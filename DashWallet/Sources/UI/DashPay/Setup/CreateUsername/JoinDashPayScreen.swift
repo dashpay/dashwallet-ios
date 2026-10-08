@@ -143,8 +143,16 @@ public struct JoinDashPayScreen: View {
     /// asks whether the wallet has hydrated, not whether there is anything to
     /// spend — which left the button inviting while the line above it said
     /// the balance was short.
+    ///
+    /// The balances counted are the ones the privacy page will offer: Platform
+    /// only in advanced mode (`canOfferPlatformFunding`). The source-agnostic
+    /// `hasMinimumRequiredBalance` counts Platform in either mode, which let a
+    /// short-Core wallet with advanced mode off through to a privacy page with
+    /// nothing it could pick.
     private var canProceed: Bool {
-        viewModel.hasMinimumRequiredBalance || viewModel.hasReadyShieldedFunding
+        viewModel.hasMinimumRequiredCoreBalance
+            || viewModel.canOfferPlatformFunding
+            || viewModel.hasReadyShieldedFunding
     }
 
     /// The caption above the button. One slot, two different things to say:

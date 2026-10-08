@@ -89,6 +89,10 @@ struct JoinDashPayCopy {
     /// Which stage `.creating` and `.creationFailed` describe. Ignored by
     /// every other state.
     var registrationStep: DWDPRegistrationState = .processingPayment
+    /// Why `.creationFailed` stopped, when known. The step line alone ("(3/3)
+    /// Can't register username") left the user nothing to act on once the
+    /// create screen, whose alert used to carry the reason, had stepped aside.
+    var failureReason: String? = nil
 
     /// The legacy status object that owns the "(1/3) Processing Payment" copy
     /// and its failure variants in all 43 locales. Built rather than
@@ -185,7 +189,14 @@ struct JoinDashPayCopy {
             }
         case .creating where surface == .more:
             return NSLocalizedString("Submitting username to the Dash network. It might take a few minutes.", comment: "Usernames")
-        case .creating, .creationFailed:
+        case .creationFailed:
+            // The step, then the reason on its own line — the same shape as the
+            // voting subtitle's deadline.
+            guard let failureReason, !failureReason.isEmpty else {
+                return registrationStatus.stateDescription()
+            }
+            return registrationStatus.stateDescription() + "\n" + failureReason
+        case .creating:
             return registrationStatus.stateDescription()
         case .interrupted:
             return NSLocalizedString(
@@ -227,7 +238,7 @@ struct JoinDashPayCopy {
             return NSLocalizedString("Upgrade", comment: "")
         case .approved:
             return NSLocalizedString("Edit profile", comment: "")
-        case .failed, .blocked, .contested:
+        case .failed, .blocked, .contested, .creationFailed:
             return NSLocalizedString("Try again", comment: "Usernames")
         default:
             return NSLocalizedString("Retry", comment: "")
@@ -247,11 +258,13 @@ struct JoinDashPayCopy {
         }
     }
 
-    /// A refused request: the row carries its own "Try again" alongside the
-    /// tap, because the retry is the only thing left to do with it.
+    /// A refused or failed request: the row carries its own "Try again"
+    /// alongside the tap, because the retry is the only thing left to do with
+    /// it. For `.creationFailed` it leads where the row's tap does — the create
+    /// form, prefilled — so the user can act on the reason shown above it.
     var showsRetryButton: Bool {
         switch state {
-        case .failed, .blocked, .contested:
+        case .failed, .blocked, .contested, .creationFailed:
             return true
         default:
             return false
@@ -304,7 +317,8 @@ struct JoinDashPayMenuItem: View {
             username: viewModel.username,
             surface: surface,
             shieldedSnapshot: shieldedReadiness.standardSnapshot,
-            registrationStep: viewModel.registrationStep)
+            registrationStep: viewModel.registrationStep,
+            failureReason: viewModel.failureReason)
     }
 
     var body: some View {
@@ -402,6 +416,10 @@ struct JoinDashPayMenuItem: View {
                         Text(copy.subtitle)
                             .dashFont(.footnote)
                             .foregroundColor(isSyncing ? Color.dash.tertiaryText : Color.dash.secondaryText)
+                            // An unrecognised failure is passed through as the
+                            // SDK wrote it, which can run to a state-transition
+                            // dump; the row keeps its first lines.
+                            .lineLimit(viewModel.state == .creationFailed ? 5 : nil)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }

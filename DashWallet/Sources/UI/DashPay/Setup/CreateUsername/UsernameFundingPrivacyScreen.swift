@@ -186,7 +186,7 @@ struct UsernameFundingPrivacyScreen: View {
     /// it on Home at all, so paying a username from it is offered only there —
     /// and only when there is enough of it to cover this registration.
     private var offersPlatformBalance: Bool {
-        viewModel.isAdvancedMode && viewModel.hasMinimumRequiredPlatformBalance
+        viewModel.canOfferPlatformFunding
     }
 
     private var continueButton: some View {

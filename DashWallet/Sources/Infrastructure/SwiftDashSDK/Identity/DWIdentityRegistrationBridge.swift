@@ -161,6 +161,13 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// Last failure description, or nil if no failure recorded.
     @objc public private(set) var lastErrorMessage: String?
 
+    /// `lastErrorMessage` in the words the user reads — the same mapping the
+    /// create screen's alert uses (`UsernameRegistrationFailureWording`), so
+    /// the Home / More row can say why a registration it reports stopped once
+    /// that screen has stepped aside. Held in memory only: after a relaunch
+    /// the row reports the attempt as interrupted, without a reason.
+    public private(set) var lastFailureReason: String?
+
     /// Funding source the SwiftUI form picked for the next
     /// `startCreateUsername:` call. Defaults to `.core` so any caller
     /// that doesn't set it (legacy Obj-C call sites, future paths)
@@ -183,6 +190,12 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// submit (nil for a plain submission), preserved across `.failed` so
     /// a retry keeps the user's choice, reset on `.completed`.
     @objc public var pendingTemporaryUsername: String?
+
+    /// The existing-identity top-up (duffs) the user confirmed for the next
+    /// submission, or nil when none was confirmed. The coordinator stops
+    /// before spending more than this. Same lifecycle as
+    /// `pendingTemporaryUsername`.
+    var authorizedTopUpDuffs: UInt64?
 
     /// Proof-of-identity link the user chose to publish with a contested
     /// submission, in the same shape as `pendingTemporaryUsername`: written by
@@ -216,7 +229,8 @@ public final class DWIdentityRegistrationBridge: NSObject {
         sanitizedVerificationURL(for: username)
     }
 
-    /// Labels compare the way DPNS treats them: trimmed and case-folded.
+    /// Labels compare as spelled, trimmed and case-folded — not homograph-
+    /// folded: a link is a claim about the spelling the user gave it for.
     private static func verificationKey(_ label: String) -> String {
         label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
@@ -249,6 +263,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let verificationURL = sanitizedVerificationURL(for: username)
+        let authorizedTopUpDuffs = authorizedTopUpDuffs
         Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public) verified=\(verificationURL != nil, privacy: .public)")
         Task { @MainActor in
             do {
@@ -256,7 +271,8 @@ public final class DWIdentityRegistrationBridge: NSObject {
                     username,
                     fundingSource: source,
                     temporaryUsername: temporaryUsername,
-                    verificationURL: verificationURL)
+                    verificationURL: verificationURL,
+                    authorizedTopUpDuffs: authorizedTopUpDuffs)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -273,13 +289,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     ) {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
+        let authorizedTopUpDuffs = authorizedTopUpDuffs
         Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(
                     username,
                     fundingSource: source,
-                    temporaryUsername: temporaryUsername)
+                    temporaryUsername: temporaryUsername,
+                    authorizedTopUpDuffs: authorizedTopUpDuffs)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -401,6 +419,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
             assetLockStatus: assetLockStatus,
             fundingSource: coord.currentFundingSource,
             isRegisteringUsername: coord.isRegisteringUsername,
+            isFundingExistingIdentity: coord.isFundingExistingIdentity,
             failedAtPhase: coord.failedAtPhase)
         switch phase {
         case .failed:
@@ -429,6 +448,9 @@ public final class DWIdentityRegistrationBridge: NSObject {
             currentAttemptScope = nil
         }
         lastErrorMessage = coord.lastErrorMessage
+        lastFailureReason = coord.lastErrorMessage.map {
+            UsernameRegistrationFailureWording.message(forRaw: $0, username: coord.currentUsername ?? "")
+        }
 
         // Reset preferredFundingSource to the safe default on
         // `.completed` only. On `.failed`, preserve the source so a
@@ -440,6 +462,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         if case .completed = phase {
             preferredFundingSource = .core
             pendingTemporaryUsername = nil
+            authorizedTopUpDuffs = nil
             pendingVerification = nil
         }
 

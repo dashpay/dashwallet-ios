@@ -48,11 +48,69 @@ final class UsernameRequestStatusViewModel: ObservableObject {
     /// Treating those as one offered "Verify Now" over a link that was about
     /// to appear, inviting a second publication of a link the user already has.
     @Published private(set) var isReadingVerification = true
+    /// The last lookup failed, so `verificationURL == nil` means "unknown",
+    /// not "nothing published". Kept apart for the same reason as the reading
+    /// state: offering "Verify Now" here invites publishing a second link over
+    /// one that may already be on Platform — which the contract then refuses.
+    @Published private(set) var didVerificationLookupFail = false
     /// Non-nil drives the failure alert. Cancelling the PIN is not an error.
     @Published var verificationError: String?
 
     /// The submitted label, as recorded at submission time.
     let label: String
+
+    /// The instant username that failed next to this request, while the
+    /// identity still has no name of its own to use during the vote.
+    /// Published and re-read on appear and on registration-status
+    /// notifications: the coordinator writes the record after the form has
+    /// already handed off, and a retry can register the name while this
+    /// screen is up.
+    @Published private(set) var failedCompanion: UsernamePrefs.FailedCompanion?
+
+    /// `rebuildSnapshot` rebuilds the identity snapshot (on appear, where a
+    /// retry may just have registered the name); notifications read the cached
+    /// one, so a burst of them does not rebuild it each time.
+    func refreshFailedCompanion(rebuildSnapshot: Bool = false) {
+        // No record is the usual case: answered without touching the identity.
+        guard let failed = UsernamePrefs.shared.failedCompanion,
+              DWContestedNameStatusService.labelsMatch(failed.contestedLabel, label) else {
+            failedCompanion = nil
+            return
+        }
+        // Any registration still running — the retry of that name, or the
+        // request itself finishing its later steps — would refuse a Try again,
+        // and may yet change the answer: nothing is offered until it settles.
+        if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
+            failedCompanion = nil
+            return
+        }
+        let snapshot = rebuildSnapshot
+            ? DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+            : DWCurrentUserIdentityInfo.shared.snapshotForReading
+        // Names still loading: an empty list proves nothing about the
+        // instant name, so nothing is claimed either way.
+        guard !snapshot.isLoading, snapshot.namesAreLoaded else {
+            failedCompanion = nil
+            return
+        }
+        // A record outliving its request has nothing left to report on. The
+        // bookmark answers nothing while the identity is unresolved, so the
+        // identity's own pending name counts too — the same fallback the hosts
+        // open this screen through.
+        let isPending = DWContestedNameStatusService.shared.isPendingLabel(label)
+            || snapshot.pendingContestedName.map { DWContestedNameStatusService.labelsMatch($0, label) } == true
+        guard isPending else {
+            failedCompanion = nil
+            return
+        }
+        if snapshot.usernames.contains(where: { DWContestedNameStatusService.labelsMatch($0, failed.username) }) {
+            // The retry registered it: nothing is missing any more.
+            UsernamePrefs.shared.clearFailedCompanion(forUsername: failed.username)
+            failedCompanion = nil
+            return
+        }
+        failedCompanion = snapshot.username == nil ? failed : nil
+    }
     private let contestsService: ContestedNamesService
     private let identityVerify = IdentityVerifyService.shared
 
@@ -78,9 +136,10 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         identityVerify.isAvailable
     }
 
-    /// Reads the published link, if any. Silent on failure: the link is extra
-    /// information about a request whose status is already on screen, so a
-    /// lookup that fails must not present itself as the request failing.
+    /// Reads the published link, if any. Quiet on failure — no alert: the
+    /// link is extra information about a request whose status is already on
+    /// screen, so a lookup that fails must not present itself as the request
+    /// failing. The link row reports it in place, with a retry.
     func refreshVerificationURL() async {
         guard identityVerify.isAvailable else {
             isReadingVerification = false
@@ -88,7 +147,13 @@ final class UsernameRequestStatusViewModel: ObservableObject {
         }
         isReadingVerification = true
         defer { isReadingVerification = false }
-        verificationURL = try? await identityVerify.publishedURL(forLabel: label)
+        do {
+            verificationURL = try await identityVerify.publishedURL(forLabel: label)
+            didVerificationLookupFail = false
+        } catch {
+            verificationURL = nil
+            didVerificationLookupFail = true
+        }
     }
 
     /// Publishes `url` as this request's proof of identity (PIN-gated inside
@@ -101,6 +166,7 @@ final class UsernameRequestStatusViewModel: ObservableObject {
 
         do {
             verificationURL = try await identityVerify.publish(url: url, forLabel: label)
+            didVerificationLookupFail = false
         } catch IdentityVerifyService.ServiceError.authCancelled {
             // The user backed out of the PIN prompt; nothing happened.
         } catch {
@@ -178,6 +244,9 @@ struct UsernameRequestStatusScreen: View {
     @State private var showVotingInfo = false
     /// The proof-of-identity screen: copy the post text, paste the link back.
     @State private var showVerifyIdentity = false
+    /// Registers a failed instant username again: the host opens the create
+    /// form prefilled with it. nil hides the retry.
+    var onRetryCompanion: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -205,6 +274,10 @@ struct UsernameRequestStatusScreen: View {
                         .padding(.horizontal, 20)
 
                     detailsCard
+
+                    if let failed = viewModel.failedCompanion {
+                        failedCompanionSection(failed)
+                    }
 
                     if let loadError = viewModel.loadError {
                         VotingBanner(text: loadError, tone: .error)
@@ -243,18 +316,23 @@ struct UsernameRequestStatusScreen: View {
             }
         }
         .task {
+            viewModel.refreshFailedCompanion(rebuildSnapshot: true)
             await viewModel.refresh()
             await viewModel.refreshVerificationURL()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+            viewModel.refreshFailedCompanion()
+        }
+
         .sheet(isPresented: $showVerifyIdentity) {
             // The library's sheet, not a `NavigationView` with a Cancel item:
             // its close control is the way out, and the screen carries its own
             // heading — a navigation title on top of it was the same words
             // twice.
-            DashUIKit.BottomSheet.selfSizing(
-                showBackButton: .constant(false),
-                fallback: 600
-            ) {
+            // Full height, not self-sizing: the screen has a text field, and a
+            // self-sizing sheet lays its content out at a fixed ideal height, so
+            // nothing can scroll out from under the keyboard.
+            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
                 VerifyIdentityScreen(
                     username: viewModel.label,
                     onConfirmed: { url in
@@ -273,6 +351,39 @@ struct UsernameRequestStatusScreen: View {
             Button(NSLocalizedString("OK", comment: "")) { viewModel.verificationError = nil }
         } message: {
             Text(viewModel.verificationError ?? "")
+        }
+    }
+
+    /// The instant username asked for with this request did not register, so
+    /// the user has no name to use while the vote runs. Says so, with the
+    /// reason, and offers to register it again on its own.
+    private func failedCompanionSection(_ failed: UsernamePrefs.FailedCompanion) -> some View {
+        // `caption` carries its own 20 pt inset, so the other two take theirs
+        // individually rather than from the stack.
+        VStack(alignment: .leading, spacing: 12) {
+            VotingBanner(
+                text: String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The instant username “%@” could not be registered, so you have no username to use while the vote runs.",
+                        comment: "Usernames: request details, failed instant username"),
+                    failed.username),
+                tone: .error)
+                .padding(.horizontal, 20)
+            // Only a recognised cause is worth a line; an unrecognised one
+            // comes back unchanged as Platform's debug text.
+            let worded = UsernameRegistrationFailureWording.message(forRaw: failed.reason, username: failed.username)
+            if !failed.reason.isEmpty, worded != failed.reason {
+                caption(worded)
+            }
+            if let onRetryCompanion {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Try again", comment: ""),
+                    fillsWidth: true,
+                    size: .medium,
+                    style: .tintedBlue,
+                    action: { onRetryCompanion(failed.username) })
+                    .padding(.horizontal, 20)
+            }
         }
     }
 
@@ -336,6 +447,18 @@ struct UsernameRequestStatusScreen: View {
                 Text(NSLocalizedString("Checking…", comment: "Usernames"))
             }
             .foregroundStyle(Color.dash.secondaryText)
+        } else if viewModel.didVerificationLookupFail {
+            // Not "Verify Now": the lookup did not answer, so a link may well
+            // be published already. Same wording as the contender details.
+            Button {
+                Task { await viewModel.refreshVerificationURL() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
+                    Image(systemName: "arrow.clockwise")
+                }
+                .foregroundStyle(Color.dash.blue)
+            }
         } else if viewModel.canVerifyIdentity {
             Button {
                 showVerifyIdentity = true

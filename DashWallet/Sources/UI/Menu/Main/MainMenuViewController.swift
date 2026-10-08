@@ -422,7 +422,8 @@ struct MainMenuScreen: View {
             // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
             // so the pop is captured directly — there is no reference cycle
             // for a `weak self` to break here.
-            onBack: { vc.popViewController(animated: true) })
+            onBack: { vc.popViewController(animated: true) },
+            onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
@@ -622,6 +623,9 @@ struct MainMenuScreen: View {
     /// it.
     private func openCreateUsernameForRecovery(username: String) {
         guard let dashPayModel = viewModel.dashPayModel else { return }
+        // Not reached through the Join DashPay sheet, so no funding pick
+        // belongs to this visit: the form pins a source the recovery can use.
+        CreateUsernameViewModel.discardChosenFundingSource()
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
         Self.pushCreateUsernameForm(
             on: vc,

@@ -127,18 +127,56 @@ struct CreateUsernameView: View {
     /// sheet or the PIN prompt.
     @State private var isTextInputFocused: Bool = false
     @State private var inProgress: Bool = false
+    /// False once the screen has left, so a deferred step does not run on it.
+    @State private var isOnScreen = false
     @State private var screenLockedAfterAuth: Bool = false
     /// Funding source for the SwiftDashSDK identity registration.
     ///
     /// Chosen a screen earlier, on the Join DashPay sheet's privacy page, and
-    /// adopted on appear. This screen does not ask again — it used to carry a
-    /// segmented picker, which asked the same question twice. For the paths
+    /// adopted on appear; this screen has no picker of its own. For the paths
     /// that skip that page (invitation, recovery, a retry from the Home row)
     /// `syncFundingSourceToViableSource()` pins the first viable source in
-    /// privacy-descending order (Shielded → Platform → Core). Written into
-    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource` in the
-    /// Continue handler right before the submit call.
+    /// privacy-descending order (Shielded → Platform → Core; without advanced
+    /// mode, Shielded → Core → Platform). It is the form's pick, not always
+    /// the source that pays: right before paying, `performSubmit` asks about a
+    /// source that can cover the names submitted (`sourceToName`, gated by
+    /// `CreateUsernameViewModel.fundingSourceNeedsConfirmation`), and writes
+    /// `payingSource(agreed:)` into
+    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`.
     @State private var fundingSource: DWIdentityFundingSource = .core
+    /// The top-up a plain name needs from an existing identity, waiting on the
+    /// user's answer to the amount alert. nil when no alert is up.
+    @State private var pendingPlainTopUp: PlainTopUp?
+
+    /// The amount alert's figure and the source it names, captured when it is
+    /// shown so Confirm agrees to what the user read.
+    private struct PlainTopUp {
+        let duffs: UInt64
+        let source: DWIdentityFundingSource
+    }
+    @State private var showPlainTopUp = false
+    /// An earlier Core top-up is unfinished: the warning is up, holding what
+    /// to run if the user goes ahead anyway.
+    @State private var unfinishedTopUpContinuation: UnfinishedTopUpContinuation?
+    @State private var showUnfinishedTopUp = false
+    /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
+    /// the user has chosen to continue.
+    @State private var acknowledgedUnfinishedTopUp = false
+    /// The funding-source question (`fundingSourceNeedsConfirmation`): the source
+    /// it names and the submission it gates. Kept after dismissal so the alert
+    /// keeps its title while it animates out.
+    @State private var sourceQuestion: SourceQuestion?
+    @State private var showSourceQuestion = false
+
+    private struct SourceQuestion {
+        let source: DWIdentityFundingSource
+        let temporaryUsername: String?
+    }
+
+    private enum UnfinishedTopUpContinuation {
+        case purchase, contested, plain
+        case submit(temporaryUsername: String?, agreedSource: DWIdentityFundingSource?)
+    }
     /// True once a choice made by the user has been adopted; auto-pinning
     /// then leaves the selection alone, even once it can no longer pay.
     @State private var didUserPickFundingSource: Bool = false
@@ -216,6 +254,9 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// Set for a submission stopped before anything was sent, whose alert
+    /// must not read "Registration failed".
+    @State private var registrationRefusalTitle: String? = nil
     /// Post-claim contact-request failure. The username IS registered
     /// at this point — the alert reports the failed request and its OK
     /// finishes the flow (the request is re-sendable from Contacts).
@@ -304,17 +345,8 @@ struct CreateUsernameView: View {
                             // sheet first so the user explicitly acknowledges the
                             // voting wait and the locked Dash. Non-contested names
                             // submit directly.
-                            if viewModel.canPurchaseListedNameDirectly {
-                                showPurchaseConfirmation = true
-                            } else if viewModel.isContestedCandidate {
-                                // The verification offer comes first, as on
-                                // Android: a link published with the request is
-                                // what masternode owners weigh, and after the
-                                // submission that window is already narrower.
-                                showVerifyOffer = true
-                            } else {
-                                performSubmit()
-                            }
+                            acknowledgedUnfinishedTopUp = false
+                            beginContinue()
                         }
                         .padding(.top, 20)
                     }
@@ -327,7 +359,9 @@ struct CreateUsernameView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onDisappear { isOnScreen = false }
         .onAppear {
+            isOnScreen = true
             isTextInputFocused = true
             // Restores an interrupted registration's draft and clears the
             // per-visit availability cache. Its only other caller waits on
@@ -343,8 +377,12 @@ struct CreateUsernameView: View {
             }
             // The funding source is chosen on the Join DashPay sheet's privacy
             // page, one screen back. Adopting it counts as an explicit pick, so
-            // the auto-pinning below leaves it alone.
-            if let chosen = viewModel.consumeChosenFundingSource() {
+            // the auto-pinning below leaves it alone. An invitation claim never
+            // passes that page — the voucher pays — so a pick left over from an
+            // earlier sheet is dropped rather than adopted.
+            if invitationURI != nil {
+                CreateUsernameViewModel.discardChosenFundingSource()
+            } else if let chosen = viewModel.consumeChosenFundingSource() {
                 fundingSource = chosen
                 didUserPickFundingSource = true
             }
@@ -390,6 +428,11 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
+        .onChange(of: viewModel.identityTopUpDuffs) { _ in
+            // Whether Shielded can pay turns on the existing identity's
+            // shortfall, which moves without the readiness snapshot changing.
+            syncFundingSourceToViableSource()
+        }
         .sheet(isPresented: $showVotingInfo) {
             DashUIKit.BottomSheet.selfSizing(
                 showBackButton: .constant(false),
@@ -422,10 +465,10 @@ struct CreateUsernameView: View {
             }
         }
         .sheet(isPresented: $showVerifyIdentity, onDismiss: runSheetFollowUp) {
-            DashUIKit.BottomSheet.selfSizing(
-                showBackButton: .constant(false),
-                fallback: 600
-            ) {
+            // Full height, not self-sizing: the screen has a text field, and a
+            // self-sizing sheet lays its content out at a fixed ideal height, so
+            // nothing can scroll out from under the keyboard.
+            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
                 VerifyIdentityScreen(
                     username: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
                     onConfirmed: { url in
@@ -455,6 +498,10 @@ struct CreateUsernameView: View {
                     // Only the contested request spends a contest fee; the
                     // instant companion is an ordinary registration.
                     showsContestFeeNote: !isNamingInstantUsername,
+                    identityPaidContestFeeDuffs:
+                        !isNamingInstantUsername && existingIdentityTopUpDuffs(nameCount: 1) != nil
+                            ? UsernameMarketplaceService.contestedFundCredits / 1000
+                            : nil,
                     onConfirm: { confirmRequestAccepted() })
             }
         }
@@ -482,7 +529,8 @@ struct CreateUsernameView: View {
             isPresented: $showPurchaseConfirmation
         ) {
             Button(NSLocalizedString("Buy", comment: "")) {
-                performPurchase()
+                // The purchase asks for the PIN; see `afterAlertDismissal`.
+                afterAlertDismissal { performPurchase() }
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         } message: {
@@ -532,6 +580,78 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
+            sourceQuestion.map { Self.sourceQuestionTitle($0.source) } ?? "",
+            isPresented: $showSourceQuestion,
+            presenting: sourceQuestion
+        ) { question in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Continue", comment: "")) {
+                afterAlertDismissal {
+                    // The source the alert named, not the auto-pick, which may
+                    // have moved while it was up; performSubmit checks it can pay.
+                    performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
+                }
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "Any Dash this request needs comes from this balance.",
+                comment: "Usernames: confirm the funding source"))
+        }
+        // `presenting:` hands the amount to the buttons and the message as a
+        // value, so dismissal clearing the state cannot lose what was shown.
+        .alert(
+            NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
+            isPresented: $showPlainTopUp,
+            presenting: pendingPlainTopUp
+        ) { topUp in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingPlainTopUp = nil
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Confirm", comment: "")) {
+                viewModel.captureConfirmedTopUp(shownDuffs: topUp.duffs, isCompanionPass: false)
+                pendingPlainTopUp = nil
+                // The alert named the source; agreeing to it is the answer to
+                // the source question, for the source it showed.
+                afterAlertDismissal { performSubmit(agreedSource: topUp.source) }
+            }
+        } message: { topUp in
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
+                    comment: "Usernames: plain name on an existing identity"),
+                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
+                topUp.duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                Self.sourceName(topUp.source)))
+        }
+        .alert(
+            NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
+            isPresented: $showUnfinishedTopUp,
+            presenting: unfinishedTopUpContinuation
+        ) { continuation in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
+                acknowledgedUnfinishedTopUp = true
+                afterAlertDismissal {
+                    switch continuation {
+                    case .purchase: showPurchaseConfirmation = true
+                    case .contested: showVerifyOffer = true
+                    case .plain: submitPlainName()
+                    case let .submit(temporaryUsername, agreedSource):
+                        performSubmit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+                    }
+                }
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.",
+                comment: "Usernames: unfinished identity top-up"))
+        }
+        .alert(
             NSLocalizedString("Username submitted", comment: "Usernames"),
             isPresented: $showVotingSubmitted
         ) {
@@ -554,12 +674,13 @@ struct CreateUsernameView: View {
             Text(inviterContactErrorMessage ?? "")
         }
         .alert(
-            NSLocalizedString("Registration failed", comment: "Usernames"),
+            registrationRefusalTitle ?? NSLocalizedString("Registration failed", comment: "Usernames"),
             isPresented: Binding(
                 get: { registrationErrorMessage != nil },
                 set: { newValue in
                     if !newValue {
                         registrationErrorMessage = nil
+                        registrationRefusalTitle = nil
                         screenLockedAfterAuth = false
                     }
                 }
@@ -567,6 +688,7 @@ struct CreateUsernameView: View {
         ) {
             Button(NSLocalizedString("OK", comment: "")) {
                 registrationErrorMessage = nil
+                registrationRefusalTitle = nil
                 screenLockedAfterAuth = false
             }
         } message: {
@@ -655,8 +777,9 @@ struct CreateUsernameView: View {
     /// a silent rule should not take a row's worth of space. A rule that is
     /// **met** is dropped too: a satisfied requirement has stopped being a
     /// requirement, and keeping it on screen buries the one thing that still
-    /// needs fixing among ticks. With everything met the block disappears and
-    /// Continue lighting up is the confirmation.
+    /// needs fixing among ticks. The one exception is availability: "Username
+    /// available" is news rather than a requirement — the answer the user was
+    /// waiting on — so it stays, as the confirmation beside Continue.
     ///
     /// Each row carries a stable `id` so a rule whose text changes (the cost
     /// line's amount, the blocked line's reason) updates in place instead of
@@ -664,10 +787,15 @@ struct CreateUsernameView: View {
     private var usernameCriteria: [DashUIKit.Criterion] {
         var items: [DashUIKit.Criterion] = []
 
-        func add(id: String, text: @autoclosure () -> String, rule: UsernameValidationRuleResult) {
+        func add(
+            id: String,
+            text: @autoclosure () -> String,
+            rule: UsernameValidationRuleResult,
+            showsWhenMet: Bool = false
+        ) {
             guard rule != .hidden else { return }
             let state = Self.criterionState(rule)
-            guard state != .met else { return }
+            guard state != .met || showsWhenMet else { return }
             items.append(DashUIKit.Criterion(id: id, text: text(), state: state))
         }
 
@@ -691,7 +819,8 @@ struct CreateUsernameView: View {
         add(
             id: "availability",
             text: getMessageForBlockedRule(),
-            rule: viewModel.uiState.usernameBlockedRule)
+            rule: viewModel.uiState.usernameBlockedRule,
+            showsWhenMet: true)
 
         return items
     }
@@ -792,6 +921,15 @@ struct CreateUsernameView: View {
         DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
             nil,
             forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// A submission the user stopped at one of its questions, or that was
+    /// refused: nothing it confirmed on the way — the top-up amount, the proof
+    /// link, the answers to the warnings — carries over to the next one.
+    private func abandonSubmission() {
+        acknowledgedUnfinishedTopUp = false
+        viewModel.discardConfirmedTopUp()
+        clearPendingVerification()
     }
 
     /// Naming the instant companion, on the same screen Android returns to for
@@ -1041,11 +1179,31 @@ struct CreateUsernameView: View {
     /// - The requested name on its own: offer the companion first. Android
     ///   asks at exactly this moment too, which is why the offer is a second
     ///   sheet rather than a section of the first.
+    /// - The requested name for an identity that already owns a name: no
+    ///   offer. A companion exists to give the user a name while the vote
+    ///   runs, and this one has one — after a lost contest, typically the
+    ///   companion from that round. Android skips it the same way
+    ///   (`hasSecondaryName()`).
     private func confirmRequestAccepted() {
-        sheetFollowUp = isNamingInstantUsername
-            ? .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
-            : .offerInstantUsername
+        // What the sheet showed, before a later balance refresh can move it.
+        // For a new identity it is the funding, which also caps an identity
+        // the create path ends up reusing.
+        viewModel.captureConfirmedTopUp(
+            shownDuffs: confirmationAmountDuffs,
+            isCompanionPass: isNamingInstantUsername)
+        if isNamingInstantUsername {
+            sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
+        } else if identityOwnsUsername {
+            sheetFollowUp = .submit(temporaryUsername: nil)
+        } else {
+            sheetFollowUp = .offerInstantUsername
+        }
         showConfirmRequest = false
+    }
+
+    private var identityOwnsUsername: Bool {
+        let identity = DWCurrentUserIdentityInfo.shared
+        return identity.hasIdentity && !identity.usernames.isEmpty
     }
 
     /// Runs whatever the sheet that just closed asked for. Called from the
@@ -1075,13 +1233,39 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// What the confirmation sheet states as the cost.
-    ///
-    /// Only the contested request spends DASH: the companion is a second DPNS
-    /// name on the identity that request funds, so nil — the sheet then says
-    /// nothing extra is spent instead of naming a second amount.
-    private var confirmationAmountDuffs: UInt64? {
-        isNamingInstantUsername ? nil : UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+    /// What the confirmation shows: what actually leaves the chosen source.
+    /// A new identity is funded with the full contested minimum, and its
+    /// companion costs nothing more. An existing identity is not created
+    /// again: it is topped up by its shortfall for the final name count —
+    /// the requested pass shows the top-up for that name alone, the companion
+    /// pass what the second name adds — and the contest fund, paid from its
+    /// credits, is stated beside it (`identityPaidContestFeeDuffs`).
+    private var confirmationAmountDuffs: UInt64 {
+        if let single = existingIdentityTopUpDuffs(nameCount: 1) {
+            guard isNamingInstantUsername else { return single }
+            // What the second name adds over the figure confirmed for the
+            // requested one, so the two sheets sum to the two-name top-up as it
+            // stands now.
+            let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
+            let base = viewModel.requestedTopUpCeilingDuffs ?? single
+            return total > base ? total - base : 0
+        }
+        if isNamingInstantUsername { return 0 }
+        if DWCurrentUserIdentityInfo.shared.hasIdentity {
+            // An identity with no top-up route here (an invitation claim)
+            // registers on what it holds: only the contest fund is at stake.
+            // The fund is the marketplace's figure, credits to duffs
+            // (1 duff = 1000 credits).
+            return UsernameMarketplaceService.contestedFundCredits / 1000
+        }
+        return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+    }
+
+    /// The top-up the confirmation states for an existing identity, or nil
+    /// when none can happen (new identity, invitation claim).
+    private func existingIdentityTopUpDuffs(nameCount: UInt64) -> UInt64? {
+        guard !viewModel.isInvitationMode else { return nil }
+        return viewModel.existingIdentityTopUpDuffs(isContested: true, nameCount: nameCount)
     }
 
     private func confirmContestedSubmission(temporaryUsername: String?) {
@@ -1095,19 +1279,202 @@ struct CreateUsernameView: View {
         performSubmit(temporaryUsername: temporaryUsername)
     }
 
+    /// A plain name on an existing identity that needs a top-up asks for the
+    /// amount and source first; otherwise it submits straight away.
+    private func submitPlainName() {
+        let topUp = viewModel.isInvitationMode
+            ? nil
+            : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+        if let topUp, topUp > 0 {
+            // The alert's Confirm answers the source question, so it names
+            // the source that question would.
+            guard let source = sourceToName(nameCount: 1) else {
+                refuseSubmission(Self.noPayableSourceMessage)
+                return
+            }
+            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: source)
+            showPlainTopUp = true
+            return
+        }
+        // No alert, but still a ceiling, so the coordinator never runs a top-up
+        // nobody saw: none needed (0), or — with no identity known — the new
+        // identity's funding the cost rule states, which also caps an identity
+        // the create path turns out to reuse.
+        if !viewModel.isInvitationMode {
+            viewModel.captureConfirmedTopUp(
+                shownDuffs: topUp ?? viewModel.newIdentityFundingDuffs(isContested: false),
+                isCompanionPass: false)
+        }
+        performSubmit()
+    }
+
+    /// A source as the privacy page names it.
+    private static func sourceName(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
+        case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
+        case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
+        case .invitation: return NSLocalizedString("Dash balance", comment: "Usernames")
+        @unknown default: return NSLocalizedString("Dash balance", comment: "Usernames")
+        }
+    }
+
+    /// Continue's routing. The paying source is settled later, in
+    /// `performSubmit` (asked there when the form picked it itself).
+    private func beginContinue() {
+        if viewModel.hasUnfinishedCoreTopUp(
+            source: payingSource(agreed: nil), nameCount: 1,
+            isPurchase: viewModel.canPurchaseListedNameDirectly) {
+            unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
+                ? .purchase
+                : (viewModel.isContestedCandidate ? .contested : .plain)
+            showUnfinishedTopUp = true
+        } else if viewModel.canPurchaseListedNameDirectly {
+            showPurchaseConfirmation = true
+        } else if viewModel.isContestedCandidate {
+            // The verification offer comes first, as on
+            // Android: a link published with the request is
+            // what masternode owners weigh, and after the
+            // submission that window is already narrower.
+            showVerifyOffer = true
+        } else {
+            submitPlainName()
+        }
+    }
+
+    /// The source a question or the amount alert names for `nameCount`
+    /// names. A privacy-page pick stands — `performSubmit` refuses it if it
+    /// cannot pay, rather than switch away from it. Otherwise the form's pick,
+    /// else the first viable source in privacy order, that can pay for them:
+    /// the auto-pick judges one name. nil when none can.
+    private func sourceToName(nameCount: UInt64) -> DWIdentityFundingSource? {
+        if didUserPickFundingSource { return payingSource(agreed: nil) }
+        return viewModel.firstPayableSource(
+            of: [payingSource(agreed: nil)] + viableFundingSources, nameCount: nameCount)
+    }
+
+    private static var noPayableSourceMessage: String {
+        NSLocalizedString(
+            "None of your balances can pay for this request right now.",
+            comment: "Usernames: confirm the funding source")
+    }
+
+    /// Stops a submission before anything is sent and says why.
+    private func refuseSubmission(_ message: String) {
+        abandonSubmission()
+        registrationRefusalTitle = NSLocalizedString("Nothing was sent", comment: "Usernames: confirm the funding source")
+        registrationErrorMessage = message
+    }
+
+    /// Runs `action` once the alert whose button called it has gone. What
+    /// follows can present something itself — the error alert, the unfinished
+    /// top-up warning, the PIN host — and a presentation requested while an
+    /// alert is still animating out is dropped. `.alert` has no `onDismiss`.
+    ///
+    /// The wait is a fixed delay — the alert's dismissal animation, with
+    /// margin. The spinner holds Continue off meanwhile, so a second tap
+    /// cannot start a parallel chain, and nothing runs once the screen is gone.
+    private func afterAlertDismissal(_ action: @escaping () -> Void) {
+        inProgress = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            inProgress = false
+            // The screen left meanwhile: what the step would have submitted
+            // is abandoned, not left for the next visit to pick up.
+            guard isOnScreen else {
+                abandonSubmission()
+                return
+            }
+            action()
+        }
+    }
+
+    /// The source that pays for a submission: Core while a paid Core lock is
+    /// resumed, else the source the user agreed to, else the form's pick.
+    private func payingSource(agreed agreedSource: DWIdentityFundingSource?) -> DWIdentityFundingSource {
+        viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : (agreedSource ?? fundingSource)
+    }
+
+    private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .platformPayment: return NSLocalizedString("Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
+        case .shielded: return NSLocalizedString("Pay from your Shielded balance?", comment: "Usernames: confirm the funding source")
+        default: return NSLocalizedString("Pay from your Dash balance?", comment: "Usernames: confirm the funding source")
+        }
+    }
+
     /// Encapsulates the submit-to-bridge dance so the direct Continue
     /// path and the contested sheet's confirmation can share the code.
     /// Writes the funding-source pick into the bridge right before
     /// submit. The bridge resets to `.core` on every terminal phase, so
     /// a stale picker value can't leak into a future attempt; this
     /// single write is the only synchronization needed.
-    private func performSubmit(temporaryUsername: String? = nil) {
-        if !viewModel.isInvitationMode {
-            if viewModel.registrationRecovery == .pendingCoreAssetLock {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = .core
-            } else if !viewModel.isResumingUsername {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+    /// `agreedSource` is the source the user agreed to at the source question;
+    /// nil until it was asked, or when it need not be.
+    private func performSubmit(temporaryUsername: String? = nil, agreedSource: DWIdentityFundingSource? = nil) {
+        // Another registration is running (started from Identities or an
+        // invitation): refuse before touching the bridge state it still reads
+        // — the funding source, top-up ceiling and companion it was given.
+        if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
+            refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription)
+            return
+        }
+        let nameCount: UInt64 = temporaryUsername == nil ? 1 : 2
+        viewModel.refreshCoreSpendable()
+        // Asked here, right before paying, so it names the source that pays.
+        if agreedSource == nil,
+           viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {
+            // The auto-pick judges one name; ask about a source that can pay
+            // for the names actually submitted, in the same privacy order.
+            guard let payable = sourceToName(nameCount: nameCount) else {
+                refuseSubmission(Self.noPayableSourceMessage)
+                return
             }
+            sourceQuestion = SourceQuestion(source: payable, temporaryUsername: temporaryUsername)
+            showSourceQuestion = true
+            return
+        }
+        let payingSource = payingSource(agreed: agreedSource)
+        // Whatever chose it — the privacy page, the question, the amount
+        // alert — the source must still cover these names, or the request
+        // would fail after the PIN. A resumed Core lock is already paid.
+        if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock,
+           !viewModel.canPay(from: payingSource, nameCount: nameCount) {
+            // Shielded picked and the identity needs a top-up: the balance may
+            // well hold enough — this flow has no Shielded top-up route. Say
+            // that, with the way out, in the coordinator's own words.
+            if payingSource == .shielded,
+               let neededDuffs = viewModel.existingIdentityTopUpDuffs(
+                   isContested: viewModel.isContestedCandidate, nameCount: nameCount),
+               neededDuffs > 0 {
+                refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
+                    .shieldedTopUpUnavailable(neededDuffs: neededDuffs).localizedDescription)
+            } else {
+                refuseSubmission(NSLocalizedString(
+                    "The chosen balance can't pay for this request. Check your balances and try again.",
+                    comment: "Usernames: confirm the funding source"))
+            }
+            return
+        }
+        // The two-name top-up can need Core where the one-name one did not:
+        // warn here too unless the user already chose to go ahead.
+        if !acknowledgedUnfinishedTopUp,
+           viewModel.hasUnfinishedCoreTopUp(source: payingSource, nameCount: nameCount) {
+            unfinishedTopUpContinuation = .submit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+            showUnfinishedTopUp = true
+            return
+        }
+        acknowledgedUnfinishedTopUp = false
+        if !viewModel.isInvitationMode {
+            // An identity that already exists — resumed or not — is topped up
+            // from this source when it holds less than the name needs, so the
+            // pick matters on that path too.
+            DWIdentityRegistrationBridge.shared.preferredFundingSource = payingSource
+            // The top-up the user confirmed — on the contested sheets or the
+            // plain name's amount alert — is the most the coordinator may move
+            // without asking again; captured on Confirm, not recalculated here.
+            // None confirmed means none allowed: the coordinator refuses a
+            // top-up it was not given an amount for.
+            DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.takeConfirmedTopUpCeiling()
         }
         // Every submission except an invitation claim reports its progress on
         // the More row and this screen steps aside straight after the PIN.
@@ -1129,10 +1496,10 @@ struct CreateUsernameView: View {
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
                 if handsOffToStatusRow {
-                    // Fires once the registration is actually running — after
-                    // the PIN gate, which `startCreateUsername` passes before
-                    // any phase change. The work itself lives in the
-                    // app-scoped coordinator and outlives this screen.
+                    // Fires once the registration is actually running: on the
+                    // coordinator's `.inFlight`, which is reached only after
+                    // the PIN prompt was answered. The work itself lives in
+                    // the app-scoped coordinator and outlives this screen.
                     didHandOff = true
                     // The label the registration actually went out under, not
                     // a second normalization of the field: the two must name
@@ -1149,7 +1516,9 @@ struct CreateUsernameView: View {
             inProgress = false
 
             // The Home row owns the outcome now; alerts from a dismissed screen
-            // would either be invisible or land on top of Home.
+            // would either be invisible or land on top of Home. A PIN
+            // cancellation cannot follow the handoff: it fires on `.inFlight`,
+            // which both paths reach only after authorization.
             guard !didHandOff else { return }
 
             switch outcome {
@@ -1222,18 +1591,25 @@ struct CreateUsernameView: View {
         if viewModel.hasReadyShieldedFunding {
             sources.append(.shielded)
         }
-        if viewModel.hasMinimumRequiredPlatformBalance {
-            sources.append(.platformPayment)
-        }
-        if viewModel.hasMinimumRequiredCoreBalance {
-            sources.append(.core)
+        // Not gated on advanced mode: a retry or recovery of a Platform-funded
+        // attempt must still finish here. Without advanced mode, though, the
+        // balance the user can see comes first, so a form opened with no pick
+        // (a retry from Request details) is not paid from one they cannot.
+        let platform = viewModel.hasMinimumRequiredPlatformBalance
+        let core = viewModel.hasMinimumRequiredCoreBalance
+        if viewModel.isAdvancedMode {
+            if platform { sources.append(.platformPayment) }
+            if core { sources.append(.core) }
+        } else {
+            if core { sources.append(.core) }
+            if platform { sources.append(.platformPayment) }
         }
         return sources
     }
 
     /// Keep `fundingSource` pointing at a viable source. With no choice
     /// carried in from the privacy page, pin to the highest-priority viable
-    /// source (Shielded → Platform → Core); with one, never override it.
+    /// source (`viableFundingSources`' order); with one, never override it.
     private func syncFundingSourceToViableSource() {
         defer { viewModel.setActiveFundingSource(fundingSource) }
 
@@ -1244,9 +1620,9 @@ struct CreateUsernameView: View {
             return
         }
 
-        // An explicit pick stands, affordable or not. The form has no picker
-        // and the confirmation does not name the source, so a quiet switch is
-        // invisible: a user who chose Shielded and then typed a contested name
+        // A privacy-page pick stands, affordable or not. The form has no picker
+        // and asks only about a source it picked itself, so a quiet switch
+        // away from the user's pick would go unannounced: a user who chose Shielded and then typed a contested name
         // its pool cannot cover would be funded from Core, linking the
         // identity to transparent funds they declined. Holding the pick lets
         // the cost rule fail against it and keeps Continue disabled; changing
@@ -1421,7 +1797,10 @@ private struct InstantUsernameForm: View {
             .padding(.bottom, 20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .scrollBounceBehavior(.basedOnSize)
+        // Always draggable, not only when the content overflows: this screen
+        // is short enough to fit above the keyboard, and a scroll view that
+        // cannot move gives no way to drag the keyboard away.
+        .scrollBounceBehavior(.always)
         .scrollDismissesKeyboard(.interactively)
     }
 }

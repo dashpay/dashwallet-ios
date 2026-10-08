@@ -189,6 +189,7 @@
 		2A392568234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A392567234CFE9D00316EA6 /* NSAttributedString+DWHighlightText.m */; };
 		2A3DC86E239717C2004B3DBA /* DWRecoverWalletCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */; };
 		2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
+		9E66D0E1B2BF2F52C82BB227 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2350DF4247B02C974F8A3628 /* SceneDelegate.m */; };
 		2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		2A4430EE22CBBAC9009BAF7F /* DWSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */; };
 		2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
@@ -1710,6 +1711,7 @@
 		C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD52997AA36000856EE /* MessageStatus.swift */; };
 		C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */; };
 		C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4430E622CBB6EC009BAF7F /* AppDelegate.m */; };
+		1535CD04CB1E10BA219A614E /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2350DF4247B02C974F8A3628 /* SceneDelegate.m */; };
 		C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917023E29D44E0B008C034D /* SendReceivePageController.swift */; };
 		C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A2C6E28DC457000AD1420 /* BaseNavigationController.swift */; };
 		C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
@@ -2078,9 +2080,11 @@
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
+		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
+		21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */; };
 		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -2387,6 +2391,8 @@
 		2A430F0B26EF5A0F00D8A196 /* DWNavigationAppearance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWNavigationAppearance.h; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2A4430E622CBB6EC009BAF7F /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		35400227B4C46E9F9885D9EE /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		2350DF4247B02C974F8A3628 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		2A4430EA22CBBA82009BAF7F /* Setup.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Setup.storyboard; sourceTree = "<group>"; };
 		2A4430EC22CBBAC9009BAF7F /* DWSetupViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSetupViewController.h; sourceTree = "<group>"; };
 		2A4430ED22CBBAC9009BAF7F /* DWSetupViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSetupViewController.m; sourceTree = "<group>"; };
@@ -3925,9 +3931,11 @@
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
+		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
+		4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRowsUITests.swift; sourceTree = "<group>"; };
 		222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashPayRecoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -7475,6 +7483,8 @@
 				FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */,
 				2A4430E522CBB6EC009BAF7F /* AppDelegate.h */,
 				2A4430E622CBB6EC009BAF7F /* AppDelegate.m */,
+				35400227B4C46E9F9885D9EE /* SceneDelegate.h */,
+				2350DF4247B02C974F8A3628 /* SceneDelegate.m */,
 			);
 			path = DashWallet;
 			sourceTree = "<group>";
@@ -7508,6 +7518,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */,
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
+				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
@@ -9103,6 +9114,7 @@
 			isa = PBXGroup;
 			children = (
 				C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */,
+				4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */,
 			);
 			name = DashPayRecoveryUITests;
 			path = DashPayRecoveryUITests;
@@ -10396,6 +10408,7 @@
 				2AD1CEAB22E18F1800C99324 /* DWGlobalOptions.m in Sources */,
 				754BEA122C0B6BD700E8C93C /* HomeViewModel.swift in Sources */,
 				2A4430E722CBB6EC009BAF7F /* AppDelegate.m in Sources */,
+				9E66D0E1B2BF2F52C82BB227 /* SceneDelegate.m in Sources */,
 				514AF1C12FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */,
 				514BEA022FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */,
 				75D2B4A12D9D28AC00228DB0 /* BlockExplorerSelectionView.swift in Sources */,
@@ -10820,6 +10833,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
+				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
@@ -11459,6 +11473,7 @@
 				C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */,
 				C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */,
 				C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */,
+				1535CD04CB1E10BA219A614E /* SceneDelegate.m in Sources */,
 				C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */,
 				C943B5242A40A54600AF23C5 /* UIColor+DWDashPay.m in Sources */,
 				C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */,
@@ -11908,6 +11923,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */,
+				21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -12362,7 +12378,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -12491,7 +12507,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -12831,7 +12847,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -12902,7 +12918,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -13020,7 +13036,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "-DDebug -DDASH_TESTNET -DDASHPAY";
@@ -13078,7 +13094,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13149,7 +13165,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\" -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -13206,7 +13222,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13277,7 +13293,7 @@
 					"\"UIKit\"",
 					"-weak_framework",
 					"\"WebKit\"",
-					"-ld64",
+					"-ld_classic",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
@@ -13397,7 +13413,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13695,7 +13711,7 @@
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Dash;
+				INFOPLIST_KEY_CFBundleDisplayName = DashPay;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

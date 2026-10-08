@@ -2399,7 +2399,7 @@
 "Mainnet" = "Mainnet";
 
 /* Usernames */
-"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow";
+"Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below";
 
 /* No comment provided by engineer. */
 "Manage GPS Permission" = "Manage GPS Permission";
@@ -4301,6 +4301,7 @@
 
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f s";
+"Shielded sync is not running" = "Shielded sync is not running";
 
 /* No comment provided by engineer. */
 "Node status" = "Nodens status";
@@ -4847,14 +4848,8 @@
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
-/* Usernames */
-"The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
-
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "Den primære identitet kan kun vælges fra den aktive tegnebog";
-
-/* Dash DEX */
-"The maximum transaction amount is %@" = "The maximum transaction amount is %@";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
@@ -5003,8 +4998,11 @@
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
-/* Dash DEX / dex_enter_amount_invalid */
-"This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+/* Dash DEX / dex_error_amount_too_small */
+"This amount is below the minimum for this swap. Please enter a larger amount." = "This amount is below the minimum for this swap. Please enter a larger amount.";
+
+/* Dash DEX / maya_max_amount_error */
+"Max %@" = "Max %@";
 
 "This applies one choice to all %d selected usernames." = "Dette anvender ét valg på alle %d valgte brugernavne.";
 
@@ -6062,6 +6060,9 @@
 /* DashPay intro: feature title */
 "Your history, organized" = "Din historik, ordnet";
 
+/* Identity withdrawal — Platform refused the amount as more than the balance can cover */
+"Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
+
 /* Username marketplace */
 "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Din identitetssaldo dækker ikke dette køb: %1$@ DASH kræves (inklusive en gebyrreserve), %2$@ DASH tilgængelig. Fyld din identitetssaldo op, og prøv igen.";
 
@@ -6225,6 +6226,20 @@
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+"Couldn't move your wallet" = "Couldn't move your wallet";
+"Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
+"To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
+"Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
+"The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help." = "The wallet from the previous version of this app is still on this device but could not be prepared. Do not delete this app. Try again or contact support for help.";
+"Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+"Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
+"Include diagnostic report" = "Include diagnostic report";
+"Preview diagnostic report" = "Preview diagnostic report";
+"Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
+"Contact Support" = "Contact Support";
+"Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
+"Couldn't prepare the support message" = "Couldn't prepare the support message";
+"Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
 
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
@@ -6243,6 +6258,7 @@
 "%d could not be reached" = "%d could not be reached";
 "%d evonodes" = "%d evonodes";
 "%d finished" = "%d finished";
+"%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
 "%d masternodes" = "%d masternodes";
 "%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
 "%d of %d nodes voted" = "%1$d of %2$d nodes voted";
@@ -6270,6 +6286,7 @@
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
 "Add someone as a contact and you can pay them by username instead of an address." = "Add someone as a contact and you can pay them by username instead of an address.";
 "Add this masternode's operator key to unban it from here." = "Add this masternode's operator key to unban it from here.";
+"Added to your identity’s credits, which pay the %@ DASH contest fee." = "Added to your identity’s credits, which pay the %@ DASH contest fee.";
 "Address Pool" = "Address Pool";
 "Addresses Used" = "Addresses Used";
 "Advanced mode" = "Advanced mode";
@@ -6311,6 +6328,7 @@
 "Complete unban" = "Complete unban";
 "Completing DashConnect request…" = "Completing DashConnect request…";
 "Confirm username request" = "Confirm username request";
+"Confirm instant username" = "Confirm instant username";
 "Confirmed in block" = "Confirmed in block";
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
 "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts" = "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts";
@@ -6332,6 +6350,7 @@
 "Could Not Read Wallets" = "Could Not Read Wallets";
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
+"Couldn’t check your identity balance. Check your connection and try again." = "Couldn’t check your identity balance. Check your connection and try again.";
 "Couldn’t Delete Wallet" = "Couldn’t Delete Wallet";
 "Create an instant username" = "Create an instant username";
 "Create instant username" = "Create instant username";
@@ -6405,7 +6424,6 @@
 "Multiple Wallets Found" = "Multiple Wallets Found";
 "My profile, %@" = "My profile, %@";
 "No Accounts" = "No Accounts";
-"No additional Dash is spent — this username is registered to the identity you are already paying for." = "No additional Dash is spent — this username is registered to the identity you are already paying for.";
 "No apps connected yet" = "No apps connected yet";
 "No contacts match “%@”" = "No contacts match “%@”";
 "No contacts yet" = "No contacts yet";
@@ -6460,6 +6478,7 @@
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 "Refresh keys from Platform" = "Refresh keys from Platform";
 "Refreshing your Platform balance before checking the new maximum…" = "Refreshing your Platform balance before checking the new maximum…";
+"Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount." = "Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount.";
 "Registration was interrupted" = "Registration was interrupted";
 "Rejected – %@" = "Rejected – %@";
 "Remind me later" = "Remind me later";
@@ -6487,7 +6506,6 @@
 "Send to Dash address" = "Send to Dash address";
 "Send to username" = "Send to username";
 "Several people requested this name — open it to choose between them." = "Several people requested this name — open it to choose between them.";
-"Shield" = "Shield";
 "Shield your funds first" = "Shield your funds first";
 "Shielded balance is unavailable. Try again after syncing." = "Shielded balance is unavailable. Try again after syncing.";
 "Show balance" = "Show balance";
@@ -6620,7 +6638,7 @@
 "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on." = "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.";
 "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides." = "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides.";
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
-"You chose “%@” as an instant username. Please note that the username can NOT be changed once it is registered." = "You chose “%@” as an instant username. Please note that the username can NOT be changed once it is registered.";
+"You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered." = "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered.";
 "You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash available (network fee reserved).\nSome usernames cost up to %2$@ Dash.";
 "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered." = "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered.";
 "You need a DashPay identity before you can move credits out of it." = "You need a DashPay identity before you can move credits out of it.";
@@ -6641,6 +6659,8 @@
 "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again." = "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again.";
 "Your credit balance could not be read. Check your connection and try again." = "Your credit balance could not be read. Check your connection and try again.";
 "Your Identity balance is too low to cover the transfer fee." = "Your Identity balance is too low to cover the transfer fee.";
+"Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again." = "Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.";
+"Your identity needs %@ DASH more to register this name, but only %@ DASH can be sent from your wallet. Add funds and try again." = "Your identity needs %1$@ DASH more to register this name, but only %2$@ DASH can be sent from your wallet. Add funds and try again.";
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";
@@ -6660,3 +6680,49 @@
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
+"Preparing logs…" = "Preparing logs…";
+
+/* Usernames: request details, failed instant username */
+"The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
+
+/* Usernames: plain name on an existing identity */
+"Top up your identity" = "Top up your identity";
+
+/* Usernames: plain name on an existing identity */
+"Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits." = "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.";
+
+/* Usernames: unfinished identity top-up */
+"A top-up hasn't finished" = "A top-up hasn't finished";
+
+/* DashPay: existing identity top-up before a username */
+"Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it." = "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.";
+
+/* Usernames: unfinished identity top-up */
+"Continue anyway" = "Continue anyway";
+
+/* Usernames: unfinished identity top-up */
+"An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
+
+/* Usernames: proof-of-identity link visibility */
+"The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
+
+/* Usernames: confirm the funding source */
+"Pay from your Dash balance?" = "Pay from your Dash balance?";
+
+/* Usernames: confirm the funding source */
+"Pay from your Platform balance?" = "Pay from your Platform balance?";
+
+/* Usernames: confirm the funding source */
+"Pay from your Shielded balance?" = "Pay from your Shielded balance?";
+
+/* Usernames: confirm the funding source */
+"Any Dash this request needs comes from this balance." = "Any Dash this request needs comes from this balance.";
+
+/* Usernames: confirm the funding source */
+"The chosen balance can't pay for this request. Check your balances and try again." = "The chosen balance can't pay for this request. Check your balances and try again.";
+
+/* Usernames: confirm the funding source */
+"None of your balances can pay for this request right now." = "None of your balances can pay for this request right now.";
+
+/* Usernames: confirm the funding source */
+"Nothing was sent" = "Nothing was sent";

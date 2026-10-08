@@ -44,9 +44,16 @@ final class IdentityVerifyService {
         case lookupFailed
         case authCancelled
         case authFailed
+        /// The wallet, network or selected identity changed while the
+        /// publication was waiting on Platform or on the PIN.
+        case contextChanged
 
         var errorDescription: String? {
             switch self {
+            case .contextChanged:
+                return NSLocalizedString(
+                    "The active wallet or identity changed. Please try again.",
+                    comment: "DashPay registration recovery")
             case .noIdentity:
                 return NSLocalizedString("This wallet has no Platform identity yet.", comment: "Usernames")
             case .unsupportedNetwork:
@@ -173,17 +180,29 @@ final class IdentityVerifyService {
             throw ServiceError.invalidURL
         }
 
+        // Everything the write is made with is captured here, the network
+        // included: the lookup and the PIN prompt below both suspend, and the
+        // document is public and charged to the identity it names.
         let (wallet, container, identityId) = try requireContext()
-        let contractId = try requireContractIdentifier()
+        guard let network = SwiftDashSDKHost.shared.runningNetwork else { throw ServiceError.contextChanged }
+        let contractId = try requireContractIdentifier(for: WalletEnvironment.networkKind(for: network))
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.noIdentity }
 
-        if let existing = try await publishedURL(forLabel: label) {
+        let existing = try await publishedURL(forLabel: label)
+        // The lookup read the live context; its answer is this request's only
+        // if that is still the captured one.
+        try requireUnchangedContext(wallet: wallet, network: network, identityId: identityId)
+        if let existing {
             Self.logger.info("🔗 IDENT-VERIFY :: document already published for \(label, privacy: .public)")
             return existing
         }
 
         let normalized = try normalizedLabel(label, sdk: sdk)
         try await authorize()
+        // The PIN only authenticates; a wallet, network or identity switched
+        // while it was up must not get a link published under the old one.
+        // Nothing suspends between this check and the write going out.
+        try requireUnchangedContext(wallet: wallet, network: network, identityId: identityId)
 
         // Hand-built rather than JSONEncoder'd: the properties are three
         // strings, and the Rust side sanitizes them against the on-chain
@@ -216,12 +235,20 @@ final class IdentityVerifyService {
     /// place Android publishes the document from (`CreateIdentityService`).
     /// Failure is the caller's to treat as non-fatal: the request itself has
     /// already been submitted by then.
+    ///
+    /// `network` is the one the registration captured alongside `wallet`, and
+    /// the contract is resolved from it rather than from the live environment:
+    /// the registration awaits Platform several times before it gets here, and
+    /// a network switch in between would otherwise pair this wallet with the
+    /// other network's contract id. The caller revalidates its context right
+    /// before calling; nothing here suspends before the write goes out.
     @discardableResult
     func publish(
         url: URL,
         forLabel label: String,
         identityId: Data,
         wallet: ManagedPlatformWallet,
+        network: Network,
         signer: KeychainSigner
     ) async throws -> URL {
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
@@ -229,7 +256,7 @@ final class IdentityVerifyService {
         }
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.noIdentity }
 
-        let contractId = try requireContractIdentifier()
+        let contractId = try requireContractIdentifier(for: WalletEnvironment.networkKind(for: network))
         let normalized = try normalizedLabel(label, sdk: sdk)
         let properties: [String: String] = [
             "normalizedLabel": normalized,
@@ -351,6 +378,23 @@ final class IdentityVerifyService {
 
     // MARK: - Plumbing
 
+    /// The captured wallet, network and identity are still the selected ones.
+    private func requireUnchangedContext(
+        wallet: ManagedPlatformWallet, network: Network, identityId: Data
+    ) throws {
+        // The instance, not only its id: a host restarted on the same wallet
+        // hands out new handles, and the captured ones belong to the manager
+        // that was shut down. The identity is re-read, not taken from a
+        // snapshot built before the suspension; names still loading is not a
+        // changed identity, so only the id is compared.
+        guard SwiftDashSDKHost.shared.wallet === wallet,
+              DWIdentityRegistrationCoordinator.isActiveContext(walletId: wallet.walletId, network: network),
+              DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId == identityId else {
+            Self.logger.error("🔗 IDENT-VERIFY :: context changed before publication — nothing written")
+            throw ServiceError.contextChanged
+        }
+    }
+
     private func requireContext() throws -> (ManagedPlatformWallet, ModelContainer, Data) {
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer,
@@ -362,16 +406,22 @@ final class IdentityVerifyService {
 
     /// The contract id in base58, for the document queries that address it as
     /// a string.
-    private func requireContractIdBase58() throws -> String {
-        guard let contractId = Self.contractIdByNetwork[WalletEnvironment.networkKind] else {
+    private func requireContractIdBase58(
+        for networkKind: WalletEnvironment.NetworkKind = WalletEnvironment.networkKind
+    ) throws -> String {
+        guard let contractId = Self.contractIdByNetwork[networkKind] else {
             throw ServiceError.unsupportedNetwork
         }
         return contractId
     }
 
     /// The same id as raw 32 bytes, which is what `createDocument` takes.
-    private func requireContractIdentifier() throws -> Data {
-        guard let identifier = Data.identifier(fromBase58: try requireContractIdBase58()),
+    /// No default network: a write is paired with the network captured for
+    /// it, never with whichever one is selected when this runs.
+    private func requireContractIdentifier(
+        for networkKind: WalletEnvironment.NetworkKind
+    ) throws -> Data {
+        guard let identifier = Data.identifier(fromBase58: try requireContractIdBase58(for: networkKind)),
               identifier.count == 32 else {
             throw ServiceError.unsupportedNetwork
         }

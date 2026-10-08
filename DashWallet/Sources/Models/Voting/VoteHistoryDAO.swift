@@ -60,9 +60,14 @@ protocol VoteHistoryDAO {
 actor VoteHistoryDAOImpl: VoteHistoryDAO {
     static let shared = VoteHistoryDAOImpl()
 
-    private nonisolated var db: Connection { DatabaseConnection.shared.db }
+    /// A connection of its own for tests; the app's store otherwise.
+    private let connection: Connection?
 
-    private init() {}
+    private nonisolated var db: Connection { connection ?? DatabaseConnection.shared.db }
+
+    init(connection: Connection? = nil) {
+        self.connection = connection
+    }
 
     func record(_ record: CastVoteRecord, network: String) async {
         let query = """
