@@ -2589,14 +2589,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         // Only the wallet goes into the predicate: the full condition as one
         // `#Predicate` does not type-check on Xcode 26 (#1197).
-        let descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { $0.walletId == walletId })
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: PersistentAssetLock.predicate(walletId: walletId))
+        descriptor.propertiesToFetch = [\.statusRaw, \.fundingTypeRaw, \.identityIndexRaw]
         guard let rows = try? context.fetch(descriptor) else { return false }
+        let pendingStatuses = 1...3
+        let identityTopUp = 1
+        let identityTopUpNotBound = 2
         return rows.contains { row in
-            guard (1...3).contains(row.statusRaw) else { return false }
+            guard pendingStatuses.contains(row.statusRaw) else { return false }
             switch row.fundingTypeRaw {
-            case 2: return true
-            case 1: return identityIndex == nil || row.identityIndexRaw == identityIndex
+            case identityTopUpNotBound: return true
+            case identityTopUp: return identityIndex == nil || row.identityIndexRaw == identityIndex
             default: return false
             }
         }
