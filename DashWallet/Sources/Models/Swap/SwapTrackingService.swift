@@ -379,9 +379,8 @@ final class SwapTrackingService {
             // - and silence has a limit too: `SwapOrder.fundedGraceSeconds` after the order
             //   aged out, it goes without an answer, so a provider that never answers
             //   again cannot keep it polled for the life of the install.
-            let agedOutAt = agedOutAt(agingOrder, finalStatus: finalStatus)
-            let sinceAgedOut = nowSeconds - agedOutAt
-            let fundsInFlight = agingOrder.depositSeenAt != nil || finalStatus != .notStarted
+            let sinceAgedOut = nowSeconds - agedOutAt(agingOrder, finalStatus: finalStatus)
+            let fundsInFlight = Self.fundsInFlight(agingOrder, finalStatus: finalStatus)
             let settled: Bool
             if fundsInFlight {
                 settled = true                                   // already had its grace
@@ -408,8 +407,11 @@ final class SwapTrackingService {
 
         // The provider has just answered that it sees no deposit, more than the stuck
         // threshold after the deposit appeared on chain: that answer is what makes the order
-        // "Stuck". Stamped once.
+        // "Stuck". Stamped once — and only with the wallet synced: before that the payout
+        // of a swap that completed while the app was away may not be visible yet, and the
+        // tracker having forgotten a finished swap would read as a denial.
         let providerDeniedDeposit = apiStatus == .notStarted
+            && walletSynced
             && finalStatus == .notStarted
             && order.providerDeniedAt == nil
             && order.depositSeenAt.map { nowSeconds > $0 + order.stuckAfterSeconds } == true
@@ -488,9 +490,14 @@ final class SwapTrackingService {
         guard order.isBuy else { return createdSeconds + Constants.ageOutSeconds }
 
         let windowEnd = order.depositDeadline ?? (createdSeconds + Constants.ageOutSeconds)
-        let fundsInFlight = order.depositSeenAt != nil || finalStatus != .notStarted
-        guard fundsInFlight else { return windowEnd }
+        guard Self.fundsInFlight(order, finalStatus: finalStatus) else { return windowEnd }
         return max(windowEnd, order.depositSeenAt ?? 0) + SwapOrder.fundedGraceSeconds
+    }
+
+    /// Whether the user's funds may be on their way: the deposit is on record, or the
+    /// provider reports the order as anything but not started.
+    private static func fundsInFlight(_ order: SwapOrder, finalStatus: SwapOrderStatus) -> Bool {
+        order.depositSeenAt != nil || finalStatus != .notStarted
     }
 
     private func hasAgedOut(_ order: SwapOrder, nowSeconds: Int64, finalStatus: SwapOrderStatus) -> Bool {
