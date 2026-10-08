@@ -25,7 +25,7 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertEqual(roots.platform.path, documents.appendingPathComponent("SwiftDashSDK/Platform").path)
         XCTAssertEqual(roots.shielded.path, documents.appendingPathComponent("SwiftDashSDK/Shielded").path)
         XCTAssertEqual(roots.spv.path, documents.appendingPathComponent("SPV").path)
-        XCTAssertEqual(roots.orderedForDeletion.map(\.label), ["SPV", "Shielded", "Platform"])
+        XCTAssertEqual(roots.orderedForDeletion.map(\.label), ["SPV", "Platform", "Shielded"])
     }
 
     func testRemovesEveryScopeUnderAllThreeRoots() async throws {
@@ -90,10 +90,10 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         // mainnet sorts first: fully removed.
         XCTAssertFalse(exists(roots.platform, "mainnet"))
         XCTAssertFalse(exists(roots.spv, "mainnet"))
-        // testnet: SPV went first, Shielded failed, Platform untouched.
+        // testnet: SPV and Platform are gone before Shielded removal can fail.
         XCTAssertFalse(exists(roots.spv, "testnet"))
         XCTAssertTrue(exists(roots.shielded, "testnet"))
-        XCTAssertTrue(exists(roots.platform, "testnet"))
+        XCTAssertFalse(exists(roots.platform, "testnet"))
         // A later scope is untouched.
         XCTAssertTrue(exists(roots.spv, "zz-devnet-last"))
         XCTAssertTrue(exists(roots.platform, "zz-devnet-last"))
@@ -110,9 +110,52 @@ final class WalletLocalStoreResetterTests: XCTestCase {
 
         let report = try await WalletLocalStoreResetter(roots: roots).resetAllScopes()
 
-        XCTAssertEqual(report.removed.map(\.root), ["Shielded", "Platform"])
+        XCTAssertEqual(report.removed.map(\.root), ["Shielded"])
         XCTAssertFalse(exists(roots.platform, "testnet"))
         XCTAssertFalse(exists(roots.shielded, "testnet"))
+    }
+
+    func testEveryInterruptionLeavesSafeStateForOrdinaryReopenWithoutAnotherReset() async throws {
+        for failingRoot in ["SPV", "Platform", "Shielded"] {
+            for scope in ["mainnet", "testnet"] {
+                try plant(roots.platform, scope, files: ["DashModel.sqlite"])
+                try plant(roots.shielded, scope, files: ["commitment-tree.sqlite"])
+                try plant(roots.spv, scope, files: ["headers.dat"])
+            }
+            let interrupted = WalletLocalStoreResetter(roots: roots) {
+                FailingFileManager(failingLastPathComponent: "testnet", underRoot: failingRoot)
+            }
+            do {
+                _ = try await interrupted.resetAllScopes()
+                XCTFail("Expected interruption")
+            } catch {}
+            // Inspect exactly what an ordinary launch finds, without rerunning
+            // reset. Existing watermarks require the original tree; absent
+            // wallet rows require absent SPV headers and a scan from zero.
+            for scope in ["mainnet", "testnet"] {
+                if exists(roots.platform, scope) {
+                    XCTAssertTrue(exists(roots.shielded, scope), "Saved watermarks lost their tree")
+                } else {
+                    XCTAssertFalse(exists(roots.spv, scope), "New rows would reuse old SPV headers")
+                }
+            }
+        }
+    }
+
+    func testUnreadableRootFailsBeforeAnyStoreIsRemoved() async throws {
+        try plant(roots.platform, "mainnet", files: ["DashModel.sqlite"])
+        try plant(roots.shielded, "mainnet", files: ["commitment-tree.sqlite"])
+        try plant(roots.spv, "mainnet", files: ["headers.dat"])
+        let resetter = WalletLocalStoreResetter(roots: roots) { UnreadableRootFileManager() }
+        do {
+            _ = try await resetter.resetAllScopes()
+            XCTFail("An unreadable root must not be treated as empty")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .enumerationFailed(root: "Platform", code: "OtherError:257"))
+        }
+        XCTAssertTrue(exists(roots.spv, "mainnet"))
+        XCTAssertTrue(exists(roots.platform, "mainnet"))
+        XCTAssertTrue(exists(roots.shielded, "mainnet"))
     }
 
     // MARK: - Helpers
@@ -149,5 +192,17 @@ private final class FailingFileManager: FileManager {
             throw NSError(domain: NSCocoaErrorDomain, code: 513, userInfo: [NSFilePathErrorKey: url.path])
         }
         try super.removeItem(at: url)
+    }
+}
+
+private final class UnreadableRootFileManager: FileManager {
+    override func contentsOfDirectory(
+        at url: URL, includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions = []
+    ) throws -> [URL] {
+        if url.lastPathComponent == "Platform" {
+            throw NSError(domain: "private-path-or-secret", code: 257)
+        }
+        return try super.contentsOfDirectory(at: url, includingPropertiesForKeys: keys, options: mask)
     }
 }

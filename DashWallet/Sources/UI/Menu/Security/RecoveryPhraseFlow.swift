@@ -732,7 +732,6 @@ enum RecoveryPhraseNavigation {
 final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
     private weak var navigationController: UINavigationController?
 
-    var isPresented: Bool { navigationController?.presentingViewController != nil }
 
     /// Presents `destination` from `anchor`. A `.phrase` arriving while the
     /// picker modal is up replaces the picker in place (the picker's select).

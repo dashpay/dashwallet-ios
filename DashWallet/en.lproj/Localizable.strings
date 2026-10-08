@@ -6114,7 +6114,7 @@
 "Backup recovery phrase" = "Backup recovery phrase";
 "Reset wallet data and rescan" = "Reset wallet data and rescan";
 "Reset wallet data and rescan?" = "Reset wallet data and rescan?";
-"Deletes the wallet data stored on this device and downloads it again from the network with a full rescan, which can take a while. Your wallet keys stay in this device's keychain." = "Deletes the wallet data stored on this device and downloads it again from the network with a full rescan, which can take a while. Your wallet keys stay in this device's keychain.";
+"Resets local wallet data for every network. Your wallet keys stay on this device, and a full rescan restores your funds and transaction history. Custom wallet names and manually tracked masternodes and their labels must be recreated; a recovery phrase backup does not preserve them. The rescan can take a while." = "Resets local wallet data for every network. Your wallet keys stay on this device, and a full rescan restores your funds and transaction history. Custom wallet names and manually tracked masternodes and their labels must be recreated; a recovery phrase backup does not preserve them. The rescan can take a while.";
 "Reset and Rescan" = "Reset and Rescan";
 "Resetting wallet data…" = "Resetting wallet data…";
 "Unlock with your wallet PIN to continue." = "Unlock with your wallet PIN to continue.";

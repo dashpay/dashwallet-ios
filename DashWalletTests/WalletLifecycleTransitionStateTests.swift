@@ -60,11 +60,24 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         case .openingWallet, .migratingLegacyWallet, .switchingNetwork, .switchingWallet, .removingWallet,
              .addingWallet, .wiping:
             XCTAssertTrue(state.tryBegin(phase), "test setup: begin from idle must admit")
+        case .resettingLocalStores:
+            state.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: NSCocoaErrorDomain, code: 134100))))
+            XCTAssertTrue(state.tryBegin(.resettingLocalStores))
         case .failedWalletOpen, .failedLegacyMigration, .failedNetworkSwitch, .failedWalletSwitch,
              .failedWalletRemoval:
             state.fail(phase)
         }
         return state
+    }
+
+    func testResetOwnsAdmissionUntilExplicitlyFinished() async throws {
+        let state = makeState(in: .resettingLocalStores)
+        XCTAssertFalse(state.allowsAutomaticWalletPreparation)
+        for (_, next) in Self.begins { XCTAssertFalse(state.tryBegin(next)) }
+        try await state.prepareWallet {} failure: { _ in nil }
+        XCTAssertEqual(state.phase, .resettingLocalStores, "Opening must not release the reset reservation")
+        state.finish()
+        XCTAssertTrue(state.tryBegin(.wiping(title: nil)))
     }
 
     // MARK: - Admission matrix

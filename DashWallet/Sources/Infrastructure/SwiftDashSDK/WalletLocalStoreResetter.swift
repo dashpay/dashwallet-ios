@@ -37,14 +37,14 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
         return WalletLocalStoreRoots(documents: documents)
     }
 
-    /// Deletion order within one scope. The SPV store goes first: wallet rows
-    /// without a chain store are always safe (SPV re-anchors at the rows'
-    /// birth height), while fresh rows over an old header store are the one
-    /// combination dash-spv never repairs (it does not re-anchor an existing
-    /// header store), so no interruption may leave the Platform store deleted
-    /// ahead of the SPV store.
+    /// SPV must disappear before wallet rows so the next open re-anchors at
+    /// their birth height. Platform must disappear before Shielded so no
+    /// saved scan watermark can outlive its commitment tree. An interruption
+    /// leaves either the old rows and tree together, or no rows: the latter
+    /// rescans from index zero, also supported with an existing shared tree
+    /// (the SDK's `clearShielded` contract).
     var orderedForDeletion: [(label: String, url: URL)] {
-        [("SPV", spv), ("Shielded", shielded), ("Platform", platform)]
+        [("SPV", spv), ("Platform", platform), ("Shielded", shielded)]
     }
 }
 
@@ -66,6 +66,8 @@ struct WalletLocalStoreResetReport: Equatable, Sendable {
 }
 
 enum WalletLocalStoreResetError: Error, Equatable {
+    /// Listing a root failed before any directory was removed.
+    case enumerationFailed(root: String, code: String)
     /// `removeItem` failed at `root/scope`. Entries removed before it are
     /// gone; nothing after it was touched. `code` is `domain:code` only —
     /// Cocoa file errors carry paths in their userInfo, and those never reach
@@ -116,20 +118,27 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
     ) throws -> WalletLocalStoreResetReport {
         let ordered = roots.orderedForDeletion
         var scopes = Set<String>()
-        for (_, root) in ordered {
-            scopes.formUnion(childNames(of: root, fileManager: fileManager))
+        for (label, root) in ordered {
+            do {
+                scopes.formUnion(try childNames(of: root, fileManager: fileManager))
+            } catch {
+                throw WalletLocalStoreResetError.enumerationFailed(
+                    root: label,
+                    code: WalletPreparationFailure(error: error).codes.joined(separator: ","))
+            }
         }
 
         var removed: [WalletLocalStoreResetReport.Removed] = []
         for scope in scopes.sorted() {
             for (label, root) in ordered {
                 let url = root.appendingPathComponent(scope)
-                guard fileManager.fileExists(atPath: url.path) else { continue }
                 do {
                     try fileManager.removeItem(at: url)
+                } catch let error as NSError where error.domain == NSCocoaErrorDomain
+                    && [NSFileNoSuchFileError, NSFileReadNoSuchFileError].contains(error.code) {
+                    continue
                 } catch {
-                    let nsError = error as NSError
-                    let code = "\(nsError.domain):\(nsError.code)"
+                    let code = WalletPreparationFailure(error: error).codes.joined(separator: ",")
                     DWLogger.log("🧹 STORE-RESET FAILED at \(label)/\(scope) code=\(code) removedBefore=\(removed.count)")
                     throw WalletLocalStoreResetError.removalFailed(root: label, scope: scope, code: code)
                 }
@@ -139,15 +148,18 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
         }
 
         let report = WalletLocalStoreResetReport(removed: removed)
-        DWLogger.log("🧹 STORE-RESET done scopes=\(report.scopes.joined(separator: ",")) removed=\(removed.count)")
+        DWLogger.log("🧹 STORE-RESET files removed scopes=\(report.scopes.joined(separator: ",")) removed=\(removed.count)")
         return report
     }
 
-    /// Every entry directly under `root`, hidden ones included; a missing or
-    /// unreadable root reads as empty.
-    private static func childNames(of root: URL, fileManager: FileManager) -> [String] {
-        guard let contents = try? fileManager.contentsOfDirectory(
-            at: root, includingPropertiesForKeys: nil, options: []) else { return [] }
-        return contents.map(\.lastPathComponent)
+    /// Every entry directly under `root`, hidden ones included. Only a missing
+    /// root is empty; permission and I/O errors must stop the reset.
+    private static func childNames(of root: URL, fileManager: FileManager) throws -> [String] {
+        do {
+            return try fileManager.contentsOfDirectory(
+                at: root, includingPropertiesForKeys: nil, options: []).map(\.lastPathComponent)
+        } catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError {
+            return []
+        }
     }
 }

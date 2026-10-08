@@ -22,6 +22,12 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     (sources / "AppDependencies.swift").write_text('''
 enum WalletEnvironment { enum NetworkKind { case mainnet, testnet, devnet } }
 enum DWLogger { static func log(_ message: String) {} }
+@MainActor final class SwiftDashSDKHost {
+    static let shared = SwiftDashSDKHost()
+    var suspended = false
+    func suspendModelContainerOpens() async { suspended = true }
+    func resumeModelContainerOpens() { suspended = false }
+}
 @MainActor final class SwiftDashSDKSPVCoordinator {
     static let shared = SwiftDashSDKSPVCoordinator()
     var preparations = 0
@@ -51,6 +57,81 @@ enum DWLogger { static func log(_ message: String) {} }
             closing += 1
         return source[offset:closing]
 
+    host = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift").read_text()
+    (sources / "ProcessNetworkValueCache.swift").write_text(
+        "import Foundation\n@MainActor\n" + declaration(host, "final class ProcessNetworkValueCache<"))
+    cache_tests = (repository / "DashWalletTests/SwiftDashSDKCoreLifecycleTests.swift").read_text()
+    import re
+    methods_to_test = re.findall(r"    func (testProcessCache\w+)\(", cache_tests)
+    (tests / "ProcessNetworkValueCacheTests.swift").write_text(
+        "import XCTest\n@testable import WalletPreparationHarness\nprivate enum CoreLifecycleTestError: Error { case start }\n@MainActor final class ProcessNetworkValueCacheTests: XCTestCase {\n"
+        + "\n".join(declaration(cache_tests, "    func " + name + "(") for name in methods_to_test) + "\n}\n")
+
+    send_service = (repository / "DashWallet/Sources/Models/Transactions/WalletSendService.swift").read_text()
+    (sources / "AuthenticationGate.swift").write_text(
+        "import Foundation\n" + declaration(send_service, "enum AuthenticationGate {") + r"""
+@MainActor enum WalletSendService {
+    struct Logger { func info(_ message: String) {} }
+    static let logger = Logger()
+}
+@MainActor final class AuthenticationService {
+    enum AuthOutcome { case authenticated, cancelled, failed }
+    static let shared = AuthenticationService()
+    var didAuthenticate = false
+    var cancelled = false
+    var started = false
+    var continuation: CheckedContinuation<AuthOutcome, Never>?
+    func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthOutcome {
+        started = true
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation = $0 }
+        } onCancel: {
+            Task { @MainActor in self.cancelled = true }
+        }
+    }
+    func finishDismissal(_ result: AuthOutcome) {
+        let pending = continuation
+        continuation = nil
+        pending?.resume(returning: result)
+    }
+}
+""")
+    (tests / "AuthenticationGateTests.swift").write_text(r"""
+import XCTest
+@testable import WalletPreparationHarness
+@MainActor final class AuthenticationGateTests: XCTestCase {
+    func testTimeoutCancelsRequestAndWaitsForPromptDismissal() async throws {
+        let service = AuthenticationService.shared
+        service.cancelled = false
+        service.started = false
+        var returned = false
+        let request = Task {
+            let result = await AuthenticationGate.authenticate(biometric: false, timeout: 0.01)
+            returned = true
+            return result
+        }
+        while !service.cancelled { await Task.yield() }
+        XCTAssertTrue(service.started)
+        XCTAssertFalse(returned, "The overlay must stay hidden until the PIN modal is dismissed")
+        service.finishDismissal(.cancelled)
+        let result = await request.value
+        XCTAssertEqual(result, .timedOut)
+    }
+    func testSuccessfulRequestIsNotCancelledByItsOldWatchdog() async throws {
+        let service = AuthenticationService.shared
+        service.cancelled = false
+        service.started = false
+        let request = Task { await AuthenticationGate.authenticate(biometric: false, timeout: 0.01) }
+        while !service.started { await Task.yield() }
+        service.finishDismissal(.authenticated)
+        let result = await request.value
+        XCTAssertEqual(result, .ok)
+        try await Task.sleep(nanoseconds: 30_000_000)
+        XCTAssertFalse(service.cancelled)
+    }
+}
+""")
+
     methods = "\n".join(declaration(runtime, start).replace("private func", "func", 1) for start in (
         "    enum RefreshTrigger: String {",
         "    func retryWalletPreparation() async {",
@@ -78,10 +159,15 @@ enum DWLogger { static func log(_ message: String) {} }
     var events: [String] = []
     func enqueue(_ op: @escaping @MainActor () async -> Void) { lifecycleQueue.enqueue(op) }
     func drain() async { await lifecycleQueue.enqueue {}.value }
-    func refresh(trigger: RefreshTrigger) async {
+    var refreshFailure: WalletPreparationFailure?
+    @discardableResult
+    func refresh(trigger: RefreshTrigger, runtimeAlreadyStopped: Bool = false) async -> WalletPreparationFailure? {
         refreshCalls += 1
         events.append("refresh")
+        if runtimeAlreadyStopped { assert(WalletLifecycleTransitionState.shared.phase == .resettingLocalStores) }
+        if let refreshFailure { return refreshFailure }
         try? await WalletLifecycleTransitionState.shared.prepareWallet {} failure: { _ in nil }
+        return nil
     }
     func resolveCurrentNetwork() -> Result<WalletEnvironment.NetworkKind, NSError> { .success(.testnet) }
     func isCoreRuntimeReady(for network: WalletEnvironment.NetworkKind) -> Bool {
@@ -113,6 +199,17 @@ final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
     }
 }
 
+actor SuspendingResetter: WalletLocalStoreResetting {
+    var started = false
+    var continuation: CheckedContinuation<Void, Never>?
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+        started = true
+        await withCheckedContinuation { continuation = $0 }
+        return WalletLocalStoreResetReport(removed: [])
+    }
+    func release() { continuation?.resume() }
+}
+
 @MainActor final class AutomaticPreparationTests: XCTestCase {
     let state = WalletLifecycleTransitionState.shared
     let runtime = SwiftDashSDKWalletRuntime.shared
@@ -120,6 +217,7 @@ final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
         await runtime.drain()
         state.finish()
         runtime.refreshCalls = 0
+        runtime.refreshFailure = nil
         runtime.events = []
         SwiftDashSDKSPVCoordinator.shared.preparations = 0
         PlatformAddressSyncCoordinator.shared.preparations = 0
@@ -235,6 +333,44 @@ final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
         XCTAssertEqual(state.preparationFailure, failure)
         guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
     }
+    func testResetRejectsConcurrentWipeWhileDeletionIsSuspended() async throws {
+        await failOpen()
+        let resetter = SuspendingResetter()
+        let reset = Task { try await runtime.resetLocalStoresAndRetry(resetter: resetter) }
+        while await !resetter.started { await Task.yield() }
+        XCTAssertEqual(state.phase, .resettingLocalStores)
+        XCTAssertTrue(SwiftDashSDKHost.shared.suspended)
+        XCTAssertFalse(state.tryBegin(.wiping(title: nil)))
+        XCTAssertFalse(state.tryBegin(.switchingNetwork(from: .testnet, to: .mainnet)))
+        await resetter.release()
+        _ = try await reset.value
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testResetFailureDuringRestartKeepsFreshDiagnostic() async throws {
+        await failOpen()
+        let failure = WalletPreparationFailure(error: NSError(domain: "SDKBootstrap", code: 42))
+        runtime.refreshFailure = failure
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        XCTAssertEqual(outcome, .failed(failure))
+        XCTAssertEqual(state.phase, .failedWalletOpen(failure))
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testResetFromNetworkSwitchFailureRestoresOriginalCardOnDeletionError() async throws {
+        let phase = WalletLifecycleTransitionState.Phase.failedNetworkSwitch(from: .mainnet, target: .testnet, message: "failure")
+        let failure = WalletPreparationFailure(error: NSError(domain: NSCocoaErrorDomain, code: 134100))
+        state.restoreAfterLocalStoreReset(phase: phase, failure: failure)
+        let resetter = FakeResetter()
+        resetter.error = .removalFailed(root: "Platform", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected failure")
+        } catch {}
+        XCTAssertEqual(state.phase, phase)
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
     func testQueuedRetryAheadOfResetMakesItSkip() async throws {
         await failOpen()
         let resetter = FakeResetter()
@@ -243,6 +379,14 @@ final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
         XCTAssertEqual(outcome, .skipped)
         XCTAssertEqual(resetter.calls, 0)
         XCTAssertEqual(state.phase, .idle)
+    }
+    func testRetryAfterResetFailureDoesNotDismissAnUnresolvedStartupError() async throws {
+        await failOpen()
+        let failure = WalletPreparationFailure(error: NSError(domain: "SDKBootstrap", code: 42))
+        runtime.refreshFailure = failure
+        _ = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(failure))
     }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()

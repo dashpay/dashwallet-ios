@@ -53,25 +53,40 @@ final class ProcessNetworkValueCache<Value: Sendable> {
     private var values: [String: Value] = [:]
     private struct PendingOpen {
         let id = UUID()
+        let generation: UInt64
         let task: Task<Value, Error>
     }
     private var inFlight: [String: PendingOpen] = [:]
-    /// Bumped by `invalidateAll` so an open that was in flight across the
-    /// eviction completes for its waiters but is not cached afterwards.
-    private var generation = 0
+    enum OpenError: Error { case invalidated, suspended }
+    private var generation: UInt64 = 0
+    private var isSuspended = false
 
     /// Evict every cached value. Only the local-store reset calls this: each
     /// cached value was built over a store directory that is about to be
     /// deleted, and reusing it would hand the next open the unlinked file.
     func invalidateAll() {
         values.removeAll()
+        inFlight.removeAll()
         generation &+= 1
     }
+
+    /// Refuse new opens, reject old results, and wait for filesystem work
+    /// already in flight before the caller unlinks any store directories.
+    func suspendAndInvalidate() async {
+        isSuspended = true
+        let pending = Array(inFlight.values)
+        invalidateAll()
+        for open in pending { _ = await open.task.result }
+    }
+
+    /// The caller has finished deleting stores, including on failure.
+    func resumeOpens() { isSuspended = false }
 
     func value(
         for networkKey: String,
         create: () throws -> Value
-    ) rethrows -> (value: Value, reused: Bool) {
+    ) throws -> (value: Value, reused: Bool) {
+        guard !isSuspended else { throw OpenError.suspended }
         if let existing = values[networkKey] {
             return (existing, true)
         }
@@ -84,6 +99,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
         for networkKey: String,
         create: @escaping @MainActor () async throws -> Value
     ) async throws -> (value: Value, source: OpenSource) {
+        guard !isSuspended else { throw OpenError.suspended }
         if let existing = values[networkKey] { return (existing, .cached) }
         let pending: PendingOpen
         let source: OpenSource
@@ -91,7 +107,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
             pending = existing
             source = .shared
         } else {
-            pending = PendingOpen(task: Task { try await create() })
+            pending = PendingOpen(generation: generation, task: Task { try await create() })
             inFlight[networkKey] = pending
             source = .created
         }
@@ -102,11 +118,9 @@ final class ProcessNetworkValueCache<Value: Sendable> {
                 inFlight[networkKey] = nil
             }
         }
-        let generationAtOpen = generation
         let created = try await pending.task.value
-        if generation == generationAtOpen {
-            values[networkKey] = created
-        }
+        guard generation == pending.generation else { throw OpenError.invalidated }
+        values[networkKey] = created
         return (created, source)
     }
 }
@@ -279,7 +293,7 @@ final class SwiftDashSDKHost {
         } catch {
             logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
             // os_log does not reach the diagnostic export; the file log does.
-            DWLogger.log("HOST wallet-presence keychain read failed: \(String(describing: error))")
+            DWLogger.log("HOST wallet-presence keychain read failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return false
         }
     }
@@ -301,7 +315,7 @@ final class SwiftDashSDKHost {
             }
         } catch {
             logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
-            DWLogger.log("HOST mnemonic keychain enumeration failed: \(String(describing: error))")
+            DWLogger.log("HOST mnemonic keychain enumeration failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return []
         }
     }
@@ -1438,7 +1452,7 @@ final class SwiftDashSDKHost {
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
-                DWLogger.log("HOST keychain recovery failed for one entry: \(String(describing: error))")
+                DWLogger.log("HOST keychain recovery failed for one entry: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             }
         }
 
@@ -1674,13 +1688,14 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
-    /// Evict every process-cached `ModelContainer`. Only the local-store reset
-    /// calls this, after `stopAsync()`: each cached container was built over a
-    /// scope directory that is about to be deleted, and `makeRuntime` /
-    /// `storeOnlyPersistenceHandler` would otherwise reuse it over the unlinked
-    /// file. The cache's normal lifetime (see `stopAsync`) is unchanged.
-    func dropCachedModelContainers() {
-        modelContainerCache.invalidateAll()
+    /// Hold model-container admission through the reset's teardown and file
+    /// deletion, draining existing opens before the files can be unlinked.
+    func suspendModelContainerOpens() async {
+        await modelContainerCache.suspendAndInvalidate()
+    }
+
+    func resumeModelContainerOpens() {
+        modelContainerCache.resumeOpens()
     }
 
     private func buildModelContainer(for network: Network, scope: String? = nil) async throws -> ModelContainer {

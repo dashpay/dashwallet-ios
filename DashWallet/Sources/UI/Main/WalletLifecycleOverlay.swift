@@ -244,7 +244,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             .sink { [weak self] phase in self?.apply(phase) }
             .store(in: &cancellables)
         transitionState.$preparationFailure
-            .sink { [weak self] failure in self?.preparationFailure = failure }
+            .sink { [weak self] failure in
+                self?.preparationFailure = failure
+                self?.updateRecoveryEligibility()
+            }
             .store(in: &cancellables)
         recoveryPhraseFlow.$navigationEvent
             .compactMap { $0 }
@@ -259,15 +262,27 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    var showsLocalStoreRecovery: Bool {
+        switch phase {
+        case .failedWalletOpen: return true
+        case .failedNetworkSwitch: return preparationFailure != nil
+        default: return false
+        }
+    }
+
+    private func updateRecoveryEligibility() {
+        let failure: WalletPreparationFailure?
+        if case let .failedWalletOpen(detail) = phase { failure = detail }
+        else { failure = preparationFailure }
+        canResetWalletData = showsLocalStoreRecovery
+            && failure?.canResetLocalData == true && WalletEnvironment.hasSDKWallet
+    }
+
     private func apply(_ phase: WalletLifecycleTransitionState.Phase) {
         self.phase = phase
-        if case let .failedWalletOpen(failure) = phase {
-            canResetWalletData = failure.canResetLocalData && WalletEnvironment.hasSDKWallet
-        } else {
-            canResetWalletData = false
+        updateRecoveryEligibility()
+        if !showsLocalStoreRecovery {
             isConfirmingReset = false
-            // The window may be dropped next (idle); nothing may stay
-            // presented from it.
             recoveryPhraseModal.dismiss(animated: false)
         }
     }
@@ -367,7 +382,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
                 recoveryPhraseFlow.consumeNavigationEvent(id: event.id)
             }
         }
-        guard case .failedWalletOpen = phase,
+        guard showsLocalStoreRecovery,
               let anchor = WalletLifecycleOverlayPresenter.shared.overlayWindow?.rootViewController
         else { return }
         recoveryPhraseModal.show(event.destination, from: anchor, flowModel: recoveryPhraseFlow)
@@ -381,8 +396,8 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     }
 
     /// Confirm on the alert: PIN gate, then the runtime's delete-and-reopen.
-    /// The phase moves on its own from there (`.openingWallet`, then `.idle`
-    /// or back to this card with the new failure).
+    /// The runtime owns `.resettingLocalStores` until `.idle`
+    /// or a failure card with the current diagnostic.
     func resetWalletData() {
         guard !isBusy, canResetWalletData else { return }
         let title = NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation")
@@ -402,7 +417,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             }
             self.resetPending = true
             do {
-                _ = try await SwiftDashSDKWalletRuntime.shared.resetLocalStoresAndRetry()
+                let result = try await SwiftDashSDKWalletRuntime.shared.resetLocalStoresAndRetry()
+                if case let .failed(failure) = result {
+                    self.actionFailure = ActionFailure(title: title, message: failure.message)
+                }
             } catch {
                 // Deletion stopped at an item; nothing was reopened and the
                 // card is unchanged, so Reset and Try Again stay available.
@@ -432,7 +450,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// the card underneath them. Retry/Switch Back are disabled while an
     /// export runs, and these guards back the disabled state up.
     func retryNetworkSwitch(to target: WalletEnvironment.NetworkKind) {
-        guard !isExportingLogs else { return }
+        guard !isBusy else { return }
         Task {
             try? await SwiftDashSDKWalletRuntime.shared.switchNetwork(to: target)
         }
@@ -478,6 +496,10 @@ struct WalletLifecycleOverlayView: View {
             switch viewModel.phase {
             case .idle:
                 EmptyView()
+            case .resettingLocalStores:
+                progressCard(
+                    title: NSLocalizedString("Resetting wallet data…", comment: "Wallet preparation"),
+                    subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
             case .openingWallet, .migratingLegacyWallet:
                 progressCard(
                     title: NSLocalizedString("Preparing your wallet…", comment: "Wallet preparation"),
@@ -489,24 +511,7 @@ struct WalletLifecycleOverlayView: View {
                         viewModel.retryWalletOpen()
                     }
                     .disabled(viewModel.isBusy)
-                    actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
-                        viewModel.backupRecoveryPhrase()
-                    }
-                    .disabled(viewModel.isBusy)
-                    if viewModel.canResetWalletData {
-                        if viewModel.resetPending {
-                            SwiftUI.ProgressView(NSLocalizedString("Resetting wallet data…", comment: "Wallet preparation"))
-                        } else {
-                            actionButton(
-                                NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),
-                                prominent: false,
-                                role: .destructive
-                            ) {
-                                viewModel.requestResetWalletData()
-                            }
-                            .disabled(viewModel.isBusy)
-                        }
-                    }
+                    walletRecoveryActions
                     preparationHelp
                 }
             case let .failedLegacyMigration(failure):
@@ -559,7 +564,7 @@ struct WalletLifecycleOverlayView: View {
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
                     }
-                    .disabled(viewModel.isExportingLogs)
+                    .disabled(viewModel.isBusy)
                     // Escape hatch: the origin network was working when the
                     // switch began, so a way back must exist even when the
                     // destination keeps failing.
@@ -567,8 +572,9 @@ struct WalletLifecycleOverlayView: View {
                         actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.retryNetworkSwitch(to: from)
                         }
-                        .disabled(viewModel.isExportingLogs)
+                        .disabled(viewModel.isBusy)
                     }
+                    if viewModel.showsLocalStoreRecovery { walletRecoveryActions }
                     preparationHelp
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
@@ -628,10 +634,27 @@ struct WalletLifecycleOverlayView: View {
             }
         } message: {
             Text(NSLocalizedString(
-                "Deletes the wallet data stored on this device and downloads it again from the network with a full rescan, which can take a while. Your wallet keys stay in this device's keychain.",
+                "Resets local wallet data for every network. Your wallet keys stay on this device, and a full rescan restores your funds and transaction history. Custom wallet names and manually tracked masternodes and their labels must be recreated; a recovery phrase backup does not preserve them. The rescan can take a while.",
                 comment: "Wallet preparation"))
         }
         .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
+    }
+
+    @ViewBuilder
+    private var walletRecoveryActions: some View {
+        actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
+            viewModel.backupRecoveryPhrase()
+        }
+        .disabled(viewModel.isBusy)
+        if viewModel.canResetWalletData {
+            actionButton(
+                NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),
+                prominent: false, role: .destructive
+            ) {
+                viewModel.requestResetWalletData()
+            }
+            .disabled(viewModel.isBusy)
+        }
     }
 
     private var preparationHelp: some View {

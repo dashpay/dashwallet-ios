@@ -15,12 +15,14 @@ struct WalletPreparationFailure: Equatable, Identifiable {
     let kind: Kind
     let occurredAt: Date
     let codes: [String]
+    let canResetLocalData: Bool
 
     init(legacyMigration reason: LegacyMigrationReason, now: Date = Date()) {
         id = UUID()
         occurredAt = now
         kind = .legacyMigration
         codes = ["KeyMigrator:\(reason.rawValue)"]
+        canResetLocalData = false
     }
 
     init(error: Error, now: Date = Date()) {
@@ -34,6 +36,8 @@ struct WalletPreparationFailure: Equatable, Identifiable {
                 || Self.isLegacySpaceFailure(error)
         }
         kind = diskFull ? .storage : .database
+        canResetLocalData = !diskFull && !errors.contains(where: Self.isTransientStoreFailure)
+            && errors.contains(where: Self.isResettableStoreFailure)
         codes = errors.map { error in
             // Only known domain names leave this boundary. Neither arbitrary
             // domain names nor localized descriptions are safe log content.
@@ -45,14 +49,29 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         }
     }
 
-    /// Whether the failure card may offer deleting the local stores and
-    /// rescanning. A database failure is a damaged or incompatible store the
-    /// keychain can rebuild; a storage failure reproduces on the rebuild until
-    /// space is freed; a legacy-migration failure has no SDK store behind it.
-    /// Whether an SDK wallet is in the keychain is the view model's check
-    /// (`WalletEnvironment.hasSDKWallet`) — this type is harness-tested
-    /// without SwiftDashSDK.
-    var canResetLocalData: Bool { kind == .database }
+    /// Reset only known corruption/schema failures. A nested permission or
+    /// busy-store error vetoes even a generic SwiftData open failure.
+    private static func isResettableStoreFailure(_ error: NSError) -> Bool {
+        switch error.domain {
+        case "SwiftData.SwiftDataError": return error.code == 1
+        case NSCocoaErrorDomain: return [134100, 134110, 134130, 134140].contains(error.code)
+        case "NSSQLiteErrorDomain": return [Int(SQLITE_CORRUPT), Int(SQLITE_NOTADB)].contains(error.code & 0xff)
+        default: return false
+        }
+    }
+
+    private static func isTransientStoreFailure(_ error: NSError) -> Bool {
+        switch error.domain {
+        case NSPOSIXErrorDomain:
+            return [EACCES, EPERM, EBUSY, EAGAIN, EIO, EROFS].map(Int.init).contains(error.code)
+        case NSCocoaErrorDomain:
+            return [NSFileReadNoPermissionError, NSFileWriteNoPermissionError].contains(error.code)
+        case "NSSQLiteErrorDomain":
+            return [SQLITE_BUSY, SQLITE_LOCKED, SQLITE_PERM, SQLITE_READONLY, SQLITE_IOERR, SQLITE_CANTOPEN]
+                .map(Int.init).contains(error.code & 0xff)
+        default: return false
+        }
+    }
 
     var title: String {
         if kind == .legacyMigration {
