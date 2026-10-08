@@ -167,8 +167,38 @@ class MainTabbarController: UITabBarController {
     /// footprint for Platform-Payment-funded registrations), hiding
     /// the tabs from exactly the users the SDK flows serve.
     @MainActor
+    /// DashPay's tabs need a username, not just an identity.
+    ///
+    /// A contested request registers the identity immediately but the name
+    /// belongs to nobody until the vote resolves, so unlocking on the identity
+    /// alone handed the user Contacts and a profile under a name they might
+    /// never get — and that nobody could find them by meanwhile.
+    /// `usernames` already excludes every in-flight contested label
+    /// (`DWCurrentUserIdentityInfo`, Row #18 filter), so this reads true the
+    /// moment a name is actually theirs: an instant companion registered
+    /// alongside the request, or the contested name once won.
     private var hasDashPayIdentity: Bool {
-        DWCurrentUserIdentityInfo.shared.hasIdentity
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard identity.hasIdentity else { return false }
+
+        // `usernames` is empty both for an identity that owns no name and for
+        // one whose names have not been read yet, and the two must not be
+        // answered the same way.
+        //
+        // Loaded: the list decides. Not loaded yet: keep a layout that is
+        // already standing — taking Contacts away from a wallet that has had a
+        // username for months, on every cold launch and for the whole session
+        // when the name query fails, is the worse answer — but do not build one
+        // on an unresolved name, or a contested request with nothing of its own
+        // would be handed DashPay for a name it may never win, with no later
+        // pass to take it back.
+        if identity.namesAreLoaded { return !identity.usernames.isEmpty }
+        return hasDashPayTabLayout
+    }
+
+    /// The five-tab DashPay layout is the one currently installed.
+    private var hasDashPayTabLayout: Bool {
+        viewControllers?.count == MainTabbarTabs.allCases.count
     }
     #endif
 
@@ -488,6 +518,17 @@ extension MainTabbarController {
         return true
     }
     #endif
+
+    /// Switch to the More tab, without disturbing what it is showing.
+    ///
+    /// Where a submitted username request is reported in one sentence, which
+    /// is where the create flow leaves the user once the request is in.
+    @discardableResult
+    func showMore() -> Bool {
+        guard let moreTabIndex else { return false }
+        selectedIndex = moreTabIndex
+        return true
+    }
 
     @objc
     public func performScanQRCodeAction() {
