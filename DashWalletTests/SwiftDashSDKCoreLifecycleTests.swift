@@ -299,6 +299,35 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 1.512), 1512)
     }
 
+    func testProcessCacheInvalidateAllEvictsAndDoesNotRecacheAnOpenInFlight() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        let before = cache.value(for: "mainnet") { Token() }
+
+        cache.invalidateAll()
+
+        let after = cache.value(for: "mainnet") { Token() }
+        XCTAssertFalse(after.reused)
+        XCTAssertFalse(before.value === after.value)
+
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let inFlight = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        cache.invalidateAll()
+        resumeOpen?.resume()
+        let opened = try await inFlight.value
+        XCTAssertEqual(opened.source, .created)
+        // Evicted while open: the next caller opens again instead of reusing it.
+        let reopened = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(reopened.source, .created)
+        XCTAssertFalse(opened.value === reopened.value)
+    }
+
     func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
         final class Token: Sendable {}
 

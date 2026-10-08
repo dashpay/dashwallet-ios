@@ -12,7 +12,7 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     tests = package / "Tests" / "WalletPreparationHarnessTests"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
-    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure"):
+    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter"):
         source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK" / f"{name}.swift"
         test = repository / "DashWalletTests" / f"{name}Tests.swift"
         (sources / source.name).symlink_to(source)
@@ -54,6 +54,8 @@ enum DWLogger { static func log(_ message: String) {} }
     methods = "\n".join(declaration(runtime, start).replace("private func", "func", 1) for start in (
         "    enum RefreshTrigger: String {",
         "    func retryWalletPreparation() async {",
+        "    enum LocalStoreResetOutcome",
+        "    func resetLocalStoresAndRetry(",
         "    private func enqueueRefresh(trigger:",
         "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
@@ -72,20 +74,44 @@ enum DWLogger { static func log(_ message: String) {} }
     static let shared = SwiftDashSDKWalletRuntime()
     let lifecycleQueue = SerialAsyncLifecycleQueue()
     var refreshCalls = 0
+    /// Order of the reset operation's steps, for the ordering assertions.
+    var events: [String] = []
     func enqueue(_ op: @escaping @MainActor () async -> Void) { lifecycleQueue.enqueue(op) }
     func drain() async { await lifecycleQueue.enqueue {}.value }
     func refresh(trigger: RefreshTrigger) async {
         refreshCalls += 1
+        events.append("refresh")
         try? await WalletLifecycleTransitionState.shared.prepareWallet {} failure: { _ in nil }
     }
     func resolveCurrentNetwork() -> Result<WalletEnvironment.NetworkKind, NSError> { .success(.testnet) }
     func isCoreRuntimeReady(for network: WalletEnvironment.NetworkKind) -> Bool {
         WalletLifecycleTransitionState.shared.phase == .idle
     }
+    func fullReset(lastError: String?, forWipe: Bool) async { events.append("fullReset") }
+    func dropLocalStoreDerivedState() { events.append("drop") }
+    func clearLocalStoreMaintenanceFlags() { events.append("flags") }
+    func selectSolePersistedNetworkIfNeeded(currentNetwork: WalletEnvironment.NetworkKind) -> Bool {
+        events.append("soleNetwork")
+        return false
+    }
+    func publishActiveWalletDidChange(reason: String) { events.append("publish") }
 ''' + methods + "\n}\n")
     (tests / "AutomaticPreparationTests.swift").write_text(r'''
 import XCTest
 @testable import WalletPreparationHarness
+
+/// Stands in for `WalletLocalStoreResetter`: records the call in the
+/// runtime's event order and throws on request.
+final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
+    var error: WalletLocalStoreResetError?
+    var calls = 0
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+        calls += 1
+        await MainActor.run { SwiftDashSDKWalletRuntime.shared.events.append("delete") }
+        if let error { throw error }
+        return WalletLocalStoreResetReport(removed: [.init(root: "Platform", scope: "testnet")])
+    }
+}
 
 @MainActor final class AutomaticPreparationTests: XCTestCase {
     let state = WalletLifecycleTransitionState.shared
@@ -94,6 +120,7 @@ import XCTest
         await runtime.drain()
         state.finish()
         runtime.refreshCalls = 0
+        runtime.events = []
         SwiftDashSDKSPVCoordinator.shared.preparations = 0
         PlatformAddressSyncCoordinator.shared.preparations = 0
     }
@@ -164,6 +191,58 @@ import XCTest
         let ready = await BackgroundRefreshCoordinator.defaultRuntimeStart(while: .init(isWanted: { true }))
         XCTAssertTrue(ready)
         XCTAssertEqual(runtime.refreshCalls, 1)
+    }
+    func testResetSkipsWhenNoFailureIsShowing() async throws {
+        let resetter = FakeResetter()
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(runtime.events, [])
+    }
+    func testResetSkipsStorageFailures() async throws {
+        do {
+            try await state.prepareWallet { throw NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC)) }
+                failure: { WalletPreparationFailure(error: $0) }
+        } catch {}
+        let resetter = FakeResetter()
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testResetOrdersTeardownDropFlagsDeleteRefreshThenPublish() async throws {
+        await failOpen()
+        runtime.events = []
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        XCTAssertEqual(outcome, .reset)
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "flags", "delete", "soleNetwork", "refresh", "publish"])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+    }
+    func testResetFailsClosedWhenDeletionFails() async throws {
+        await failOpen()
+        let failure = state.preparationFailure
+        let resetter = FakeResetter()
+        resetter.error = .removalFailed(root: "Shielded", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the deletion error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(state.preparationFailure, failure)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testQueuedRetryAheadOfResetMakesItSkip() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        runtime.enqueue { await self.runtime.refresh(trigger: .startIfReady) }
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(state.phase, .idle)
     }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()

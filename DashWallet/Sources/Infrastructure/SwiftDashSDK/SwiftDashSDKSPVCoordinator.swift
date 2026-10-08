@@ -1056,13 +1056,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// network name so two devnets keep separate headers and filters — see
     /// the `Network.persistenceScope` doc.
     private func makeSPVDataDirectory(for network: Network) throws -> URL {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SPV", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().spv
             .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
@@ -1235,11 +1229,11 @@ enum SPVChainResyncMarker {
         UserDefaults.standard.removeObject(forKey: key(for: network))
     }
 
-    /// Clear pending markers on a wallet wipe: the rows and chain data they
-    /// reference are gone, so a stale marker would only wipe the next
-    /// wallet's fresh sync. Clears every startable network, mirroring
-    /// `CoinJoinRecovery.resetForWipe`.
-    static func resetForWipe() {
+    /// Clear every pending marker: the rows and chain data they reference are
+    /// gone (wallet wipe or local-store reset), so a stale marker would only
+    /// rewind the next fresh sync's checkpoint. Clears every startable
+    /// network, mirroring `CoinJoinRecovery.resetRecoveryFlags`.
+    static func clearAll() {
         clear(for: .mainnet)
         clear(for: .testnet)
         clear(for: .devnet)
@@ -1247,5 +1241,10 @@ enum SPVChainResyncMarker {
         for scope in DevnetConfiguration.persistedDevnetScopes() {
             UserDefaults.standard.removeObject(forKey: key(scope: scope))
         }
+    }
+
+    /// Wallet wipe: same as `clearAll`, named for the wiper's call site.
+    static func resetForWipe() {
+        clearAll()
     }
 }

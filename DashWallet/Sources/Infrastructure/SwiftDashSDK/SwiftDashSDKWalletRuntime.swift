@@ -247,6 +247,102 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }.value
     }
 
+    /// Outcome of `resetLocalStoresAndRetry(resetter:)`.
+    enum LocalStoreResetOutcome: Equatable {
+        /// Nothing was deleted: by the time the step ran the failure card was
+        /// gone (a queued Try Again succeeded first) or the failure is not a
+        /// database one.
+        case skipped
+        /// Every local store was deleted and the start was re-run. The
+        /// lifecycle phase carries the verdict: `.idle` when the wallet opened,
+        /// `.failedWalletOpen` with a fresh failure when the empty store failed
+        /// too.
+        case reset
+    }
+
+    /// Emulate a reinstall for the local stores while keeping the keychain and
+    /// UserDefaults: stop the runtime, delete every per-scope Platform,
+    /// shielded and SPV store, then re-run the serialized start so
+    /// `SwiftDashSDKHost.start` rebuilds the wallet rows from the keychain
+    /// mnemonics (`recoverPersistedWallet`, birth height =
+    /// `importedWalletBirthHeight`) and SPV re-anchors on an empty chain
+    /// store. One link of the serial lifecycle chain, like
+    /// `retryWalletPreparation`. Throws `WalletLocalStoreResetError` when
+    /// deletion fails; the phase is then untouched, so the original card stays
+    /// with Try Again and Reset available. The card's guards keep every other
+    /// wallet operation off the window while this runs.
+    func resetLocalStoresAndRetry(
+        resetter: (any WalletLocalStoreResetting)? = nil
+    ) async throws -> LocalStoreResetOutcome {
+        try await lifecycleQueue.enqueueAwaitable {
+            // Decided on the queue, not at call time: a queued Try Again may
+            // have cleared the card meanwhile.
+            guard case let .failedWalletOpen(failure) = WalletLifecycleTransitionState.shared.phase,
+                  failure.canResetLocalData else {
+                DWLogger.log("🧹 STORE-RESET skipped: phase=\(WalletLifecycleTransitionState.shared.phase.logLabel)")
+                return .skipped
+            }
+            DWLogger.log("🧹 STORE-RESET begin codes=\(failure.codes.joined(separator: ","))")
+            let started = CFAbsoluteTimeGetCurrent()
+            // Releases every native handle: the manager destroy closes the
+            // shielded tree and the SPV data directory.
+            await self.fullReset(lastError: nil, forWipe: false)
+            self.dropLocalStoreDerivedState()
+            // Before deleting: a kill between the two costs one extra wide
+            // scan on the old store, never a skipped scan on a fresh one.
+            self.clearLocalStoreMaintenanceFlags()
+            let activeResetter: any WalletLocalStoreResetting =
+                try resetter ?? WalletLocalStoreResetter(roots: .inDocuments())
+            let report = try await activeResetter.resetAllScopes()
+            // Reinstall parity: with the current network's rows gone, a
+            // keychain holding only the other network's wallet selects that
+            // network. The observer's own refresh is refused while the card
+            // is up, so the refresh below is the one that starts it.
+            if case .success(let network) = self.resolveCurrentNetwork() {
+                _ = self.selectSolePersistedNetworkIfNeeded(currentNetwork: network)
+            }
+            await self.refresh(trigger: .startIfReady)
+            // `startIfReady` does not publish; consumers that cache per
+            // active wallet must drop snapshots taken before the failure.
+            self.publishActiveWalletDidChange(reason: "local-stores-reset")
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log("🧹 STORE-RESET done scopes=\(report.scopes.joined(separator: ",")) verdict=\(WalletLifecycleTransitionState.shared.phase.logLabel) in \(ms)ms")
+            return .reset
+        }
+    }
+
+    /// Drop every in-memory handle or memo derived from the store directories
+    /// the reset is about to delete. Runs after `fullReset`, so no manager
+    /// holds a store: a cached `ModelContainer` kept past this point would
+    /// hand the next start the unlinked inode instead of the fresh file.
+    private func dropLocalStoreDerivedState() {
+        SwiftDashSDKHost.shared.dropCachedModelContainers()
+        PlatformAddressSyncCoordinator.shared.dropRetainedModelContainer()
+        // The identity rows live in the deleted store; the same call the
+        // devnet chain change makes between teardown and rebuild.
+        DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
+#if DASHPAY
+        // Same-seed identity recovery settles a (wallet, network) once per
+        // process; the rebuilt store has no identity rows, so every persisted
+        // wallet gets its attempt back — the treatment a phrase removed and
+        // re-imported in one session gets.
+        do {
+            for walletId in try SwiftDashSDKHost.persistedWalletIds() {
+                DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
+            }
+        } catch {
+            DWLogger.log("🧹 STORE-RESET keychain id enumeration failed; identity recovery memo kept: \(String(describing: error))")
+        }
+#endif
+    }
+
+    /// The one-time CoinJoin wide-gap scan flag and any pending birth-height
+    /// resync marker both describe the store being deleted.
+    private func clearLocalStoreMaintenanceFlags() {
+        CoinJoinRecovery.shared.resetRecoveryFlags()
+        SPVChainResyncMarker.clearAll()
+    }
+
     /// Connectivity-return recovery, used by `SyncingActivityMonitor` when the
     /// path flips back to online.
     ///

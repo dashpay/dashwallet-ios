@@ -45,6 +45,15 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         }
     }
 
+    /// Whether the failure card may offer deleting the local stores and
+    /// rescanning. A database failure is a damaged or incompatible store the
+    /// keychain can rebuild; a storage failure reproduces on the rebuild until
+    /// space is freed; a legacy-migration failure has no SDK store behind it.
+    /// Whether an SDK wallet is in the keychain is the view model's check
+    /// (`WalletEnvironment.hasSDKWallet`) — this type is harness-tested
+    /// without SwiftDashSDK.
+    var canResetLocalData: Bool { kind == .database }
+
     var title: String {
         if kind == .legacyMigration {
             return NSLocalizedString("Couldn't move your wallet",
@@ -62,11 +71,11 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         }
         if kind == .storage {
             return NSLocalizedString(
-                "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.",
+                "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.",
                 comment: "Wallet preparation failure")
         }
         return NSLocalizedString(
-            "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.",
+            "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.",
             comment: "Wallet preparation failure")
     }
 

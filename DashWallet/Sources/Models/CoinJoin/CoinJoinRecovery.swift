@@ -141,28 +141,40 @@ final class CoinJoinRecovery: NSObject {
         return currentBalanceDuffs <= stored
     }
 
-    /// Clear the terminal per-network recovery flags on a wallet wipe so a
-    /// wallet restored afterwards re-runs the one-time wide CoinJoin scan. The
-    /// flag is app-level (UserDefaults), not per-wallet, and a wipe deletes the
-    /// persisted deep UTXOs, so without this a restored heavy-mixer wallet would
-    /// skip the wide scan and understate its balance. Clears BOTH networks —
-    /// the wipe removes all wallet material and we don't know the next restored
-    /// wallet's network, so every network and every devnet scope is cleared.
-    /// Thread-safe.
-    func resetForWipe() {
+    /// Clear the terminal per-network recovery flags so the next start on any
+    /// network re-runs the one-time wide CoinJoin scan. Needed whenever the
+    /// persisted deep UTXOs are gone — a wallet wipe or a local-store reset:
+    /// the flag is app-level (UserDefaults), not per-wallet, so without this a
+    /// restored heavy-mixer wallet would skip the wide scan and understate its
+    /// balance. Clears every network and every devnet scope, because the next
+    /// restored wallet's network is unknown. Thread-safe.
+    func resetRecoveryFlags() {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(.mainnet))
         defaults.removeObject(forKey: recoveredKey(.testnet))
         defaults.removeObject(forKey: recoveredKey(.devnet))
-        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
-        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
-        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
         // Flags written on devnets other than the one configured now.
         for scope in DevnetConfiguration.persistedDevnetScopes() {
             defaults.removeObject(forKey: recoveredKey(tag: scope))
+        }
+        Self.logger.info(
+            "🪙 CJRECOV :: recovery flags cleared — next start re-runs the one-time wide scan")
+    }
+
+    /// Wallet wipe: the recovery flags (`resetRecoveryFlags`) plus the sweep
+    /// prompt's "Later" balances, which belong to the wallet being removed.
+    /// A local-store reset keeps those balances — the rescan re-derives the
+    /// same CoinJoin balance, so the user's deferral still applies. Thread-safe.
+    func resetForWipe() {
+        resetRecoveryFlags()
+        lock.lock(); defer { lock.unlock() }
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
             defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(tag: scope))
         }
         Self.logger.info(
-            "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
+            "🪙 CJRECOV :: sweep prompt deferrals cleared on wipe")
     }
 }

@@ -56,6 +56,17 @@ final class ProcessNetworkValueCache<Value: Sendable> {
         let task: Task<Value, Error>
     }
     private var inFlight: [String: PendingOpen] = [:]
+    /// Bumped by `invalidateAll` so an open that was in flight across the
+    /// eviction completes for its waiters but is not cached afterwards.
+    private var generation = 0
+
+    /// Evict every cached value. Only the local-store reset calls this: each
+    /// cached value was built over a store directory that is about to be
+    /// deleted, and reusing it would hand the next open the unlinked file.
+    func invalidateAll() {
+        values.removeAll()
+        generation &+= 1
+    }
 
     func value(
         for networkKey: String,
@@ -91,8 +102,11 @@ final class ProcessNetworkValueCache<Value: Sendable> {
                 inFlight[networkKey] = nil
             }
         }
+        let generationAtOpen = generation
         let created = try await pending.task.value
-        values[networkKey] = created
+        if generation == generationAtOpen {
+            values[networkKey] = created
+        }
         return (created, source)
     }
 }
@@ -264,6 +278,8 @@ final class SwiftDashSDKHost {
             return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
         } catch {
             logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
+            // os_log does not reach the diagnostic export; the file log does.
+            DWLogger.log("HOST wallet-presence keychain read failed: \(String(describing: error))")
             return false
         }
     }
@@ -285,6 +301,7 @@ final class SwiftDashSDKHost {
             }
         } catch {
             logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log("HOST mnemonic keychain enumeration failed: \(String(describing: error))")
             return []
         }
     }
@@ -522,6 +539,7 @@ final class SwiftDashSDKHost {
             // FROM-network active phrase, bound as devnet-active, with an
             // every-stored-phrase fallback (devnet rows + devnet-scoped
             // mnemonic entries only; mainnet/testnet are untouched).
+            DWLogger.log("HOST no wallet rows for \(network.rawValue); recovering from keychain")
             var recovered = recoverPersistedWallet(handles: handles)
             if recovered == nil, network == .devnet {
                 recovered = await provisionDevnetWallets(handles: handles)
@@ -1094,6 +1112,10 @@ final class SwiftDashSDKHost {
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
+            // Allow-listed `domain:code` pairs only: Core Data errors carry
+            // paths and stored values, which never belong in the exported log.
+            DWLogger.log(
+                "HOST stage 2/4 ModelContainer FAILED for \(network.rawValue) scope=\(configurationIdentity.scope) codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             throw HostError.modelContainerFailed(error)
         }
 
@@ -1412,14 +1434,21 @@ final class SwiftDashSDKHost {
                 if created.walletId != entry.walletId {
                     try? handles.manager.deleteWallet(walletId: created.walletId)
                     Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
+                    DWLogger.log("HOST keychain recovery: created wallet id did not match its keychain id; discarded")
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST keychain recovery failed for one entry: \(String(describing: error))")
             }
         }
 
-        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
+        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else {
+            DWLogger.log("HOST keychain recovery resolved no active wallet for \(handles.network.networkName) eligible=\(entries.count)")
+            return nil
+        }
         Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
+        DWLogger.log(
+            "HOST recovered \(entries.count) wallet(s) from keychain for \(handles.network.networkName) skipped=\(inventory.count - entries.count) birthHeight=\(Self.importedWalletBirthHeight(for: handles.network))")
         return resolved
     }
 
@@ -1645,15 +1674,17 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
+    /// Evict every process-cached `ModelContainer`. Only the local-store reset
+    /// calls this, after `stopAsync()`: each cached container was built over a
+    /// scope directory that is about to be deleted, and `makeRuntime` /
+    /// `storeOnlyPersistenceHandler` would otherwise reuse it over the unlinked
+    /// file. The cache's normal lifetime (see `stopAsync`) is unchanged.
+    func dropCachedModelContainers() {
+        modelContainerCache.invalidateAll()
+    }
+
     private func buildModelContainer(for network: Network, scope: String? = nil) async throws -> ModelContainer {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-            .appendingPathComponent("Platform", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().platform
             .appendingPathComponent(scope ?? network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
@@ -1665,20 +1696,13 @@ final class SwiftDashSDKHost {
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree
     /// SQLite file, handed to `PlatformWalletManager.configureShielded(dbPath:)`.
-    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<scope>/`
-    /// convention in a sibling `Shielded/` directory; creates the directory if
+    /// `WalletLocalStoreRoots.shielded/<scope>/`, the sibling of the
+    /// `Platform/` root `buildModelContainer` uses; creates the directory if
     /// needed. The manager is rebuilt per network (`buildRuntime`), so a
     /// per-network path keeps `configureShielded` idempotent — it throws only
     /// when re-pointed to a different path on the same manager.
     func shieldedTreeDBPath(for network: Network) throws -> String {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-            .appendingPathComponent("Shielded", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().shielded
             .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,

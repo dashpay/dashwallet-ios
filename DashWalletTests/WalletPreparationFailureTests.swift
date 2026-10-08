@@ -59,6 +59,14 @@ final class WalletPreparationFailureTests: XCTestCase {
         XCTAssertEqual(WalletPreparationFailure(error: nested).codes.count, 8)
     }
 
+    func testOnlyDatabaseFailuresOfferTheLocalDataReset() {
+        XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(EACCES))).canResetLocalData)
+        XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: "NSSQLiteErrorDomain", code: 13)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(legacyMigration: .failed).canResetLocalData)
+    }
+
     func testLegacyMigrationFailureCarriesOnlyTheMigratorReason() {
         let failure = WalletPreparationFailure(legacyMigration: .timedOut, now: Date(timeIntervalSince1970: 0))
         XCTAssertEqual(failure.kind, .legacyMigration)
