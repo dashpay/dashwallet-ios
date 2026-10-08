@@ -1145,15 +1145,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// key off is still this registration's. Narrower than
     /// `validateRegistrationContext`: a record only needs the scope, not an
     /// identity snapshot that may be mid-refresh.
-    private func isRecordScopeCurrent(walletId: Data, network: Network) -> Bool {
+    private static func isRecordScopeCurrent(walletId: Data, network: Network) -> Bool {
         WalletEnvironment.network == network
             && (WalletEnvironment.activeWalletIdHex as String?) == walletId.hexEncodedString()
     }
 
+    /// The host is running `walletId` on `network` and both are the selected
+    /// ones. Shared with the standalone proof-link publication, which guards
+    /// the same thing around its own awaits.
+    static func isActiveContext(walletId: Data, network: Network) -> Bool {
+        SwiftDashSDKHost.shared.wallet?.walletId == walletId
+            && SwiftDashSDKHost.shared.runningNetwork == network
+            && isRecordScopeCurrent(walletId: walletId, network: network)
+    }
+
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
-        guard SwiftDashSDKHost.shared.wallet?.walletId == walletId,
-              SwiftDashSDKHost.shared.runningNetwork == network,
-              isRecordScopeCurrent(walletId: walletId, network: network) else {
+        guard Self.isActiveContext(walletId: walletId, network: network) else {
             throw CoordinatorError.contextChanged
         }
         if let resumedIdentityId {
@@ -1414,7 +1421,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // after authorization and the write, so a cancelled or refused
             // attempt — on any entry point, the invitation claim included —
             // leaves it in place; a retry of that same name keeps it too.
-            if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+            if Self.isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
                 UsernamePrefs.shared.clearFailedCompanion(unlessUsername: username)
             }
         } catch DWIdentityAuthorizer.AuthError.cancelled {
@@ -1515,7 +1522,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 DWCurrentUserIdentityInfo.persistConfirmedUsername(
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
                 registeredTemporaryUsername = temporaryUsername
-                if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+                if Self.isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
                     // This request now has its instant name, whichever one
                     // failed before.
                     UsernamePrefs.shared.clearFailedCompanion(forContestedLabel: username)
@@ -1534,7 +1541,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // learns the instant name is missing and can try it again.
                 // Written only while the registration's wallet and network are
                 // still the active ones, which is the scope the record uses.
-                if isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
+                if Self.isRecordScopeCurrent(walletId: wallet.walletId, network: network) {
                     UsernamePrefs.shared.failedCompanion = .init(
                         username: temporaryUsername,
                         contestedLabel: username,
@@ -2264,10 +2271,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // network switched while our awaits were in flight. Same MainActor
         // stretch as the mutation below, so it's atomic against
         // recordSubmission.
-        guard WalletEnvironment.network == expectedNetwork,
-              SwiftDashSDKHost.shared.runningNetwork == expectedNetwork,
-              SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId,
-              (WalletEnvironment.activeWalletIdHex as String?) == wallet.walletId.hexEncodedString(),
+        guard Self.isActiveContext(walletId: wallet.walletId, network: expectedNetwork),
               DWCurrentUserIdentityInfo.shared.identityId == identityId,
               DWContestedNameStatusService.shared.pendingLabels(
                   for: expectedNetwork, identityId: identityId, walletId: wallet.walletId, confirmedOnly: true)
@@ -2362,10 +2366,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // Same freshness guard as `resolvePendingContest`, and the marker must
         // still be the earlier launch's: a retry started meanwhile owns it.
         let service = DWContestedNameStatusService.shared
-        guard WalletEnvironment.network == expectedNetwork,
-              SwiftDashSDKHost.shared.runningNetwork == expectedNetwork,
-              SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId,
-              (WalletEnvironment.activeWalletIdHex as String?) == wallet.walletId.hexEncodedString(),
+        guard Self.isActiveContext(walletId: wallet.walletId, network: expectedNetwork),
               DWCurrentUserIdentityInfo.shared.identityId == identityId,
               service.provisionalLabels(for: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
                   .contains(where: { DWContestedNameStatusService.labelsMatch($0, label) })

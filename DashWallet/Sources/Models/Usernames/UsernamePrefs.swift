@@ -41,7 +41,13 @@ enum JoinDashPayDismissalScope {
     /// flags that must not leak across a network switch.
     static func scopedKey(_ base: String, networkRawValue: Int, walletIdHex: String?) -> String {
         let walletScope = walletIdHex.flatMap { $0.isEmpty ? nil : $0 } ?? "unbound"
-        return "\(base).v2.\(networkRawValue).\(walletScope)"
+        return "\(scopePrefix(base))\(networkRawValue).\(walletScope)"
+    }
+
+    /// What every scoped key of `base` starts with, whatever its network and
+    /// wallet.
+    static func scopePrefix(_ base: String) -> String {
+        "\(base).v2."
     }
 }
 
@@ -268,8 +274,52 @@ class UsernamePrefs {
         }
     }
 
+    // MARK: - Wallet deletion
+
+    /// The registration reports kept per wallet and network: the in-flight
+    /// and completed records, a lost or blocked contest, a failed instant
+    /// name. `scoped(_:)` asserts that its key is listed here, so a new
+    /// record added without its cleanup trips in a debug build.
+    static let registrationRecordKeys = [
+        kInFlightRegistrationUsername,
+        kCompletedTileUsername,
+        kLostContestUsername,
+        kLostContestWasBlocked,
+        kFailedCompanion,
+    ]
+
+    /// Drops `walletIdHex`'s registration reports, and its form drafts, on
+    /// every network. A wallet id is derived from the phrase, so re-importing
+    /// a removed wallet finds the same keys — and the row reads these reports
+    /// ahead of the current contest and ownership state. Addressed by id, not
+    /// through the current-selection getters: the wallet being removed need
+    /// not be the active one.
+    static func clearRegistrationRecords(walletIdHex: String, defaults: UserDefaults = .standard) {
+        // An empty id would address the "unbound" scope, which is no wallet's.
+        guard !walletIdHex.isEmpty else { return }
+        for network in WalletEnvironment.NetworkKind.allCases {
+            for base in registrationRecordKeys {
+                defaults.removeObject(forKey: JoinDashPayDismissalScope.scopedKey(
+                    base, networkRawValue: network.rawValue, walletIdHex: walletIdHex))
+            }
+        }
+        UsernameRegistrationDraftStore(defaults: defaults).clearAll(walletIdHex: walletIdHex)
+    }
+
+    /// Drops every wallet's registration reports and form drafts, for the
+    /// full wipe.
+    static func clearAllRegistrationRecords(defaults: UserDefaults = .standard) {
+        let prefixes = registrationRecordKeys.map(JoinDashPayDismissalScope.scopePrefix)
+            + [UsernameRegistrationDraftStore.keyPrefix]
+        for key in defaults.dictionaryRepresentation().keys
+        where prefixes.contains(where: { key.hasPrefix($0) }) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     private func scoped(_ base: String) -> String {
-        JoinDashPayDismissalScope.scopedKey(
+        assert(Self.registrationRecordKeys.contains(base), "\(base) is not cleared on wallet deletion")
+        return JoinDashPayDismissalScope.scopedKey(
             base,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
