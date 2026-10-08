@@ -311,7 +311,7 @@ class TxDetailModel: NSObject {
         // Buy: the incoming Dash tx belongs to the order the row label assigned it to —
         // the same assignment, so the link opens the order the row shows.
         if let orderID = SwapOrderMetadataProvider.shared.orderID(forTxHashData: transaction.txHashData),
-           let order = await dao.get(byId: orderID), order.direction == "buy" {
+           let order = await dao.get(byId: orderID), order.isBuy {
             return link(for: order, dashTxId: transactionId)
         }
 

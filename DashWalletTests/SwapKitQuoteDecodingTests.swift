@@ -435,18 +435,23 @@ final class BuySwapOrderTests: XCTestCase {
 
     func testOnlyOrdersTheProviderHasNotEndedCanStillBePaidOut() {
         for status in [SwapOrderStatus.notStarted, .pending, .swapping, .unknown, .completed] {
-            XCTAssertTrue(buyOrder(status: status).mayStillBePaidOut, "\(status)")
+            XCTAssertTrue(buyOrder(status: status).mayStillBePaidOut(now: now), "\(status)")
         }
-        XCTAssertFalse(buyOrder(status: .refunded).mayStillBePaidOut)
-        XCTAssertFalse(buyOrder(status: .failed).mayStillBePaidOut)
-        // Expired is us no longer asking; a late payout still belongs to a funded order —
-        // but an expired order nobody paid claims nothing.
-        XCTAssertTrue(buyOrder(status: .expired, depositSeenSecondsAgo: 86_400).mayStillBePaidOut)
-        XCTAssertFalse(buyOrder(status: .expired).mayStillBePaidOut)
+        XCTAssertFalse(buyOrder(status: .refunded).mayStillBePaidOut(now: now))
+        XCTAssertFalse(buyOrder(status: .failed).mayStillBePaidOut(now: now))
+        // Expired is us no longer asking; a late payout still belongs to a funded order for
+        // a while — but an expired order nobody paid claims nothing.
+        XCTAssertTrue(buyOrder(
+            status: .expired, depositSeenSecondsAgo: 86_400, finalisedSecondsAgo: SwapOrder.latePayoutSeconds
+        ).mayStillBePaidOut(now: now))
+        XCTAssertFalse(buyOrder(
+            status: .expired, depositSeenSecondsAgo: 86_400, finalisedSecondsAgo: SwapOrder.latePayoutSeconds + 1
+        ).mayStillBePaidOut(now: now))
+        XCTAssertFalse(buyOrder(status: .expired, finalisedSecondsAgo: 60).mayStillBePaidOut(now: now))
     }
 
     func testNoTransactionsMeansNoPayouts() {
-        XCTAssertTrue(SwapBuyTransactionMatcher.payoutAssignments(among: [buyOrder(status: .pending)], in: []).isEmpty)
+        XCTAssertTrue(SwapBuyTransactionMatcher.payoutAssignments(among: [buyOrder(status: .pending)], in: [], now: now).isEmpty)
         XCTAssertTrue(SwapBuyTransactionMatcher.matchingTransactions(for: buyOrder(status: .pending), in: []).isEmpty)
     }
 

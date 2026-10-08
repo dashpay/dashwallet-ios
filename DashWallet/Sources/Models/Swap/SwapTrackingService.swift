@@ -204,8 +204,13 @@ final class SwapTrackingService {
             // by order.
             let nowSeconds = Int64(Date().timeIntervalSince1970)
             let due = active.filter { isDueForPoll($0, nowSeconds: nowSeconds) }
-            let payouts = await walletPayouts(for: due, among: orders)
-            await completeExpiredOrdersThatWerePaidOut(among: orders)
+            // One wallet read per cycle serves both the orders being polled and the
+            // expired ones whose payout may still turn up.
+            let lateCandidates = orders.filter {
+                $0.isBuy && $0.status == .expired && $0.mayStillBePaidOut(now: Date())
+            }
+            let payouts = await walletPayouts(for: due + lateCandidates, among: orders)
+            await completeExpiredOrders(lateCandidates, paidOutBy: payouts)
 
             await withTaskGroup(of: Void.self) { group in
                 for order in due {
@@ -351,8 +356,9 @@ final class SwapTrackingService {
             // sight for good — so a Buy order is let go only on answers, never on silence:
             // - never in a cycle where the provider was not reached (`apiStatus == nil`);
             // - an order whose deposit address we watch also needs that lookup to have
-            //   answered "nothing there", and not before `unpaidSettleSeconds` past its
-            //   deadline — a transfer sent in the last minutes still gets found;
+            //   answered "nothing there", and not before a settle time past its deadline —
+            //   a transfer sent in the last minutes still gets found, with twice the
+            //   chain's stuck wait allowed for it to show up on a slow chain;
             // - a day past the window the provider's answer alone is enough, so a lookup
             //   that never answers cannot keep the order alive;
             // - and silence has a limit too: `fundedBuyGraceSeconds` after the order aged
@@ -360,8 +366,9 @@ final class SwapTrackingService {
             //   cannot keep it polled for the life of the install.
             let agedOutAt = agedOutAt(agingOrder, finalStatus: finalStatus)
             let sinceAgedOut = nowSeconds - agedOutAt
+            let settleSeconds = max(Constants.unpaidSettleSeconds, 2 * order.stuckAfterSeconds)
             let lookupSettled = !watchesDeposit
-                || (lookup == .absent && sinceAgedOut > Constants.unpaidSettleSeconds)
+                || (lookup == .absent && sinceAgedOut > settleSeconds)
                 || sinceAgedOut > Constants.ageOutSeconds
             if order.isBuy, apiStatus == nil || !lookupSettled, sinceAgedOut <= Constants.fundedBuyGraceSeconds {
                 DWLogger.log("SwapTrackingService: order \(order.id) is past its window, waiting for an answer")
@@ -374,8 +381,8 @@ final class SwapTrackingService {
         // The provider's status proving the deposit (or the payout arriving) is deposit
         // evidence too. Without recording it, an order the provider acknowledged first (the
         // usual case) would count as never paid once it ended, and its row would vanish with
-        // the funds still at the provider. Only a proving status counts — "unknown" and
-        // "failed" are merely mapped onto refunded and say nothing about a deposit.
+        // the funds still at the provider. Only a proving status counts (`depositProven`,
+        // set above): "unknown" and unrecognised words say nothing about a deposit.
         let providerReportedDeposit = order.isBuy && order.depositSeenAt == nil && depositProven
 
         // The provider has just answered that it sees no deposit, more than the stuck
@@ -423,22 +430,14 @@ final class SwapTrackingService {
 
     /// An expired Buy order with a deposit on record is no longer polled, but its payout can
     /// still arrive — the user handed the deposit to the provider, or the provider was just
-    /// slow. When that transaction is in the wallet within `fundedBuyGraceSeconds` of the
-    /// expiry, the order is completed after all, so it does not stay "Not confirmed" beside
-    /// its own payout.
-    private func completeExpiredOrdersThatWerePaidOut(among orders: [SwapOrder]) async {
-        // Looked for during `fundedBuyGraceSeconds` after expiry, not forever: each look is a
-        // wallet read on the main actor.
-        let nowSeconds = Int64(Date().timeIntervalSince1970)
-        let candidates = orders.filter {
-            $0.isBuy && $0.status == .expired && $0.hasDepositOnRecord
-                && $0.finalisedAt > 0 && nowSeconds - $0.finalisedAt <= Constants.fundedBuyGraceSeconds
-        }
-        guard !candidates.isEmpty else { return }
-        let payouts = await walletPayouts(for: candidates, among: orders)
+    /// slow. When that transaction is in the wallet within `SwapOrder.latePayoutSeconds` of
+    /// the expiry, the order is completed after all, so it does not stay "Not confirmed"
+    /// beside its own payout.
+    private func completeExpiredOrders(_ candidates: [SwapOrder], paidOutBy payouts: [String: String]) async {
         for order in candidates {
             guard let txHash = payouts[order.id],
                   var updated = await dao.get(byId: order.id), updated.status == .expired else { continue }
+            let nowSeconds = Int64(Date().timeIntervalSince1970)
             updated.status = .completed
             updated.outboundTxHash = txHash
             updated.lastChecked = nowSeconds
@@ -486,7 +485,8 @@ final class SwapTrackingService {
 
         let ageSeconds = nowSeconds - order.timestamp / 1000
         let sinceDeadline = order.depositDeadline.map { nowSeconds - $0 }
-        let settling = sinceDeadline.map { $0 > 0 && $0 <= Constants.unpaidSettleSeconds } ?? false
+        let settleSeconds = max(Constants.unpaidSettleSeconds, 2 * order.stuckAfterSeconds)
+        let settling = sinceDeadline.map { $0 > 0 && $0 <= settleSeconds } ?? false
         let interval = ageSeconds <= Constants.unpaidEagerSeconds || settling
             ? Constants.unpaidPollIntervalSeconds
             : Constants.unpaidIdlePollIntervalSeconds

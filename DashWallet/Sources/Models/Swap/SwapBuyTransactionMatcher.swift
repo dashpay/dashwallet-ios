@@ -70,30 +70,30 @@ enum SwapBuyTransactionMatcher {
     ///
     /// Looked at one order at a time, two orders for the same amount to the same receive
     /// address both match the one payout that arrived. Here each transaction goes to at
-    /// most one order, settled tier by tier:
+    /// most one order, settled in this priority:
     /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
     ///    transaction also fits the order;
     /// 2. orders the provider reports as completed, oldest first — it paid them out, and
     ///    payouts arrive in the order the swaps were made. A completed order only takes a
     ///    transaction from before it was finalised (plus `timestampSlack`): its payout
     ///    exists by then, so a later one is somebody else's;
-    /// 3. orders still in flight with a deposit on record;
-    /// 4. orders with no deposit on record — they only take what is left, so an order
-    ///    nobody paid cannot take a funded order's payout.
-    /// In tiers 3 and 4 an order alone on its transactions takes the earliest. Orders that
-    /// share any transaction are settled together and only when it is unambiguous: they fit
-    /// exactly the same transactions and there are at least as many as orders — then they
-    /// pair up in time order. Otherwise none of them is assigned: which of two in-flight
-    /// attempts a payout answers is the provider's to say, and a wrong guess would finalise
-    /// the other attempt as paid — and a transaction a funded group could not settle is
-    /// not left for tier 4 either. Orders that ended without a payout claim nothing.
+    /// 3. orders still in flight. One that is alone on its transactions takes the earliest.
+    ///    Orders that share any transaction are settled together and only when it is
+    ///    unambiguous: they fit exactly the same transactions and there are at least as
+    ///    many as orders — then they pair up in time order. Otherwise none of them is
+    ///    assigned: which of two attempts a payout answers is the provider's to say (it
+    ///    moves the right one to tier 2), and a wrong guess would finalise the other
+    ///    attempt as paid. Whether an order's deposit is on record does not rank it here —
+    ///    that record can lag behind a payout that is already in the wallet.
+    /// Orders that can no longer be paid out (`mayStillBePaidOut`) claim nothing.
     static func payoutAssignments(
         among orders: [SwapOrder],
-        in transactions: [Transaction]
+        in transactions: [Transaction],
+        now: Date = Date()
     ) -> [String: Transaction] {
         guard !transactions.isEmpty else { return [:] }
         let claimants = orders
-            .filter { $0.isBuy && $0.mayStillBePaidOut }
+            .filter { $0.isBuy && $0.mayStillBePaidOut(now: now) }
             .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return [:] }
 
@@ -125,32 +125,25 @@ enum SwapBuyTransactionMatcher {
             if let txId = fitting(claimant, before: limit).first { take(txId, for: claimant) }
         }
 
+        // Fitting sets are taken before anything in the tier is assigned, and orders that
+        // share a transaction are settled as one group — so the outcome does not depend on
+        // the order in which the tier is walked.
         let inFlight = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
-        for tier in [inFlight.filter(\.hasDepositOnRecord), inFlight.filter { !$0.hasDepositOnRecord }] {
-            // Fitting sets are taken before anything in the tier is assigned, and orders that
-            // share a transaction are settled as one group — so the outcome does not depend
-            // on the order in which the tier is walked.
-            let fits = tier.map { (order: $0, txIds: fitting($0)) }.filter { !$0.txIds.isEmpty }
-            var groups: [[(order: SwapOrder, txIds: [String])]] = []
-            for entry in fits {
-                let touching = groups.indices.filter { index in
-                    groups[index].contains { !Set($0.txIds).isDisjoint(with: entry.txIds) }
-                }
-                var merged = [entry]
-                for index in touching.reversed() { merged += groups.remove(at: index) }
-                groups.append(merged)
+        let fits = inFlight.map { (order: $0, txIds: fitting($0)) }.filter { !$0.txIds.isEmpty }
+        var groups: [[(order: SwapOrder, txIds: [String])]] = []
+        for entry in fits {
+            let touching = groups.indices.filter { index in
+                groups[index].contains { !Set($0.txIds).isDisjoint(with: entry.txIds) }
             }
-            for group in groups {
-                let first = group[0].txIds
-                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else {
-                    // Unsettled: these transactions belong to one of the group's orders, we
-                    // just cannot say which. Keep them from a lower tier.
-                    for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
-                    continue
-                }
-                for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
-                    take(txId, for: entry.order)
-                }
+            var merged = [entry]
+            for index in touching.reversed() { merged += groups.remove(at: index) }
+            groups.append(merged)
+        }
+        for group in groups {
+            let first = group[0].txIds
+            guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else { continue }
+            for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
+                take(txId, for: entry.order)
             }
         }
         return assigned

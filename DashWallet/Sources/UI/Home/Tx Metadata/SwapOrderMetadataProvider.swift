@@ -127,7 +127,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// allTransactions is frozen (empty) post-migration.
     private func buyMatcherTransactions(for orders: [SwapOrder]) -> [Transaction] {
         let cutoffs = orders
-            .filter { $0.direction != "sell" }
+            .filter(\.isBuy)
             .map(SwapBuyTransactionMatcher.fetchCutoff(for:))
         guard let oldest = cutoffs.min() else { return [] }
         return SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: oldest)?.transactions ?? []

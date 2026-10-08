@@ -234,6 +234,10 @@ extension SwapOrder {
     /// the wallet yet.
     static let completedRowSeconds: Int64 = 60 * 60
 
+    /// How long after an order with a deposit on record expired its payout is still looked
+    /// for, and the order completed when it arrives.
+    static let latePayoutSeconds: Int64 = 7 * 24 * 60 * 60
+
 
     /// How long a deposit may sit on the source chain unseen by the provider before the order
     /// is called stuck. Per source chain: the deposit address shows a balance as soon as the
@@ -304,14 +308,17 @@ extension SwapOrder {
     }
 
     /// Whether a Dash payout for this order can still turn up: not once the provider has
-    /// ended it without one. An expired order still can when its deposit is on record —
-    /// expiry is us no longer asking, and a deposit handed to the provider later is paid
-    /// out all the same. An expired order nobody paid can not, and must not claim an
-    /// unrelated receive of a similar amount.
-    var mayStillBePaidOut: Bool {
+    /// ended it without one. An expired order still can for `latePayoutSeconds` when its
+    /// deposit is on record — expiry is us no longer asking, and a deposit handed to the
+    /// provider later is paid out all the same; the tracker completes the order when it
+    /// is. An expired order nobody paid can not, and must not claim an unrelated receive of
+    /// a similar amount.
+    func mayStillBePaidOut(now: Date = Date()) -> Bool {
         switch status {
         case .refunded, .failed: return false
-        case .expired: return hasDepositOnRecord
+        case .expired:
+            return hasDepositOnRecord && finalisedAt > 0
+                && Int64(now.timeIntervalSince1970) - finalisedAt <= SwapOrder.latePayoutSeconds
         case .notStarted, .pending, .swapping, .unknown, .completed: return true
         }
     }

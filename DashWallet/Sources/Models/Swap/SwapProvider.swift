@@ -58,8 +58,8 @@ struct SwapStatusResult {
     let requestFailed: Bool
     /// True when the provider's own status says it has the deposit: in progress, paid out
     /// or sent back. False for the statuses that are only mapped onto one of those for want
-    /// of a better place ("unknown", "failed", anything unrecognised) — they do not say a
-    /// deposit was ever seen.
+    /// of a better place ("unknown", "failed", anything unrecognised); what those mean for a
+    /// deposit is for the caller to decide from `providerStatus`.
     let depositProven: Bool
     /// The provider's own status word, lower-cased, when it sent one. `observedStatus` folds
     /// several of them together ("failed" and "unknown" read "refunded" there); a caller
