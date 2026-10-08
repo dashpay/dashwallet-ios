@@ -291,9 +291,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 report = try await activeResetter.resetAllScopes()
                 // Only after every store is gone: a resync marker kept over a
                 // deleted store merely rewinds a fresh checkpoint, while one
-                // lost over a surviving store drops its repair. The CoinJoin
-                // flags are additionally re-armed by the host whenever it
-                // recreates wallet rows, which covers an interrupted deletion.
+                // lost over a surviving store drops its repair. An interrupted
+                // deletion is covered by the resetter's durable per-scope
+                // rescan intent, honored by `CoinJoinRecovery` until that
+                // scope's wide scan completes.
                 self.clearLocalStoreMaintenanceFlags()
             } catch {
                 state.restoreAfterLocalStoreReset(phase: originalPhase, failure: failure)

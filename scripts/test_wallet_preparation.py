@@ -128,6 +128,7 @@ extension WalletEnvironment {
     static var directory: URL!
     static var unreadableKeychain = false
     static var invalidMaterial = false
+    static var nulMaterial = false
     var manager: PlatformWalletManager?
     var wallet: ManagedPlatformWallet?
     var runningNetwork: Network?
@@ -143,6 +144,7 @@ extension WalletEnvironment {
     func unlockDashPayContactCrypto(manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {}
     static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
         if unreadableKeychain { throw NSError(domain: "InjectedKeychain", code: 1) }
+        if nulMaterial { return [(Data("wallet-a".utf8), "wallet-a\u{0}trailing bytes")] }
         return ["wallet-a", "wallet-b"].map { (Data($0.utf8), $0) }
     }
     static func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network> {
@@ -165,6 +167,7 @@ import XCTest
         try FileManager.default.createDirectory(at: HostRecoveryHarness.directory, withIntermediateDirectories: true)
         HostRecoveryHarness.unreadableKeychain = false
         HostRecoveryHarness.invalidMaterial = false
+        HostRecoveryHarness.nulMaterial = false
         PlatformWalletManager.rows = [:]
         PlatformWalletManager.failingMnemonic = nil
         PlatformWalletManager.createAttempts = []
@@ -257,6 +260,15 @@ import XCTest
         HostRecoveryHarness.unreadableKeychain = false
         HostRecoveryHarness.invalidMaterial = true
         XCTAssertThrowsError(try HostRecoveryHarness().validateLocalStoreReset())
+        HostRecoveryHarness.invalidMaterial = false
+        // A valid phrase followed by an embedded NUL passes C-string validation
+        // and id derivation but can never sign; it must not authorize deletion.
+        HostRecoveryHarness.nulMaterial = true
+        XCTAssertThrowsError(try HostRecoveryHarness().validateLocalStoreReset()) { error in
+            guard case HostRecoveryHarness.HostError.invalidMnemonic = error else {
+                return XCTFail("Expected invalidMnemonic, got \(error)")
+            }
+        }
     }
 }
 ''')

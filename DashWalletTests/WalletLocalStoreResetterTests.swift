@@ -168,6 +168,61 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertTrue(exists(roots.platform, "zz-devnet-last"))
     }
 
+    func testRecordsRescanIntentForEveryWalletScopeBeforeRemovingAnything() async throws {
+        for scope in ["mainnet", "testnet"] {
+            try plant(roots.platform, scope, files: ["DashModel.sqlite"])
+            try plant(roots.spv, scope, files: ["headers.dat"])
+        }
+        try plant(roots.spv, "spv-only", files: ["headers.dat"])
+        // The very first removal fails: nothing is gone, every intent is there.
+        let resetter = WalletLocalStoreResetter(roots: roots) {
+            FailingFileManager(failingLastPathComponent: "mainnet", underRoot: "SPV")
+        }
+        do {
+            _ = try await resetter.resetAllScopes()
+            XCTFail("Expected the injected removal failure")
+        } catch {}
+
+        let intent = WalletLocalStoreResetIntent(directory: roots.resetIntents)
+        XCTAssertTrue(intent.isPending(scope: "mainnet"))
+        XCTAssertTrue(intent.isPending(scope: "testnet"))
+        XCTAssertFalse(intent.isPending(scope: "spv-only"), "No wallet rows, no CoinJoin data to rescan")
+        XCTAssertTrue(exists(roots.spv, "mainnet"))
+        XCTAssertTrue(exists(roots.platform, "mainnet"))
+    }
+
+    func testWalOnlyInterruptionKeepsWalletRowsButLeavesTheRescanIntent() async throws {
+        try plant(roots.platform, "testnet", files: ["DashModel.sqlite", "DashModel.sqlite-wal"])
+        try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])
+        try plant(roots.spv, "testnet", files: ["headers.dat"])
+        let resetter = WalletLocalStoreResetter(roots: roots) {
+            PartiallyRemovingFileManager(failingLastPathComponent: "testnet", underRoot: "Platform",
+                                         removedChildBeforeFailing: "DashModel.sqlite-wal")
+        }
+        do {
+            _ = try await resetter.resetAllScopes()
+            XCTFail("Expected the injected removal failure")
+        } catch {}
+
+        // The main database — and its wallet rows — survive, so an ordinary
+        // reopen finds no empty store and no recovery marker; only the intent
+        // records that committed CoinJoin data may be gone with the WAL.
+        XCTAssertTrue(FileManager.default.fileExists(atPath: roots.platform.appendingPathComponent("testnet/DashModel.sqlite").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: roots.platform.appendingPathComponent("testnet/DashModel.sqlite-wal").path))
+        XCTAssertTrue(WalletLocalStoreResetIntent(directory: roots.resetIntents).isPending(scope: "testnet"))
+    }
+
+    func testSuccessfulResetLeavesTheIntentsForTheScansToFinish() async throws {
+        try plant(roots.platform, "mainnet", files: ["DashModel.sqlite"])
+        _ = try await WalletLocalStoreResetter(roots: roots).resetAllScopes()
+        let intent = WalletLocalStoreResetIntent(directory: roots.resetIntents)
+        XCTAssertTrue(intent.isPending(scope: "mainnet"))
+        try intent.finish(scope: "mainnet")
+        XCTAssertFalse(intent.isPending(scope: "mainnet"))
+        try intent.finish(scope: "mainnet")
+        XCTAssertFalse(intent.isPending(scope: "never-recorded"))
+    }
+
     func testPartialPlatformRemovalLeavesADirectoryWithoutItsStoreFile() async throws {
         try plant(roots.platform, "testnet", files: ["DashModel.sqlite", "DashModel.sqlite-wal"])
         try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])

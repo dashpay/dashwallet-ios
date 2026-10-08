@@ -1716,7 +1716,14 @@ final class SwiftDashSDKHost {
     func validateLocalStoreReset() throws {
         guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
         let inventory = try Self.strictlyPersistedMnemonics()
-        guard !inventory.isEmpty else { throw HostError.invalidMnemonic }
+        // An embedded NUL is accepted by the C-string boundary of validation
+        // and id derivation (only the prefix is read) but rejected by the
+        // signer, so such material must not authorize a deletion it could
+        // never spend from afterwards.
+        guard !inventory.isEmpty,
+              inventory.allSatisfy({ !$0.mnemonic.utf8.contains(0) }) else {
+            throw HostError.invalidMnemonic
+        }
         _ = try Self.persistedSDKWalletNetworks(in: inventory)
     }
 

@@ -17,12 +17,16 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
     let shielded: URL
     /// `Documents/SPV/<scope>/` — dash-spv headers, filters and chain state.
     let spv: URL
+    /// `Documents/SwiftDashSDK/ResetIntents/<scope>.coinjoin-rescan` — the
+    /// reset's durable per-scope intent, outside every deleted directory.
+    let resetIntents: URL
 
     init(documents: URL) {
         let sdk = documents.appendingPathComponent("SwiftDashSDK", isDirectory: true)
         platform = sdk.appendingPathComponent("Platform", isDirectory: true)
         shielded = sdk.appendingPathComponent("Shielded", isDirectory: true)
         spv = documents.appendingPathComponent("SPV", isDirectory: true)
+        resetIntents = sdk.appendingPathComponent("ResetIntents", isDirectory: true)
     }
 
     /// The roots under the user's Documents directory (created if missing,
@@ -79,6 +83,11 @@ enum WalletLocalStoreResetError: Error, Equatable {
     case storesStillInUse
     /// Listing a root failed before any directory was removed.
     case enumerationFailed(root: String, code: String)
+    /// The per-scope rescan intent could not be written. Nothing was removed:
+    /// without the intent, an interrupted removal could lose committed
+    /// CoinJoin data while the wallet rows survive, and nothing would re-arm
+    /// the wide scan.
+    case intentNotPersisted(code: String)
     /// `removeItem` failed at `root/scope`. Entries before it are gone;
     /// nothing after it was touched. The failed entry itself may be partly
     /// removed — directory removal is not atomic — so a store file can be
@@ -86,6 +95,45 @@ enum WalletLocalStoreResetError: Error, Equatable {
     /// Cocoa file errors carry paths in their userInfo, and those never reach
     /// the diagnostic logs.
     case removalFailed(root: String, scope: String, code: String)
+}
+
+/// The reset's durable intent, one marker file per scope that had wallet
+/// rows, written before the first removal and kept outside every deleted
+/// directory. Directory removal is not atomic: an interruption can unlink
+/// `DashModel.sqlite-wal` — with the newest committed deep CoinJoin UTXOs —
+/// while the main database and its wallet rows survive, so neither an empty
+/// store nor a recovery marker signals the loss. `CoinJoinRecovery` treats a
+/// pending intent as "wide scan required" regardless of its completion flag,
+/// and finishes the intent only when that scope's wide scan completes; a
+/// successful reset leaves the intents in place for exactly that purpose.
+struct WalletLocalStoreResetIntent: Sendable {
+    let directory: URL
+
+    private func marker(for scope: String) -> URL {
+        directory.appendingPathComponent("\(scope).coinjoin-rescan", isDirectory: false)
+    }
+
+    /// Atomic per-scope files, so a kill mid-way leaves some scopes marked
+    /// and none half-written.
+    func record(scopes: some Sequence<String>, fileManager: FileManager = .default) throws {
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        for scope in scopes {
+            try Data().write(to: marker(for: scope), options: .atomic)
+        }
+    }
+
+    func isPending(scope: String, fileManager: FileManager = .default) -> Bool {
+        fileManager.fileExists(atPath: marker(for: scope).path)
+    }
+
+    func finish(scope: String, fileManager: FileManager = .default) throws {
+        do {
+            try fileManager.removeItem(at: marker(for: scope))
+        } catch let error as NSError where error.domain == NSCocoaErrorDomain
+            && [NSFileNoSuchFileError, NSFileReadNoSuchFileError].contains(error.code) {
+            return
+        }
+    }
 }
 
 /// Rust retains its Swift persistence callback context until its last worker
@@ -196,14 +244,28 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
     ) throws -> WalletLocalStoreResetReport {
         let ordered = roots.orderedForDeletion
         var scopes = Set<String>()
+        var walletScopes: [String] = []
         for (label, root) in ordered {
             do {
-                scopes.formUnion(try childNames(of: root, fileManager: fileManager))
+                let names = try childNames(of: root, fileManager: fileManager)
+                scopes.formUnion(names)
+                if label == WalletLocalStoreRoots.platformLabel { walletScopes = names }
             } catch {
                 throw WalletLocalStoreResetError.enumerationFailed(
                     root: label,
                     code: WalletPreparationFailure(error: error).codes.joined(separator: ","))
             }
+        }
+
+        // Durable intent first: every scope with wallet rows gets its rescan
+        // marker before any of its files can disappear.
+        do {
+            try WalletLocalStoreResetIntent(directory: roots.resetIntents)
+                .record(scopes: walletScopes, fileManager: fileManager)
+        } catch {
+            let code = WalletPreparationFailure(error: error).codes.joined(separator: ",")
+            DWLogger.log("🧹 STORE-RESET FAILED recording rescan intent code=\(code)")
+            throw WalletLocalStoreResetError.intentNotPersisted(code: code)
         }
 
         var removed: [WalletLocalStoreResetReport.Removed] = []

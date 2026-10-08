@@ -104,7 +104,16 @@ final class CoinJoinRecovery: NSObject {
     /// launches load them at the default gap.
     func needsWideRecoveryGap(for network: Network) -> Bool {
         lock.lock(); defer { lock.unlock() }
+        // A local-store reset leaves a durable per-scope intent before it
+        // removes anything (`WalletLocalStoreResetIntent`): the flag alone
+        // cannot tell a scope whose WAL was unlinked from a healthy one.
+        if Self.resetIntent()?.isPending(scope: networkTag(network)) == true { return true }
         return !defaults.bool(forKey: recoveredKey(network))
+    }
+
+    private static func resetIntent() -> WalletLocalStoreResetIntent? {
+        guard let roots = try? WalletLocalStoreRoots.inDocuments() else { return nil }
+        return WalletLocalStoreResetIntent(directory: roots.resetIntents)
     }
 
     /// Mark recovery complete for `network` — the first wide-gap scan completed
@@ -112,6 +121,15 @@ final class CoinJoinRecovery: NSObject {
     /// revert to the fast default gap. Idempotent and thread-safe.
     func markRecovered(for network: Network) {
         lock.lock(); defer { lock.unlock() }
+        // The reset's intent for this scope is satisfied by this completed
+        // scan, whatever the flag said before.
+        if let intent = Self.resetIntent() {
+            do {
+                try intent.finish(scope: networkTag(network))
+            } catch {
+                Self.logger.error("🪙 CJRECOV :: could not clear the rescan intent for \(self.networkTag(network), privacy: .public): \(String(describing: error), privacy: .public)")
+            }
+        }
         guard !defaults.bool(forKey: recoveredKey(network)) else { return }
         defaults.set(true, forKey: recoveredKey(network))
         Self.logger.info(
