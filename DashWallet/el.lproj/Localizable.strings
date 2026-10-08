@@ -593,6 +593,18 @@
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
+/* Dash DEX / tx history row title */
+"Converting · %@" = "Converting · %@";
+
+/* Dash DEX */
+"Not confirmed" = "Not confirmed";
+
+/* Dash DEX / tx history row title */
+"Not converted · %@" = "Not converted · %@";
+
+/* Dash DEX */
+"Refunded" = "Refunded";
+
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
@@ -2280,6 +2292,9 @@
 
 "Lock the name" = "Κλείδωμα του ονόματος";
 
+/* Dash DEX */
+"Stuck" = "Stuck";
+
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "Η ψηφοφορία λήγει";
 
@@ -3843,6 +3858,9 @@
 
 /* No comment provided by engineer. */
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Αυτό θα διαγράψει και τα %ld πορτοφόλια που είναι αποθηκευμένα σε αυτή τη συσκευή. Μπορούν να επαναφερθούν μόνο με τις φράσεις ανάκτησής τους. Η διαγραφή τους από αυτή τη συσκευή δεν αναιρείται.";
+
+/* Dash DEX */
+"Waiting for the provider" = "Waiting for the provider";
 
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Σε αυτή τη συσκευή υπάρχουν ακόμη δεδομένα πορτοφολιών από προηγούμενη εγκατάσταση. Να συνεχίσετε να χρησιμοποιείτε αυτά τα πορτοφόλια ή να διαγράψετε όλα τα δεδομένα και να ξεκινήσετε από την αρχή; Βεβαιωθείτε ότι κάθε φράση ανάκτησης έχει αντίγραφο ασφαλείας πριν τη διαγραφή.";
