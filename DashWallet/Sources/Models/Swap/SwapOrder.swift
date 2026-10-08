@@ -240,7 +240,7 @@ extension SwapOrder {
     /// transfer is broadcast or mined, while the provider waits for confirmations — minutes
     /// on most chains, up to an hour and more on the slow proof-of-work ones.
     static func stuckAfterSeconds(forAsset asset: String) -> Int64 {
-        switch asset.split(separator: ".").first.map({ $0.uppercased() }) {
+        switch chain(ofAsset: asset) {
         case "BTC", "BCH": return 90 * 60
         case "LTC", "DOGE", "ZEC": return 45 * 60
         default: return 10 * 60
@@ -248,6 +248,14 @@ extension SwapOrder {
     }
 
     var stuckAfterSeconds: Int64 { SwapOrder.stuckAfterSeconds(forAsset: fromAsset) }
+
+    /// The chain part of a SwapKit asset identifier, upper-cased: "ARB" of "ARB.USDT-0x…".
+    static func chain(ofAsset asset: String) -> String? {
+        asset.split(separator: ".").first.map { $0.uppercased() }
+    }
+
+    /// The source chain of the order's `fromAsset`.
+    var fromChain: String? { SwapOrder.chain(ofAsset: fromAsset) }
 
     var isBuy: Bool { direction == "buy" }
 
@@ -296,12 +304,15 @@ extension SwapOrder {
     }
 
     /// Whether a Dash payout for this order can still turn up: not once the provider has
-    /// ended it without one. An expired order still can — expiry is us no longer asking,
-    /// and a deposit handed to the provider later is paid out all the same.
+    /// ended it without one. An expired order still can when its deposit is on record —
+    /// expiry is us no longer asking, and a deposit handed to the provider later is paid
+    /// out all the same. An expired order nobody paid can not, and must not claim an
+    /// unrelated receive of a similar amount.
     var mayStillBePaidOut: Bool {
         switch status {
         case .refunded, .failed: return false
-        case .notStarted, .pending, .swapping, .unknown, .completed, .expired: return true
+        case .expired: return hasDepositOnRecord
+        case .notStarted, .pending, .swapping, .unknown, .completed: return true
         }
     }
 

@@ -50,7 +50,7 @@ enum SwapBuyTransactionMatcher {
     /// Every transaction that could be `order`'s payout: received at its address, not before
     /// it (within `timestampSlack`), for about its expected amount.
     static func matchingTransactions(for order: SwapOrder, in transactions: [Transaction]) -> [Transaction] {
-        guard order.direction == "buy" else { return [] }
+        guard order.isBuy else { return [] }
         let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !receiveAddress.isEmpty,
               let expectedDashAmount = expectedDashAmount(for: order), expectedDashAmount > 0
@@ -93,7 +93,7 @@ enum SwapBuyTransactionMatcher {
     ) -> [String: Transaction] {
         guard !transactions.isEmpty else { return [:] }
         let claimants = orders
-            .filter { $0.direction == "buy" && $0.mayStillBePaidOut }
+            .filter { $0.isBuy && $0.mayStillBePaidOut }
             .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return [:] }
 

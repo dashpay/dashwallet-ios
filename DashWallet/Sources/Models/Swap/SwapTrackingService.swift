@@ -205,6 +205,7 @@ final class SwapTrackingService {
             let nowSeconds = Int64(Date().timeIntervalSince1970)
             let due = active.filter { isDueForPoll($0, nowSeconds: nowSeconds) }
             let payouts = await walletPayouts(for: due, among: orders)
+            await completeExpiredOrdersThatWerePaidOut(among: orders)
 
             await withTaskGroup(of: Void.self) { group in
                 for order in due {
@@ -234,7 +235,7 @@ final class SwapTrackingService {
         var depositProven = false
 
         do {
-            if order.direction == "buy" {
+            if order.isBuy {
                 if let walletTxHash = payoutTxHash {
                     apiStatus = .completed
                     firstOutHash = walletTxHash
@@ -261,13 +262,17 @@ final class SwapTrackingService {
                         depositProven = result.depositProven
                         // `observedStatus` folds "failed", "unknown" and anything new into
                         // refunded / pending. A Buy row states its status as fact, so read
-                        // the provider's own word for those: a failure is a failure, not a
-                        // refund; "unknown" is what the tracker says before it has seen a
-                        // deposit; and a word we do not know is progress of some kind.
+                        // the provider's own word for those:
+                        // - "failed" is a failure, not a refund — and it is the provider
+                        //   speaking about a transaction it saw, so the deposit is on record;
+                        // - "unknown" is what the tracker says before it has seen a deposit;
+                        // - a word we do not know tells us nothing: keep the status we have.
                         switch result.providerStatus {
-                        case "failed": apiStatus = .failed
+                        case "failed":
+                            apiStatus = .failed
+                            depositProven = true
                         case "unknown": apiStatus = .notStarted
-                        case .some: apiStatus = .unknown
+                        case .some: apiStatus = nil
                         case nil: break
                         }
                     }
@@ -326,10 +331,8 @@ final class SwapTrackingService {
         // invisible order into a history row — and, if the provider keeps not seeing it,
         // into "Stuck".
         var lookup = DepositLookup.unknown
-        // Also asked once more when the order ends without the provider having proven a
-        // deposit (a bare "failed"): if the coin is on the address, the user did pay.
-        let watchesDeposit = order.depositSeenAt == nil && order.canWatchDepositAddress && !depositProven
-            && finalStatus != .completed
+        let watchesDeposit = finalStatus == .notStarted && order.depositSeenAt == nil
+            && order.canWatchDepositAddress
         if watchesDeposit {
             lookup = await lookUpDeposit(order)
             if lookup == .seen {
@@ -416,6 +419,35 @@ final class SwapTrackingService {
         await dao.update(dto: updated)
     }
 
+    // MARK: - Private: Late payouts
+
+    /// An expired Buy order with a deposit on record is no longer polled, but its payout can
+    /// still arrive — the user handed the deposit to the provider, or the provider was just
+    /// slow. When that transaction is in the wallet within `fundedBuyGraceSeconds` of the
+    /// expiry, the order is completed after all, so it does not stay "Not confirmed" beside
+    /// its own payout.
+    private func completeExpiredOrdersThatWerePaidOut(among orders: [SwapOrder]) async {
+        // Looked for during `fundedBuyGraceSeconds` after expiry, not forever: each look is a
+        // wallet read on the main actor.
+        let nowSeconds = Int64(Date().timeIntervalSince1970)
+        let candidates = orders.filter {
+            $0.isBuy && $0.status == .expired && $0.hasDepositOnRecord
+                && $0.finalisedAt > 0 && nowSeconds - $0.finalisedAt <= Constants.fundedBuyGraceSeconds
+        }
+        guard !candidates.isEmpty else { return }
+        let payouts = await walletPayouts(for: candidates, among: orders)
+        for order in candidates {
+            guard let txHash = payouts[order.id],
+                  var updated = await dao.get(byId: order.id), updated.status == .expired else { continue }
+            updated.status = .completed
+            updated.outboundTxHash = txHash
+            updated.lastChecked = nowSeconds
+            updated.finalisedAt = nowSeconds
+            DWLogger.log("SwapTrackingService: order \(order.id) expired → completed, payout in the wallet")
+            await dao.update(dto: updated)
+        }
+    }
+
     // MARK: - Private: Age-out
 
     /// When a still-active order outlives its tracking window (unix s).
@@ -481,7 +513,7 @@ final class SwapTrackingService {
     private func lookUpDeposit(_ order: SwapOrder) async -> DepositLookup {
         guard let address = order.depositAddress?.trimmingCharacters(in: .whitespacesAndNewlines),
               !address.isEmpty,
-              let chain = order.fromAsset.split(separator: ".").first.map(String.init), !chain.isEmpty
+              let chain = order.fromChain, !chain.isEmpty
         else { return .unknown }
 
         do {
@@ -527,11 +559,12 @@ final class SwapTrackingService {
         return .swapKitHash
     }
 
-    /// Order id → display hash of the wallet transaction that pays it out, for the Buy
-    /// orders polled this cycle that have one. No wallet read when none is being polled.
+    /// Order id → display hash of the wallet transaction that pays it out, for those of the
+    /// `wanted` Buy orders that have one. No wallet read when there is no Buy order among
+    /// them.
     @MainActor
-    private func walletPayouts(for due: [SwapOrder], among orders: [SwapOrder]) -> [String: String] {
-        let activeBuys = due.filter(\.isBuy)
+    private func walletPayouts(for wanted: [SwapOrder], among orders: [SwapOrder]) -> [String: String] {
+        let activeBuys = wanted.filter(\.isBuy)
         guard let cutoff = activeBuys.map(SwapBuyTransactionMatcher.fetchCutoff(for:)).min() else { return [:] }
         // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
         // (empty) post-migration, so a buy's incoming DASH would never match.

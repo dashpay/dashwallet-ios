@@ -465,6 +465,13 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.track(request)
             return mapTrackResponse(response)
         } catch {
+            // 404 for a deposit address is the tracker answering: it knows no such deposit
+            // channel (never funded, or aged out of its storage). That is "nothing observed",
+            // not a failed request.
+            if let depositAddress, !depositAddress.isEmpty,
+               case HTTPClientError.statusCode(let response) = error, response.statusCode == 404 {
+                return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            }
             // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
             // that draws conclusions from "not observed" can tell it from a real answer.
             DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")

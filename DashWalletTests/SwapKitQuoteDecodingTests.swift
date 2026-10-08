@@ -398,6 +398,12 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertFalse(SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil).requestFailed)
     }
 
+    func testSourceChainComesFromTheAssetIdentifier() {
+        XCTAssertEqual(buyOrder().fromChain, "ARB")
+        XCTAssertEqual(SwapOrder.chain(ofAsset: "btc.BTC"), "BTC")
+        XCTAssertNil(SwapOrder.chain(ofAsset: ""))
+    }
+
     func testOnlyInProgressStatusesAreProviderProgress() {
         XCTAssertEqual(
             [SwapOrderStatus.pending, .swapping, .unknown].map(\.isProviderProgress), [true, true, true])
@@ -433,8 +439,10 @@ final class BuySwapOrderTests: XCTestCase {
         }
         XCTAssertFalse(buyOrder(status: .refunded).mayStillBePaidOut)
         XCTAssertFalse(buyOrder(status: .failed).mayStillBePaidOut)
-        // Expired is us no longer asking; a late payout still belongs to the order.
-        XCTAssertTrue(buyOrder(status: .expired).mayStillBePaidOut)
+        // Expired is us no longer asking; a late payout still belongs to a funded order —
+        // but an expired order nobody paid claims nothing.
+        XCTAssertTrue(buyOrder(status: .expired, depositSeenSecondsAgo: 86_400).mayStillBePaidOut)
+        XCTAssertFalse(buyOrder(status: .expired).mayStillBePaidOut)
     }
 
     func testNoTransactionsMeansNoPayouts() {
