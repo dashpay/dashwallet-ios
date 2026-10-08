@@ -161,11 +161,13 @@ final class CoinJoinRecovery: NSObject {
             "🪙 CJRECOV :: recovery flags cleared — next start re-runs the one-time wide scan")
     }
 
-    /// Clear one scope's terminal flag once its wallet rows are gone. The
-    /// local-store reset calls this per scope as it removes directories, so a
-    /// reset interrupted later still re-runs the wide scan for every store it
-    /// deleted, and leaves the flag alone for every store it did not reach.
-    /// `scope` is a `Network.persistenceScope` value. Thread-safe.
+    /// Clear one scope's terminal flag right before its wallet rows are
+    /// unlinked by the local-store reset. Cleared ahead of the removal because
+    /// the flag must never survive the rows it describes: an interrupted or
+    /// partial removal is reopened by an ordinary start that recreates the
+    /// rows, and a stale flag would skip the wide scan over them. If the
+    /// removal never happens, the next start merely re-runs the idempotent
+    /// one-time scan. `scope` is a `Network.persistenceScope` value. Thread-safe.
     func resetRecoveryFlag(scope: String) {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(tag: scope))

@@ -79,9 +79,10 @@ enum WalletLocalStoreResetError: Error, Equatable {
     case storesStillInUse
     /// Listing a root failed before any directory was removed.
     case enumerationFailed(root: String, code: String)
-    /// `removeItem` failed at `root/scope`. Entries removed before it are
-    /// gone (each was reported through `onEntryRemoved`); nothing after it
-    /// was touched. `code` is `domain:code` only —
+    /// `removeItem` failed at `root/scope`. Entries before it are gone;
+    /// nothing after it was touched. The failed entry itself may be partly
+    /// removed — directory removal is not atomic — which is why
+    /// `willRemove` runs before the attempt. `code` is `domain:code` only —
     /// Cocoa file errors carry paths in their userInfo, and those never reach
     /// the diagnostic logs.
     case removalFailed(root: String, scope: String, code: String)
@@ -160,18 +161,19 @@ protocol WalletLocalStoreResetting: Sendable {
     /// `WalletLocalStoreResetError`; a re-run after a failure continues where
     /// it stopped because removed entries no longer exist.
     ///
-    /// `onEntryRemoved` runs on the deleting thread right after each entry is
-    /// gone and before the next removal starts. State that describes only
-    /// that entry (per-scope maintenance flags) is dropped there, so it does
-    /// not outlive its store when a later entry fails and no report is made.
+    /// `willRemove` runs on the deleting thread right before each entry's
+    /// removal is attempted. A directory removal is not atomic and the process
+    /// can die at any point, so state that must not outlive the entry's files
+    /// (a "scan already done" flag) is dropped there: whichever way the
+    /// attempt ends, the files never exist without that state already gone.
     func resetAllScopes(
-        onEntryRemoved: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
+        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
     ) async throws -> WalletLocalStoreResetReport
 }
 
 extension WalletLocalStoreResetting {
     func resetAllScopes() async throws -> WalletLocalStoreResetReport {
-        try await resetAllScopes(onEntryRemoved: { _ in })
+        try await resetAllScopes(willRemove: { _ in })
     }
 }
 
@@ -193,13 +195,13 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
     }
 
     func resetAllScopes(
-        onEntryRemoved: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
+        willRemove: @escaping @Sendable (WalletLocalStoreResetReport.Removed) -> Void
     ) async throws -> WalletLocalStoreResetReport {
         let roots = self.roots
         let makeFileManager = self.makeFileManager
         return try await Task.detached(priority: .userInitiated) {
             try Self.removeEveryScope(
-                under: roots, fileManager: makeFileManager(), onEntryRemoved: onEntryRemoved)
+                under: roots, fileManager: makeFileManager(), willRemove: willRemove)
         }.value
     }
 
@@ -208,7 +210,7 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
     static func removeEveryScope(
         under roots: WalletLocalStoreRoots,
         fileManager: FileManager,
-        onEntryRemoved: (WalletLocalStoreResetReport.Removed) -> Void = { _ in }
+        willRemove: (WalletLocalStoreResetReport.Removed) -> Void = { _ in }
     ) throws -> WalletLocalStoreResetReport {
         let ordered = roots.orderedForDeletion
         var scopes = Set<String>()
@@ -226,6 +228,8 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
         for scope in scopes.sorted() {
             for (label, root) in ordered {
                 let url = root.appendingPathComponent(scope)
+                let entry = WalletLocalStoreResetReport.Removed(root: label, scope: scope)
+                willRemove(entry)
                 do {
                     try fileManager.removeItem(at: url)
                 } catch let error as NSError where error.domain == NSCocoaErrorDomain
@@ -236,10 +240,8 @@ struct WalletLocalStoreResetter: WalletLocalStoreResetting {
                     DWLogger.log("🧹 STORE-RESET FAILED at \(label)/\(scope) code=\(code) removedBefore=\(removed.count)")
                     throw WalletLocalStoreResetError.removalFailed(root: label, scope: scope, code: code)
                 }
-                let entry = WalletLocalStoreResetReport.Removed(root: label, scope: scope)
                 removed.append(entry)
                 DWLogger.log("🧹 STORE-RESET removed \(label)/\(scope)")
-                onEntryRemoved(entry)
             }
         }
 
