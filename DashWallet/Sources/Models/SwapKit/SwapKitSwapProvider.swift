@@ -317,9 +317,11 @@ final class SwapKitSwapProvider: SwapProvider {
         // own. Without one the address may be a shared router or vault.
         let hasDepositChannel = swapResponse.meta?.depositChannelExpiration != nil
         DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
+        // An empty memo is no memo.
+        let memo = swapResponse.memo.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         return BuyOrder(
             depositAddress: depositAddress,
-            memo: swapResponse.memo,
+            memo: memo,
             expectedDashAmount: expectedDashAmount,
             sellAsset: sellAsset,
             sellAmount: sellAmount,
@@ -966,11 +968,16 @@ final class SwapKitSwapProvider: SwapProvider {
         case "failed", "unknown":
             // Map to "refunded" so the polling loop drives swapStatus = .failed(reason:)
             // via the existing .refunded path. Conservative: no new state machine needed.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            // `providerStatus` keeps the real word for callers that must tell them apart.
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil,
+                providerStatus: response.status?.lowercased())
 
         default:
             // Prefer "still pending" over a wrong terminal state for any future statuses.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "pending", outHashes: nil,
+                providerStatus: response.status?.lowercased())
         }
     }
 

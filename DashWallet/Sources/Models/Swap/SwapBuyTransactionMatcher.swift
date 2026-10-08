@@ -47,47 +47,6 @@ enum SwapBuyTransactionMatcher {
         return Date(timeIntervalSince1970: max(0, orderTimestamp - timestampSlack - 24 * 60 * 60))
     }
 
-    static func matchedTransaction(
-        for order: SwapOrder,
-        in transactions: [Transaction]
-    ) -> Transaction? {
-        guard order.direction == "buy" else { return nil }
-
-        let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !receiveAddress.isEmpty else { return nil }
-
-        guard let expectedDashAmount = expectedDashAmount(for: order), expectedDashAmount > 0 else {
-            return nil
-        }
-
-        let candidates = matchingTransactions(for: order, in: transactions)
-
-        return candidates.min(by: { lhs, rhs in
-            let lhsTimestamp = lhs.date.timeIntervalSince1970
-            let rhsTimestamp = rhs.date.timeIntervalSince1970
-            if lhsTimestamp != rhsTimestamp {
-                return lhsTimestamp < rhsTimestamp
-            }
-
-            let lhsDifference = amountDifference(
-                tx: lhs,
-                expectedDashAmount: expectedDashAmount
-            )
-            let rhsDifference = amountDifference(
-                tx: rhs,
-                expectedDashAmount: expectedDashAmount
-            )
-
-            let lhsAbsoluteDifference = absolute(lhsDifference)
-            let rhsAbsoluteDifference = absolute(rhsDifference)
-            if lhsAbsoluteDifference != rhsAbsoluteDifference {
-                return lhsAbsoluteDifference < rhsAbsoluteDifference
-            }
-
-            return lhs.txHashHexString < rhs.txHashHexString
-        })
-    }
-
     /// Every transaction that could be `order`'s payout: received at its address, not before
     /// it (within `timestampSlack`), for about its expected amount.
     static func matchingTransactions(for order: SwapOrder, in transactions: [Transaction]) -> [Transaction] {
@@ -109,9 +68,9 @@ enum SwapBuyTransactionMatcher {
 
     /// Which transaction pays out which Buy order: order id → transaction.
     ///
-    /// `matchedTransaction(for:in:)` looks at one order alone, so two orders for the same
-    /// amount to the same receive address both match the one payout that arrived. Here each
-    /// transaction goes to at most one order, settled tier by tier:
+    /// Looked at one order at a time, two orders for the same amount to the same receive
+    /// address both match the one payout that arrived. Here each transaction goes to at
+    /// most one order, settled tier by tier:
     /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
     ///    transaction also fits the order;
     /// 2. orders the provider reports as completed, oldest first — it paid them out, and
@@ -126,7 +85,8 @@ enum SwapBuyTransactionMatcher {
     /// exactly the same transactions and there are at least as many as orders — then they
     /// pair up in time order. Otherwise none of them is assigned: which of two in-flight
     /// attempts a payout answers is the provider's to say, and a wrong guess would finalise
-    /// the other attempt as paid. Orders that ended without a payout claim nothing.
+    /// the other attempt as paid — and a transaction a funded group could not settle is
+    /// not left for tier 4 either. Orders that ended without a payout claim nothing.
     static func payoutAssignments(
         among orders: [SwapOrder],
         in transactions: [Transaction]
@@ -155,7 +115,8 @@ enum SwapBuyTransactionMatcher {
 
         for claimant in claimants {
             guard let recorded = claimant.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-                  !recorded.isEmpty, fitting(claimant).contains(recorded) else { continue }
+                  let tx = free[recorded],
+                  !matchingTransactions(for: claimant, in: [tx]).isEmpty else { continue }
             take(recorded, for: claimant)
         }
 
@@ -181,7 +142,12 @@ enum SwapBuyTransactionMatcher {
             }
             for group in groups {
                 let first = group[0].txIds
-                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else { continue }
+                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else {
+                    // Unsettled: these transactions belong to one of the group's orders, we
+                    // just cannot say which. Keep them from a lower tier.
+                    for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
+                    continue
+                }
                 for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
                     take(txId, for: entry.order)
                 }
@@ -219,17 +185,6 @@ enum SwapBuyTransactionMatcher {
     private static func receivedDashAmount(for tx: Transaction) -> Decimal? {
         guard tx.dashAmount != UInt64.max else { return nil }
         return Decimal(tx.dashAmount) / baseUnits
-    }
-
-    private static func amountDifference(
-        tx: Transaction,
-        expectedDashAmount: Decimal
-    ) -> Decimal {
-        (receivedDashAmount(for: tx) ?? 0) - expectedDashAmount
-    }
-
-    private static func absolute(_ value: Decimal) -> Decimal {
-        value < 0 ? -value : value
     }
 
     private static func isWithinTolerance(

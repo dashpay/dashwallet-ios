@@ -32,7 +32,8 @@ class SwapTrackingServiceObjcWrapper: NSObject {
 ///
 /// Mirrors Android's `SwapTrackingService.kt`:
 /// - `start()` at app launch resumes all non-terminal orders.
-/// - Polls `/track` every 30 s for active orders.
+/// - Polls `/track` every 30 s for active orders (an unpaid Buy order less often — see
+///   `isDueForPoll`).
 /// - Tracks NEAR-routed sells by `depositAddress` and Maya-routed sells by tx hash.
 /// - Material-change-only writes (unconditional writes turn the ticker into a tight loop).
 /// - Ages out an order still unresolved after 24 h → `.expired`. A Buy order follows the
@@ -258,6 +259,17 @@ final class SwapTrackingService {
                         firstOutHash = result.outHashes?.first
                         newActualAmount = result.actualToAmount
                         depositProven = result.depositProven
+                        // `observedStatus` folds "failed", "unknown" and anything new into
+                        // refunded / pending. A Buy row states its status as fact, so read
+                        // the provider's own word for those: a failure is a failure, not a
+                        // refund; "unknown" is what the tracker says before it has seen a
+                        // deposit; and a word we do not know is progress of some kind.
+                        switch result.providerStatus {
+                        case "failed": apiStatus = .failed
+                        case "unknown": apiStatus = .notStarted
+                        case .some: apiStatus = .unknown
+                        case nil: break
+                        }
                     }
                 }
             } else {
@@ -314,7 +326,10 @@ final class SwapTrackingService {
         // invisible order into a history row — and, if the provider keeps not seeing it,
         // into "Stuck".
         var lookup = DepositLookup.unknown
-        let watchesDeposit = finalStatus == .notStarted && order.depositSeenAt == nil && order.canWatchDepositAddress
+        // Also asked once more when the order ends without the provider having proven a
+        // deposit (a bare "failed"): if the coin is on the address, the user did pay.
+        let watchesDeposit = order.depositSeenAt == nil && order.canWatchDepositAddress && !depositProven
+            && finalStatus != .completed
         if watchesDeposit {
             lookup = await lookUpDeposit(order)
             if lookup == .seen {
@@ -332,21 +347,20 @@ final class SwapTrackingService {
             // Expiry is terminal and, for an order with no deposit on record, removes it from
             // sight for good — so a Buy order is let go only on answers, never on silence:
             // - never in a cycle where the provider was not reached (`apiStatus == nil`);
-            // - at its deadline, an order whose deposit address we watch also needs that
-            //   lookup to have answered "nothing there";
+            // - an order whose deposit address we watch also needs that lookup to have
+            //   answered "nothing there", and not before `unpaidSettleSeconds` past its
+            //   deadline — a transfer sent in the last minutes still gets found;
             // - a day past the window the provider's answer alone is enough, so a lookup
             //   that never answers cannot keep the order alive;
             // - and silence has a limit too: `fundedBuyGraceSeconds` after the order aged
             //   out, it goes without an answer, so a provider that never answers again
             //   cannot keep it polled for the life of the install.
-            let windowEnd = order.depositDeadline ?? (order.timestamp / 1000 + Constants.ageOutSeconds)
-            let lookupSettled = !watchesDeposit || lookup == .absent || nowSeconds - windowEnd > Constants.ageOutSeconds
-            let fundsInFlight = agingOrder.depositSeenAt != nil || finalStatus != .notStarted
-            let agedOutAt = fundsInFlight
-                ? max(windowEnd, agingOrder.depositSeenAt ?? 0) + Constants.fundedBuyGraceSeconds
-                : windowEnd
-            let silenceLimit = agedOutAt + Constants.fundedBuyGraceSeconds
-            if order.isBuy, apiStatus == nil || !lookupSettled, nowSeconds <= silenceLimit {
+            let agedOutAt = agedOutAt(agingOrder, finalStatus: finalStatus)
+            let sinceAgedOut = nowSeconds - agedOutAt
+            let lookupSettled = !watchesDeposit
+                || (lookup == .absent && sinceAgedOut > Constants.unpaidSettleSeconds)
+                || sinceAgedOut > Constants.ageOutSeconds
+            if order.isBuy, apiStatus == nil || !lookupSettled, sinceAgedOut <= Constants.fundedBuyGraceSeconds {
                 DWLogger.log("SwapTrackingService: order \(order.id) is past its window, waiting for an answer")
             } else {
                 DWLogger.log("SwapTrackingService: order \(order.id) unresolved past its tracking window → expired")
@@ -383,6 +397,10 @@ final class SwapTrackingService {
         // network round-trips above are long, and a whole-row write of an old snapshot would
         // erase whatever landed in between. A row deleted meanwhile stays deleted.
         guard var updated = await dao.get(byId: order.id) else { return }
+        // …and a row that is no longer the one this poll decided about is left alone: its
+        // status was moved on by another write, or its id (the deposit address) now belongs
+        // to a newer order. The next cycle decides afresh.
+        guard updated.status == order.status, updated.timestamp == order.timestamp else { return }
         updated.status = finalStatus
         if depositSeenNow || providerReportedDeposit, updated.depositSeenAt == nil {
             updated.depositSeenAt = nowSeconds
@@ -400,39 +418,39 @@ final class SwapTrackingService {
 
     // MARK: - Private: Age-out
 
-    /// Whether a still-active order has outlived its tracking window.
+    /// When a still-active order outlives its tracking window (unix s).
     ///
     /// Sell orders keep the flat 24 h. A Buy order is tied to the provider's deposit deadline:
-    /// - no deposit anywhere → it expires at the deadline (24 h when none is known);
-    /// - the deposit is on the source chain, or the provider has seen it → funds are in
-    ///   flight, so it is tracked for `fundedBuyGraceSeconds` past the deadline. Dropping it
-    ///   at 24 h is how an order could go dark two days before the provider's own cutoff.
-    private func hasAgedOut(_ order: SwapOrder, nowSeconds: Int64, finalStatus: SwapOrderStatus) -> Bool {
+    /// - no deposit anywhere → the deadline (24 h after creation when none is known);
+    /// - the deposit is on record, or the provider reports the order in progress → funds
+    ///   are in flight, so `fundedBuyGraceSeconds` past the deadline (or past the moment the
+    ///   deposit was put on record, if later). Dropping it at 24 h is how an order could go
+    ///   dark two days before the provider's own cutoff.
+    private func agedOutAt(_ order: SwapOrder, finalStatus: SwapOrderStatus) -> Int64 {
         let createdSeconds = order.timestamp / 1000
-        guard order.isBuy else {
-            return nowSeconds - createdSeconds > Constants.ageOutSeconds
-        }
+        guard order.isBuy else { return createdSeconds + Constants.ageOutSeconds }
 
+        let windowEnd = order.depositDeadline ?? (createdSeconds + Constants.ageOutSeconds)
         let fundsInFlight = order.depositSeenAt != nil || finalStatus != .notStarted
-        if fundsInFlight {
-            let anchor = max(order.depositDeadline ?? 0, order.depositSeenAt ?? 0, createdSeconds)
-            return nowSeconds > anchor + Constants.fundedBuyGraceSeconds
-        }
-        if let deadline = order.depositDeadline {
-            return nowSeconds > deadline
-        }
-        return nowSeconds - createdSeconds > Constants.ageOutSeconds
+        guard fundsInFlight else { return windowEnd }
+        return max(windowEnd, order.depositSeenAt ?? 0) + Constants.fundedBuyGraceSeconds
+    }
+
+    private func hasAgedOut(_ order: SwapOrder, nowSeconds: Int64, finalStatus: SwapOrderStatus) -> Bool {
+        nowSeconds > agedOutAt(order, finalStatus: finalStatus)
     }
 
     // MARK: - Private: Poll pacing
 
     /// Whether the order is polled this cycle. Every active order is, each cycle — except a
-    /// Buy order nobody has paid yet, which has the one pace described at `Constants`: every
-    /// `unpaidPollIntervalSeconds` while young and again right after its deadline, every
-    /// `unpaidIdlePollIntervalSeconds` otherwise. The deposit-address lookup rides on the
-    /// poll, so it has no pace of its own.
+    /// Buy order nobody has paid yet whose deposit address we watch, which has the one pace
+    /// described at `Constants`: every `unpaidPollIntervalSeconds` while young and again
+    /// right after its deadline, every `unpaidIdlePollIntervalSeconds` otherwise. The
+    /// deposit-address lookup rides on the poll, so it has no pace of its own. An unpaid
+    /// order we cannot watch has only the provider to learn from and keeps the full pace.
     private func isDueForPoll(_ order: SwapOrder, nowSeconds: Int64) -> Bool {
-        guard order.isBuy, order.status == .notStarted, order.depositSeenAt == nil else { return true }
+        guard order.isBuy, order.status == .notStarted, order.depositSeenAt == nil,
+              order.canWatchDepositAddress else { return true }
 
         let ageSeconds = nowSeconds - order.timestamp / 1000
         let sinceDeadline = order.depositDeadline.map { nowSeconds - $0 }

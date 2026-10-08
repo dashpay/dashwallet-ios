@@ -207,6 +207,13 @@ class TxDetailModel: NSObject {
         // the row and the tap that opened this screen, and the current value corrects that.
         swapOrderObservation = SwapOrdersDAOImpl.shared.observeAll()
             .compactMap { orders in orders.first { $0.id == orderID } }
+            // The DAO re-emits the whole table on any order's write; rebuild only when this
+            // order's shown fields moved.
+            .removeDuplicates { lhs, rhs in
+                lhs.status == rhs.status
+                    && lhs.depositSeenAt == rhs.depositSeenAt
+                    && lhs.providerDeniedAt == rhs.providerDeniedAt
+            }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] order in
                 guard let self else { return }

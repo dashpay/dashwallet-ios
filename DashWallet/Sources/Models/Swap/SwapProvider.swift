@@ -61,6 +61,10 @@ struct SwapStatusResult {
     /// of a better place ("unknown", "failed", anything unrecognised) — they do not say a
     /// deposit was ever seen.
     let depositProven: Bool
+    /// The provider's own status word, lower-cased, when it sent one. `observedStatus` folds
+    /// several of them together ("failed" and "unknown" read "refunded" there); a caller
+    /// that must not state a refund nobody reported reads this instead.
+    let providerStatus: String?
 
     init(
         error: String?,
@@ -69,7 +73,8 @@ struct SwapStatusResult {
         outHashes: [String]?,
         actualToAmount: String? = nil,
         requestFailed: Bool = false,
-        depositProven: Bool = false
+        depositProven: Bool = false,
+        providerStatus: String? = nil
     ) {
         self.error = error
         self.isObserved = isObserved
@@ -78,6 +83,7 @@ struct SwapStatusResult {
         self.actualToAmount = actualToAmount
         self.requestFailed = requestFailed
         self.depositProven = depositProven
+        self.providerStatus = providerStatus
     }
 }
 

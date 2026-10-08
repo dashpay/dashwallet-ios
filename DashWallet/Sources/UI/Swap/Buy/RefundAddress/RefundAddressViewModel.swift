@@ -215,6 +215,7 @@ final class RefundAddressViewModel: ObservableObject {
             depositDeadline: order.depositDeadline.map { Int64($0.timeIntervalSince1970) },
             // "" (known: no memo) only when the provider opened a deposit channel; with
             // no channel the address may be shared, so a missing memo stays unknown.
+            // (`order.memo` is nil for an empty memo — `createBuyOrder` normalises it.)
             depositMemo: order.memo ?? (order.hasDepositChannel ? "" : nil),
             ownerWalletId: ownerWalletId,
             ownerNetwork: ownerNetwork
