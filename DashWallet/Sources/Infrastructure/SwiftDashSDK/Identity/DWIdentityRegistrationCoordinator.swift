@@ -768,9 +768,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // figure only falls, so it is at or below what the form showed.
         // Shielded does not use it — it spends its own exit denomination.
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredIdentityFundingDuffs = isContestedSubmission
-            ? ContestedUsernameFee.shared.amounts.fundingDuffs
-            : UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
+        let requiredIdentityFundingDuffs = ContestedUsernameFee.shared.amounts
+            .newIdentityFundingDuffs(isContested: isContestedSubmission, fromShielded: false)
         Self.logger.info(
             "🪪 IDENT-COORD :: contested=\(isContestedSubmission) identityFundingDuffs=\(requiredIdentityFundingDuffs)")
 

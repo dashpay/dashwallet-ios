@@ -94,6 +94,35 @@ final class ContestedUsernameFeeTests: XCTestCase {
             Coordinator.registrationFeeHeadroomCreditsPerName)
     }
 
+    /// What a new identity is funded with: the Dash and Platform balances
+    /// follow the protocol version, Shielded's exit denomination does not.
+    func testNewIdentityFundingBySource() {
+        for amounts in [Amounts.legacy, Amounts.reduced] {
+            XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: false, fromShielded: false), 3_000_000)
+            XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: false, fromShielded: true), 10_000_000)
+            XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: true, fromShielded: true), 25_000_000)
+        }
+        XCTAssertEqual(Amounts.legacy.newIdentityFundingDuffs(isContested: true, fromShielded: false), 25_000_000)
+        XCTAssertEqual(Amounts.reduced.newIdentityFundingDuffs(isContested: true, fromShielded: false), 15_000_000)
+        // "Some usernames cost up to": Shielded keeps it at 0.25 on protocol 14.
+        XCTAssertEqual(Amounts.legacy.maximumUsernameCostDuffs, 25_000_000)
+        XCTAssertEqual(Amounts.reduced.maximumUsernameCostDuffs, 25_000_000)
+    }
+
+    /// The form states the figure of the source it holds, and judges the
+    /// Dash balance at its own figure whichever source that is.
+    func testFormFigureFollowsItsSource() {
+        let model = CreateUsernameViewModel.makeForPreview()
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 3_000_000)
+        model.setActiveFundingSource(.shielded)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 10_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true), 25_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false, source: .core), 3_000_000)
+        model.setActiveFundingSource(.core)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 3_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true, source: .shielded), 25_000_000)
+    }
+
     func testUnknownVersionChargesTheLegacyAmounts() async {
         let network = Network()
         let fee = makeFee(network)

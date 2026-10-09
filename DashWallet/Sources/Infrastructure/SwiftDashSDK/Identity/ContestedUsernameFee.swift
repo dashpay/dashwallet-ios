@@ -70,6 +70,26 @@ final class ContestedUsernameFee: ObservableObject {
         /// First protocol version charging the reduced fund.
         static let reducedFromProtocolVersion: UInt32 = 14
 
+        /// What a new identity is funded with for one name. The Dash Wallet
+        /// and Platform balances pay 0.03 DASH for a standard name and
+        /// `fundingDuffs` for a contested one. Shielded leaves the pool as a
+        /// fixed exit denomination that does not follow the protocol version.
+        @MainActor
+        func newIdentityFundingDuffs(isContested: Bool, fromShielded: Bool) -> UInt64 {
+            if fromShielded {
+                return ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: isContested)
+                    / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+            }
+            return isContested ? fundingDuffs : UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
+        }
+
+        /// The most a username can cost, whichever source pays.
+        @MainActor
+        var maximumUsernameCostDuffs: UInt64 {
+            max(newIdentityFundingDuffs(isContested: true, fromShielded: false),
+                newIdentityFundingDuffs(isContested: true, fromShielded: true))
+        }
+
         /// `nil` — version not known — resolves to the legacy pair.
         static func forProtocolVersion(_ version: UInt32?) -> Amounts {
             guard let version, version >= reducedFromProtocolVersion else { return .legacy }

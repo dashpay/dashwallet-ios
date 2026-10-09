@@ -76,8 +76,8 @@ class CreateUsernameViewModel: ObservableObject {
     private var contestedShieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?
     /// What Core or Platform would pay for the typed name, as the last
     /// validation judged it. Not `uiState.requiredDash`: that is the active
-    /// source's figure, and Shielded's fixed denomination for a contested
-    /// name is higher than what the transparent sources are charged.
+    /// source's figure, and Shielded's fixed denomination can be higher than
+    /// what the transparent sources are charged.
     private var transparentRequiredDuffs = UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
     /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
     /// The shared readiness service arms its own flip timer only for
@@ -418,26 +418,19 @@ class CreateUsernameViewModel: ObservableObject {
         Task { await ContestedUsernameFee.shared.refresh() }
     }
 
-    /// What a new identity is funded with for one name — the figure the form's
-    /// cost rule states. Also the ceiling for an identity the create path
-    /// reuses instead of funding.
-    ///
-    /// A contested name paid from Shielded leaves the pool as a fixed exit
-    /// denomination, the same on every protocol version, so that is the
-    /// figure for that source; `source` defaults to the form's.
+    /// What a new identity is funded with for one name from `source` (the
+    /// form's when nil) — the figure the form's cost rule states. Also the
+    /// ceiling for an identity the create path reuses instead of funding.
     func newIdentityFundingDuffs(isContested: Bool, source: DWIdentityFundingSource? = nil) -> UInt64 {
-        guard isContested else { return UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) }
-        if (source ?? activeFundingSource) == .shielded {
-            return ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: true)
-                / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
-        }
-        return contestedFee.fundingDuffs
+        contestedFee.newIdentityFundingDuffs(
+            isContested: isContested,
+            fromShielded: (source ?? activeFundingSource) == .shielded)
     }
 
     /// Non-nil when `source` would take more for the typed contested name's
     /// new identity than its confirmation showed. The sheet states the
-    /// figure for the source the form held then; one settled afterwards
-    /// (Shielded, with its higher denomination) must not exceed it.
+    /// figure for the source the form held then; one settled afterwards must
+    /// not exceed it — Shielded's denomination can.
     func fundingExceedingConfirmation(
         source: DWIdentityFundingSource, nameCount: UInt64
     ) -> (neededDuffs: UInt64, confirmedDuffs: UInt64)? {
@@ -490,7 +483,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// What the chosen source has to cover for a name: the shortfall of an
     /// existing identity (the coordinator tops it up), or a new identity's full
     /// funding. Updates `identityTopUpDuffs` for the label being judged.
-    private func requiredFundingDuffs(isContested: Bool) -> UInt64 {
+    /// `source` nil is the form's; Core and Platform are judged with
+    /// `.core`, at their own figure rather than Shielded's denomination.
+    private func requiredFundingDuffs(isContested: Bool, source: DWIdentityFundingSource? = nil) -> UInt64 {
         // One name: the companion is chosen only after this verdict, and the
         // confirmation sheet states what it adds.
         let topUp = existingIdentityTopUpDuffs(isContested: isContested, nameCount: 1)
@@ -498,7 +493,7 @@ class CreateUsernameViewModel: ObservableObject {
             identityTopUpDuffs = topUp
         }
         if let topUp { return topUp }
-        return newIdentityFundingDuffs(isContested: isContested)
+        return newIdentityFundingDuffs(isContested: isContested, source: source)
     }
 
     /// Whether registering the typed name as `nameCount` names moves money
@@ -628,7 +623,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     var recommendedBalance: String {
-        return contestedFee.fundingDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        return contestedFee.maximumUsernameCostDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
     
     var minimumRequiredBalanceFiat: String {
@@ -689,7 +684,8 @@ class CreateUsernameViewModel: ObservableObject {
     /// - Parameters:
     ///   - balance: formatted transparent balance, as the info line prints it.
     ///   - hasMinimumRequiredBalance: covers a standard name (0.03 DASH).
-    ///   - hasRecommendedBalance: covers a contested name.
+    ///   - hasRecommendedBalance: the Dash or Platform balance covers a
+    ///     contested name.
     ///   - shieldedReadiness: poses the shielded route; `nil` stands for a
     ///     wallet that has not hydrated yet, which is what keeps Continue off.
     static func makeForPreview(
@@ -969,7 +965,7 @@ class CreateUsernameViewModel: ObservableObject {
             if shieldedReadiness != standardReadiness {
                 shieldedReadiness = standardReadiness
             }
-            let standardCost = requiredFundingDuffs(isContested: false)
+            let standardCost = requiredFundingDuffs(isContested: false, source: .core)
             transparentRequiredDuffs = standardCost
             updateCurrentFundingEligibility(
                 coreEligible: coreSpendableDuffs >= standardCost,
@@ -1002,8 +998,7 @@ class CreateUsernameViewModel: ObservableObject {
         // gates (funding, maturity, pool) all pass — and never for a top-up.
         // All three are measured here; `activeFundingSource` decides which
         // verdict the cost rule actually reports.
-        let transparentCost = identityTopUpDuffs
-            ?? newIdentityFundingDuffs(isContested: isContested, source: .core)
+        let transparentCost = requiredFundingDuffs(isContested: isContested, source: .core)
         transparentRequiredDuffs = transparentCost
         let coreBalance = coreSpendableDuffs
         let hasEnoughCore = coreBalance >= transparentCost
@@ -1470,8 +1465,11 @@ class CreateUsernameViewModel: ObservableObject {
         // "user has enough to register" without caring about source, Platform
         // included in either mode. The contested-cost caption below counts
         // Platform only where the entry offers it (advanced mode).
-        hasRecommendedBalance = balance >= contestedFee.fundingDuffs
-            || offersPlatform(covering: contestedFee.fundingDuffs)
+        // Judged at what Core or Platform pay for a contested name; the
+        // caption it gates names the dearest route (`recommendedBalance`).
+        let contestedCost = newIdentityFundingDuffs(isContested: true, source: .core)
+        hasRecommendedBalance = balance >= contestedCost
+            || offersPlatform(covering: contestedCost)
     }
 }
 
