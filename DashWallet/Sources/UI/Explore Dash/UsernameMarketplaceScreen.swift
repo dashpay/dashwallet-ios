@@ -21,6 +21,7 @@
 //  dashpay target only.
 //
 
+import Combine
 import SwiftUI
 import SwiftDashSDK
 import DashUIKit
@@ -246,6 +247,29 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     }
 
     let service = UsernameMarketplaceService()
+
+    // MARK: Contest fund
+
+    /// The fund a contested request locks from the identity balance, on the
+    /// running network.
+    var contestFundDuffs: UInt64 { ContestedUsernameFee.shared.amounts.fundDuffs }
+
+    /// A request also pays a network fee, so the balance must exceed the fund.
+    func coversContestFund(_ balanceCredits: UInt64) -> Bool {
+        balanceCredits > ContestedUsernameFee.shared.amounts.fundCredits
+    }
+
+    private var contestFundObservation: AnyCancellable?
+
+    /// Reads the network's protocol version, which decides the fund, and
+    /// republishes this model when the fund changes.
+    func refreshContestFund() async {
+        if contestFundObservation == nil {
+            contestFundObservation = ContestedUsernameFee.shared.objectWillChange
+                .sink { [weak self] _ in self?.objectWillChange.send() }
+        }
+        await ContestedUsernameFee.shared.refresh()
+    }
     private var searchTask: Task<Void, Never>?
 
     var ownIdentityId: Data? { DWCurrentUserIdentityInfo.shared.identityId }
@@ -1789,9 +1813,8 @@ private struct RegisterNameSheet: View {
     private var canAffordRequest: Bool {
         guard let identityId = viewModel.ownIdentityId,
               let container = SwiftDashSDKHost.shared.modelContainer else { return false }
-        return UsernameMarketplaceService.identityBalanceCredits(
-            identityId: identityId, container: container)
-            > UsernameMarketplaceService.contestedFundCredits
+        return viewModel.coversContestFund(
+            UsernameMarketplaceService.identityBalanceCredits(identityId: identityId, container: container))
     }
 
     var body: some View {
@@ -1856,6 +1879,10 @@ private struct RegisterNameSheet: View {
             if let activity = viewModel.activityMessage {
                 MarketplaceActivityOverlay(message: activity)
             }
+        }
+        .task {
+            guard isContested else { return }
+            await viewModel.refreshContestFund()
         }
         .task {
             guard isContested else { return }
@@ -1928,9 +1955,8 @@ private struct RegisterNameSheet: View {
     }
 
     /// The vote-resolution fund the request locks from the identity
-    /// balance (a protocol constant), next to what's available.
+    /// balance, next to what's available.
     @ViewBuilder private var requestCostCard: some View {
-        let fund = UsernameMarketplaceService.contestedFundCredits
         let available: UInt64 = {
             guard let identityId = viewModel.ownIdentityId,
                   let container = SwiftDashSDKHost.shared.modelContainer else { return 0 }
@@ -1945,7 +1971,7 @@ private struct RegisterNameSheet: View {
                 Spacer()
                 Text(String.localizedStringWithFormat(
                     NSLocalizedString("%@ DASH + network fee", comment: "Username marketplace: contested request cost value — the vote-resolution fund amount"),
-                    (fund / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                    viewModel.contestFundDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             }
@@ -1958,7 +1984,7 @@ private struct RegisterNameSheet: View {
                 Spacer()
                 Text("\((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(available > fund ? .dash.primaryText : .orange)
+                    .foregroundColor(viewModel.coversContestFund(available) ? .dash.primaryText : .orange)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
@@ -1969,7 +1995,7 @@ private struct RegisterNameSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14)
                 .padding(.bottom, 10)
-            if available <= fund {
+            if !viewModel.coversContestFund(available) {
                 Text(NSLocalizedString("Not enough identity credits for this request — top up from My Profile first.", comment: "Username marketplace: insufficient balance hint for a contested request"))
                     .font(.system(size: 11))
                     .foregroundColor(.orange)

@@ -408,6 +408,7 @@
 		471DD1BA290A962B00E030C8 /* String+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B9290A962B00E030C8 /* String+DashWallet.swift */; };
 		471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */; };
 		4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF3451257DC1D5B6DC2CE0E /* ShieldedIdentityFundingReadiness.swift */; };
+		C0F1E5ED0A14B2C3D4E5F601 /* ContestedUsernameFee.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F602 /* ContestedUsernameFee.swift */; };
 		472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472CEE002924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift */; };
 		472D13DF299DF5C6006903F1 /* TaxReportGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13DE299DF5C6006903F1 /* TaxReportGenerator.swift */; };
 		472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
@@ -2089,6 +2090,7 @@
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
+		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
@@ -2782,6 +2784,7 @@
 		3D58056D713E4B50DAE0F24B /* BIP70PaymentService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BIP70PaymentService.swift; sourceTree = "<group>"; };
 		3DC11A0747AD00DA7524204A /* libPods-WatchApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FF3451257DC1D5B6DC2CE0E /* ShieldedIdentityFundingReadiness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedIdentityFundingReadiness.swift; sourceTree = "<group>"; };
+		C0F1E5ED0A14B2C3D4E5F602 /* ContestedUsernameFee.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFee.swift; sourceTree = "<group>"; };
 		40153BBCF17452E661EFB84B /* SwiftDashSDKCoinJoinBalanceReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoinJoinBalanceReader.swift; sourceTree = "<group>"; };
 		41D6F206BA803FDFA21B31F5 /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		42C22064915D913252F56184 /* SwiftDashSDKWalletState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletState.swift; sourceTree = "<group>"; };
@@ -3945,6 +3948,7 @@
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
+		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
@@ -7535,6 +7539,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */,
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
+				C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */,
 				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
@@ -7669,6 +7674,7 @@
 				E950113F9E258B2F1CC0D50C /* DWContestedNameStatusService.swift */,
 				C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */,
 				3FF3451257DC1D5B6DC2CE0E /* ShieldedIdentityFundingReadiness.swift */,
+				C0F1E5ED0A14B2C3D4E5F602 /* ContestedUsernameFee.swift */,
 			);
 			path = Identity;
 			sourceTree = "<group>";
@@ -10856,6 +10862,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
+				C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */,
 				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
@@ -11941,6 +11948,7 @@
 				4836792999634AC6B1D00392 /* VerifyIdentityOfferSheet.swift in Sources */,
 				FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */,
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
+				C0F1E5ED0A14B2C3D4E5F601 /* ContestedUsernameFee.swift in Sources */,
 				D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */,
 				A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */,
 			);

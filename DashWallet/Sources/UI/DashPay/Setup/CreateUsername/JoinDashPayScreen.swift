@@ -191,7 +191,7 @@ public struct JoinDashPayScreen: View {
 
 #if DEBUG
 
-/// Enough for a contested name (0.25 DASH, `DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME`):
+/// Enough for a contested name (`ContestedUsernameFee`):
 /// no info line at all, Continue enabled. This is the state the redesign's
 /// "has enough balance" sheet starts from.
 #Preview("Enough for a contested name") {
