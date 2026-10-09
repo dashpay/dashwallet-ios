@@ -145,6 +145,32 @@ final class PassiveWalletStateUITailTests: XCTestCase {
         XCTAssertEqual(screen.currentTestDashReceiveAddress(), "second-address")
     }
 
+    func testReceiveAddressDropsAnAddressReadForTheOutgoingWallet() {
+        let walletA = Data(repeating: 0x0A, count: 32)
+        let walletB = Data(repeating: 0x0B, count: 32)
+        var currentWalletId = walletA
+
+        // The read captured wallet A; the host switches to B before it returns.
+        let address = SwiftDashSDKReceiveAddressReader.addressForCurrentWallet(
+            read: {
+                currentWalletId = walletB
+                return ("address-of-wallet-a", walletA)
+            },
+            currentWalletId: { currentWalletId })
+
+        XCTAssertNil(address)
+    }
+
+    func testReceiveAddressKeepsAnAddressReadForTheCurrentWallet() {
+        let walletA = Data(repeating: 0x0A, count: 32)
+
+        let address = SwiftDashSDKReceiveAddressReader.addressForCurrentWallet(
+            read: { ("address-of-wallet-a", walletA) },
+            currentWalletId: { walletA })
+
+        XCTAssertEqual(address, "address-of-wallet-a")
+    }
+
     func testBuySellVisibilityUsesAppOwnedNetworkState() {
         XCTAssertFalse(
             ServiceDataProviderImpl.shouldShow(
