@@ -1272,7 +1272,14 @@ final class SwiftDashSDKHost {
         let restored = try await manager.loadFromPersistor()
         let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
         DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
-        if try localStoreRecovery(for: network).isPending() {
+        // A pending reset intent means a removal may have taken only the WAL,
+        // leaving an older wallet in the main database while a newer wallet's
+        // rows were lost with it: a non-empty store proves nothing. Reconcile
+        // the keychain against the rows before accepting the store, exactly
+        // like a pending recovery marker; the intent itself outlives this
+        // start, until the scope's wide scan completes.
+        if try localStoreRecovery(for: network).isPending()
+            || resetIntent().isPending(scope: network.persistenceScope) {
             throw HostError.walletNotFound(network)
         }
         if let resolved = resolveActiveWallet(in: manager, network: network) {
@@ -1737,6 +1744,10 @@ final class SwiftDashSDKHost {
     private func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
         WalletLocalStoreRecovery(directory: try WalletLocalStoreRoots.inDocuments().platform
             .appendingPathComponent(network.persistenceScope, isDirectory: true))
+    }
+
+    private func resetIntent() throws -> WalletLocalStoreResetIntent {
+        WalletLocalStoreResetIntent(directory: try WalletLocalStoreRoots.inDocuments().resetIntents)
     }
 
     /// Hold model-container admission through the reset's teardown and file

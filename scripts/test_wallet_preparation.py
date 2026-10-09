@@ -157,6 +157,9 @@ extension WalletEnvironment {
     func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
         WalletLocalStoreRecovery(directory: Self.directory)
     }
+    func resetIntent() throws -> WalletLocalStoreResetIntent {
+        WalletLocalStoreResetIntent(directory: Self.directory.appendingPathComponent("ResetIntents"))
+    }
 ''' + recovery_methods + "\n}\n")
     (tests / "HostRecoveryTests.swift").write_text(r'''
 import XCTest
@@ -191,6 +194,28 @@ import XCTest
         PlatformWalletManager.failingMnemonic = nil
         _ = try await HostRecoveryHarness().start(network: .mainnet)
         XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet", "mainnet", "mainnet"])
+    }
+    func testPendingResetIntentReconcilesKeychainAgainstSurvivingRows() async throws {
+        // A WAL-only interruption: wallet A survives in the main database,
+        // wallet B's rows were lost with the WAL, no recovery marker exists.
+        let a = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[a] = .init(walletId: a)
+        WalletEnvironment.active[.mainnet] = Data("wallet-b".utf8)
+        let host = HostRecoveryHarness()
+        try host.resetIntent().record(scopes: ["mainnet"])
+
+        let resolved = try await host.start(network: .mainnet)
+
+        XCTAssertEqual(PlatformWalletManager.createAttempts, ["wallet-b"], "Only the missing wallet is recreated")
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+        XCTAssertEqual(resolved.wallet.walletId, Data("wallet-b".utf8), "The active wallet is not replaced by the survivor")
+        XCTAssertFalse(try host.localStoreRecovery(for: .mainnet).isPending())
+        XCTAssertTrue(try host.resetIntent().isPending(scope: "mainnet"), "The intent outlives the start, until the scan completes")
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet"])
+        // A later start with every wallet present changes nothing.
+        PlatformWalletManager.createAttempts = []
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
     }
     func testHealthyStoreKeepsTheCompletedWideScanFlag() async throws {
         let id = Data("wallet-a".utf8)

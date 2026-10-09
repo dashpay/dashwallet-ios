@@ -106,6 +106,9 @@ enum WalletLocalStoreResetError: Error, Equatable {
 /// pending intent as "wide scan required" regardless of its completion flag,
 /// and finishes the intent only when that scope's wide scan completes; a
 /// successful reset leaves the intents in place for exactly that purpose.
+/// The host also treats a pending intent as "reconcile the keychain against
+/// the wallet rows": the same WAL loss can take a newer wallet's rows while an
+/// older wallet survives in the main database.
 struct WalletLocalStoreResetIntent: Sendable {
     let directory: URL
 
@@ -114,11 +117,28 @@ struct WalletLocalStoreResetIntent: Sendable {
     }
 
     /// Atomic per-scope files, so a kill mid-way leaves some scopes marked
-    /// and none half-written.
+    /// and none half-written — then flushed to stable storage along with the
+    /// directory entries that name them. The removals that follow must not
+    /// be able to reach disk ahead of the intent after a power loss.
     func record(scopes: some Sequence<String>, fileManager: FileManager = .default) throws {
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         for scope in scopes {
-            try Data().write(to: marker(for: scope), options: .atomic)
+            let url = marker(for: scope)
+            try Data().write(to: url, options: .atomic)
+            try Self.flushToStableStorage(url)
+        }
+        try Self.flushToStableStorage(directory)
+        try Self.flushToStableStorage(directory.deletingLastPathComponent())
+    }
+
+    /// `F_FULLFSYNC` on the file or directory: the strongest flush the
+    /// platform offers (an `fsync` alone may stop at the drive cache).
+    private static func flushToStableStorage(_ url: URL) throws {
+        let fd = open(url.path, O_RDONLY)
+        guard fd >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        defer { close(fd) }
+        if fcntl(fd, F_FULLFSYNC) < 0, fsync(fd) < 0 {
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
         }
     }
 
