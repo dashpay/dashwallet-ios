@@ -27,7 +27,7 @@ enum DWLogger { static func log(_ message: String) {} }
     var suspended = false
     var validationError: Error?
     var releaseError: Error?
-    func validateLocalStoreReset() throws {
+    func validateLocalStoreReset() async throws {
         if let validationError { throw validationError }
     }
     func waitForLocalStoreRelease() async throws {
@@ -126,9 +126,9 @@ extension WalletEnvironment {
     enum HostError: Error { case walletNotFound(Network), walletBootstrapFailed(Error), mnemonicRoundTripMismatch, invalidMnemonic }
     struct RuntimeHandles { let manager: PlatformWalletManager; let network: Network }
     static var directory: URL!
-    static var unreadableKeychain = false
-    static var invalidMaterial = false
-    static var nulMaterial = false
+    nonisolated(unsafe) static var unreadableKeychain = false
+    nonisolated(unsafe) static var invalidMaterial = false
+    nonisolated(unsafe) static var nulMaterial = false
     var manager: PlatformWalletManager?
     var wallet: ManagedPlatformWallet?
     var runningNetwork: Network?
@@ -142,12 +142,12 @@ extension WalletEnvironment {
     }
     func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? { nil }
     func unlockDashPayContactCrypto(manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {}
-    static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
+    nonisolated static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
         if unreadableKeychain { throw NSError(domain: "InjectedKeychain", code: 1) }
         if nulMaterial { return [(Data("wallet-a".utf8), "wallet-a\u{0}trailing bytes")] }
         return ["wallet-a", "wallet-b"].map { (Data($0.utf8), $0) }
     }
-    static func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network> {
+    nonisolated static func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network> {
         if invalidMaterial { throw HostError.invalidMnemonic }
         return [.mainnet]
     }
@@ -269,30 +269,34 @@ import XCTest
         _ = try await HostRecoveryHarness().start(network: .mainnet)
         XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
     }
+    /// `XCTAssertThrowsError` has no async form.
+    private func preflightError(_ host: HostRecoveryHarness) async -> Error? {
+        do { try await host.validateLocalStoreReset(); return nil } catch { return error }
+    }
     func testNativeRuntimeLatchSurvivesShutdownAndRequiresFreshHost() async throws {
         let host = HostRecoveryHarness()
-        try host.validateLocalStoreReset()
+        try await host.validateLocalStoreReset()
         let handles = try await host.buildRuntime(for: .testnet)
         await handles.manager.shutdown()
-        XCTAssertThrowsError(try host.validateLocalStoreReset()) { error in
-            XCTAssertEqual(error as? WalletLocalStoreResetError, .restartRequired)
-        }
-        try HostRecoveryHarness().validateLocalStoreReset()
+        let latched = await preflightError(host)
+        XCTAssertEqual(latched as? WalletLocalStoreResetError, .restartRequired)
+        try await HostRecoveryHarness().validateLocalStoreReset()
     }
-    func testResetPreflightRejectsUnreadableOrMalformedRecoveryMaterial() throws {
+    func testResetPreflightRejectsUnreadableOrMalformedRecoveryMaterial() async throws {
         HostRecoveryHarness.unreadableKeychain = true
-        XCTAssertThrowsError(try HostRecoveryHarness().validateLocalStoreReset())
+        let unreadable = await preflightError(HostRecoveryHarness())
+        XCTAssertNotNil(unreadable)
         HostRecoveryHarness.unreadableKeychain = false
         HostRecoveryHarness.invalidMaterial = true
-        XCTAssertThrowsError(try HostRecoveryHarness().validateLocalStoreReset())
+        let malformed = await preflightError(HostRecoveryHarness())
+        XCTAssertNotNil(malformed)
         HostRecoveryHarness.invalidMaterial = false
         // A valid phrase followed by an embedded NUL passes C-string validation
         // and id derivation but can never sign; it must not authorize deletion.
         HostRecoveryHarness.nulMaterial = true
-        XCTAssertThrowsError(try HostRecoveryHarness().validateLocalStoreReset()) { error in
-            guard case HostRecoveryHarness.HostError.invalidMnemonic = error else {
-                return XCTFail("Expected invalidMnemonic, got \(error)")
-            }
+        let nul = await preflightError(HostRecoveryHarness())
+        guard case HostRecoveryHarness.HostError.invalidMnemonic? = nul else {
+            return XCTFail("Expected invalidMnemonic, got \(String(describing: nul))")
         }
     }
 }

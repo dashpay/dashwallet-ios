@@ -787,14 +787,31 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     accountIndex: 0,
                     gapLimit: CoinJoinRecovery.recoveryGapLimit)
             }
+            // A pending local-store reset intent: wallet rows that survived an
+            // interrupted removal keep their filter checkpoint, and dash-spv
+            // resumes at `syncedHeight + 1` however wide the gap is, so the
+            // history that lived only in the lost WAL would never be walked.
+            // Rewind every wallet to the import floor before `startSpv`; a
+            // rewind failure leaves the widened network unset, so the scan's
+            // completion cannot finish the intent, and the next start rewinds
+            // again.
+            if CoinJoinRecovery.shared.isResetRescanPending(for: network) {
+                let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
+                for wallet in manager.wallets.values {
+                    try manager.spvRescanFilters(walletId: wallet.walletId, fromHeight: floor)
+                }
+                Self.logger.info(
+                    "🛰️ SPVCOORD :: reset rescan intent pending on \(network.rawValue, privacy: .public) — filter checkpoints rewound to \(floor, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
+            }
             coinJoinRecoveryWidenedNetwork = network
             Self.logger.info(
                 "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
         } catch {
-            // Partial widening is not recorded: the flag stays unset and the
-            // next launch widens every wallet again.
+            // Partial widening or rewinding is not recorded: the flag and the
+            // intent stay, and the next launch widens and rewinds every
+            // wallet again.
             Self.logger.error(
-                "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery widen/rewind failed: \(String(describing: error), privacy: .public)")
         }
     }
 

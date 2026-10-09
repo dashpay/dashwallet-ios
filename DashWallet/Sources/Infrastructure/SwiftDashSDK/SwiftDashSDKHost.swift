@@ -1720,18 +1720,26 @@ final class SwiftDashSDKHost {
     /// A local reset may unlink databases only before any native runtime has
     /// been configured in this process. A timed-out shutdown can otherwise
     /// leave SPV's independent disk worker writing to those paths.
-    func validateLocalStoreReset() throws {
+    func validateLocalStoreReset() async throws {
         guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
-        let inventory = try Self.strictlyPersistedMnemonics()
-        // An embedded NUL is accepted by the C-string boundary of validation
-        // and id derivation (only the prefix is read) but rejected by the
-        // signer, so such material must not authorize a deletion it could
-        // never spend from afterwards.
-        guard !inventory.isEmpty,
-              inventory.allSatisfy({ !$0.mnemonic.utf8.contains(0) }) else {
-            throw HostError.invalidMnemonic
-        }
-        _ = try Self.persistedSDKWalletNetworks(in: inventory)
+        // Reading and classifying the inventory constructs a native wallet
+        // per entry and network (seed derivation, default accounts): off the
+        // main actor, like every other FFI-heavy step of the lifecycle.
+        try await Task.detached(priority: .userInitiated) {
+            let inventory = try Self.strictlyPersistedMnemonics()
+            // An embedded NUL is accepted by the C-string boundary of
+            // validation and id derivation (only the prefix is read) but
+            // rejected by the signer, so such material must not authorize a
+            // deletion it could never spend from afterwards.
+            guard !inventory.isEmpty,
+                  inventory.allSatisfy({ !$0.mnemonic.utf8.contains(0) }) else {
+                throw HostError.invalidMnemonic
+            }
+            _ = try Self.persistedSDKWalletNetworks(in: inventory)
+        }.value
+        // The suspension above is a window for a start to configure a native
+        // runtime; the latch is monotonic, so recheck it before admitting.
+        guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
     }
 
     func waitForLocalStoreRelease() async throws {

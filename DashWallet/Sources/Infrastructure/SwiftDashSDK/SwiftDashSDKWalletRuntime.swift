@@ -281,7 +281,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             defer { host.resumeModelContainerOpens() }
             let report: WalletLocalStoreResetReport
             do {
-                try host.validateLocalStoreReset()
+                try await host.validateLocalStoreReset()
                 await host.suspendModelContainerOpens()
                 await self.fullReset(lastError: nil, forWipe: false)
                 self.dropLocalStoreDerivedState()

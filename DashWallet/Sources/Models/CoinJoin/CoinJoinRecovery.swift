@@ -111,6 +111,15 @@ final class CoinJoinRecovery: NSObject {
         return !defaults.bool(forKey: recoveredKey(network))
     }
 
+    /// Whether a local-store reset left its rescan intent for `network`:
+    /// the SPV coordinator then also rewinds every wallet's filter checkpoint
+    /// before the widened scan, since surviving rows keep a checkpoint past
+    /// the history that may have been lost. Thread-safe.
+    func isResetRescanPending(for network: Network) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return Self.resetIntent()?.isPending(scope: networkTag(network)) == true
+    }
+
     private static func resetIntent() -> WalletLocalStoreResetIntent? {
         guard let roots = try? WalletLocalStoreRoots.inDocuments() else { return nil }
         return WalletLocalStoreResetIntent(directory: roots.resetIntents)
