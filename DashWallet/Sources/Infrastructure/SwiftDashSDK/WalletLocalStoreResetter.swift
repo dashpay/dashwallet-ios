@@ -156,6 +156,35 @@ struct WalletLocalStoreResetIntent: Sendable {
     }
 }
 
+/// When the wide CoinJoin recovery scan — and with it a pending reset intent
+/// — may be called complete. Two independent conditions, both testable
+/// without the SDK:
+///
+/// 1. Network completion. dash-spv reports `Synced` only while every
+///    sub-manager is simultaneously synced, a transient window a ~1 Hz poll
+///    can miss; its steady state is `WaitForEvents` at completed progress,
+///    the same reading `SyncingActivityMonitor` maps to `syncDone`.
+/// 2. Durable persistence. Progress is read from the sync loop, while the
+///    recovered rows are committed by a separate persister worker; a
+///    rejected batch freezes a wallet's durable checkpoint. The scan counts
+///    as persisted only once every widened and rewound wallet's persisted
+///    checkpoint has reached the tip the scan completed at.
+enum CoinJoinRescanCompletion {
+    static let completedProgress = 0.999
+
+    static func networkScanComplete(synced: Bool, waitingForEvents: Bool, progress: Double) -> Bool {
+        synced || (waitingForEvents && progress >= completedProgress)
+    }
+
+    /// `persistedCheckpoints` carries one entry per wallet that was widened
+    /// and rewound; a wallet without a readable row is `nil` and blocks
+    /// completion, as does an unknown tip.
+    static func durablyPersisted(scannedTip: UInt32, persistedCheckpoints: [UInt32?]) -> Bool {
+        guard scannedTip > 0, !persistedCheckpoints.isEmpty else { return false }
+        return persistedCheckpoints.allSatisfy { ($0 ?? 0) >= scannedTip }
+    }
+}
+
 /// Rust retains its Swift persistence callback context until its last worker
 /// exits, even when `shutdown()` has already returned success. That context
 /// strongly owns the ModelContainer. Track every container weakly, including

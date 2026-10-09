@@ -223,6 +223,29 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertFalse(intent.isPending(scope: "never-recorded"))
     }
 
+    func testRescanCompletesOnTheSteadyStateNotOnlyTheTransientSyncedSnapshot() {
+        // syncing → waitForEvents at completed progress, no .synced in between.
+        XCTAssertFalse(CoinJoinRescanCompletion.networkScanComplete(synced: false, waitingForEvents: false, progress: 0.4))
+        XCTAssertFalse(CoinJoinRescanCompletion.networkScanComplete(synced: false, waitingForEvents: true, progress: 0.0),
+                       "waitForEvents is also the pre-start default")
+        XCTAssertFalse(CoinJoinRescanCompletion.networkScanComplete(synced: false, waitingForEvents: true, progress: 0.97))
+        XCTAssertTrue(CoinJoinRescanCompletion.networkScanComplete(synced: false, waitingForEvents: true, progress: 0.999))
+        XCTAssertTrue(CoinJoinRescanCompletion.networkScanComplete(synced: true, waitingForEvents: false, progress: 0.5))
+    }
+
+    func testRescanIsAcknowledgedOnlyOnceEveryWalletCheckpointIsDurable() {
+        // Delayed persistence: one wallet's checkpoint still behind the tip.
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: [2_300_000, 2_299_990]))
+        // Rejected persistence: a frozen checkpoint never reaches the tip.
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: [2_300_000, 1_800_000]))
+        // Unreadable row, unknown tip, no wallets: never acknowledged.
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: [2_300_000, nil]))
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 0, persistedCheckpoints: [10]))
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: []))
+        // Every checkpoint at or past the tip.
+        XCTAssertTrue(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: [2_300_000, 2_300_004]))
+    }
+
     func testPartialPlatformRemovalLeavesADirectoryWithoutItsStoreFile() async throws {
         try plant(roots.platform, "testnet", files: ["DashModel.sqlite", "DashModel.sqlite-wal"])
         try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])
