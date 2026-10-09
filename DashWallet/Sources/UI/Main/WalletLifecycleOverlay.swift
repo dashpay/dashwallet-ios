@@ -368,9 +368,12 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     /// Backup recovery phrase on the wallet-open failure card: the Security
     /// menu's flow (PIN, then one phrase or a wallet picker), hosted modally
-    /// in the overlay window because the card has no navigation stack.
+    /// in the overlay window because the card has no navigation stack. Not
+    /// on a keys failure: the phrase is what could not be read, and the card
+    /// does not show the button.
     func backupRecoveryPhrase() {
         guard !isBusy,
+              preparationFailure?.kind != .keychain,
               requirePin(
                   for: NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"),
                   message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
@@ -515,14 +518,16 @@ struct WalletLifecycleOverlayView: View {
                     title: NSLocalizedString("Preparing your wallet…", comment: "Wallet preparation"),
                     subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
             case let .failedWalletOpen(failure):
+                // A keys failure shows neither Backup nor Reset, and its
+                // Export Logs authenticates first, as the migration card's does.
                 card {
                     failureHeader(title: failure.title, message: failure.message)
                     actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
                         viewModel.retryWalletOpen()
                     }
                     .disabled(viewModel.isBusy)
-                    walletRecoveryActions
-                    preparationHelp
+                    walletRecoveryActions(for: failure)
+                    preparationHelp(authenticatedExport: failure.kind == .keychain)
                 }
             case let .failedLegacyMigration(failure):
                 // No Create/Recover here: the wallet is still in the keychain.
@@ -584,7 +589,7 @@ struct WalletLifecycleOverlayView: View {
                         }
                         .disabled(viewModel.isBusy)
                     }
-                    if viewModel.showsLocalStoreRecovery { walletRecoveryActions }
+                    if viewModel.showsLocalStoreRecovery { walletRecoveryActions(for: viewModel.preparationFailure) }
                     preparationHelp
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
@@ -650,12 +655,16 @@ struct WalletLifecycleOverlayView: View {
         .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
     }
 
+    /// Backup is offered unless the keys themselves failed to read; Reset
+    /// only when the failure record and the keychain inventory allow it.
     @ViewBuilder
-    private var walletRecoveryActions: some View {
-        actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
-            viewModel.backupRecoveryPhrase()
+    private func walletRecoveryActions(for failure: WalletPreparationFailure?) -> some View {
+        if failure?.kind != .keychain {
+            actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
+                viewModel.backupRecoveryPhrase()
+            }
+            .disabled(viewModel.isBusy)
         }
-        .disabled(viewModel.isBusy)
         if viewModel.canResetWalletData {
             actionButton(
                 NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),
@@ -671,8 +680,9 @@ struct WalletLifecycleOverlayView: View {
         preparationHelp(authenticatedExport: false)
     }
 
-    /// `authenticatedExport`: the card shows before the lock screen, so
-    /// Export Logs authenticates first (see `exportDiagnosticLogs`).
+    /// `authenticatedExport`: the migration card shows before the lock screen
+    /// and the keys card cannot rely on it, so Export Logs authenticates
+    /// first (see `exportDiagnosticLogs`).
     @ViewBuilder
     private func preparationHelp(authenticatedExport: Bool) -> some View {
         if viewModel.preparationFailure != nil {
