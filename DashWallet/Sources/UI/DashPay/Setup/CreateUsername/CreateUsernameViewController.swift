@@ -22,12 +22,6 @@ import DashUIKit
 class CreateUsernameViewController: UIViewController {
     @objc var completionHandler: ((Bool) -> ())?
 
-    /// Set before presentation by the readiness-interstitial `onProceed`
-    /// paths: the user has already been through the shielded checklist
-    /// (or its explicit transparent escape), so the form skips the
-    /// Private registration teaser. Read once in `viewDidLoad`.
-    @objc var suppressShieldedHint: Bool = false
-
     /// Normalized invitation URI (see `DWInvitationLinkNormalizer`)
     /// when this form is claiming a DIP-13 invitation; nil for the
     /// regular self-funded registration.
@@ -54,11 +48,11 @@ class CreateUsernameViewController: UIViewController {
 
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView(
-            invitationURI: invitationURI,
-            definedUsername: definedUsername,
-            suppressShieldedHint: suppressShieldedHint
-        ) {
+        // Unwinding is shared; reporting an outcome is not. `finish` ends a
+        // registration whose result is known here, `handOffToStatusRow` leaves
+        // a running one to the More row without claiming anything about it.
+        let leaveFlow: (_ showMore: Bool) -> Void = { [weak self] showMore in
+            guard let self else { return }
             let navigationController = self.navigationController
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
@@ -71,8 +65,14 @@ class CreateUsernameViewController: UIViewController {
             // unwinding to that root is the correct destination for all of
             // them (Home for the home/deep-link entries, More for the menu).
             navigationController?.popToRootViewController(animated: true)
-            self.completionHandler?(true)
             #if DASHPAY
+            // A submitted request is reported on More, so that is where the
+            // flow ends regardless of which tab it started from. Selected
+            // after the pop, so the tab arrives at its own root rather than
+            // mid-stack.
+            if showMore {
+                mainTabController?.showMore()
+            }
             if let transitionCoordinator = navigationController?.transitionCoordinator {
                 transitionCoordinator.animate(alongsideTransition: nil) { _ in
                     mainTabController?.applyPendingDashPayTabReconfiguration()
@@ -82,14 +82,23 @@ class CreateUsernameViewController: UIViewController {
             }
             #endif
         }
+
+        let content = CreateUsernameView(
+            invitationURI: invitationURI,
+            definedUsername: definedUsername,
+            finish: { [weak self] in
+                leaveFlow(false)
+                self?.completionHandler?(true)
+            },
+            handOffToStatusRow: { leaveFlow(true) },
+            // One level, not the whole stack: this is the plain "go back to
+            // where I came from" gesture the UIKit bar used to provide.
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            })
         let swiftUIController = UIHostingController(rootView: content)
         swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
         self.dw_embedChild(swiftUIController)
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.navigationBar.applyOpaqueAppearance(with: UIColor.dw_secondaryBackground(), shadowColor: .clear)
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -97,29 +106,124 @@ class CreateUsernameViewController: UIViewController {
     }
 }
 
+// MARK: - NavigationBarDisplayable
+
+/// The screen carries its own `DashUIKit.NavigationBar`, so the stack's bar
+/// would be a second, differently styled back button above it.
+///
+/// This protocol, not `setNavigationBarHidden` in `viewWillAppear`:
+/// `BaseNavigationController.willShow` reads `isNavigationBarHidden` on every
+/// push and pop, so a call made here is overwritten by whatever that read
+/// returns — which is how the two back buttons ended up on screen together.
+extension CreateUsernameViewController: NavigationBarDisplayable {
+    var isNavigationBarHidden: Bool { true }
+}
+
 struct CreateUsernameView: View {
     @StateObject private var viewModel = CreateUsernameViewModel()
-    @FocusState private var isTextInputFocused: Bool
+    /// Requests focus on the username field rather than holding it: the field
+    /// owns the `@FocusState` and mirrors this flag both ways. Setting it false
+    /// is how the screen gets the keyboard out of the way before presenting a
+    /// sheet or the PIN prompt.
+    @State private var isTextInputFocused: Bool = false
     @State private var inProgress: Bool = false
+    /// False once the screen has left, so a deferred step does not run on it.
+    @State private var isOnScreen = false
     @State private var screenLockedAfterAuth: Bool = false
     /// Funding source for the SwiftDashSDK identity registration.
-    /// Auto-pinned by `syncFundingSourceToViableSource()` to the first
-    /// viable source in privacy-descending order (Shielded → Platform →
-    /// Core) until the user explicitly picks one; user-selectable via
-    /// the segmented picker when two or more sources qualify. Written
-    /// into `DWIdentityRegistrationBridge.shared.preferredFundingSource`
-    /// in the Continue handler right before the submit call.
+    ///
+    /// Chosen a screen earlier, on the Join DashPay sheet's privacy page, and
+    /// adopted on appear; this screen has no picker of its own. For the paths
+    /// that skip that page (invitation, recovery, a retry from the Home row)
+    /// `syncFundingSourceToViableSource()` pins the first viable source in
+    /// privacy-descending order (Shielded → Platform → Core; without advanced
+    /// mode, Shielded → Core → Platform). It is the form's pick, not always
+    /// the source that pays: right before paying, `performSubmit` asks about a
+    /// source that can cover the names submitted (`sourceToName`, gated by
+    /// `CreateUsernameViewModel.fundingSourceNeedsConfirmation`), and writes
+    /// `payingSource(agreed:)` into
+    /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`.
     @State private var fundingSource: DWIdentityFundingSource = .core
-    /// True once the user has manually changed the picker; auto-pinning
-    /// then only corrects a selection that became non-viable, instead
-    /// of overriding the user's explicit choice.
+    /// The top-up a plain name needs from an existing identity, waiting on the
+    /// user's answer to the amount alert. nil when no alert is up.
+    @State private var pendingPlainTopUp: PlainTopUp?
+
+    /// The amount alert's figure and the source it names, captured when it is
+    /// shown so Confirm agrees to what the user read.
+    private struct PlainTopUp {
+        let duffs: UInt64
+        let source: DWIdentityFundingSource
+    }
+    @State private var showPlainTopUp = false
+    /// An earlier Core top-up is unfinished: the warning is up, holding what
+    /// to run if the user goes ahead anyway.
+    @State private var unfinishedTopUpContinuation: UnfinishedTopUpContinuation?
+    @State private var showUnfinishedTopUp = false
+    /// `acknowledgedUnfinishedTopUp` lets the submission past the warning once
+    /// the user has chosen to continue.
+    @State private var acknowledgedUnfinishedTopUp = false
+    /// The funding-source question (`fundingSourceNeedsConfirmation`): the source
+    /// it names and the submission it gates. Kept after dismissal so the alert
+    /// keeps its title while it animates out.
+    @State private var sourceQuestion: SourceQuestion?
+    @State private var showSourceQuestion = false
+
+    private struct SourceQuestion {
+        let source: DWIdentityFundingSource
+        let temporaryUsername: String?
+    }
+
+    private enum UnfinishedTopUpContinuation {
+        case purchase, contested, plain
+        case submit(temporaryUsername: String?, agreedSource: DWIdentityFundingSource?)
+    }
+    /// True once a choice made by the user has been adopted; auto-pinning
+    /// then leaves the selection alone, even once it can no longer pay.
     @State private var didUserPickFundingSource: Bool = false
     /// Tracks the contested-name confirmation sheet. Continue routes
     /// through this sheet (instead of submitting directly) when the
     /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
     /// Besides acknowledging the vote wait, the sheet prompts for a
     /// non-contested temporary username registered in the same flow.
-    @State private var showContestedConfirmation: Bool = false
+    /// Step 1 of the contested submission: confirm the requested name, its
+    /// cost and that it cannot be changed.
+    @State private var showConfirmRequest: Bool = false
+    /// Step 2, shown only when no instant companion has been named yet: the
+    /// offer to register one.
+    @State private var showCreateInstantOffer: Bool = false
+    /// Step 3: the form itself is naming the instant companion. Android
+    /// returns to its request screen for this; the same screen does it here,
+    /// with the companion's own field and validation.
+    @State private var isNamingInstantUsername: Bool = false
+    /// Step 0 of a contested submission: the offer to publish a
+    /// proof-of-identity link before the request goes out. Android asks the
+    /// same thing on Continue, and a link only counts while the vote is open.
+    @State private var showVerifyOffer: Bool = false
+    /// The screen that captures the link.
+    @State private var showVerifyIdentity: Bool = false
+
+    /// What to do once the sheet that asked for it has actually left the
+    /// screen.
+    ///
+    /// Nothing here may run while a sheet is still up or mid-dismissal: the
+    /// PIN host cannot be presented over one, and `PinPromptPresenter` resolves
+    /// the rejected attempt as `.failed` after its 0.5 s watchdog — the form
+    /// then reported "Authentication failed" for a prompt the user never saw
+    /// (`🔐 PINPROMPT :: presentation rejected`). Presenting the next sheet
+    /// straight from the previous one's button races the same animation.
+    @State private var sheetFollowUp: SheetFollowUp?
+
+    /// The three things a sheet in this flow can hand back.
+    private enum SheetFollowUp: Equatable {
+        case verifyIdentity
+        case confirmRequest
+        case offerInstantUsername
+        case nameInstantUsername
+        case submit(temporaryUsername: String?)
+    }
+    /// The voting explainer, opened from the contested disclosure's
+    /// "See details". Explains and closes; it starts nothing.
+    @State private var showVotingInfo: Bool = false
     /// Companion ("temporary") username that the completed contested
     /// submission actually registered — read by `votingSubmittedMessage`
     /// (the live `viewModel.temporaryUsername` field must not be read
@@ -150,6 +254,9 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// Set for a submission stopped before anything was sent, whose alert
+    /// must not read "Registration failed".
+    @State private var registrationRefusalTitle: String? = nil
     /// Post-claim contact-request failure. The username IS registered
     /// at this point — the alert reports the failed request and its OK
     /// finishes the flow (the request is re-sendable from Contacts).
@@ -159,192 +266,136 @@ struct CreateUsernameView: View {
     var invitationURI: String? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
     var definedUsername: String? = nil
-    /// True when the user arrived through the readiness interstitial —
-    /// they either chose the explicit "Use transparent balance instead"
-    /// escape or already worked through the shielded checklist there,
-    /// so the form must not re-tease private registration.
-    var suppressShieldedHint: Bool = false
     var finish: () -> Void
+    /// Leaves the flow WITHOUT reporting an outcome. A handoff happens while
+    /// the registration is still running — `preparingKeys`/`inFlight`, before
+    /// payment has even settled — so routing it through `finish` showed
+    /// "Username was successfully requested" for an attempt that can still
+    /// fail, and the later failure would arrive only on the Home row,
+    /// contradicting a HUD the user had already seen.
+    var handOffToStatusRow: () -> Void
+    /// Pops this screen. Wired to the `NavigationBar`'s back element, which
+    /// replaced the UIKit bar's own button.
+    var onBack: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(viewModel.isResumingUsername
-                        ? NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
-                        : NSLocalizedString("Create your username", comment: "Usernames"))
-                        .foregroundColor(.dash.primaryText)
-                        .font(.title1)
-                        .padding(.top, 12)
-                    Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
-                        .foregroundColor(.dash.primaryText)
-                        .font(.system(size: 14))
-                    TextInput(
-                        label: "Username",
-                        text: $viewModel.username,
-                        isEnabled: !screenLockedAfterAuth,
-                        onSubmit: { isTextInputFocused = false },
-                        focus: $isTextInputFocused
-                    )
-                    .padding(.top, 20)
-                    .submitLabel(.done)
-                    .disabled(screenLockedAfterAuth)
-                
-                    if viewModel.uiState.lengthRule != .hidden {
-                        ValidationCheck(
-                            validationResult: viewModel.uiState.lengthRule,
-                            text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
-                        ).padding(.top, 20)
-                    }
-            
-                    if viewModel.uiState.allowedCharactersRule != .hidden {
-                        ValidationCheck(
-                            validationResult: viewModel.uiState.allowedCharactersRule,
-                            text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
-                        ).padding(.top, 20)
-                    }
-            
-                    if viewModel.recoveryHasNoCredits {
-                        Text(NSLocalizedString("This identity has no credits. Use Top Up in My Profile, then return to finish registration.", comment: "Identity recovery"))
-                            .foregroundColor(.dash.primaryText)
-                    }
-                    if viewModel.uiState.costRule != .hidden {
-                        ValidationCheck(
-                            validationResult: viewModel.uiState.costRule,
-                            text: String.localizedStringWithFormat(NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"), viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol)
-                        ).padding(.top, 20)
-                    }
-            
-                    if viewModel.uiState.usernameBlockedRule != .hidden {
-                        ValidationCheck(
-                            validationResult: viewModel.uiState.usernameBlockedRule,
-                            text: getMessageForBlockedRule()
-                        ).padding(.top, 20)
-                    }
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button(action: goBack) })
 
-                    // Taken-but-listed pointer: the owner has put the name up for
-                    // sale in the Username Marketplace, so "taken" isn't the end
-                    // of the road — affordable listings under the direct-purchase
-                    // ceiling are buyable right here via the Buy button below.
-                    if let salePriceCredits = viewModel.takenNameSalePriceCredits {
-                        forSaleHint(priceCredits: salePriceCredits)
+            // The companion pass replaces the form rather than sitting under it:
+            // it asks for a different name, by different rules, and the requested
+            // one is already confirmed by the time it appears.
+            if isNamingInstantUsername {
+                instantUsernameForm
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        DashUIKit.TopIntroView(
+                            title: NSLocalizedString("Create username", comment: "Usernames"),
+                            mainDescription: NSLocalizedString("Please note that you will not be able to change it in the future", comment: "Usernames"))
+                            .padding(.top, 12)
+
+                        usernameCard
                             .padding(.top, 20)
-                    }
 
-                    if viewModel.isIdentityLoading {
-                        SwiftUI.ProgressView(NSLocalizedString("Loading identity…", comment: "DashPay registration recovery"))
-                            .padding(.top, 20)
-                    } else if viewModel.hasPendingRegistrationRecovery {
-                        registrationRecoveryBanner
-                            .padding(.top, 20)
-                    }
+                        // Taken-but-listed pointer: the owner has put the name up for
+                        // sale in the Username Marketplace, so "taken" isn't the end
+                        // of the road — affordable listings under the direct-purchase
+                        // ceiling are buyable right here via the Buy button below.
+                        if let salePriceCredits = viewModel.takenNameSalePriceCredits {
+                            forSaleHint(priceCredits: salePriceCredits)
+                                .padding(.top, 20)
+                        }
 
-                    // Invitation-claim mode: the voucher funds the registration,
-                    // so the shielded readiness hint and the funding-source
-                    // picker below don't apply and stay hidden. A short banner
-                    // states the funding instead.
-                    if viewModel.isInvitationMode {
-                        invitationFundingBanner
-                            .padding(.top, 20)
-                    }
+                        if viewModel.isIdentityLoading {
+                            SwiftUI.ProgressView(NSLocalizedString("Loading identity…", comment: "DashPay registration recovery"))
+                                .padding(.top, 20)
+                        } else if viewModel.hasPendingRegistrationRecovery {
+                            registrationRecoveryBanner
+                                .padding(.top, 20)
+                        }
 
-                    // Shielded readiness hint. Shown while the privacy-preserving
-                    // funding path is NOT yet available (needs funds / maturing /
-                    // pool below the consensus minimum) so the user learns what
-                    // the wait is for without being blocked — the transparent
-                    // sources below remain an explicit choice. Suppressed when the
-                    // user already answered this question on the readiness
-                    // interstitial (`suppressShieldedHint`).
-                    if !viewModel.isInvitationMode,
-                       !viewModel.hasPendingRegistrationRecovery, !viewModel.isIdentityLoading,
-                       !suppressShieldedHint {
-                        shieldedReadinessHint
-                    }
+                        // Invitation-claim mode: the voucher funds the registration,
+                        // so the shielded readiness hint and the funding-source
+                        // picker below don't apply and stay hidden. A short banner
+                        // states the funding instead.
+                        if viewModel.isInvitationMode {
+                            invitationFundingBanner
+                                .padding(.top, 20)
+                        }
 
-                    // Funding source picker. Visible when two or more sources
-                    // can cover the identity-registration cost. When only one
-                    // is viable, the picker stays hidden and `fundingSource` is
-                    // auto-pinned by `syncFundingSourceToViableSource()` so the
-                    // Continue handler routes correctly without UI clutter.
-                    if !viewModel.isInvitationMode,
-                       !viewModel.hasPendingRegistrationRecovery, !viewModel.isIdentityLoading,
-                       viableFundingSources.count >= 2 {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(NSLocalizedString("Pay with", comment: "Usernames"))
-                                .foregroundColor(.dash.secondaryText)
-                                .font(.caption)
-                            Picker("", selection: userFundingSourceBinding) {
-                                ForEach(viableFundingSources, id: \.rawValue) { source in
-                                    Text(fundingSourceLabel(source)).tag(source)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                            .disabled(screenLockedAfterAuth)
-                            fundingPrivacyFootnote
+                        DashButton(
+                            text: primaryButtonText,
+                            isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
+                                && !screenLockedAfterAuth,
+                            isLoading: inProgress
+                        ) {
+                            isTextInputFocused = false
+
+                            // `viewModel.uiState.canContinue` is only true after
+                            // `checkIfBlocked` flips `usernameBlockedRule` to
+                            // `.valid`, so the registration branches are gated on the
+                            // same condition. A taken-but-listed name never reaches
+                            // `.valid`; its buyable state enables the button through
+                            // `canPurchaseListedNameDirectly` and routes to the
+                            // purchase confirmation instead.
+                            //
+                            // Contested-name submissions go through a confirmation
+                            // sheet first so the user explicitly acknowledges the
+                            // voting wait and the locked Dash. Non-contested names
+                            // submit directly.
+                            acknowledgedUnfinishedTopUp = false
+                            beginContinue()
                         }
                         .padding(.top, 20)
                     }
-
-                    // Keep the contested-name disclosure immediately before the
-                    // action it qualifies. Because both live in this ScrollView,
-                    // the user can always reveal the full warning and Continue
-                    // above the keyboard, even on compact screens.
-                    if viewModel.showContestedWarning {
-                        contestedNameWarning
-                            .padding(.top, 20)
-                    }
-
-                    DashButton(
-                        text: primaryButtonText,
-                        isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
-                            && !screenLockedAfterAuth,
-                        isLoading: inProgress
-                    ) {
-                        isTextInputFocused = false
-
-                        // `viewModel.uiState.canContinue` is only true after
-                        // `checkIfBlocked` flips `usernameBlockedRule` to
-                        // `.valid`, so the registration branches are gated on the
-                        // same condition. A taken-but-listed name never reaches
-                        // `.valid`; its buyable state enables the button through
-                        // `canPurchaseListedNameDirectly` and routes to the
-                        // purchase confirmation instead.
-                        //
-                        // Contested-name submissions go through a confirmation
-                        // sheet first so the user explicitly acknowledges the
-                        // voting wait and the locked Dash. Non-contested names
-                        // submit directly.
-                        if viewModel.canPurchaseListedNameDirectly {
-                            showPurchaseConfirmation = true
-                        } else if viewModel.isContestedCandidate {
-                            showContestedConfirmation = true
-                        } else {
-                            performSubmit()
-                        }
-                    }
-                    .padding(.top, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollDismissesKeyboard(.interactively)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onDisappear { isOnScreen = false }
         .onAppear {
+            isOnScreen = true
             isTextInputFocused = true
+            // Restores an interrupted registration's draft and clears the
+            // per-visit availability cache. Its only other caller waits on
+            // `isIdentityLoading`, which is already false for a loaded
+            // identity — so without this the recovery form opened empty and a
+            // DPNS verdict from an earlier visit was reused unchecked.
+            viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
             }
-            viewModel.refreshRegistrationRecoveryState()
-            // Seed the picker selection so a wallet with only one
-            // viable source (typical case) doesn't default to a
-            // non-viable Core path.
+            // The funding source is chosen on the Join DashPay sheet's privacy
+            // page, one screen back. Adopting it counts as an explicit pick, so
+            // the auto-pinning below leaves it alone. An invitation claim never
+            // passes that page — the voucher pays — so a pick left over from an
+            // earlier sheet is dropped rather than adopted.
+            if invitationURI != nil {
+                CreateUsernameViewModel.discardChosenFundingSource()
+            } else if let chosen = viewModel.consumeChosenFundingSource() {
+                fundingSource = chosen
+                didUserPickFundingSource = true
+            }
+            // Paths that never pass that page — an invitation claim, a
+            // recovery, a retry from the Home row — arrive with no choice, so
+            // pin to the highest-priority viable source rather than defaulting
+            // to Core on a wallet that has no Core balance.
             syncFundingSourceToViableSource()
+        }
+        .onChange(of: fundingSource) { source in
+            // The cost rule is judged against the source that will pay, so the
+            // model has to be told which one that is.
+            viewModel.setActiveFundingSource(source)
         }
         .task(id: "\(viewModel.isIdentityLoading)-\(identityLoadAttempt)") {
             for _ in 0..<20 {
@@ -377,28 +428,109 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
-        .sheet(isPresented: $showContestedConfirmation) {
-            DashUIKit.BottomSheet(
-                title: NSLocalizedString("Contested name", comment: "Usernames"),
-                showBackButton: .constant(false)
+        .onChange(of: viewModel.identityTopUpDuffs) { _ in
+            // Whether Shielded can pay turns on the existing identity's
+            // shortfall, which moves without the readiness snapshot changing.
+            syncFundingSourceToViableSource()
+        }
+        .sheet(isPresented: $showVotingInfo) {
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                fallback: 600
             ) {
-                ContestedNameConfirmationSheet(
-                    viewModel: viewModel,
-                    temporaryField: viewModel.temporaryField,
-                    onSubmit: { temporaryUsername in
-                        confirmContestedSubmission(temporaryUsername: temporaryUsername)
-                    },
-                    onCancel: { showContestedConfirmation = false })
+                VotingInfoScreen(
+                    action: { showVotingInfo = false },
+                    buttonLabel: NSLocalizedString("Close", comment: ""))
             }
-            .presentationDetents([.large])
-            .presentationDragIndicator(.hidden)
+        }
+        .sheet(isPresented: $showVerifyOffer, onDismiss: runSheetFollowUp) {
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                showsCloseButton: false,
+                fallback: 420
+            ) {
+                VerifyIdentityOfferSheet(
+                    onVerify: {
+                        sheetFollowUp = .verifyIdentity
+                        showVerifyOffer = false
+                    },
+                    onSkip: {
+                        // Skip is an answer, not a postponement: whatever was
+                        // captured for this label in an earlier pass must not
+                        // be published behind it.
+                        clearPendingVerification()
+                        sheetFollowUp = .confirmRequest
+                        showVerifyOffer = false
+                    })
+            }
+        }
+        .sheet(isPresented: $showVerifyIdentity, onDismiss: runSheetFollowUp) {
+            // Full height, not self-sizing: the screen has a text field, and a
+            // self-sizing sheet lays its content out at a fixed ideal height, so
+            // nothing can scroll out from under the keyboard.
+            DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                VerifyIdentityScreen(
+                    username: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
+                    onConfirmed: { url in
+                        // The link travels with the submission and is published
+                        // by the coordinator once the identity exists — no
+                        // second PIN, same as Android.
+                        DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
+                            url,
+                            forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+                        sheetFollowUp = .confirmRequest
+                        showVerifyIdentity = false
+                    })
+            }
+        }
+        .sheet(isPresented: $showConfirmRequest, onDismiss: runSheetFollowUp) {
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                showsCloseButton: false,
+                fallback: 520
+            ) {
+                ConfirmUsernameRequestSheet(
+                    kind: isNamingInstantUsername ? .instant : .requested,
+                    username: isNamingInstantUsername
+                        ? viewModel.temporaryField.trimmedText
+                        : viewModel.username,
+                    amountDuffs: confirmationAmountDuffs,
+                    // Only the contested request spends a contest fee; the
+                    // instant companion is an ordinary registration.
+                    showsContestFeeNote: !isNamingInstantUsername,
+                    identityPaidContestFeeDuffs:
+                        !isNamingInstantUsername && existingIdentityTopUpDuffs(nameCount: 1) != nil
+                            ? UsernameMarketplaceService.contestedFundCredits / 1000
+                            : nil,
+                    onConfirm: { confirmRequestAccepted() })
+            }
+        }
+        .sheet(isPresented: $showCreateInstantOffer, onDismiss: runSheetFollowUp) {
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                showsCloseButton: false,
+                fallback: 480
+            ) {
+                CreateInstantUsernameSheet(
+                    onCreate: {
+                        sheetFollowUp = .nameInstantUsername
+                        showCreateInstantOffer = false
+                    },
+                    onDecline: {
+                        // The contested request alone, as confirmed a step ago
+                        // — submitted once this sheet is out of the way.
+                        sheetFollowUp = .submit(temporaryUsername: nil)
+                        showCreateInstantOffer = false
+                    })
+            }
         }
         .alert(
             NSLocalizedString("Buy username", comment: "Usernames"),
             isPresented: $showPurchaseConfirmation
         ) {
             Button(NSLocalizedString("Buy", comment: "")) {
-                performPurchase()
+                // The purchase asks for the PIN; see `afterAlertDismissal`.
+                afterAlertDismissal { performPurchase() }
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         } message: {
@@ -448,6 +580,78 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
+            sourceQuestion.map { Self.sourceQuestionTitle($0.source) } ?? "",
+            isPresented: $showSourceQuestion,
+            presenting: sourceQuestion
+        ) { question in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Continue", comment: "")) {
+                afterAlertDismissal {
+                    // The source the alert named, not the auto-pick, which may
+                    // have moved while it was up; performSubmit checks it can pay.
+                    performSubmit(temporaryUsername: question.temporaryUsername, agreedSource: question.source)
+                }
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "Any Dash this request needs comes from this balance.",
+                comment: "Usernames: confirm the funding source"))
+        }
+        // `presenting:` hands the amount to the buttons and the message as a
+        // value, so dismissal clearing the state cannot lose what was shown.
+        .alert(
+            NSLocalizedString("Top up your identity", comment: "Usernames: plain name on an existing identity"),
+            isPresented: $showPlainTopUp,
+            presenting: pendingPlainTopUp
+        ) { topUp in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingPlainTopUp = nil
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Confirm", comment: "")) {
+                viewModel.captureConfirmedTopUp(shownDuffs: topUp.duffs, isCompanionPass: false)
+                pendingPlainTopUp = nil
+                // The alert named the source; agreeing to it is the answer to
+                // the source question, for the source it showed.
+                afterAlertDismissal { performSubmit(agreedSource: topUp.source) }
+            }
+        } message: { topUp in
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Registering “%1$@” first moves %2$@ DASH from your %3$@ to your identity’s credits.",
+                    comment: "Usernames: plain name on an existing identity"),
+                viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines),
+                topUp.duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                Self.sourceName(topUp.source)))
+        }
+        .alert(
+            NSLocalizedString("A top-up hasn't finished", comment: "Usernames: unfinished identity top-up"),
+            isPresented: $showUnfinishedTopUp,
+            presenting: unfinishedTopUpContinuation
+        ) { continuation in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                abandonSubmission()
+            }
+            Button(NSLocalizedString("Continue anyway", comment: "Usernames: unfinished identity top-up")) {
+                acknowledgedUnfinishedTopUp = true
+                afterAlertDismissal {
+                    switch continuation {
+                    case .purchase: showPurchaseConfirmation = true
+                    case .contested: showVerifyOffer = true
+                    case .plain: submitPlainName()
+                    case let .submit(temporaryUsername, agreedSource):
+                        performSubmit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+                    }
+                }
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.",
+                comment: "Usernames: unfinished identity top-up"))
+        }
+        .alert(
             NSLocalizedString("Username submitted", comment: "Usernames"),
             isPresented: $showVotingSubmitted
         ) {
@@ -470,12 +674,13 @@ struct CreateUsernameView: View {
             Text(inviterContactErrorMessage ?? "")
         }
         .alert(
-            NSLocalizedString("Registration failed", comment: "Usernames"),
+            registrationRefusalTitle ?? NSLocalizedString("Registration failed", comment: "Usernames"),
             isPresented: Binding(
                 get: { registrationErrorMessage != nil },
                 set: { newValue in
                     if !newValue {
                         registrationErrorMessage = nil
+                        registrationRefusalTitle = nil
                         screenLockedAfterAuth = false
                     }
                 }
@@ -483,10 +688,163 @@ struct CreateUsernameView: View {
         ) {
             Button(NSLocalizedString("OK", comment: "")) {
                 registrationErrorMessage = nil
+                registrationRefusalTitle = nil
                 screenLockedAfterAuth = false
             }
         } message: {
             Text(registrationErrorMessage ?? "")
+        }
+    }
+
+    /// Label, field and the rules the field is judged by, in one card.
+    ///
+    /// The card is the design: the three belong together, and putting the rules
+    /// on the plain background next to it read as page content rather than as
+    /// feedback on what was typed. `MenuViewModifier` is that card — radius 20,
+    /// secondary background, shadow at (0, 5) — so its own 6pt of inner padding
+    /// plus 14 here is the design's 20pt inset.
+    private var usernameCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            DashUIKit.AddressFieldView(
+                text: $viewModel.username,
+                label: NSLocalizedString("Username", comment: "Usernames"),
+                placeholder: NSLocalizedString("Enter a username", comment: "Usernames"),
+                hasError: hasUsernameError,
+                isDisabled: screenLockedAfterAuth,
+                // No `onScanQR`: a username has no QR form, and the field draws
+                // the button only for a handler that exists.
+                isFocused: $isTextInputFocused,
+                // A username is short enough to clear by hand, and the rules
+                // below already say when it is wrong.
+                showsClearButton: false,
+                isAccepted: isUsernameAccepted
+            )
+            .submitLabel(.done)
+            .onSubmit { isTextInputFocused = false }
+
+            if !usernameCriteria.isEmpty {
+                DashUIKit.Criteria(usernameCriteria)
+                    .padding(.top, 20)
+            }
+
+            // Inside the card, under the rules: the disclosure is the last
+            // thing the rules have to say about the name that was typed — that
+            // it is one the network votes on — not a separate remark about the
+            // screen.
+            if viewModel.showContestedWarning {
+                contestedNameWarning
+                    .padding(.top, 20)
+            }
+        }
+        .padding(14)
+        .modifier(DashUIKit.MenuViewModifier())
+    }
+
+    /// The field's error styling follows the rules below it: it turns red only
+    /// once something is actually wrong with what was typed, never while a
+    /// check is still running or before anything has been entered.
+    private var hasUsernameError: Bool {
+        let rules: [UsernameValidationRuleResult] = [
+            viewModel.uiState.lengthRule,
+            viewModel.uiState.allowedCharactersRule,
+            viewModel.uiState.usernameBlockedRule,
+        ]
+        return rules.contains { Self.criterionState($0) == .failed || Self.criterionState($0) == .blocking }
+    }
+
+    /// Every rule that has something to say is satisfied, so the field drops
+    /// its focus ring. Not `uiState.canContinue`: that also waits on the
+    /// availability query, and the ring should go quiet as soon as what the
+    /// user typed is accepted rather than when the network agrees.
+    private var isUsernameAccepted: Bool {
+        let rules: [UsernameValidationRuleResult] = [
+            viewModel.uiState.lengthRule,
+            viewModel.uiState.allowedCharactersRule,
+            viewModel.uiState.costRule,
+            viewModel.uiState.usernameBlockedRule,
+        ]
+        // A rule reported as `.hidden` has nothing to say — it is not a row on
+        // screen and not a verdict to wait for. Everything else has to be met.
+        let stated = rules.filter { $0 != .hidden }
+        return !stated.isEmpty && stated.allSatisfy { Self.criterionState($0) == .met }
+    }
+
+    /// The rules, in the order the design lists them — **only the ones still
+    /// worth reading**.
+    ///
+    /// Two kinds of row are left out. A rule the view model reports as
+    /// `.hidden` has nothing to say, and `Criteria` has no hidden state because
+    /// a silent rule should not take a row's worth of space. A rule that is
+    /// **met** is dropped too: a satisfied requirement has stopped being a
+    /// requirement, and keeping it on screen buries the one thing that still
+    /// needs fixing among ticks. The one exception is availability: "Username
+    /// available" is news rather than a requirement — the answer the user was
+    /// waiting on — so it stays, as the confirmation beside Continue.
+    ///
+    /// Each row carries a stable `id` so a rule whose text changes (the cost
+    /// line's amount, the blocked line's reason) updates in place instead of
+    /// being replaced.
+    private var usernameCriteria: [DashUIKit.Criterion] {
+        var items: [DashUIKit.Criterion] = []
+
+        func add(
+            id: String,
+            text: @autoclosure () -> String,
+            rule: UsernameValidationRuleResult,
+            showsWhenMet: Bool = false
+        ) {
+            guard rule != .hidden else { return }
+            let state = Self.criterionState(rule)
+            guard state != .met || showsWhenMet else { return }
+            items.append(DashUIKit.Criterion(id: id, text: text(), state: state))
+        }
+
+        add(
+            id: "length",
+            text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames"),
+            rule: viewModel.uiState.lengthRule)
+
+        add(
+            id: "characters",
+            text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames"),
+            rule: viewModel.uiState.allowedCharactersRule)
+
+        add(
+            id: "cost",
+            text: String.localizedStringWithFormat(
+                NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"),
+                viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
+            rule: viewModel.uiState.costRule)
+
+        add(
+            id: "availability",
+            text: getMessageForBlockedRule(),
+            rule: viewModel.uiState.usernameBlockedRule,
+            showsWhenMet: true)
+
+        return items
+    }
+
+    /// The app's validation vocabulary in the library's terms.
+    ///
+    /// Two pairs collapse: `.empty` and `.hidden` are both "nothing to say yet"
+    /// (`.hidden` never reaches here — the caller drops those rows), and
+    /// `.invalidCritical` and `.error` both mean the user cannot continue, which
+    /// is what `.blocking` is for.
+    private static func criterionState(_ result: UsernameValidationRuleResult) -> DashUIKit.CriterionState {
+        switch result {
+        case .empty, .hidden:
+            return .pending
+        case .loading:
+            return .checking
+        case .valid:
+            return .met
+        case .warning:
+            return .warning
+        case .invalid:
+            return .failed
+        case .invalidCritical, .error:
+            return .blocking
         }
     }
 
@@ -515,57 +873,6 @@ struct CreateUsernameView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    /// Blue informational callout shown while the shielded funding
-    /// path is not yet available, explaining which gate is unmet and
-    /// what will unlock it. Purely informative — the transparent
-    /// sources stay selectable.
-    @ViewBuilder
-    private var shieldedReadinessHint: some View {
-        if let snapshot = viewModel.shieldedReadiness, snapshot.state != .ready {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "shield.lefthalf.filled")
-                    .foregroundColor(.blue)
-                    .font(.system(size: 20))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(NSLocalizedString("Private registration", comment: "Usernames"))
-                        .font(.subheadline.bold())
-                        .foregroundColor(.blue)
-                    Text(shieldedHintText(for: snapshot))
-                        .font(.caption)
-                        .foregroundColor(.dash.secondaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.dash.blue.opacity(0.08))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.top, 20)
-        }
-    }
-
-    private func shieldedHintText(for snapshot: ShieldedIdentityFundingReadiness.Snapshot) -> String {
-        switch snapshot.state {
-        case .needsFunding(let shortfallCredits):
-            // Credits → duffs (÷1000) for display.
-            let shortfallDash = (shortfallCredits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds.", comment: "Usernames"),
-                shortfallDash)
-        case .maturing(let readyAt):
-            let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your Shielded balance is almost ready — you can register privately around %@.", comment: "Usernames"),
-                time)
-        case .poolTooSmall(let current):
-            return String.localizedStringWithFormat(
-                NSLocalizedString("The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum.", comment: "Usernames"),
-                Int(current), Int(ShieldedIdentityFundingReadiness.minimumPoolNotes))
-        case .ready:
-            return ""
-        }
-    }
-
     /// Primary button label: registration recovery > direct listing
     /// purchase (priced) > plain Continue.
     private var primaryButtonText: String {
@@ -589,23 +896,85 @@ struct CreateUsernameView: View {
         return "\(formatter.shortStringFromDate(date)) \(formatter.timeOnly(from: date))"
     }
 
-    /// Orange warning callout shown above the Continue button when
-    /// the typed name is contested-eligible. Styled to match the
-    /// example app's `RegisterNameView.swift:277-293`. When the view
-    /// model reports a vote already running for this name
-    /// (`activeContestContenders`), the copy switches from "requires
-    /// a vote" to "a vote is in progress — a request joins it", with
-    /// the deadline when the network reports one; past the deadline
-    /// it reports the vote as ended and finalizing instead.
+    /// Back leaves the companion pass first, and the screen only once there is
+    /// no pass to leave: the requested name is already confirmed by then, so
+    /// popping out would drop a decision the user has made rather than the
+    /// screen they are on.
+    private func goBack() {
+        if isNamingInstantUsername {
+            isNamingInstantUsername = false
+            return
+        }
+
+        // Leaving the form ends the submission this link was captured for.
+        clearPendingVerification()
+        onBack()
+    }
+
+    /// Drops the proof-of-identity link held for this screen's current label.
+    ///
+    /// The bridge keeps it only to hand it to the coordinator with the
+    /// submission; every way out of the flow that does not submit has to say
+    /// so, or the next attempt at the same name inherits a link the user
+    /// declined to publish.
+    private func clearPendingVerification() {
+        DWIdentityRegistrationBridge.shared.setPendingVerificationURL(
+            nil,
+            forLabel: viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    /// A submission the user stopped at one of its questions, or that was
+    /// refused: nothing it confirmed on the way — the top-up amount, the proof
+    /// link, the answers to the warnings — carries over to the next one.
+    private func abandonSubmission() {
+        acknowledgedUnfinishedTopUp = false
+        viewModel.discardConfirmedTopUp()
+        clearPendingVerification()
+    }
+
+    /// Naming the instant companion, on the same screen Android returns to for
+    /// it. Its own view, not a computed property here, because the button has
+    /// to track `TemporaryUsernameFieldModel` — a nested `ObservableObject`,
+    /// whose changes do not reach this view's `viewModel` subscription. Read
+    /// from here, Continue stayed disabled after the name was found available
+    /// and only woke up when something unrelated republished.
+    private var instantUsernameForm: some View {
+        InstantUsernameForm(
+            temporaryField: viewModel.temporaryField,
+            requestedUsername: viewModel.username,
+            onContinue: {
+                isTextInputFocused = false
+                showConfirmRequest = true
+            })
+    }
+
+    /// The contested-name disclosure, as a `SystemMessageView`.
+    ///
+    /// Four shapes, all in the same component so the row never changes its
+    /// look mid-typing:
+    ///
+    /// - Not yet submitted: the designed line — the network will vote, and
+    ///   when the result is due. No contest exists yet, so that deadline is a
+    ///   projection from the network's own poll duration (see below).
+    /// - A vote already running: the real deadline the network reports, and
+    ///   whether a request can still join it.
+    /// - Past the deadline: the result is being finalized.
+    ///
+    /// The last two keep warning styling — they qualify what submitting will
+    /// do — while the plain case is information, so it takes the info mark.
+    /// `See details` opens the voting explainer in every shape.
     private var contestedNameWarning: some View {
         let voteInProgress = viewModel.activeContestContenders != nil
         let title: String
-        let body: String
+        let body: String?
+        var isWarning = false
+
         if voteInProgress, viewModel.activeContestHasEnded {
             title = NSLocalizedString("Vote ended", comment: "Usernames")
             body = NSLocalizedString(
                 "The masternode vote for this name has ended and the result is being finalized. Check back soon.",
                 comment: "Usernames")
+            isWarning = true
         } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt, viewModel.activeContestJoinClosed {
             title = NSLocalizedString("Vote in progress", comment: "Usernames")
             body = String.localizedStringWithFormat(
@@ -613,6 +982,7 @@ struct CreateUsernameView: View {
                     "A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote.",
                     comment: "Usernames"),
                 Self.contestDeadlineText(endsAt))
+            isWarning = true
         } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt {
             title = NSLocalizedString("Vote in progress", comment: "Usernames")
             body = String.localizedStringWithFormat(
@@ -625,30 +995,60 @@ struct CreateUsernameView: View {
             body = NSLocalizedString(
                 "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.",
                 comment: "Usernames")
-        } else {
-            title = NSLocalizedString("Contested name", comment: "Usernames")
+        } else if viewModel.isLockedContestedName {
+            // The vote already happened and went to nobody. Everything below
+            // projects a deadline for a vote that has yet to run, which for a
+            // locked name promised a future result the network can never
+            // deliver — and an invented date to go with it.
+            title = NSLocalizedString("This name is locked", comment: "Usernames")
             body = NSLocalizedString(
-                "This name requires a masternode vote.",
+                "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.",
                 comment: "Usernames")
+            isWarning = true
+        } else if let resultsBy = Self.projectedVotingDeadlineText() {
+            // One sentence in the title slot, as designed — there is no
+            // heading over it, the statement IS the message.
+            title = String.localizedStringWithFormat(
+                NSLocalizedString("The Dash network will vote on this username. Results by %@.", comment: "Usernames"),
+                resultsBy)
+            body = nil
+        } else {
+            title = NSLocalizedString("The Dash network will vote on this username.", comment: "Usernames")
+            body = nil
         }
-        return HStack(alignment: .top, spacing: 12) {
-            Image(systemName: voteInProgress ? "person.2.fill" : "exclamationmark.triangle.fill")
-                .foregroundColor(.orange)
-                .font(.system(size: 20))
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.orange)
-                Text(body)
-                    .font(.caption)
-                    .foregroundColor(.dash.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+        return DashUIKit.SystemMessageView(
+            title: title,
+            subtitle: body,
+            icon: isWarning
+                ? DashIcon.SystemMessage.warningTriangle.source
+                : DashIcon.SystemMessage.infoRectSmall.source,
+            backgroundColor: isWarning ? Color.dash.orangeAlpha10 : Color.dash.blueAlpha5,
+            buttonName: NSLocalizedString("See details", comment: "Usernames"),
+            onAction: { showVotingInfo = true },
+            // A link, not a call to action: the message is not asking to be
+            // acted on, it points at an explanation.
+            buttonStyle: .plainBlue
+        )
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// When a vote started now would be due, formatted for the disclosure.
+    ///
+    /// Before submission there is no contest to ask about, so this is the same
+    /// conservative projection the submission path persists as its fallback:
+    /// the protocol poll duration for the active network — 14 days on mainnet,
+    /// 90 minutes on testnet. A testnet projection lands today, where a bare
+    /// date says nothing, so that case carries the time as well.
+    private static func projectedVotingDeadlineText() -> String? {
+        guard let network = WalletEnvironment.network else { return nil }
+
+        let deadline = DWContestedNameStatusService.fallbackVotingEndTime(
+            submittedAt: Date(),
+            network: network)
+        return Calendar.current.isDateInToday(deadline)
+            ? contestDeadlineText(deadline)
+            : DWDateFormatter.sharedInstance.dateOnly(from: deadline)
     }
 
     /// Blue informational callout when the typed name is taken but its
@@ -772,13 +1172,234 @@ struct CreateUsernameView: View {
     /// the network would refuse is replaced by a fresh availability
     /// answer (which shows the join-closed state) instead of a
     /// broadcast failure.
+    /// What `Confirm` does depends on which name it just confirmed.
+    ///
+    /// - The instant companion: both names go in together.
+    /// - The requested name with a companion already named: same.
+    /// - The requested name on its own: offer the companion first. Android
+    ///   asks at exactly this moment too, which is why the offer is a second
+    ///   sheet rather than a section of the first.
+    /// - The requested name for an identity that already owns a name: no
+    ///   offer. A companion exists to give the user a name while the vote
+    ///   runs, and this one has one — after a lost contest, typically the
+    ///   companion from that round. Android skips it the same way
+    ///   (`hasSecondaryName()`).
+    private func confirmRequestAccepted() {
+        // What the sheet showed, before a later balance refresh can move it.
+        // For a new identity it is the funding, which also caps an identity
+        // the create path ends up reusing.
+        viewModel.captureConfirmedTopUp(
+            shownDuffs: confirmationAmountDuffs,
+            isCompanionPass: isNamingInstantUsername)
+        if isNamingInstantUsername {
+            sheetFollowUp = .submit(temporaryUsername: viewModel.temporaryField.trimmedText)
+        } else if identityOwnsUsername {
+            sheetFollowUp = .submit(temporaryUsername: nil)
+        } else {
+            sheetFollowUp = .offerInstantUsername
+        }
+        showConfirmRequest = false
+    }
+
+    private var identityOwnsUsername: Bool {
+        let identity = DWCurrentUserIdentityInfo.shared
+        return identity.hasIdentity && !identity.usernames.isEmpty
+    }
+
+    /// Runs whatever the sheet that just closed asked for. Called from the
+    /// sheets' `onDismiss`, which is the first moment UIKit will present
+    /// anything else — including the PIN host.
+    private func runSheetFollowUp() {
+        guard let followUp = sheetFollowUp else {
+            // Dismissed with nothing queued behind it — the user swiped the
+            // offer or the verify screen away rather than answering it.
+            clearPendingVerification()
+            return
+        }
+        sheetFollowUp = nil
+
+        switch followUp {
+        case .verifyIdentity:
+            showVerifyIdentity = true
+        case .confirmRequest:
+            showConfirmRequest = true
+        case .offerInstantUsername:
+            showCreateInstantOffer = true
+        case .nameInstantUsername:
+            viewModel.temporaryField.seedSuggestion(from: viewModel.username)
+            isNamingInstantUsername = true
+        case .submit(let temporaryUsername):
+            confirmContestedSubmission(temporaryUsername: temporaryUsername)
+        }
+    }
+
+    /// What the confirmation shows: what actually leaves the chosen source.
+    /// A new identity is funded with the full contested minimum, and its
+    /// companion costs nothing more. An existing identity is not created
+    /// again: it is topped up by its shortfall for the final name count —
+    /// the requested pass shows the top-up for that name alone, the companion
+    /// pass what the second name adds — and the contest fund, paid from its
+    /// credits, is stated beside it (`identityPaidContestFeeDuffs`).
+    private var confirmationAmountDuffs: UInt64 {
+        if let single = existingIdentityTopUpDuffs(nameCount: 1) {
+            guard isNamingInstantUsername else { return single }
+            // What the second name adds over the figure confirmed for the
+            // requested one, so the two sheets sum to the two-name top-up as it
+            // stands now.
+            let total = existingIdentityTopUpDuffs(nameCount: 2) ?? single
+            let base = viewModel.requestedTopUpCeilingDuffs ?? single
+            return total > base ? total - base : 0
+        }
+        if isNamingInstantUsername { return 0 }
+        if DWCurrentUserIdentityInfo.shared.hasIdentity {
+            // An identity with no top-up route here (an invitation claim)
+            // registers on what it holds: only the contest fund is at stake.
+            // The fund is the marketplace's figure, credits to duffs
+            // (1 duff = 1000 credits).
+            return UsernameMarketplaceService.contestedFundCredits / 1000
+        }
+        return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+    }
+
+    /// The top-up the confirmation states for an existing identity, or nil
+    /// when none can happen (new identity, invitation claim).
+    private func existingIdentityTopUpDuffs(nameCount: UInt64) -> UInt64? {
+        guard !viewModel.isInvitationMode else { return nil }
+        return viewModel.existingIdentityTopUpDuffs(isContested: true, nameCount: nameCount)
+    }
+
     private func confirmContestedSubmission(temporaryUsername: String?) {
-        showContestedConfirmation = false
+        showConfirmRequest = false
+        showCreateInstantOffer = false
+        isNamingInstantUsername = false
         if viewModel.activeContestContenders != nil, viewModel.activeContestJoinClosed {
             viewModel.refreshRegistrationRecoveryState()
             return
         }
         performSubmit(temporaryUsername: temporaryUsername)
+    }
+
+    /// A plain name on an existing identity that needs a top-up asks for the
+    /// amount and source first; otherwise it submits straight away.
+    private func submitPlainName() {
+        let topUp = viewModel.isInvitationMode
+            ? nil
+            : viewModel.existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+        if let topUp, topUp > 0 {
+            // The alert's Confirm answers the source question, so it names
+            // the source that question would.
+            guard let source = sourceToName(nameCount: 1) else {
+                refuseSubmission(Self.noPayableSourceMessage)
+                return
+            }
+            pendingPlainTopUp = PlainTopUp(duffs: topUp, source: source)
+            showPlainTopUp = true
+            return
+        }
+        // No alert, but still a ceiling, so the coordinator never runs a top-up
+        // nobody saw: none needed (0), or — with no identity known — the new
+        // identity's funding the cost rule states, which also caps an identity
+        // the create path turns out to reuse.
+        if !viewModel.isInvitationMode {
+            viewModel.captureConfirmedTopUp(
+                shownDuffs: topUp ?? viewModel.newIdentityFundingDuffs(isContested: false),
+                isCompanionPass: false)
+        }
+        performSubmit()
+    }
+
+    /// A source as the privacy page names it.
+    private static func sourceName(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .core: return NSLocalizedString("Dash balance", comment: "Usernames")
+        case .platformPayment: return NSLocalizedString("Platform balance", comment: "Usernames")
+        case .shielded: return NSLocalizedString("Shielded balance", comment: "Usernames")
+        case .invitation: return NSLocalizedString("Dash balance", comment: "Usernames")
+        @unknown default: return NSLocalizedString("Dash balance", comment: "Usernames")
+        }
+    }
+
+    /// Continue's routing. The paying source is settled later, in
+    /// `performSubmit` (asked there when the form picked it itself).
+    private func beginContinue() {
+        if viewModel.hasUnfinishedCoreTopUp(
+            source: payingSource(agreed: nil), nameCount: 1,
+            isPurchase: viewModel.canPurchaseListedNameDirectly) {
+            unfinishedTopUpContinuation = viewModel.canPurchaseListedNameDirectly
+                ? .purchase
+                : (viewModel.isContestedCandidate ? .contested : .plain)
+            showUnfinishedTopUp = true
+        } else if viewModel.canPurchaseListedNameDirectly {
+            showPurchaseConfirmation = true
+        } else if viewModel.isContestedCandidate {
+            // The verification offer comes first, as on
+            // Android: a link published with the request is
+            // what masternode owners weigh, and after the
+            // submission that window is already narrower.
+            showVerifyOffer = true
+        } else {
+            submitPlainName()
+        }
+    }
+
+    /// The source a question or the amount alert names for `nameCount`
+    /// names. A privacy-page pick stands — `performSubmit` refuses it if it
+    /// cannot pay, rather than switch away from it. Otherwise the form's pick,
+    /// else the first viable source in privacy order, that can pay for them:
+    /// the auto-pick judges one name. nil when none can.
+    private func sourceToName(nameCount: UInt64) -> DWIdentityFundingSource? {
+        if didUserPickFundingSource { return payingSource(agreed: nil) }
+        return viewModel.firstPayableSource(
+            of: [payingSource(agreed: nil)] + viableFundingSources, nameCount: nameCount)
+    }
+
+    private static var noPayableSourceMessage: String {
+        NSLocalizedString(
+            "None of your balances can pay for this request right now.",
+            comment: "Usernames: confirm the funding source")
+    }
+
+    /// Stops a submission before anything is sent and says why.
+    private func refuseSubmission(_ message: String) {
+        abandonSubmission()
+        registrationRefusalTitle = NSLocalizedString("Nothing was sent", comment: "Usernames: confirm the funding source")
+        registrationErrorMessage = message
+    }
+
+    /// Runs `action` once the alert whose button called it has gone. What
+    /// follows can present something itself — the error alert, the unfinished
+    /// top-up warning, the PIN host — and a presentation requested while an
+    /// alert is still animating out is dropped. `.alert` has no `onDismiss`.
+    ///
+    /// The wait is a fixed delay — the alert's dismissal animation, with
+    /// margin. The spinner holds Continue off meanwhile, so a second tap
+    /// cannot start a parallel chain, and nothing runs once the screen is gone.
+    private func afterAlertDismissal(_ action: @escaping () -> Void) {
+        inProgress = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            inProgress = false
+            // The screen left meanwhile: what the step would have submitted
+            // is abandoned, not left for the next visit to pick up.
+            guard isOnScreen else {
+                abandonSubmission()
+                return
+            }
+            action()
+        }
+    }
+
+    /// The source that pays for a submission: Core while a paid Core lock is
+    /// resumed, else the source the user agreed to, else the form's pick.
+    private func payingSource(agreed agreedSource: DWIdentityFundingSource?) -> DWIdentityFundingSource {
+        viewModel.registrationRecovery == .pendingCoreAssetLock ? .core : (agreedSource ?? fundingSource)
+    }
+
+    private static func sourceQuestionTitle(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .platformPayment: return NSLocalizedString("Pay from your Platform balance?", comment: "Usernames: confirm the funding source")
+        case .shielded: return NSLocalizedString("Pay from your Shielded balance?", comment: "Usernames: confirm the funding source")
+        default: return NSLocalizedString("Pay from your Dash balance?", comment: "Usernames: confirm the funding source")
+        }
     }
 
     /// Encapsulates the submit-to-bridge dance so the direct Continue
@@ -787,25 +1408,118 @@ struct CreateUsernameView: View {
     /// submit. The bridge resets to `.core` on every terminal phase, so
     /// a stale picker value can't leak into a future attempt; this
     /// single write is the only synchronization needed.
-    private func performSubmit(temporaryUsername: String? = nil) {
-        if !viewModel.isInvitationMode {
-            if viewModel.registrationRecovery == .pendingCoreAssetLock {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = .core
-            } else if !viewModel.isResumingUsername {
-                DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
-            }
+    /// `agreedSource` is the source the user agreed to at the source question;
+    /// nil until it was asked, or when it need not be.
+    private func performSubmit(temporaryUsername: String? = nil, agreedSource: DWIdentityFundingSource? = nil) {
+        // Another registration is running (started from Identities or an
+        // invitation): refuse before touching the bridge state it still reads
+        // — the funding source, top-up ceiling and companion it was given.
+        if DWIdentityRegistrationCoordinator.shared.isAttemptActive {
+            refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError.alreadyInFlight.localizedDescription)
+            return
         }
+        let nameCount: UInt64 = temporaryUsername == nil ? 1 : 2
+        viewModel.refreshCoreSpendable()
+        // Asked here, right before paying, so it names the source that pays.
+        if agreedSource == nil,
+           viewModel.fundingSourceNeedsConfirmation(nameCount: nameCount, sourcePickedByUser: didUserPickFundingSource) {
+            // The auto-pick judges one name; ask about a source that can pay
+            // for the names actually submitted, in the same privacy order.
+            guard let payable = sourceToName(nameCount: nameCount) else {
+                refuseSubmission(Self.noPayableSourceMessage)
+                return
+            }
+            sourceQuestion = SourceQuestion(source: payable, temporaryUsername: temporaryUsername)
+            showSourceQuestion = true
+            return
+        }
+        let payingSource = payingSource(agreed: agreedSource)
+        // Whatever chose it — the privacy page, the question, the amount
+        // alert — the source must still cover these names, or the request
+        // would fail after the PIN. A resumed Core lock is already paid.
+        if !viewModel.isInvitationMode, viewModel.registrationRecovery != .pendingCoreAssetLock,
+           !viewModel.canPay(from: payingSource, nameCount: nameCount) {
+            // Shielded picked and the identity needs a top-up: the balance may
+            // well hold enough — this flow has no Shielded top-up route. Say
+            // that, with the way out, in the coordinator's own words.
+            if payingSource == .shielded,
+               let neededDuffs = viewModel.existingIdentityTopUpDuffs(
+                   isContested: viewModel.isContestedCandidate, nameCount: nameCount),
+               neededDuffs > 0 {
+                refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
+                    .shieldedTopUpUnavailable(neededDuffs: neededDuffs).localizedDescription)
+            } else {
+                refuseSubmission(NSLocalizedString(
+                    "The chosen balance can't pay for this request. Check your balances and try again.",
+                    comment: "Usernames: confirm the funding source"))
+            }
+            return
+        }
+        // The two-name top-up can need Core where the one-name one did not:
+        // warn here too unless the user already chose to go ahead.
+        if !acknowledgedUnfinishedTopUp,
+           viewModel.hasUnfinishedCoreTopUp(source: payingSource, nameCount: nameCount) {
+            unfinishedTopUpContinuation = .submit(temporaryUsername: temporaryUsername, agreedSource: agreedSource)
+            showUnfinishedTopUp = true
+            return
+        }
+        acknowledgedUnfinishedTopUp = false
+        if !viewModel.isInvitationMode {
+            // An identity that already exists — resumed or not — is topped up
+            // from this source when it holds less than the name needs, so the
+            // pick matters on that path too.
+            DWIdentityRegistrationBridge.shared.preferredFundingSource = payingSource
+            // The top-up the user confirmed — on the contested sheets or the
+            // plain name's amount alert — is the most the coordinator may move
+            // without asking again; captured on Confirm, not recalculated here.
+            // None confirmed means none allowed: the coordinator refuses a
+            // top-up it was not given an amount for.
+            DWIdentityRegistrationBridge.shared.authorizedTopUpDuffs = viewModel.takeConfirmedTopUpCeiling()
+        }
+        // Every submission except an invitation claim reports its progress on
+        // the More row and this screen steps aside straight after the PIN.
+        // A contested one used to stay here to the end for its voting
+        // explanation; that explanation now lives on the row and behind
+        // "Request details", so keeping the screen up only hid the progress
+        // the user came to watch. An invitation claim still holds the screen:
+        // it carries the inviter contact request afterwards, which has nowhere
+        // else to go.
+        let handsOffToStatusRow = !viewModel.isInvitationMode
         Task {
-            // `inProgress` keeps the Continue spinner up — and the screen
-            // alive — across the PIN gate and the whole registration. The
+            // `inProgress` keeps the Continue spinner up across the PIN gate.
+            // Where the screen hands off, that is all it still does; otherwise
+            // it also holds the screen alive for the whole registration and the
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
             screenLockedAfterAuth = false
+            var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
-                screenLockedAfterAuth = true
+                if handsOffToStatusRow {
+                    // Fires once the registration is actually running: on the
+                    // coordinator's `.inFlight`, which is reached only after
+                    // the PIN prompt was answered. The work itself lives in
+                    // the app-scoped coordinator and outlives this screen.
+                    didHandOff = true
+                    // The label the registration actually went out under, not
+                    // a second normalization of the field: the two must name
+                    // the same attempt or the row reports an interruption for
+                    // a registration that is running.
+                    JoinDashPayViewModel.markRegistrationHandedOff(
+                        username: viewModel.submittedRegistrationUsername
+                            ?? viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines))
+                    handOffToStatusRow()
+                } else {
+                    screenLockedAfterAuth = true
+                }
             }
             inProgress = false
+
+            // The Home row owns the outcome now; alerts from a dismissed screen
+            // would either be invisible or land on top of Home. A PIN
+            // cancellation cannot follow the handoff: it fires on `.inFlight`,
+            // which both paths reach only after authorization.
+            guard !didHandOff else { return }
 
             switch outcome {
             case .success:
@@ -877,68 +1591,45 @@ struct CreateUsernameView: View {
         if viewModel.hasReadyShieldedFunding {
             sources.append(.shielded)
         }
-        if viewModel.hasMinimumRequiredPlatformBalance {
-            sources.append(.platformPayment)
-        }
-        if viewModel.hasMinimumRequiredCoreBalance {
-            sources.append(.core)
+        // Not gated on advanced mode: a retry or recovery of a Platform-funded
+        // attempt must still finish here. Without advanced mode, though, the
+        // balance the user can see comes first, so a form opened with no pick
+        // (a retry from Request details) is not paid from one they cannot.
+        let platform = viewModel.hasMinimumRequiredPlatformBalance
+        let core = viewModel.hasMinimumRequiredCoreBalance
+        if viewModel.isAdvancedMode {
+            if platform { sources.append(.platformPayment) }
+            if core { sources.append(.core) }
+        } else {
+            if core { sources.append(.core) }
+            if platform { sources.append(.platformPayment) }
         }
         return sources
     }
 
-    /// Picker binding that records an explicit user pick, so the
-    /// auto-pinning in `syncFundingSourceToViableSource()` stops
-    /// overriding the selection. Programmatic assignments write
-    /// `fundingSource` directly and deliberately bypass this.
-    private var userFundingSourceBinding: Binding<DWIdentityFundingSource> {
-        Binding(
-            get: { fundingSource },
-            set: { newValue in
-                didUserPickFundingSource = true
-                fundingSource = newValue
-            })
-    }
-
-    private func fundingSourceLabel(_ source: DWIdentityFundingSource) -> String {
-        switch source {
-        case .shielded:
-            return "Shielded (\(viewModel.shieldedBalance) Dash)"
-        case .platformPayment:
-            return "Platform (\(viewModel.platformPaymentBalance) Dash)"
-        case .core:
-            return "Core (\(viewModel.balance) Dash)"
-        case .invitation:
-            // Never user-pickable — `viableFundingSources` never
-            // contains it and the picker is hidden in invitation mode.
-            return ""
-        }
-    }
-
-    /// One-line privacy consequence of the current pick, shown under
-    /// the picker whenever it is visible.
-    private var fundingPrivacyFootnote: some View {
-        Text(fundingSource == .shielded
-            ? NSLocalizedString("Funded from your Shielded balance — your username can't be linked to your other Dash.", comment: "Usernames")
-            : NSLocalizedString("Transparent funding publicly links your username to these funds.", comment: "Usernames"))
-            .font(.caption2)
-            .foregroundColor(.dash.secondaryText)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    /// Keep `fundingSource` pointing at a viable source. Until the
-    /// user explicitly picks one, pin to the highest-priority viable
-    /// source (Shielded → Platform → Core); after an explicit pick,
-    /// only correct a selection that is no longer viable.
+    /// Keep `fundingSource` pointing at a viable source. With no choice
+    /// carried in from the privacy page, pin to the highest-priority viable
+    /// source (`viableFundingSources`' order); with one, never override it.
     private func syncFundingSourceToViableSource() {
+        defer { viewModel.setActiveFundingSource(fundingSource) }
+
         let viable = viableFundingSources
         guard let preferred = viable.first else {
             // Nothing viable — leave the selection alone; the Continue
             // button is disabled by the cost rule anyway.
             return
         }
-        if !viable.contains(fundingSource) || !didUserPickFundingSource {
-            fundingSource = preferred
-        }
+
+        // A privacy-page pick stands, affordable or not. The form has no picker
+        // and asks only about a source it picked itself, so a quiet switch
+        // away from the user's pick would go unannounced: a user who chose Shielded and then typed a contested name
+        // its pool cannot cover would be funded from Core, linking the
+        // identity to transparent funds they declined. Holding the pick lets
+        // the cost rule fail against it and keeps Continue disabled; changing
+        // it is the user's move, back on the privacy page, which asks for the
+        // transparent balance too rather than picking one.
+        if didUserPickFundingSource { return }
+        fundingSource = preferred
     }
 
     private func getMessageForBlockedRule() -> String {
@@ -981,137 +1672,50 @@ struct CreateUsernameView: View {
     }
 }
 
-/// Contested-name confirmation sheet. Replaces the old plain
-/// "Submit anyway" alert: besides acknowledging the vote wait and the
-/// locked Dash, it prompts the user to register a non-contested
-/// temporary username to the same identity in the same flow (one PIN
-/// prompt) — they are reachable at it while the vote runs, and keep it
-/// permanently afterwards. Skipping is an explicit secondary action;
-/// swiping the sheet down cancels the submission entirely.
-private struct ContestedNameConfirmationSheet: View {
-    @ObservedObject var viewModel: CreateUsernameViewModel
-    @ObservedObject var temporaryField: TemporaryUsernameFieldModel
-    /// Called with the validated temporary username, or nil for
-    /// "continue without one". The caller dismisses the sheet.
-    let onSubmit: (String?) -> Void
-    let onCancel: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(voteMessage)
-                        .foregroundColor(.dash.secondaryText)
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top, 24)
-
-                    Text(NSLocalizedString("Add a temporary username", comment: "Usernames"))
-                        .foregroundColor(.dash.primaryText)
-                        .font(.subheadline.bold())
-                        .padding(.top, 24)
-                    Text(String.localizedStringWithFormat(
-                        NSLocalizedString(
-                            "While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames.",
-                            comment: "Usernames"),
-                        viewModel.username))
-                        .foregroundColor(.dash.secondaryText)
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top, 4)
-
-                    TemporaryUsernameField(model: temporaryField)
-                        .padding(.top, 16)
-                }
-            }
-            // The buttons below sit outside this ScrollView, and `BottomSheet`'s
-            // `edgesIgnoringSafeArea(.bottom)` swallows the keyboard region as well as the
-            // home indicator, so nothing moves when the keyboard appears. Let a drag put it
-            // away; the toolbar below gives an explicit way out too.
-            .scrollDismissesKeyboard(.interactively)
-
-            DashButton(
-                text: NSLocalizedString("Submit both usernames", comment: "Usernames"),
-                isEnabled: temporaryField.check == .available
-            ) {
-                onSubmit(temporaryField.trimmedText)
-            }
-            .padding(.top, 8)
-
-            DashButton(
-                text: NSLocalizedString("Continue without a temporary username", comment: "Usernames"),
-                style: .plain
-            ) {
-                onSubmit(nil)
-            }
-            .padding(.top, 4)
-
-            DashButton(
-                text: NSLocalizedString("Cancel", comment: ""),
-                style: .plain
-            ) {
-                onCancel()
-            }
-            .padding(.top, 4)
-        }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button(NSLocalizedString("Done", comment: "")) {
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }
-            }
-        }
-        .onAppear {
-            temporaryField.seedSuggestion(from: viewModel.username)
-        }
-    }
-
-    /// The join-the-vote wording only holds while the join window is
-    /// still open; past it (or with no known contest) the generic
-    /// contested message is the honest one — same rule as the alert
-    /// this sheet replaced. Both variants state the real fee semantics:
-    /// the contest fee is SPENT at submission (it prefunds the vote
-    /// poll's specialized balance, whose leftover goes to the network's
-    /// processing pools at poll end — see rs-drive-abci's
-    /// `clean_up_after_contested_resources_vote_polls_end`), never
-    /// locked-and-returned.
-    private var voteMessage: String {
-        viewModel.activeContestContenders != nil && !viewModel.activeContestJoinClosed
-            ? NSLocalizedString(
-                "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
-                comment: "Usernames")
-            : NSLocalizedString(
-                "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
-                comment: "Usernames")
-    }
-}
-
 // MARK: - TemporaryUsernameField
 
-/// TextInput + single validation rule row for a temporary-username
-/// field, bound to a `TemporaryUsernameFieldModel`. Shared by the
-/// contested confirmation sheet above and `UsernameRequestStatusScreen`'s
-/// register section so the two surfaces render the same rules.
+/// Field + single validation rule row for a temporary-username field, bound to
+/// a `TemporaryUsernameFieldModel`. Shared by the contested confirmation sheet
+/// above and `UsernameRequestStatusScreen`'s register section so the two
+/// surfaces render the same rules.
+///
+/// The same field and the same rule row as the main form, so the companion pass
+/// does not look like a different screen — but no card: this one already sits
+/// inside a bottom sheet, and a card inside a sheet is a second surface for no
+/// reason.
 struct TemporaryUsernameField: View {
     @ObservedObject var model: TemporaryUsernameFieldModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TextInput(
-                label: NSLocalizedString("Temporary username", comment: "Usernames"),
+            DashUIKit.AddressFieldView(
                 text: $model.text,
-                autocapitalization: .never)
+                label: NSLocalizedString("Temporary username", comment: "Usernames"),
+                placeholder: NSLocalizedString("Enter a username", comment: "Usernames"),
+                hasError: ruleResult == .invalid || ruleResult == .invalidCritical || ruleResult == .error)
 
             if ruleResult != .hidden {
-                ValidationCheck(
-                    validationResult: ruleResult,
-                    text: ruleText
-                ).padding(.top, 16)
+                DashUIKit.Criteria([
+                    DashUIKit.Criterion(
+                        id: "temporary-username",
+                        text: ruleText,
+                        state: Self.criterionState(ruleResult)),
+                ])
+                .padding(.top, 20)
             }
+        }
+    }
+
+    /// Same mapping as the main form's — see
+    /// `CreateUsernameView.criterionState(_:)` for why the pairs collapse.
+    private static func criterionState(_ result: UsernameValidationRuleResult) -> DashUIKit.CriterionState {
+        switch result {
+        case .empty, .hidden: return .pending
+        case .loading: return .checking
+        case .valid: return .met
+        case .warning: return .warning
+        case .invalid: return .failed
+        case .invalidCritical, .error: return .blocking
         }
     }
 
@@ -1155,3 +1759,49 @@ struct TemporaryUsernameField: View {
         }
     }
 }
+
+/// Companion-naming pass of the create-username screen.
+///
+/// `@ObservedObject` on the field is the point of the type: the availability
+/// check publishes on it, and Continue is gated on that check.
+private struct InstantUsernameForm: View {
+    @ObservedObject var temporaryField: TemporaryUsernameFieldModel
+    /// The contested name already confirmed, quoted in the explanation. Fixed
+    /// here — this pass names the companion, not the request.
+    let requestedUsername: String
+    let onContinue: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                DashUIKit.TopIntroView(
+                    title: NSLocalizedString("Create an instant username", comment: "Usernames"),
+                    mainDescription: String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "While “%@” is out for a vote it does not belong to you yet and other users cannot find you by it. This username works right away and stays yours whatever the vote decides.",
+                            comment: "Usernames"),
+                        requestedUsername))
+                    .padding(.top, 12)
+
+                TemporaryUsernameField(model: temporaryField)
+                    .padding(.top, 20)
+
+                DashButton(
+                    text: NSLocalizedString("Continue", comment: ""),
+                    isEnabled: temporaryField.check == .available,
+                    action: onContinue
+                )
+                .padding(.top, 20)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        // Always draggable, not only when the content overflows: this screen
+        // is short enough to fit above the keyboard, and a scroll view that
+        // cannot move gives no way to drag the keyboard away.
+        .scrollBounceBehavior(.always)
+        .scrollDismissesKeyboard(.interactively)
+    }
+}
+

@@ -25,16 +25,19 @@ import SwiftUI
 /// Menu → Voting. Lists every open DPNS username contest on the network and
 /// lets masternodes and evonodes registered to this wallet vote on them.
 ///
-/// Browsing needs no masternode. The voting controls are enabled only when the
-/// wallet derives the voting key of at least one active registration.
+/// Browsing needs no masternode. Voting needs the voting key of at least one
+/// active masternode: derived by the wallet, or added through the voting-key
+/// flow this screen's header opens.
 struct UsernameVotingScreen: View {
     /// Pops the UIKit stack. The screen lives inside its own `NavigationStack`
-    /// (see `GovernanceMenuScreen.showVoting`), so the back button has to be
-    /// wired explicitly — SwiftUI cannot see the UIKit stack underneath it.
+    /// (see `MainMenuScreen.showVoting`), so the back button has to be wired
+    /// explicitly — SwiftUI cannot see the UIKit stack underneath it.
     let onClose: () -> Void
 
     @StateObject private var viewModel = VotingViewModel()
     @State private var showingNodePicker = false
+    /// Where the voting-key flow opens, while it is shown.
+    @State private var keyFlowStart: VotingKeysFlow.Start?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -43,7 +46,9 @@ struct UsernameVotingScreen: View {
                 totalWeight: viewModel.totalVoteWeight,
                 effectiveSelection: viewModel.effectiveSelectedNodeIDs,
                 selectedNodeIDs: $viewModel.selectedNodeIDs,
-                onEditSelection: { showingNodePicker = true })
+                onEditSelection: { showingNodePicker = true },
+                onAddKey: { keyFlowStart = .addKey },
+                onShowKeys: { keyFlowStart = .keyList })
 
             if viewModel.nodeListMayBeIncomplete {
                 VotingBanner(
@@ -108,6 +113,14 @@ struct UsernameVotingScreen: View {
             VotingNodeSelectionSheet(
                 nodes: viewModel.votableNodes,
                 selectedNodeIDs: $viewModel.selectedNodeIDs)
+        }
+        .sheet(item: $keyFlowStart) { start in
+            // Not opened from a vote, so the list's button only closes.
+            VotingKeysFlow(
+                start: start,
+                continuesToVote: false,
+                viewModel: viewModel,
+                onFinish: { _ in keyFlowStart = nil })
         }
         .task { await viewModel.refreshIfNeeded() }
         .refreshable { await viewModel.refresh() }
@@ -183,7 +196,7 @@ struct UsernameVotingScreen: View {
 // MARK: - VoterCapacityHeader
 
 /// States plainly how much voting power this wallet actually has. When it has
-/// none, it says so and points at where masternodes would appear — it never
+/// none, it says so and offers to add a masternode voting key — it never
 /// implies a check passed that did not.
 private struct VoterCapacityHeader: View {
     let nodes: [VoterNode]
@@ -197,6 +210,10 @@ private struct VoterCapacityHeader: View {
     @Binding var selectedNodeIDs: Set<Data>
     /// Opens the node picker.
     let onEditSelection: () -> Void
+    /// Opens the voting-key input — offered when there is no node.
+    let onAddKey: () -> Void
+    /// Opens the list of nodes this wallet votes with.
+    let onShowKeys: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -209,10 +226,16 @@ private struct VoterCapacityHeader: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                     Text(NSLocalizedString(
-                        "This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes.",
+                        "This wallet holds no active masternode voting keys, so it cannot vote.",
                         comment: "Voting"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
+                    // The only way to a voting key outside advanced mode, where
+                    // Governance → Masternodes is not shown.
+                    Button(NSLocalizedString("Add masternode voting key", comment: "Voting"), action: onAddKey)
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.borderless)
+                        .padding(.top, 4)
                 } else {
                     Text(nodeSummary)
                         .font(.subheadline)
@@ -224,6 +247,14 @@ private struct VoterCapacityHeader: View {
             }
 
             Spacer(minLength: 0)
+
+            if !nodes.isEmpty {
+                Button(action: onShowKeys) {
+                    Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderless)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

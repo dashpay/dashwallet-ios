@@ -27,6 +27,7 @@ import Combine
 import Foundation
 import OSLog
 import SwiftDashSDK
+import SwiftData
 
 /// The exact transaction used for an in-process Core SPV restart. It is kept
 /// free of SDK types so the stop → start ordering, error propagation and busy
@@ -218,6 +219,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// during the current run, so a subsequent full sync can mark recovery
     /// complete when nothing remains to recover. `nil` when no widen is active.
     private var coinJoinRecoveryWidenedNetwork: Network?
+    /// The wallets widened (and, under a reset intent, rewound) for the
+    /// current recovery scan, and the tip the scan was first seen complete
+    /// at. Completion is acknowledged only once each wallet's persisted
+    /// checkpoint reaches that tip — see `CoinJoinRescanCompletion`.
+    private var coinJoinRecoveryWalletIds: [Data] = []
+    private var coinJoinRecoveryScanTip: UInt32?
 
     /// Whether the manager publishers that feed progress, peers and the
     /// balance bridge are currently detached.
@@ -752,6 +759,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         runningNetwork = nil
         coinJoinRecoveryWidenedNetwork = nil
+        coinJoinRecoveryWalletIds = []
+        coinJoinRecoveryScanTip = nil
         resetPublishedState()
         self.lastError = lastError
     }
@@ -759,18 +768,23 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - CoinJoin recovery (one-time wide gap)
 
     /// Widen the CoinJoin address gap limit for the one-time recovery scan —
-    /// applied on the first launch per network for every wallet, until the
-    /// recovery flag is set (see `CoinJoinRecovery`). Must run BEFORE `startSpv`
-    /// so the initial filter covers the wide window. No-op once recovered.
-    /// Best-effort: a failure is logged and leaves the flag unset to retry next
-    /// launch.
+    /// applied on the first launch per network, until the recovery flag is set
+    /// (see `CoinJoinRecovery`). Must run BEFORE `startSpv` so the initial
+    /// filter covers the wide window. The flag is per network and one SPV
+    /// start syncs every wallet the manager holds, so every wallet is widened:
+    /// after a local-store reset all of them lost their persisted deep UTXOs,
+    /// and the flag set at the end of the scan must not leave an inactive
+    /// wallet unscanned. No-op once recovered. Best-effort: a failure is logged
+    /// and leaves the flag unset to retry next launch.
     @MainActor
     private func applyCoinJoinRecoveryGapIfNeeded(for network: Network) {
         coinJoinRecoveryWidenedNetwork = nil
+        coinJoinRecoveryWalletIds = []
+        coinJoinRecoveryScanTip = nil
         guard CoinJoinRecovery.shared.needsWideRecoveryGap(for: network) else { return }
 
-        guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            Self.logger.warning("🛰️ SPVCOORD :: coinjoin recovery: wallet not bound — skipping gap widen")
+        guard let manager = SwiftDashSDKHost.shared.manager, !manager.wallets.isEmpty else {
+            Self.logger.warning("🛰️ SPVCOORD :: coinjoin recovery: no wallets bound — skipping gap widen")
             return
         }
 
@@ -778,16 +792,45 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             // Widen the CoinJoin account's gap limit so the SPV scan re-discovers
             // mixed coins scattered beyond the default gap on BOTH the external
             // `/0/` and internal `/1/` pools. Core clamps to [1, MAX_GAP_LIMIT].
-            try wallet.coreWallet().setGapLimit(
-                accountType: .coinJoin,
-                accountIndex: 0,
-                gapLimit: CoinJoinRecovery.recoveryGapLimit)
+            for wallet in manager.wallets.values {
+                try wallet.coreWallet().setGapLimit(
+                    accountType: .coinJoin,
+                    accountIndex: 0,
+                    gapLimit: CoinJoinRecovery.recoveryGapLimit)
+            }
+            // A pending local-store reset intent: wallet rows that survived an
+            // interrupted removal keep their filter checkpoint, and dash-spv
+            // resumes at `syncedHeight + 1` however wide the gap is, so the
+            // history that lived only in the lost WAL would never be walked.
+            // Rewind every wallet to the import floor before `startSpv`; a
+            // rewind failure leaves the widened network unset, so the scan's
+            // completion cannot finish the intent, and the next start rewinds
+            // again.
+            if CoinJoinRecovery.shared.isResetRescanPending(for: network) {
+                let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
+                for wallet in manager.wallets.values {
+                    try manager.spvRescanFilters(walletId: wallet.walletId, fromHeight: floor)
+                }
+                // The rescan API lowers only the in-memory checkpoint. Lower
+                // the persisted one too, so the durable acknowledgement below
+                // can be met only by a checkpoint the persister writes AFTER
+                // this scan — never by a surviving pre-reset row that already
+                // sat at the tip. A failed save throws: fail closed, keep the
+                // intent, and let the next launch try again.
+                try persistLoweredCheckpoints(for: Array(manager.wallets.keys), floor: floor)
+                Self.logger.info(
+                    "🛰️ SPVCOORD :: reset rescan intent pending on \(network.rawValue, privacy: .public) — filter checkpoints rewound to \(floor, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
+            }
             coinJoinRecoveryWidenedNetwork = network
+            coinJoinRecoveryWalletIds = Array(manager.wallets.keys)
             Self.logger.info(
-                "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
         } catch {
+            // Partial widening or rewinding is not recorded: the flag and the
+            // intent stay, and the next launch widens and rewinds every
+            // wallet again.
             Self.logger.error(
-                "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery widen/rewind failed: \(String(describing: error), privacy: .public)")
         }
     }
 
@@ -853,23 +896,91 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }.value
     }
 
-    /// After a widened recovery scan reaches `.synced`, mark recovery complete
-    /// so future launches revert to the fast default gap. One completed wide
-    /// scan is sufficient: the deep CoinJoin (4') UTXOs it discovered — and
-    /// their address metadata — are persisted and reload on every later launch
-    /// independently of the gap limit, so re-widening would only re-find the
-    /// same coins. An interrupted scan never reaches `.synced`, so it safely
-    /// retries next launch. (Sweeping is the user's separate choice and no
-    /// longer drives re-scanning.)
+    /// After a widened recovery scan has completed on the network, mark
+    /// recovery complete so future launches revert to the fast default gap —
+    /// but only once the recovered rows are durably persisted. One completed
+    /// wide scan is sufficient: the deep CoinJoin (4') UTXOs it discovered —
+    /// and their address metadata — are persisted and reload on every later
+    /// launch independently of the gap limit, so re-widening would only
+    /// re-find the same coins. An interrupted scan never completes, so it
+    /// safely retries next launch. (Sweeping is the user's separate choice
+    /// and no longer drives re-scanning.)
+    ///
+    /// Completion is the steady-state reading, not only the transient
+    /// `.synced` snapshot (`CoinJoinRescanCompletion.networkScanComplete`);
+    /// the tip seen then is the bar every wallet's persisted checkpoint must
+    /// reach before the flag — and a pending reset intent — are finished.
     @MainActor
-    private func maybeCompleteCoinJoinRecovery(state: SPVSyncState) {
-        guard state == .synced,
-              let network = coinJoinRecoveryWidenedNetwork,
-              network == runningNetwork else { return }
+    private func maybeCompleteCoinJoinRecovery(state: SPVSyncState, progress: Double, scannedTip: UInt32) {
+        guard let network = coinJoinRecoveryWidenedNetwork, network == runningNetwork else { return }
+        if coinJoinRecoveryScanTip == nil,
+           CoinJoinRescanCompletion.networkScanComplete(
+               synced: state == .synced, waitingForEvents: state == .waitForEvents, progress: progress) {
+            coinJoinRecoveryScanTip = scannedTip
+            Self.logger.info("🛰️ SPVCOORD :: coinjoin recovery scan complete on \(network.rawValue, privacy: .public) at tip \(scannedTip, privacy: .public) — awaiting durable checkpoints")
+        }
+        acknowledgeCoinJoinRecoveryIfPersisted()
+    }
 
-        Self.logger.info("🛰️ SPVCOORD :: coinjoin recovery scan reached .synced on \(network.rawValue, privacy: .public) — marking recovered")
+    /// Finish the recovery once every widened wallet's persisted checkpoint
+    /// has reached the completed scan's tip. Called from the progress tick
+    /// and from every persister commit, since the ticks stop in steady state
+    /// while the persister may still be draining the scan's last batches. A
+    /// frozen checkpoint (rejected batch) or an unreadable row keeps the flag
+    /// and the intent, so the next launch widens and rewinds again.
+    @MainActor
+    private func acknowledgeCoinJoinRecoveryIfPersisted() {
+        guard let network = coinJoinRecoveryWidenedNetwork, network == runningNetwork,
+              let tip = coinJoinRecoveryScanTip else { return }
+        let checkpoints = persistedCheckpoints(for: coinJoinRecoveryWalletIds)
+        guard CoinJoinRescanCompletion.durablyPersisted(scannedTip: tip, persistedCheckpoints: checkpoints) else { return }
+
+        Self.logger.info("🛰️ SPVCOORD :: coinjoin recovery durably persisted on \(network.rawValue, privacy: .public) for \(checkpoints.count, privacy: .public) wallet(s) at tip \(tip, privacy: .public) — marking recovered")
         CoinJoinRecovery.shared.markRecovered(for: network)
         coinJoinRecoveryWidenedNetwork = nil
+        coinJoinRecoveryWalletIds = []
+        coinJoinRecoveryScanTip = nil
+    }
+
+    /// Lower every wallet row's persisted `syncedHeight` to `floor` (never
+    /// raising it) in one save on the main context, the same write the SPV
+    /// Status screen's birth-height resync performs. Runs before `startSpv`,
+    /// so it cannot race the persister's own checkpoint writes.
+    @MainActor
+    private func persistLoweredCheckpoints(for walletIds: [Data], floor: UInt32) throws {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            throw StartError.runtimeNotRunning
+        }
+        let context = container.mainContext
+        for walletId in walletIds {
+            var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+            descriptor.fetchLimit = 1
+            guard let row = try context.fetch(descriptor).first else {
+                throw StartError.runtimeNotRunning
+            }
+            if row.syncedHeight > floor {
+                row.syncedHeight = floor
+            }
+        }
+        if context.hasChanges {
+            try context.save()
+        }
+    }
+
+    /// Each wallet's durable `syncedHeight` from the current network's store,
+    /// `nil` where the row cannot be read. A main-context fetch of a handful
+    /// of rows, on the same cadence as the balance refresh.
+    @MainActor
+    private func persistedCheckpoints(for walletIds: [Data]) -> [UInt32?] {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            return walletIds.map { _ in nil }
+        }
+        let context = ModelContext(container)
+        return walletIds.map { walletId in
+            var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+            descriptor.fetchLimit = 1
+            return (try? context.fetch(descriptor))?.first?.syncedHeight
+        }
     }
 
     @MainActor
@@ -906,6 +1017,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             .sink { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.refreshBalanceBridge()
+                    // The persister just committed: the recovery scan's rows
+                    // may now be durable even though progress ticks stopped.
+                    self?.acknowledgeCoinJoinRecoveryIfPersisted()
                 }
             }
     }
@@ -967,7 +1081,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         // Once a wide recovery scan has fully synced, revert to the fast gap if
         // there's nothing (left) to recover.
-        maybeCompleteCoinJoinRecovery(state: mappedState)
+        maybeCompleteCoinJoinRecovery(
+            state: mappedState,
+            progress: p.overallPercentage,
+            scannedTip: p.filters?.currentHeight ?? headersCurrent)
     }
 
     /// Pull the latest core-wallet balance via FFI and republish through
@@ -1055,13 +1172,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// network name so two devnets keep separate headers and filters — see
     /// the `Network.persistenceScope` doc.
     private func makeSPVDataDirectory(for network: Network) throws -> URL {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SPV", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().spv
             .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
@@ -1234,11 +1345,11 @@ enum SPVChainResyncMarker {
         UserDefaults.standard.removeObject(forKey: key(for: network))
     }
 
-    /// Clear pending markers on a wallet wipe: the rows and chain data they
-    /// reference are gone, so a stale marker would only wipe the next
-    /// wallet's fresh sync. Clears every startable network, mirroring
-    /// `CoinJoinRecovery.resetForWipe`.
-    static func resetForWipe() {
+    /// Clear every pending marker: the rows and chain data they reference are
+    /// gone (wallet wipe or local-store reset), so a stale marker would only
+    /// rewind the next fresh sync's checkpoint. Clears every startable
+    /// network, mirroring `CoinJoinRecovery.resetRecoveryFlags`.
+    static func clearAll() {
         clear(for: .mainnet)
         clear(for: .testnet)
         clear(for: .devnet)
@@ -1246,5 +1357,10 @@ enum SPVChainResyncMarker {
         for scope in DevnetConfiguration.persistedDevnetScopes() {
             UserDefaults.standard.removeObject(forKey: key(scope: scope))
         }
+    }
+
+    /// Wallet wipe: same as `clearAll`, named for the wiper's call site.
+    static func resetForWipe() {
+        clearAll()
     }
 }

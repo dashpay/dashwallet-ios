@@ -149,6 +149,7 @@ struct SendScreen: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.asciiCapable)
                     .lineLimit(2...4)
+                    .accessibilityIdentifier("send_address_field")
                     .focused($addressFieldFocused)
                     .onAppear {
                         // Rendered after tapping the locked card → put the
@@ -211,6 +212,7 @@ struct SendScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("send_address_locked")
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
