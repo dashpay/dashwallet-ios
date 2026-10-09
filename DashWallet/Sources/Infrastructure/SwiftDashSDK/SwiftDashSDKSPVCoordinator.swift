@@ -811,6 +811,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 for wallet in manager.wallets.values {
                     try manager.spvRescanFilters(walletId: wallet.walletId, fromHeight: floor)
                 }
+                // The rescan API lowers only the in-memory checkpoint. Lower
+                // the persisted one too, so the durable acknowledgement below
+                // can be met only by a checkpoint the persister writes AFTER
+                // this scan — never by a surviving pre-reset row that already
+                // sat at the tip. A failed save throws: fail closed, keep the
+                // intent, and let the next launch try again.
+                try persistLoweredCheckpoints(for: Array(manager.wallets.keys), floor: floor)
                 Self.logger.info(
                     "🛰️ SPVCOORD :: reset rescan intent pending on \(network.rawValue, privacy: .public) — filter checkpoints rewound to \(floor, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
             }
@@ -933,6 +940,31 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         coinJoinRecoveryWidenedNetwork = nil
         coinJoinRecoveryWalletIds = []
         coinJoinRecoveryScanTip = nil
+    }
+
+    /// Lower every wallet row's persisted `syncedHeight` to `floor` (never
+    /// raising it) in one save on the main context, the same write the SPV
+    /// Status screen's birth-height resync performs. Runs before `startSpv`,
+    /// so it cannot race the persister's own checkpoint writes.
+    @MainActor
+    private func persistLoweredCheckpoints(for walletIds: [Data], floor: UInt32) throws {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            throw StartError.runtimeNotRunning
+        }
+        let context = container.mainContext
+        for walletId in walletIds {
+            var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+            descriptor.fetchLimit = 1
+            guard let row = try context.fetch(descriptor).first else {
+                throw StartError.runtimeNotRunning
+            }
+            if row.syncedHeight > floor {
+                row.syncedHeight = floor
+            }
+        }
+        if context.hasChanges {
+            try context.save()
+        }
     }
 
     /// Each wallet's durable `syncedHeight` from the current network's store,

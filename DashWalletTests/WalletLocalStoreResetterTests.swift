@@ -246,6 +246,20 @@ final class WalletLocalStoreResetterTests: XCTestCase {
         XCTAssertTrue(CoinJoinRescanCompletion.durablyPersisted(scannedTip: 2_300_000, persistedCheckpoints: [2_300_000, 2_300_004]))
     }
 
+    func testSurvivingCheckpointAtTheTipCountsOnlyAfterItWasLoweredAndRewritten() {
+        // A row that survived the interrupted reset already sat at the tip
+        // the widened scan completes at. The coordinator lowers the persisted
+        // checkpoint to the import floor before the scan, so the old value
+        // can no longer satisfy the acknowledgement...
+        let floor: UInt32 = 200_000, tip: UInt32 = 2_300_000
+        let lowered: UInt32? = min(tip, floor)
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: tip, persistedCheckpoints: [lowered]))
+        // ...a rejected or still-pending persistence batch leaves it there...
+        XCTAssertFalse(CoinJoinRescanCompletion.durablyPersisted(scannedTip: tip, persistedCheckpoints: [lowered, tip]))
+        // ...and only a checkpoint the persister writes after the scan does.
+        XCTAssertTrue(CoinJoinRescanCompletion.durablyPersisted(scannedTip: tip, persistedCheckpoints: [tip, tip]))
+    }
+
     func testPartialPlatformRemovalLeavesADirectoryWithoutItsStoreFile() async throws {
         try plant(roots.platform, "testnet", files: ["DashModel.sqlite", "DashModel.sqlite-wal"])
         try plant(roots.shielded, "testnet", files: ["commitment-tree.sqlite"])
