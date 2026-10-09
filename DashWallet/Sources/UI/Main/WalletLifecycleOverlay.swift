@@ -258,6 +258,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
                 // The phrase screen pops itself on resign, which as a modal
                 // root has nothing to pop from; the host takes the modal down.
                 self?.recoveryPhraseModal.dismiss(animated: false)
+                // A backup still waiting on the PIN prompt is withdrawn too:
+                // its outcome must not read or reveal the phrase after the
+                // app comes back. The user taps Backup again and unlocks.
+                self?.recoveryPhraseFlow.invalidatePendingAuthentication()
             }
             .store(in: &cancellables)
     }

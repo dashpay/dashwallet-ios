@@ -344,6 +344,10 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
 
     private var retryRequest: RetryRequest?
     private var pickerRetryDescriptor: RecoveryPhraseWalletDescriptor?
+    /// Bumped by `invalidatePendingAuthentication`; an authentication that
+    /// started under an older value is discarded when it resolves, so the
+    /// phrase is never read or shown for a request the host has withdrawn.
+    private var authenticationGeneration: UInt64 = 0
 
     /// The PIN gate run before any keychain read. Hosts inside a `.normal`
     /// window keep the default; the wallet-open failure overlay injects a
@@ -428,6 +432,17 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
         }
     }
 
+    /// Withdraw a backup request still awaiting authentication. Hosts call
+    /// this when the app resigns active: a PIN verified just before Control
+    /// Center or another interruption would otherwise resume after the app
+    /// returns and reveal the phrase without a fresh unlock. A later outcome
+    /// from that prompt is dropped — no read, no modal, no retry alert.
+    func invalidatePendingAuthentication() {
+        guard isBusy else { return }
+        authenticationGeneration &+= 1
+        Self.logger.info("Pending recovery-phrase authentication withdrawn")
+    }
+
     func retry() {
         let request = retryRequest
         alertState = nil
@@ -449,9 +464,14 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
     private func authenticate(for request: RetryRequest, action: @escaping () -> Void) {
         guard !isBusy else { return }
         isBusy = true
+        let generation = authenticationGeneration
         Task { @MainActor in
             let outcome = await runAuthentication()
             isBusy = false
+            // Resolved after the host withdrew the request: a stale outcome,
+            // whatever it says. Checking app activity here would miss an
+            // inactive→active transition that completes before the result.
+            guard generation == authenticationGeneration else { return }
             switch outcome {
             case .ok:
                 action()
