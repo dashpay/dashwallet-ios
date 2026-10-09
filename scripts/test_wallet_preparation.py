@@ -76,6 +76,9 @@ enum DWLogger { static func log(_ message: String) {} }
         "    private func registryNetworkKind(",
         "    private func recoverPersistedWallet(",
         "    func validateLocalStoreReset()",
+        # The wallet-open card's classification of a failed start: keys vs store.
+        "    nonisolated static func preparationFailure(forStartError",
+        "    nonisolated static func keysFailure(in",
     ))
     (sources / "HostRecoveryHarness.swift").write_text(r'''
 import Foundation
@@ -121,9 +124,16 @@ extension WalletEnvironment {
     func deleteWallet(walletId: Data) throws { wallets[walletId] = nil; Self.rows[walletId] = nil }
     func shutdown() async { Self.shutdowns += 1 }
 }
+/// The SDK's keychain error and the app's resolver error, as the host's keys
+/// classification matches them by type.
+enum WalletStorageError: Error { case keychainError(OSStatus), mnemonicNotFound }
+enum SwiftDashSDKWalletDeletionError: Error { case invalidMnemonic, unrecognizedWalletNetwork }
 @MainActor final class HostRecoveryHarness {
     static let logger = Logger(subsystem: "wallet-preparation-tests", category: "recovery")
-    enum HostError: Error { case walletNotFound(Network), walletBootstrapFailed(Error), mnemonicRoundTripMismatch, invalidMnemonic }
+    enum HostError: Error {
+        case sdkInitFailed(Error), modelContainerFailed(Error), walletNotFound(Network), walletBootstrapFailed(Error)
+        case mnemonicRoundTripMismatch, invalidMnemonic
+    }
     struct RuntimeHandles { let manager: PlatformWalletManager; let network: Network }
     static var directory: URL!
     nonisolated(unsafe) static var unreadableKeychain = false
@@ -143,7 +153,7 @@ extension WalletEnvironment {
     func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? { nil }
     func unlockDashPayContactCrypto(manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {}
     nonisolated static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
-        if unreadableKeychain { throw NSError(domain: "InjectedKeychain", code: 1) }
+        if unreadableKeychain { throw WalletStorageError.keychainError(-25308) }
         if nulMaterial { return [(Data("wallet-a".utf8), "wallet-a\u{0}trailing bytes")] }
         return ["wallet-a", "wallet-b"].map { (Data($0.utf8), $0) }
     }
@@ -298,6 +308,57 @@ import XCTest
         guard case HostRecoveryHarness.HostError.invalidMnemonic? = nul else {
             return XCTFail("Expected invalidMnemonic, got \(String(describing: nul))")
         }
+    }
+    /// The card record the runtime shows for a failed start, or nil when the
+    /// start succeeded or the error keeps its existing flow.
+    private func startFailure(_ host: HostRecoveryHarness) async -> WalletPreparationFailure? {
+        do { _ = try await host.start(network: .mainnet); return nil } catch {
+            return HostRecoveryHarness.preparationFailure(forStartError: error)
+        }
+    }
+    func testUnreadableKeychainShowsTheKeysCardWithItsStatus() async throws {
+        HostRecoveryHarness.unreadableKeychain = true
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .keychain)
+        XCTAssertEqual(failure?.codes, ["Keychain:unreadable", "OSStatus:-25308"])
+        XCTAssertEqual(failure?.canResetLocalData, false)
+    }
+    func testUnclassifiableMaterialShowsTheKeysCard() async throws {
+        HostRecoveryHarness.invalidMaterial = true
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .keychain)
+        XCTAssertEqual(failure?.codes, ["Keychain:unclassifiable"])
+    }
+    func testStoreWriteFailureWhileReplayingTheKeychainKeepsTheDatabaseCard() async throws {
+        PlatformWalletManager.failingMnemonic = "wallet-a"
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .database)
+        XCTAssertEqual(failure?.codes, ["OtherError:1"])
+        XCTAssertEqual(failure?.canResetLocalData, false)
+    }
+    func testOnlyKnownKeysCausesClassifyAsKeys() {
+        typealias HostError = HostRecoveryHarness.HostError
+        let swiftData = NSError(domain: "SwiftData.SwiftDataError", code: 1)
+        let store = HostRecoveryHarness.preparationFailure(forStartError: HostError.modelContainerFailed(swiftData))
+        XCTAssertEqual(store?.kind, .database)
+        XCTAssertEqual(store?.canResetLocalData, true)
+        // Keys readable, nothing eligible for the network: the database card's
+        // "keys are stored safely" is true there, and never a reset.
+        let notFound = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(HostError.walletNotFound(.mainnet)))
+        XCTAssertEqual(notFound?.kind, .database)
+        XCTAssertEqual(notFound?.canResetLocalData, false)
+        let mismatch = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(HostError.mnemonicRoundTripMismatch))
+        XCTAssertEqual(mismatch?.codes, ["Keychain:idMismatch"])
+        let missing = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(WalletStorageError.mnemonicNotFound))
+        XCTAssertEqual(missing?.codes, ["Keychain:notFound"])
+        let resolver = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork))
+        XCTAssertEqual(resolver?.codes, ["Keychain:unclassifiable"])
+        XCTAssertNil(HostRecoveryHarness.preparationFailure(forStartError: HostError.sdkInitFailed(swiftData)))
+        XCTAssertNil(HostRecoveryHarness.keysFailure(in: swiftData))
     }
 }
 ''')

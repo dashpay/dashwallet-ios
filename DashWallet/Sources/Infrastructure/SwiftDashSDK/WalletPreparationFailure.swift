@@ -1,15 +1,23 @@
 import Foundation
 import SQLite3
 
-/// Display and support evidence for a failed wallet open, or for a failed
-/// import of the previous app generation's wallet. Never retains an Error or
+/// Display and support evidence for a failed wallet open, for a failed
+/// import of the previous app generation's wallet, or for wallet keys that
+/// could not be read back from the keychain. Never retains an Error or
 /// its userInfo: Core Data errors can contain paths and stored values.
 struct WalletPreparationFailure: Equatable, Identifiable {
-    enum Kind: String { case database, storage, legacyMigration }
+    /// `keychain`: the store is not the problem — the wallet keys could not
+    /// be read or replayed from the keychain, and nothing was deleted.
+    enum Kind: String { case database, storage, legacyMigration, keychain }
 
     /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
     /// Only the migrator's terminal flag names leave this boundary.
     enum LegacyMigrationReason: String { case failed, unknownChain, timedOut, unreadableKeychain }
+
+    /// How the keychain replay of the wallet keys failed, as
+    /// `SwiftDashSDKHost.keysFailure(in:)` classifies it. Only these names and
+    /// the Security framework status of a failed read leave this boundary.
+    enum KeysReason: String { case unreadable, notFound, unclassifiable, idMismatch }
 
     let id: UUID
     let kind: Kind
@@ -22,6 +30,17 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         occurredAt = now
         kind = .legacyMigration
         codes = ["KeyMigrator:\(reason.rawValue)"]
+        canResetLocalData = false
+    }
+
+    /// The store opened, but the wallet keys could not be read or replayed.
+    /// Never resettable: deleting the store cannot help, and the card offers
+    /// no phrase backup either, since the phrase is what could not be read.
+    init(keys reason: KeysReason, status: OSStatus? = nil, now: Date = Date()) {
+        id = UUID()
+        occurredAt = now
+        kind = .keychain
+        codes = ["Keychain:\(reason.rawValue)"] + (status.map { ["OSStatus:\($0)"] } ?? [])
         canResetLocalData = false
     }
 
@@ -78,6 +97,10 @@ struct WalletPreparationFailure: Equatable, Identifiable {
             return NSLocalizedString("Couldn't move your wallet",
                                      comment: "Wallet preparation failure")
         }
+        if kind == .keychain {
+            return NSLocalizedString("Couldn't read your wallet keys",
+                                     comment: "Wallet preparation failure")
+        }
         return NSLocalizedString("Couldn't open your wallet data",
                                  comment: "Wallet preparation failure")
     }
@@ -91,6 +114,13 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         if kind == .storage {
             return NSLocalizedString(
                 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.",
+                comment: "Wallet preparation failure")
+        }
+        if kind == .keychain {
+            // Neither "your keys are safe" nor "your keys are lost": a read
+            // failed, and the keychain is untouched by the app.
+            return NSLocalizedString(
+                "Your wallet keys could not be read from this device's secure storage. Nothing was deleted. Do not delete this app. Try again or contact support for help.",
                 comment: "Wallet preparation failure")
         }
         return NSLocalizedString(

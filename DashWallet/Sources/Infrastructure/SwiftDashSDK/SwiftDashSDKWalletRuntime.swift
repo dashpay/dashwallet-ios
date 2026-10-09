@@ -913,12 +913,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 WalletLifecycleOverlayPresenter.shared.ensureActive()
                 let (manager, wallet) = try await WalletLifecycleTransitionState.shared.prepareWallet {
                     try await SwiftDashSDKHost.shared.start(network: network)
-                } failure: { error in
-                    if case let SwiftDashSDKHost.HostError.modelContainerFailed(underlying) = error {
-                        return WalletPreparationFailure(error: underlying)
-                    }
-                    return nil
-                }
+                } failure: { SwiftDashSDKHost.preparationFailure(forStartError: $0) }
                 PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(

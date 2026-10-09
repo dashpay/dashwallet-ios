@@ -519,6 +519,52 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// The wallet-open card's record for a failed `start(network:)`, or nil
+    /// for errors that keep their existing recovery flow (devnet preflight,
+    /// SDK init, configure). A store that would not open keeps the database
+    /// card; a bootstrap failure is a keys failure only when `keysFailure(in:)`
+    /// recognizes its cause, otherwise it is a store failure too — a SwiftData
+    /// write that failed while replaying the keychain, or a recovery marker
+    /// that could not be written — and the database card's Reset recreates the
+    /// rows from the keychain that was just read. Keys readable but nothing
+    /// eligible for the network (`walletNotFound`) also stays on that card:
+    /// its "keys are stored safely" copy is true and the phrase backup works.
+    nonisolated static func preparationFailure(forStartError error: Error) -> WalletPreparationFailure? {
+        switch error {
+        case HostError.modelContainerFailed(let underlying):
+            return WalletPreparationFailure(error: underlying)
+        case HostError.walletBootstrapFailed(let underlying):
+            if let keys = keysFailure(in: underlying) {
+                return WalletPreparationFailure(keys: keys.reason, status: keys.status)
+            }
+            return WalletPreparationFailure(error: underlying)
+        default:
+            return nil
+        }
+    }
+
+    /// Only a cause this host knows to be about the keys classifies as one;
+    /// every other error is treated as a store failure. Matched by type, not
+    /// by NSError domain: app enums bridge to domains carrying the module
+    /// name, and `WalletStorageError.keychainError` loses its status when
+    /// bridged.
+    nonisolated static func keysFailure(in error: Error) -> (reason: WalletPreparationFailure.KeysReason, status: OSStatus?)? {
+        switch error {
+        case WalletStorageError.keychainError(let status):
+            return (.unreadable, status)
+        case WalletStorageError.mnemonicNotFound:
+            return (.notFound, nil)
+        case SwiftDashSDKWalletDeletionError.invalidMnemonic,
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
+             HostError.invalidMnemonic:
+            return (.unclassifiable, nil)
+        case HostError.mnemonicRoundTripMismatch:
+            return (.idMismatch, nil)
+        default:
+            return nil
+        }
+    }
+
     private struct RuntimeHandles {
         let sdk: SDK
         let manager: PlatformWalletManager
