@@ -245,6 +245,28 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
+    func testParserKeepsTheLimitsAScannedKeyRegistrationCarries() throws {
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            Self.parsed(.identityUpdate(.init(
+                identityId: Data(repeating: 0x21, count: 32),
+                addPublicKeys: [
+                    .init(
+                        keyId: 1, keyType: .ecdsaHash160, purpose: .authentication,
+                        securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 20),
+                        totalBudget: 7, expiresAt: 9),
+                    .init(
+                        keyId: 2, keyType: .ecdsaSecp256k1, purpose: .encryption,
+                        securityLevel: .medium, pubkeyBytes: Data(repeating: 0x23, count: 33)),
+                ],
+                disablePublicKeyIds: [])))
+        }
+        guard case let .keyRegistration(transition) = try parser.parse(Data([0])) else {
+            return XCTFail("Expected a key-registration transition")
+        }
+        XCTAssertEqual(transition.addPublicKeys.map(\.totalBudget), [7, nil])
+        XCTAssertEqual(transition.addPublicKeys.map(\.expiresAt), [9, nil])
+    }
+
     func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
         let ownerId = Data(repeating: 0x21, count: 32)
         let contractId = Data(repeating: 0x22, count: 32)
@@ -1283,10 +1305,10 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
         viewModel.disconnect(Self.connection)
-        XCTAssertTrue(viewModel.isProcessingStateTransition)
+        XCTAssertTrue(viewModel.isDisconnecting)
         // A second tap while the first is still out must not start another.
         viewModel.disconnect(Self.connection)
-        await waitUntil { !viewModel.isProcessingStateTransition }
+        await waitUntil { !viewModel.isDisconnecting }
 
         XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
         XCTAssertEqual(viewModel.message?.kind, .error)
@@ -1298,7 +1320,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
         viewModel.disconnect(Self.connection)
-        await waitUntil { !viewModel.isProcessingStateTransition }
+        await waitUntil { !viewModel.isDisconnecting }
 
         XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
         XCTAssertNil(viewModel.message)
@@ -1514,7 +1536,7 @@ final class AppConnectLoginTests: XCTestCase {
     }
 
     func testDisconnectDisablesOnlyTheLiveSessionKeysItGranted() {
-        let responses = [9, 11, 12, 13].map { Self.response(sessionKeyId: $0) }
+        let grants = [9, 11, 12, 13].map { Self.grant(sessionKeyId: $0) }
         let keys = [
             Self.key(keyId: 0, securityLevel: .master, keyType: .ecdsaSecp256k1, data: Data([0])),
             Self.key(keyId: 9, data: Data([9])),
@@ -1528,15 +1550,15 @@ final class AppConnectLoginTests: XCTestCase {
             Self.key(keyId: 14, data: Data([14])),
         ]
         XCTAssertEqual(
-            AppConnect.sessionKeyIdsToDisable(for: responses, currentIdentityPublicKeys: keys),
+            AppConnect.sessionKeyIdsToDisable(for: grants, currentIdentityPublicKeys: keys),
             [9])
         XCTAssertEqual(
             AppConnect.sessionKeyIdsToDisable(for: [], currentIdentityPublicKeys: keys),
             [])
     }
 
-    private static func response(sessionKeyId: UInt32) -> AppConnectPublishedResponse {
-        AppConnectPublishedResponse(
+    private static func grant(sessionKeyId: UInt32) -> AppConnectGrant {
+        AppConnectGrant(
             identityId: "identity", appContractId: "app", documentId: "document-\(sessionKeyId)",
             values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
             sessionKeyId: sessionKeyId, totalBudget: nil, expiresAt: nil,
@@ -1571,10 +1593,10 @@ final class AppConnectLoginTests: XCTestCase {
         let walletEphemeralPrivateKeyBytes = Data(repeating: 0x09, count: 32)
         var walletEphemeralPrivateKey = walletEphemeralPrivateKeyBytes
 
-        let values = try AppConnect.responseValues(
-            sessionPrivateKey: sessionPrivateKey,
+        let values = AppConnect.ResponseValues(try AppConnect.seal(
+            sessionPrivateKey,
             appEphemeralPubKey: appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey)
+            walletEphemeralPrivateKey: &walletEphemeralPrivateKey))
 
         XCTAssertEqual(walletEphemeralPrivateKey, Data(repeating: 0, count: 32), "the ephemeral key is wiped")
         XCTAssertEqual(
@@ -1609,8 +1631,37 @@ final class AppConnectLoginTests: XCTestCase {
         ])
     }
 
+    func testAGrantWrittenBeforeTheDeleteFlagsExistedStillLoads() throws {
+        // The shape the first device run stored: no `responseDeleted`, no
+        // `keyDisabled`. Losing it would leave that key impossible to find.
+        let stored = """
+        [{"identityId":"identity","appContractId":"app","documentId":"document",
+          "values":{"appEphemeralPubKeyHash":"aa","walletEphemeralPubKey":"bb","encryptedPayload":"cc"},
+          "sessionKeyId":6,"totalBudget":5000000000,"expiresAt":1799315762000,"publishedAt":1791539765792}]
+        """
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        let grant = try XCTUnwrap(store.load().first)
+        XCTAssertEqual(grant.sessionKeyId, 6)
+        XCTAssertEqual(grant.documentId, "document")
+        XCTAssertNil(grant.responseDeleted)
+        XCTAssertNil(grant.keyDisabled)
+        XCTAssertTrue(grant.hasDeletableResponse)
+    }
+
+    func testAGrantHasNothingToDeleteBeforeItIsPublishedOrAfterItsResponseIsGone() {
+        var grant = Self.grant(sessionKeyId: 6)
+        XCTAssertTrue(grant.hasDeletableResponse)
+        grant.responseDeleted = true
+        XCTAssertFalse(grant.hasDeletableResponse)
+        grant.responseDeleted = nil
+        grant.documentId = nil
+        XCTAssertFalse(grant.hasDeletableResponse)
+    }
+
     func testPublishedResponsesSurviveAReloadAndAreScoped() {
-        let response = AppConnectPublishedResponse(
+        let response = AppConnectGrant(
             identityId: "identity", appContractId: "app", documentId: "document",
             values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
             sessionKeyId: 8, totalBudget: 5, expiresAt: 6,

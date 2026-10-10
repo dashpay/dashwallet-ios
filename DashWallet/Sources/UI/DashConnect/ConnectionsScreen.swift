@@ -51,7 +51,7 @@ struct ConnectionsScreen: View {
                 content
             }
 
-            if viewModel.isProcessingStateTransition {
+            if viewModel.isProcessingStateTransition || viewModel.isDisconnecting {
                 Color.black.opacity(0.08)
                     .ignoresSafeArea()
 

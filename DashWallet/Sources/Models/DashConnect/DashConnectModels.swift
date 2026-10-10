@@ -173,6 +173,14 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     }
 }
 
+/// Which login made a connection. It decides what turning it off means:
+/// a one-QR connection has a session key on the identity to disable, a
+/// two-QR connection does not (see `DashConnectDataSource.disconnect`).
+enum DashConnectLoginKind: String, Codable {
+    case twoQR
+    case oneQR
+}
+
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
     let id: String
@@ -180,6 +188,7 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
+    var loginKind: DashConnectLoginKind = .twoQR
 }
 
 /// A pending request derived from a scanned login QR code.

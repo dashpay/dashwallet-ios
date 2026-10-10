@@ -32,6 +32,21 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), connections)
     }
 
+    func testRoundTripKeepsWhichLoginMadeAConnection() {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        var oneQR = sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10))
+        oneQR.loginKind = .oneQR
+        let twoQR = sampleConnection(
+            id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 20))
+
+        store.save([oneQR, twoQR])
+
+        XCTAssertEqual(store.load().map(\.loginKind), [.oneQR, .twoQR])
+    }
+
     func testUnknownStatusDropsOnlyThatRow() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let payload: [[String: Any]] = [

@@ -19,7 +19,7 @@ enum AppConnect {
     /// Same id on every network (`docs/protocol/app-connect.md` in
     /// dashpay/platform).
     static let contractId = "H8F9mP1BM55TE1ShsxPZHzhyinaMdY9bMmP85mkDhcJJ"
-    static let documentType = "loginKeyResponse"
+    static let documentType = PlatformDashConnectDataSource.loginKeyExchangeDocumentType
 
     /// Limits put on every session key.
     /// TODO(app-connect-limits): the protocol leaves both values to the
@@ -100,14 +100,14 @@ enum AppConnect {
         )
     }
 
-    /// The session keys behind `responses` that can still sign: the ones a
+    /// The session keys behind `grants` that can still sign: the ones a
     /// disconnect has to disable. A key that is gone, already disabled, or no
     /// longer the kind of key this login registers is left alone.
     static func sessionKeyIdsToDisable(
-        for responses: [AppConnectPublishedResponse],
+        for grants: [AppConnectGrant],
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> [UInt32] {
-        let granted = Set(responses.map(\.sessionKeyId))
+        let granted = Set(grants.map(\.sessionKeyId))
         return currentIdentityPublicKeys
             .filter {
                 granted.contains(UInt32(bitPattern: $0.keyId))
@@ -126,6 +126,20 @@ enum AppConnect {
         let walletEphemeralPubKey: String
         let encryptedPayload: String
 
+        init(appEphemeralPubKeyHash: String, walletEphemeralPubKey: String, encryptedPayload: String) {
+            self.appEphemeralPubKeyHash = appEphemeralPubKeyHash
+            self.walletEphemeralPubKey = walletEphemeralPubKey
+            self.encryptedPayload = encryptedPayload
+        }
+
+        init(_ sealed: SealedKey) {
+            self.init(
+                appEphemeralPubKeyHash: sealed.appEphemeralPubKeyHash.toHexString(),
+                walletEphemeralPubKey: sealed.walletEphemeralPublicKey.toHexString(),
+                encryptedPayload: sealed.encryptedPayload.toHexString()
+            )
+        }
+
         /// The document's properties in the form `createDocument` and
         /// delete-by-values take.
         func propertiesJSON() throws -> String {
@@ -140,10 +154,19 @@ enum AppConnect {
         }
     }
 
-    /// Encrypts the session private key to the app. `walletEphemeralPrivateKey`
-    /// is wiped before returning.
-    static func responseValues(
-        sessionPrivateKey: Data,
+    /// A 32-byte key encrypted to an app's ephemeral key, with what the app
+    /// needs to find and open it. Shared by both logins: the two-QR response
+    /// carries the login key, the one-QR response the session private key.
+    struct SealedKey: Equatable {
+        let appEphemeralPubKeyHash: Data
+        let walletEphemeralPublicKey: Data
+        let encryptedPayload: Data
+    }
+
+    /// Encrypts `key` to the app. `walletEphemeralPrivateKey` is wiped before
+    /// returning.
+    static func seal(
+        _ key: Data,
         appEphemeralPubKey: Data,
         walletEphemeralPrivateKey: inout Data,
         encrypt: (Data, Data, Data) throws -> Data = { key, walletPriv, appPub in
@@ -153,7 +176,7 @@ enum AppConnect {
                 appEphemeralPub: appPub
             )
         }
-    ) throws -> ResponseValues {
+    ) throws -> SealedKey {
         defer { PlatformDashConnectDataSource.zero(&walletEphemeralPrivateKey) }
 
         let appEphemeralPubKeyHash = try KeyExchangeCrypto.hash160(appEphemeralPubKey)
@@ -161,25 +184,31 @@ enum AppConnect {
             throw DashConnectPlatformError.invalidHash160
         }
         let walletEphemeralPublicKey = try Secp256k1.compressedPublicKey(privateKey: walletEphemeralPrivateKey)
-        let encryptedPayload = try encrypt(sessionPrivateKey, walletEphemeralPrivateKey, appEphemeralPubKey)
+        let encryptedPayload = try encrypt(key, walletEphemeralPrivateKey, appEphemeralPubKey)
 
-        return ResponseValues(
-            appEphemeralPubKeyHash: appEphemeralPubKeyHash.toHexString(),
-            walletEphemeralPubKey: walletEphemeralPublicKey.toHexString(),
-            encryptedPayload: encryptedPayload.toHexString()
+        return SealedKey(
+            appEphemeralPubKeyHash: appEphemeralPubKeyHash,
+            walletEphemeralPublicKey: walletEphemeralPublicKey,
+            encryptedPayload: encryptedPayload
         )
     }
 }
 
-/// A response this wallet published and has not deleted yet, with the key it
-/// granted. The type is index-only on Platform: there is no lookup by app and
+/// A session key this wallet registered for an app, and the response that
+/// carried it. Kept until the key is disabled and the response is gone.
+///
+/// The response type is index-only on Platform: there is no lookup by app and
 /// a delete has to carry the original values, so this record is the only way
-/// back to the entry.
-struct AppConnectPublishedResponse: Codable, Equatable {
+/// back to the entry — and the only place that knows which key on the
+/// identity belongs to which app.
+struct AppConnectGrant: Codable, Equatable {
     /// Base58 ids.
     let identityId: String
     let appContractId: String
-    let documentId: String
+    /// `nil` until Platform confirmed the response: the grant is recorded
+    /// before publishing, so a publish whose outcome is unknown still leaves
+    /// a key that can be disabled.
+    var documentId: String?
     let values: AppConnect.ResponseValues
     let sessionKeyId: UInt32
     /// `nil` when the key was found already registered and its limits were
@@ -187,11 +216,22 @@ struct AppConnectPublishedResponse: Codable, Equatable {
     let totalBudget: UInt64?
     let expiresAt: UInt64?
     let publishedAt: Date
+    /// Set once the response was deleted from Platform while the key stays
+    /// live (a later login to the same app). Absent means not deleted.
+    var responseDeleted: Bool?
+    /// Set once a disconnect disabled the key but could not delete the
+    /// response; the record then only waits for that delete.
+    var keyDisabled: Bool?
+
+    /// Whether there is a response on Platform this record can still delete.
+    var hasDeletableResponse: Bool {
+        documentId != nil && responseDeleted != true
+    }
 }
 
 protocol AppConnectResponseStore {
-    func load() -> [AppConnectPublishedResponse]
-    func save(_ responses: [AppConnectPublishedResponse])
+    func load() -> [AppConnectGrant]
+    func save(_ grants: [AppConnectGrant])
 }
 
 /// Wallet- and network-scoped, like `UserDefaultsDashConnectStore`, whose
@@ -233,27 +273,29 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
         scopeKeyProvider().map { "\($0).app-connect-responses.v1" }
     }
 
-    func load() -> [AppConnectPublishedResponse] {
+    func load() -> [AppConnectGrant] {
         guard let storageKey, let data = defaults.data(forKey: storageKey) else { return [] }
         do {
-            return try decoder.decode([AppConnectPublishedResponse].self, from: data)
+            return try decoder.decode([AppConnectGrant].self, from: data)
         } catch {
-            // Losing the records is survivable: the next login still creates a
-            // fresh response, and the old entries stay until deleted by value.
+            // Without the records the keys they named can no longer be told
+            // apart on the identity. A one-QR row whose records are gone
+            // refuses to disconnect (`grantRecordsMissing`) instead of
+            // pretending the key was disabled.
             Self.logger.warning(
                 "AppConnectResponseStore: stored responses could not be decoded: \(error.localizedDescription, privacy: .public)")
             return []
         }
     }
 
-    func save(_ responses: [AppConnectPublishedResponse]) {
+    func save(_ grants: [AppConnectGrant]) {
         guard let storageKey else { return }
-        guard !responses.isEmpty else {
+        guard !grants.isEmpty else {
             defaults.removeObject(forKey: storageKey)
             return
         }
         do {
-            defaults.set(try encoder.encode(responses), forKey: storageKey)
+            defaults.set(try encoder.encode(grants), forKey: storageKey)
         } catch {
             Self.logger.error(
                 "AppConnectResponseStore: failed to encode responses: \(error.localizedDescription, privacy: .public)")
