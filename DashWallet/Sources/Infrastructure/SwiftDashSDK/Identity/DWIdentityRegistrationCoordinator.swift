@@ -300,7 +300,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// itself, which Platform takes from the credits it delivers.
     ///
     /// Deliberately below what a new identity keeps after IdentityCreate
-    /// (0.03 / 0.25 DASH minus the create fee): an identity this flow has
+    /// (0.03 DASH, or `ContestedUsernameFee`'s funding figure, minus the
+    /// create fee): an identity this flow has
     /// just funded must never read as short and trigger a second payment.
     static let registrationFeeHeadroomCreditsPerName: UInt64 = 1_000_000_000
 
@@ -310,15 +311,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// check is balance ≥ fund + fee), so it is required up front.
     static func requiredRegistrationCredits(
         username: String,
-        temporaryUsername: String?
+        temporaryUsername: String?,
+        contestFundCredits: UInt64
     ) -> UInt64 {
         requiredRegistrationCredits(
             isContested: DWContestedNameStatusService.isContestedLabel(username),
-            nameCount: temporaryUsername == nil ? 1 : 2)
+            nameCount: temporaryUsername == nil ? 1 : 2,
+            contestFundCredits: contestFundCredits)
     }
 
-    static func requiredRegistrationCredits(isContested: Bool, nameCount: UInt64) -> UInt64 {
-        let fund = isContested ? UsernameMarketplaceService.contestedFundCredits : 0
+    /// `contestFundCredits` is the fund on the running network
+    /// (`ContestedUsernameFee`), stated by the caller so one judgement uses
+    /// one figure throughout.
+    static func requiredRegistrationCredits(
+        isContested: Bool, nameCount: UInt64, contestFundCredits: UInt64
+    ) -> UInt64 {
+        let fund = isContested ? contestFundCredits : 0
         return fund + nameCount * registrationFeeHeadroomCreditsPerName
     }
 
@@ -755,10 +763,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentFundingSource = recoveryLock == nil ? fundingSource : .core
         failedAtPhase = nil
         lastErrorMessage = nil
+        // What Core or Platform fund a contested name's new identity with:
+        // `ContestedUsernameFee` as known right now. Within one network that
+        // figure only falls, so it is at or below what the form showed.
+        // Shielded does not use it — it spends its own exit denomination.
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredIdentityFundingDuffs = isContestedSubmission
-            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let requiredIdentityFundingDuffs = ContestedUsernameFee.shared.amounts
+            .newIdentityFundingDuffs(isContested: isContestedSubmission, fromShielded: false)
         Self.logger.info(
             "🪪 IDENT-COORD :: contested=\(isContestedSubmission) identityFundingDuffs=\(requiredIdentityFundingDuffs)")
 
@@ -851,7 +862,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs)),
+                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
         } catch {
@@ -1272,7 +1283,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         signer: KeychainSigner, newController: DWIdentityRegistrationController
     ) async throws {
         let requiredCredits = Self.requiredRegistrationCredits(
-            username: username, temporaryUsername: temporaryUsername)
+            username: username, temporaryUsername: temporaryUsername,
+            contestFundCredits: ContestedUsernameFee.shared.amounts.fundCredits)
         let heldCredits: UInt64
         do {
             heldCredits = try await wallet.refreshIdentityBalance(identityId: identityId)

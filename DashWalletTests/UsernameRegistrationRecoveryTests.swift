@@ -280,7 +280,9 @@ extension UsernameRegistrationRecoveryTests {
 
         // A 0.03 lock recovered, then a contested name: short, and not authorized.
         let contestedNeed = Coordinator.identityTopUpDuffs(
-            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: true, nameCount: 1),
+            requiredCredits: Coordinator.requiredRegistrationCredits(
+                isContested: true, nameCount: 1,
+                contestFundCredits: ContestedUsernameFee.Amounts.legacy.fundCredits),
             heldCredits: plainLockCredits)
         XCTAssertGreaterThan(contestedNeed, 0)
         let recovered = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: true)
@@ -289,7 +291,9 @@ extension UsernameRegistrationRecoveryTests {
 
         // The same lock for the plain name it was paid for: nothing to top up.
         let plainNeed = Coordinator.identityTopUpDuffs(
-            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: false, nameCount: 1),
+            requiredCredits: Coordinator.requiredRegistrationCredits(
+                isContested: false, nameCount: 1,
+                contestFundCredits: ContestedUsernameFee.Amounts.legacy.fundCredits),
             heldCredits: plainLockCredits)
         XCTAssertEqual(plainNeed, 0)
         XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: plainNeed, authorizedDuffs: recovered), .notNeeded)

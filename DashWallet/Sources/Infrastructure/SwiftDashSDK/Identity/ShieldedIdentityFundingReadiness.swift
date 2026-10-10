@@ -69,9 +69,10 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     /// the 0.03 DASH the transparent funding paths provision.
     static let standardDenominationCredits: UInt64 = 10_000_000_000
 
-    /// Exit denomination for contested usernames — 0.25 DASH in credits.
-    /// This is both the exact contested-name requirement and a member of
-    /// the current v9 shielded identity-create denomination set. The prior
+    /// Exit denomination for contested usernames — 0.25 DASH in credits:
+    /// the smallest member of the shielded identity-create denomination set
+    /// that covers a contested name (`ContestedUsernameFee`) on every
+    /// protocol version; protocol 14 lowered the cost, not the set. The prior
     /// 0.3 DASH denomination was retired and is rejected by Drive.
     static let contestedDenominationCredits: UInt64 = 25_000_000_000
 
