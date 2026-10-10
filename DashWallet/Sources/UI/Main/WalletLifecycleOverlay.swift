@@ -37,7 +37,7 @@ final class WalletLifecycleOverlayPresenter {
     private let state = WalletLifecycleTransitionState.shared
     private var cancellables = Set<AnyCancellable>()
     private var openingDelay: Task<Void, Never>?
-    private var lockScreenVisible = false
+    private(set) var lockScreenVisible = false
     private var applicationActive = false
     /// Set around every PIN gate a card runs (the migration card's Export
     /// Logs, the wallet-open card's Backup recovery phrase and Reset). The
