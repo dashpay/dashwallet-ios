@@ -345,10 +345,9 @@ final class IdentitiesViewModel: ObservableObject {
         } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
             .filter { !rejected.contains(DWContestedNameStatusService.dpnsKey($0)) }
-        let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
-        let isSoldAway: (String?) -> Bool = { candidate in
+        let hasLeft: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
-            return departedLabels.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
+            return DWCurrentUserIdentityInfo.hasNameLeft(candidate, identity: identity)
         }
         let pickedName = DWCurrentUserIdentityInfo.mainDpnsName(for: identity)
         let pendingBelongsToIdentity = pendingLabel != nil && (
@@ -360,16 +359,16 @@ final class IdentitiesViewModel: ObservableObject {
         let alias = identity.alias?.nonEmptyString
         // The display-pick scalars can outlive a sale of the picked name;
         // a KNOWN-departed label falls through to the next candidate.
-        // (Scalars are still trusted while the label cache is empty —
-        // they double as the hydration fallback.)
+        // (Scalars are still trusted while no row says otherwise — they
+        // double as the hydration fallback.)
         let isRejected: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
             return rejected.contains(DWContestedNameStatusService.dpnsKey(candidate))
         }
-        let mainName = isPending(pickedName) || isSoldAway(pickedName) || isRejected(pickedName)
+        let mainName = isPending(pickedName) || hasLeft(pickedName) || isRejected(pickedName)
             ? nil
             : pickedName
-        let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
+        let preferredName = isPending(identity.dpnsName) || hasLeft(identity.dpnsName)
             || isRejected(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString

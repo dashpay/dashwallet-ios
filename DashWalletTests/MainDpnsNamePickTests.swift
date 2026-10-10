@@ -119,6 +119,55 @@ final class MainDpnsNamePickTests: XCTestCase {
         XCTAssertNil(UserDefaults.standard.string(forKey: pickKeys[0]))
     }
 
+    func testReadingAnSdkColumnDefaultDoesNotStoreIt() throws {
+        let container = try makeContainer()
+        let identity = addIdentity(to: container, id: identityId, mainDpnsName: "Alice", names: [])
+
+        XCTAssertEqual(DWCurrentUserIdentityInfo.mainDpnsName(for: identity), "Alice")
+
+        XCTAssertNil(UserDefaults.standard.string(forKey: pickKeys[0]))
+    }
+
+    func testNameLeftOnlyWhenARowSaysSo() throws {
+        let container = try makeContainer()
+        let identity = addIdentity(
+            to: container, id: identityId, mainDpnsName: nil,
+            names: [("Alice", true), ("Bob", false)])
+
+        XCTAssertFalse(DWCurrentUserIdentityInfo.hasNameLeft("Alice", identity: identity))
+        XCTAssertTrue(DWCurrentUserIdentityInfo.hasNameLeft("Bob", identity: identity))
+        // No row anywhere: the label cache may not be hydrated yet.
+        XCTAssertFalse(DWCurrentUserIdentityInfo.hasNameLeft("Carol", identity: identity))
+    }
+
+    /// The sender's last name moves to another identity on this device: the
+    /// SDK rebinds the name's single row to the recipient, so the sender
+    /// has no row left and only its stored pick still names it.
+    func testPickTransferredToAnotherLocalIdentityHasLeftTheSender() throws {
+        let container = try makeContainer()
+        let sender = addIdentity(to: container, id: identityId, mainDpnsName: nil, names: [])
+        let recipient = addIdentity(
+            to: container, id: otherIdentityId, mainDpnsName: nil, names: [("Alice", true)])
+        DWCurrentUserIdentityInfo.setMainDpnsName("Alice", identityId: identityId)
+        try container.mainContext.save()
+
+        XCTAssertTrue(DWCurrentUserIdentityInfo.hasNameLeft("alice.dash", identity: sender))
+        XCTAssertFalse(DWCurrentUserIdentityInfo.hasNameLeft("Alice", identity: recipient))
+        // The stored pick stays as written; readers skip it.
+        XCTAssertEqual(DWCurrentUserIdentityInfo.mainDpnsName(for: sender), "Alice")
+    }
+
+    func testLegacyPickOwnedByAnotherIdentityIsNotCaptured() throws {
+        let container = try makeContainer()
+        addIdentity(to: container, id: identityId, mainDpnsName: "Alice", names: [])
+        addIdentity(to: container, id: otherIdentityId, mainDpnsName: nil, names: [("Alice", true)])
+        try container.mainContext.save()
+
+        DWCurrentUserIdentityInfo.captureLegacyMainDpnsNames(in: container)
+
+        XCTAssertNil(UserDefaults.standard.string(forKey: pickKeys[0]))
+    }
+
     func testWipeRemovesStoredAndPendingPicksOnly() {
         DWCurrentUserIdentityInfo.setMainDpnsName("Alice", identityId: identityId)
         DWCurrentUserIdentityInfo.setMainDpnsName("Carol", identityId: otherIdentityId)
