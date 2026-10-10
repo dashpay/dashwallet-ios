@@ -236,9 +236,10 @@ enum BuySwapWalletPayout {
     /// Transactions that may be the completed order's are there — one for each completed
     /// order that shares them; which is whose, is not settled.
     case unsettled
-    /// The wallet was read and does not show the order's payout.
+    /// The bound wallet does not show the order's payout.
     case notFound
-    /// The wallet has not been read.
+    /// No reading of the order's wallet at hand: it is not the one bound, or has not been
+    /// looked at yet.
     case unknown
 }
 
@@ -370,11 +371,13 @@ extension SwapOrder {
     /// A completed order keeps its row until the wallet shows the payout, however long
     /// that takes: the provider reporting it is not the wallet having it. It gives the row
     /// up when the payout is assigned to it, and also when the completed orders it shares
-    /// transactions with have one each without it being settled which is whose — the provider says the
-    /// order was paid, and the Dash is in the list. While the wallet has not been read the row
-    /// is shown for `completedRowSeconds` after completion only, so that every finished
-    /// swap does not reappear for a moment each time the list is built before the wallet
-    /// is.
+    /// transactions with have one each without it being settled which is whose — the
+    /// provider says the order was paid, and the Dash is in the list. While there is no
+    /// reading of the wallet at all (`.unknown`) the row is shown for
+    /// `completedRowSeconds` after completion only, so that every finished swap does not
+    /// reappear for a moment each time the list is built before the wallet is bound. A
+    /// bound wallet whose store could not be read is not that case: it reads as holding
+    /// no payout, and the row stays.
     func isBuyHistoryRow(walletPayout: BuySwapWalletPayout, now: Date = Date()) -> Bool {
         guard isBuy, hasDepositOnRecord, walletPayout != .inWallet else { return false }
         switch buyPhase {

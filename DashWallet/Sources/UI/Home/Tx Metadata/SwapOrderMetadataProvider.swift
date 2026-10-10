@@ -61,8 +61,8 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// Ids of the completed orders that share possible payouts with others, one for each
     /// (`PayoutResolution.contestedWithEnough`).
     private var _unsettledOrderIds: Set<String> = []
-    /// The wallet and network the assignment was read from; nil while that wallet could
-    /// not be read.
+    /// The wallet and network the assignment was read from; nil while that wallet is not
+    /// the one bound.
     private var _readWallet: (walletId: String?, network: String?)?
     /// Fires after the assignment — or what is known about it — changed.
     let assignmentsChanged = PassthroughSubject<Void, Never>()
@@ -73,8 +73,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     /// What the wallet `walletId` on `network` says about the order's Dash payout.
     /// A payout that is assigned is in the wallet whatever else is known; anything short
-    /// of that is `.unknown` while the assignment at hand is not a reading of that wallet
-    /// that may be relied on for absence.
+    /// of that is `.unknown` while the assignment at hand is not a reading of that wallet.
     func walletPayout(forOrderID orderID: String, walletId: String?, network: String?) -> BuySwapWalletPayout {
         metadataQueue.sync {
             if _orderIdByTx.values.contains(orderID) { return .inWallet }
@@ -148,18 +147,17 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         // shared, `firstSeen`-ranged wallet read, so a transaction is labelled by the order
         // it belongs to and not by another one for the same amount. No label while the
         // wallet cannot be read.
-        // The strict read is what "the wallet holds nothing for this order" may be said
-        // on. When it fails, the lenient one still serves the labels, and nothing is said
-        // about absence.
+        // The lenient read: nil only while this wallet is not the one bound. A store read
+        // that failed comes back as a wallet with no payouts in it, and a completed order
+        // then shows its own row — a row too many until the next read, never an order
+        // with neither its row nor its payout in the list.
         let walletId = SwapOrder.currentOwnerWalletId
         let network = SwapOrder.currentOwnerNetwork
-        let read = SwapBuyTransactionMatcher.walletAssignments(
-            among: orders, walletId: walletId, network: network, strict: true)
-        let resolution = read ?? SwapBuyTransactionMatcher.walletAssignments(
+        let resolution = SwapBuyTransactionMatcher.walletAssignments(
             among: orders, walletId: walletId, network: network, strict: false)
         let payouts = resolution?.assigned ?? [:]
-        let unsettled = read?.contestedWithEnough ?? []
-        let readWallet = read.map { _ in (walletId: walletId, network: network) }
+        let unsettled = resolution?.contestedWithEnough ?? []
+        let readWallet = resolution.map { _ in (walletId: walletId, network: network) }
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {

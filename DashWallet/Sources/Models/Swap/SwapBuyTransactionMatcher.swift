@@ -102,9 +102,9 @@ enum SwapBuyTransactionMatcher {
     /// out. Nil when that wallet's transactions could not be read — no wallet is bound, or
     /// the one that is bound is another (mid-switch); "nothing found" must not be
     /// concluded from that. `strict` also makes a failed store read nil instead of an
-    /// empty pool: for whoever concludes something from a payout being absent — the
-    /// tracker letting orders go, the labeller saying a completed order's payout is not in
-    /// the wallet. The lenient read is the labeller's fallback for the labels alone.
+    /// empty pool: for the tracker, which lets orders go on a payout being absent. The
+    /// labeller is not strict: on a failed read it errs towards showing an order's own
+    /// row, which costs a row too many for a moment.
     static func walletAssignments(
         among orders: [SwapOrder],
         walletId: String?,
