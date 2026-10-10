@@ -234,8 +234,8 @@ extension SwapOrder {
     /// the wallet yet.
     static let completedRowSeconds: Int64 = 60 * 60
 
-    /// How long after an order with a deposit on record expired its payout is still looked
-    /// for, and the order completed when it arrives.
+    /// How long after an order with a deposit on record expired a transaction may arrive and
+    /// still be its payout; the order is completed when one is found.
     static let latePayoutSeconds: Int64 = 7 * 24 * 60 * 60
 
     /// How long past its window an order with funds in flight keeps being tracked. The same
@@ -320,22 +320,31 @@ extension SwapOrder {
         return ownerWalletId == walletId && ownerNetwork == network
     }
 
+    /// Whether the order is known to belong to another wallet or network than the given one.
+    /// That wallet's transactions say nothing about such an order. Each half of the owner is
+    /// compared when it is recorded; an order saved before the owner was recorded is not
+    /// known to be anybody else's.
+    func isForeign(toWalletId walletId: String?, network: String?) -> Bool {
+        if let ownerNetwork, ownerNetwork != network { return true }
+        if let ownerWalletId, ownerWalletId != walletId { return true }
+        return false
+    }
+
     /// Whether a Dash payout for this order can still turn up: not once the provider has
-    /// ended it without one. An expired order still can for `latePayoutSeconds` when its
-    /// deposit is on record — expiry is us no longer asking, and a deposit handed to the
-    /// provider later is paid out all the same; the tracker completes the order when it
-    /// is. An expired order nobody paid can not, and must not claim an unrelated receive of
-    /// a similar amount.
-    func mayStillBePaidOut(now: Date = Date()) -> Bool {
+    /// ended it without one. An expired order still can when its deposit is on record —
+    /// expiry is us no longer asking, and a deposit handed to the provider later is paid out
+    /// all the same; the tracker completes the order when it is. Which transactions it may
+    /// still take is bounded by their date (`SwapBuyTransactionMatcher.latestPayoutDate`),
+    /// not by when anybody looks. An expired order nobody paid can not, and must not claim
+    /// an unrelated receive of a similar amount.
+    var mayStillBePaidOut: Bool {
         // An order saved before deposits were recorded has no such record to judge by. It
         // keeps what it had: any of them could be matched to its payout, whatever its status
         // — otherwise payouts already labelled "Converted" would lose the label on upgrade.
         guard !isLegacyRecord else { return true }
         switch status {
         case .refunded, .failed: return false
-        case .expired:
-            return hasDepositOnRecord && finalisedAt > 0
-                && Int64(now.timeIntervalSince1970) - finalisedAt <= SwapOrder.latePayoutSeconds
+        case .expired: return hasDepositOnRecord && finalisedAt > 0
         case .notStarted, .pending, .swapping, .unknown, .completed: return true
         }
     }

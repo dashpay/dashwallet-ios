@@ -81,13 +81,14 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     // MARK: - Private
 
     private func updateMetadata(from orders: [SwapOrder]) {
-        // One shared, `firstSeen`-ranged fetch feeds every order that needs
-        // the address+time buy matcher (the previous shape walked the ENTIRE
-        // wallet once per order, on every balance tick).
-        let matcherTransactions = buyMatcherTransactions(for: orders)
-        // One payout, one order: decided across all orders, so a transaction is labelled by
-        // the order it belongs to and not by another one for the same amount.
-        let payouts = SwapBuyTransactionMatcher.payoutAssignments(among: orders, in: matcherTransactions)
+        // One payout, one order: decided across all the active wallet's orders, over one
+        // shared, `firstSeen`-ranged wallet read, so a transaction is labelled by the order
+        // it belongs to and not by another one for the same amount. No label while the
+        // wallet cannot be read.
+        let payouts = SwapBuyTransactionMatcher.walletAssignments(
+            among: orders,
+            walletId: SwapOrder.currentOwnerWalletId,
+            network: SwapOrder.currentOwnerNetwork) ?? [:]
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {
@@ -119,18 +120,6 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         } else {
             return payouts[order.id]?.txHashData
         }
-    }
-
-    /// Candidate pool for the buy matcher: wallet transactions first seen at/
-    /// after the oldest buy order's fetch cutoff. Empty (and fetch-free) when
-    /// no order needs matching. SwiftDashSDK tx set; DashSync's
-    /// allTransactions is frozen (empty) post-migration.
-    private func buyMatcherTransactions(for orders: [SwapOrder]) -> [Transaction] {
-        let cutoffs = orders
-            .filter(\.isBuy)
-            .map(SwapBuyTransactionMatcher.fetchCutoff(for:))
-        guard let oldest = cutoffs.min() else { return [] }
-        return SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: oldest)?.transactions ?? []
     }
 
     private func refreshMetadata() {

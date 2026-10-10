@@ -17,6 +17,17 @@
 
 import Foundation
 
+/// What the matcher reads of a wallet transaction.
+protocol SwapPayoutCandidate {
+    var txHashHexString: String { get }
+    var date: Date { get }
+    var direction: TransactionDirection { get }
+    var outputReceiveAddresses: [String] { get }
+    var dashAmount: UInt64 { get }
+}
+
+extension Transaction: SwapPayoutCandidate {}
+
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
 ///
 /// We need to identify the buy's incoming DASH tx more precisely than "any tx to the same address":
@@ -47,9 +58,56 @@ enum SwapBuyTransactionMatcher {
         return Date(timeIntervalSince1970: max(0, orderTimestamp - timestampSlack - 24 * 60 * 60))
     }
 
+    /// The `firstSeen` cutoff of the pool `payoutAssignments(among:in:)` needs for `orders`:
+    /// far enough back for every order that can claim a transaction, not only the ones the
+    /// caller is asking about — an order whose own payout is missing from the pool takes
+    /// somebody else's. Nil when no order can claim anything.
+    static func fetchCutoff(forAssignmentsAmong orders: [SwapOrder]) -> Date? {
+        orders.filter { $0.isBuy && $0.mayStillBePaidOut }.map(fetchCutoff(for:)).min()
+    }
+
+    /// The latest date a transaction may carry and still be `order`'s payout; nil when there
+    /// is no such bound.
+    /// - A completed order's payout exists by the time it is finalised (plus
+    ///   `timestampSlack`), so a later one is somebody else's.
+    /// - An expired order with a deposit on record is owed a payout that arrives within
+    ///   `SwapOrder.latePayoutSeconds` of the expiry. The bound is on the transaction, so a
+    ///   payout that arrived in time is still found however late the wallet is looked at.
+    static func latestPayoutDate(for order: SwapOrder) -> TimeInterval? {
+        guard order.finalisedAt > 0 else { return nil }
+        switch order.status {
+        case .completed: return TimeInterval(order.finalisedAt) + timestampSlack
+        case .expired where !order.isLegacyRecord:
+            return TimeInterval(order.finalisedAt + SwapOrder.latePayoutSeconds)
+        default: return nil
+        }
+    }
+
+    /// Which transaction of the wallet `walletId` on `network` pays out which of `orders`:
+    /// the one reading of the wallet the tracker and the row labeller share, so they match
+    /// the same orders against the same pool. Orders of another wallet or network are left
+    /// out. Nil when that wallet's transactions could not be read — no wallet is bound, or
+    /// the one that is bound is another (mid-switch); "nothing found" must not be
+    /// concluded from that.
+    static func walletAssignments(
+        among orders: [SwapOrder],
+        walletId: String?,
+        network: String?
+    ) -> [String: Transaction]? {
+        let claimants = orders.filter { !$0.isForeign(toWalletId: walletId, network: network) }
+        guard let cutoff = fetchCutoff(forAssignmentsAmong: claimants) else { return [:] }
+        // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
+        // (empty) post-migration, so a buy's incoming DASH would never match.
+        // The matcher only considers rows around an order's own time, so range the fetch by
+        // `firstSeen` instead of walking the wallet.
+        guard let snapshot = SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
+              snapshot.walletId.hexEncodedString() == walletId else { return nil }
+        return payoutAssignments(among: claimants, in: snapshot.transactions)
+    }
+
     /// Every transaction that could be `order`'s payout: received at its address, not before
     /// it (within `timestampSlack`), for about its expected amount.
-    static func matchingTransactions(for order: SwapOrder, in transactions: [Transaction]) -> [Transaction] {
+    static func matchingTransactions<T: SwapPayoutCandidate>(for order: SwapOrder, in transactions: [T]) -> [T] {
         guard order.isBuy else { return [] }
         let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !receiveAddress.isEmpty,
@@ -70,18 +128,17 @@ enum SwapBuyTransactionMatcher {
     ///
     /// Looked at one order at a time, two orders for the same amount to the same receive
     /// address both match the one payout that arrived. Here each transaction goes to at
-    /// most one order, settled in this priority:
+    /// most one order, and an order only takes one dated within its own bound
+    /// (`latestPayoutDate`). Settled in this priority:
     /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
     ///    transaction also fits the order;
     /// 2. orders the provider reports as completed, oldest first — it paid them out, and
-    ///    payouts arrive in the order the swaps were made. A completed order only takes a
-    ///    transaction from before it was finalised (plus `timestampSlack`): its payout
-    ///    exists by then, so a later one is somebody else's;
-    /// 3. orders still in flight (an active status), then
-    /// 4. orders that have ended but may still be paid out (expired with a deposit on
-    ///    record, and any order saved before deposits were recorded) — these only take what
-    ///    the in-flight ones left, so an attempt that is over cannot stand between a live
-    ///    order and its payout.
+    ///    payouts arrive in the order the swaps were made;
+    /// 3. orders that are still owed a payout: the ones in flight (an active status) and the
+    ///    expired ones with a deposit on record. Expiry is us no longer asking, not the
+    ///    provider's word, so an expired order's late payout is not a newer order's to take;
+    /// 4. orders saved before deposits were recorded that have ended — these only take what
+    ///    the others left, so an old attempt cannot stand between a live order and its payout.
     ///    Within tier 3 and within tier 4: one that is alone on its transactions takes the
     ///    earliest. Orders that share any transaction are settled together and only when it is
     ///    unambiguous: they fit exactly the same transactions and there are at least as
@@ -91,29 +148,34 @@ enum SwapBuyTransactionMatcher {
     ///    attempt as paid. Whether an order's deposit is on record does not rank it here —
     ///    that record can lag behind a payout that is already in the wallet.
     /// Orders that can no longer be paid out (`mayStillBePaidOut`) claim nothing.
-    static func payoutAssignments(
+    ///
+    /// `transactions` has to reach back to `fetchCutoff(forAssignmentsAmong:)` of the same
+    /// `orders`.
+    static func payoutAssignments<T: SwapPayoutCandidate>(
         among orders: [SwapOrder],
-        in transactions: [Transaction],
-        now: Date = Date()
-    ) -> [String: Transaction] {
+        in transactions: [T]
+    ) -> [String: T] {
         guard !transactions.isEmpty else { return [:] }
         let claimants = orders
-            .filter { $0.isBuy && $0.mayStillBePaidOut(now: now) }
+            .filter { $0.isBuy && $0.mayStillBePaidOut }
             .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return [:] }
 
-        var free: [String: Transaction] = [:]
+        var free: [String: T] = [:]
         for tx in transactions { free[tx.txHashHexString.lowercased()] = tx }
-        var assigned: [String: Transaction] = [:]
+        var assigned: [String: T] = [:]
 
         func take(_ txId: String, for order: SwapOrder) {
             guard let tx = free.removeValue(forKey: txId) else { return }
             assigned[order.id] = tx
         }
+        func isInTime(_ tx: T, for order: SwapOrder) -> Bool {
+            latestPayoutDate(for: order).map { tx.date.timeIntervalSince1970 <= $0 } ?? true
+        }
         /// Ids of the free transactions `order` fits, earliest first.
-        func fitting(_ order: SwapOrder, before limit: TimeInterval? = nil) -> [String] {
+        func fitting(_ order: SwapOrder) -> [String] {
             matchingTransactions(for: order, in: Array(free.values))
-                .filter { limit == nil || $0.date.timeIntervalSince1970 <= limit! }
+                .filter { isInTime($0, for: order) }
                 .sorted { ($0.date, $0.txHashHexString) < ($1.date, $1.txHashHexString) }
                 .map { $0.txHashHexString.lowercased() }
         }
@@ -126,12 +188,12 @@ enum SwapBuyTransactionMatcher {
         }
 
         for claimant in claimants where claimant.status == .completed && assigned[claimant.id] == nil {
-            let limit = claimant.finalisedAt > 0 ? TimeInterval(claimant.finalisedAt) + timestampSlack : nil
-            if let txId = fitting(claimant, before: limit).first { take(txId, for: claimant) }
+            if let txId = fitting(claimant).first { take(txId, for: claimant) }
         }
 
         let open = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
-        for tier in [open.filter(\.status.isActive), open.filter { !$0.status.isActive }] {
+        let isOwed: (SwapOrder) -> Bool = { $0.status.isActive || !$0.isLegacyRecord }
+        for tier in [open.filter(isOwed), open.filter { !isOwed($0) }] {
             // Fitting sets are taken before anything in the tier is assigned, and orders
             // that share a transaction are settled as one group — so the outcome does not
             // depend on the order in which the tier is walked.
@@ -148,8 +210,8 @@ enum SwapBuyTransactionMatcher {
             for group in groups {
                 let first = group[0].txIds
                 guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else {
-                    // Unsettled between live orders: the transaction is one of theirs, so
-                    // it is not left for an ended order to take.
+                    // Unsettled between these orders: the transaction is one of theirs, so
+                    // it is not left for the next tier to take.
                     for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
                     continue
                 }
@@ -161,8 +223,8 @@ enum SwapBuyTransactionMatcher {
         return assigned
     }
 
-    private static func matches(
-        _ tx: Transaction,
+    private static func matches<T: SwapPayoutCandidate>(
+        _ tx: T,
         receiveAddress: String,
         minimumTimestamp: TimeInterval,
         expectedDashAmount: Decimal
@@ -187,7 +249,7 @@ enum SwapBuyTransactionMatcher {
         return Decimal(string: raw, locale: Locale(identifier: "en_US_POSIX"))
     }
 
-    private static func receivedDashAmount(for tx: Transaction) -> Decimal? {
+    private static func receivedDashAmount<T: SwapPayoutCandidate>(for tx: T) -> Decimal? {
         guard tx.dashAmount != UInt64.max else { return nil }
         return Decimal(tx.dashAmount) / baseUnits
     }
