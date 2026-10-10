@@ -48,11 +48,16 @@ final class PendingInvitationViewModelTests: XCTestCase {
     private var store: PendingInvitationStore!
     private var validator: ScriptedValidator!
     private var isIneligible = false
+    private var isRegistering = false
+    private var registrationEnded = PassthroughSubject<Void, Never>()
+    /// nil: every scope counts as active.
+    private var activeScope: InvitationScope?
     private var rearms = 0
     private var outcomes: [InvitationValidation] = []
     private var cancellables = Set<AnyCancellable>()
 
     private let walletA = InvitationScope(networkRawValue: 1, walletIdHex: "walletA")
+    private let walletB = InvitationScope(networkRawValue: 1, walletIdHex: "walletB")
     private let linkA = "dashpay://invite?du=alice&assetlocktx=\(String(repeating: "ab", count: 32))&pk=A&islock=null"
     private let linkB = "dashpay://invite?du=bob&assetlocktx=\(String(repeating: "cd", count: 32))&pk=B&islock=null"
     private let inviter = InvitationInviter(username: "alice", displayName: nil, avatarURL: nil)
@@ -71,6 +76,8 @@ final class PendingInvitationViewModelTests: XCTestCase {
             isActiveAndBound: { _ in true })
         validator = ScriptedValidator()
         isIneligible = false
+        isRegistering = false
+        activeScope = nil
         rearms = 0
         outcomes = []
     }
@@ -85,12 +92,14 @@ final class PendingInvitationViewModelTests: XCTestCase {
         let validator = validator!
         let viewModel = PendingInvitationViewModel(
             store: store,
-            isActive: { _ in true },
+            isActive: { [unowned self] scope in self.activeScope.map { $0 == scope } ?? true },
             rearmIdentityRefresh: { [unowned self] in self.rearms += 1 },
             isWalletIneligible: { [unowned self] in self.isIneligible },
             validate: { await validator.validate($0) },
             isReadyToValidate: { true },
             isSynced: { true },
+            isRegistrationInFlight: { [unowned self] in self.isRegistering },
+            registrationEnded: registrationEnded.eraseToAnyPublisher(),
             observesSyncMonitor: false,
             notReadyRetryDelay: 1_000_000)
         viewModel.definitiveOutcomes
@@ -223,6 +232,78 @@ final class PendingInvitationViewModelTests: XCTestCase {
         viewModel.create { _, proceededTier in tier = proceededTier }
         XCTAssertEqual(tier, .nonContested)
         XCTAssertEqual(validator.calls.count, 1)
+    }
+
+    // MARK: - Scope of a waiting verdict
+
+    func testVerdictForOneWalletIsNotShownOrUsedUpInAnother() async {
+        validator.results[linkA] = .alreadyRequestedUsername
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.undeliveredOutcome != nil }
+
+        // Home was off screen; the user switches to another wallet.
+        activeScope = walletB
+        XCTAssertNil(viewModel.undeliveredOutcome, "wallet B's Home has nothing to show")
+        viewModel.acknowledgeOutcome(.alreadyRequestedUsername)
+
+        activeScope = walletA
+        XCTAssertEqual(viewModel.undeliveredOutcome, .alreadyRequestedUsername, "wallet A still gets its verdict")
+        viewModel.acknowledgeOutcome(.alreadyRequestedUsername)
+        XCTAssertNil(viewModel.undeliveredOutcome)
+    }
+
+    func testWaitingVerdictIsOfferedAgainOnReturnToItsWallet() async {
+        validator.results[linkA] = .alreadyRequestedUsername
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { self.outcomes.count == 1 }
+
+        activeScope = walletB
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+        XCTAssertEqual(outcomes.count, 1, "nothing is offered to wallet B")
+
+        activeScope = walletA
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+        XCTAssertEqual(outcomes, [.alreadyRequestedUsername, .alreadyRequestedUsername])
+        XCTAssertEqual(viewModel.undeliveredOutcome, .alreadyRequestedUsername)
+    }
+
+    // MARK: - A registration in flight
+
+    func testNoCheckRunsWhileARegistrationIsInFlight() async {
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        isRegistering = true
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+
+        NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        viewModel.validateIfPossible()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertTrue(validator.calls.isEmpty, "our own claim must not read as someone else's")
+        XCTAssertNotNil(store.pending)
+
+        isRegistering = false
+        NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        await settle { !self.outcomes.isEmpty }
+        XCTAssertEqual(validator.calls, [linkA])
+    }
+
+    func testSkippedCheckRunsWhenTheRegistrationEndsWithoutAStatusChange() async {
+        validator.results[linkA] = valid
+        isRegistering = true
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertTrue(validator.calls.isEmpty)
+
+        // A cancelled PIN: the attempt ends and nothing else is posted.
+        isRegistering = false
+        registrationEnded.send()
+        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        XCTAssertEqual(validator.calls, [linkA])
     }
 
     // MARK: - Wipe

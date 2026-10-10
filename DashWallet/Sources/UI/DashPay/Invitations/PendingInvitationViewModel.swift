@@ -38,7 +38,14 @@ final class PendingInvitationViewModel: ObservableObject {
     /// and also kept in `undeliveredOutcome` until a visible Home has shown
     /// it — the check can finish while the user is on another tab.
     let definitiveOutcomes = PassthroughSubject<InvitationValidation, Never>()
-    private(set) var undeliveredOutcome: InvitationValidation?
+    /// Kept under the wallet and network it was reached for: a verdict can
+    /// be about that wallet only ("already has a username"), so another
+    /// wallet's Home neither shows it nor uses it up.
+    private var undeliveredOutcomes: [InvitationScope: InvitationValidation] = [:]
+    /// The verdict waiting for the wallet and network that are active now.
+    var undeliveredOutcome: InvitationValidation? {
+        undeliveredOutcomes.first { isActive($0.key) }?.value
+    }
 
     /// Android treats a check older than a minute as stale
     /// (`InvitationLinkData.expired`); Create re-checks past that.
@@ -73,6 +80,10 @@ final class PendingInvitationViewModel: ObservableObject {
     /// The chain is synced, the app is in front and unlocked.
     private let isReadyToValidate: @MainActor () -> Bool
     private let isSynced: @MainActor () -> Bool
+    /// A registration is running. A check now could see the voucher spent
+    /// by our own claim before the wallet has the identity, and report
+    /// "already claimed" for an invitation that is being claimed.
+    private let isRegistrationInFlight: @MainActor () -> Bool
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
@@ -94,6 +105,10 @@ final class PendingInvitationViewModel: ObservableObject {
                  && UIApplication.shared.applicationState == .active
          },
          isSynced: @escaping @MainActor () -> Bool = { SyncingActivityMonitor.shared.state == .syncDone },
+         isRegistrationInFlight: @escaping @MainActor () -> Bool = {
+             DWIdentityRegistrationCoordinator.shared.isAttemptActive
+         },
+         registrationEnded: AnyPublisher<Void, Never>? = nil,
          observesSyncMonitor: Bool = true,
          notReadyRetryDelay: UInt64 = 5_000_000_000) {
         self.store = store ?? .shared
@@ -103,6 +118,7 @@ final class PendingInvitationViewModel: ObservableObject {
         self.validate = validate
         self.isReadyToValidate = isReadyToValidate
         self.isSynced = isSynced
+        self.isRegistrationInFlight = isRegistrationInFlight
         self.notReadyRetryDelay = notReadyRetryDelay
         self.store.$pending
             .removeDuplicates()
@@ -122,13 +138,27 @@ final class PendingInvitationViewModel: ObservableObject {
             .sink { [weak self] in self?.discardUndeliveredOutcome() }
             .store(in: &cancellables)
 
+        // The checks skipped during a registration run when it ends, however
+        // it ends: a cancelled or failed attempt posts no status change.
+        (registrationEnded ?? DWIdentityRegistrationCoordinator.shared.$phase
+            .map(\.isActive)
+            .removeDuplicates()
+            .filter { !$0 }
+            .map { _ in }
+            .eraseToAnyPublisher())
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.validateIfPossible() }
+            .store(in: &cancellables)
+
         let center = NotificationCenter.default
         // A username registered or requested elsewhere changes whether this
         // wallet can take the invitation: the cached verdict is stale.
         observers.append(center.addObserver(
             forName: .DWDashPayRegistrationStatusUpdated, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated {
-                    guard let self,
+                    // During a registration the phases post this too; the
+                    // cached verdict stays until the attempt has ended.
+                    guard let self, !self.isRegistrationInFlight(),
                           InvitationNotReadyPolicy.revalidatesOnStatusChange(afterAttempts: self.notReadyAttempts)
                     else { return }
                     self.lastVerdict = nil
@@ -140,8 +170,14 @@ final class PendingInvitationViewModel: ObservableObject {
                      SwiftDashSDKWalletState.activeWalletDidChangeNotification] {
             observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated {
-                    self?.store.reload()
-                    self?.validateIfPossible()
+                    guard let self else { return }
+                    self.store.reload()
+                    self.validateIfPossible()
+                    // Back in a wallet whose verdict is still waiting: offer
+                    // it to the Home on screen again.
+                    if let outcome = self.undeliveredOutcome {
+                        self.definitiveOutcomes.send(outcome)
+                    }
                 }
             })
         }
@@ -206,21 +242,21 @@ final class PendingInvitationViewModel: ObservableObject {
 
     /// A wipe: a verdict reached for the old wallet is not shown after it.
     func discardUndeliveredOutcome() {
-        undeliveredOutcome = nil
+        undeliveredOutcomes.removeAll()
         lastVerdict = nil
     }
 
     /// Home showed the outcome; it is no longer waiting for a screen.
     func acknowledgeOutcome(_ outcome: InvitationValidation) {
-        if undeliveredOutcome == outcome {
-            undeliveredOutcome = nil
+        for (scope, held) in undeliveredOutcomes where held == outcome && isActive(scope) {
+            undeliveredOutcomes[scope] = nil
         }
     }
 
     // MARK: - Validation
 
     private var canValidate: Bool {
-        invitation != nil && isReadyToValidate()
+        invitation != nil && isReadyToValidate() && !isRegistrationInFlight()
     }
 
     func validateIfPossible() {
@@ -307,8 +343,10 @@ final class PendingInvitationViewModel: ObservableObject {
             // also covers leftovers elsewhere. A leftover whose removal failed
             // comes back as its own card and gets the same verdict again.
             if store.pending != invitation {
-                undeliveredOutcome = verdict
-                definitiveOutcomes.send(verdict)
+                undeliveredOutcomes[invitation.scope] = verdict
+                if isActive(invitation.scope) {
+                    definitiveOutcomes.send(verdict)
+                }
             } else {
                 // The invitation is still stored. Say nothing final; the card
                 // offers Retry, which repeats the check and the removal.

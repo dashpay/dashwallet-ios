@@ -232,9 +232,18 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertNil(verdict)
     }
 
+    func testNonContestedInvitationPaysOnlyForNonContestedNames() {
+        let contested: (String) -> Bool = { $0 == "alice" }
+        XCTAssertFalse(CreateUsernameViewModel.invitationPays(for: "alice", tier: .nonContested, isContested: contested))
+        XCTAssertTrue(CreateUsernameViewModel.invitationPays(for: "alice2", tier: .nonContested, isContested: contested))
+        XCTAssertTrue(CreateUsernameViewModel.invitationPays(for: "alice", tier: .contested, isContested: contested))
+        XCTAssertTrue(CreateUsernameViewModel.invitationPays(for: "alice", tier: nil, isContested: contested))
+    }
+
     func testClaimFailureWordingNamesTheSender() {
-        XCTAssertTrue(InvitationClaimFailure.reportedUsed.message(sender: "alice").contains("alice"))
         XCTAssertTrue(InvitationClaimFailure.invalid.message(sender: "alice").contains("alice"))
+        // Not proven spent, so it does not say "claimed".
+        XCTAssertFalse(InvitationClaimFailure.reportedUsed.message(sender: "alice").contains("claimed"))
         XCTAssertFalse(InvitationClaimFailure.stillConfirming.message(sender: "alice").contains("alice"))
     }
 

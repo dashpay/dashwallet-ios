@@ -283,8 +283,11 @@ enum InvitationClaimFailure: Equatable {
     func message(sender: String) -> String {
         switch self {
         case .reportedUsed:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ has been already claimed", comment: ""), sender)
+            // Not proven spent (see the case): the Home card's check names
+            // the outcome, so this does not.
+            return NSLocalizedString(
+                "This invitation couldn't be used. Check it on the Home screen.",
+                comment: "DashPay Invitations")
         case .invalid:
             return String.localizedStringWithFormat(
                 NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)

@@ -617,6 +617,9 @@ extension HomeViewController: HomeViewDelegate {
         // screen shows it. Off screen it stays undelivered and `viewDidAppear`
         // shows it on return.
         guard viewIfLoaded?.window != nil else { return }
+        // Only a verdict still waiting for the active wallet: one reached for
+        // another wallet stays for that wallet's Home.
+        guard PendingInvitationViewModel.shared.undeliveredOutcome == outcome else { return }
         PendingInvitationViewModel.shared.acknowledgeOutcome(outcome)
         guard let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
         // Over whatever is already up (a sheet, another alert), or UIKit

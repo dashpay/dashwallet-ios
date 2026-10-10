@@ -389,10 +389,12 @@ struct CreateUsernameView: View {
             // `isIdentityLoading`, which is already false for a loaded
             // identity — so without this the recovery form opened empty and a
             // DPNS verdict from an earlier visit was reused unchecked.
-            viewModel.refreshRegistrationRecoveryState()
+            // Invitation mode first: it decides which names are allowed, and
+            // no draft from an earlier registration is restored into it.
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier, invitation: pendingInvitation)
             }
+            viewModel.refreshRegistrationRecoveryState()
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
             }

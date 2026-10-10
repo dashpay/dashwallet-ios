@@ -6810,3 +6810,6 @@
 
 /* DashPay Invitations */
 "You cannot claim this invite since this wallet already has a Dash identity" = "You cannot claim this invite since this wallet already has a Dash identity";
+
+/* DashPay Invitations */
+"This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
