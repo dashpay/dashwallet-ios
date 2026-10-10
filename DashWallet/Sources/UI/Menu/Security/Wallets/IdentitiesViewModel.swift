@@ -185,7 +185,16 @@ final class IdentitiesViewModel: ObservableObject {
             in: container.mainContext,
             identityId: row.identityId,
             mainDpnsName: name)
-        try? container.mainContext.save()
+        do {
+            try container.mainContext.save()
+        } catch {
+            // An unsaved pick shows until relaunch and then reverts.
+            container.mainContext.rollback()
+            DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(error)")
+            errorMessage = error.localizedDescription
+            reload()
+            return
+        }
         if row.isMainIdentity {
             _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
         }
