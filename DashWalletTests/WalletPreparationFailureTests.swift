@@ -93,4 +93,22 @@ final class WalletPreparationFailureTests: XCTestCase {
         XCTAssertTrue(report.contains("KeyMigrator:timedOut"))
         XCTAssertEqual(WalletPreparationFailure(legacyMigration: .unreadableKeychain).codes, ["KeyMigrator:unreadableKeychain"])
     }
+
+    func testKeysFailureIsNeverResettableAndCarriesOnlyReasonAndStatus() {
+        let failure = WalletPreparationFailure(keys: .unreadable, status: -25308, now: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(failure.kind, .keychain)
+        XCTAssertEqual(failure.codes, ["Keychain:unreadable", "OSStatus:-25308"])
+        XCTAssertFalse(failure.canResetLocalData)
+        let database = WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))
+        XCTAssertNotEqual(failure.title, database.title)
+        XCTAssertNotEqual(failure.title, WalletPreparationFailure(legacyMigration: .failed).title)
+        // Neither claim: the keys were not read, and nothing was deleted.
+        XCTAssertFalse(failure.message.contains("stored safely"))
+        XCTAssertFalse(failure.message.lowercased().contains("lost"))
+        let report = failure.diagnosticReport(appVersion: "1", systemVersion: "2")
+        XCTAssertTrue(report.contains("Category: keychain"))
+        XCTAssertTrue(report.contains("Keychain:unreadable\nOSStatus:-25308"))
+        XCTAssertEqual(WalletPreparationFailure(keys: .notFound).codes, ["Keychain:notFound"])
+        XCTAssertEqual(WalletPreparationFailure(keys: .idMismatch).codes, ["Keychain:idMismatch"])
+    }
 }

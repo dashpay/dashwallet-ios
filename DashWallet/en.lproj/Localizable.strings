@@ -6110,6 +6110,8 @@
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.";
 "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help." = "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.";
+"Couldn't read your wallet keys" = "Couldn't read your wallet keys";
+"Your wallet keys could not be read from this device's secure storage. Nothing was deleted. Do not delete this app. Try again or contact support for help." = "Your wallet keys could not be read from this device's secure storage. Nothing was deleted. Do not delete this app. Try again or contact support for help.";
 "Couldn't move your wallet" = "Couldn't move your wallet";
 "Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
 "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
@@ -6129,6 +6131,8 @@
 "Try Again" = "Try Again";
 "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n";
 "Your wallet keys are still stored safely on this device. Try opening your wallet again, or contact support if the problem continues." = "Your wallet keys are still stored safely on this device. Try opening your wallet again, or contact support if the problem continues.";
+"Your wallet keys could not be read from this device. Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Your wallet keys could not be read from this device. Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+"To: %@\n\nI couldn't open my wallet. The app says my wallet keys could not be read.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't open my wallet. The app says my wallet keys could not be read.\n\nWhat happened before the error:\n";
 "Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
 "Include diagnostic report" = "Include diagnostic report";
 "Preview diagnostic report" = "Preview diagnostic report";
