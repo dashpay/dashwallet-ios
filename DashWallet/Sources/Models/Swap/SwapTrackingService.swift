@@ -271,6 +271,19 @@ final class SwapTrackingService {
         }
     }
 
+    /// What one look at the provider (or the wallet) established about an order.
+    private struct ProviderAnswer {
+        var status: SwapOrderStatus?
+        var firstOutHash: String?
+        var actualAmount: String?
+        /// Whether it proved the Buy order's deposit exists other than by finding it on
+        /// chain: the payout is in the wallet, or the provider's own status says so.
+        var depositProven = false
+        /// Whether the order's state was established: the provider answered in words we
+        /// understand, or the payout is in the wallet.
+        var answered = false
+    }
+
     private func pollOrder(_ order: SwapOrder, payoutTxHash: String?, wallet: WalletView) async {
         let nowSeconds = Int64(Date().timeIntervalSince1970)
 
@@ -278,98 +291,11 @@ final class SwapTrackingService {
         // an order can complete while the app is closed (polling only runs in-foreground), so an
         // order older than 24 h can already be `completed`/`refunded`. Aging out before checking
         // would mislabel a genuinely-completed swap as failed.
-        let route = trackingRoute(for: order)
-
-        var apiStatus: SwapOrderStatus?
-        var firstOutHash: String?
-        var newActualAmount: String?
-        // Whether this cycle proved the Buy order's deposit exists other than by finding it
-        // on chain: the payout is in the wallet, or the provider's own status says so.
-        var depositProven = false
-        // Whether the order's state was established this cycle: the provider answered in
-        // words we understand, or the payout is in the wallet.
-        var providerAnswered = false
-
+        var answer = ProviderAnswer()
         do {
-            if order.isBuy {
-                if let walletTxHash = payoutTxHash {
-                    apiStatus = .completed
-                    firstOutHash = walletTxHash
-                    depositProven = true
-                    providerAnswered = true
-                } else {
-                    // Buy orders use the deposit address as the tracking key until the Dash tx
-                    // lands in the wallet; the source-chain address must never be treated as a hash.
-                    let depositAddress = order.depositAddress ?? order.id
-                    let result = try await SwapKitSwapProvider().fetchSwapStatus(
-                        txid: order.id,
-                        depositAddress: depositAddress
-                    )
-
-                    // Only treat the response as authoritative when the provider has observed the tx,
-                    // or returned cleanly. When isObserved = true, a non-nil error is often a non-critical
-                    // warning alongside valid status data (e.g. Maya returns both fields on completion).
-                    if !result.requestFailed, result.isObserved || result.error == nil {
-                        apiStatus = SwapOrderStatus.from(
-                            trackStatus: result.observedStatus,
-                            isObserved: result.isObserved
-                        )
-                        providerAnswered = true
-                        firstOutHash = result.outHashes?.first
-                        newActualAmount = result.actualToAmount
-                        depositProven = result.depositProven
-                        // `observedStatus` folds "failed", "unknown" and anything new into
-                        // refunded / pending. A Buy row states its status as fact, so read
-                        // the provider's own word for those:
-                        // - "failed" is a failure, not a refund — and it is the provider
-                        //   speaking about a transaction it saw, so the deposit is on record;
-                        // - "unknown" is what the tracker says before it has seen a deposit;
-                        // - a word we do not know tells us nothing: keep the status we have.
-                        switch result.providerStatus {
-                        case "failed":
-                            apiStatus = .failed
-                            depositProven = true
-                        case "unknown": apiStatus = .notStarted
-                        case .some:
-                            apiStatus = nil
-                            providerAnswered = false
-                        case nil: break
-                        }
-                    }
-                }
-            } else {
-                let result: SwapStatusResult
-                switch route {
-                case .maya:
-                    result = try await MayaSwapProvider().fetchSwapStatus(
-                        txid: order.id,
-                        depositAddress: nil
-                    )
-                case .near:
-                    // NEAR-Intents tracking uses the deposit address, not the Dash tx hash.
-                    result = try await SwapKitSwapProvider().fetchSwapStatus(
-                        txid: order.id,
-                        depositAddress: order.depositAddress
-                    )
-                case .swapKitHash:
-                    result = try await SwapKitSwapProvider().fetchSwapStatus(
-                        txid: order.id,
-                        depositAddress: nil
-                    )
-                }
-
-                // Only treat the response as authoritative when the provider has observed the tx,
-                // or returned cleanly. When isObserved = true, a non-nil error is often a non-critical
-                // warning alongside valid status data (e.g. Maya returns both fields on completion).
-                if !result.requestFailed, result.isObserved || result.error == nil {
-                    apiStatus = SwapOrderStatus.from(
-                        trackStatus: result.observedStatus,
-                        isObserved: result.isObserved
-                    )
-                    firstOutHash = result.outHashes?.first
-                    newActualAmount = result.actualToAmount
-                }
-            }
+            answer = try await order.isBuy
+                ? buyAnswer(for: order, payoutTxHash: payoutTxHash)
+                : sellAnswer(for: order)
         } catch {
             // Transient network error — no authoritative status this cycle; may still age out below.
             DWLogger.log("SwapTrackingService: poll error for \(order.id): \(error)")
@@ -380,11 +306,11 @@ final class SwapTrackingService {
         // order in progress into one whose deposit the provider "does not see" — and, with
         // the deposit on chain, into a false "Stuck". Treat it as no information about the
         // status (the provider did answer, which is what letting an old order go asks for).
-        if apiStatus == .notStarted, order.status.isProviderProgress {
-            apiStatus = nil
+        if answer.status == .notStarted, order.status.isProviderProgress {
+            answer.status = nil
         }
 
-        var finalStatus = apiStatus ?? order.status
+        var finalStatus = answer.status ?? order.status
 
         // The provider does not report this Buy order's deposit. Before believing that
         // nothing was sent, look at the source chain: the deposit address belongs to this
@@ -402,6 +328,12 @@ final class SwapTrackingService {
         }
         let depositSeenNow = lookup == .seen
 
+        // The wallet's word, for this order: taken now, after the requests above.
+        let walletReady = wallet.vouches(
+            for: order,
+            activeWalletId: SwapOrder.currentOwnerWalletId,
+            activeNetwork: SwapOrder.currentOwnerNetwork)
+
         // Decide the final status: prefer the API result; only fall back to the age-out when
         // the order is STILL non-terminal. Age-out lands on the neutral `.expired` (not
         // `.failed`) — funds may have arrived; we simply stopped tracking.
@@ -409,19 +341,14 @@ final class SwapTrackingService {
         // provider — starts its grace now, so an order first heard about after a long gap
         // is not expired in the same breath.
         var agingOrder = order
-        if order.depositSeenAt == nil, depositSeenNow || depositProven { agingOrder.depositSeenAt = nowSeconds }
-        // The wallet's word, for this order: taken now, after the requests above.
-        let walletReady = wallet.vouches(
-            for: order,
-            activeWalletId: SwapOrder.currentOwnerWalletId,
-            activeNetwork: SwapOrder.currentOwnerNetwork)
+        if order.depositSeenAt == nil, depositSeenNow || answer.depositProven { agingOrder.depositSeenAt = nowSeconds }
         if finalStatus.isActive, hasAgedOut(agingOrder, nowSeconds: nowSeconds, finalStatus: finalStatus) {
             let mayLetGo = !order.isBuy || Self.mayLetGo(
                 fundsInFlight: Self.fundsInFlight(agingOrder, finalStatus: finalStatus),
                 depositOnRecord: agingOrder.hasDepositOnRecord,
                 sinceAgedOut: nowSeconds - agedOutAt(agingOrder, finalStatus: finalStatus),
                 settleSeconds: order.settleSeconds,
-                providerAnswered: providerAnswered,
+                providerAnswered: answer.answered,
                 walletReady: walletReady,
                 watchesDeposit: watchesDeposit,
                 lookup: lookup)
@@ -436,29 +363,114 @@ final class SwapTrackingService {
         // The provider's status proving the deposit (or the payout arriving) is deposit
         // evidence too. Without recording it, an order the provider acknowledged first (the
         // usual case) would count as never paid once it ended, and its row would vanish with
-        // the funds still at the provider. Only a proving status counts (`depositProven`,
-        // set above): "unknown" and unrecognised words say nothing about a deposit.
-        let providerReportedDeposit = order.isBuy && order.depositSeenAt == nil && depositProven
+        // the funds still at the provider. Only a proving status counts (`depositProven`):
+        // "unknown" and unrecognised words say nothing about a deposit.
+        let depositOnRecordNow = depositSeenNow
+            || (order.isBuy && order.depositSeenAt == nil && answer.depositProven)
 
         // The provider has just answered that it sees no deposit, more than the stuck
         // threshold after the deposit appeared on chain: that answer is what makes the order
         // "Stuck". Stamped once — and only with the order's own wallet synced: before that
         // the payout of a swap that completed while the app was away may not be visible
         // yet, and the tracker having forgotten a finished swap would read as a denial.
-        let providerDeniedDeposit = apiStatus == .notStarted
+        let providerDeniedDeposit = answer.status == .notStarted
             && walletReady
             && finalStatus == .notStarted
             && order.providerDeniedAt == nil
             && order.depositSeenAt.map { nowSeconds > $0 + order.stuckAfterSeconds } == true
 
-        // Material-change-only writes — avoids tight-loop DB churn.
-        let changed = finalStatus != order.status
-            || depositSeenNow
-            || providerReportedDeposit
-            || providerDeniedDeposit
-            || (firstOutHash != nil && firstOutHash != order.outboundTxHash)
-            || (newActualAmount != nil && newActualAmount != order.actualToAmount)
+        await record(
+            finalStatus, for: order, answer: answer,
+            depositOnRecordNow: depositOnRecordNow, providerDeniedDeposit: providerDeniedDeposit,
+            nowSeconds: nowSeconds)
+    }
 
+    /// A Buy order's answer: the payout already in the wallet, otherwise the provider's status.
+    private func buyAnswer(for order: SwapOrder, payoutTxHash: String?) async throws -> ProviderAnswer {
+        if let payoutTxHash {
+            return ProviderAnswer(
+                status: .completed, firstOutHash: payoutTxHash, depositProven: true, answered: true)
+        }
+        // Buy orders use the deposit address as the tracking key until the Dash tx
+        // lands in the wallet; the source-chain address must never be treated as a hash.
+        let result = try await SwapKitSwapProvider().fetchSwapStatus(
+            txid: order.id,
+            depositAddress: order.depositAddress ?? order.id
+        )
+        var answer = Self.answer(from: result)
+        guard answer.answered else { return answer }
+        answer.depositProven = result.depositProven
+        // `observedStatus` folds "failed", "unknown" and anything new into
+        // refunded / pending. A Buy row states its status as fact, so read
+        // the provider's own word for those:
+        // - "failed" is a failure, not a refund — and it is the provider
+        //   speaking about a transaction it saw, so the deposit is on record;
+        // - "unknown" is what the tracker says before it has seen a deposit;
+        // - a word we do not know tells us nothing: keep the status we have.
+        switch result.providerStatus {
+        case "failed":
+            answer.status = .failed
+            answer.depositProven = true
+        case "unknown": answer.status = .notStarted
+        case .some:
+            answer.status = nil
+            answer.answered = false
+        case nil: break
+        }
+        return answer
+    }
+
+    private func sellAnswer(for order: SwapOrder) async throws -> ProviderAnswer {
+        let result: SwapStatusResult
+        switch trackingRoute(for: order) {
+        case .maya:
+            result = try await MayaSwapProvider().fetchSwapStatus(
+                txid: order.id,
+                depositAddress: nil
+            )
+        case .near:
+            // NEAR-Intents tracking uses the deposit address, not the Dash tx hash.
+            result = try await SwapKitSwapProvider().fetchSwapStatus(
+                txid: order.id,
+                depositAddress: order.depositAddress
+            )
+        case .swapKitHash:
+            result = try await SwapKitSwapProvider().fetchSwapStatus(
+                txid: order.id,
+                depositAddress: nil
+            )
+        }
+        return Self.answer(from: result)
+    }
+
+    /// Only treat the response as authoritative when the provider has observed the tx,
+    /// or returned cleanly. When isObserved = true, a non-nil error is often a non-critical
+    /// warning alongside valid status data (e.g. Maya returns both fields on completion).
+    private static func answer(from result: SwapStatusResult) -> ProviderAnswer {
+        guard !result.requestFailed, result.isObserved || result.error == nil else { return ProviderAnswer() }
+        return ProviderAnswer(
+            status: SwapOrderStatus.from(trackStatus: result.observedStatus, isObserved: result.isObserved),
+            firstOutHash: result.outHashes?.first,
+            actualAmount: result.actualToAmount,
+            answered: true)
+    }
+
+    /// Writes what a poll established. Material-change-only — avoids tight-loop DB churn.
+    private func record(
+        _ finalStatus: SwapOrderStatus,
+        for order: SwapOrder,
+        answer: ProviderAnswer,
+        depositOnRecordNow: Bool,
+        providerDeniedDeposit: Bool,
+        nowSeconds: Int64
+    ) async {
+        let newOutHash = answer.firstOutHash.flatMap { $0 != order.outboundTxHash ? $0 : nil }
+        let newActualAmount = answer.actualAmount.flatMap { $0 != order.actualToAmount ? $0 : nil }
+        let changed = finalStatus != order.status
+            || depositOnRecordNow
+            || providerDeniedDeposit
+            || newOutHash != nil
+            || newActualAmount != nil
         guard changed else { return }
 
         // Write onto the row as it is NOW, not the snapshot this poll started from: the
@@ -470,15 +482,15 @@ final class SwapTrackingService {
         // to a newer order. The next cycle decides afresh.
         guard updated.status == order.status, updated.timestamp == order.timestamp else { return }
         updated.status = finalStatus
-        if depositSeenNow || providerReportedDeposit, updated.depositSeenAt == nil {
-            updated.depositSeenAt = nowSeconds
-        }
+        if depositOnRecordNow, updated.depositSeenAt == nil { updated.depositSeenAt = nowSeconds }
         if providerDeniedDeposit, updated.providerDeniedAt == nil { updated.providerDeniedAt = nowSeconds }
-        if let firstOutHash { updated.outboundTxHash = firstOutHash }
+        if let newOutHash { updated.outboundTxHash = newOutHash }
         if let newActualAmount { updated.actualToAmount = newActualAmount }
         updated.lastChecked = nowSeconds
-        if finalStatus.isTerminal { updated.finalisedAt = nowSeconds }
-        if finalStatus.isTerminal { forgetPacing(for: order.id) }
+        if finalStatus.isTerminal {
+            updated.finalisedAt = nowSeconds
+            forgetPacing(for: order.id)
+        }
 
         DWLogger.log("SwapTrackingService: order \(order.id) → \(finalStatus.rawValue)")
         await dao.update(dto: updated)

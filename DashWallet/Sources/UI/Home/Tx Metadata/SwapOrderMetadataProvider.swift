@@ -37,6 +37,10 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     private let dao = SwapOrdersDAOImpl.shared
     private var cancellables = Set<AnyCancellable>()
     private let metadataQueue = DispatchQueue(label: "SwapOrderMetadataProvider.metadata", qos: .utility)
+    /// Where the payout assignment is worked out: off the main thread — it reads a range of
+    /// the wallet's transactions — and one update at a time, so results are published in
+    /// the order the updates came in and an older one cannot overwrite a newer one.
+    private let assignmentQueue = DispatchQueue(label: "SwapOrderMetadataProvider.assignments", qos: .utility)
 
     private var _availableMetadata: [Data: TxRowMetadata] = [:]
     var availableMetadata: [Data: TxRowMetadata] {
@@ -81,6 +85,12 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     // MARK: - Private
 
     private func updateMetadata(from orders: [SwapOrder]) {
+        assignmentQueue.async { [weak self] in
+            self?.computeMetadata(from: orders)
+        }
+    }
+
+    private func computeMetadata(from orders: [SwapOrder]) {
         // One payout, one order: decided across all the active wallet's orders, over one
         // shared, `firstSeen`-ranged wallet read, so a transaction is labelled by the order
         // it belongs to and not by another one for the same amount. No label while the
@@ -98,8 +108,8 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
         }
 
-        metadataQueue.async { [weak self] in
-            guard let self else { return }
+        // `sync`, so this update is in place before the next one is worked out.
+        metadataQueue.sync {
             let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
             let changedKeys = Set(current.keys).union(staleKeys)
             self._availableMetadata = current
