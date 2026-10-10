@@ -555,7 +555,7 @@ class HomeViewModel: ObservableObject {
     /// Fails OPEN: a save whose payload we can't inspect is treated as
     /// relevant, so an unexpected notification shape costs a redundant reload
     /// rather than a feed that stops updating.
-    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+    static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
         guard let userInfo = notification.userInfo else { return true }
         var sawInspectableChange = false
         for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
@@ -1041,9 +1041,10 @@ class HomeViewModel: ObservableObject {
         let network = SwapOrder.currentOwnerNetwork
         let payouts = SwapOrderMetadataProvider.shared
         for order in SwapOrdersDAOImpl.shared.currentOrders
-            where order.isBuyHistoryRow(now: now)
-                && order.isOwned(byWalletId: walletId, network: network)
-                && !payouts.hasWalletTransaction(forOrderID: order.id) {
+            where order.isOwned(byWalletId: walletId, network: network)
+                && order.isBuyHistoryRow(
+                    walletPayout: payouts.walletPayout(forOrderID: order.id, walletId: walletId, network: network),
+                    now: now) {
             let swapItem = BuySwapOrderItem(order: order)
             guard windowCovers(date: swapItem.date) else { continue }
             guard self.passesCategoryFilter(

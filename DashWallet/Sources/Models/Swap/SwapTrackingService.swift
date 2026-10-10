@@ -706,6 +706,16 @@ final class SwapTrackingService {
         }
     }
 
+    /// A `/balance` amount, read whole: ASCII digits with at most one decimal point. Nil for
+    /// anything else — `Decimal(string:)` alone stops at the first character it does not
+    /// know and would read "0junk" or "0,5" as zero, and a negative amount is no balance.
+    static func balanceAmount(_ raw: String?) -> Decimal? {
+        guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
+              trimmed.range(of: #"^([0-9]+\.?[0-9]*|\.[0-9]+)$"#, options: .regularExpression) != nil
+        else { return nil }
+        return Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
     /// What `balances` says about `asset` at the address: `.seen` for a positive amount,
     /// `.absent` for none, `.unknown` when the asset is listed with an amount that cannot be
     /// read, or when an entry does not say which asset it is — an answer we do not
@@ -722,9 +732,7 @@ final class SwapTrackingService {
     /// several, which one is ours is unknown.
     static func depositLookup(of asset: String, in balances: [SwapKitBalanceItem]) -> DepositLookup {
         func read(_ items: [SwapKitBalanceItem]) -> DepositLookup {
-            let amounts = items.map { item in
-                item.value.flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) }
-            }
+            let amounts = items.map { balanceAmount($0.value) }
             if amounts.contains(where: { ($0 ?? 0) > 0 }) { return .seen }
             return amounts.contains(where: { $0 == nil }) ? .unknown : .absent
         }

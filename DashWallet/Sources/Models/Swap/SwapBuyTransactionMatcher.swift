@@ -35,6 +35,10 @@ struct PayoutResolution<T> {
     /// Ids of the orders that fit a transaction another order fits as well, and were given
     /// none for that reason.
     var contested: Set<String> = []
+    /// The completed ones of `contested` for which the wallet holds at least as many
+    /// transactions they fit as there are completed orders fitting those: each can have
+    /// its payout there. With fewer, somebody's has not arrived.
+    var contestedWithEnough: Set<String> = []
 }
 
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
@@ -98,8 +102,9 @@ enum SwapBuyTransactionMatcher {
     /// out. Nil when that wallet's transactions could not be read — no wallet is bound, or
     /// the one that is bound is another (mid-switch); "nothing found" must not be
     /// concluded from that. `strict` also makes a failed store read nil instead of an
-    /// empty pool: for the tracker, which lets orders go on a payout being absent. The
-    /// labeller is not strict — a label missing for a moment costs nothing.
+    /// empty pool: for whoever concludes something from a payout being absent — the
+    /// tracker letting orders go, the labeller saying a completed order's payout is not in
+    /// the wallet. The lenient read is the labeller's fallback for the labels alone.
     static func walletAssignments(
         among orders: [SwapOrder],
         walletId: String?,
@@ -274,7 +279,17 @@ enum SwapBuyTransactionMatcher {
                 contested.formUnion(group.map(\.order.id))
             }
         }
-        return PayoutResolution(assigned: assigned, contested: contested)
+        // For a completed order: are there as many held-back transactions it fits as
+        // completed orders that fit them? Only those count — the provider says they were
+        // paid; an order still open beside them may never be.
+        let paid = claimants.filter { $0.status == .completed && contested.contains($0.id) }
+        var enough = Set<String>()
+        for order in paid {
+            let reachable = withheld.filter { fits(order, anyOf: [$0]) }
+            let sharing = paid.filter { fits($0, anyOf: reachable) }
+            if !reachable.isEmpty, reachable.count >= sharing.count { enough.insert(order.id) }
+        }
+        return PayoutResolution(assigned: assigned, contested: contested, contestedWithEnough: enough)
     }
 
     private static func matches<T: SwapPayoutCandidate>(

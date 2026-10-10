@@ -229,9 +229,22 @@ enum BuySwapPhase: Equatable {
     case expired
 }
 
+/// What the wallet's transactions say about a Buy order's Dash payout.
+enum BuySwapWalletPayout {
+    /// A transaction is assigned to the order.
+    case inWallet
+    /// Transactions that may be the completed order's are there — one for each completed
+    /// order that shares them; which is whose, is not settled.
+    case unsettled
+    /// The wallet was read and does not show the order's payout.
+    case notFound
+    /// The wallet has not been read.
+    case unknown
+}
+
 extension SwapOrder {
-    /// How long a completed order keeps its own row while the Dash payout has not shown up in
-    /// the wallet yet.
+    /// How long a completed order keeps its own row while it is not known whether the Dash
+    /// payout is in the wallet (`BuySwapWalletPayout.unknown`).
     static let completedRowSeconds: Int64 = 60 * 60
 
     /// How long after an order with a deposit on record expired a transaction may arrive and
@@ -349,20 +362,31 @@ extension SwapOrder {
         }
     }
 
-    /// Whether the order may be a history row of its own: only an order whose deposit is on
-    /// record. An unpaid one is shown nowhere — whatever status it ends in.
+    /// Whether the order is a history row of its own: only an order whose deposit is on
+    /// record — an unpaid one is shown nowhere, whatever status it ends in — and only
+    /// while its Dash payout is not in the wallet. Once that transaction is there it is the
+    /// row, labelled by `SwapOrderMetadataProvider`.
     ///
-    /// This is the order's side only. Home shows the row just while the Dash payout is not in
-    /// the wallet — once that transaction is there it is the row, labelled by
-    /// `SwapOrderMetadataProvider`. A completed order therefore keeps a row only briefly,
-    /// covering the gap between the provider reporting the payout and the wallet seeing it.
-    func isBuyHistoryRow(now: Date = Date()) -> Bool {
-        guard isBuy, hasDepositOnRecord else { return false }
+    /// A completed order keeps its row until the wallet shows the payout, however long
+    /// that takes: the provider reporting it is not the wallet having it. It gives the row
+    /// up when the payout is assigned to it, and also when the completed orders it shares
+    /// transactions with have one each without it being settled which is whose — the provider says the
+    /// order was paid, and the Dash is in the list. While the wallet has not been read the row
+    /// is shown for `completedRowSeconds` after completion only, so that every finished
+    /// swap does not reappear for a moment each time the list is built before the wallet
+    /// is.
+    func isBuyHistoryRow(walletPayout: BuySwapWalletPayout, now: Date = Date()) -> Bool {
+        guard isBuy, hasDepositOnRecord, walletPayout != .inWallet else { return false }
         switch buyPhase {
         case .waitingForProvider, .processing, .stuck, .refunded, .failed, .expired: return true
         case .completed:
-            guard finalisedAt > 0 else { return false }
-            return Int64(now.timeIntervalSince1970) - finalisedAt <= SwapOrder.completedRowSeconds
+            switch walletPayout {
+            case .inWallet, .unsettled: return false
+            case .notFound: return true
+            case .unknown:
+                return finalisedAt > 0
+                    && Int64(now.timeIntervalSince1970) - finalisedAt <= SwapOrder.completedRowSeconds
+            }
         case .awaitingPayment: return false
         }
     }

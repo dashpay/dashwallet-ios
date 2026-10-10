@@ -346,7 +346,7 @@ final class BuySwapOrderTests: XCTestCase {
         let order = buyOrder()
         XCTAssertEqual(order.buyPhase, .awaitingPayment)
         XCTAssertFalse(order.hasDepositOnRecord)
-        XCTAssertFalse(order.isBuyHistoryRow(now: now))
+        XCTAssertFalse(order.isBuyHistoryRow(walletPayout: .notFound, now: now))
     }
 
     func testDepositOnChainWaitsForTheProviderUntilTheProviderDeniesIt() {
@@ -354,12 +354,12 @@ final class BuySwapOrderTests: XCTestCase {
         // app in the background nobody asked the provider.
         let waiting = buyOrder(depositSeenSecondsAgo: 86_400)
         XCTAssertEqual(waiting.buyPhase, .waitingForProvider)
-        XCTAssertTrue(waiting.isBuyHistoryRow(now: now))
+        XCTAssertTrue(waiting.isBuyHistoryRow(walletPayout: .notFound, now: now))
         XCTAssertFalse(BuySwapOrderItem(order: waiting).showsErrorBadge)
 
         let denied = buyOrder(depositSeenSecondsAgo: 86_400, providerDenied: true)
         XCTAssertEqual(denied.buyPhase, .stuck)
-        XCTAssertTrue(denied.isBuyHistoryRow(now: now))
+        XCTAssertTrue(denied.isBuyHistoryRow(walletPayout: .notFound, now: now))
         XCTAssertTrue(BuySwapOrderItem(order: denied).showsErrorBadge)
     }
 
@@ -376,7 +376,7 @@ final class BuySwapOrderTests: XCTestCase {
         for status in [SwapOrderStatus.pending, .swapping, .unknown] {
             let order = buyOrder(status: status, depositSeenSecondsAgo: 86_400, providerDenied: true)
             XCTAssertEqual(order.buyPhase, .processing, "\(status)")
-            XCTAssertTrue(order.isBuyHistoryRow(now: now), "\(status)")
+            XCTAssertTrue(order.isBuyHistoryRow(walletPayout: .notFound, now: now), "\(status)")
         }
     }
 
@@ -385,22 +385,34 @@ final class BuySwapOrderTests: XCTestCase {
         // `depositSeenAt` when the deposit is actually proven, and only that counts.
         for status in [SwapOrderStatus.pending, .refunded, .failed, .expired] {
             XCTAssertFalse(buyOrder(status: status).hasDepositOnRecord, "\(status)")
-            XCTAssertFalse(buyOrder(status: status).isBuyHistoryRow(now: now), "\(status)")
-            XCTAssertTrue(buyOrder(status: status, depositSeenSecondsAgo: 60).isBuyHistoryRow(now: now), "\(status)")
+            XCTAssertFalse(buyOrder(status: status).isBuyHistoryRow(walletPayout: .notFound, now: now), "\(status)")
+            XCTAssertTrue(buyOrder(status: status, depositSeenSecondsAgo: 60).isBuyHistoryRow(walletPayout: .notFound, now: now), "\(status)")
         }
     }
 
-    func testCompletedOrderKeepsARowOnlyWhileThePayoutMayStillBeArriving() {
+    func testCompletedOrderKeepsItsRowUntilTheWalletShowsThePayout() {
+        // The provider completed it a day ago, with the wallet inactive or still syncing.
+        let done = buyOrder(status: .completed, depositSeenSecondsAgo: 2 * 86_400, finalisedSecondsAgo: 86_400)
+        XCTAssertEqual(done.buyPhase, .completed)
+        // The wallet was read and has no payout: the row stays, however long ago that was.
+        XCTAssertTrue(done.isBuyHistoryRow(walletPayout: .notFound, now: now))
+        // The payout is there: that transaction is the row.
+        XCTAssertFalse(done.isBuyHistoryRow(walletPayout: .inWallet, now: now))
+        // …or what may be the payout is there, unsettled between orders.
+        XCTAssertFalse(done.isBuyHistoryRow(walletPayout: .unsettled, now: now))
+        // An order still in progress keeps its row through that.
+        let live = buyOrder(status: .swapping, depositSeenSecondsAgo: 600)
+        XCTAssertTrue(live.isBuyHistoryRow(walletPayout: .unsettled, now: now))
+        XCTAssertTrue(live.isBuyHistoryRow(walletPayout: .unknown, now: now))
+        XCTAssertFalse(live.isBuyHistoryRow(walletPayout: .inWallet, now: now))
+
+        // The wallet not read yet: shown only right after completion.
+        XCTAssertFalse(done.isBuyHistoryRow(walletPayout: .unknown, now: now))
         let justDone = buyOrder(
             status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: SwapOrder.completedRowSeconds)
-        XCTAssertEqual(justDone.buyPhase, .completed)
-        XCTAssertTrue(justDone.isBuyHistoryRow(now: now))
-
-        XCTAssertFalse(buyOrder(
-            status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: SwapOrder.completedRowSeconds + 1
-        ).isBuyHistoryRow(now: now))
-        // Completion time unknown: nothing to bound the row with, so no row.
-        XCTAssertFalse(buyOrder(status: .completed, depositSeenSecondsAgo: 7_200).isBuyHistoryRow(now: now))
+        XCTAssertTrue(justDone.isBuyHistoryRow(walletPayout: .unknown, now: now))
+        // An unpaid order is no row whatever the wallet says.
+        XCTAssertFalse(buyOrder(status: .completed).isBuyHistoryRow(walletPayout: .notFound, now: now))
     }
 
     @MainActor
@@ -457,7 +469,7 @@ final class BuySwapOrderTests: XCTestCase {
     func testSellOrderIsNeverABuyRow() {
         var order = buyOrder(status: .pending, depositSeenSecondsAgo: 60)
         order.direction = "sell"
-        XCTAssertFalse(order.isBuyHistoryRow(now: now))
+        XCTAssertFalse(order.isBuyHistoryRow(walletPayout: .notFound, now: now))
         XCTAssertFalse(order.canWatchDepositAddress)
     }
 
@@ -496,7 +508,7 @@ final class BuySwapOrderTests: XCTestCase {
             XCTAssertTrue(legacy.isLegacyRecord)
             XCTAssertTrue(legacy.mayStillBePaidOut, "\(status)")
             // …but it is still no row of its own: no deposit on record, no owner.
-            XCTAssertFalse(legacy.isBuyHistoryRow(now: now), "\(status)")
+            XCTAssertFalse(legacy.isBuyHistoryRow(walletPayout: .notFound, now: now), "\(status)")
         }
         XCTAssertFalse(buyOrder().isLegacyRecord)
     }
@@ -615,6 +627,30 @@ final class BuySwapOrderTests: XCTestCase {
             ["0xa": "aa", "0xb": "bb"])
         // An order alone on its payout still takes it.
         XCTAssertEqual(assignments([second], [paidToSecond]), ["0xb": "bb"])
+    }
+
+    func testCompletedOrdersSharingPayoutsHaveEnoughOnlyWithOneEach() {
+        let first = buyOrder(id: "0xa", status: .completed, createdSecondsAgo: 7_200)
+        let second = buyOrder(id: "0xb", status: .completed, createdSecondsAgo: 3_600)
+        // Never paid, and fits the same transactions.
+        let abandoned = buyOrder(id: "0xc", createdSecondsAgo: 1_800)
+        let one = payout("aa", secondsAgo: 600), other = payout("bb", secondsAgo: 60)
+        func resolve(_ orders: [SwapOrder], _ txs: [PayoutFixture]) -> PayoutResolution<PayoutFixture> {
+            SwapBuyTransactionMatcher.payoutResolution(among: orders, in: txs)
+        }
+        // Two payouts for the two the provider says were paid — whatever else shares them.
+        XCTAssertEqual(resolve([first, second], [one, other]).contestedWithEnough, ["0xa", "0xb"])
+        let withAbandoned = resolve([first, second, abandoned], [one, other])
+        XCTAssertEqual(withAbandoned.contested, ["0xa", "0xb", "0xc"])
+        XCTAssertEqual(withAbandoned.contestedWithEnough, ["0xa", "0xb"])
+        // One payout for the two of them: somebody's has not arrived.
+        let short = resolve([first, second], [one])
+        XCTAssertEqual(short.contested, ["0xa", "0xb"])
+        XCTAssertTrue(short.contestedWithEnough.isEmpty)
+        // Orders still open are never counted in: their row does not depend on it.
+        let open = resolve([abandoned, buyOrder(id: "0xd", createdSecondsAgo: 900)], [one, other])
+        XCTAssertEqual(open.contested, ["0xc", "0xd"])
+        XCTAssertTrue(open.contestedWithEnough.isEmpty)
     }
 
     func testAnUnsettledPayoutIsNotAMissingOne() {
@@ -835,6 +871,24 @@ final class BuySwapOrderTests: XCTestCase {
             SwapKitBalanceItem(identifier: nil, value: "7"),
             SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "150"),
         ]), .seen)
+    }
+
+    func testAMalformedBalanceAmountIsUnknownNotAbsent() {
+        let asset = "ARB.USDT-0XFD086BC7"
+        for value in ["0junk", "0,5", "-1", "-0", "0x0", "1e3", "", " ", "0\u{0665}", "0.0\u{FF11}"] {
+            XCTAssertNil(SwapTrackingService.balanceAmount(value), value)
+            // Under the asset's own name, and in an entry without a name.
+            for identifier in ["ARB.USDT-0xFd086bC7", nil] as [String?] {
+                let lookup = SwapTrackingService.depositLookup(
+                    of: asset, in: [SwapKitBalanceItem(identifier: identifier, value: value)])
+                XCTAssertEqual(lookup, .unknown, "\(value) \(identifier ?? "nil")")
+                XCTAssertFalse(mayLetGo(sinceAgedOut: 365 * 86_400, lookup: lookup), value)
+            }
+        }
+        XCTAssertEqual(SwapTrackingService.balanceAmount("0"), 0)
+        XCTAssertEqual(SwapTrackingService.balanceAmount(" 0.000 "), 0)
+        XCTAssertEqual(SwapTrackingService.balanceAmount("150.25"), Decimal(string: "150.25"))
+        XCTAssertEqual(SwapTrackingService.balanceAmount(".5"), Decimal(string: "0.5"))
     }
 
     func testAFailedWalletReadCannotLetAnUnpaidOrderGo() {

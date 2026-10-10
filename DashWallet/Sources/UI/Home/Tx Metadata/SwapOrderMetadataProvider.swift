@@ -58,16 +58,31 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// assignment the row label, the details screen and Home all read, so they cannot
     /// disagree about which order a payout is.
     private var _orderIdByTx: [Data: String] = [:]
-    /// Fires after the assignment changed.
+    /// Ids of the completed orders that share possible payouts with others, one for each
+    /// (`PayoutResolution.contestedWithEnough`).
+    private var _unsettledOrderIds: Set<String> = []
+    /// The wallet and network the assignment was read from; nil while that wallet could
+    /// not be read.
+    private var _readWallet: (walletId: String?, network: String?)?
+    /// Fires after the assignment — or what is known about it — changed.
     let assignmentsChanged = PassthroughSubject<Void, Never>()
 
     func orderID(forTxHashData txHashData: Data) -> String? {
         metadataQueue.sync { _orderIdByTx[txHashData] }
     }
 
-    /// Whether the order's Dash transaction is in the wallet.
-    func hasWalletTransaction(forOrderID orderID: String) -> Bool {
-        metadataQueue.sync { _orderIdByTx.values.contains(orderID) }
+    /// What the wallet `walletId` on `network` says about the order's Dash payout.
+    /// A payout that is assigned is in the wallet whatever else is known; anything short
+    /// of that is `.unknown` while the assignment at hand is not a reading of that wallet
+    /// that may be relied on for absence.
+    func walletPayout(forOrderID orderID: String, walletId: String?, network: String?) -> BuySwapWalletPayout {
+        metadataQueue.sync {
+            if _orderIdByTx.values.contains(orderID) { return .inWallet }
+            guard let read = _readWallet, read.walletId == walletId, read.network == network else {
+                return .unknown
+            }
+            return _unsettledOrderIds.contains(orderID) ? .unsettled : .notFound
+        }
     }
 
     private init() {
@@ -82,6 +97,16 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         // never fires, so buy metadata never attached.
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.balanceDidChangeNotification)
             .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.updateMetadata() }
+            .store(in: &cancellables)
+
+        // …and when the wallet's transactions are saved: the balance can change before the
+        // payout's row is in the store, and an order that has ended is not written again,
+        // so nothing else would bring a read that finds it.
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { HomeViewModel.saveTouchesFeedRows($0) }
+            .map { _ in () }
+            .throttle(for: .seconds(2), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in self?.updateMetadata() }
             .store(in: &cancellables)
     }
@@ -123,11 +148,18 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         // shared, `firstSeen`-ranged wallet read, so a transaction is labelled by the order
         // it belongs to and not by another one for the same amount. No label while the
         // wallet cannot be read.
-        let payouts = SwapBuyTransactionMatcher.walletAssignments(
-            among: orders,
-            walletId: SwapOrder.currentOwnerWalletId,
-            network: SwapOrder.currentOwnerNetwork,
-            strict: false)?.assigned ?? [:]
+        // The strict read is what "the wallet holds nothing for this order" may be said
+        // on. When it fails, the lenient one still serves the labels, and nothing is said
+        // about absence.
+        let walletId = SwapOrder.currentOwnerWalletId
+        let network = SwapOrder.currentOwnerNetwork
+        let read = SwapBuyTransactionMatcher.walletAssignments(
+            among: orders, walletId: walletId, network: network, strict: true)
+        let resolution = read ?? SwapBuyTransactionMatcher.walletAssignments(
+            among: orders, walletId: walletId, network: network, strict: false)
+        let payouts = resolution?.assigned ?? [:]
+        let unsettled = read?.contestedWithEnough ?? []
+        let readWallet = read.map { _ in (walletId: walletId, network: network) }
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {
@@ -138,11 +170,18 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         }
 
         metadataQueue.sync {
-            let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
-            let changedKeys = Set(current.keys).union(staleKeys)
+            let previous = self._availableMetadata
+            let staleKeys = Set(previous.keys).subtracting(current.keys)
+            let changedKeys = Set(current.filter { previous[$0.key] != $0.value }.keys).union(staleKeys)
             self._availableMetadata = current
             let ownersChanged = self._orderIdByTx != owners
+                || self._unsettledOrderIds != unsettled
+                || self._readWallet?.walletId != readWallet?.walletId
+                || self._readWallet?.network != readWallet?.network
+                || (self._readWallet == nil) != (readWallet == nil)
             self._orderIdByTx = owners
+            self._unsettledOrderIds = unsettled
+            self._readWallet = readWallet
             DispatchQueue.main.async {
                 for key in changedKeys {
                     self.metadataUpdated.send(key)
