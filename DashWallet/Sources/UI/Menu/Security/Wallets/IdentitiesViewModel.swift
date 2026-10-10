@@ -185,29 +185,42 @@ final class IdentitiesViewModel: ObservableObject {
             reload()
             return
         }
-        let previous = (name: identity.mainDpnsName, lastUpdated: identity.lastUpdated)
-        identity.mainDpnsName = name
-        identity.lastUpdated = Date()
         do {
-            try context.save()
+            try Self.persistMainName(name, on: identity, save: context.save)
         } catch {
-            // An unsaved pick would show until relaunch and then revert.
             // Core Data errors carry paths and stored values: codes only.
-            identity.mainDpnsName = previous.name
-            identity.lastUpdated = previous.lastUpdated
             let codes = WalletPreparationFailure(error: error).codes.joined(separator: ",")
             DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(codes)")
             errorMessage = NSLocalizedString("Something went wrong", comment: "")
             reload()
             return
         }
-        // A manual pick overrides any promotion still waiting for the
-        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
-        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: row.identityId)
         if row.isMainIdentity {
             _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
         }
         reload()
+    }
+
+    /// Write `name` as the identity's pick and save it. A failed save puts
+    /// both fields back — an unsaved pick would show until relaunch and
+    /// then revert — and keeps a waiting promotion; `save` is a parameter
+    /// so a test can fail it.
+    static func persistMainName(
+        _ name: String, on identity: PersistentIdentity, save: () throws -> Void
+    ) throws {
+        let previous = (name: identity.mainDpnsName, lastUpdated: identity.lastUpdated)
+        identity.mainDpnsName = name
+        identity.lastUpdated = Date()
+        do {
+            try save()
+        } catch {
+            identity.mainDpnsName = previous.name
+            identity.lastUpdated = previous.lastUpdated
+            throw error
+        }
+        // A manual pick overrides any promotion still waiting for the
+        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
+        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: identity.identityId)
     }
 
     /// One-shot Platform refresh, pull-to-refresh style: re-fetch each
