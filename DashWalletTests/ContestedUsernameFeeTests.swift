@@ -123,6 +123,65 @@ final class ContestedUsernameFeeTests: XCTestCase {
         XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true, source: .shielded), 25_000_000)
     }
 
+    /// Protocol 14: the sheet stated 0.15 DASH for the Dash or Platform
+    /// balance. A source settled afterwards must not take more than that,
+    /// and Shielded's 0.25 DASH denomination would — for the requested name
+    /// alone and with a companion, whose own sheet adds nothing.
+    func testSourceSettledAfterConfirmationCannotExceedIt() {
+        let model = CreateUsernameViewModel.makeForPreview(contestedFee: .reduced, isContestedCandidate: true)
+        model.captureConfirmedTopUp(shownDuffs: 15_000_000, isCompanionPass: false)
+        assertOnlyShieldedExceeds(model, nameCount: 1)
+
+        model.captureConfirmedTopUp(shownDuffs: 0, isCompanionPass: true)
+        assertOnlyShieldedExceeds(model, nameCount: 2)
+        XCTAssertEqual(model.takeConfirmedTopUpCeiling(), 15_000_000)
+    }
+
+    private func assertOnlyShieldedExceeds(
+        _ model: CreateUsernameViewModel, nameCount: UInt64, line: UInt = #line
+    ) {
+        let excess = model.fundingExceedingConfirmation(source: .shielded, nameCount: nameCount)
+        XCTAssertEqual(excess?.neededDuffs, 25_000_000, line: line)
+        XCTAssertEqual(excess?.confirmedDuffs, 15_000_000, line: line)
+        XCTAssertNil(model.fundingExceedingConfirmation(source: .core, nameCount: nameCount), line: line)
+        XCTAssertNil(model.fundingExceedingConfirmation(source: .platformPayment, nameCount: nameCount), line: line)
+    }
+
+    /// A sheet that stated Shielded's 0.25 DASH covers every source, on
+    /// either protocol version.
+    func testConfirmedShieldedAmountCoversEverySource() {
+        for fee in [Amounts.legacy, Amounts.reduced] {
+            let model = CreateUsernameViewModel.makeForPreview(contestedFee: fee, isContestedCandidate: true)
+            model.captureConfirmedTopUp(shownDuffs: 25_000_000, isCompanionPass: false)
+            for source in [DWIdentityFundingSource.core, .platformPayment, .shielded] {
+                XCTAssertNil(model.fundingExceedingConfirmation(source: source, nameCount: 1))
+            }
+        }
+    }
+
+    /// The ceiling guards a confirmed contested name on a new identity. A
+    /// plain name has no confirmation sheet, an existing identity's top-up
+    /// is checked against the confirmed amount by the coordinator, and
+    /// nothing confirmed leaves nothing to exceed.
+    func testNoCeilingWithoutAConfirmedNewContestedIdentity() {
+        let unconfirmed = CreateUsernameViewModel.makeForPreview(contestedFee: .reduced, isContestedCandidate: true)
+        XCTAssertNil(unconfirmed.fundingExceedingConfirmation(source: .shielded, nameCount: 1))
+
+        unconfirmed.captureConfirmedTopUp(shownDuffs: 15_000_000, isCompanionPass: false)
+        XCTAssertNotNil(unconfirmed.fundingExceedingConfirmation(source: .shielded, nameCount: 1))
+        unconfirmed.discardConfirmedTopUp()
+        XCTAssertNil(unconfirmed.fundingExceedingConfirmation(source: .shielded, nameCount: 1))
+
+        let plainName = CreateUsernameViewModel.makeForPreview(contestedFee: .reduced)
+        plainName.captureConfirmedTopUp(shownDuffs: 3_000_000, isCompanionPass: false)
+        XCTAssertNil(plainName.fundingExceedingConfirmation(source: .shielded, nameCount: 1))
+
+        let existingIdentity = CreateUsernameViewModel.makeForPreview(
+            contestedFee: .reduced, isContestedCandidate: true, existingIdentityCredits: 0)
+        existingIdentity.captureConfirmedTopUp(shownDuffs: 11_000_000, isCompanionPass: false)
+        XCTAssertNil(existingIdentity.fundingExceedingConfirmation(source: .shielded, nameCount: 1))
+    }
+
     func testUnknownVersionChargesTheLegacyAmounts() async {
         let network = Network()
         let fee = makeFee(network)

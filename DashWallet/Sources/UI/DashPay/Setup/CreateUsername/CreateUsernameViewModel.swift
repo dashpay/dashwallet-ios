@@ -670,8 +670,14 @@ class CreateUsernameViewModel: ObservableObject {
     private init(previewBalance: String,
                  hasMinimumRequiredBalance: Bool,
                  hasRecommendedBalance: Bool,
-                 shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?) {
+                 shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?,
+                 contestedFee: ContestedUsernameFee.Amounts,
+                 isContestedCandidate: Bool,
+                 existingIdentityCredits: UInt64?) {
         self.isPreviewInstance = true
+        self.contestedFee = contestedFee
+        self.isContestedCandidate = isContestedCandidate
+        self.existingIdentityCredits = existingIdentityCredits
         self.balance = previewBalance
         self.hasMinimumRequiredBalance = hasMinimumRequiredBalance
         // The Join DashPay sheet reads the per-source flag; a preview's
@@ -688,17 +694,30 @@ class CreateUsernameViewModel: ObservableObject {
     ///     contested name.
     ///   - shieldedReadiness: poses the shielded route; `nil` stands for a
     ///     wallet that has not hydrated yet, which is what keeps Continue off.
+    ///   - contestedFee: the contested cost of the network the form is on.
+    ///   - isContestedCandidate: the typed name goes to a masternode vote.
+    ///     Posed without a name in the field, so the next validation (a
+    ///     funding-source change runs one) puts it back to false.
+    ///   - existingIdentityCredits: the balance of an identity the wallet
+    ///     already has; `nil` for none, so a registration funds a new one.
+    ///     Replaced by the next recovery-state refresh.
     static func makeForPreview(
         balance: String = "0.00000000",
         hasMinimumRequiredBalance: Bool = false,
         hasRecommendedBalance: Bool = false,
-        shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
+        shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil,
+        contestedFee: ContestedUsernameFee.Amounts = .legacy,
+        isContestedCandidate: Bool = false,
+        existingIdentityCredits: UInt64? = nil
     ) -> CreateUsernameViewModel {
         CreateUsernameViewModel(
             previewBalance: balance,
             hasMinimumRequiredBalance: hasMinimumRequiredBalance,
             hasRecommendedBalance: hasRecommendedBalance,
-            shieldedReadiness: shieldedReadiness)
+            shieldedReadiness: shieldedReadiness,
+            contestedFee: contestedFee,
+            isContestedCandidate: isContestedCandidate,
+            existingIdentityCredits: existingIdentityCredits)
     }
     #endif
     
