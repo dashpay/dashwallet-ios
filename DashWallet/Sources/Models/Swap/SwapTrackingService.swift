@@ -79,14 +79,20 @@ final class SwapTrackingService {
         var synced: Bool
         let walletId: String?
         let network: String?
+        /// Ids of the orders a transaction in this wallet may be the payout of, without
+        /// that being settled (`PayoutResolution.contested`).
+        var contested: Set<String> = []
 
         /// Whether a decision about `order` may rest on this wallet's transactions: it is
         /// synced, the order is not another wallet's, and it is still the active wallet
         /// (`activeWalletId` / `activeNetwork`, read when the decision is made — the
-        /// requests in between are long enough for a switch).
+        /// requests in between are long enough for a switch). And the wallet has to be
+        /// clear about the order: with a transaction in it that may be the order's payout,
+        /// "no payout arrived" is not something it says.
         func vouches(for order: SwapOrder, activeWalletId: String?, activeNetwork: String?) -> Bool {
             synced && walletId == activeWalletId && network == activeNetwork
                 && !order.isForeign(toWalletId: walletId, network: network)
+                && !contested.contains(order.id)
         }
     }
 
@@ -114,9 +120,9 @@ final class SwapTrackingService {
     private var visibleStatusOrderIDs: [String: Int] = [:]
 
     /// When each paced Buy order was last polled (unix s), and whether the wallet was synced
-    /// then; see `isDueForPoll`. In memory only — a relaunch simply polls again. An entry is
+    /// then, or its read failed; see `isDueForPoll`. In memory only — a relaunch simply polls again. An entry is
     /// dropped once its order has ended.
-    private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool)] = [:]
+    private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool, readFailed: Bool)] = [:]
     private let pacedPollLock = NSLock()
 
     /// When expired orders were last checked for a late payout (unix s). Read and written
@@ -246,13 +252,16 @@ final class SwapTrackingService {
             let lateInterval = anyInWindow
                 ? Constants.unpaidIdlePollIntervalSeconds : Constants.dormantPollIntervalSeconds
             let lateCandidates = nowSeconds - lastLatePayoutCheck >= lateInterval ? expiredFunded : []
-            if let payouts = walletPayouts(for: due + lateCandidates, among: orders, in: wallet) {
+            if let resolution = walletPayouts(for: due + lateCandidates, among: orders, in: wallet) {
+                let payouts = resolution.assigned
+                wallet.contested = resolution.contested
                 if !lateCandidates.isEmpty { lastLatePayoutCheck = nowSeconds }
                 await completeExpiredOrders(lateCandidates, paidOutBy: payouts)
                 await pollOrders(due, payouts: payouts, wallet: wallet)
             } else {
                 // The wallet could not be read: nothing about it is known this cycle.
                 wallet.synced = false
+                markWalletReadFailed(due)
                 await pollOrders(due, payouts: [:], wallet: wallet)
             }
 
@@ -621,7 +630,9 @@ final class SwapTrackingService {
     ///
     /// An order past its window cannot be let go while the wallet is syncing, so a poll made
     /// then never waits longer than `unpaidIdlePollIntervalSeconds`, and does not use up the
-    /// slot of the first poll with the wallet synced — the one that can decide.
+    /// slot of the first poll with the wallet synced — the one that can decide. A poll
+    /// whose wallet read failed (`markWalletReadFailed`) is followed at the idle pace:
+    /// not at the dormant one, and not every cycle while the read keeps failing.
     private func isDueForPoll(_ order: SwapOrder, nowSeconds: Int64, walletSynced: Bool) -> Bool {
         guard order.isBuy else { return true }
         let unpaid = order.status == .notStarted && order.depositSeenAt == nil
@@ -643,12 +654,30 @@ final class SwapTrackingService {
 
         pacedPollLock.lock()
         defer { pacedPollLock.unlock() }
-        if let last = lastPacedPoll[order.id], nowSeconds - last.at < interval,
-           !(overdue && walletSynced && !last.walletSynced) {
-            return false
+        if let last = lastPacedPoll[order.id] {
+            let wait: Int64
+            if last.readFailed {
+                wait = min(interval, Constants.unpaidIdlePollIntervalSeconds)
+            } else if overdue && walletSynced && !last.walletSynced {
+                wait = 0
+            } else {
+                wait = interval
+            }
+            if nowSeconds - last.at < wait { return false }
         }
-        lastPacedPoll[order.id] = (nowSeconds, walletSynced)
+        lastPacedPoll[order.id] = (nowSeconds, walletSynced, false)
         return true
+    }
+
+    /// Restamps this cycle's paced polls as made without the wallet: the cycle started
+    /// with it synced and then failed to read it, and such a poll must not hold a dormant
+    /// slot against the one that can decide.
+    private func markWalletReadFailed(_ orders: [SwapOrder]) {
+        pacedPollLock.lock()
+        defer { pacedPollLock.unlock() }
+        for order in orders {
+            if let last = lastPacedPoll[order.id] { lastPacedPoll[order.id] = (last.at, false, true) }
+        }
     }
 
     /// Drops the pacing entry of an order that has ended.
@@ -679,7 +708,8 @@ final class SwapTrackingService {
 
     /// What `balances` says about `asset` at the address: `.seen` for a positive amount,
     /// `.absent` for none, `.unknown` when the asset is listed with an amount that cannot be
-    /// read — an answer we do not understand is not "nothing there". Identifiers are
+    /// read, or when an entry does not say which asset it is — an answer we do not
+    /// understand is not "nothing there". Identifiers are
     /// compared case-insensitively: ours are upper-cased, `/balance` keeps the contract's
     /// own case. Any positive amount counts, short of the order's or not: the question is
     /// whether the user's funds are at the address, and a partial deposit is funds at the
@@ -698,21 +728,26 @@ final class SwapTrackingService {
             if amounts.contains(where: { ($0 ?? 0) > 0 }) { return .seen }
             return amounts.contains(where: { $0 == nil }) ? .unknown : .absent
         }
-        let wanted = asset.uppercased()
-        let exact = balances.filter { $0.identifier?.uppercased() == wanted }
-        if !exact.isEmpty { return read(exact) }
-        guard !wanted.contains("-"), let chain = SwapOrder.chain(ofAsset: wanted) else { return .absent }
-        let natives = balances.filter { item in
-            guard let identifier = item.identifier?.uppercased() else { return false }
-            return !identifier.contains("-") && SwapOrder.chain(ofAsset: identifier) == chain
+        func named(_ items: [SwapKitBalanceItem]) -> DepositLookup {
+            let wanted = asset.uppercased()
+            let exact = items.filter { $0.identifier?.uppercased() == wanted }
+            if !exact.isEmpty { return read(exact) }
+            guard !wanted.contains("-"), let chain = SwapOrder.chain(ofAsset: wanted) else { return .absent }
+            let natives = items.filter { item in
+                guard let identifier = item.identifier?.uppercased() else { return false }
+                return !identifier.contains("-") && SwapOrder.chain(ofAsset: identifier) == chain
+            }
+            if natives.count > 1 { return .unknown }
+            return read(natives)
         }
-        if natives.count > 1 { return .unknown }
-        return read(natives)
-    }
-
-    /// True when `balances` carries a positive amount of `asset`; see `depositLookup`.
-    static func holdsAsset(_ asset: String, in balances: [SwapKitBalanceItem]) -> Bool {
-        depositLookup(of: asset, in: balances) == .seen
+        // An entry with no asset name that holds something (or an amount that cannot be
+        // read) may be the one asked about, so with one in the answer the asset is not
+        // known to be absent.
+        let unnamed = balances.filter {
+            ($0.identifier ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        let lookup = named(balances)
+        return lookup == .absent && read(unnamed) != .absent ? .unknown : lookup
     }
 
     // MARK: - Private: Route resolution
@@ -736,16 +771,21 @@ final class SwapTrackingService {
     }
 
     /// Order id → display hash of the wallet transaction that pays it out, for those of the
-    /// `wanted` Buy orders that have one. No wallet read when there is no Buy order among
-    /// them. Nil when `wallet`'s transactions could not be read.
-    private func walletPayouts(for wanted: [SwapOrder], among orders: [SwapOrder], in wallet: WalletView) -> [String: String]? {
+    /// `wanted` Buy orders that have one, and which orders have an unsettled one. No wallet
+    /// read when there is no Buy order among them. Nil when `wallet`'s transactions could
+    /// not be read.
+    private func walletPayouts(
+        for wanted: [SwapOrder],
+        among orders: [SwapOrder],
+        in wallet: WalletView
+    ) -> PayoutResolution<String>? {
         let wantedBuys = wanted.filter(\.isBuy)
-        guard !wantedBuys.isEmpty else { return [:] }
-        guard let assignments = SwapBuyTransactionMatcher.walletAssignments(
+        guard !wantedBuys.isEmpty else { return PayoutResolution() }
+        guard let resolution = SwapBuyTransactionMatcher.walletAssignments(
             among: orders, walletId: wallet.walletId, network: wallet.network, strict: true) else { return nil }
-        var result: [String: String] = [:]
+        var result = PayoutResolution<String>(contested: resolution.contested)
         for order in wantedBuys {
-            if let tx = assignments[order.id] { result[order.id] = tx.txHashHexString }
+            if let tx = resolution.assigned[order.id] { result.assigned[order.id] = tx.txHashHexString }
         }
         return result
     }

@@ -509,7 +509,7 @@ final class BuySwapOrderTests: XCTestCase {
 
     func testNoTransactionsMeansNoPayouts() {
         let none: [PayoutFixture] = []
-        XCTAssertTrue(SwapBuyTransactionMatcher.payoutAssignments(among: [buyOrder(status: .pending)], in: none).isEmpty)
+        XCTAssertTrue(SwapBuyTransactionMatcher.payoutResolution(among: [buyOrder(status: .pending)], in: none).assigned.isEmpty)
         XCTAssertTrue(SwapBuyTransactionMatcher.matchingTransactions(for: buyOrder(status: .pending), in: none).isEmpty)
     }
 
@@ -526,7 +526,7 @@ final class BuySwapOrderTests: XCTestCase {
     }
 
     private func assignments(_ orders: [SwapOrder], _ transactions: [PayoutFixture]) -> [String: String] {
-        SwapBuyTransactionMatcher.payoutAssignments(among: orders, in: transactions).mapValues(\.txHashHexString)
+        SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions).assigned.mapValues(\.txHashHexString)
     }
 
     func testALiveOrderDoesNotTakeAnExpiredOrdersLatePayout() {
@@ -576,8 +576,73 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertEqual(
             assignments([firstDone, secondDone], [paidToSecond, paidToFirst]),
             ["0xa": "aa", "0xb": "bb"])
+        // Completed without a named transaction says each was paid, not with which.
+        firstDone.outboundTxHash = nil
+        secondDone.outboundTxHash = nil
+        XCTAssertEqual(assignments([firstDone, secondDone], [paidToSecond, paidToFirst]), [:])
+        // …and the unsettled pair is not left for a live order to take.
+        let third = buyOrder(id: "0xc", status: .pending, createdSecondsAgo: 1_800)
+        XCTAssertEqual(assignments([firstDone, secondDone, third], [paidToSecond, paidToFirst]), [:])
+        XCTAssertEqual(
+            SwapBuyTransactionMatcher.payoutResolution(
+                among: [firstDone, secondDone, third], in: [paidToSecond, paidToFirst]).contested,
+            ["0xa", "0xb", "0xc"])
+        // Nor does being the only completed one say which of the two is its own while a
+        // live order fits them as well…
+        XCTAssertEqual(assignments([firstDone, second], [paidToSecond, paidToFirst]), [:])
+        // …but a single transaction goes to the order the provider says was paid, and that
+        // leaves no open question about the other.
+        let single = SwapBuyTransactionMatcher.payoutResolution(among: [firstDone, second], in: [paidToFirst])
+        XCTAssertEqual(single.assigned.mapValues(\.txHashHexString), ["0xa": "aa"])
+        XCTAssertTrue(single.contested.isEmpty)
+        // A live order does not settle for the transaction left over from an open question
+        // it is part of.
+        let leftOver = payout("cc", secondsAgo: 30)
+        XCTAssertEqual(assignments([firstDone, second], [paidToSecond, paidToFirst, leftOver]), [:])
+        // An old attempt saved before deposits were recorded stands in nobody's way: the
+        // live order takes its earliest, the old one what is left.
+        let legacy = buyOrder(id: "0xl", status: .expired, finalisedSecondsAgo: 86_400, createdSecondsAgo: 9_000)
+        var legacyRecord = legacy
+        legacyRecord.fromAmount = nil
+        XCTAssertTrue(legacyRecord.isLegacyRecord)
+        XCTAssertEqual(
+            assignments([legacyRecord, second], [paidToSecond, paidToFirst]),
+            ["0xb": "bb", "0xl": "aa"])
+        // One of them named settles both.
+        secondDone.outboundTxHash = "bb"
+        XCTAssertEqual(
+            assignments([firstDone, secondDone], [paidToSecond, paidToFirst]),
+            ["0xa": "aa", "0xb": "bb"])
         // An order alone on its payout still takes it.
         XCTAssertEqual(assignments([second], [paidToSecond]), ["0xb": "bb"])
+    }
+
+    func testAnUnsettledPayoutIsNotAMissingOne() {
+        // Two unpaid-looking orders for the same amount; both were paid while the app was
+        // away. The provider has forgotten them (404) and the deposit addresses were swept.
+        let first = buyOrder(id: "0xa", createdSecondsAgo: 7 * 86_400)
+        let second = buyOrder(id: "0xb", createdSecondsAgo: 6 * 86_400)
+        let lone = buyOrder(id: "0xc", expected: "9", createdSecondsAgo: 6 * 86_400)
+        let resolution = SwapBuyTransactionMatcher.payoutResolution(
+            among: [first, second, lone],
+            in: [payout("aa", secondsAgo: 5 * 86_400), payout("bb", secondsAgo: 4 * 86_400)])
+        XCTAssertTrue(resolution.assigned.isEmpty)
+        XCTAssertEqual(resolution.contested, ["0xa", "0xb"])
+
+        // Synced and read — but the wallet holds what may be their payouts, so it does not
+        // vouch for "none arrived", and they are not let go on the provider's and the
+        // chain's "nothing".
+        var wallet = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0")
+        wallet.contested = resolution.contested
+        for order in [first, second] {
+            let walletReady = wallet.vouches(for: order, activeWalletId: "aa11", activeNetwork: "0")
+            XCTAssertFalse(walletReady)
+            XCTAssertFalse(mayLetGo(sinceAgedOut: 365 * 86_400, walletReady: walletReady, lookup: .absent))
+        }
+        // An order no transaction fits is judged as before.
+        let walletReady = wallet.vouches(for: lone, activeWalletId: "aa11", activeNetwork: "0")
+        XCTAssertTrue(walletReady)
+        XCTAssertTrue(mayLetGo(sinceAgedOut: 365 * 86_400, walletReady: walletReady, lookup: .absent))
     }
 
     func testThePoolReachesBackToEveryOrderThatCanClaim() {
@@ -696,23 +761,26 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertFalse(buyOrder(memo: nil).canWatchDepositAddress)
     }
 
+    private func holds(_ asset: String, in balances: [SwapKitBalanceItem]) -> Bool {
+        SwapTrackingService.depositLookup(of: asset, in: balances) == .seen
+    }
+
     func testHoldsAssetMatchesTheIdentifierWhateverItsCase() {
         let asset = "ARB.USDT-0XFD086BC7"
         let held = [
             SwapKitBalanceItem(identifier: "ARB.ETH", value: "0"),
             SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "150"),
         ]
-        XCTAssertTrue(SwapTrackingService.holdsAsset(asset, in: held))
+        XCTAssertTrue(holds(asset, in: held))
     }
 
     func testHoldsAssetIgnoresZeroOtherAssetsAndGarbage() {
         let asset = "ARB.USDT-0XFD086BC7"
-        XCTAssertFalse(SwapTrackingService.holdsAsset(asset, in: []))
-        XCTAssertFalse(SwapTrackingService.holdsAsset(asset, in: [
+        XCTAssertFalse(holds(asset, in: []))
+        XCTAssertFalse(holds(asset, in: [
             SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "0"),
             SwapKitBalanceItem(identifier: "ARB.USDC-0xaf88d065", value: "9"),
             SwapKitBalanceItem(identifier: "ARB.ETH", value: "1.5"),
-            SwapKitBalanceItem(identifier: nil, value: "7"),
             SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "n/a"),
         ]))
     }
@@ -742,6 +810,33 @@ final class BuySwapOrderTests: XCTestCase {
         ]), .unknown)
     }
 
+    func testABalanceEntryWithoutANameIsUnknownNotAbsent() throws {
+        let asset = "ARB.USDT-0XFD086BC7"
+        // As decoded from the wire: identifier null, missing, blank.
+        for entry in [#"{"identifier":null,"value":"150"}"#, #"{"value":"150"}"#, #"{"identifier":" ","value":"150"}"#] {
+            let json = #"[{"identifier":"ARB.ETH","value":"0"},"# + entry + "]"
+            let balances = try JSONDecoder().decode([SwapKitBalanceItem].self, from: Data(json.utf8))
+            let lookup = SwapTrackingService.depositLookup(of: asset, in: balances)
+            XCTAssertEqual(lookup, .unknown, entry)
+            XCTAssertFalse(mayLetGo(sinceAgedOut: 365 * 86_400, lookup: lookup), entry)
+            // The same for a native coin, which is looked for by its chain.
+            XCTAssertEqual(SwapTrackingService.depositLookup(of: "ARB.ETH", in: balances), .unknown, entry)
+        }
+        // An unnamed entry that holds nothing cannot be the deposit.
+        XCTAssertEqual(SwapTrackingService.depositLookup(of: asset, in: [
+            SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "0"),
+            SwapKitBalanceItem(identifier: nil, value: "0"),
+        ]), .absent)
+        XCTAssertEqual(SwapTrackingService.depositLookup(of: asset, in: [
+            SwapKitBalanceItem(identifier: nil, value: nil),
+        ]), .unknown)
+        // A named, positive entry is still the deposit, whatever else is unnamed.
+        XCTAssertEqual(SwapTrackingService.depositLookup(of: asset, in: [
+            SwapKitBalanceItem(identifier: nil, value: "7"),
+            SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "150"),
+        ]), .seen)
+    }
+
     func testAFailedWalletReadCannotLetAnUnpaidOrderGo() {
         // A wallet read that failed leaves the cycle's wallet unsynced, so it vouches for
         // nothing — and without the wallet's word no order is let go.
@@ -758,22 +853,22 @@ final class BuySwapOrderTests: XCTestCase {
             SwapKitBalanceItem(identifier: "TON.GRAM", value: "12.5"),
             SwapKitBalanceItem(identifier: "TON.USDT-EQCxE6mU", value: "2"),
         ]
-        XCTAssertTrue(SwapTrackingService.holdsAsset("TON.TON", in: ton))
-        XCTAssertTrue(SwapTrackingService.holdsAsset("TON.USDT-EQCXE6MU", in: ton))
-        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.TON", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "0")]))
+        XCTAssertTrue(holds("TON.TON", in: ton))
+        XCTAssertTrue(holds("TON.USDT-EQCXE6MU", in: ton))
+        XCTAssertFalse(holds("TON.TON", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "0")]))
         // Listed under its own name: that entry decides, a sibling native does not.
-        XCTAssertFalse(SwapTrackingService.holdsAsset("MAYA.MAYA", in: [
+        XCTAssertFalse(holds("MAYA.MAYA", in: [
             SwapKitBalanceItem(identifier: "MAYA.MAYA", value: "0"),
             SwapKitBalanceItem(identifier: "MAYA.CACAO", value: "5"),
         ]))
         // Two natives and neither is ours: nothing to mean.
-        XCTAssertFalse(SwapTrackingService.holdsAsset("MAYA.MAYA", in: [
+        XCTAssertFalse(holds("MAYA.MAYA", in: [
             SwapKitBalanceItem(identifier: "MAYA.CACAO", value: "5"),
             SwapKitBalanceItem(identifier: "MAYA.OTHER", value: "5"),
         ]))
         // A token is never matched by the native balance, nor a coin by another chain's.
-        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.USDT-EQCXE6MU", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "9")]))
-        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.TON", in: [SwapKitBalanceItem(identifier: "SOL.SOL", value: "9")]))
+        XCTAssertFalse(holds("TON.USDT-EQCXE6MU", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "9")]))
+        XCTAssertFalse(holds("TON.TON", in: [SwapKitBalanceItem(identifier: "SOL.SOL", value: "9")]))
     }
 
     // MARK: Row

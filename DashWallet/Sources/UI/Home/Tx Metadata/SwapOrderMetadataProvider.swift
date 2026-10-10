@@ -26,9 +26,10 @@ import DashUIKit
 ///   `tx.txHashData` (the metadata dict key) equals the byte-reversed form of that hex.
 ///   Convert: `Data(hex: order.id).map { Data($0.reversed()) }`.
 /// - **Buy**: the incoming Dash tx assigned to the order by
-///   `SwapBuyTransactionMatcher.payoutAssignments` — the tx the order names as its payout
+///   `SwapBuyTransactionMatcher.payoutResolution` — the tx the order names as its payout
 ///   (`outboundTxHash`) when that tx fits it, otherwise a match by address + time +
-///   approximate amount, one order per transaction. Return that tx's `txHashData`.
+///   approximate amount, one order per transaction; none while it is not settled which of
+///   several orders a tx belongs to. Return that tx's `txHashData`.
 ///   Re-resolves on `SwiftDashSDKWalletState.balanceDidChangeNotification` so a buy that
 ///   lands after the order is stored still gets labelled.
 class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
@@ -38,9 +39,14 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     private var cancellables = Set<AnyCancellable>()
     private let metadataQueue = DispatchQueue(label: "SwapOrderMetadataProvider.metadata", qos: .utility)
     /// Where the payout assignment is worked out: off the main thread — it reads a range of
-    /// the wallet's transactions — and one update at a time, so results are published in
-    /// the order the updates came in and an older one cannot overwrite a newer one.
+    /// the wallet's transactions — and one update at a time.
     private let assignmentQueue = DispatchQueue(label: "SwapOrderMetadataProvider.assignments", qos: .utility)
+    /// Updates run one after another, each reading the orders when it starts. One asked
+    /// for while another runs is not queued: it makes the running one go round once more
+    /// when it is done — during a sync they arrive faster than a wallet read takes, and
+    /// only the last result is kept anyway. Both guarded by `metadataQueue`.
+    private var isUpdating = false
+    private var updateRequested = false
 
     private var _availableMetadata: [Data: TxRowMetadata] = [:]
     var availableMetadata: [Data: TxRowMetadata] {
@@ -67,9 +73,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     private init() {
         dao.observeAll()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] orders in
-                self?.updateMetadata(from: orders)
-            }
+            .sink { [weak self] _ in self?.updateMetadata() }
             .store(in: &cancellables)
 
         // Re-resolve buy orders when the wallet state changes (the incoming DASH landing is
@@ -78,15 +82,39 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         // never fires, so buy metadata never attached.
         NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.balanceDidChangeNotification)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.refreshMetadata() }
+            .sink { [weak self] _ in self?.updateMetadata() }
             .store(in: &cancellables)
     }
 
     // MARK: - Private
 
-    private func updateMetadata(from orders: [SwapOrder]) {
-        assignmentQueue.async { [weak self] in
-            self?.computeMetadata(from: orders)
+    private func updateMetadata() {
+        let starts = metadataQueue.sync { () -> Bool in
+            if isUpdating {
+                updateRequested = true
+                return false
+            }
+            isUpdating = true
+            return true
+        }
+        guard starts else { return }
+        Task { [weak self] in
+            var again = true
+            while again, let self {
+                let orders = await self.dao.all()
+                await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
+                    self.assignmentQueue.async {
+                        self.computeMetadata(from: orders)
+                        done.resume()
+                    }
+                }
+                again = self.metadataQueue.sync {
+                    let requested = self.updateRequested
+                    self.updateRequested = false
+                    self.isUpdating = requested
+                    return requested
+                }
+            }
         }
     }
 
@@ -99,7 +127,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             among: orders,
             walletId: SwapOrder.currentOwnerWalletId,
             network: SwapOrder.currentOwnerNetwork,
-            strict: false) ?? [:]
+            strict: false)?.assigned ?? [:]
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {
@@ -109,7 +137,6 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
         }
 
-        // `sync`, so this update is in place before the next one is worked out.
         metadataQueue.sync {
             let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
             let changedKeys = Set(current.keys).union(staleKeys)
@@ -130,13 +157,6 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             return Data(hex: order.id).map { Data($0.reversed()) }
         } else {
             return payouts[order.id]?.txHashData
-        }
-    }
-
-    private func refreshMetadata() {
-        Task {
-            let orders = await dao.all()
-            updateMetadata(from: orders)
         }
     }
 

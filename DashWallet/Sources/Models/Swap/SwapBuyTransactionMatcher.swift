@@ -28,6 +28,15 @@ protocol SwapPayoutCandidate {
 
 extension Transaction: SwapPayoutCandidate {}
 
+/// Which wallet transaction pays out which Buy order, as far as that can be told.
+struct PayoutResolution<T> {
+    /// Order id → the transaction that pays it out.
+    var assigned: [String: T] = [:]
+    /// Ids of the orders that fit a transaction another order fits as well, and were given
+    /// none for that reason.
+    var contested: Set<String> = []
+}
+
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
 ///
 /// We need to identify the buy's incoming DASH tx more precisely than "any tx to the same address":
@@ -58,7 +67,7 @@ enum SwapBuyTransactionMatcher {
         return Date(timeIntervalSince1970: max(0, orderTimestamp - timestampSlack - 24 * 60 * 60))
     }
 
-    /// The `firstSeen` cutoff of the pool `payoutAssignments(among:in:)` needs for `orders`:
+    /// The `firstSeen` cutoff of the pool `payoutResolution(among:in:)` needs for `orders`:
     /// far enough back for every order that can claim a transaction, not only the ones the
     /// caller is asking about — an order whose own payout is missing from the pool takes
     /// somebody else's. Nil when no order can claim anything.
@@ -96,9 +105,9 @@ enum SwapBuyTransactionMatcher {
         walletId: String?,
         network: String?,
         strict: Bool
-    ) -> [String: Transaction]? {
+    ) -> PayoutResolution<Transaction>? {
         let claimants = orders.filter { !$0.isForeign(toWalletId: walletId, network: network) }
-        guard let cutoff = fetchCutoff(forAssignmentsAmong: claimants) else { return [:] }
+        guard let cutoff = fetchCutoff(forAssignmentsAmong: claimants) else { return PayoutResolution() }
         // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
         // (empty) post-migration, so a buy's incoming DASH would never match.
         // The matcher only considers rows around an order's own time, so range the fetch by
@@ -112,7 +121,7 @@ enum SwapBuyTransactionMatcher {
                   ? SwiftDashSDKWalletSource.fetchRecentOrFail(firstSeenSince: cutoff)
                   : SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
               snapshot.walletId.hexEncodedString() == walletId else { return nil }
-        return payoutAssignments(among: claimants, in: snapshot.transactions)
+        return payoutResolution(among: claimants, in: snapshot.transactions)
     }
 
     /// Every transaction that could be `order`'s payout: received at its address, not before
@@ -142,38 +151,61 @@ enum SwapBuyTransactionMatcher {
     /// (`latestPayoutDate`). Settled in this priority:
     /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
     ///    transaction also fits the order;
-    /// 2. orders the provider reports as completed, oldest first — it paid them out, and
-    ///    payouts arrive in the order the swaps were made;
+    /// 2. orders the provider reports as completed — it paid them out;
     /// 3. orders that are still owed a payout: the ones in flight (an active status) and the
     ///    expired ones with a deposit on record. Expiry is us no longer asking, not the
     ///    provider's word, so an expired order's late payout is not a newer order's to take;
     /// 4. orders saved before deposits were recorded that have ended — these only take what
     ///    the others left, so an old attempt cannot stand between a live order and its payout.
-    ///    Within tier 3 and within tier 4: one that is alone on its transactions takes the
+    ///    Within each of tiers 2–4: an order that is alone on its transactions takes the
     ///    earliest. Orders that share any transaction get none of them, however many there
     ///    are: nothing ties the sequence of payouts to the sequence the orders were made
-    ///    in — a later order can be paid first. Which attempt a payout answers is the
-    ///    provider's to say (it moves the right one to tier 2, naming its transaction), and
-    ///    a wrong guess would finalise the other attempt as paid. Whether an order's
-    ///    deposit is on record does not rank it here — that record can lag behind a payout
-    ///    that is already in the wallet.
+    ///    in — a later order can be paid first — and a wrong guess would finalise the other
+    ///    attempt as paid, or show one order's payout under another. That holds for
+    ///    completed orders too: completion says an order was paid, not with which of two
+    ///    alike transactions. And across tiers 2 and 3: an order alone in its tier that fits
+    ///    several transactions takes none while an order of tier 3 fits one of them — the
+    ///    tier says who is served first, not which transaction is whose. With a single
+    ///    transaction there is nothing to mix up, and the earlier tier has it. An order
+    ///    that fits a transaction held back this way takes no other one either.
+    ///    Whether an order's deposit is on record does not rank it here — that record can
+    ///    lag behind a payout that is already in the wallet.
     /// Orders that can no longer be paid out (`mayStillBePaidOut`) claim nothing.
+    ///
+    /// Orders left without a transaction because one they fit was held back are reported
+    /// as `contested`: a payout that may be theirs is in the wallet, which is not the same
+    /// as none having arrived. They stay so until the others stop claiming (refunded,
+    /// failed, let go unpaid) or move to an earlier tier; orders that have all ended keep
+    /// sharing for good, and their payouts stay unlabelled. An order whose only fitting
+    /// transaction went to an earlier tier is not contested: the provider says that
+    /// order was paid, and the transaction is the one payout there is.
     ///
     /// `transactions` has to reach back to `fetchCutoff(forAssignmentsAmong:)` of the same
     /// `orders`.
-    static func payoutAssignments<T: SwapPayoutCandidate>(
+    static func payoutResolution<T: SwapPayoutCandidate>(
         among orders: [SwapOrder],
         in transactions: [T]
-    ) -> [String: T] {
-        guard !transactions.isEmpty else { return [:] }
+    ) -> PayoutResolution<T> {
+        guard !transactions.isEmpty else { return PayoutResolution() }
         let claimants = orders
             .filter { $0.isBuy && $0.mayStillBePaidOut }
             .sorted { $0.timestamp < $1.timestamp }
-        guard !claimants.isEmpty else { return [:] }
+        guard !claimants.isEmpty else { return PayoutResolution() }
 
         var free: [String: T] = [:]
         for tx in transactions { free[tx.txHashHexString.lowercased()] = tx }
         var assigned: [String: T] = [:]
+        var contested = Set<String>()
+        /// Transactions held back from every order because it is not settled whose they are.
+        var withheld: [T] = []
+        func withhold(_ txIds: some Sequence<String>) {
+            for txId in txIds {
+                if let tx = free.removeValue(forKey: txId) { withheld.append(tx) }
+            }
+        }
+        func fits(_ order: SwapOrder, anyOf pool: [T]) -> Bool {
+            matchingTransactions(for: order, in: pool).contains { isInTime($0, for: order) }
+        }
 
         func take(_ txId: String, for order: SwapOrder) {
             guard let tx = free.removeValue(forKey: txId) else { return }
@@ -197,13 +229,18 @@ enum SwapBuyTransactionMatcher {
             take(recorded, for: claimant)
         }
 
-        for claimant in claimants where claimant.status == .completed && assigned[claimant.id] == nil {
-            if let txId = fitting(claimant).first { take(txId, for: claimant) }
-        }
-
-        let open = claimants.filter { $0.status != .completed && assigned[$0.id] == nil }
+        let unnamed = claimants.filter { assigned[$0.id] == nil }
+        let completed = unnamed.filter { $0.status == .completed }
+        let open = unnamed.filter { $0.status != .completed }
         let isOwed: (SwapOrder) -> Bool = { $0.status.isActive || !$0.isLegacyRecord }
-        for tier in [open.filter(isOwed), open.filter { !isOwed($0) }] {
+        for var tier in [completed, open.filter(isOwed), open.filter { !isOwed($0) }] {
+            // An order that fits a held-back transaction is part of that open question: it
+            // takes nothing, and what else it fits is held back with it.
+            while let index = tier.firstIndex(where: { fits($0, anyOf: withheld) }) {
+                let order = tier.remove(at: index)
+                contested.insert(order.id)
+                withhold(fitting(order))
+            }
             // Fitting sets are taken before anything in the tier is assigned, and orders
             // that share a transaction are settled as one group — so the outcome does not
             // depend on the order in which the tier is walked.
@@ -217,17 +254,27 @@ enum SwapBuyTransactionMatcher {
                 for index in touching.reversed() { merged += groups.remove(at: index) }
                 groups.append(merged)
             }
+            let tierIds = Set(tier.map(\.id))
             for group in groups {
-                guard group.count == 1, let txId = group[0].txIds.first else {
-                    // Unsettled between these orders: the transaction is one of theirs, so
-                    // it is not left for the next tier to take.
-                    for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
-                    continue
+                let txIds = Set(group.flatMap(\.txIds))
+                if group.count == 1, let txId = group[0].txIds.first {
+                    // Tier 4 does not count: its orders only take what the others left.
+                    let sharedWithALaterTier = txIds.count > 1 && open.contains { other in
+                        isOwed(other) && assigned[other.id] == nil && !tierIds.contains(other.id)
+                            && !txIds.isDisjoint(with: fitting(other))
+                    }
+                    if !sharedWithALaterTier {
+                        take(txId, for: group[0].order)
+                        continue
+                    }
                 }
-                take(txId, for: group[0].order)
+                // Unsettled between these orders: the transaction is one of theirs, so it
+                // is not left for the next tier to take.
+                withhold(txIds)
+                contested.formUnion(group.map(\.order.id))
             }
         }
-        return assigned
+        return PayoutResolution(assigned: assigned, contested: contested)
     }
 
     private static func matches<T: SwapPayoutCandidate>(
