@@ -113,18 +113,15 @@ final class SwapTrackingService {
     /// disappear would mark a still-visible replacement as gone.
     private var visibleStatusOrderIDs: [String: Int] = [:]
 
-    /// When each paced Buy order was last polled (unix s); see `isDueForPoll`. In memory
-    /// only — a relaunch simply polls again. An entry is dropped once its order has ended.
-    private var lastPacedPoll: [String: Int64] = [:]
+    /// When each paced Buy order was last polled (unix s), and whether the wallet was synced
+    /// then; see `isDueForPoll`. In memory only — a relaunch simply polls again. An entry is
+    /// dropped once its order has ended.
+    private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool)] = [:]
     private let pacedPollLock = NSLock()
 
     /// When expired orders were last checked for a late payout (unix s). Read and written
     /// only by the poll loop itself, between cycles.
     private var lastLatePayoutCheck: Int64 = 0
-    /// Expired orders whose late-payout window had closed when the synced wallet was last
-    /// looked at: no transaction that could still be theirs can arrive, so they are not
-    /// looked for again. In memory only — a relaunch looks once more. Poll loop only.
-    private var latePayoutSettled: Set<String> = []
 
     private init() {}
 
@@ -236,22 +233,22 @@ final class SwapTrackingService {
             let due = active.filter { isDueForPoll($0, nowSeconds: nowSeconds, walletSynced: wallet.synced) }
             // One wallet read per cycle serves both the orders being polled and the
             // expired ones whose payout may still turn up. The latter are only looked for
-            // at the idle pace: nothing about them changes fast, and each look reads the
-            // wallet on the main actor.
-            let lateDue = wallet.synced
-                && nowSeconds - lastLatePayoutCheck >= Constants.unpaidIdlePollIntervalSeconds
-            let lateCandidates = !lateDue ? [] : orders.filter {
+            // at the idle pace — nothing about them changes fast — and at the dormant pace
+            // once every one of them is past its late-payout window: a transaction dated
+            // inside it can then only surface through a rescan or a settled ambiguity.
+            let expiredFunded = !wallet.synced ? [] : orders.filter {
                 $0.isBuy && !$0.isLegacyRecord && $0.status == .expired && $0.mayStillBePaidOut
-                    && !latePayoutSettled.contains($0.id)
                     && !$0.isForeign(toWalletId: wallet.walletId, network: wallet.network)
             }
-            if let payouts = await walletPayouts(for: due + lateCandidates, among: orders, in: wallet) {
-                if lateDue { lastLatePayoutCheck = nowSeconds }
+            let anyInWindow = expiredFunded.contains {
+                SwapBuyTransactionMatcher.latestPayoutDate(for: $0).map { TimeInterval(nowSeconds) <= $0 } ?? true
+            }
+            let lateInterval = anyInWindow
+                ? Constants.unpaidIdlePollIntervalSeconds : Constants.dormantPollIntervalSeconds
+            let lateCandidates = nowSeconds - lastLatePayoutCheck >= lateInterval ? expiredFunded : []
+            if let payouts = walletPayouts(for: due + lateCandidates, among: orders, in: wallet) {
+                if !lateCandidates.isEmpty { lastLatePayoutCheck = nowSeconds }
                 await completeExpiredOrders(lateCandidates, paidOutBy: payouts)
-                for order in lateCandidates where payouts[order.id] == nil {
-                    let limit = SwapBuyTransactionMatcher.latestPayoutDate(for: order) ?? .infinity
-                    if TimeInterval(nowSeconds) > limit { latePayoutSettled.insert(order.id) }
-                }
                 await pollOrders(due, payouts: payouts, wallet: wallet)
             } else {
                 // The wallet could not be read: nothing about it is known this cycle.
@@ -493,9 +490,14 @@ final class SwapTrackingService {
         // The sync state carries no wallet identity, and during a switch it still describes
         // the wallet being left. It counts only while the wallet actually bound is the
         // selected one.
-        let bound = SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString()
+        // The same seed has the same wallet id on every network, so the running network is
+        // compared as well.
+        let host = SwiftDashSDKHost.shared
+        let bound = host.wallet?.walletId.hexEncodedString()
+        let isSelectedWallet = bound != nil && bound == walletId
+            && host.runningNetwork != nil && host.runningNetwork == WalletEnvironment.network
         return WalletView(
-            synced: SyncingActivityMonitor.shared.state == .syncDone && bound != nil && bound == walletId,
+            synced: SyncingActivityMonitor.shared.state == .syncDone && isSelectedWallet,
             walletId: walletId,
             network: SwapOrder.currentOwnerNetwork)
     }
@@ -599,27 +601,29 @@ final class SwapTrackingService {
     ///   own;
     /// - one past its window, kept only until the answers that let it go arrive: every
     ///   `unpaidIdlePollIntervalSeconds`, and every `dormantPollIntervalSeconds` once it
-    ///   has waited `SwapOrder.fundedGraceSeconds`. Not paced while the wallet is still
-    ///   syncing: a poll then cannot decide anything, and must not use up the slot of the
-    ///   one that can.
+    ///   has waited `SwapOrder.fundedGraceSeconds`.
     /// An unpaid order is back at `unpaidPollIntervalSeconds` for `settleSeconds` right
     /// after its deadline, when a last-minute transfer is still expected. An unpaid order
     /// we cannot watch has only the provider to learn from and keeps the full pace up to
     /// its deadline.
+    ///
+    /// An order past its window cannot be let go while the wallet is syncing, so a poll made
+    /// then never waits longer than `unpaidIdlePollIntervalSeconds`, and does not use up the
+    /// slot of the first poll with the wallet synced — the one that can decide.
     private func isDueForPoll(_ order: SwapOrder, nowSeconds: Int64, walletSynced: Bool) -> Bool {
         guard order.isBuy else { return true }
         let unpaid = order.status == .notStarted && order.depositSeenAt == nil
         let unpaidWatched = unpaid && order.canWatchDepositAddress
         let sinceAgedOut = nowSeconds - agedOutAt(order, finalStatus: order.status)
         let overdue = sinceAgedOut > 0
-        guard unpaidWatched || (overdue && walletSynced) else { return true }
+        guard unpaidWatched || overdue else { return true }
 
         let ageSeconds = nowSeconds - order.timestamp / 1000
         let settling = unpaid && overdue && sinceAgedOut <= order.settleSeconds
         let interval: Int64
         if settling || (unpaidWatched && ageSeconds <= Constants.unpaidEagerSeconds) {
             interval = Constants.unpaidPollIntervalSeconds
-        } else if sinceAgedOut > SwapOrder.fundedGraceSeconds {
+        } else if sinceAgedOut > SwapOrder.fundedGraceSeconds, walletSynced {
             interval = Constants.dormantPollIntervalSeconds
         } else {
             interval = Constants.unpaidIdlePollIntervalSeconds
@@ -627,8 +631,11 @@ final class SwapTrackingService {
 
         pacedPollLock.lock()
         defer { pacedPollLock.unlock() }
-        guard nowSeconds - (lastPacedPoll[order.id] ?? 0) >= interval else { return false }
-        lastPacedPoll[order.id] = nowSeconds
+        if let last = lastPacedPoll[order.id], nowSeconds - last.at < interval,
+           !(overdue && walletSynced && !last.walletSynced) {
+            return false
+        }
+        lastPacedPoll[order.id] = (nowSeconds, walletSynced)
         return true
     }
 

@@ -100,7 +100,12 @@ enum SwapBuyTransactionMatcher {
         // (empty) post-migration, so a buy's incoming DASH would never match.
         // The matcher only considers rows around an order's own time, so range the fetch by
         // `firstSeen` instead of walking the wallet.
-        guard let snapshot = SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
+        // The same seed has the same wallet id on every network, so the network the bound
+        // wallet runs on is compared as well.
+        let runningNetwork = SwiftDashSDKWalletSource.onMain { SwiftDashSDKHost.shared.runningNetwork }
+        guard network == SwapOrder.currentOwnerNetwork,
+              runningNetwork != nil, runningNetwork == WalletEnvironment.network,
+              let snapshot = SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
               snapshot.walletId.hexEncodedString() == walletId else { return nil }
         return payoutAssignments(among: claimants, in: snapshot.transactions)
     }
