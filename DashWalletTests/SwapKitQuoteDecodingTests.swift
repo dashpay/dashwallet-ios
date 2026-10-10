@@ -542,6 +542,30 @@ final class BuySwapOrderTests: XCTestCase {
         ]))
     }
 
+    func testNativeCoinNamedDifferentlyByTheBalanceLookupStillCounts() {
+        // Toncoin: `TON.TON` in the coin list, `TON.GRAM` from `/balance`.
+        let ton = [
+            SwapKitBalanceItem(identifier: "TON.GRAM", value: "12.5"),
+            SwapKitBalanceItem(identifier: "TON.USDT-EQCxE6mU", value: "2"),
+        ]
+        XCTAssertTrue(SwapTrackingService.holdsAsset("TON.TON", in: ton))
+        XCTAssertTrue(SwapTrackingService.holdsAsset("TON.USDT-EQCXE6MU", in: ton))
+        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.TON", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "0")]))
+        // Listed under its own name: that entry decides, a sibling native does not.
+        XCTAssertFalse(SwapTrackingService.holdsAsset("MAYA.MAYA", in: [
+            SwapKitBalanceItem(identifier: "MAYA.MAYA", value: "0"),
+            SwapKitBalanceItem(identifier: "MAYA.CACAO", value: "5"),
+        ]))
+        // Two natives and neither is ours: nothing to mean.
+        XCTAssertFalse(SwapTrackingService.holdsAsset("MAYA.MAYA", in: [
+            SwapKitBalanceItem(identifier: "MAYA.CACAO", value: "5"),
+            SwapKitBalanceItem(identifier: "MAYA.OTHER", value: "5"),
+        ]))
+        // A token is never matched by the native balance, nor a coin by another chain's.
+        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.USDT-EQCXE6MU", in: [SwapKitBalanceItem(identifier: "TON.GRAM", value: "9")]))
+        XCTAssertFalse(SwapTrackingService.holdsAsset("TON.TON", in: [SwapKitBalanceItem(identifier: "SOL.SOL", value: "9")]))
+    }
+
     // MARK: Row
 
     func testRowShowsTheExpectedAmountOnlyWhileAPayoutIsStillPossible() {
