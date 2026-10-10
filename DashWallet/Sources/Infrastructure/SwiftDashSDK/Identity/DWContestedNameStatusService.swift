@@ -12,9 +12,9 @@
 //  pending label out of the displayed username until resolution.
 //
 //  Scope:
-//    - `recordSubmission(label:)` — coordinator writes the
-//      bookmark right after `registerDpnsName` succeeds for a
-//      contested label.
+//    - `recordSubmission(label:)` — coordinator writes a provisional
+//      bookmark before `registerDpnsName` and confirms it once the
+//      call succeeds for a contested label.
 //    - `pendingLabel` — read by `DWCurrentUserIdentityInfo` to
 //      suppress the leak into Edit Profile / SDK profile sheet /
 //      invitation links / payment-side username memo.
@@ -66,6 +66,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// {submitted, end}); the label/endTime prefixes are the two retired
     /// single-slot layouts, kept only for one-time migration.
     private static let entriesKeyPrefix = "DWPendingContestedDPNSEntries"
+    private static let rejectedKeyPrefix = "DWRejectedContestedDPNSLabels"
     private static let pendingLabelKeyPrefix = "DWPendingContestedDPNSLabel"
     private static let pendingVotingEndTimeKeyPrefix = "DWPendingContestedDPNSVotingEndTime"
 
@@ -77,6 +78,14 @@ public final class DWContestedNameStatusService: NSObject {
     /// identity's main name. Absent for marketplace requests and for
     /// bookmarks rebuilt from Platform, whose origin is unknown.
     private static let promoteOnWinField = "promoteOnWin"
+    /// Present while the entry is only a pre-submission marker: the
+    /// create-username flow writes it before the DPNS write so the label is
+    /// filtered from owned names, and clears it once `registerDpnsName`
+    /// returns. The value is the launch that wrote it — an app killed in
+    /// between leaves a marker from an earlier launch, which proves nothing
+    /// was submitted and must be reconciled with Platform before it may read
+    /// as "Voting" (or ever resolve to Blocked/Rejected).
+    private static let provisionalField = "provisional"
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
     /// starts at OUR submission time, which is at or after the first contender's
@@ -86,6 +95,10 @@ public final class DWContestedNameStatusService: NSObject {
     private static let mainnetFallbackDuration: TimeInterval = 14 * 24 * 60 * 60
     private static let testnetFallbackDuration: TimeInterval = 90 * 60
     private static let fallbackResolutionGrace: TimeInterval = 5 * 60
+
+    /// Identifies this launch in provisional entries. Internal and mutable
+    /// only so tests can simulate a relaunch.
+    var launchToken = UUID().uuidString
 
     private override init() {
         super.init()
@@ -107,6 +120,13 @@ public final class DWContestedNameStatusService: NSObject {
     public var pendingLabels: [String] {
         guard let network = WalletEnvironment.network else { return [] }
         return pendingLabels(for: network, identityId: DWCurrentUserIdentityInfo.shared.identityId)
+    }
+
+    /// Pre-submission markers left by an earlier launch for the selected
+    /// identity (see `provisionalLabels(for:identityId:walletId:)`).
+    public var provisionalLabels: [String] {
+        guard let network = WalletEnvironment.network else { return [] }
+        return provisionalLabels(for: network, identityId: DWCurrentUserIdentityInfo.shared.identityId)
     }
 
     /// Best-known voting deadline of the OLDEST entry (see `pendingLabel`).
@@ -140,6 +160,10 @@ public final class DWContestedNameStatusService: NSObject {
     /// submission time (re-recording from recovery must not reorder)
     /// and its `promoteOnWin` mark: a later upsert that does not pass the
     /// flag never withdraws it.
+    ///
+    /// `provisional` marks a write made BEFORE the DPNS submission. Any later
+    /// non-provisional upsert confirms the entry; a provisional upsert never
+    /// downgrades an entry that is already confirmed.
     @nonobjc
     func recordSubmission(
         label: String,
@@ -147,7 +171,8 @@ public final class DWContestedNameStatusService: NSObject {
         identityId: Data?,
         walletId: Data? = nil,
         submittedAt: Date = Date(),
-        promoteOnWin: Bool = false
+        promoteOnWin: Bool = false,
+        provisional: Bool = false
     ) {
         guard let identityId, let key = Self.entriesKey(for: network, walletId: walletId) else {
             // A submission is always made by an active wallet, so this cannot
@@ -164,12 +189,21 @@ public final class DWContestedNameStatusService: NSObject {
         let canonical = Self.canonicalLabel(label)
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
+            if !provisional {
+                existing.removeValue(forKey: Self.provisionalField)
+            } else if existing[Self.provisionalField] != nil {
+                // A retry in this launch owns the marker now.
+                existing[Self.provisionalField] = launchToken
+            }
             entries[canonical] = existing
         } else {
             entries[canonical] = [
                 Self.submittedField: submittedAt.timeIntervalSince1970,
                 Self.endField: fallbackEnd.timeIntervalSince1970,
             ]
+            if provisional {
+                entries[canonical]?[Self.provisionalField] = launchToken
+            }
         }
         entries[canonical]?[Self.identityField] = identityId.map { String(format: "%02x", $0) }.joined()
         if promoteOnWin {
@@ -177,7 +211,7 @@ public final class DWContestedNameStatusService: NSObject {
         }
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
-            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) inFlight=\(entries.count, privacy: .public)")
+            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) provisional=\(provisional, privacy: .public) inFlight=\(entries.count, privacy: .public)")
     }
 
     /// Cache the real contest deadline for one label once Platform exposes
@@ -246,6 +280,31 @@ public final class DWContestedNameStatusService: NSObject {
         canonicalLabel(lhs) == canonicalLabel(rhs)
     }
 
+    /// Whether two labels are one name to DPNS (`dpnsKey`): "alice" and the
+    /// normalized "a11ce" are. For the rejected-name records, which must find
+    /// a purchased or Platform-returned spelling of the name they hide.
+    public nonisolated static func isSameDpnsName(_ lhs: String, _ rhs: String) -> Bool {
+        dpnsKey(lhs) == dpnsKey(rhs)
+    }
+
+    /// The label as DPNS identifies a name: canonical form, then the
+    /// protocol's homograph folding (o→0, i and l→1). Two labels with the same
+    /// key are one name to the network, so the rejected-name records, which
+    /// must find each other across spellings, use this (`isSameDpnsName`).
+    ///
+    /// For matching labels the app already holds, only — while the SDK may
+    /// not be running yet. Anything sent to Platform or indexed there is
+    /// normalized through the SDK (`dpnsNormalizeLabel`), never with this.
+    nonisolated static func dpnsKey(_ label: String) -> String {
+        String(canonicalLabel(label).map { character -> Character in
+            switch character {
+            case "o": return "0"
+            case "i", "l": return "1"
+            default: return character
+            }
+        })
+    }
+
     /// Objective-C-friendly check used by the legacy DashPay state bridge.
     /// True when ANY in-flight contested submission matches `label`.
     public func isPendingLabel(_ label: String) -> Bool {
@@ -275,6 +334,7 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func finalizeWon(username: String, network: Network, identityId: Data? = nil, walletId: Data? = nil) {
+        clearRejected(label: username, for: network, identityId: identityId, walletId: walletId)
         // Read before `clearPending` drops the entry.
         let promote = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(username)]?[Self.promoteOnWinField] as? Bool == true
         // Only the WON label's bookmark clears — other contests stay in flight.
@@ -332,12 +392,41 @@ public final class DWContestedNameStatusService: NSObject {
     /// Only attributed bookmarks can suppress recovery for this identity.
     /// Retired entries without an owner remain available for migration, but
     /// cannot be assigned to whichever identity happens to be selected.
+    ///
+    /// A marker from an earlier launch is left out: nothing proves that
+    /// submission happened (see `provisionalField`). This launch's marker is
+    /// kept — its registration is still running — unless `confirmedOnly`,
+    /// which is what outcome decisions (won / lost / blocked) use.
     @nonobjc
-    func pendingLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
+    func pendingLabels(
+        for network: Network, identityId: Data?, walletId: Data? = nil, confirmedOnly: Bool = false
+    ) -> [String] {
+        labels(for: network, identityId: identityId, walletId: walletId) { entry in
+            guard let token = entry[Self.provisionalField] as? String else { return true }
+            return !confirmedOnly && token == self.launchToken
+        }
+    }
+
+    /// Pre-submission markers an earlier launch left behind: the app ended
+    /// between the marker and the DPNS write's result. Still filtered from
+    /// owned names, never reported as a request, and reconciled with Platform
+    /// by `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`.
+    @nonobjc
+    func provisionalLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
+        labels(for: network, identityId: identityId, walletId: walletId) { entry in
+            guard let token = entry[Self.provisionalField] as? String else { return false }
+            return token != self.launchToken
+        }
+    }
+
+    private func labels(
+        for network: Network, identityId: Data?, walletId: Data?,
+        where include: ([String: Any]) -> Bool
+    ) -> [String] {
         guard let identityId else { return [] }
         let hex = identityId.map { String(format: "%02x", $0) }.joined()
         return Self.entries(for: network, walletId: walletId)
-            .filter { $0.value[Self.identityField] as? String == hex }
+            .filter { $0.value[Self.identityField] as? String == hex && include($0.value) }
             .sorted { ($0.value[Self.submittedField] as? Double ?? 0) < ($1.value[Self.submittedField] as? Double ?? 0) }
             .map(\.key)
     }
@@ -512,6 +601,79 @@ public final class DWContestedNameStatusService: NSObject {
             "🪪 CONTEST-SVC :: discarded unattributable legacy bookmark for \(networkKey(network), privacy: .public)")
     }
 
+    // MARK: - Rejected labels
+
+    /// Contested labels this wallet's identity asked for and did not get —
+    /// another identity won, or the network locked the name.
+    ///
+    /// The SDK adds a contested label to the identity's own names when the
+    /// request is submitted, and nothing prunes it on a loss; while the vote
+    /// ran the pending bookmark hid it. Once the bookmark is cleared this
+    /// record keeps hiding it, across dismissing the outcome and restarting.
+    /// Scoped like the bookmarks (network + wallet) and keyed to the identity.
+    func recordRejected(label: String, network: Network, identityId: Data, walletId: Data? = nil) {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId) else { return }
+        var entries = (UserDefaults.standard.dictionary(forKey: key) as? [String: String]) ?? [:]
+        let canonical = Self.canonicalLabel(label)
+        // One entry per identity and name: drop one an earlier key format
+        // left under the plain label.
+        let prefix = identityId.hexEncodedString() + "/"
+        entries = entries.filter { !($0.key.hasPrefix(prefix) && Self.isSameDpnsName($0.value, canonical)) }
+        entries[Self.rejectedEntryKey(label: canonical, identityId: identityId)] = canonical
+        UserDefaults.standard.set(entries, forKey: key)
+        Self.logger.info("🪪 CONTEST-SVC :: recordRejected label=\(canonical, privacy: .public)")
+    }
+
+    /// The rejected names for `identityId` as `dpnsKey`s, for testing a
+    /// label with `contains(dpnsKey(label))`: a Platform-returned or
+    /// purchased spelling ("a11ce") finds the rejection of "alice".
+    func rejectedNameKeys(for network: Network, identityId: Data?, walletId: Data? = nil) -> Set<String> {
+        Set(rejectedLabels(for: network, identityId: identityId, walletId: walletId).map(Self.dpnsKey))
+    }
+
+    /// The rejected labels for `identityId` (every identity's when nil).
+    func rejectedLabels(for network: Network, identityId: Data?, walletId: Data? = nil) -> [String] {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId),
+              let entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return [] }
+        guard let identityId else { return Array(Set(entries.values)) }
+        let prefix = identityId.hexEncodedString() + "/"
+        return Array(Set(entries.compactMap { $0.key.hasPrefix(prefix) ? $0.value : nil }))
+    }
+
+    /// Drops the rejection of `label` for `identityId` (for every identity
+    /// when nil): that identity has since come to own the name — it won a
+    /// later request (`finalizeWon`) or bought it.
+    func clearRejected(label: String, for network: Network, identityId: Data?, walletId: Data? = nil) {
+        guard let key = Self.rejectedKey(for: network, walletId: walletId),
+              var entries = UserDefaults.standard.dictionary(forKey: key) as? [String: String] else { return }
+        let labelKey = Self.dpnsKey(label)
+        let prefix = identityId.map { $0.hexEncodedString() + "/" }
+        let before = entries.count
+        // Matched on the stored value, not the entry key: entries written
+        // before the key was folded are keyed by the plain label.
+        entries = entries.filter { entry in
+            if let prefix, !entry.key.hasPrefix(prefix) { return true }
+            return Self.dpnsKey(entry.value) != labelKey
+        }
+        guard entries.count != before else { return }
+        if entries.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(entries, forKey: key)
+        }
+    }
+
+    /// Keyed by `dpnsKey`, so a request for "alice" and the purchased
+    /// document "a11ce" — the same name to the protocol — find the same entry.
+    private nonisolated static func rejectedEntryKey(label: String, identityId: Data) -> String {
+        identityId.hexEncodedString() + "/" + dpnsKey(label)
+    }
+
+    private nonisolated static func rejectedKey(for network: Network, walletId: Data? = nil) -> String? {
+        let walletScope = walletId.map { $0.hexEncodedString() } ?? scope()
+        return walletScope.map { "\(rejectedKeyPrefix).\(networkKey(network)).\($0)" }
+    }
+
     /// Drop every contested bookmark this device holds — both wallet-scoped and
     /// legacy, across networks. Called from the wallet wiper alongside the other
     /// UserDefaults-backed stores.
@@ -519,6 +681,7 @@ public final class DWContestedNameStatusService: NSObject {
         let defaults = UserDefaults.standard
         for key in defaults.dictionaryRepresentation().keys
         where key.hasPrefix(entriesKeyPrefix)
+            || key.hasPrefix(rejectedKeyPrefix)
             || key.hasPrefix(pendingLabelKeyPrefix)
             || key.hasPrefix(pendingVotingEndTimeKeyPrefix) {
             defaults.removeObject(forKey: key)

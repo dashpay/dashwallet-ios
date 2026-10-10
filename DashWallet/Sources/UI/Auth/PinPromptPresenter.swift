@@ -16,80 +16,99 @@ import SwiftUI
 @MainActor
 enum PinPromptPresenter {
 
+    /// Owns only this request's cancellation, so a timed-out gate never
+    /// dismisses another caller's prompt.
+    @MainActor private final class PendingPrompt {
+        var cancel: (() -> Void)?
+    }
+
     /// Present the PIN modal and resume once with the user's outcome.
     static func present(service: AuthenticationServiceProtocol = AuthenticationService.shared) async -> PinPromptResult {
+        guard !Task.isCancelled else { return .cancelled }
         guard let anchor = topPresentedController() else {
             NSLog("🔐 PINPROMPT :: no presentation anchor — resolving .failed")
             return .failed
         }
 
-        return await withCheckedContinuation { continuation in
-            var didResume = false
-            var hostRef: UIViewController?
-            func resume(_ result: PinPromptResult) {
-                guard !didResume else { return }
-                didResume = true
-                // Dismiss the modal WE presented, addressed directly. Never
-                // route the dismissal through the original anchor: flows
-                // like the marketplace sheets dismiss themselves right after
-                // starting the gate, and a deallocated anchor used to leave
-                // the PIN card frozen on screen after a successful entry.
-                if let hostRef, hostRef.presentingViewController != nil {
-                    hostRef.dismiss(animated: true) { continuation.resume(returning: result) }
-                } else {
-                    continuation.resume(returning: result)
-                }
-            }
-
-            let viewModel = PinPromptViewModel(service: service) { result in
-                resume(result)
-            }
-            let host = UIHostingController(rootView: PinPromptView(viewModel: viewModel))
-            hostRef = host
-            host.modalPresentationStyle = .overFullScreen
-            host.modalTransitionStyle = .crossDissolve
-            // Transparent so the SwiftUI dimmed backdrop is the only overlay
-            // and the send screen stays visible behind the card.
-            host.view.backgroundColor = .clear
-
-            // A presentation can land AFTER the gate already resolved
-            // (UIKit queues it behind an in-flight sheet dismissal). Tear
-            // the late modal down from the presentation completion, or it
-            // sits orphaned on screen swallowing PIN digits forever.
-            func present(from presenter: UIViewController) {
-                presenter.present(host, animated: true) {
-                    if didResume {
-                        host.dismiss(animated: false)
-                    }
-                }
-            }
-            present(from: anchor)
-
-            // UIKit can reject a presentation without calling a completion
-            // handler (for example when a SwiftUI sheet is being replaced —
-            // exactly what happens when the flow that asked for this gate
-            // dismissed its own sheet as it started). Verify the modal
-            // actually landed; re-anchor once on the post-dismissal top
-            // controller before giving up, and never leak the continuation.
-            func verifyPresented(retriesLeft: Int) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        let pending = PendingPrompt()
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                var didResume = false
+                var hostRef: UIViewController?
+                @MainActor func resume(_ result: PinPromptResult) {
                     guard !didResume else { return }
-                    if host.presentingViewController != nil, host.viewIfLoaded?.window != nil {
-                        return
+                    didResume = true
+                    pending.cancel = nil
+                    // Dismiss the modal WE presented, addressed directly. Never
+                    // route the dismissal through the original anchor: flows
+                    // like the marketplace sheets dismiss themselves right after
+                    // starting the gate, and a deallocated anchor used to leave
+                    // the PIN card frozen on screen after a successful entry.
+                    if let hostRef, hostRef.presentingViewController != nil {
+                        hostRef.dismiss(animated: true) { continuation.resume(returning: result) }
+                    } else {
+                        continuation.resume(returning: result)
                     }
-                    guard retriesLeft > 0,
-                          host.presentingViewController == nil,
-                          let retryAnchor = topPresentedController() else {
-                        NSLog("🔐 PINPROMPT :: presentation rejected — resolving .failed")
-                        resume(.failed)
-                        return
-                    }
-                    NSLog("🔐 PINPROMPT :: presentation rejected — retrying on a fresh anchor")
-                    present(from: retryAnchor)
-                    verifyPresented(retriesLeft: retriesLeft - 1)
                 }
+
+                let viewModel = PinPromptViewModel(service: service) { result in
+                    resume(result)
+                }
+                guard !didResume else { return }
+                pending.cancel = { viewModel.cancel() }
+                if Task.isCancelled {
+                    viewModel.cancel()
+                    return
+                }
+                let host = UIHostingController(rootView: PinPromptView(viewModel: viewModel))
+                hostRef = host
+                host.modalPresentationStyle = .overFullScreen
+                host.modalTransitionStyle = .crossDissolve
+                // Transparent so the SwiftUI dimmed backdrop is the only overlay
+                // and the send screen stays visible behind the card.
+                host.view.backgroundColor = .clear
+
+                // A presentation can land AFTER the gate already resolved
+                // (UIKit queues it behind an in-flight sheet dismissal). Tear
+                // the late modal down from the presentation completion, or it
+                // sits orphaned on screen swallowing PIN digits forever.
+                @MainActor func present(from presenter: UIViewController) {
+                    presenter.present(host, animated: true) {
+                        if didResume {
+                            host.dismiss(animated: false)
+                        }
+                    }
+                }
+                present(from: anchor)
+
+                // UIKit can reject a presentation without calling a completion
+                // handler (for example when a SwiftUI sheet is being replaced —
+                // exactly what happens when the flow that asked for this gate
+                // dismissed its own sheet as it started). Verify the modal
+                // actually landed; re-anchor once on the post-dismissal top
+                // controller before giving up, and never leak the continuation.
+                @MainActor func verifyPresented(retriesLeft: Int) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        guard !didResume else { return }
+                        if host.presentingViewController != nil, host.viewIfLoaded?.window != nil {
+                            return
+                        }
+                        guard retriesLeft > 0,
+                              host.presentingViewController == nil,
+                              let retryAnchor = topPresentedController() else {
+                            NSLog("🔐 PINPROMPT :: presentation rejected — resolving .failed")
+                            resume(.failed)
+                            return
+                        }
+                        NSLog("🔐 PINPROMPT :: presentation rejected — retrying on a fresh anchor")
+                        present(from: retryAnchor)
+                        verifyPresented(retriesLeft: retriesLeft - 1)
+                    }
+                }
+                verifyPresented(retriesLeft: 1)
             }
-            verifyPresented(retriesLeft: 1)
+        } onCancel: {
+            Task { @MainActor in pending.cancel?() }
         }
     }
 
@@ -99,10 +118,9 @@ enum PinPromptPresenter {
         let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
 
-        // This app still owns its UIWindow in AppDelegate and does not use a
-        // SceneDelegate. On those launches `connectedScenes` can be empty
-        // even while the legacy DWWindow is visible. Conversely, after the
-        // lock-window handoff, neither the app-delegate window nor the
+        // AppDelegate keeps the app window (SceneDelegate forwards to it), and
+        // the PIN lock window is a separate window in the same scene. After
+        // the lock-window handoff, neither the app window nor the
         // formerly-key lock window is guaranteed to be returned by the
         // foreground-scene-only path. Include all three sources and validate
         // attachment below.
@@ -115,10 +133,9 @@ enum PinPromptPresenter {
             windows.append(appWindow)
         }
         windows.append(contentsOf: scenes.flatMap(\.windows))
-        // Legacy-window fallback is required for the AppDelegate-managed
-        // lifecycle above. `UIApplication.windows` is deprecated for
-        // scene-based apps, but here it is deliberately the compatibility
-        // source when there is no active UIWindowScene.
+        // TODO(scene-lifecycle): `UIApplication.windows` is deprecated for
+        // scene-based apps and should now add nothing the two sources above
+        // miss; drop it once PIN prompts are verified without it.
         windows.append(contentsOf: UIApplication.shared.windows)
 
         var seen = Set<ObjectIdentifier>()

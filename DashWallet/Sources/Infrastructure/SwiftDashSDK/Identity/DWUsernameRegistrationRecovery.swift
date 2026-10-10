@@ -24,7 +24,7 @@ struct UsernameRegistrationDraftStore {
         fileprivate var key: String {
             let wallet = walletId.map { String(format: "%02x", $0) }.joined()
             let identity = identityId.map { String(format: "%02x", $0) }.joined()
-            return "DWUsernameRegistrationDraft.v1.\(network).\(wallet).\(identity)"
+            return "\(UsernameRegistrationDraftStore.keyPrefix)\(network).\(wallet).\(identity)"
         }
     }
 
@@ -33,7 +33,22 @@ struct UsernameRegistrationDraftStore {
         let temporaryUsername: String?
     }
 
+    static let keyPrefix = "DWUsernameRegistrationDraft.v1."
+
     var defaults: UserDefaults = .standard
+
+    /// Drops the drafts of every identity of `walletIdHex` (lowercase hex) on
+    /// every network. For wallet deletion: the wallet id comes back with the
+    /// phrase, and so would the draft.
+    func clearAll(walletIdHex: String) {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.keyPrefix) {
+            // <network>.<wallet>.<identity>, read from the end: only the
+            // network part is free text.
+            let parts = key.dropFirst(Self.keyPrefix.count).split(separator: ".")
+            guard parts.count >= 3, parts[parts.count - 2] == walletIdHex else { continue }
+            defaults.removeObject(forKey: key)
+        }
+    }
 
     func draft(for scope: Scope) -> Draft? {
         guard let data = defaults.data(forKey: scope.key) else { return nil }

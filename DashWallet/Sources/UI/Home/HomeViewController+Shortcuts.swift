@@ -227,6 +227,9 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     /// report is itself the evidence that an attempt already ran, so it decides
     /// the route and nothing else is consulted.
     func showCreateUsernameForRecovery(definedUsername: String?) {
+        // Not reached through the Join DashPay sheet, so no funding pick
+        // belongs to this visit: the form pins a source the recovery can use.
+        CreateUsernameViewModel.discardChosenFundingSource()
         let trimmed = definedUsername?.trimmingCharacters(in: .whitespacesAndNewlines)
         pushCreateUsernameForm(
             invitationURL: nil,

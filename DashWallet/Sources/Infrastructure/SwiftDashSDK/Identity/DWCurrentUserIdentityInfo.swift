@@ -149,6 +149,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         return snapshot
     }
 
+    /// The current snapshot without forcing a rebuild: recomputed only if the
+    /// revision moved since the last read. For readers that re-check often.
+    @nonobjc var snapshotForReading: Snapshot {
+        snapshot
+    }
+
     static func cachedBalanceCredits(_ credits: UInt64?) -> UInt64? {
         guard let credits, credits > 0 else { return nil }
         return credits
@@ -388,8 +394,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                         guard let network = SwiftDashSDKHost.shared.runningNetwork else { return false }
                         let service = DWContestedNameStatusService.shared
                         let pending = service.pendingLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
+                            + service.provisionalLabels(for: network, identityId: recoveredIdentityId, walletId: walletId)
                             + service.unattributedLabels(for: network, walletId: walletId)
+                        let rejected = service.rejectedNameKeys(
+                            for: network, identityId: recoveredIdentityId, walletId: walletId)
                         return !pending.contains { DWContestedNameStatusService.labelsMatch(candidate, $0) }
+                            && !rejected.contains(DWContestedNameStatusService.dpnsKey(candidate))
                     })
             }
         }
@@ -675,8 +685,19 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let pendingContested = DWContestedNameStatusService.shared.pendingLabels(
             for: network, identityId: identityId, walletId: walletId)
         let unattributed = DWContestedNameStatusService.shared.unattributedLabels(for: network, walletId: walletId)
+        // A marker an earlier launch left before its DPNS write is not a
+        // request, but the name is not known to be ours either: hidden until
+        // the coordinator reconciles it.
+        let provisional = DWContestedNameStatusService.shared.provisionalLabels(
+            for: network, identityId: identityId, walletId: walletId)
+        // A lost or locked contest: the SDK keeps the label among the
+        // identity's names, but it is someone else's or nobody's.
+        let rejected = DWContestedNameStatusService.shared.rejectedNameKeys(
+            for: network, identityId: identityId, walletId: walletId)
         let isPending: (String) -> Bool = { name in
-            (pendingContested + unattributed).contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+            (pendingContested + provisional + unattributed)
+                .contains { DWContestedNameStatusService.labelsMatch(name, $0) }
+                || rejected.contains(DWContestedNameStatusService.dpnsKey(name))
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
@@ -1010,6 +1031,9 @@ enum SameSeedIdentityRecoveryPipeline {
                 identityIds = discoveredIds
             }
         }
+        // A cancelled run stops before the name refresh: its owner is tearing
+        // the wallet down (`PlatformAddressSyncCoordinator.performStop`).
+        try Task.checkCancellation()
 
         guard !identityIds.isEmpty else {
             return Outcome(
@@ -1250,6 +1274,9 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         // An in-flight run for this context keeps its verdict untouched: the
         // call that started it settles or returns it.
         guard !activeContexts.contains(contextKey) else { return }
+        // Cancelled before it started (its start is being torn down): leave
+        // the verdict for the start that follows.
+        guard !Task.isCancelled else { return }
 
         // Consumed here. A branch that settles the context keeps it
         // consumed; every branch that returns without settling — the memo
@@ -1305,6 +1332,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         activeContexts.insert(contextKey)
         defer { activeContexts.remove(contextKey) }
 
+        // DWLogger, unlike `Self.logger`, reaches the diagnostic log export.
+        let logTag = "🪪 IDENT-RECOVERY [\(walletHex.prefix(8))]"
+        let started = CFAbsoluteTimeGetCurrent()
+        func elapsedMs() -> Int { Int((CFAbsoluteTimeGetCurrent() - started) * 1000) }
+        DWLogger.log("\(logTag) start network=\(network.networkName)")
+
         do {
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 knownIdentityIds: verdict?.identityId.map { [$0] } ?? [],
@@ -1319,6 +1352,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 },
                 refreshNames: { identityIds in
                     for identityId in identityIds {
+                        try Task.checkCancellation()
                         try await DWCurrentUserIdentityInfo.shared.refreshNames(
                             wallet: wallet, network: network, container: modelContainer, identityId: identityId)
                     }
@@ -1372,6 +1406,8 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 persisted=\(outcome.identitiesPersisted, privacy: .public) \
                 adopted=\(outcome.adopted, privacy: .public)
                 """)
+            DWLogger.log(
+                "\(logTag) complete in \(elapsedMs())ms identities=\(outcome.identityCount) persisted=\(outcome.identitiesPersisted)")
         } catch {
             restoreVerdict()
             Self.logger.warning(
@@ -1379,6 +1415,11 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 🪪 IDENT-RECOVERY :: failed; will retry after next runtime start: \
                 \(String(describing: error), privacy: .public)
                 """)
+            if error is CancellationError {
+                DWLogger.log("\(logTag) cancelled after \(elapsedMs())ms")
+            } else {
+                DWLogger.log("\(logTag) failed after \(elapsedMs())ms: \(String(describing: error))")
+            }
         }
     }
 

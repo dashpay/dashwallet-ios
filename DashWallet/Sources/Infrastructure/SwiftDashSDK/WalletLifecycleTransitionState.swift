@@ -28,6 +28,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
     enum Phase: Equatable {
         case idle
         case openingWallet
+        /// Exclusive admission throughout store deletion and restart.
+        case resettingLocalStores
         case failedWalletOpen(WalletPreparationFailure)
         /// Launch hold while the DashSync → SwiftDashSDK key migrator imports
         /// an upgrading user's wallet. Owned by
@@ -78,6 +80,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
             switch self {
             case .idle: return "idle"
             case .openingWallet: return "openingWallet"
+            case .resettingLocalStores: return "resettingLocalStores"
             case .failedWalletOpen: return "failedWalletOpen"
             case .migratingLegacyWallet: return "migratingLegacyWallet"
             case .failedLegacyMigration: return "failedLegacyMigration"
@@ -126,8 +129,10 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// Automatic kicks must leave the failure card and any unsent support
     /// draft intact. Explicit Retry / Sync Now use their existing entry points.
     var allowsAutomaticWalletPreparation: Bool {
-        if case .failedWalletOpen = phase { return false }
-        return true
+        switch phase {
+        case .failedWalletOpen, .resettingLocalStores: return false
+        default: return true
+        }
     }
 
     /// Atomically admit `next` as the active operation. Admission rules: any
@@ -138,8 +143,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// failure card, and the runtime's wallet open may take the window over
     /// from either legacy-migration phase once the imported wallet exists;
     /// an independently authorized wipe may begin from any failure phase.
-    /// Admission does not imply a reset button on a failure card: a
-    /// database-open failure offers Retry and Help, preserving data.
+    /// A local-store reset reserves its own phase through deletion and
+    /// restart, including when the failure occurred during a network switch.
     /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         if next == .migratingLegacyWallet { deferredLegacyFailure = nil }
@@ -147,6 +152,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
         case (.idle, .openingWallet),
              (.failedWalletOpen, .openingWallet),
              (.failedWalletOpen, .wiping),
+             (.failedWalletOpen, .resettingLocalStores),
+             (.failedNetworkSwitch, .resettingLocalStores),
              (.idle, .migratingLegacyWallet),
              (.failedLegacyMigration, .migratingLegacyWallet),
              (.migratingLegacyWallet, .openingWallet),
@@ -210,6 +217,22 @@ final class WalletLifecycleTransitionState: ObservableObject {
 
     func fail(_ failure: Phase) {
         phase = failure
+        if case let .failedWalletOpen(detail) = failure { preparationFailure = detail }
+    }
+
+    /// Database-open details available to recovery actions on either card.
+    var localStoreRecoveryFailure: WalletPreparationFailure? {
+        switch phase {
+        case let .failedWalletOpen(failure): return failure
+        case .failedNetworkSwitch: return preparationFailure
+        default: return nil
+        }
+    }
+
+    /// Restore the exact card and diagnostic when deletion could not finish.
+    func restoreAfterLocalStoreReset(phase: Phase, failure: WalletPreparationFailure) {
+        self.phase = phase
+        preparationFailure = failure
     }
 
     /// The legacy-migration hold ended without a wallet. Keeps the window up
@@ -495,6 +518,87 @@ final class LegacyWalletMigrationLaunchCoordinator: NSObject {
         let completion = self.completion
         self.completion = nil
         completion?(hasWallet)
+    }
+}
+
+/// What DashSync's own per-chain wallet lists say about its keychain
+/// mnemonics. Pure over plain data, so the launch probe and the key migrator
+/// reach the same verdict and it is testable without the keychain or the SDK.
+/// It never touches the keychain: `SwiftDashSDKKeyMigrator`, the only reader
+/// of DashSync's wallet items, hands it what it read. Deliberately not
+/// actor-isolated: the migrator calls it from its queue.
+///
+/// DashSync (the 8.x app) instantiated wallets only from the ids in
+/// `CHAIN_WALLETS_KEY_<genesisShortHex>`. Its Reset removes the id from that
+/// list (rewriting it, empty if need be) and deletes the PIN, but never
+/// deletes `WALLET_MNEMONIC_KEY_<id>`. A mnemonic that no list names is
+/// therefore a wallet the user reset in the previous app, one 8.x itself no
+/// longer showed: nothing to migrate, and it stays in the keychain untouched.
+/// That verdict needs every list read and decoded; a list that does not is
+/// never taken as empty. A wallet a readable list names is listed whatever
+/// happened to the other lists. With no list at all the mnemonics stay
+/// unresolved, failing closed: a real Reset keeps its list, so a keychain
+/// without any is a layout nothing here can vouch for.
+enum DashSyncChainWalletLists {
+    /// What the keychain held, as the migrator read it.
+    struct Inventory: Equatable {
+        /// Each chain's genesis short hex → the wallet ids its list names,
+        /// for every list that was read and decoded.
+        var lists: [String: [String]] = [:]
+        /// Chains whose list exists but could not be read or decoded.
+        var unreadableChains: Set<String> = []
+    }
+
+    enum Membership: Equatable {
+        /// Named by the readable lists of these chains (genesis short hex).
+        case listed(chains: Set<String>)
+        /// Every list was read and none names it: reset in the previous app.
+        case orphaned
+        /// No readable list names it, but a list that could not be read might.
+        case undetermined
+        /// No chain list exists at all, so nothing can be told.
+        case unresolved
+    }
+
+    static func membership(ofWalletID walletID: String, in inventory: Inventory) -> Membership {
+        let chains = Set(inventory.lists.compactMap { $0.value.contains(walletID) ? $0.key : nil })
+        if !chains.isEmpty { return .listed(chains: chains) }
+        if !inventory.unreadableChains.isEmpty { return .undetermined }
+        return inventory.lists.isEmpty ? .unresolved : .orphaned
+    }
+
+    /// The launch probe's verdict. Only a keychain whose every mnemonic is
+    /// orphaned leaves nothing to wait for. Any listed or unresolved mnemonic
+    /// is material the migrator must settle; if all that remains is
+    /// undetermined, the keychain is unreadable.
+    static func materialState(
+        mnemonicWalletIDs: [String],
+        inventory: Inventory
+    ) -> LegacyWalletMigrationLaunchCoordinator.LegacyMaterialState {
+        var undetermined = false
+        for walletID in mnemonicWalletIDs {
+            switch membership(ofWalletID: walletID, in: inventory) {
+            case .orphaned:
+                continue
+            case .undetermined:
+                undetermined = true
+            case .listed, .unresolved:
+                return .pending
+            }
+        }
+        return undetermined ? .unreadable : .absent
+    }
+
+    /// One list decoded the way DashSync wrote it: `NSKeyedArchiver` with
+    /// `requiringSecureCoding: NO`, an `NSMutableArray` of `NSString` ids
+    /// (empty after a Reset). Anything else is `nil`, never an empty list,
+    /// because a list that does not decode might name any wallet.
+    static func decodeWalletIDs(_ data: Data) -> [String]? {
+        guard let object = try? NSKeyedUnarchiver.unarchivedObject(
+                ofClasses: [NSArray.self, NSString.self], from: data) else {
+            return nil
+        }
+        return object as? [String]
     }
 }
 

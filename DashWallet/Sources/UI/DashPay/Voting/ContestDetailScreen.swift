@@ -31,6 +31,18 @@ struct ContestDetailScreen: View {
 
     /// The choice the user tapped, held until they confirm in the sheet.
     @State private var pendingChoice: VoteChoice?
+    /// The voting-key flow, open because this wallet had no node to vote with.
+    @State private var keyFlow: KeyFlowRequest?
+    /// Set when the key flow ended with "Continue": the vote to open the cast
+    /// sheet for once the flow's sheet is gone.
+    @State private var voteAfterKeyFlow: VoteChoice?
+
+    /// Why the voting-key flow is open. `choice` is the vote that opened it,
+    /// or `nil` when it was opened from the "Add voting key" button.
+    private struct KeyFlowRequest: Identifiable {
+        let id = UUID()
+        let choice: VoteChoice?
+    }
 
     private var current: DPNSContest {
         viewModel.contests.first { $0.normalizedLabel == contest.normalizedLabel } ?? contest
@@ -58,13 +70,32 @@ struct ContestDetailScreen: View {
         viewModel.nodesForVote(choice, on: contest.normalizedLabel)
     }
 
+    /// The wallet has no node to vote with, but the contest is open. The Vote
+    /// buttons stay and a tap asks for a voting key first — as on Android.
+    /// Hiding them left a masternode owner with a fresh wallet no way into the
+    /// key flow from where they wanted to vote.
+    private var needsVotingKey: Bool {
+        !viewModel.canVote && !isClosed
+    }
+
     private func canVote(_ choice: VoteChoice) -> Bool {
-        canVote && !nodes(for: choice).isEmpty
+        needsVotingKey || (canVote && !nodes(for: choice).isEmpty)
+    }
+
+    /// A Vote tap: the cast sheet when a node can cast it, else the key flow,
+    /// which comes back here with the same choice.
+    private func vote(_ choice: VoteChoice) {
+        if needsVotingKey {
+            keyFlow = KeyFlowRequest(choice: choice)
+        } else {
+            pendingChoice = choice
+        }
     }
 
     /// What a tap on this choice will do, so the button says it rather than
     /// leaving the user to infer it.
     private func voteTitle(for choice: VoteChoice) -> String {
+        guard !needsVotingKey else { return NSLocalizedString("Vote", comment: "Voting") }
         let pending = nodes(for: choice)
         if pending.count <= 1 { return NSLocalizedString("Vote", comment: "Voting") }
         return String(format: NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
@@ -155,7 +186,7 @@ struct ContestDetailScreen: View {
                             && current.lockVotes <= contender.voteTally,
                         canVote: canVote(.towards(identityId: contender.identityId)),
                         voteTitle: voteTitle(for: .towards(identityId: contender.identityId)),
-                        onVote: { pendingChoice = .towards(identityId: contender.identityId) })
+                        onVote: { vote(.towards(identityId: contender.identityId)) })
                 }
             }
 
@@ -167,7 +198,7 @@ struct ContestDetailScreen: View {
                     systemImage: "lock",
                     canVote: canVote(.lock),
                     voteTitle: voteTitle(for: .lock),
-                    onVote: { pendingChoice = .lock })
+                    onVote: { vote(.lock) })
                 VoteTallyRow(
                     title: NSLocalizedString("Abstain", comment: "Voting"),
                     subtitle: NSLocalizedString("Take no side", comment: "Voting"),
@@ -175,7 +206,7 @@ struct ContestDetailScreen: View {
                     systemImage: "minus.circle",
                     canVote: canVote(.abstain),
                     voteTitle: voteTitle(for: .abstain),
-                    onVote: { pendingChoice = .abstain })
+                    onVote: { vote(.abstain) })
             }
 
             if allNodesVoted && !isClosed {
@@ -188,13 +219,22 @@ struct ContestDetailScreen: View {
                 }
             }
 
-            if !viewModel.canVote && !isClosed {
+            // Kept alongside the visible Vote buttons: without it, a tap that
+            // asks for a masternode key reads as a bug to someone who holds none.
+            if needsVotingKey {
                 Section {
-                    Text(NSLocalizedString(
-                        "Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys.",
-                        comment: "Voting"))
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(NSLocalizedString(
+                            "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.",
+                            comment: "Voting"))
+                            .font(.caption)
+                            .foregroundColor(Color.dash.secondaryText)
+                        Button(NSLocalizedString("Add voting key", comment: "Voting")) {
+                            keyFlow = KeyFlowRequest(choice: nil)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.borderless)
+                    }
                 }
             }
         }
@@ -208,6 +248,25 @@ struct ContestDetailScreen: View {
                 choice: choice,
                 viewModel: viewModel)
         }
+        .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
+            VotingKeysFlow(
+                start: .addKey,
+                continuesToVote: request.choice != nil,
+                viewModel: viewModel,
+                onFinish: { continueToVote in
+                    voteAfterKeyFlow = continueToVote ? request.choice : nil
+                    keyFlow = nil
+                })
+        }
+    }
+
+    /// Open the cast sheet for the vote that sent the user to the key flow.
+    /// Deferred to the flow's `onDismiss`: a second sheet cannot be presented
+    /// while the first is still on screen.
+    private func openVoteAfterKeyFlow() {
+        defer { voteAfterKeyFlow = nil }
+        guard let choice = voteAfterKeyFlow, viewModel.canVote, !isClosed else { return }
+        pendingChoice = choice
     }
 }
 

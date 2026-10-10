@@ -26,6 +26,7 @@ private let kInFlightRegistrationUsername = "inFlightRegistrationUsername"
 private let kLostContestUsername = "lostContestUsername"
 private let kLostContestWasBlocked = "lostContestWasBlocked"
 private let kCompletedTileUsername = "usernameRegistrationCompletedTile"
+private let kFailedCompanion = "failedCompanionUsernameRecord"
 
 /// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
 /// network where the user made that choice. A global flag leaks between
@@ -40,7 +41,13 @@ enum JoinDashPayDismissalScope {
     /// flags that must not leak across a network switch.
     static func scopedKey(_ base: String, networkRawValue: Int, walletIdHex: String?) -> String {
         let walletScope = walletIdHex.flatMap { $0.isEmpty ? nil : $0 } ?? "unbound"
-        return "\(base).v2.\(networkRawValue).\(walletScope)"
+        return "\(scopePrefix(base))\(networkRawValue).\(walletScope)"
+    }
+
+    /// What every scoped key of `base` starts with, whatever its network and
+    /// wallet.
+    static func scopePrefix(_ base: String) -> String {
+        "\(base).v2."
     }
 }
 
@@ -120,11 +127,17 @@ class UsernamePrefs {
         }
     }
 
+    /// Drops the in-flight record when it is `label`'s — the request reached
+    /// an outcome that is reported from its own record (a contest won or
+    /// lost). A record for any other name stays: it is another request's.
+    func retireInFlightRegistration(matching label: String) {
+        guard let inFlight = inFlightRegistrationUsername,
+              DWContestedNameStatusService.labelsMatch(inFlight, label) else { return }
+        inFlightRegistrationUsername = nil
+    }
+
     private var inFlightRegistrationUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kInFlightRegistrationUsername,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kInFlightRegistrationUsername)
     }
 
     /// The username whose registration finished and whose success tile the user
@@ -187,22 +200,127 @@ class UsernamePrefs {
     }
 
     private var lostContestWasBlockedKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kLostContestWasBlocked,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kLostContestWasBlocked)
     }
 
     private var lostContestUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kLostContestUsername,
-            networkRawValue: WalletEnvironment.networkKind.rawValue,
-            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+        scoped(kLostContestUsername)
     }
 
     private var completedTileUsernameKey: String {
-        JoinDashPayDismissalScope.scopedKey(
-            kCompletedTileUsername,
+        scoped(kCompletedTileUsername)
+    }
+
+    // MARK: - Instant (companion) username failure
+
+    /// The instant username that failed to register next to a contested
+    /// request, the contested label it was asked for with, and why.
+    ///
+    /// The contested request still goes in when its companion fails, and the
+    /// form hands the outcome to the status row before it is known, so this
+    /// record is what lets Request details tell the user and offer a retry.
+    /// Scoped to the wallet and network like the other registration records;
+    /// cleared once a request for another name is written to Platform, when
+    /// the instant name itself registers, when the contest resolves, or when
+    /// Request details finds the name owned. `reason` is the raw error, worded
+    /// when shown.
+    struct FailedCompanion: Equatable, Codable {
+        let username: String
+        let contestedLabel: String
+        let reason: String
+    }
+
+    /// One scoped key holding the whole record, so it is written and cleared
+    /// as a unit.
+    var failedCompanion: FailedCompanion? {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: scoped(kFailedCompanion)) else { return nil }
+            return try? JSONDecoder().decode(FailedCompanion.self, from: data)
+        }
+        set(value) {
+            if let value, let data = try? JSONEncoder().encode(value) {
+                UserDefaults.standard.set(data, forKey: scoped(kFailedCompanion))
+            } else {
+                UserDefaults.standard.removeObject(forKey: scoped(kFailedCompanion))
+            }
+        }
+    }
+
+    /// Clears the record when it belongs to the request for `contestedLabel`.
+    func clearFailedCompanion(forContestedLabel contestedLabel: String) {
+        if let failed = failedCompanion,
+           DWContestedNameStatusService.labelsMatch(failed.contestedLabel, contestedLabel) {
+            failedCompanion = nil
+        }
+    }
+
+    /// Clears the record when `username` belongs to another request — neither
+    /// the instant name it reports (its retry) nor the contested name it was
+    /// asked with (that request driven again). A request for anything else
+    /// retires it.
+    func clearFailedCompanion(unlessUsername username: String) {
+        if let failed = failedCompanion,
+           !DWContestedNameStatusService.labelsMatch(failed.username, username),
+           !DWContestedNameStatusService.labelsMatch(failed.contestedLabel, username) {
+            failedCompanion = nil
+        }
+    }
+
+    /// Clears the record when it is for the instant name `username`.
+    func clearFailedCompanion(forUsername username: String) {
+        if let failed = failedCompanion,
+           DWContestedNameStatusService.labelsMatch(failed.username, username) {
+            failedCompanion = nil
+        }
+    }
+
+    // MARK: - Wallet deletion
+
+    /// The registration reports kept per wallet and network: the in-flight
+    /// and completed records, a lost or blocked contest, a failed instant
+    /// name. `scoped(_:)` asserts that its key is listed here, so a new
+    /// record added without its cleanup trips in a debug build.
+    static let registrationRecordKeys = [
+        kInFlightRegistrationUsername,
+        kCompletedTileUsername,
+        kLostContestUsername,
+        kLostContestWasBlocked,
+        kFailedCompanion,
+    ]
+
+    /// Drops `walletIdHex`'s registration reports, and its form drafts, on
+    /// every network. A wallet id is derived from the phrase, so re-importing
+    /// a removed wallet finds the same keys — and the row reads these reports
+    /// ahead of the current contest and ownership state. Addressed by id, not
+    /// through the current-selection getters: the wallet being removed need
+    /// not be the active one.
+    static func clearRegistrationRecords(walletIdHex: String, defaults: UserDefaults = .standard) {
+        // An empty id would address the "unbound" scope, which is no wallet's.
+        guard !walletIdHex.isEmpty else { return }
+        for network in WalletEnvironment.NetworkKind.allCases {
+            for base in registrationRecordKeys {
+                defaults.removeObject(forKey: JoinDashPayDismissalScope.scopedKey(
+                    base, networkRawValue: network.rawValue, walletIdHex: walletIdHex))
+            }
+        }
+        UsernameRegistrationDraftStore(defaults: defaults).clearAll(walletIdHex: walletIdHex)
+    }
+
+    /// Drops every wallet's registration reports and form drafts, for the
+    /// full wipe.
+    static func clearAllRegistrationRecords(defaults: UserDefaults = .standard) {
+        let prefixes = registrationRecordKeys.map(JoinDashPayDismissalScope.scopePrefix)
+            + [UsernameRegistrationDraftStore.keyPrefix]
+        for key in defaults.dictionaryRepresentation().keys
+        where prefixes.contains(where: { key.hasPrefix($0) }) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    private func scoped(_ base: String) -> String {
+        assert(Self.registrationRecordKeys.contains(base), "\(base) is not cleared on wallet deletion")
+        return JoinDashPayDismissalScope.scopedKey(
+            base,
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
     }
