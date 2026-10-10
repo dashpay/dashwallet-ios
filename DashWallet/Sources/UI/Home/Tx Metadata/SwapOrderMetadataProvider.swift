@@ -98,7 +98,8 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         let payouts = SwapBuyTransactionMatcher.walletAssignments(
             among: orders,
             walletId: SwapOrder.currentOwnerWalletId,
-            network: SwapOrder.currentOwnerNetwork) ?? [:]
+            network: SwapOrder.currentOwnerNetwork,
+            strict: false) ?? [:]
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {

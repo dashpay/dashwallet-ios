@@ -2093,6 +2093,25 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
     }
 
+    /// `fetchRecent(firstSeenSince:)` for callers that conclude something
+    /// from a transaction being ABSENT: nil when the store read failed,
+    /// where the lenient variant falls back and can hand back an empty list
+    /// that only means "could not read". Safe from any thread.
+    static func fetchRecentOrFail(firstSeenSince cutoff: Date) -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        do {
+            let rows = try scopedRows(
+                in: ModelContext(container), walletId: walletId,
+                minFirstSeen: UInt64(max(0, cutoff.timeIntervalSince1970)), maxFirstSeen: .max,
+                updatedAfter: .distantPast, limit: nil)
+            return SwiftDashSDKWalletTransactionSnapshot(
+                walletId: walletId, transactions: rows.map { wrap($0, walletId: walletId) })
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: ranged fetch failed (\(error))")
+            return nil
+        }
+    }
+
     /// The subset of wallet transactions whose txid (wire order) is in
     /// `txids`, `firstSeen` desc. Safe from any thread. Point lookups on the
     /// unique txid index — cost scales with `txids.count`, not with the

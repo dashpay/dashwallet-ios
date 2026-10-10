@@ -88,11 +88,14 @@ enum SwapBuyTransactionMatcher {
     /// the same orders against the same pool. Orders of another wallet or network are left
     /// out. Nil when that wallet's transactions could not be read — no wallet is bound, or
     /// the one that is bound is another (mid-switch); "nothing found" must not be
-    /// concluded from that.
+    /// concluded from that. `strict` also makes a failed store read nil instead of an
+    /// empty pool: for the tracker, which lets orders go on a payout being absent. The
+    /// labeller is not strict — a label missing for a moment costs nothing.
     static func walletAssignments(
         among orders: [SwapOrder],
         walletId: String?,
-        network: String?
+        network: String?,
+        strict: Bool
     ) -> [String: Transaction]? {
         let claimants = orders.filter { !$0.isForeign(toWalletId: walletId, network: network) }
         guard let cutoff = fetchCutoff(forAssignmentsAmong: claimants) else { return [:] }
@@ -105,7 +108,9 @@ enum SwapBuyTransactionMatcher {
         let runningNetwork = SwiftDashSDKWalletSource.onMain { SwiftDashSDKHost.shared.runningNetwork }
         guard network == SwapOrder.currentOwnerNetwork,
               runningNetwork != nil, runningNetwork == WalletEnvironment.network,
-              let snapshot = SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
+              let snapshot = strict
+                  ? SwiftDashSDKWalletSource.fetchRecentOrFail(firstSeenSince: cutoff)
+                  : SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff),
               snapshot.walletId.hexEncodedString() == walletId else { return nil }
         return payoutAssignments(among: claimants, in: snapshot.transactions)
     }
@@ -145,13 +150,13 @@ enum SwapBuyTransactionMatcher {
     /// 4. orders saved before deposits were recorded that have ended — these only take what
     ///    the others left, so an old attempt cannot stand between a live order and its payout.
     ///    Within tier 3 and within tier 4: one that is alone on its transactions takes the
-    ///    earliest. Orders that share any transaction are settled together and only when it is
-    ///    unambiguous: they fit exactly the same transactions and there are at least as
-    ///    many as orders — then they pair up in time order. Otherwise none of them is
-    ///    assigned: which of two attempts a payout answers is the provider's to say (it
-    ///    moves the right one to tier 2), and a wrong guess would finalise the other
-    ///    attempt as paid. Whether an order's deposit is on record does not rank it here —
-    ///    that record can lag behind a payout that is already in the wallet.
+    ///    earliest. Orders that share any transaction get none of them, however many there
+    ///    are: nothing ties the sequence of payouts to the sequence the orders were made
+    ///    in — a later order can be paid first. Which attempt a payout answers is the
+    ///    provider's to say (it moves the right one to tier 2, naming its transaction), and
+    ///    a wrong guess would finalise the other attempt as paid. Whether an order's
+    ///    deposit is on record does not rank it here — that record can lag behind a payout
+    ///    that is already in the wallet.
     /// Orders that can no longer be paid out (`mayStillBePaidOut`) claim nothing.
     ///
     /// `transactions` has to reach back to `fetchCutoff(forAssignmentsAmong:)` of the same
@@ -213,16 +218,13 @@ enum SwapBuyTransactionMatcher {
                 groups.append(merged)
             }
             for group in groups {
-                let first = group[0].txIds
-                guard group.allSatisfy({ $0.txIds == first }), first.count >= group.count else {
+                guard group.count == 1, let txId = group[0].txIds.first else {
                     // Unsettled between these orders: the transaction is one of theirs, so
                     // it is not left for the next tier to take.
                     for txId in Set(group.flatMap(\.txIds)) { free.removeValue(forKey: txId) }
                     continue
                 }
-                for (entry, txId) in zip(group.sorted { $0.order.timestamp < $1.order.timestamp }, first) {
-                    take(txId, for: entry.order)
-                }
+                take(txId, for: group[0].order)
             }
         }
         return assigned

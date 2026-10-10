@@ -670,36 +670,49 @@ final class SwapTrackingService {
 
         do {
             let balances = try await SwapKitAPIService.shared.balance(chain: chain, address: address)
-            return Self.holdsAsset(order.fromAsset, in: balances) ? .seen : .absent
+            return Self.depositLookup(of: order.fromAsset, in: balances)
         } catch {
             DWLogger.log("SwapTrackingService: deposit lookup failed for \(order.id): \(error)")
             return .unknown
         }
     }
 
-    /// True when `balances` carries a positive amount of `asset`. Identifiers are compared
-    /// case-insensitively: ours are upper-cased, `/balance` keeps the contract's own case.
-    /// Any positive amount counts, short of the order's or not: the question is whether the
-    /// user's funds are at the address, and a partial deposit is funds at the address.
+    /// What `balances` says about `asset` at the address: `.seen` for a positive amount,
+    /// `.absent` for none, `.unknown` when the asset is listed with an amount that cannot be
+    /// read — an answer we do not understand is not "nothing there". Identifiers are
+    /// compared case-insensitively: ours are upper-cased, `/balance` keeps the contract's
+    /// own case. Any positive amount counts, short of the order's or not: the question is
+    /// whether the user's funds are at the address, and a partial deposit is funds at the
+    /// address.
     ///
     /// A chain's own coin is not always named the same on both sides — `/balance` reports
     /// Toncoin as `TON.GRAM` where the coin list says `TON.TON`. So when `asset` is a native
     /// coin (no contract part) that is not listed under its own name, the chain's native
-    /// balance counts for it, provided the answer has exactly one such entry to mean.
-    static func holdsAsset(_ asset: String, in balances: [SwapKitBalanceItem]) -> Bool {
-        func isPositive(_ item: SwapKitBalanceItem) -> Bool {
-            item.value.flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) }.map { $0 > 0 } ?? false
+    /// balance counts for it, provided the answer has exactly one such entry to mean; with
+    /// several, which one is ours is unknown.
+    static func depositLookup(of asset: String, in balances: [SwapKitBalanceItem]) -> DepositLookup {
+        func read(_ items: [SwapKitBalanceItem]) -> DepositLookup {
+            let amounts = items.map { item in
+                item.value.flatMap { Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) }
+            }
+            if amounts.contains(where: { ($0 ?? 0) > 0 }) { return .seen }
+            return amounts.contains(where: { $0 == nil }) ? .unknown : .absent
         }
         let wanted = asset.uppercased()
-        if let exact = balances.first(where: { $0.identifier?.uppercased() == wanted }) {
-            return isPositive(exact)
-        }
-        guard !wanted.contains("-"), let chain = SwapOrder.chain(ofAsset: wanted) else { return false }
+        let exact = balances.filter { $0.identifier?.uppercased() == wanted }
+        if !exact.isEmpty { return read(exact) }
+        guard !wanted.contains("-"), let chain = SwapOrder.chain(ofAsset: wanted) else { return .absent }
         let natives = balances.filter { item in
             guard let identifier = item.identifier?.uppercased() else { return false }
             return !identifier.contains("-") && SwapOrder.chain(ofAsset: identifier) == chain
         }
-        return natives.count == 1 && isPositive(natives[0])
+        if natives.count > 1 { return .unknown }
+        return read(natives)
+    }
+
+    /// True when `balances` carries a positive amount of `asset`; see `depositLookup`.
+    static func holdsAsset(_ asset: String, in balances: [SwapKitBalanceItem]) -> Bool {
+        depositLookup(of: asset, in: balances) == .seen
     }
 
     // MARK: - Private: Route resolution
@@ -729,7 +742,7 @@ final class SwapTrackingService {
         let wantedBuys = wanted.filter(\.isBuy)
         guard !wantedBuys.isEmpty else { return [:] }
         guard let assignments = SwapBuyTransactionMatcher.walletAssignments(
-            among: orders, walletId: wallet.walletId, network: wallet.network) else { return nil }
+            among: orders, walletId: wallet.walletId, network: wallet.network, strict: true) else { return nil }
         var result: [String: String] = [:]
         for order in wantedBuys {
             if let tx = assignments[order.id] { result[order.id] = tx.txHashHexString }

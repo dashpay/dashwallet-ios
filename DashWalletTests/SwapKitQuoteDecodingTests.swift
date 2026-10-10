@@ -537,10 +537,9 @@ final class BuySwapOrderTests: XCTestCase {
             createdSecondsAgo: 6 * 86_400)
         let live = buyOrder(id: "0xb", createdSecondsAgo: 600)
         XCTAssertEqual(assignments([funded, live], [payout("aa", secondsAgo: 60)]), [:])
-        // Two payouts settle it in time order.
-        XCTAssertEqual(
-            assignments([funded, live], [payout("aa", secondsAgo: 300), payout("bb", secondsAgo: 60)]),
-            ["0xa": "aa", "0xb": "bb"])
+        // Two payouts do not settle it either: nothing says they arrive in the order the
+        // attempts were made.
+        XCTAssertEqual(assignments([funded, live], [payout("aa", secondsAgo: 300), payout("bb", secondsAgo: 60)]), [:])
         // An expired order nobody paid is no claimant, so it stands in nobody's way.
         let unpaid = buyOrder(id: "0xa", status: .expired, finalisedSecondsAgo: 86_400, createdSecondsAgo: 6 * 86_400)
         XCTAssertEqual(assignments([unpaid, live], [payout("aa", secondsAgo: 60)]), ["0xb": "aa"])
@@ -561,6 +560,24 @@ final class BuySwapOrderTests: XCTestCase {
         // …and it is free for another order it fits.
         let live = buyOrder(id: "0xb", status: .pending, createdSecondsAgo: 25 * 86_400)
         XCTAssertEqual(assignments([funded, live], [afterWindow]), ["0xb": "bb"])
+    }
+
+    func testIndistinguishablePayoutsAreNotPairedByCreationTime() {
+        // A was made before B, but B was funded and paid out first. Both payouts fit both.
+        let first = buyOrder(id: "0xa", status: .pending, createdSecondsAgo: 7_200)
+        let second = buyOrder(id: "0xb", status: .pending, createdSecondsAgo: 3_600)
+        let paidToSecond = payout("bb", secondsAgo: 600)
+        let paidToFirst = payout("aa", secondsAgo: 60)
+        XCTAssertEqual(assignments([first, second], [paidToSecond, paidToFirst]), [:])
+        // The provider's word settles it: each completed order names its own transaction.
+        var firstDone = first, secondDone = second
+        firstDone.status = .completed; firstDone.outboundTxHash = "aa"
+        secondDone.status = .completed; secondDone.outboundTxHash = "bb"
+        XCTAssertEqual(
+            assignments([firstDone, secondDone], [paidToSecond, paidToFirst]),
+            ["0xa": "aa", "0xb": "bb"])
+        // An order alone on its payout still takes it.
+        XCTAssertEqual(assignments([second], [paidToSecond]), ["0xb": "bb"])
     }
 
     func testThePoolReachesBackToEveryOrderThatCanClaim() {
@@ -698,6 +715,41 @@ final class BuySwapOrderTests: XCTestCase {
             SwapKitBalanceItem(identifier: nil, value: "7"),
             SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: "n/a"),
         ]))
+    }
+
+    func testAnUnreadableBalanceIsUnknownNotAbsent() {
+        let asset = "ARB.USDT-0XFD086BC7"
+        func lookup(_ value: String?) -> SwapTrackingService.DepositLookup {
+            SwapTrackingService.depositLookup(of: asset, in: [
+                SwapKitBalanceItem(identifier: "ARB.ETH", value: "0"),
+                SwapKitBalanceItem(identifier: "ARB.USDT-0xFd086bC7", value: value),
+            ])
+        }
+        XCTAssertEqual(lookup("150"), .seen)
+        XCTAssertEqual(lookup("0"), .absent)
+        XCTAssertEqual(lookup(nil), .unknown)
+        XCTAssertEqual(lookup("n/a"), .unknown)
+        XCTAssertEqual(SwapTrackingService.depositLookup(of: asset, in: []), .absent)
+        // …and an unknown lookup never lets the order go, whatever else answered.
+        for value in [nil, "n/a"] as [String?] {
+            XCTAssertFalse(mayLetGo(sinceAgedOut: 365 * 86_400, lookup: lookup(value)))
+        }
+        XCTAssertTrue(mayLetGo(sinceAgedOut: 365 * 86_400, lookup: lookup("0")))
+        // Several native entries, none under our name: which one is ours is not known.
+        XCTAssertEqual(SwapTrackingService.depositLookup(of: "MAYA.MAYA", in: [
+            SwapKitBalanceItem(identifier: "MAYA.CACAO", value: "5"),
+            SwapKitBalanceItem(identifier: "MAYA.OTHER", value: "5"),
+        ]), .unknown)
+    }
+
+    func testAFailedWalletReadCannotLetAnUnpaidOrderGo() {
+        // A wallet read that failed leaves the cycle's wallet unsynced, so it vouches for
+        // nothing — and without the wallet's word no order is let go.
+        let order = buyOrder()
+        let unread = SwapTrackingService.WalletView(synced: false, walletId: "aa11", network: "0")
+        let walletReady = unread.vouches(for: order, activeWalletId: "aa11", activeNetwork: "0")
+        XCTAssertFalse(walletReady)
+        XCTAssertFalse(mayLetGo(sinceAgedOut: 365 * 86_400, walletReady: walletReady))
     }
 
     func testNativeCoinNamedDifferentlyByTheBalanceLookupStillCounts() {
