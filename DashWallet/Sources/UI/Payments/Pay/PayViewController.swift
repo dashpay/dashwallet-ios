@@ -22,6 +22,9 @@ import UIKit
 protocol PayViewControllerDelegate: AnyObject {
     /// `txidWire` is the broadcast transaction's wire-order txid (`Transaction.txHashData` convention).
     func payViewControllerDidFinishPayment(_ controller: PayViewController, txidWire: Data)
+    /// A payment whose broadcast got no answer, after its notice: it waits in
+    /// the history, so the payment flow just closes.
+    func payViewControllerDidSubmitWithUnknownOutcome(_ controller: PayViewController)
 }
 
 // MARK: - PayViewController
@@ -157,6 +160,12 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
 
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {
         delegate?.payViewControllerDidFinishPayment(self, txidWire: txidWire)
+    }
+
+    /// The notice is gone: the payment waits in the history, so the flow
+    /// closes — not to the sent-payment screen, which would read as sent.
+    func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        delegate?.payViewControllerDidSubmitWithUnknownOutcome(self)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) { }

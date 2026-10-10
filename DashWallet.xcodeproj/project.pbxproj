@@ -728,6 +728,8 @@
 		5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */; };
 		5EE4B9063E1F3D890E811B1F /* WalletAccountsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F334C7FE582BF48AB47BDAA2 /* WalletAccountsViewModel.swift */; };
 		61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */; };
+		5E7D0C3A9B1F42E68A310000 /* PendingSendOutcomes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7D0C3A9B1F42E68A310001 /* PendingSendOutcomes.swift */; };
+		5E7D0C3A9B1F42E68A320000 /* WalletChainScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7D0C3A9B1F42E68A320001 /* WalletChainScope.swift */; };
 		630227C0414D5C74BA95BB8F /* BIP70Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94606903417F75BE99D4B31C /* BIP70Error.swift */; };
 		63869E343191C55BDBBEED72 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */; };
 		66B50619EC898EEE8C8FE13E /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
@@ -1031,6 +1033,8 @@
 		8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */; };
 		8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */; };
 		8DD6758D2AC6F5BB23D5504D /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */; };
+		5E7D0C3A9B1F42E68A310002 /* PendingSendOutcomes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7D0C3A9B1F42E68A310001 /* PendingSendOutcomes.swift */; };
+		5E7D0C3A9B1F42E68A320002 /* WalletChainScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7D0C3A9B1F42E68A320001 /* WalletChainScope.swift */; };
 		8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		8E3AF21ED19AEC0FD89A63FC /* IdentitiesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528594007157A56ABDEAD552 /* IdentitiesScreen.swift */; };
 		8EAA05FA797008525050A2A7 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */; };
@@ -2765,6 +2769,8 @@
 		2AFF01D9243F4559003718DC /* DWDPRegistrationStatus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPRegistrationStatus.h; sourceTree = "<group>"; };
 		2AFF01DA243F4559003718DC /* DWDPRegistrationStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPRegistrationStatus.m; sourceTree = "<group>"; };
 		2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletSendService.swift; sourceTree = "<group>"; };
+		5E7D0C3A9B1F42E68A310001 /* PendingSendOutcomes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingSendOutcomes.swift; sourceTree = "<group>"; };
+		5E7D0C3A9B1F42E68A320001 /* WalletChainScope.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletChainScope.swift; sourceTree = "<group>"; };
 		2CE7E8766B8C1601A85AAB4F /* ContactItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactItem.swift; sourceTree = "<group>"; };
 		4D0A7C21B5E39F04A11C2D57 /* DashPayUserLink.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayUserLink.swift; sourceTree = "<group>"; };
 		2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageRecordDetailViews.swift; sourceTree = "<group>"; };
@@ -6110,6 +6116,8 @@
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
 				FE0000000000000000000061 /* ExtendedPublicKeysView.swift */,
 				2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */,
+				5E7D0C3A9B1F42E68A310001 /* PendingSendOutcomes.swift */,
+				5E7D0C3A9B1F42E68A320001 /* WalletChainScope.swift */,
 			);
 			path = Transactions;
 			sourceTree = "<group>";
@@ -10721,6 +10729,8 @@
 				1F3FF21B0295D5A326F08B74 /* OrderPreviewFeeRow.swift in Sources */,
 				3A958F915CDACC6FE30923BA /* DarkCoinMessageFraming.swift in Sources */,
 				61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */,
+				5E7D0C3A9B1F42E68A310000 /* PendingSendOutcomes.swift in Sources */,
+				5E7D0C3A9B1F42E68A320000 /* WalletChainScope.swift in Sources */,
 				6715F4CB33E5F472FEC43B7E /* DWParsedPaymentURI.swift in Sources */,
 				5010C6015DD809969DF514ED /* DWRecoverModel+Mnemonic.swift in Sources */,
 				CB74BF16EB95CE2D1246C243 /* SwiftDashSDKKeyMigrator.swift in Sources */,
@@ -11792,6 +11802,8 @@
 				C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */,
 				C20BF8237F3E1009AD3B7716 /* DarkCoinMessageFraming.swift in Sources */,
 				8DD6758D2AC6F5BB23D5504D /* WalletSendService.swift in Sources */,
+				5E7D0C3A9B1F42E68A310002 /* PendingSendOutcomes.swift in Sources */,
+				5E7D0C3A9B1F42E68A320002 /* WalletChainScope.swift in Sources */,
 				90BCB843A2C5965C115C04CC /* WalletsScreen.swift in Sources */,
 				756F67E27604B9C680848733 /* IdentitiesViewModel.swift in Sources */,
 				8E3AF21ED19AEC0FD89A63FC /* IdentitiesScreen.swift in Sources */,

@@ -249,6 +249,7 @@ struct HomeViewContent<Content: View>: View {
     /// confirm sheet closes the moment it begins — so its outcome is
     /// announced here, where the user lands.
     @ObservedObject private var internalTransfers = InternalTransferRunner.shared
+    private let pendingSends = PendingSendOutcomes.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -546,6 +547,7 @@ struct HomeViewContent<Content: View>: View {
             }
         }
         .internalTransferToast(runner: internalTransfers)
+        .pendingSendToast(outcomes: pendingSends)
         .sheet(item: $selectedTxDataItem) { item in
             TransactionDetailsSheet(item: item)
         }
@@ -881,7 +883,7 @@ struct HomeViewContent<Content: View>: View {
                     // moves into the corner badge instead of being dropped —
                     // matching Android and the tx-detail header.
                     ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
-                title: metadata?.title ?? txItem.stateTitle,
+                title: txItem.waitingForNetworkTitle ?? metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
@@ -1181,5 +1183,49 @@ struct TransactionDetailsSheet: View {
 extension Data: Identifiable {
     public var id: String {
         return self.base64EncodedString()
+    }
+}
+
+extension View {
+    /// Tells, once, that a payment that had been waiting for the network went
+    /// through — its history row moves to "Sent" at the same moment.
+    func pendingSendToast(outcomes: PendingSendOutcomes) -> some View {
+        modifier(PendingSendToastModifier(outcomes: outcomes))
+    }
+}
+
+private struct PendingSendToastModifier: ViewModifier {
+    @ObservedObject var outcomes: PendingSendOutcomes
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if let notice = outcomes.notice {
+                    DashUIKit.Toast(style: .success, message: Self.message(for: notice))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: outcomes.notice)
+            .task(id: outcomes.notice?.id) {
+                guard let id = outcomes.notice?.id else { return }
+                // Its full window from when home shows it: a send that settled
+                // while the app was locked or home was away is still told.
+                try? await Task.sleep(for: .seconds(PendingSendOutcomes.noticeDuration))
+                guard !Task.isCancelled else { return }
+                outcomes.dismissNotice(id: id)
+            }
+    }
+
+    private static func message(for notice: PendingSendOutcomes.Notice) -> String {
+        if notice.count == 1 {
+            return String(
+                format: NSLocalizedString("Payment of %@ went through", comment: "A payment that had been waiting for the network was confirmed; %@ is the amount"),
+                notice.total.formattedDashAmount)
+        }
+        return String(
+            format: NSLocalizedString("%1$ld payments went through, %2$@ in total", comment: "Several payments that had been waiting for the network were confirmed; %1$ld is how many, %2$@ their total amount"),
+            notice.count, notice.total.formattedDashAmount)
     }
 }

@@ -78,10 +78,21 @@ enum ScriptAddressCodec {
 
     // MARK: - Address → script (refund_to)
 
+    /// The longest string that can be an address: Base58 of the 25 bytes an
+    /// address encodes (version + 20-byte hash + 4-byte checksum) is at most
+    /// 35 characters (25 × log 256 / log 58 = 34.14, rounded up). Dash's own
+    /// version bytes give 34; 35 is the ceiling of the format on any network.
+    static let maxAddressLength = 35
+
     /// Base58Check address → P2PKH or P2SH scriptPubKey, chosen by the decoded version byte.
     /// Returns `nil` if the address can't be decoded or its version doesn't belong to `network`.
+    ///
+    /// A string longer than `maxAddressLength` is refused before decoding
+    /// (`base58CheckDecode`): an address can come from outside (a payment
+    /// URI).
     static func scriptPubKey(forAddress address: String, network: PaymentNetwork) -> Data? {
-        guard let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
+        guard let decoded = base58CheckDecode(address, maxLength: maxAddressLength),
+              decoded.count == 21 else { return nil }
         let version = decoded[decoded.startIndex]
         let hash160 = Array(decoded[decoded.index(after: decoded.startIndex)...]) // 20 bytes
 
@@ -137,8 +148,15 @@ enum ScriptAddressCodec {
         return base58Encode(payload)
     }
 
-    private static func base58CheckDecode(_ string: String) -> Data? {
-        guard let raw = base58Decode(string), raw.count >= 4 else { return nil }
+    /// Base58Check → payload (checksum verified and removed), or nil.
+    ///
+    /// - Parameter maxLength: the longest `string` (UTF-8 bytes) worth
+    ///   decoding; a longer one is refused without decoding. Required, so
+    ///   every decode is bounded: `base58Decode` allocates a buffer
+    ///   proportional to its input and walks it once per input byte.
+    static func base58CheckDecode(_ string: String, maxLength: Int) -> Data? {
+        guard string.utf8.count <= maxLength,
+              let raw = base58Decode(string), raw.count >= 4 else { return nil }
         let payload = Data(raw.prefix(raw.count - 4))
         let checksum = Data(raw.suffix(4))
         guard doubleSHA256(payload).prefix(4) == checksum else { return nil }

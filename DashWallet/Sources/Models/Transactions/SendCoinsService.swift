@@ -77,6 +77,14 @@ public final class SendCoinsService: NSObject {
             // Preserve the swap flow's existing auth-cancel handling, which keys on
             // `DashSpendError.authenticationCancelled` rather than the send service's NSError.
             throw DashSpendError.authenticationCancelled
+        } catch {
+            // A deposit whose broadcast got no answer may still settle: it gates
+            // the next swap like a confirmed one until it is IS-locked (or the
+            // gate's timeout), so a second deposit cannot chain onto it.
+            if let unknownTxidWire = WalletSendService.unknownOutcomeTxidWire(of: error) {
+                SwapPendingGate.shared.register(txidWire: unknownTxidWire)
+            }
+            throw error
         }
 
         SwapPendingGate.shared.register(txidWire: txidWire)
@@ -106,18 +114,31 @@ public final class SendCoinsService: NSObject {
         do {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
-                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
+                callbackScheme: uri.callbackScheme, fallbackAddress: uri.address,
+                awaitAcceptance: awaitAcceptance)
         } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
             // The merchant may already hold the signed bytes; hand the caller the txid so the
             // order is recorded rather than dropped on the floor.
             throw DashSpendError.paymentNotAcknowledged(
                 txIdWire: Data(txHashDisplay.reversed()), reason: reason)
-        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
+        } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, let payees) {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
-            throw DashSpendError.paymentStatusUnknown(
-                txIdWire: Data(txHashDisplay.reversed()), reason: reason)
+            // Its row waits for the network like any send's; the amount is not known here,
+            // so it settles without the "went through" notice.
+            let txIdWire = Data(txHashDisplay.reversed())
+            await MainActor.run {
+                // Under the payment's addresses (its recipients, then the
+                // URI's own). Not known only if the error did not come
+                // through the service: the URI's address alone then.
+                let addresses = payees ?? [uri.address].compactMap { $0 }
+                    .filter { $0.utf8.count <= ScriptAddressCodec.maxAddressLength }
+                _ = PendingSendOutcomes.shared.recordUnknownOutcome(
+                    txidWire: txIdWire, address: addresses.first, otherAddresses: addresses,
+                    amount: 0, notifies: false, origin: origin)
+            }
+            throw DashSpendError.paymentStatusUnknown(txIdWire: txIdWire, reason: reason)
         }
 
         let txidWire = Data(result.txHashDisplay.reversed())

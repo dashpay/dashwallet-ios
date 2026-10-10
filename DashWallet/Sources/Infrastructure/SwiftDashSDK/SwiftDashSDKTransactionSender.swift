@@ -31,11 +31,8 @@ import SwiftDashSDK
 @objc(DWSwiftDashSDKTransactionSender)
 final class SwiftDashSDKTransactionSender: NSObject {
 
-    // MARK: - Logging
-
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.transaction-sender")
+    // 💸 TXSEND lines go through `DWLogger`, so they reach the "Share
+    // application logs" export; an `os.Logger` line never does.
 
     // MARK: - CoinJoin sweep constants (documented mirrors; core is the backstop)
 
@@ -90,19 +87,24 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// - Returns: Tuple of (the finalized transaction handle — exposes the
     ///   serialized bytes via `serializedData()` and the exact FFI fee in
     ///   `.fee`, 32-byte display-order txHash).
-    static func buildAndSign(address: String, amount: UInt64) throws -> (tx: FinalizedCoreTransaction, txHash: Data) {
+    static func buildAndSign(address: String, amount: UInt64) throws -> (tx: FinalizedCoreTransaction, txHash: Data, origin: WalletChainScope) {
         try buildAndSign(recipients: [(address: address, amountDuffs: amount)])
     }
 
     /// Multi-recipient variant — used by the app-side BIP70 send, where a merchant request may
     /// carry several outputs. Build + sign via the same `CoreTransactionBuilder`
     /// path as the single-recipient variant; broadcast is deferred to `broadcast(_:)`.
-    static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (tx: FinalizedCoreTransaction, txHash: Data) {
-        logger.info("💸 TXSEND :: building+signing \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
+    ///
+    /// - Returns: also the wallet that signed and the chain it signed on,
+    ///   read in the same main-actor hop as the build, so an outcome is
+    ///   booked under them whatever is bound when it arrives.
+    static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (tx: FinalizedCoreTransaction, txHash: Data, origin: WalletChainScope) {
+        DWLogger.log("💸 TXSEND :: building+signing \(recipients.count) recipient(s) via PlatformWalletManager.coreWallet")
 
-        let build = { @MainActor () throws -> FinalizedCoreTransaction in
+        let build = { @MainActor () throws -> (FinalizedCoreTransaction, WalletChainScope) in
             guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                  let network = SwiftDashSDKHost.shared.runningNetwork,
+                  let origin = WalletChainScope.bound else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             // Build + sign a standard payment via the core
@@ -121,15 +123,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // outputs beside transparent ones would undo the mixing), as are
             // a contact's watch-only external coins. Change returns to BIP44,
             // the first pooled source.
-            return try builder.finalizeAtomic(wallet: wallet, accountType: .allSpendable)
+            return (try builder.finalizeAtomic(wallet: wallet, accountType: .allSpendable), origin)
         }
 
-        let tx = try MainThread.sync(build)
+        let (tx, origin) = try MainThread.sync(build)
 
         let txData = try tx.serializedData()
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
-        return (tx, txHash)
+        DWLogger.log("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(tx.fee) duffs size=\(txData.count) bytes")
+        return (tx, txHash, origin)
     }
 
     /// Build + sign a MAYACHAIN-style swap deposit: vault payment at VOUT0, a zero-value
@@ -139,17 +141,18 @@ final class SwiftDashSDKTransactionSender: NSObject {
         vaultAddress: String,
         amountDuffs: UInt64,
         memo: String
-    ) throws -> (tx: FinalizedCoreTransaction, txHash: Data) {
+    ) throws -> (tx: FinalizedCoreTransaction, txHash: Data, origin: WalletChainScope) {
         let memoData = Data(memo.utf8)
         guard memoData.count <= Self.maxSwapMemoBytes else {
             throw SendError.invalidSwapMemo("Swap memo is too long. Please refresh and try again.")
         }
 
-        logger.info("💸 TXSEND :: building+signing MAYA swap deposit via PlatformWalletManager.coreWallet")
+        DWLogger.log("💸 TXSEND :: building+signing MAYA swap deposit via PlatformWalletManager.coreWallet")
 
-        let build = { @MainActor () throws -> (tx: FinalizedCoreTransaction, network: Network) in
+        let build = { @MainActor () throws -> (tx: FinalizedCoreTransaction, network: Network, origin: WalletChainScope) in
             guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                  let network = SwiftDashSDKHost.shared.runningNetwork,
+                  let origin = WalletChainScope.bound else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
 
@@ -164,7 +167,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // from, and the builder sizes the change output for the largest
             // eligible routing script.
             let tx = try builder.finalizeAtomic(wallet: wallet, accountType: .allSpendable)
-            return (tx, network)
+            return (tx, network, origin)
         }
 
         let built = try MainThread.sync(build)
@@ -180,8 +183,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
         )
 
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(built.tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
-        return (built.tx, txHash)
+        DWLogger.log("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(built.tx.fee) duffs size=\(txData.count) bytes")
+        return (built.tx, txHash, built.origin)
     }
 
     // MARK: - CoinJoin Sweep
@@ -234,20 +237,21 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// - Parameters:
     ///   - address: Destination Dash address (the user's own BIP44 receive
     ///     address, from `SwiftDashSDKReceiveAddressReader.receiveDestination()`).
-    ///   - walletId: The wallet `address` was read from.
-    ///   - network: The network `address` belongs to. The sweep refuses to
-    ///     start on any other wallet or network, so its coins never go to
-    ///     another wallet's address.
+    ///   - origin: The wallet `address` was read from and the chain it was
+    ///     read on. The sweep refuses to start, and each chunk to go out,
+    ///     under any other wallet or chain, so its coins never go to another
+    ///     wallet's address; its chunks are followed under it.
+    ///   - network: The network of that chain, for the builder.
     /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids,
     ///   any chunk failure, and the chunks a wallet change left unattempted.
     ///   Throws when the wallet or network no longer matches before the first
     ///   chunk, or when every attempted chunk failed and none was left
     ///   unattempted.
     static func sweepCoinJoin(
-        to address: String, ofWallet walletId: Data, on network: Network
+        to address: String, under origin: WalletChainScope, on network: Network
     ) throws -> CoinJoinSweepOutcome {
         assert(!Thread.isMainThread, "sweepCoinJoin waits for network acceptance of every chunk")
-        logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
+        DWLogger.log("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
         // The host, the manager and its account reads are main-actor state, so
         // the snapshot is taken there. Everything after it stays on this thread.
@@ -256,7 +260,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let wallet = host.wallet, let manager = host.manager else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
-            guard wallet.walletId == walletId, host.runningNetwork == network else {
+            guard WalletChainScope.bound == origin, host.runningNetwork == network else {
                 throw SendError.walletNotReady("the destination address belongs to another wallet or network")
             }
 
@@ -283,14 +287,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let outcome = try sweepChunks(
             Self.balancedChunks(utxos),
             // Re-resolved per chunk: a restart of the same wallet publishes a new
-            // handle, and the old one belongs to a stopped manager. The network
-            // is checked with the id because the chunks' destination and
-            // `network` were fixed when the sweep started.
+            // handle, and the old one belongs to a stopped manager. The chain
+            // is checked with the id (two devnets share both the id and the
+            // `Network`) because the chunks' destination was fixed when the
+            // sweep started.
             runningWallet: {
                 MainThread.sync { () -> ManagedPlatformWallet? in
                     let host = SwiftDashSDKHost.shared
-                    guard host.runningNetwork == network, let wallet = host.wallet,
-                          wallet.walletId == walletId else { return nil }
+                    guard host.runningNetwork == network, WalletChainScope.bound == origin,
+                          let wallet = host.wallet else { return nil }
                     return wallet
                 }
             },
@@ -314,19 +319,37 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     accountIndex: Self.coinJoinAccountIndex)
                 // Serialize BEFORE broadcast — broadcasting consumes the handle.
                 let txData = try tx.serializedData()
-                let outcome = try wallet.coreWallet().broadcastTransactionWithOutcome(tx)
-                _ = try Self.requireAccepted(outcome)
                 // Wire (internal) byte order to match `Transaction.txHashData` /
                 // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                 // so reverse it back to wire order.
-                return Data(Self.computeTxHash(from: txData).reversed())
+                let txidWire = Data(Self.computeTxHash(from: txData).reversed())
+                let outcome = try wallet.coreWallet().broadcastTransactionWithOutcome(tx)
+                do {
+                    _ = try Self.requireAccepted(outcome)
+                } catch SendError.transactionStatusUnknown(_, let reason, _) {
+                    // No answer is not a failure: the chunk may well have gone
+                    // out. It counts as sent (grouped with the sweep's other
+                    // transactions) and its row reads "Waiting for the network"
+                    // until it is locked or mined. It is a move within the wallet, not a payment:
+                    // no repeat-payment refusal keys on it and it settles without the
+                    // "went through" notice.
+                    let amount = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+                    // Under the wallet and chain the destination was read
+                    // on: `runningWallet` let this chunk through only on them.
+                    let followed = MainThread.sync {
+                        PendingSendOutcomes.shared.recordUnknownOutcome(
+                            txidWire: txidWire, address: nil, amount: amount, notifies: false, origin: origin)
+                    }
+                    DWLogger.log("💸 TXSEND :: coinjoin sweep chunk outcome unknown (\(reason)); followed=\(followed)")
+                }
+                return txidWire
             })
 
         // Log display-order hex (byte-reversed wire order) to match explorers.
         let hexes = outcome.txids.map { txid -> String in
             Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
         }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed, \(outcome.unattemptedChunkCount, privacy: .public) not attempted: \(hexes.joined(separator: ","), privacy: .public)")
+        DWLogger.log("💸 TXSEND :: coinjoin sweep broadcast — \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) chunk(s) failed, \(outcome.unattemptedChunkCount) not attempted: \(hexes.joined(separator: ","))")
         return outcome
     }
 
@@ -354,8 +377,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
         for (index, chunk) in chunks.enumerated() {
             guard let wallet = runningWallet() else {
                 unattemptedChunkCount = chunks.count - index
-                Self.logger.error(
-                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1, privacy: .public) of \(chunks.count, privacy: .public): its wallet or network is no longer running")
+                DWLogger.logError(
+                    "💸 TXSEND :: coinjoin sweep stopped before chunk \(index + 1) of \(chunks.count): its wallet or network is no longer running")
                 break
             }
             do {
@@ -363,8 +386,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
             } catch {
                 failedChunkCount += 1
                 firstError = firstError ?? error
-                Self.logger.error(
-                    "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
+                DWLogger.logError(
+                    "💸 TXSEND :: coinjoin sweep chunk \(index + 1) failed to broadcast, continuing: \(String(describing: error))")
             }
         }
         if txids.isEmpty, unattemptedChunkCount == 0, let error = firstError { throw error }
@@ -407,9 +430,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
         fromAddress: String,
         to address: String,
         amount: UInt64,
-        adjustAmountDownwards: Bool
+        adjustAmountDownwards: Bool,
+        holdingRouting: Bool
     ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: selected-input send — amount=\(amount, privacy: .public) adjust=\(adjustAmountDownwards, privacy: .public)")
+        DWLogger.log("💸 TXSEND :: selected-input send — amount=\(amount) adjust=\(adjustAmountDownwards)")
 
         // Resolve the sender address to its P2PKH/P2SH script for byte-exact
         // UTXO matching (`AccountUtxo` carries scriptPubkey, not an address).
@@ -446,12 +470,14 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // Only the host lookup needs the main actor. The build is small (the
         // address's few UTXOs); the broadcast runs on a background queue
         // through the same wallet that signed.
-        let (wallet, coreNetwork) = try await MainActor.run { () throws -> (ManagedPlatformWallet, Network) in
+        let (wallet, coreNetwork, origin) = try await MainActor.run {
+            () throws -> (ManagedPlatformWallet, Network, WalletChainScope) in
             guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                  let network = SwiftDashSDKHost.shared.runningNetwork,
+                  let origin = WalletChainScope.bound else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
-            return (wallet, network)
+            return (wallet, network, origin)
         }
         let builder = try CoreTransactionBuilder(network: coreNetwork)
         try builder.addInputs(
@@ -468,12 +494,21 @@ final class SwiftDashSDKTransactionSender: NSObject {
         // Serialize BEFORE broadcast — broadcasting consumes the handle.
         let txData = try tx.serializedData()
         let exactFee = tx.fee
-        // Unheld: the selected-input send is CrowdNode's, whose sends run
-        // without the routing hold (`WalletSendService.sendWithoutRoutingHold`).
-        _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: false) { try submit(tx, through: wallet) })
-
         let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(exactFee, privacy: .public) adjusted=\(adjusted, privacy: .public) inputs=\(utxos.count, privacy: .public)")
+        do {
+            // CrowdNode, the only caller today, runs unheld
+            // (`WalletSendService.sendWithoutRoutingHold`).
+            _ = try Self.requireAccepted(try await waitingForNetwork(holdingRouting: holdingRouting) { try submit(tx, through: wallet) })
+        } catch SendError.transactionStatusUnknown(_, let reason, _) {
+            // Carry the app-computed hash (display order, as every other route
+            // reports it) and the wallet and chain that signed (read in one
+            // hop above), so the caller can follow the send by its txid under
+            // them.
+            throw SendError.transactionStatusUnknown(
+                txid: txHash.map { String(format: "%02x", $0) }.joined(), reason: reason, origin: origin)
+        }
+
+        DWLogger.log("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined()) fee=\(exactFee) adjusted=\(adjusted) inputs=\(utxos.count)")
         return (txData, exactFee, txHash)
     }
 
@@ -511,7 +546,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let utxos = try await MainActor.run { try addressUtxos(script: script) }
             let total = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
             if total >= minimumTotal || Date() >= deadline {
-                logger.info("💸 TXSEND :: selected-input UTXO wait — polls=\(polls, privacy: .public) utxos=\(utxos.count, privacy: .public) total=\(total, privacy: .public) needed=\(minimumTotal, privacy: .public)")
+                DWLogger.log("💸 TXSEND :: selected-input UTXO wait — polls=\(polls) utxos=\(utxos.count) total=\(total) needed=\(minimumTotal)")
                 return utxos
             }
             try await Task.sleep(nanoseconds: UInt64(selectedInputPollInterval * 1_000_000_000))
@@ -619,11 +654,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
         switch outcome {
         case .accepted(let txid):
-            logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
+            DWLogger.log("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid) txHash=\(displayHash)")
         case .rejected(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+            DWLogger.logError("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid) txHash=\(displayHash) reason=\(reason)")
         case .unknown(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+            DWLogger.logError("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid) txHash=\(displayHash) reason=\(reason)")
         }
         return outcome
     }
@@ -678,7 +713,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case .rejected(let txid, let reason):
             throw SendError.transactionRejected(txid: txid, reason: reason)
         case .unknown(let txid, let reason):
-            throw SendError.transactionStatusUnknown(txid: txid, reason: reason)
+            // The signing wallet and chain are added by a caller that knows
+            // them (`buildAndSignFromAddress`).
+            throw SendError.transactionStatusUnknown(txid: txid, reason: reason, origin: nil)
         }
     }
 
@@ -783,7 +820,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case walletNotReady(String)
         case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
         case transactionRejected(txid: String, reason: String)
-        case transactionStatusUnknown(txid: String, reason: String)
+        /// `origin`: the wallet and chain that signed, when the thrower knows
+        /// them (the selected-input send).
+        case transactionStatusUnknown(txid: String, reason: String, origin: WalletChainScope?)
 
         var errorDescription: String? {
             switch self {
@@ -797,7 +836,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 return "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
             case .transactionRejected(_, let reason):
                 return "The transaction wasn't sent. You can try again. \(reason)"
-            case .transactionStatusUnknown(_, let reason):
+            case .transactionStatusUnknown(_, let reason, _):
                 return "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
             }
         }

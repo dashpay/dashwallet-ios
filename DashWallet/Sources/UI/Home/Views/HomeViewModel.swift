@@ -483,6 +483,15 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // A send waiting for the network changes its row's title while its
+        // stored row stays as it was.
+        NotificationCenter.default.publisher(for: PendingSendOutcomes.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // The platform-address recorder inserts into the app's SQLite —
         // invisible to the SwiftData save trigger above — so it posts its
         // own signal when a received row lands.
@@ -555,7 +564,7 @@ class HomeViewModel: ObservableObject {
     /// Fails OPEN: a save whose payload we can't inspect is treated as
     /// relevant, so an unexpected notification shape costs a redundant reload
     /// rather than a feed that stops updating.
-    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+    static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
         guard let userInfo = notification.userInfo else { return true }
         var sawInspectableChange = false
         for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
@@ -2058,9 +2067,20 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// The subset of wallet transactions whose txid (wire order) is in
     /// `txids`, `firstSeen` desc. Safe from any thread. Point lookups on the
     /// unique txid index — cost scales with `txids.count`, not with the
-    /// wallet's history size.
-    static func fetch(txids: Set<Data>) -> SwiftDashSDKWalletTransactionSnapshot? {
-        guard let (container, walletId) = hostHandles() else { return nil }
+    /// wallet's history size. Nil when the rows could not be read, so a
+    /// caller never takes a failed read for "these transactions are gone".
+    ///
+    /// - Parameter scope: when given, the read counts only if it is this
+    ///   wallet and chain the host has bound at the moment the store is
+    ///   taken (nil otherwise): the same wallet id has another store on
+    ///   every other chain.
+    static func fetch(txids: Set<Data>, from scope: WalletChainScope? = nil) -> SwiftDashSDKWalletTransactionSnapshot? {
+        let handles: (container: ModelContainer, walletId: Data)? = MainThread.sync {
+            guard let handles = hostHandles() else { return nil }
+            if let scope, WalletChainScope.bound != scope { return nil }
+            return handles
+        }
+        guard let (container, walletId) = handles else { return nil }
         guard !txids.isEmpty else {
             return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: [])
         }
@@ -2069,11 +2089,90 @@ class SwiftDashSDKWalletSource: TransactionSource {
             predicate: #Predicate { txids.contains($0.txid) },
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
-        let rows = (try? context.fetch(descriptor)) ?? []
+        guard let rows = try? context.fetch(descriptor) else { return nil }
         let transactions = rows
             .filter { isWalletMember($0, walletId: walletId) }
             .map { wrap($0, walletId: walletId) }
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// Duffs of the active wallet's own coins that a payment cannot use until
+    /// the network confirms or InstantSend-locks them: unspent outputs of the
+    /// standard accounts (BIP44 and BIP32, every index) that are neither in a
+    /// block nor locked — an incoming payment not locked yet, or the change of
+    /// a send the network has not taken. CoinJoin and the other account types
+    /// are left out, as are outputs paid to others, and outputs with a saved
+    /// spender (see `awaitingConfirmationTotal`). One fetch of the saved state;
+    /// Nil when it could not be read.
+    ///
+    /// In two steps, so the worker never hops back to the main thread: this
+    /// call, on the main actor, takes the bound wallet's handles and returns
+    /// the read (nil when nothing is bound); the read runs anywhere and
+    /// comes back with the wallet and network it was for, so a caller can
+    /// tell a value read before a wallet or network switch from the bound
+    /// wallet's.
+    @MainActor
+    static func prepareAwaitingConfirmationRead() -> (() -> PendingBalanceFollower.Reading?)? {
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let scope = WalletChainScope.bound else { return nil }
+        return {
+            awaitingConfirmationDuffs(in: container, walletId: scope.walletId)
+                .map { .init(scope: scope, duffs: $0) }
+        }
+    }
+
+    private static func awaitingConfirmationDuffs(in container: ModelContainer, walletId: Data) -> UInt64? {
+        // A pre-filter on the row's own columns; `awaitingConfirmationTotal`
+        // applies the whole rule again and is the one that decides. The
+        // spender check is a nil test on the link, which needs no prefetch.
+        var descriptor = FetchDescriptor<PersistentTxo>(predicate: #Predicate {
+            $0.walletId == walletId && !$0.isSpent && !$0.isConfirmed && !$0.isInstantLocked
+        })
+        descriptor.relationshipKeyPathsForPrefetching = [\.coreAddress, \.account]
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return nil }
+        return awaitingConfirmationTotal(of: rows.map { txo in
+            AwaitingConfirmationTxo(
+                amount: txo.amount,
+                isSpent: txo.isSpent,
+                hasSpender: txo.spendingTransaction != nil,
+                isConfirmed: txo.isConfirmed,
+                isInstantLocked: txo.isInstantLocked,
+                isStandardAccount: (txo.coreAddress?.account ?? txo.account)?.accountType == standardAccountType)
+        })
+    }
+
+    /// One saved output as the pending-balance rule sees it.
+    struct AwaitingConfirmationTxo {
+        let amount: UInt64
+        let isSpent: Bool
+        /// A transaction spending it is saved (`spendingTransaction`). The SDK
+        /// links a spender once it has resolved both rows, but sets `isSpent`
+        /// only for a spender it treats as settled (in a block, InstantSend- or
+        /// finalized-locked, a sweep's stamp, a credit verdict), so an output
+        /// spent by a still-unconfirmed transaction reads unspent. The link is
+        /// what is saved, not a network verdict: a spender that never reached
+        /// the network keeps the output excluded until it is removed ("Remove
+        /// if Not on Network"); a link the SDK has not written yet, or one it
+        /// keeps after handing the coin back as unspent, makes the caption
+        /// briefly count, or miss, that output.
+        let hasSpender: Bool
+        let isConfirmed: Bool
+        let isInstantLocked: Bool
+        let isStandardAccount: Bool
+    }
+
+    /// The pending-balance rule: the standard-account outputs that are
+    /// unspent with no saved spender, and neither mined nor locked. In a chain
+    /// T1 → T2 where T2 spends T1's unconfirmed change, only T2's change
+    /// counts. The total saturates.
+    static func awaitingConfirmationTotal(of txos: [AwaitingConfirmationTxo]) -> UInt64 {
+        var total: UInt64 = 0
+        for txo in txos
+        where txo.isStandardAccount && !txo.isSpent && !txo.hasSpender && !txo.isConfirmed && !txo.isInstantLocked {
+            let (sum, overflow) = total.addingReportingOverflow(txo.amount)
+            total = overflow ? UInt64.max : sum
+        }
+        return total
     }
 
     /// Ids, in `ShieldedActivityItem.id` form, of every shielded activity row

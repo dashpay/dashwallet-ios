@@ -203,6 +203,19 @@ extension TransferAmountHostingController: PaymentControllerDelegate {
         showSuccessTransactionStatus(text: Self.transferSuccessText, holdsExitsWhileShown: true)
     }
 
+    /// The network gave no answer: the transfer waits in the history. Tagged
+    /// at once so its row resolves the Coinbase title and icon even if the
+    /// app is killed while the notice is up.
+    func paymentControllerDidReceiveUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        CoinbaseTransactionMetadataTagger.shared.track(sentTransactionTxidWire: txidWire)
+    }
+
+    /// The "Waiting for the network" notice (`PaymentController` presents it
+    /// first) is gone: the keypad takes input again.
+    func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data) {
+        walletPaymentDidEnd(controller)
+    }
+
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {
         walletPaymentDidEnd(controller)
     }

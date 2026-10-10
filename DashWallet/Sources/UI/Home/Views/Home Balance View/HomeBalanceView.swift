@@ -127,6 +127,13 @@ struct HomeBalanceView: View {
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.7))
                             }
+                            if let awaitingConfirmationDuffs = viewModel.awaitingConfirmationDuffs, awaitingConfirmationDuffs > 0 {
+                                Text(String(
+                                    format: NSLocalizedString("%@ waiting for confirmation", comment: "Home balance: the part a payment can't use until the network confirms it; %@ is the amount"),
+                                    awaitingConfirmationDuffs.formattedDashAmount))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
                         } else {
                             Text("—")
                                 .font(.largeTitle)

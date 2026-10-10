@@ -89,12 +89,18 @@ struct PreparedSend: Equatable {
     /// L6 adapter can broadcast the exact built tx. Kept as `AnyObject` so this module stays
     /// Foundation-only. nil in test fakes. Excluded from equality.
     let sdkTransaction: AnyObject?
+    /// The wallet the transaction was built for and the chain it was built
+    /// on (a plain Foundation value), so a broadcast outcome reported later is
+    /// booked under them even if another wallet or chain is bound by then.
+    /// nil in test fakes. Excluded from equality.
+    let origin: WalletChainScope?
 
-    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil) {
+    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil, origin: WalletChainScope? = nil) {
         self.txData = txData
         self.fee = fee
         self.txHashDisplay = txHashDisplay
         self.sdkTransaction = sdkTransaction
+        self.origin = origin
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -132,7 +138,22 @@ struct Confirmation {
     /// Default-initialized: a reference shared by every value copy of this `Confirmation`.
     let sendGuard = BIP70SendGuard()
 
+    /// The address of the payment URI the request came from (BIP72), if it
+    /// had one that is payable on `network`: what a plain send falls back to
+    /// when the request cannot be fetched. The transaction itself may not
+    /// pay it.
+    var fallbackAddress: String? = nil
+
     var primaryAddress: String? { recipients.first?.address }
+    /// Every address a repeat of this payment could go to: the recipients in
+    /// request order, then `fallbackAddress`, each once. What the
+    /// repeat-payment check is asked about, and what an unknown outcome is
+    /// followed under, on every route.
+    var repeatCheckAddresses: [String] {
+        var seen = Set<String>()
+        return (recipients.map(\.address) + [fallbackAddress].compactMap { $0 })
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
 }
 
 /// Outcome of a completed send: the tx was broadcast; the merchant round-trip was attempted.
@@ -166,6 +187,13 @@ final class BIP70PaymentService {
     /// When true, allow unsigned (`pki_type == "none"`) requests. Invalid SIGNED requests are
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
+    /// Told when a broadcast handed off after the merchant's acknowledgement
+    /// (`awaitAcceptance: false`) ends with no answer from the network, with
+    /// the display-order txid, the paid amount, the payment's addresses
+    /// (`Confirmation.repeatCheckAddresses`), the wallet and chain the
+    /// transaction was built for and the reason, so the app can follow the
+    /// payment; the layer does not know where sends are followed.
+    var onDetachedBroadcastUnknown: ((_ txHashDisplay: Data, _ amount: UInt64, _ addresses: [String], _ origin: WalletChainScope?, _ reason: String) -> Void)?
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
@@ -189,6 +217,7 @@ final class BIP70PaymentService {
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
+                                fallbackAddress: String? = nil,
                                 now: Date = Date()) async throws -> Confirmation {
 
         // 1. Fetch (L3).
@@ -248,7 +277,15 @@ final class BIP70PaymentService {
             merchantData: details.merchantData,
             memo: details.memo,
             callbackScheme: callbackScheme,
-            request: request)
+            request: request,
+            // Only an address payable on this network can be fallen back to.
+            // It comes from the URI unvalidated and of any length: one too
+            // long to be an address is dropped here without decoding (the
+            // codec refuses it too).
+            fallbackAddress: fallbackAddress.flatMap {
+                guard $0.utf8.count <= ScriptAddressCodec.maxAddressLength else { return nil }
+                return ScriptAddressCodec.scriptPubKey(forAddress: $0, network: network) != nil ? $0 : nil
+            })
     }
 
     // MARK: Send (the only spend point)
@@ -331,7 +368,15 @@ final class BIP70PaymentService {
 
         let txidHexDisplay: String
         if awaitAcceptance || !acknowledged {
-            txidHexDisplay = try await wallet.broadcast(prepared)
+            do {
+                txidHexDisplay = try await wallet.broadcast(prepared)
+            } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, _) {
+                // With the payment's addresses: the caller follows it, and a
+                // later payment to any of them is refused while it waits.
+                throw BIP70Error.broadcastOutcomeUnknown(
+                    txHashDisplay: txHashDisplay, origin: origin, reason: reason,
+                    repeatCheckAddresses: confirmation.repeatCheckAddresses)
+            }
         } else {
             // The merchant already acknowledged the signed bytes, so the spend is committed
             // whatever the network verdict turns out to be. Hand the broadcast off and report
@@ -339,9 +384,15 @@ final class BIP70PaymentService {
             // verdict only decides what gets logged here.
             txidHexDisplay = prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
             let wallet = self.wallet
+            let onUnknown = onDetachedBroadcastUnknown
+            let amount = confirmation.amount
+            let addresses = confirmation.repeatCheckAddresses
             Task.detached(priority: .userInitiated) {
                 do {
                     _ = try await wallet.broadcast(prepared)
+                } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let origin, let reason, _) {
+                    DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) got no answer from the network: \(reason)")
+                    onUnknown?(txHashDisplay, amount, addresses, origin, reason)
                 } catch {
                     DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
                 }
@@ -365,11 +416,13 @@ final class BIP70PaymentService {
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
+                                fallbackAddress: String? = nil,
                                 now: Date = Date(),
                                 awaitAcceptance: Bool = true) async throws -> SendResult {
         try await auth.authorize()
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
-                                                            network: network, callbackScheme: callbackScheme, now: now)
+                                                            network: network, callbackScheme: callbackScheme,
+                                                            fallbackAddress: fallbackAddress, now: now)
         return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
     }
 
