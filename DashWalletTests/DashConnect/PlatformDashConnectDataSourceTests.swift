@@ -1277,6 +1277,37 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
     ///
     /// `approvePendingTokenPurchase` works in an unstructured `Task` and the
     /// data source runs off the main actor, so there is no handle to await.
+    func testAFailedDisconnectIsReportedInsteadOfLookingLikeASuccess() async {
+        let spy = PurchaseApprovalSpy()
+        spy.disconnectFailure = PurchaseSpyError.refused
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        XCTAssertTrue(viewModel.isProcessingStateTransition)
+        // A second tap while the first is still out must not start another.
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isProcessingStateTransition }
+
+        XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertEqual(viewModel.message?.text.contains("spy refused"), true)
+    }
+
+    func testASuccessfulDisconnectReportsNothing() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isProcessingStateTransition }
+
+        XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
+        XCTAssertNil(viewModel.message)
+    }
+
+    private static let connection = DAppConnection(
+        id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "App", url: "",
+        status: .active, updatedAt: Date(timeIntervalSince1970: 1_000))
+
     private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition(), Date() < deadline {
@@ -1371,8 +1402,12 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String) async {
-        XCTFail("disconnect is not part of the purchase approval flow")
+    var disconnectFailure: Error?
+    private(set) var disconnectedIds: [String] = []
+
+    func disconnect(id: String) async throws {
+        disconnectedIds.append(id)
+        if let disconnectFailure { throw disconnectFailure }
     }
 
     func remove(id: String) async {
@@ -1476,6 +1511,36 @@ final class AppConnectLoginTests: XCTestCase {
                 Self.key(keyId: 3, data: Data([3])),
             ]),
             8)
+    }
+
+    func testDisconnectDisablesOnlyTheLiveSessionKeysItGranted() {
+        let responses = [9, 11, 12, 13].map { Self.response(sessionKeyId: $0) }
+        let keys = [
+            Self.key(keyId: 0, securityLevel: .master, keyType: .ecdsaSecp256k1, data: Data([0])),
+            Self.key(keyId: 9, data: Data([9])),
+            // Not granted by these responses.
+            Self.key(keyId: 10, data: Data([10])),
+            // Already disabled.
+            Self.key(keyId: 11, data: Data([11]), disabledAt: 1),
+            // The id now belongs to a key this login would never register.
+            Self.key(keyId: 12, securityLevel: .critical, data: Data([12])),
+            // 13 is not on the identity at all.
+            Self.key(keyId: 14, data: Data([14])),
+        ]
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(for: responses, currentIdentityPublicKeys: keys),
+            [9])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(for: [], currentIdentityPublicKeys: keys),
+            [])
+    }
+
+    private static func response(sessionKeyId: UInt32) -> AppConnectPublishedResponse {
+        AppConnectPublishedResponse(
+            identityId: "identity", appContractId: "app", documentId: "document-\(sessionKeyId)",
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: sessionKeyId, totalBudget: nil, expiresAt: nil,
+            publishedAt: Date(timeIntervalSince1970: 1_000))
     }
 
     func testSessionKeyIsBoundToTheRequestedContractWithBothLimits() {

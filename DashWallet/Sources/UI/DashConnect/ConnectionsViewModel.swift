@@ -281,8 +281,23 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func disconnect(_ connection: DAppConnection) {
-        Task {
-            await dataSource.disconnect(id: connection.id)
+        // Disconnecting a one-QR connection signs an identity update, which
+        // takes seconds; the flag keeps a second tap and an inbound request
+        // out until it is done.
+        guard !isProcessingStateTransition else { return }
+        isProcessingStateTransition = true
+        Task { [weak self] in
+            guard let self else { return }
+            defer { self.isProcessingStateTransition = false }
+            do {
+                try await self.dataSource.disconnect(id: connection.id)
+            } catch {
+                self.message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString("Could not disconnect: %@", comment: "DashConnect"),
+                        error.localizedDescription))
+            }
         }
     }
 

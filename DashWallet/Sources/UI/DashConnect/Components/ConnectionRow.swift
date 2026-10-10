@@ -87,9 +87,11 @@ struct ConnectionRow: View {
     }
 
     /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. Turning it off locally
-    /// downgrades the connection back to `.approved`; it does not sign the user
-    /// out of the app, because the wallet has no channel to end that session.
+    /// only the off direction is reachable from here. Turning it off
+    /// downgrades the connection back to `.approved`. For a one-QR connection
+    /// the data source first disables the app's key on the identity, which is
+    /// what ends the app's access; for a two-QR connection the change is local
+    /// and the app keeps its keys (see `DashConnectDataSource.disconnect`).
     private var activeSwitch: some View {
         ZStack {
             SwitchView(isOn: .constant(true))

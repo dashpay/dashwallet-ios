@@ -100,6 +100,26 @@ enum AppConnect {
         )
     }
 
+    /// The session keys behind `responses` that can still sign: the ones a
+    /// disconnect has to disable. A key that is gone, already disabled, or no
+    /// longer the kind of key this login registers is left alone.
+    static func sessionKeyIdsToDisable(
+        for responses: [AppConnectPublishedResponse],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [UInt32] {
+        let granted = Set(responses.map(\.sessionKeyId))
+        return currentIdentityPublicKeys
+            .filter {
+                granted.contains(UInt32(bitPattern: $0.keyId))
+                    && $0.keyType == .ecdsaHash160
+                    && $0.purpose == .authentication
+                    && $0.securityLevel == .high
+                    && $0.disabledAt == nil
+            }
+            .map { UInt32(bitPattern: $0.keyId) }
+            .sorted()
+    }
+
     /// The three values of a `loginKeyResponse`, as hex.
     struct ResponseValues: Codable, Equatable {
         let appEphemeralPubKeyHash: String

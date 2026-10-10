@@ -1037,11 +1037,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         persistAndSend(subject.value.filter { $0.id != id })
     }
 
-    func disconnect(id: String) async {
+    func disconnect(id: String) async throws {
+        try await revokeAppConnectGrants(appContractId: id)
+
         let disconnectedAt = now()
-        // Local-only: keep the published `loginKeyResponse` document intact.
-        // Re-approving the same `dash-key:` QR is enough to return to `.active`
-        // once the identity keys are still registered.
+        // A two-QR connection has nothing recorded to revoke and stops here:
+        // its `loginKeyResponse` document stays, and re-approving the same
+        // `dash-key:` QR returns it to `.active` while the identity keys are
+        // still registered.
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
             return DAppConnection(
@@ -1052,6 +1055,56 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 updatedAt: disconnectedAt
             )
         })
+    }
+
+    /// Ends the access a one-QR login gave an app: disables its session keys
+    /// on the identity, then deletes the responses that carried them. Does
+    /// nothing, and needs neither a wallet nor the network, when nothing was
+    /// published for the app.
+    ///
+    /// The key goes first because it is what the app signs with; a response
+    /// that could not be deleted afterwards stays recorded and is retried by
+    /// the next disconnect or login.
+    private func revokeAppConnectGrants(appContractId: String) async throws {
+        guard responseStore.load().contains(where: { $0.appContractId == appContractId }) else {
+            return
+        }
+
+        let context = try await requireContext()
+        let identityId = context.identityId.toBase58String()
+        let granted = responseStore.load().filter {
+            $0.identityId == identityId && $0.appContractId == appContractId
+        }
+        guard !granted.isEmpty else { return }
+
+        try await authorize()
+
+        let signer = KeychainSigner(modelContainer: context.modelContainer)
+        let currentPublicKeys = try context.wallet
+            .managedIdentity(identityId: context.identityId)
+            .getPublicKeys()
+        let keyIds = AppConnect.sessionKeyIdsToDisable(
+            for: granted,
+            currentIdentityPublicKeys: currentPublicKeys
+        )
+        if !keyIds.isEmpty {
+            Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) session key(s)")
+            try await context.wallet.updateIdentity(
+                identityId: context.identityId,
+                disablePublicKeyIds: keyIds,
+                signer: signer
+            )
+            Self.logger.info("🔗 DASHCONNECT :: session key(s) disabled")
+        }
+
+        guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else { return }
+        await deletePublishedAppConnectResponses(
+            identityId: identityId,
+            appContractId: appContractId,
+            responseContractId: responseContractId,
+            context: context,
+            signer: signer
+        )
     }
 
     static func buildLoginKeyResponseDraft(

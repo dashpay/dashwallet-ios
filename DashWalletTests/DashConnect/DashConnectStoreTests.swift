@@ -178,7 +178,7 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot.count, 1)
