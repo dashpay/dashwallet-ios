@@ -954,6 +954,21 @@ struct HomeViewContent<Content: View>: View {
                 self.selectedTxDataItem = txDataItem
             }
             .frame(minHeight: 66)
+
+        case .swapOrder(let item):
+            DashUIKit.TransactionView(
+                icon: DashIcon.Transaction.convert.source,
+                secondaryIcon: item.showsErrorBadge ? DashIcon.AdditionalInfo.error.source : nil,
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.statusText,
+                dashAmount: item.expectedDuffs,
+                amountSign: .always,
+                fiat: item.sendAmountText
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
         }
     }
 }
@@ -1174,6 +1189,9 @@ struct TransactionDetailsSheet: View {
             ShieldedActivityDetailsView(item: item)
         case .platformActivity(let item):
             PlatformAddressActivityDetailsView(item: item)
+        case .swapOrder(let item):
+            // No Dash transaction yet: the standard screen, with what the order knows.
+            TXDetailVCWrapper(swapOrder: item, navigateBack: $backNavigationRequested)
         }
     }
 }
