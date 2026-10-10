@@ -357,14 +357,12 @@ private enum RefusalNotice {
 
     static func observeKeyboard() {
         guard keyboardObservers.isEmpty else { return }
-        func isLocal(_ notification: Notification) -> Bool {
-            (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool) ?? true
-        }
         keyboardObservers = [
             NotificationCenter.default.addObserver(
                 forName: UIResponder.keyboardWillChangeFrameNotification, object: nil, queue: .main
             ) { notification in
-                let frame = isLocal(notification)
+                let isLocal = (notification.userInfo?[UIResponder.keyboardIsLocalUserInfoKey] as? Bool) ?? true
+                let frame = isLocal
                     ? notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
                     : nil
                 MainActor.assumeIsolated {
@@ -390,7 +388,7 @@ private enum RefusalNotice {
 /// (`PaymentInFlight.abandonHolds`), or when the hold itself is freed,
 /// so an owner that drops it cannot leave links refused for good. Thread-safe.
 @objc(DWPaymentInFlightHold)
-final class PaymentInFlightHold: NSObject {
+final class PaymentInFlightHold: NSObject, Sendable {
     private let token = PaymentInFlight.beginHold()
 
     /// Idempotent.
