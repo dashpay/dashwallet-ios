@@ -1229,6 +1229,7 @@
 		B66294BFAF57B052A74EE77D /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		B66D25CAD54ABDC1049BDDD5 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */; };
 		B6BCDC4CE4C8E1CF85776AD1 /* BIP70URI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7313C7337036FEC54729E4 /* BIP70URI.swift */; };
+		D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */; };
 		B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */; };
 		B92994F1CFA3ACA87C944125 /* BIP70Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94606903417F75BE99D4B31C /* BIP70Error.swift */; };
 		BA1A0002C0FFEE00B15A0002 /* BalanceInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1A0001C0FFEE00B15A0001 /* BalanceInfoSheet.swift */; };
@@ -3391,6 +3392,7 @@
 		B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletCreator.swift; sourceTree = "<group>"; };
 		B6C652479D19F2169F565A6C /* libPods-dashpay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashpay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B728BBE755AB93DD58FDA4EC /* NotificationsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsScreen.swift; sourceTree = "<group>"; };
+		0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainNamePickSaveTests.swift; sourceTree = "<group>"; };
 		B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWContestedNameStatusServiceTests.swift; sourceTree = "<group>"; };
 		B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountHostingController.swift; sourceTree = "<group>"; };
 		B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -7560,6 +7562,7 @@
 				E41D0A0126C7000000000002 /* ExitHoldTests.swift */,
 				B0D7E50126C7000000000002 /* PaymentLinkRoutingTests.swift */,
 				C015EE0126C7000000000002 /* CoinJoinSweepTests.swift */,
+				0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
 				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
@@ -10885,6 +10888,7 @@
 				E41D0A0126C7000000000001 /* ExitHoldTests.swift in Sources */,
 				B0D7E50126C7000000000001 /* PaymentLinkRoutingTests.swift in Sources */,
 				C015EE0126C7000000000001 /* CoinJoinSweepTests.swift in Sources */,
+				D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
 				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,

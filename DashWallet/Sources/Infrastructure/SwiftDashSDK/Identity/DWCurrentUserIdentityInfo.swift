@@ -388,7 +388,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                let persistedIdentity = persistedWallet.identities.first(where: {
                    $0.identityId == recoveredIdentityId
                }) {
-                recoveredUsername = [persistedIdentity.mainDpnsName, persistedIdentity.dpnsName]
+                recoveredUsername = [persistedIdentity.ownedMainDpnsName, persistedIdentity.dpnsName]
                     .compactMap { Self.nilIfEmpty($0) }
                     .first(where: { candidate in
                         guard let network = SwiftDashSDKHost.shared.runningNetwork else { return false }
@@ -779,7 +779,9 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             var persistedCandidates = persisted.dpnsNames
                 .filter { $0.isOwned }
                 .map { $0.label }
-            persistedCandidates.append(contentsOf: [persisted.mainDpnsName, persisted.dpnsName]
+            // The pick only while the identity still owns it: a name that
+            // moved to another identity leaves this one no row to check.
+            persistedCandidates.append(contentsOf: [persisted.ownedMainDpnsName, persisted.dpnsName]
                 .compactMap { Self.nilIfEmpty($0) })
             for candidate in persistedCandidates where !isPending(candidate) {
                 if !usernames.contains(where: {
