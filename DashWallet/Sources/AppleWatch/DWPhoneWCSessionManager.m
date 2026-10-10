@@ -229,7 +229,10 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 - (BRAppleWatchData *)applicationContextData {
     NSArray<DWAppleWatchTransactionSnapshot *> *transactions = [DWAppleWatchSnapshotProvider recentTransactions];
     BOOL hasWallet = [DWAppleWatchSnapshotProvider hasWallet];
-    UIImage *qrCodeImage = self.qrCode;
+    // Read once per build and share it with the QR code: each read takes the
+    // wallet-manager write lock.
+    NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
+    UIImage *qrCodeImage = [self qrCodeForReceiveAddress:receiveAddress];
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
 
     uint64_t balance = DWSwiftDashSDKWalletState.currentTotalBalance;
@@ -239,7 +242,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:42980000];
     appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:42980000];
 #endif
-    appleWatchData.receiveMoneyAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
+    appleWatchData.receiveMoneyAddress = receiveAddress;
     appleWatchData.transactions = [self recentTransactionListFromTransactions:transactions];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
     appleWatchData.hasWallet = hasWallet;
@@ -278,12 +281,11 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                          transaction.dateText];
 }
 
-- (nullable UIImage *)qrCode {
+- (nullable UIImage *)qrCodeForReceiveAddress:(nullable NSString *)receiveAddress {
     if (![DWAppleWatchSnapshotProvider hasWallet]) {
         return nil;
     }
 
-    NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
     NSData *req = [[DWPaymentURIBuilder alloc] initWithAddress:receiveAddress].data;
     if (!req) {
         return nil;
