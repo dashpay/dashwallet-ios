@@ -147,4 +147,74 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         XCTAssertTrue(service.unattributedLabels(for: .testnet, walletId: walletId).isEmpty)
     }
 
+    /// The app is killed after the pre-submission marker is written but before
+    /// `registerDpnsName` returns. After the relaunch the marker still hides
+    /// the name from owned names, but is no submission: it must not read as
+    /// Voting, and outcome resolution must never see it.
+    func testProvisionalMarkerFromEarlierLaunchIsNotASubmission() {
+        let walletId = Data([0x91, 0x26])
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9126"
+        let identity = Data([1])
+        let launch = service.launchToken
+        defer {
+            service.launchToken = launch
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+
+        service.recordSubmission(
+            label: "Alpha", network: .testnet, identityId: identity, walletId: walletId,
+            promoteOnWin: true, provisional: true)
+        // Same launch: the registration that wrote it is still running.
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: identity, walletId: walletId), ["alpha"])
+        XCTAssertTrue(service.pendingLabels(
+            for: .testnet, identityId: identity, walletId: walletId, confirmedOnly: true).isEmpty)
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+
+        // Relaunch before the DPNS write returned.
+        service.launchToken = UUID().uuidString
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty,
+                      "A marker from an earlier launch must not report the request as submitted")
+        XCTAssertTrue(service.pendingLabels(
+            for: .testnet, identityId: identity, walletId: walletId, confirmedOnly: true).isEmpty)
+        XCTAssertEqual(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId), ["alpha"],
+                       "Still held for ownership filtering and reconciliation")
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: Data([2]), walletId: walletId).isEmpty)
+
+        // Reconciliation found our contender: confirmed, deadline kept.
+        let end = service.pendingVotingEndTime(label: "alpha", for: .testnet, walletId: walletId)
+        service.recordSubmission(label: "alpha", network: .testnet, identityId: identity, walletId: walletId)
+        XCTAssertEqual(service.pendingLabels(
+            for: .testnet, identityId: identity, walletId: walletId, confirmedOnly: true), ["alpha"])
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+        XCTAssertEqual(service.pendingVotingEndTime(label: "alpha", for: .testnet, walletId: walletId), end)
+    }
+
+    func testProvisionalMarkerIsWithdrawnAndNeverDowngradesAConfirmedEntry() {
+        let walletId = Data([0x91, 0x27])
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9127"
+        let identity = Data([1])
+        let launch = service.launchToken
+        defer {
+            service.launchToken = launch
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+
+        // Nothing was submitted: dropping the marker leaves no request behind.
+        service.recordSubmission(
+            label: "Beta", network: .testnet, identityId: identity, walletId: walletId, provisional: true)
+        service.launchToken = UUID().uuidString
+        service.clearPending(label: "beta", for: .testnet, walletId: walletId)
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+
+        // A retry's marker over a confirmed request keeps it confirmed.
+        service.recordSubmission(label: "Gamma", network: .testnet, identityId: identity, walletId: walletId)
+        service.recordSubmission(
+            label: "Gamma", network: .testnet, identityId: identity, walletId: walletId, provisional: true)
+        service.launchToken = UUID().uuidString
+        XCTAssertEqual(service.pendingLabels(
+            for: .testnet, identityId: identity, walletId: walletId, confirmedOnly: true), ["gamma"])
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+    }
+
 }

@@ -15,12 +15,14 @@ struct WalletPreparationFailure: Equatable, Identifiable {
     let kind: Kind
     let occurredAt: Date
     let codes: [String]
+    let canResetLocalData: Bool
 
     init(legacyMigration reason: LegacyMigrationReason, now: Date = Date()) {
         id = UUID()
         occurredAt = now
         kind = .legacyMigration
         codes = ["KeyMigrator:\(reason.rawValue)"]
+        canResetLocalData = false
     }
 
     init(error: Error, now: Date = Date()) {
@@ -34,6 +36,8 @@ struct WalletPreparationFailure: Equatable, Identifiable {
                 || Self.isLegacySpaceFailure(error)
         }
         kind = diskFull ? .storage : .database
+        canResetLocalData = !diskFull && !errors.contains(where: Self.isTransientStoreFailure)
+            && errors.contains(where: Self.isResettableStoreFailure)
         codes = errors.map { error in
             // Only known domain names leave this boundary. Neither arbitrary
             // domain names nor localized descriptions are safe log content.
@@ -42,6 +46,30 @@ struct WalletPreparationFailure: Equatable, Identifiable {
                            "SwiftDashSDK.DashLegacyStoreSQLite.Failure"]
             let domain = allowed.contains(error.domain) ? error.domain : "OtherError"
             return "\(domain):\(error.code)"
+        }
+    }
+
+    /// Reset only known corruption/schema failures. A nested permission or
+    /// busy-store error vetoes even a generic SwiftData open failure.
+    private static func isResettableStoreFailure(_ error: NSError) -> Bool {
+        switch error.domain {
+        case "SwiftData.SwiftDataError": return error.code == 1
+        case NSCocoaErrorDomain: return [134100, 134110, 134130, 134140].contains(error.code)
+        case "NSSQLiteErrorDomain": return [Int(SQLITE_CORRUPT), Int(SQLITE_NOTADB)].contains(error.code & 0xff)
+        default: return false
+        }
+    }
+
+    private static func isTransientStoreFailure(_ error: NSError) -> Bool {
+        switch error.domain {
+        case NSPOSIXErrorDomain:
+            return [EACCES, EPERM, EBUSY, EAGAIN, EIO, EROFS].map(Int.init).contains(error.code)
+        case NSCocoaErrorDomain:
+            return [NSFileReadNoPermissionError, NSFileWriteNoPermissionError].contains(error.code)
+        case "NSSQLiteErrorDomain":
+            return [SQLITE_BUSY, SQLITE_LOCKED, SQLITE_PERM, SQLITE_READONLY, SQLITE_IOERR, SQLITE_CANTOPEN]
+                .map(Int.init).contains(error.code & 0xff)
+        default: return false
         }
     }
 
@@ -62,11 +90,11 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         }
         if kind == .storage {
             return NSLocalizedString(
-                "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.",
+                "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.",
                 comment: "Wallet preparation failure")
         }
         return NSLocalizedString(
-            "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.",
+            "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.",
             comment: "Wallet preparation failure")
     }
 

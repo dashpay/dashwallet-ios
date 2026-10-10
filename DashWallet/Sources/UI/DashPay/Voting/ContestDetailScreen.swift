@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -30,6 +31,18 @@ struct ContestDetailScreen: View {
 
     /// The choice the user tapped, held until they confirm in the sheet.
     @State private var pendingChoice: VoteChoice?
+    /// The voting-key flow, open because this wallet had no node to vote with.
+    @State private var keyFlow: KeyFlowRequest?
+    /// Set when the key flow ended with "Continue": the vote to open the cast
+    /// sheet for once the flow's sheet is gone.
+    @State private var voteAfterKeyFlow: VoteChoice?
+
+    /// Why the voting-key flow is open. `choice` is the vote that opened it,
+    /// or `nil` when it was opened from the "Add voting key" button.
+    private struct KeyFlowRequest: Identifiable {
+        let id = UUID()
+        let choice: VoteChoice?
+    }
 
     private var current: DPNSContest {
         viewModel.contests.first { $0.normalizedLabel == contest.normalizedLabel } ?? contest
@@ -41,21 +54,65 @@ struct ContestDetailScreen: View {
         viewModel.isClosed(normalizedLabel: contest.normalizedLabel)
     }
 
-    private var canVote: Bool { viewModel.canVote && !isClosed && !allNodesVoted }
-
-    /// How many of this wallet's nodes have voted here.
-    private var castCount: Int { viewModel.castCount(for: contest.normalizedLabel) }
-
-    private var allNodesVoted: Bool {
-        viewModel.canVote && viewModel.nodesYetToVote(on: contest.normalizedLabel).isEmpty
+    /// Whether this screen may offer votes at all. Deliberately NOT gated on
+    /// "every node has already voted": Platform replaces a vote with one state
+    /// transition (five per node per contest), so a node that already voted can
+    /// still change its mind — which is what the hint at the bottom of this
+    /// screen has always told the user to do. Whether a *particular* choice is
+    /// castable is decided per row by `nodes(for:)`.
+    private var canVote: Bool {
+        viewModel.canVote && !isClosed && viewModel.hasLoadedVoteHistory(for: contest.normalizedLabel)
     }
 
-    /// What one tap will do, so the button can say so rather than making the
-    /// user infer it from a setting on the previous screen.
-    private var voteButtonTitle: String {
-        let pending = viewModel.nodesForNextVote(on: contest.normalizedLabel)
+    /// The nodes one tap on `choice` would cast with — none when every selected
+    /// node already holds it, or has spent its five casts.
+    private func nodes(for choice: VoteChoice) -> [VoterNode] {
+        viewModel.nodesForVote(choice, on: contest.normalizedLabel)
+    }
+
+    /// The wallet has no node to vote with, but the contest is open. The Vote
+    /// buttons stay and a tap asks for a voting key first — as on Android.
+    /// Hiding them left a masternode owner with a fresh wallet no way into the
+    /// key flow from where they wanted to vote.
+    private var needsVotingKey: Bool {
+        !viewModel.canVote && !isClosed
+    }
+
+    private func canVote(_ choice: VoteChoice) -> Bool {
+        needsVotingKey || (canVote && !nodes(for: choice).isEmpty)
+    }
+
+    /// A Vote tap: the cast sheet when a node can cast it, else the key flow,
+    /// which comes back here with the same choice.
+    private func vote(_ choice: VoteChoice) {
+        if needsVotingKey {
+            keyFlow = KeyFlowRequest(choice: choice)
+        } else {
+            pendingChoice = choice
+        }
+    }
+
+    /// What a tap on this choice will do, so the button says it rather than
+    /// leaving the user to infer it.
+    private func voteTitle(for choice: VoteChoice) -> String {
+        guard !needsVotingKey else { return NSLocalizedString("Vote", comment: "Voting") }
+        let pending = nodes(for: choice)
         if pending.count <= 1 { return NSLocalizedString("Vote", comment: "Voting") }
         return String(format: NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
+    }
+
+    /// Nodes of ours with a live vote here. Not the number of vote *records*:
+    /// a node that changed its mind has two of those and is still one node,
+    /// which used to render as "2 of 1 nodes voted".
+    private var castCount: Int { viewModel.votedNodeCount(on: contest.normalizedLabel) }
+
+    /// Gated on the loaded history, like the vote controls: before it arrives
+    /// `nodesYetToVote` is empty because nothing is known, and the screen
+    /// announced "all voted" over a green counter until the load finished.
+    private var allNodesVoted: Bool {
+        viewModel.canVote
+            && viewModel.hasLoadedVoteHistory(for: contest.normalizedLabel)
+            && viewModel.nodesYetToVote(on: contest.normalizedLabel).isEmpty
     }
 
     var body: some View {
@@ -120,11 +177,16 @@ struct ContestDetailScreen: View {
                 ForEach(current.contenders) { contender in
                     ContenderRow(
                         contender: contender,
+                        normalizedLabel: contest.normalizedLabel,
+                        votingEndsAt: current.endTime,
+                        // Nobody leads before the first vote: with every tally at
+                        // zero the first row was highlighted as if it were ahead.
                         isLeading: contender.id == current.leadingContender?.id
+                            && contender.voteTally > 0
                             && current.lockVotes <= contender.voteTally,
-                        canVote: canVote,
-                        voteTitle: voteButtonTitle,
-                        onVote: { pendingChoice = .towards(identityId: contender.identityId) })
+                        canVote: canVote(.towards(identityId: contender.identityId)),
+                        voteTitle: voteTitle(for: .towards(identityId: contender.identityId)),
+                        onVote: { vote(.towards(identityId: contender.identityId)) })
                 }
             }
 
@@ -134,36 +196,45 @@ struct ContestDetailScreen: View {
                     subtitle: NSLocalizedString("Nobody gets it", comment: "Voting"),
                     tally: current.lockVotes,
                     systemImage: "lock",
-                    canVote: canVote,
-                    voteTitle: voteButtonTitle,
-                    onVote: { pendingChoice = .lock })
+                    canVote: canVote(.lock),
+                    voteTitle: voteTitle(for: .lock),
+                    onVote: { vote(.lock) })
                 VoteTallyRow(
                     title: NSLocalizedString("Abstain", comment: "Voting"),
                     subtitle: NSLocalizedString("Take no side", comment: "Voting"),
                     tally: current.abstainVotes,
                     systemImage: "minus.circle",
-                    canVote: canVote,
-                    voteTitle: voteButtonTitle,
-                    onVote: { pendingChoice = .abstain })
+                    canVote: canVote(.abstain),
+                    voteTitle: voteTitle(for: .abstain),
+                    onVote: { vote(.abstain) })
             }
 
             if allNodesVoted && !isClosed {
                 Section {
                     Text(NSLocalizedString(
-                        "All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer.",
+                        "All of your masternodes have voted on this username. To change a vote, vote again for the outcome you now prefer — the new vote replaces the old one.",
                         comment: "Voting"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }
             }
 
-            if !viewModel.canVote && !isClosed {
+            // Kept alongside the visible Vote buttons: without it, a tap that
+            // asks for a masternode key reads as a bug to someone who holds none.
+            if needsVotingKey {
                 Section {
-                    Text(NSLocalizedString(
-                        "Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys.",
-                        comment: "Voting"))
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(NSLocalizedString(
+                            "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.",
+                            comment: "Voting"))
+                            .font(.caption)
+                            .foregroundColor(Color.dash.secondaryText)
+                        Button(NSLocalizedString("Add voting key", comment: "Voting")) {
+                            keyFlow = KeyFlowRequest(choice: nil)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.borderless)
+                    }
                 }
             }
         }
@@ -177,6 +248,25 @@ struct ContestDetailScreen: View {
                 choice: choice,
                 viewModel: viewModel)
         }
+        .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
+            VotingKeysFlow(
+                start: .addKey,
+                continuesToVote: request.choice != nil,
+                viewModel: viewModel,
+                onFinish: { continueToVote in
+                    voteAfterKeyFlow = continueToVote ? request.choice : nil
+                    keyFlow = nil
+                })
+        }
+    }
+
+    /// Open the cast sheet for the vote that sent the user to the key flow.
+    /// Deferred to the flow's `onDismiss`: a second sheet cannot be presented
+    /// while the first is still on screen.
+    private func openVoteAfterKeyFlow() {
+        defer { voteAfterKeyFlow = nil }
+        guard let choice = voteAfterKeyFlow, viewModel.canVote, !isClosed else { return }
+        pendingChoice = choice
     }
 }
 
@@ -184,6 +274,10 @@ struct ContestDetailScreen: View {
 
 private struct ContenderRow: View {
     let contender: DPNSContender
+    /// Passed through to the details screen, which shows the stored form and
+    /// looks this contender's published link up by it.
+    let normalizedLabel: String
+    let votingEndsAt: Date?
     let isLeading: Bool
     let canVote: Bool
     let voteTitle: String
@@ -191,16 +285,36 @@ private struct ContenderRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(contender.displayNameOrIdentity)
-                    .font(.subheadline)
-                    .monospaced(contender.displayLabel == nil)
-                Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
-                            contender.voteTally))
-                    .font(.caption)
-                    .foregroundColor(isLeading ? .green : Color.dash.secondaryText)
-                    .fontWeight(isLeading ? .semibold : .regular)
+            // The name opens this contender; the button votes. Two controls in
+            // one row, so the link wraps only the text — wrapping the row would
+            // swallow the button's tap.
+            NavigationLink {
+                ContenderDetailScreen(
+                    contender: contender,
+                    normalizedLabel: normalizedLabel,
+                    votingEndsAt: votingEndsAt,
+                    canVote: canVote,
+                    voteTitle: voteTitle,
+                    onVote: onVote)
+            } label: {
+                HStack(spacing: 6) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(contender.displayNameOrIdentity)
+                            .font(.subheadline)
+                            .monospaced(contender.displayLabel == nil)
+                        Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
+                                    contender.voteTally))
+                            .font(.caption)
+                            .foregroundColor(isLeading ? .green : Color.dash.secondaryText)
+                            .fontWeight(isLeading ? .semibold : .regular)
+                    }
+                    // No chevron of our own: the List already draws the
+                    // disclosure for a NavigationLink row, and two read as a
+                    // glitch.
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -264,5 +378,197 @@ extension VoteChoice: Identifiable {
         case .abstain: return "abstain"
         case .lock: return "lock"
         }
+    }
+}
+
+// MARK: - ContenderDetailScreen
+
+/// One contender, in the same four fields — and the same shape — as the
+/// requester's own "Request details": the name as this person typed it, the
+/// proof of identity they published, who they are on Platform, and when the
+/// result is due. The vote control comes along so the decision can be made
+/// where the evidence is.
+private struct ContenderDetailScreen: View {
+    let contender: DPNSContender
+    let normalizedLabel: String
+    let votingEndsAt: Date?
+    let canVote: Bool
+    let voteTitle: String
+    let onVote: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    /// What the link lookup has to say. Reading, a link, nothing published, or
+    /// a failure — four answers, because collapsing the last two tells a voter
+    /// this contender published no proof when in truth the query did not run.
+    private enum LinkState {
+        case reading
+        case published(URL)
+        case none
+        case failed
+    }
+    @State private var link: LinkState = .reading
+
+    private enum Layout {
+        static let cardSpacing: CGFloat = 2
+        static let rowHPadding: CGFloat = 14
+        static let rowVPadding: CGFloat = 12
+        static let labelSpacing: CGFloat = 20
+        static let rowMinHeight: CGFloat = 46
+    }
+
+    private var requestedLabel: String {
+        contender.displayLabel ?? normalizedLabel
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button(action: { dismiss() }) })
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    DashUIKit.TopIntroView(
+                        title: NSLocalizedString("Contender details", comment: "Voting"),
+                        mainDescription: NSLocalizedString(
+                            "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.",
+                            comment: "Voting"))
+                        .padding(.horizontal, 20)
+
+                    VStack(spacing: Layout.cardSpacing) {
+                        detailRow(NSLocalizedString("Username", comment: "Voting")) {
+                            Text(requestedLabel)
+                        }
+                        detailRow(NSLocalizedString("Link", comment: "Voting")) {
+                            linkValue
+                        }
+                        detailRow(NSLocalizedString("Identity", comment: "Voting")) {
+                            Text(contender.identityId)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                        detailRow(NSLocalizedString("Results", comment: "Voting")) {
+                            Text(votingEndsAt.map { DWDateFormatter.sharedInstance.dateAndTime(from: $0) }
+                                ?? NSLocalizedString("Unknown", comment: "Voting"))
+                        }
+                    }
+                    .modifier(DashUIKit.MenuViewModifier(shadowRadius: 20))
+                    .padding(.horizontal, 20)
+
+                    if canVote {
+                        DashUIKit.DashButton(
+                            text: voteTitle,
+                            fillsWidth: true,
+                            size: .large,
+                            style: .filledBlue,
+                            action: {
+                                // The cast sheet belongs to the screen behind
+                                // this one; step back rather than stack a
+                                // second presentation on top of it.
+                                dismiss()
+                                onVote()
+                            })
+                            .padding(.horizontal, 20)
+                    }
+                }
+                .padding(.vertical, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .background(Color.dash.primaryBackground)
+        .navigationBarHidden(true)
+        .task {
+            guard case .reading = link else { return }
+            await loadLink()
+        }
+    }
+
+    private func loadLink() async {
+        link = .reading
+        do {
+            if let url = try await IdentityVerifyService.shared.publishedURL(
+                forLabel: normalizedLabel, ownedBy: contender.identityId) {
+                link = .published(url)
+            } else {
+                link = .none
+            }
+        } catch {
+            link = .failed
+        }
+    }
+
+    @ViewBuilder
+    private var linkValue: some View {
+        switch link {
+        case .reading:
+            HStack(spacing: 6) {
+                SwiftUI.ProgressView()
+                Text(NSLocalizedString("Checking…", comment: "Voting"))
+            }
+            .foregroundColor(Color.dash.secondaryText)
+        case .none:
+            Text(NSLocalizedString("None", comment: "Voting"))
+                .foregroundColor(Color.dash.secondaryText)
+        case .failed:
+            // Not "None": the difference between "published nothing" and "we
+            // could not ask" is the whole value of this row to a voter.
+            Button {
+                Task { await loadLink() }
+            } label: {
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
+                    Image(systemName: "arrow.clockwise")
+                }
+                .foregroundStyle(Color.dash.blue)
+            }
+        case .published(let url) where !Self.isOpenableInBrowser(url):
+            // Written by another contender, through any client or straight
+            // against the contract, so the read path cannot assume what the
+            // write path enforces. A `someapp://…` value handed to the system
+            // opener is an attacker's choice of action, taken by a masternode
+            // owner who only meant to read; show it, do not offer it.
+            Text(url.absoluteString)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .foregroundColor(Color.dash.secondaryText)
+        case .published(let url):
+            Link(destination: url) {
+                HStack(spacing: 6) {
+                    Text(url.absoluteString)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Image(systemName: "arrow.up.right.square")
+                }
+                .foregroundStyle(Color.dash.blue)
+            }
+        }
+    }
+
+    /// Whether this is a link a browser will take: `http` or `https` and
+    /// nothing else, matching what the publish path accepts.
+    private static func isOpenableInBrowser(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return false }
+        return scheme == "http" || scheme == "https"
+    }
+
+    private func detailRow<Value: View>(
+        _ label: String,
+        @ViewBuilder value: () -> Value
+    ) -> some View {
+        HStack(alignment: .top, spacing: Layout.labelSpacing) {
+            Text(label)
+                .dashFont(.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
+                .fixedSize()
+
+            value()
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(.horizontal, Layout.rowHPadding)
+        .padding(.vertical, Layout.rowVPadding)
+        .frame(minHeight: Layout.rowMinHeight)
     }
 }

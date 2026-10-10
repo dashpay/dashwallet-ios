@@ -59,6 +59,30 @@ final class WalletPreparationFailureTests: XCTestCase {
         XCTAssertEqual(WalletPreparationFailure(error: nested).codes.count, 8)
     }
 
+    func testOnlyDatabaseFailuresOfferTheLocalDataReset() {
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(EACCES))).canResetLocalData)
+        XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: "NSSQLiteErrorDomain", code: 13)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(legacyMigration: .failed).canResetLocalData)
+    }
+
+    func testTransientUnderlyingErrorsVetoGenericSwiftDataReset() {
+        for (domain, code) in [(NSPOSIXErrorDomain, Int(EPERM)), (NSCocoaErrorDomain, 257),
+                               ("NSSQLiteErrorDomain", 5), ("NSSQLiteErrorDomain", 6),
+                               ("NSSQLiteErrorDomain", 266)] {
+            let error = NSError(domain: "SwiftData.SwiftDataError", code: 1, userInfo: [
+                NSUnderlyingErrorKey: NSError(domain: domain, code: code)
+            ])
+            XCTAssertFalse(WalletPreparationFailure(error: error).canResetLocalData, "\(domain):\(code)")
+        }
+        for (domain, code) in [(NSCocoaErrorDomain, 134100), ("NSSQLiteErrorDomain", 11),
+                               ("NSSQLiteErrorDomain", 26)] {
+            XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: domain, code: code)).canResetLocalData)
+        }
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: "unknown", code: 1)).canResetLocalData)
+    }
+
     func testLegacyMigrationFailureCarriesOnlyTheMigratorReason() {
         let failure = WalletPreparationFailure(legacyMigration: .timedOut, now: Date(timeIntervalSince1970: 0))
         XCTAssertEqual(failure.kind, .legacyMigration)

@@ -19,9 +19,6 @@ import Foundation
 
 enum GovernanceMenuNavigationDestination {
     case masternodes
-    #if DASHPAY
-    case voting
-    #endif
 }
 
 @MainActor
@@ -48,22 +45,6 @@ final class GovernanceMenuViewModel: ObservableObject {
                 self?.navigationDestination = .masternodes
             }
         ))
-
-        #if DASHPAY
-        // Username voting, behind the same preference that gated it on the
-        // main menu (Settings → "Username voting").
-        if VotingPrefs.shared.votingEnabled {
-            allItems.append(MenuItemModel(
-                title: NSLocalizedString("Voting", comment: ""),
-                subtitle: NSLocalizedString(
-                    "Vote on contested usernames", comment: "Voting"),
-                icon: .custom("menu_voting", maxHeight: 30),
-                action: { [weak self] in
-                    self?.navigationDestination = .voting
-                }
-            ))
-        }
-        #endif
 
         items = allItems
     }

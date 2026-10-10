@@ -880,13 +880,8 @@ final class WalletSendService: NSObject {
     }
 }
 
-/// Timeout-guarded wrapper over `DSAuthenticationManager.authenticate(...)`. The bare
-/// completion-based API never resumes if the PIN view controller fails to present silently
-/// (no key window / app backgrounded / a sheet already presenting — DashSync's internal
-/// `NSParameterAssert` is compiled out in Release), which would hang an awaiting `async` call
-/// forever. This guarantees the continuation resumes exactly once: either from the callback or
-/// from a watchdog. The 120s timeout is generous enough never to interrupt real PIN/biometric
-/// entry — it only breaks an otherwise-infinite hang.
+/// A timeout cancels this request's PIN/biometric prompt and waits for its
+/// dismissal before returning, so callers can safely restore their overlay.
 enum AuthenticationGate {
     enum Outcome { case ok, cancelled, failed, timedOut }
 
@@ -895,6 +890,7 @@ enum AuthenticationGate {
     /// protocol sends: an already-authenticated session (`didAuthenticate`,
     /// set by the lock-screen PIN/biometric unlock) passes without presenting
     /// any UI. Interactive gates keep the default `false` and prompt per send.
+    @MainActor
     static func authenticate(biometric: Bool,
                              sessionAuthSufficient: Bool = false,
                              spendAmount: UInt64? = nil,
@@ -911,14 +907,14 @@ enum AuthenticationGate {
                 continuation.resume(returning: outcome)
             }
 
-            // Watchdog: resume after the timeout if the modal never resolves
-            // (no presentation anchor is handled inside the presenter, but a
-            // wedged UI still can't be ruled out). Idempotent; serial on main.
-            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { safeResume(.timedOut) }
-
-            Task { @MainActor in
+            var didTimeOut = false
+            let authentication = Task { @MainActor in
                 let outcome = await AuthenticationService.shared.authenticate(
                     usingBiometrics: biometric, spendAmount: spendAmount)
+                if didTimeOut {
+                    safeResume(.timedOut)
+                    return
+                }
                 switch outcome {
                 case .authenticated:
                     safeResume(.ok)
@@ -927,6 +923,11 @@ enum AuthenticationGate {
                 case .failed:
                     safeResume(.failed)
                 }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+                guard !didResume else { return }
+                didTimeOut = true
+                authentication.cancel()
             }
         }
     }
