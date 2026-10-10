@@ -39,13 +39,29 @@ protocol TrackedMasternodeKeyVaulting {
     /// write failure — callers surface that, never assume success.
     @discardableResult
     func store(_ keyText: String, for proTxHash: Data, role: MasternodeKeyRole) -> Bool
-    /// Remove one role's key.
+    /// Remove one role's key. Returns `false` only on a keychain failure — a
+    /// key that was not there counts as removed.
     @discardableResult
     func removeKey(for proTxHash: Data, role: MasternodeKeyRole) -> Bool
     /// The roles that currently have a key attached for this node.
     func attachedRoles(for proTxHash: Data) -> Set<MasternodeKeyRole>
+    /// Whether a role's key is stored, telling a confirmed absence apart from
+    /// a keychain read that failed — `key(for:role:)` and `attachedRoles(for:)`
+    /// answer both with "no key", which is too weak to decide anything
+    /// irreversible on.
+    func keyPresence(for proTxHash: Data, role: MasternodeKeyRole) -> TrackedMasternodeKeyPresence
     /// Remove every key of this node (untrack).
     func removeAllKeys(for proTxHash: Data)
+}
+
+// MARK: - TrackedMasternodeKeyPresence
+
+enum TrackedMasternodeKeyPresence {
+    case present
+    case absent
+    /// The keychain could not answer (locked device, missing network…).
+    /// Treat as possibly present.
+    case unknown
 }
 
 // MARK: - TrackedMasternodeKeyVault
@@ -102,6 +118,27 @@ final class TrackedMasternodeKeyVault: TrackedMasternodeKeyVaulting {
             guard let identifier = identifier(proTxHash, role) else { return false }
             return keychain.retrieveKeyData(identifier: identifier) != nil
         })
+    }
+
+    func keyPresence(for proTxHash: Data, role: MasternodeKeyRole) -> TrackedMasternodeKeyPresence {
+        guard let identifier = identifier(proTxHash, role) else { return .unknown }
+        // The same item query `KeychainManager.retrieveKeyData` builds, minus
+        // the data: that API maps every failure to `nil`, and only the status
+        // tells "no such item" from "could not read it".
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychain.serviceName,
+            kSecAttrAccount as String: identifier,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        if let accessGroup = keychain.accessGroup {
+            query[kSecAttrAccessGroup as String] = accessGroup
+        }
+        switch SecItemCopyMatching(query as CFDictionary, nil) {
+        case errSecSuccess: return .present
+        case errSecItemNotFound: return .absent
+        default: return .unknown
+        }
     }
 
     func removeAllKeys(for proTxHash: Data) {

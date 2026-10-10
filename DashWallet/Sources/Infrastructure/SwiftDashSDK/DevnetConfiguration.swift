@@ -192,14 +192,7 @@ extension DevnetConfiguration {
         if let current = devnetName {
             scopes.insert("\(SwiftDashSDK.Network.devnet.networkName)-\(current)")
         }
-        if let documents = try? FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: false) {
-            let platform = documents
-                .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-                .appendingPathComponent("Platform", isDirectory: true)
+        if let platform = (try? WalletLocalStoreRoots.inDocuments())?.platform {
             let contents = (try? FileManager.default.contentsOfDirectory(
                 at: platform,
                 includingPropertiesForKeys: [.isDirectoryKey],

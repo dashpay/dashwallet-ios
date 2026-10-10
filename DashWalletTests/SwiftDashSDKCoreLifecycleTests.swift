@@ -299,13 +299,103 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 1.512), 1512)
     }
 
-    func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
+    func testProcessCacheInvalidateAllEvictsAndDoesNotRecacheAnOpenInFlight() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        let before = try cache.value(for: "mainnet") { Token() }
+
+        cache.invalidateAll()
+
+        let after = try cache.value(for: "mainnet") { Token() }
+        XCTAssertFalse(after.reused)
+        XCTAssertFalse(before.value === after.value)
+
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let inFlight = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        cache.invalidateAll()
+        resumeOpen?.resume()
+        do {
+            _ = try await inFlight.value
+            XCTFail("An invalidated open must not escape to its caller")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        let reopened = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(reopened.source, .created)
+    }
+
+    func testProcessCacheWaiterAfterInvalidationCannotJoinOrRecacheOldOpen() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var resumeOld: CheckedContinuation<Void, Never>?
+        let old = Task { @MainActor in
+            try await cache.valueAsync(for: "mainnet") {
+                await withCheckedContinuation { resumeOld = $0 }
+                return Token()
+            }
+        }
+        while resumeOld == nil { await Task.yield() }
+        cache.invalidateAll()
+        let fresh = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(fresh.source, .created)
+        resumeOld?.resume()
+        do {
+            _ = try await old.value
+            XCTFail("Old container escaped invalidation")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        let cached = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === fresh.value)
+    }
+
+    func testProcessCacheSuspensionDrainsOpensAndRejectsNewCallersUntilResumed() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var resumeOld: CheckedContinuation<Void, Never>?
+        let old = Task { @MainActor in
+            try await cache.valueAsync(for: "mainnet") {
+                await withCheckedContinuation { resumeOld = $0 }
+                return Token()
+            }
+        }
+        while resumeOld == nil { await Task.yield() }
+        var started = false
+        var drained = false
+        let suspension = Task { @MainActor in
+            started = true
+            await cache.suspendAndInvalidate()
+            drained = true
+        }
+        while !started { await Task.yield() }
+        XCTAssertFalse(drained, "Deletion must wait for the old filesystem open")
+        do {
+            _ = try await cache.valueAsync(for: "testnet") { Token() }
+            XCTFail("New opens must be rejected during deletion")
+        } catch ProcessNetworkValueCache<Token>.OpenError.suspended {}
+        XCTAssertThrowsError(try cache.value(for: "testnet") { Token() })
+        resumeOld?.resume()
+        await suspension.value
+        do {
+            _ = try await old.value
+            XCTFail("The old caller must fail")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        XCTAssertTrue(drained)
+        cache.resumeOpens()
+        let reopened = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(reopened.source, .created)
+    }
+
+    func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() throws {
         final class Token: Sendable {}
 
         let cache = ProcessNetworkValueCache<Token>()
-        let mainnetFirst = cache.value(for: "mainnet") { Token() }
-        let mainnetSecond = cache.value(for: "mainnet") { Token() }
-        let testnet = cache.value(for: "testnet") { Token() }
+        let mainnetFirst = try cache.value(for: "mainnet") { Token() }
+        let mainnetSecond = try cache.value(for: "mainnet") { Token() }
+        let testnet = try cache.value(for: "testnet") { Token() }
 
         XCTAssertFalse(mainnetFirst.reused)
         XCTAssertTrue(mainnetSecond.reused)

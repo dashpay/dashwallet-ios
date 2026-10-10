@@ -377,6 +377,7 @@
 		371ADBAC635CEB63CA0A4A1E /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */; };
 		FBA8AC3BF5464D0E85240A56 /* WalletLifecycleTransitionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */; };
 		978A58E93C5D4F0E9F2041DD /* WalletPreparationFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45CD13C357340BA8FA8CE14 /* WalletPreparationFailure.swift */; };
+		7D4F1A2B3C4D5E6F7A8B9C02 /* WalletLocalStoreResetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4F1A2B3C4D5E6F7A8B9C03 /* WalletLocalStoreResetter.swift */; };
 		3A377045AA5C10F3FD63A7C2 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E950113F9E258B2F1CC0D50C /* DWContestedNameStatusService.swift */; };
 		3A958F915CDACC6FE30923BA /* DarkCoinMessageFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C25F44380CDB841AF55D3FF /* DarkCoinMessageFraming.swift */; };
 		3B1ECCE5521BAB084D74B5ED /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
@@ -1111,6 +1112,8 @@
 		AA0003022CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
 		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
 		AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */; };
+		5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */; };
+		5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */; };
 		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
@@ -2004,6 +2007,7 @@
 		EDA94EDDBAB5D5E1DEC635D9 /* SwiftDashSDKWalletRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */; };
 		CCB87402238B4324A72EB0B4 /* WalletLifecycleTransitionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */; };
 		6BC9B28CF9B34A72AA35C555 /* WalletPreparationFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45CD13C357340BA8FA8CE14 /* WalletPreparationFailure.swift */; };
+		7D4F1A2B3C4D5E6F7A8B9C01 /* WalletLocalStoreResetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4F1A2B3C4D5E6F7A8B9C03 /* WalletLocalStoreResetter.swift */; };
 		EE0000012DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000022DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
@@ -2074,6 +2078,12 @@
 		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */; };
 		A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */; };
+		7DFE0229E495EDB4DCBF1135 /* VotingKeyInputViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */; };
+		13B96E9292E7F7FCAE569B14 /* VotingKeyInputViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */; };
+		77D07752F23A1DBB84EF533A /* VotingKeyInputScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */; };
+		C23DCB2DF08950815BCDAE16 /* VotingKeyInputScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */; };
+		8A1A54FAF3A2D664815EE39B /* VotingKeysScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */; };
+		A15BD917294003C8A262FEC6 /* VotingKeysScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */; };
 		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
 		553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
@@ -2986,6 +2996,7 @@
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionState.swift; sourceTree = "<group>"; };
 		C45CD13C357340BA8FA8CE14 /* WalletPreparationFailure.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletPreparationFailure.swift; sourceTree = "<group>"; };
+		7D4F1A2B3C4D5E6F7A8B9C03 /* WalletLocalStoreResetter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetter.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
@@ -3306,6 +3317,8 @@
 		AA0003002CA0F58E00A1B401 /* SwapAddressValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapAddressValidator.swift; sourceTree = "<group>"; };
 		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
 		AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapAddressValidatorTests.swift; sourceTree = "<group>"; };
+		5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyFormatTests.swift; sourceTree = "<group>"; };
+		5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyImportTests.swift; sourceTree = "<group>"; };
 		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
 		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
 		AA00030A2CA0F58E00B1B404 /* GenericQRScannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericQRScannerController.swift; sourceTree = "<group>"; };
@@ -3927,6 +3940,9 @@
 		ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRequestStatusScreen.swift; sourceTree = "<group>"; };
 		C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BulkVoteSheet.swift; sourceTree = "<group>"; };
 		A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingNodeSelectionSheet.swift; sourceTree = "<group>"; };
+		A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingKeyInputViewModel.swift; sourceTree = "<group>"; };
+		BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingKeyInputScreen.swift; sourceTree = "<group>"; };
+		43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingKeysScreen.swift; sourceTree = "<group>"; };
 		0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoteHistoryDAO.swift; sourceTree = "<group>"; };
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
@@ -7182,6 +7198,9 @@
 			children = (
 				C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */,
 				A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */,
+				A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */,
+				BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */,
+				43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */,
 				33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */,
 				6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */,
 				FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */,
@@ -7548,6 +7567,8 @@
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
+				5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */,
+				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
@@ -7597,6 +7618,7 @@
 				4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */,
 				81F0D6EBA27F471A9FC46E49 /* WalletLifecycleTransitionState.swift */,
 				C45CD13C357340BA8FA8CE14 /* WalletPreparationFailure.swift */,
+				7D4F1A2B3C4D5E6F7A8B9C03 /* WalletLocalStoreResetter.swift */,
 				E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */,
 				35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */,
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
@@ -9952,6 +9974,9 @@
 				553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */,
 				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
+				13B96E9292E7F7FCAE569B14 /* VotingKeyInputViewModel.swift in Sources */,
+				C23DCB2DF08950815BCDAE16 /* VotingKeyInputScreen.swift in Sources */,
+				A15BD917294003C8A262FEC6 /* VotingKeysScreen.swift in Sources */,
 				D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */,
 				6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */,
 				AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */,
@@ -10692,6 +10717,7 @@
 				EDA94EDDBAB5D5E1DEC635D9 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				CCB87402238B4324A72EB0B4 /* WalletLifecycleTransitionState.swift in Sources */,
 				6BC9B28CF9B34A72AA35C555 /* WalletPreparationFailure.swift in Sources */,
+				7D4F1A2B3C4D5E6F7A8B9C01 /* WalletLocalStoreResetter.swift in Sources */,
 				16AA1B384A9758C1DA97676A /* SwiftDashSDKHost.swift in Sources */,
 				DA5A00000000000000000001 /* DWDashPayIdentityKeys.swift in Sources */,
 				19CF9D60B276558AA48380C2 /* SwiftDashSDKSPVCoordinator.swift in Sources */,
@@ -10863,6 +10889,8 @@
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
+				5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */,
+				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
@@ -10909,6 +10937,9 @@
 				7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */,
 				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
+				7DFE0229E495EDB4DCBF1135 /* VotingKeyInputViewModel.swift in Sources */,
+				77D07752F23A1DBB84EF533A /* VotingKeyInputScreen.swift in Sources */,
+				8A1A54FAF3A2D664815EE39B /* VotingKeysScreen.swift in Sources */,
 				E503EDEA94E656CAE70E5A11 /* UsernameRequestStatusScreen.swift in Sources */,
 				1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */,
 				D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */,
@@ -11761,6 +11792,7 @@
 				371ADBAC635CEB63CA0A4A1E /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				FBA8AC3BF5464D0E85240A56 /* WalletLifecycleTransitionState.swift in Sources */,
 				978A58E93C5D4F0E9F2041DD /* WalletPreparationFailure.swift in Sources */,
+				7D4F1A2B3C4D5E6F7A8B9C02 /* WalletLocalStoreResetter.swift in Sources */,
 				915115B56A2B097590AE3797 /* SwiftDashSDKHost.swift in Sources */,
 				DA5A00000000000000000002 /* DWDashPayIdentityKeys.swift in Sources */,
 				ACAB47BF67F9E00D253166D4 /* DWRegistrationPhaseAdapter.swift in Sources */,
