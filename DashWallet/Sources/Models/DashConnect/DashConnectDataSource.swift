@@ -36,7 +36,13 @@ protocol DashConnectDataSource {
     /// transition could already have reached Platform — the caller must not
     /// offer a retry when it could have.
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
-    func disconnect(id: String) async
+    /// Turns a connection off. For a one-QR connection this disables the key
+    /// the app was given on the identity and deletes the published response,
+    /// and throws when the key could not be disabled — the connection then
+    /// stays as it was. For a two-QR connection it only changes the local
+    /// status: that login derives the same key every time and Platform never
+    /// re-adds a disabled key, so disabling it would lock the app out for good.
+    func disconnect(id: String) async throws
     func remove(id: String) async
 }
 
@@ -239,7 +245,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String) async {
+    func disconnect(id: String) async throws {
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }

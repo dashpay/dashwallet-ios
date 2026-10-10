@@ -199,7 +199,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
 
         let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
-            .identityUpdate(try wallet.parseIdentityUpdateTransition(bytes))
+            Self.parsed(.identityUpdate(try wallet.parseIdentityUpdateTransition(bytes)))
         }
         guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
             return XCTFail("Expected a key-registration transition")
@@ -214,14 +214,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         let contractId = Data(repeating: 0x22, count: 32)
         let tokenId = Data(repeating: 0x23, count: 32)
         let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            .tokenPurchase(ManagedPlatformWallet.ParsedTokenPurchaseTransition(
-                ownerId: ownerId,
-                dataContractId: contractId,
-                tokenId: tokenId,
-                tokenContractPosition: 3,
-                tokenCount: 100,
-                totalAgreedPrice: 100_000_000
-            ))
+            Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId)
+            ])))
         }
 
         guard case let .tokenPurchase(purchase) = try parser.parse(Data([0x00])) else {
@@ -237,17 +232,99 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
     func testParserRejectsContractGroupKeysInsteadOfDroppingTheirRestriction() throws {
         let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            .identityUpdate(.init(
+            Self.parsed(.identityUpdate(.init(
                 identityId: Data(repeating: 0x21, count: 32),
                 addPublicKeys: [.init(
                     keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
                     securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
                     contractBounds: .contractGroup(id: Data(repeating: 0x23, count: 32)))],
-                disablePublicKeyIds: []))
+                disablePublicKeyIds: [])))
         }
         XCTAssertThrowsError(try parser.parse(Data([0]))) {
             XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
         }
+    }
+
+    func testParserKeepsTheLimitsAScannedKeyRegistrationCarries() throws {
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            Self.parsed(.identityUpdate(.init(
+                identityId: Data(repeating: 0x21, count: 32),
+                addPublicKeys: [
+                    .init(
+                        keyId: 1, keyType: .ecdsaHash160, purpose: .authentication,
+                        securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 20),
+                        totalBudget: 7, expiresAt: 9),
+                    .init(
+                        keyId: 2, keyType: .ecdsaSecp256k1, purpose: .encryption,
+                        securityLevel: .medium, pubkeyBytes: Data(repeating: 0x23, count: 33)),
+                ],
+                disablePublicKeyIds: [])))
+        }
+        guard case let .keyRegistration(transition) = try parser.parse(Data([0])) else {
+            return XCTFail("Expected a key-registration transition")
+        }
+        XCTAssertEqual(transition.addPublicKeys.map(\.totalBudget), [7, nil])
+        XCTAssertEqual(transition.addPublicKeys.map(\.expiresAt), [9, nil])
+    }
+
+    func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
+        let ownerId = Data(repeating: 0x21, count: 32)
+        let contractId = Data(repeating: 0x22, count: 32)
+        let tokenId = Data(repeating: 0x23, count: 32)
+        let purchase = Self.tokenRow(contractId: contractId, tokenId: tokenId)
+        let refused: [(String, ManagedPlatformWallet.ParsedStateTransition)] = [
+            ("two rows", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [purchase, purchase])))),
+            ("no rows", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [])))),
+            ("another token action", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, action: "Transfer")
+            ])))),
+            ("an incomplete row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, complete: false)
+            ])))),
+            ("an incomplete transition", Self.parsed(
+                .batch(.init(ownerId: ownerId, transitions: [purchase])), complete: false)),
+            ("a missing price", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, amount: nil)
+            ])))),
+            ("a document row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                .document(.init(
+                    dataContractId: contractId, documentType: "note",
+                    documentId: Data(repeating: 0x24, count: 32), action: "Delete",
+                    amount: nil, recipientId: nil, complete: true, details: nil))
+            ])))),
+            ("another kind", Self.parsed(.other)),
+        ]
+        for (name, transition) in refused {
+            let parser = PlatformWalletDashConnectStateTransitionParser { _ in transition }
+            XCTAssertThrowsError(try parser.parse(Data([0])), name) {
+                XCTAssertEqual(
+                    $0 as? DashConnectPlatformError,
+                    .unsupportedStateTransition("TestKind"),
+                    name)
+            }
+        }
+    }
+
+    private static func parsed(
+        _ kind: ManagedPlatformWallet.ParsedStateTransitionKind,
+        complete: Bool = true
+    ) -> ManagedPlatformWallet.ParsedStateTransition {
+        .init(
+            kindName: "TestKind", ownerId: nil, isSigned: false, userFeeIncrease: 0,
+            complete: complete, serialized: Data(), details: nil, kind: kind)
+    }
+
+    private static func tokenRow(
+        contractId: Data,
+        tokenId: Data,
+        action: String = "DirectPurchase",
+        amount: UInt64? = 100_000_000,
+        complete: Bool = true
+    ) -> ManagedPlatformWallet.ParsedBatchedTransition {
+        .token(.init(
+            dataContractId: contractId, tokenId: tokenId, tokenContractPosition: 3,
+            action: action, amount: amount, recipientId: nil, tokenCount: 100,
+            complete: complete, details: complete ? nil : "note"))
     }
 
     func testTokenPurchasePriceConvertsCreditsToDash() {
@@ -1222,6 +1299,37 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
     ///
     /// `approvePendingTokenPurchase` works in an unstructured `Task` and the
     /// data source runs off the main actor, so there is no handle to await.
+    func testAFailedDisconnectIsReportedInsteadOfLookingLikeASuccess() async {
+        let spy = PurchaseApprovalSpy()
+        spy.disconnectFailure = PurchaseSpyError.refused
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        XCTAssertTrue(viewModel.isDisconnecting)
+        // A second tap while the first is still out must not start another.
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting }
+
+        XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertEqual(viewModel.message?.text.contains("spy refused"), true)
+    }
+
+    func testASuccessfulDisconnectReportsNothing() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting }
+
+        XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
+        XCTAssertNil(viewModel.message)
+    }
+
+    private static let connection = DAppConnection(
+        id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "App", url: "",
+        status: .active, updatedAt: Date(timeIntervalSince1970: 1_000))
+
     private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition(), Date() < deadline {
@@ -1316,8 +1424,12 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String) async {
-        XCTFail("disconnect is not part of the purchase approval flow")
+    var disconnectFailure: Error?
+    private(set) var disconnectedIds: [String] = []
+
+    func disconnect(id: String) async throws {
+        disconnectedIds.append(id)
+        if let disconnectFailure { throw disconnectFailure }
     }
 
     func remove(id: String) async {
@@ -1336,5 +1448,314 @@ private enum PurchaseSpyError: LocalizedError {
         case .unsupported:
             return "not part of the purchase approval flow"
         }
+    }
+}
+
+final class AppConnectLoginTests: XCTestCase {
+    private var defaults: UserDefaults!
+    private var suiteName: String!
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "AppConnectLoginTests.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    func testOneQrLoginStartsAtProtocolVersion14() {
+        XCTAssertFalse(AppConnect.isAvailable(protocolVersion: 13))
+        XCTAssertTrue(AppConnect.isAvailable(protocolVersion: 14))
+        XCTAssertTrue(AppConnect.isAvailable(protocolVersion: 15))
+    }
+
+    func testRequestIdIsHash256OfTheAppEphemeralKey() {
+        // hash256 of the empty string, a published vector.
+        XCTAssertEqual(
+            AppConnect.requestId(appEphemeralPubKey: Data()).toHexString(),
+            "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456")
+        XCTAssertEqual(AppConnect.requestId(appEphemeralPubKey: Data(repeating: 0x02, count: 33)).count, 32)
+    }
+
+    func testSessionKeyIsAbsentUntilItsHashIsOnTheIdentity() {
+        let hash = Data(repeating: 0x11, count: 20)
+        let other = Self.key(keyId: 4, data: Data(repeating: 0x22, count: 20))
+        XCTAssertEqual(
+            AppConnect.sessionKeyState(publicKeyHash160: hash, currentIdentityPublicKeys: [other], now: Self.now),
+            .absent)
+        // The same bytes under another key type are a different key.
+        let sameBytesOtherType = Self.key(keyId: 5, keyType: .ecdsaSecp256k1, data: hash)
+        XCTAssertEqual(
+            AppConnect.sessionKeyState(
+                publicKeyHash160: hash, currentIdentityPublicKeys: [sameBytesOtherType], now: Self.now),
+            .absent)
+    }
+
+    func testRegisteredSessionKeyIsUsableWithItsKeyId() {
+        let hash = Data(repeating: 0x11, count: 20)
+        let live = Self.key(keyId: 9, data: hash, expiresAt: Self.nowMilliseconds + 1)
+        XCTAssertEqual(
+            AppConnect.sessionKeyState(publicKeyHash160: hash, currentIdentityPublicKeys: [live], now: Self.now),
+            .usable(keyId: 9))
+        let unlimited = Self.key(keyId: 9, data: hash)
+        XCTAssertEqual(
+            AppConnect.sessionKeyState(publicKeyHash160: hash, currentIdentityPublicKeys: [unlimited], now: Self.now),
+            .usable(keyId: 9))
+    }
+
+    func testDisabledExpiredOrMisregisteredSessionKeyIsUnusable() {
+        let hash = Data(repeating: 0x11, count: 20)
+        let unusable: [(String, ManagedIdentity.IdentityPublicKeyInfo)] = [
+            ("disabled", Self.key(keyId: 9, data: hash, disabledAt: 1)),
+            ("expired", Self.key(keyId: 9, data: hash, expiresAt: Self.nowMilliseconds)),
+            ("wrong level", Self.key(keyId: 9, securityLevel: .critical, data: hash)),
+            ("wrong purpose", Self.key(keyId: 9, purpose: .transfer, data: hash)),
+        ]
+        for (name, key) in unusable {
+            XCTAssertEqual(
+                AppConnect.sessionKeyState(publicKeyHash160: hash, currentIdentityPublicKeys: [key], now: Self.now),
+                .unusable,
+                name)
+        }
+    }
+
+    func testNextKeyIdFollowsTheHighestKeyOnTheIdentity() {
+        XCTAssertEqual(AppConnect.nextKeyId(currentIdentityPublicKeys: []), 1)
+        XCTAssertEqual(
+            AppConnect.nextKeyId(currentIdentityPublicKeys: [
+                Self.key(keyId: 0, data: Data([1])),
+                Self.key(keyId: 7, data: Data([2]), disabledAt: 1),
+                Self.key(keyId: 3, data: Data([3])),
+            ]),
+            8)
+    }
+
+    func testDisconnectDisablesOnlyTheLiveSessionKeysItGranted() {
+        let grants = [9, 11, 12, 13].map { Self.grant(sessionKeyId: $0) }
+        let keys = [
+            Self.key(keyId: 0, securityLevel: .master, keyType: .ecdsaSecp256k1, data: Data([0])),
+            Self.key(keyId: 9, data: Data([9])),
+            // Not granted by these responses.
+            Self.key(keyId: 10, data: Data([10])),
+            // Already disabled.
+            Self.key(keyId: 11, data: Data([11]), disabledAt: 1),
+            // The id now belongs to a key this login would never register.
+            Self.key(keyId: 12, securityLevel: .critical, data: Data([12])),
+            // 13 is not on the identity at all.
+            Self.key(keyId: 14, data: Data([14])),
+        ]
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(for: grants, currentIdentityPublicKeys: keys),
+            [9])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(for: [], currentIdentityPublicKeys: keys),
+            [])
+    }
+
+    private static func grant(sessionKeyId: UInt32) -> AppConnectGrant {
+        AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: "document-\(sessionKeyId)",
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: sessionKeyId, totalBudget: nil, expiresAt: nil,
+            publishedAt: Date(timeIntervalSince1970: 1_000))
+    }
+
+    func testSessionKeyIsBoundToTheRequestedContractWithBothLimits() {
+        let hash = Data(repeating: 0x11, count: 20)
+        let contractId = Data(repeating: 0x33, count: 32)
+        let key = AppConnect.sessionIdentityPubkey(
+            keyId: 8, publicKeyHash160: hash, appContractId: contractId, totalBudget: 5, expiresAt: 6)
+        XCTAssertEqual(key.keyId, 8)
+        XCTAssertEqual(key.keyType, .ecdsaHash160)
+        XCTAssertEqual(key.purpose, .authentication)
+        XCTAssertEqual(key.securityLevel, .high)
+        XCTAssertEqual(key.pubkeyBytes, hash)
+        XCTAssertEqual(key.contractBounds, .singleContract(id: contractId))
+        XCTAssertEqual(key.totalBudget, 5)
+        XCTAssertEqual(key.expiresAt, 6)
+    }
+
+    func testExpiryIsTheLifetimeAfterNowInMilliseconds() {
+        XCTAssertEqual(
+            AppConnect.expiresAt(from: Date(timeIntervalSince1970: 1_000)),
+            UInt64((1_000 + AppConnect.sessionKeyLifetime) * 1000))
+    }
+
+    func testResponseCarriesTheSessionKeyOnlyTheAppCanDecrypt() throws {
+        let sessionPrivateKey = Data(repeating: 0x5a, count: 32)
+        let appEphemeralPrivateKey = Data(repeating: 0x07, count: 32)
+        let appEphemeralPubKey = try Secp256k1.compressedPublicKey(privateKey: appEphemeralPrivateKey)
+        let walletEphemeralPrivateKeyBytes = Data(repeating: 0x09, count: 32)
+        var walletEphemeralPrivateKey = walletEphemeralPrivateKeyBytes
+
+        let values = AppConnect.ResponseValues(try AppConnect.seal(
+            sessionPrivateKey,
+            appEphemeralPubKey: appEphemeralPubKey,
+            walletEphemeralPrivateKey: &walletEphemeralPrivateKey))
+
+        XCTAssertEqual(walletEphemeralPrivateKey, Data(repeating: 0, count: 32), "the ephemeral key is wiped")
+        XCTAssertEqual(
+            values.appEphemeralPubKeyHash,
+            try KeyExchangeCrypto.hash160(appEphemeralPubKey).toHexString())
+        let walletEphemeralPubKey = try Secp256k1.compressedPublicKey(privateKey: walletEphemeralPrivateKeyBytes)
+        XCTAssertEqual(values.walletEphemeralPubKey, walletEphemeralPubKey.toHexString())
+        // 28-byte envelope plus one 32-byte key: the contract's minimum.
+        XCTAssertEqual(values.encryptedPayload.count, 60 * 2)
+
+        let payload = try XCTUnwrap(Self.data(hex: values.encryptedPayload))
+        // The app's side of the exchange: its private key with the wallet's
+        // public key. ECDH is symmetric, so the helper's parameters take the
+        // opposite pair to the one that encrypted.
+        XCTAssertEqual(
+            try KeyExchangeCrypto.decryptLoginKey(
+                payload,
+                walletEphemeralPriv: appEphemeralPrivateKey,
+                appEphemeralPub: walletEphemeralPubKey),
+            sessionPrivateKey)
+    }
+
+    func testPropertiesJsonHoldsExactlyTheThreeContractFields() throws {
+        let values = AppConnect.ResponseValues(
+            appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc")
+        let object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(try values.propertiesJSON().utf8)) as? [String: String])
+        XCTAssertEqual(object, [
+            "appEphemeralPubKeyHash": "aa",
+            "walletEphemeralPubKey": "bb",
+            "encryptedPayload": "cc",
+        ])
+    }
+
+    func testAGrantWrittenBeforeTheDeleteFlagsExistedStillLoads() throws {
+        // The shape the first device run stored: no `responseDeleted`, no
+        // `keyDisabled`. Losing it would leave that key impossible to find.
+        let stored = """
+        [{"identityId":"identity","appContractId":"app","documentId":"document",
+          "values":{"appEphemeralPubKeyHash":"aa","walletEphemeralPubKey":"bb","encryptedPayload":"cc"},
+          "sessionKeyId":6,"totalBudget":5000000000,"expiresAt":1799315762000,"publishedAt":1791539765792}]
+        """
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        let grant = try XCTUnwrap(store.load().first)
+        XCTAssertEqual(grant.sessionKeyId, 6)
+        XCTAssertEqual(grant.documentId, "document")
+        XCTAssertNil(grant.responseDeleted)
+        XCTAssertNil(grant.keyDisabled)
+        XCTAssertTrue(grant.hasDeletableResponse)
+    }
+
+    func testAGrantIsFoundAgainAfterTheStoreRoundTrip() {
+        // A wall-clock date does not survive the millisecond round trip bit
+        // for bit, so whole-value equality misses the stored record about
+        // half the time; the grant key does not depend on the date.
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+        for offset in 0 ..< 200 {
+            let grant = AppConnectGrant(
+                identityId: "identity", appContractId: "app", documentId: nil,
+                values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+                sessionKeyId: 6, totalBudget: nil, expiresAt: nil,
+                publishedAt: Date(timeIntervalSince1970: 1_791_539_765.792_813 + Double(offset) * 0.000_137))
+            store.save([grant])
+            XCTAssertEqual(store.load().first?.key, grant.key)
+        }
+    }
+
+    func testARowThisBuildCannotReadIsKeptWhenTheStoreIsSaved() throws {
+        let stored = """
+        [{"somethingNewer":true,"sessionKeyId":4},
+         {"identityId":"identity","appContractId":"app","documentId":"document",
+          "values":{"appEphemeralPubKeyHash":"aa","walletEphemeralPubKey":"bb","encryptedPayload":"cc"},
+          "sessionKeyId":6,"publishedAt":1791539765792}]
+        """
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        XCTAssertEqual(store.load().map(\.sessionKeyId), [6])
+        store.save(store.load() + [Self.grant(sessionKeyId: 7)])
+        XCTAssertEqual(store.load().map(\.sessionKeyId), [6, 7])
+
+        let rows = try XCTUnwrap(
+            JSONSerialization.jsonObject(
+                with: try XCTUnwrap(defaults.data(forKey: "scope.app-connect-responses.v1"))) as? [[String: Any]])
+        XCTAssertEqual(rows.filter { $0["somethingNewer"] as? Bool == true }.count, 1)
+
+        // Clearing the readable grants must not clear the unreadable row.
+        store.save([])
+        XCTAssertNotNil(defaults.data(forKey: "scope.app-connect-responses.v1"))
+    }
+
+    func testAGrantedKeyMissingFromTheIdentityViewIsReportedNotAssumedGone() {
+        let grants = [9, 13].map { Self.grant(sessionKeyId: $0) }
+        let keys = [Self.key(keyId: 9, data: Data([9]), disabledAt: 1)]
+        XCTAssertEqual(AppConnect.sessionKeyIdsMissing(from: keys, for: grants), [13])
+        XCTAssertEqual(AppConnect.sessionKeyIdsMissing(from: keys, for: [grants[0]]), [])
+    }
+
+    func testAGrantHasNothingToDeleteBeforeItIsPublishedOrAfterItsResponseIsGone() {
+        var grant = Self.grant(sessionKeyId: 6)
+        XCTAssertTrue(grant.hasDeletableResponse)
+        grant.responseDeleted = true
+        XCTAssertFalse(grant.hasDeletableResponse)
+        grant.responseDeleted = nil
+        grant.documentId = nil
+        XCTAssertFalse(grant.hasDeletableResponse)
+    }
+
+    func testPublishedResponsesSurviveAReloadAndAreScoped() {
+        let response = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: "document",
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 8, totalBudget: 5, expiresAt: 6,
+            publishedAt: Date(timeIntervalSince1970: 1_000))
+        var scope: String? = "scope-a"
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { scope }
+
+        store.save([response])
+        XCTAssertEqual(store.load(), [response])
+
+        scope = "scope-b"
+        XCTAssertEqual(store.load(), [], "another wallet does not see the records")
+        scope = nil
+        store.save([response])
+        XCTAssertEqual(store.load(), [], "nothing is stored without a wallet scope")
+
+        scope = "scope-a"
+        store.save([])
+        XCTAssertEqual(store.load(), [])
+    }
+
+    private static let now = Date(timeIntervalSince1970: 1_800_000_000)
+    private static let nowMilliseconds: Int64 = 1_800_000_000_000
+
+    private static func key(
+        keyId: Int32,
+        purpose: KeyPurpose = .authentication,
+        securityLevel: SecurityLevel = .high,
+        keyType: KeyType = .ecdsaHash160,
+        data: Data,
+        disabledAt: Int64? = nil,
+        expiresAt: Int64? = nil
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
+        ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: keyId, purpose: purpose, securityLevel: securityLevel, keyType: keyType,
+            readOnly: false, disabledAt: disabledAt, data: data, totalBudget: nil, expiresAt: expiresAt)
+    }
+
+    private static func data(hex: String) -> Data? {
+        var bytes = [UInt8]()
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            guard let next = hex.index(index, offsetBy: 2, limitedBy: hex.endIndex),
+                  let byte = UInt8(hex[index ..< next], radix: 16) else { return nil }
+            bytes.append(byte)
+            index = next
+        }
+        return Data(bytes)
     }
 }

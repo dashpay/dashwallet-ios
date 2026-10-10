@@ -52,6 +52,10 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
     @Published var isProcessingStateTransition = false
+    /// A disconnect that is signing an identity update. Its own flag, not
+    /// `isProcessingStateTransition`: a `dash-st:` task clears that one when
+    /// it finishes, which would lift the guard while a disconnect is still out.
+    @Published private(set) var isDisconnecting = false
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
@@ -128,7 +132,7 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
 
-        guard !isProcessingStateTransition else {
+        guard !isProcessingStateTransition, !isDisconnecting else {
             message = ConnectionsScreenMessage(
                 kind: .error,
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
@@ -281,8 +285,25 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func disconnect(_ connection: DAppConnection) {
-        Task {
-            await dataSource.disconnect(id: connection.id)
+        // Disconnecting a one-QR connection signs an identity update, which
+        // takes seconds. It must not overlap anything else that signs one or
+        // touches the same records: a second tap, an approval on screen or in
+        // flight, a request still resolving, a `dash-st:` in progress.
+        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        isDisconnecting = true
+        Task { [weak self] in
+            guard let self else { return }
+            defer { self.isDisconnecting = false }
+            do {
+                try await self.dataSource.disconnect(id: connection.id)
+            } catch {
+                self.message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString("Could not disconnect: %@", comment: "DashConnect"),
+                        error.localizedDescription))
+            }
         }
     }
 
