@@ -53,14 +53,40 @@ final class ProcessNetworkValueCache<Value: Sendable> {
     private var values: [String: Value] = [:]
     private struct PendingOpen {
         let id = UUID()
+        let generation: UInt64
         let task: Task<Value, Error>
     }
     private var inFlight: [String: PendingOpen] = [:]
+    enum OpenError: Error { case invalidated, suspended }
+    private var generation: UInt64 = 0
+    private var isSuspended = false
+
+    /// Evict every cached value. Only the local-store reset calls this: each
+    /// cached value was built over a store directory that is about to be
+    /// deleted, and reusing it would hand the next open the unlinked file.
+    func invalidateAll() {
+        values.removeAll()
+        inFlight.removeAll()
+        generation &+= 1
+    }
+
+    /// Refuse new opens, reject old results, and wait for filesystem work
+    /// already in flight before the caller unlinks any store directories.
+    func suspendAndInvalidate() async {
+        isSuspended = true
+        let pending = Array(inFlight.values)
+        invalidateAll()
+        for open in pending { _ = await open.task.result }
+    }
+
+    /// The caller has finished deleting stores, including on failure.
+    func resumeOpens() { isSuspended = false }
 
     func value(
         for networkKey: String,
         create: () throws -> Value
-    ) rethrows -> (value: Value, reused: Bool) {
+    ) throws -> (value: Value, reused: Bool) {
+        guard !isSuspended else { throw OpenError.suspended }
         if let existing = values[networkKey] {
             return (existing, true)
         }
@@ -73,6 +99,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
         for networkKey: String,
         create: @escaping @MainActor () async throws -> Value
     ) async throws -> (value: Value, source: OpenSource) {
+        guard !isSuspended else { throw OpenError.suspended }
         if let existing = values[networkKey] { return (existing, .cached) }
         let pending: PendingOpen
         let source: OpenSource
@@ -80,7 +107,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
             pending = existing
             source = .shared
         } else {
-            pending = PendingOpen(task: Task { try await create() })
+            pending = PendingOpen(generation: generation, task: Task { try await create() })
             inFlight[networkKey] = pending
             source = .created
         }
@@ -92,6 +119,7 @@ final class ProcessNetworkValueCache<Value: Sendable> {
             }
         }
         let created = try await pending.task.value
+        guard generation == pending.generation else { throw OpenError.invalidated }
         values[networkKey] = created
         return (created, source)
     }
@@ -157,6 +185,11 @@ final class SwiftDashSDKHost {
     /// whatever the devnet configuration says by now.
     private(set) var runningPersistenceScope: String?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
+    private let storeLifetimes = WalletLocalStoreLifetimeBarrier()
+    /// Monotonic for this process. Native destroy may leave storage workers
+    /// alive, including SPV workers without a Swift persistence callback.
+    /// Dropping managers or observing a successful stop cannot clear this.
+    private var hasConfiguredStoreRuntime = false
 
     /// Watches for contact-crypto work that gets deferred *after* the
     /// load-time unlock. See `unlockDashPayContactCrypto`. Replaced (and the
@@ -270,6 +303,8 @@ final class SwiftDashSDKHost {
             return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
         } catch {
             logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
+            // os_log does not reach the diagnostic export; the file log does.
+            DWLogger.log("HOST wallet-presence keychain read failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return false
         }
     }
@@ -291,6 +326,7 @@ final class SwiftDashSDKHost {
             }
         } catch {
             logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log("HOST mnemonic keychain enumeration failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return []
         }
     }
@@ -530,18 +566,29 @@ final class SwiftDashSDKHost {
             // FROM-network active phrase, bound as devnet-active, with an
             // every-stored-phrase fallback (devnet rows + devnet-scoped
             // mnemonic entries only; mainnet/testnet are untouched).
-            var recovered = recoverPersistedWallet(handles: handles)
-            if recovered == nil, network == .devnet {
-                recovered = await provisionDevnetWallets(handles: handles)
-            }
-            guard let recovered else {
-                // The freshly built manager was never published — tear it
-                // down deterministically instead of leaving it to the
-                // deinit fallback.
+            DWLogger.log("HOST wallet recovery required for \(network.rawValue); restoring missing keychain wallets")
+            // The rows being recreated carried this network's persisted deep
+            // CoinJoin UTXOs. Re-arm the one-time wide scan here, where the
+            // loss is observed, rather than where the store was deleted: a
+            // reset interrupted after the unlink, a kill before UserDefaults
+            // reached disk, or any other way to an empty store all pass
+            // through this branch.
+            CoinJoinRecovery.shared.resetRecoveryFlag(scope: network.persistenceScope)
+            do {
+                var recovered = try recoverPersistedWallet(handles: handles)
+                if recovered == nil, network == .devnet {
+                    recovered = await provisionDevnetWallets(handles: handles)
+                }
+                guard let recovered else { throw HostError.walletNotFound(network) }
+                // Existing keychain wallets must all recover before clearing
+                // the marker. First-entry devnet provisioning keeps its
+                // separate policy when no devnet wallet existed yet.
+                try localStoreRecovery(for: network).finish()
+                resolvedWallet = recovered
+            } catch {
                 await handles.manager.shutdown()
-                throw HostError.walletNotFound(network)
+                throw HostError.walletBootstrapFailed(error)
             }
-            resolvedWallet = recovered
         } catch let error as HostError {
             await handles.manager.shutdown()
             throw error
@@ -552,6 +599,11 @@ final class SwiftDashSDKHost {
         }
 
         publish(handles: handles, wallet: resolvedWallet)
+        // Keep keychain unlock and its FFI work off the load critical path,
+        // including when a partially recovered store supplied this wallet.
+        Task { [weak self] in
+            self?.unlockDashPayContactCrypto(manager: handles.manager, wallet: resolvedWallet)
+        }
         Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
         Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
         DWLogger.log("HOST started for \(network.rawValue)")
@@ -1103,6 +1155,10 @@ final class SwiftDashSDKHost {
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
+            // Allow-listed `domain:code` pairs only: Core Data errors carry
+            // paths and stored values, which never belong in the exported log.
+            DWLogger.log(
+                "HOST stage 2/4 ModelContainer FAILED for \(network.rawValue) scope=\(configurationIdentity.scope) codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             throw HostError.modelContainerFailed(error)
         }
 
@@ -1112,6 +1168,7 @@ final class SwiftDashSDKHost {
         }
 
         let newManager = PlatformWalletManager()
+        hasConfiguredStoreRuntime = true
         do {
             Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
             let started = CFAbsoluteTimeGetCurrent()
@@ -1234,16 +1291,18 @@ final class SwiftDashSDKHost {
         let restored = try await manager.loadFromPersistor()
         let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
         DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
+        // A pending reset intent means a removal may have taken only the WAL,
+        // leaving an older wallet in the main database while a newer wallet's
+        // rows were lost with it: a non-empty store proves nothing. Reconcile
+        // the keychain against the rows before accepting the store, exactly
+        // like a pending recovery marker; the intent itself outlives this
+        // start, until the scope's wide scan completes.
+        if try localStoreRecovery(for: network).isPending()
+            || resetIntent().isPending(scope: network.persistenceScope) {
+            throw HostError.walletNotFound(network)
+        }
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
-            // Off the load path. `PlatformWalletManager` is `@MainActor`, so
-            // the unlock's Keychain read and its two synchronous FFI calls run
-            // on the main thread whenever they run; scheduling them as their
-            // own main-actor turn at least keeps them out of wallet load,
-            // which is on the launch critical path.
-            Task { [weak self] in
-                self?.unlockDashPayContactCrypto(manager: manager, wallet: resolved)
-            }
             return resolved
         }
 
@@ -1396,22 +1455,26 @@ final class SwiftDashSDKHost {
         return fallback
     }
 
-    /// `walletNotFound` retry: re-create wallet rows from the keychain
-    /// mnemonics (`persistedMnemonics`). One attempt per entry, no retry loop —
-    /// `createWallet` is idempotent by walletId (`Wallet(mnemonic:network:).id`),
-    /// so a re-run after a partial failure converges. Network-scoped ids are
-    /// never replayed through the other network's manager.
+    /// Empty or partially recovered store: strictly read the keychain and
+    /// recreate missing wallet rows. A failure leaves the on-disk marker so
+    /// the next start resumes even if some wallets already exist. Existing
+    /// rows are preserved; ids are never replayed on another network.
     /// Wipe race note: the wiper deletes mnemonics before `handleWalletWiped`,
     /// so a refresh racing a wipe finds an empty list here and fails the start
     /// — and the next refresh's `hasSDKWallet` gate stays closed.
-    private func recoverPersistedWallet(handles: RuntimeHandles) -> ManagedPlatformWallet? {
-        let inventory = Self.persistedMnemonics()
+    private func recoverPersistedWallet(handles: RuntimeHandles) throws -> ManagedPlatformWallet? {
+        try localStoreRecovery(for: handles.network).begin()
+        let inventory = try Self.strictlyPersistedMnemonics()
+        // Reject malformed/unclassifiable material instead of treating it as
+        // a wallet that belongs to another network and silently skipping it.
+        _ = try Self.persistedSDKWalletNetworks(in: inventory)
         let entries = Self.recoverablePersistedMnemonics(
             inventory,
             for: handles.network)
         guard !entries.isEmpty else { return nil }
 
         for entry in entries {
+            if handles.manager.wallets[entry.walletId] != nil { continue }
             do {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
@@ -1431,14 +1494,23 @@ final class SwiftDashSDKHost {
                 if created.walletId != entry.walletId {
                     try? handles.manager.deleteWallet(walletId: created.walletId)
                     Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
+                    DWLogger.log("HOST keychain recovery: created wallet id did not match its keychain id; discarded")
+                    throw HostError.mnemonicRoundTripMismatch
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST keychain recovery failed for one entry: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                throw error
             }
         }
 
-        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
+        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else {
+            DWLogger.log("HOST keychain recovery resolved no active wallet for \(handles.network.networkName) eligible=\(entries.count)")
+            return nil
+        }
         Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
+        DWLogger.log(
+            "HOST recovered \(entries.count) wallet(s) from keychain for \(handles.network.networkName) skipped=\(inventory.count - entries.count) birthHeight=\(Self.importedWalletBirthHeight(for: handles.network))")
         return resolved
     }
 
@@ -1668,40 +1740,79 @@ final class SwiftDashSDKHost {
 
     // MARK: - ModelContainer
 
+    /// A local reset may unlink databases only before any native runtime has
+    /// been configured in this process. A timed-out shutdown can otherwise
+    /// leave SPV's independent disk worker writing to those paths.
+    func validateLocalStoreReset() async throws {
+        guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
+        // Reading and classifying the inventory constructs a native wallet
+        // per entry and network (seed derivation, default accounts): off the
+        // main actor, like every other FFI-heavy step of the lifecycle.
+        try await Task.detached(priority: .userInitiated) {
+            let inventory = try Self.strictlyPersistedMnemonics()
+            // An embedded NUL is accepted by the C-string boundary of
+            // validation and id derivation (only the prefix is read) but
+            // rejected by the signer, so such material must not authorize a
+            // deletion it could never spend from afterwards.
+            guard !inventory.isEmpty,
+                  inventory.allSatisfy({ !$0.mnemonic.utf8.contains(0) }) else {
+                throw HostError.invalidMnemonic
+            }
+            _ = try Self.persistedSDKWalletNetworks(in: inventory)
+        }.value
+        // The suspension above is a window for a start to configure a native
+        // runtime; the latch is monotonic, so recheck it before admitting.
+        guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
+    }
+
+    func waitForLocalStoreRelease() async throws {
+        try await storeLifetimes.waitForRelease()
+        // A caller already past container admission must not configure a
+        // runtime while reset waits. Fail closed if that ever happened.
+        guard !hasConfiguredStoreRuntime else { throw WalletLocalStoreResetError.restartRequired }
+    }
+
+    private func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
+        WalletLocalStoreRecovery(directory: try WalletLocalStoreRoots.inDocuments().platform
+            .appendingPathComponent(network.persistenceScope, isDirectory: true))
+    }
+
+    private func resetIntent() throws -> WalletLocalStoreResetIntent {
+        WalletLocalStoreResetIntent(directory: try WalletLocalStoreRoots.inDocuments().resetIntents)
+    }
+
+    /// Hold model-container admission through the reset's teardown and file
+    /// deletion, draining existing opens before the files can be unlinked.
+    func suspendModelContainerOpens() async {
+        await modelContainerCache.suspendAndInvalidate()
+    }
+
+    func resumeModelContainerOpens() {
+        modelContainerCache.resumeOpens()
+    }
+
     private func buildModelContainer(for network: Network, scope: String? = nil) async throws -> ModelContainer {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-            .appendingPathComponent("Platform", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().platform
             .appendingPathComponent(scope ?? network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
             withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("DashModel.sqlite", isDirectory: false)
 
-        return try await DashModelContainer.createAsync(url: url)
+        let container = try await DashModelContainer.createAsync(url: url)
+        storeLifetimes.track(container)
+        return container
     }
 
     /// Filesystem path for the per-network shielded Orchard commitment-tree
     /// SQLite file, handed to `PlatformWalletManager.configureShielded(dbPath:)`.
-    /// Mirrors `buildModelContainer`'s `documents/SwiftDashSDK/<subsystem>/<scope>/`
-    /// convention in a sibling `Shielded/` directory; creates the directory if
+    /// `WalletLocalStoreRoots.shielded/<scope>/`, the sibling of the
+    /// `Platform/` root `buildModelContainer` uses; creates the directory if
     /// needed. The manager is rebuilt per network (`buildRuntime`), so a
     /// per-network path keeps `configureShielded` idempotent — it throws only
     /// when re-pointed to a different path on the same manager.
     func shieldedTreeDBPath(for network: Network) throws -> String {
-        let documents = try FileManager.default.url(
-            for: .documentDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true)
-        let dir = documents
-            .appendingPathComponent("SwiftDashSDK", isDirectory: true)
-            .appendingPathComponent("Shielded", isDirectory: true)
+        let dir = try WalletLocalStoreRoots.inDocuments().shielded
             .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,

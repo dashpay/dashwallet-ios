@@ -60,11 +60,24 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         case .openingWallet, .migratingLegacyWallet, .switchingNetwork, .switchingWallet, .removingWallet,
              .addingWallet, .wiping:
             XCTAssertTrue(state.tryBegin(phase), "test setup: begin from idle must admit")
+        case .resettingLocalStores:
+            state.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: NSCocoaErrorDomain, code: 134100))))
+            XCTAssertTrue(state.tryBegin(.resettingLocalStores))
         case .failedWalletOpen, .failedLegacyMigration, .failedNetworkSwitch, .failedWalletSwitch,
              .failedWalletRemoval:
             state.fail(phase)
         }
         return state
+    }
+
+    func testResetOwnsAdmissionUntilExplicitlyFinished() async throws {
+        let state = makeState(in: .resettingLocalStores)
+        XCTAssertFalse(state.allowsAutomaticWalletPreparation)
+        for (_, next) in Self.begins { XCTAssertFalse(state.tryBegin(next)) }
+        try await state.prepareWallet {} failure: { _ in nil }
+        XCTAssertEqual(state.phase, .resettingLocalStores, "Opening must not release the reset reservation")
+        state.finish()
+        XCTAssertTrue(state.tryBegin(.wiping(title: nil)))
     }
 
     // MARK: - Admission matrix
@@ -713,5 +726,87 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         await settle(probe.outcomes == [true])
         XCTAssertEqual(probe.outcomes, [true])
         XCTAssertEqual(state.phase, .openingWallet)
+    }
+}
+
+/// The verdict the launch probe and the key migrator share: a DashSync
+/// mnemonic that no readable chain list names was reset in the previous app
+/// and is not material to migrate; anything else keeps the launch hold.
+final class DashSyncChainWalletListsTests: XCTestCase {
+    private typealias Lists = DashSyncChainWalletLists
+    private let mainnet = "b67a40f"
+    private let testnet = "2cbcf83"
+    private let devnet = "1a2b3c4"
+
+    private func inventory(_ lists: [String: [String]], unreadable: Set<String> = []) -> Lists.Inventory {
+        Lists.Inventory(lists: lists, unreadableChains: unreadable)
+    }
+
+    func testAListedWalletReportsTheChainsNamingIt() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: inventory([mainnet: ["a1"], testnet: []])),
+                       .listed(chains: [mainnet]))
+        XCTAssertEqual(Lists.membership(ofWalletID: "d1", in: inventory([mainnet: [], devnet: ["d1"]])),
+                       .listed(chains: [devnet]))
+    }
+
+    /// One list that does not read must not hold back a wallet a readable
+    /// list names.
+    func testAReadableListStillNamesAWalletWhenAnotherListIsUnreadable() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "a1", in: inventory([mainnet: ["a1"]], unreadable: [devnet])),
+                       .listed(chains: [mainnet]))
+    }
+
+    /// DashSync's Reset rewrites the list without the id, empty for the last
+    /// wallet, and leaves the mnemonic behind.
+    func testAMnemonicNoReadableListNamesIsOrphaned() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: []])), .orphaned)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: ["a1"], testnet: ["t1"]])), .orphaned)
+    }
+
+    /// A list that does not read might name the mnemonic, so it is never
+    /// judged orphaned then.
+    func testAnUnreadableListLeavesAnUnnamedMnemonicUndetermined() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([mainnet: []], unreadable: [devnet])), .undetermined)
+        XCTAssertEqual(Lists.membership(ofWalletID: "r1", in: inventory([:], unreadable: [mainnet])), .undetermined)
+    }
+
+    func testNoChainListAtAllIsUnresolvedNotOrphaned() {
+        XCTAssertEqual(Lists.membership(ofWalletID: "x1", in: inventory([:])), .unresolved)
+    }
+
+    func testOnlyOrphanedMnemonicsReleaseTheLaunch() {
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "r2"], inventory: inventory([mainnet: []])), .absent)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"], inventory: inventory([mainnet: ["a1"]])), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["d1"], inventory: inventory([devnet: ["d1"]])), .pending)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["x1"], inventory: inventory([:])), .pending)
+    }
+
+    /// A wallet left to migrate keeps the launch waiting for the migrator;
+    /// only undetermined leftovers make the keychain unreadable.
+    func testAnUnreadableListMakesTheLaunchUnreadableUnlessAWalletIsListed() {
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1"], inventory: inventory([mainnet: []], unreadable: [devnet])),
+                       .unreadable)
+        XCTAssertEqual(Lists.materialState(mnemonicWalletIDs: ["r1", "a1"],
+                                           inventory: inventory([mainnet: ["a1"]], unreadable: [devnet])),
+                       .pending)
+    }
+
+    /// DashSync archives an `NSMutableArray` with `requiringSecureCoding: NO`.
+    func testDecodesListsAsDashSyncWroteThem() throws {
+        let emptied = try NSKeyedArchiver.archivedData(withRootObject: NSMutableArray(), requiringSecureCoding: false)
+        XCTAssertEqual(Lists.decodeWalletIDs(emptied), [])
+        let listed = try NSKeyedArchiver.archivedData(
+            withRootObject: NSMutableArray(array: ["a1", "b2"]), requiringSecureCoding: false)
+        XCTAssertEqual(Lists.decodeWalletIDs(listed), ["a1", "b2"])
+    }
+
+    func testAnUndecodableListIsNilNeverEmpty() throws {
+        XCTAssertNil(Lists.decodeWalletIDs(Data("not an archive".utf8)))
+        let numbers = try NSKeyedArchiver.archivedData(
+            withRootObject: NSMutableArray(array: [1, 2]), requiringSecureCoding: false)
+        XCTAssertNil(Lists.decodeWalletIDs(numbers))
+        let dictionary = try NSKeyedArchiver.archivedData(
+            withRootObject: NSDictionary(dictionary: ["a1": "b2"]), requiringSecureCoding: false)
+        XCTAssertNil(Lists.decodeWalletIDs(dictionary))
     }
 }

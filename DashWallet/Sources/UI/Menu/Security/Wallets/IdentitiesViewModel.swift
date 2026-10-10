@@ -178,15 +178,49 @@ final class IdentitiesViewModel: ObservableObject {
         guard row.dpnsNames.contains(where: { DWContestedNameStatusService.labelsMatch($0, name) }) else {
             return
         }
-        PersistentIdentity.updateMainDpnsName(
-            in: container.mainContext,
-            identityId: row.identityId,
-            mainDpnsName: name)
-        try? container.mainContext.save()
+        let context = container.mainContext
+        guard let identity = PersistentIdentity.fetch(in: context, identityId: row.identityId) else {
+            DWLogger.log("IdentitiesViewModel: main name not set — identity \(row.idBase58) is not in the store")
+            errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            reload()
+            return
+        }
+        do {
+            try Self.persistMainName(name, on: identity, save: context.save)
+        } catch {
+            // Core Data errors carry paths and stored values: codes only.
+            let codes = WalletPreparationFailure(error: error).codes.joined(separator: ",")
+            DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(codes)")
+            errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            reload()
+            return
+        }
         if row.isMainIdentity {
             _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
         }
         reload()
+    }
+
+    /// Write `name` as the identity's pick and save it. A failed save puts
+    /// both fields back — an unsaved pick would show until relaunch and
+    /// then revert — and keeps a waiting promotion; `save` is a parameter
+    /// so a test can fail it.
+    static func persistMainName(
+        _ name: String, on identity: PersistentIdentity, save: () throws -> Void
+    ) throws {
+        let previous = (name: identity.mainDpnsName, lastUpdated: identity.lastUpdated)
+        identity.mainDpnsName = name
+        identity.lastUpdated = Date()
+        do {
+            try save()
+        } catch {
+            identity.mainDpnsName = previous.name
+            identity.lastUpdated = previous.lastUpdated
+            throw error
+        }
+        // A manual pick overrides any promotion still waiting for the
+        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
+        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: identity.identityId)
     }
 
     /// One-shot Platform refresh, pull-to-refresh style: re-fetch each
@@ -329,7 +363,15 @@ final class IdentitiesViewModel: ObservableObject {
         // `isOwned == false` (their trade history remains browsable) —
         // they are no longer this identity's names and must not appear
         // in the picker or count toward "has a name".
+        // A lost or locked contest leaves its label among the cached names;
+        // it is not this identity's.
+        let rejected = WalletEnvironment.network.map {
+            // The identity's own wallet: Identities lists other wallets' too.
+            DWContestedNameStatusService.shared.rejectedNameKeys(
+                for: $0, identityId: identity.identityId, walletId: identity.wallet?.walletId)
+        } ?? []
         let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
+            .filter { !rejected.contains(DWContestedNameStatusService.dpnsKey($0)) }
         let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
         let isSoldAway: (String?) -> Bool = { candidate in
             guard let candidate else { return false }
@@ -346,10 +388,16 @@ final class IdentitiesViewModel: ObservableObject {
         // a KNOWN-departed label falls through to the next candidate.
         // (Scalars are still trusted while the label cache is empty —
         // they double as the hydration fallback.)
-        let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
-            ? nil
-            : identity.mainDpnsName?.nonEmptyString
+        let isRejected: (String?) -> Bool = { candidate in
+            guard let candidate else { return false }
+            return rejected.contains(DWContestedNameStatusService.dpnsKey(candidate))
+        }
+        // `ownedMainDpnsName` also drops a pick whose name moved to another
+        // identity on this device, which leaves no departed row here.
+        let pickedName = identity.ownedMainDpnsName?.nonEmptyString
+        let mainName = isPending(pickedName) || isRejected(pickedName) ? nil : pickedName
         let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
+            || isRejected(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
         let displayedName = mainName ?? preferredName ?? ownedNames.first

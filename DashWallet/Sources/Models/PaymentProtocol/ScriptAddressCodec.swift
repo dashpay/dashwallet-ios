@@ -191,7 +191,9 @@ enum ScriptAddressCodec {
     }
 
     /// Inverse of `base58Encode`; returns `nil` on any non-alphabet character.
-    private static func base58Decode(_ string: String) -> Data? {
+    /// Not private: the voting-key screen decodes a pasted key with it to say
+    /// what is wrong with it.
+    static func base58Decode(_ string: String) -> Data? {
         let input = Array(string.utf8)
         var leadingZeros = 0
         while leadingZeros < input.count, input[leadingZeros] == base58Alphabet[0] { leadingZeros += 1 }

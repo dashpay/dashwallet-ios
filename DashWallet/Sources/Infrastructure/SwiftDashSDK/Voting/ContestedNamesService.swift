@@ -110,6 +110,14 @@ final class ContestedNamesService {
     ///   never contested, or the poll has been pruned since it resolved.
     func voteState(normalizedLabel: String) async throws -> DPNSContestVoteState? {
         let sdk = try requireSDK()
+        // FIXME(sdk): this blocks the main thread. `SDK.dpnsContestVoteState`
+        // is a synchronous `@MainActor` method around a blocking FFI call that
+        // goes to an evonode, so the round-trip runs on the main thread and the
+        // UI freezes until it answers — opening "Request details" hangs the app
+        // for seconds. It cannot be fixed here: the method's isolation forbids
+        // calling it off the main actor. The fix belongs in swift-sdk, where
+        // `dpnsActiveContests` in the same file already shows the shape
+        // (continuation + a dedicated GCD queue).
         return try sdk.dpnsContestVoteState(normalizedLabel: normalizedLabel)
     }
 
@@ -118,6 +126,7 @@ final class ContestedNamesService {
     /// instead of after a long broadcast retry.
     func contestIsOpen(normalizedLabel: String) async throws -> Bool {
         let sdk = try requireSDK()
+        // Same main-thread problem as `voteState`, same place to fix it.
         return try sdk.dpnsContestIsOpen(normalizedLabel: normalizedLabel)
     }
 

@@ -21,6 +21,9 @@ class SchemaReleaseTest < Minitest::Test
     def file(*_args)
       SchemaRelease.json(@registry)
     end
+    def platform_branch
+      "trunk-dev"
+    end
     def dispatch(id, commit)
       @dispatches << [id, commit]
     end
@@ -295,7 +298,7 @@ class SchemaReleaseTest < Minitest::Test
     with_platform do |dir|
       path = File.join(dir, SchemaRelease::REGISTRY)
       missing_merge = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
-      assert_includes missing_merge.message, "dashpay/platform:v4.2-dev"
+      assert_includes missing_merge.message, "dashpay/platform:trunk-dev"
       merge_release
       missing_checkout = assert_raises(SchemaRelease::Error) { @pipeline.gate(dir) }
       assert_includes missing_checkout.message, "missing from the selected Platform commit"
@@ -610,14 +613,15 @@ class SchemaGitHubRequestTest < Minitest::Test
 
   def setup
     @api = SchemaRelease::GitHub.new("private-test-token")
-    @calls, @sleeps = [], []
+    @calls, @sleeps, @requests = [], [], []
   end
 
   def with_responses(outcomes)
-    calls = @calls
+    calls, requests = @calls, @requests
     http = Struct.new(:max_retries).new
     http.define_singleton_method(:request) do |request|
       calls << request.method
+      requests << request
       raise "Net::HTTP retry budget was not disabled" unless max_retries == 0
       outcome = outcomes.fetch(calls.length - 1)
       raise outcome if outcome.is_a?(Exception)
@@ -703,6 +707,35 @@ class SchemaGitHubRequestTest < Minitest::Test
         SchemaRelease.main(["gate", "--platform-dir", "/unused"], { "SCHEMA_RELEASE_TOKEN" => token })
       end
       assert_includes error.message, "Add the Actions secret"
+    end
+  end
+
+  def test_platform_branch_is_read_once_from_platform_default_branch_and_used_for_dispatch
+    with_responses([Response.new("200", '{"default_branch":"v5.0-dev"}'), Response.new("204", "")]) do
+      assert_equal "v5.0-dev", @api.platform_branch
+      assert_equal "v5.0-dev", @api.platform_branch
+      @api.dispatch("release", "a" * 40)
+    end
+    assert_equal %w[GET POST], @calls
+    assert_equal "/repos/dashpay/platform", @requests.first.path
+    assert_equal "v5.0-dev", JSON.parse(@requests.last.body).fetch("ref")
+  end
+
+  def test_missing_or_unsafe_platform_default_branch_is_rejected
+    ['{}', '{"default_branch":""}', '{"default_branch":"../v5.0-dev"}'].each do |body|
+      @api = SchemaRelease::GitHub.new("private-test-token")
+      @calls.clear
+      with_responses([Response.new("200", body)]) do
+        error = assert_raises(SchemaRelease::Error) { @api.platform_branch }
+        assert_includes error.message, "default branch"
+      end
+    end
+    @api = SchemaRelease::GitHub.new("private-test-token")
+    @calls.clear
+    with_responses([Response.new("403", "")]) do
+      error = assert_raises(SchemaRelease::Error) { @api.platform_branch }
+      refute_kind_of SchemaRelease::HTTPError, error
+      assert_includes error.message, "SCHEMA_RELEASE_TOKEN"
     end
   end
 

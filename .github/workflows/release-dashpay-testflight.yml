@@ -2,7 +2,7 @@ name: Release dashpay to TestFlight
 
 run-name: >-
   dashpay ${{ inputs.release_channel }} TestFlight from ${{ inputs.wallet_ref }}
-  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref }})
+  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || 'default branch' }})
 
 on:
   workflow_dispatch:
@@ -13,9 +13,9 @@ on:
         default: develop
         type: string
       platform_ref:
-        description: "dashpay/platform branch, tag, or commit SHA"
-        required: true
-        default: v5.0-dev
+        description: "dashpay/platform branch, tag, or commit SHA — blank uses dashpay/platform's default branch"
+        required: false
+        default: ""
         type: string
       dashuikit_ref:
         description: "dashpay/DashUIKit branch, tag, or full commit SHA — blank uses the pin committed in Package.resolved"
@@ -213,6 +213,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: dashpay/platform
+          # Blank checks out Platform's default branch, so a renamed dev branch needs no edit here.
           ref: ${{ inputs.platform_ref }}
           path: platform
           # Frozen models are regenerated from historical source commits.
@@ -859,7 +860,7 @@ jobs:
           WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
-          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
+          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref || 'default branch' }}
           REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
           LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
           LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
