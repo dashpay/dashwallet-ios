@@ -178,23 +178,28 @@ final class IdentitiesViewModel: ObservableObject {
         guard row.dpnsNames.contains(where: { DWContestedNameStatusService.labelsMatch($0, name) }) else {
             return
         }
-        // A manual pick overrides any promotion still waiting for the
-        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
-        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: row.identityId)
-        PersistentIdentity.updateMainDpnsName(
-            in: container.mainContext,
-            identityId: row.identityId,
-            mainDpnsName: name)
+        let context = container.mainContext
+        guard let identity = PersistentIdentity.fetch(in: context, identityId: row.identityId) else {
+            errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            return
+        }
+        let previousName = identity.mainDpnsName
+        PersistentIdentity.updateMainDpnsName(in: context, identityId: row.identityId, mainDpnsName: name)
         do {
-            try container.mainContext.save()
+            try context.save()
         } catch {
-            // An unsaved pick shows until relaunch and then reverts.
-            container.mainContext.rollback()
-            DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(error)")
-            errorMessage = error.localizedDescription
+            // An unsaved pick would show until relaunch and then revert.
+            // Core Data errors carry paths and stored values: codes only.
+            identity.mainDpnsName = previousName
+            let codes = WalletPreparationFailure(error: error).codes.joined(separator: ",")
+            DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(codes)")
+            errorMessage = NSLocalizedString("Something went wrong", comment: "")
             reload()
             return
         }
+        // A manual pick overrides any promotion still waiting for the
+        // persister (see `DWCurrentUserIdentityInfo.promoteToMainName`).
+        DWCurrentUserIdentityInfo.discardPendingMainName(identityId: row.identityId)
         if row.isMainIdentity {
             _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
         }
