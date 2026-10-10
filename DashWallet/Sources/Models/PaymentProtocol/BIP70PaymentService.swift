@@ -90,7 +90,7 @@ struct PreparedSend: Equatable {
     /// Foundation-only. nil in test fakes. Excluded from equality.
     let sdkTransaction: AnyObject?
     /// The wallet the transaction was built for and the chain it was built
-    /// on (opaque to this layer), so a broadcast outcome reported later is
+    /// on (a plain Foundation value), so a broadcast outcome reported later is
     /// booked under them even if another wallet or chain is bound by then.
     /// nil in test fakes. Excluded from equality.
     let origin: WalletChainScope?

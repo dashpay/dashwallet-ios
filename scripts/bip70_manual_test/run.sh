@@ -20,6 +20,7 @@ swiftc \
   "$SRC/PaymentRequestVerifier.swift" \
   "$SRC/PaymentProtocolTransport.swift" \
   "$SRC/BIP70Error.swift" \
+  "$SRC/../Transactions/WalletChainScope.swift" \
   "$SRC/ScriptAddressCodec.swift" \
   "$SRC/BIP70PaymentService.swift" \
   "$SRC/BIP70URI.swift" \

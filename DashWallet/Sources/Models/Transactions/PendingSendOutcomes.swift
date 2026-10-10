@@ -21,23 +21,7 @@ import os
 import SwiftDashSDK
 import UIKit
 
-/// A wallet on one chain: the wallet id and the chain's persistence scope
-/// (`Network.persistenceScope`: "mainnet", "testnet", or "devnet-<name>").
-///
-/// A seed's wallet id differs between mainnet, testnet and devnet
-/// (key-wallet folds the network into it), but it is the same on every
-/// named devnet, while each devnet has its own transaction store. So on a
-/// devnet the wallet id alone does not say whose rows, sends or coins
-/// something is; the chain does.
-///
-/// What a send is signed under (read in the same main-actor hop as its
-/// build), what a followed send is kept under, and what the Home pending
-/// caption is read for.
-struct WalletChainScope: Equatable, Hashable {
-    let walletId: Data
-    /// `Network.persistenceScope` of the chain.
-    let chain: String
-
+extension WalletChainScope {
     /// The wallet the host has bound and the scope its store was opened
     /// for (`SwiftDashSDKHost.runningPersistenceScope`, a stored fact of the
     /// running host, not the devnet configuration of the moment); nil when
