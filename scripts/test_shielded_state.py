@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="shielded-state-tests-") as directory:
     tests = package / "Tests" / "ShieldedBalanceHarnessTests"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
-    names = ["ShieldedBalanceController", "ShieldedRecoveryController", "PlatformBalanceController", "HomeBalancePresentation"]
+    names = ["ShieldedBalanceController", "ShieldedRecoveryController", "PlatformBalanceController", "HomeBalancePresentation", "ShieldedProverWarmup"]
     if args.sdk_path:
         names.append("PlatformBalanceReader")
     for name in names:
