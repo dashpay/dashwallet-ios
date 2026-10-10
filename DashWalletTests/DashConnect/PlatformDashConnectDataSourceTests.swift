@@ -1650,6 +1650,53 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertTrue(grant.hasDeletableResponse)
     }
 
+    func testAGrantIsFoundAgainAfterTheStoreRoundTrip() {
+        // A wall-clock date does not survive the millisecond round trip bit
+        // for bit, so whole-value equality misses the stored record about
+        // half the time; the grant key does not depend on the date.
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+        for offset in 0 ..< 200 {
+            let grant = AppConnectGrant(
+                identityId: "identity", appContractId: "app", documentId: nil,
+                values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+                sessionKeyId: 6, totalBudget: nil, expiresAt: nil,
+                publishedAt: Date(timeIntervalSince1970: 1_791_539_765.792_813 + Double(offset) * 0.000_137))
+            store.save([grant])
+            XCTAssertEqual(store.load().first?.key, grant.key)
+        }
+    }
+
+    func testARowThisBuildCannotReadIsKeptWhenTheStoreIsSaved() throws {
+        let stored = """
+        [{"somethingNewer":true,"sessionKeyId":4},
+         {"identityId":"identity","appContractId":"app","documentId":"document",
+          "values":{"appEphemeralPubKeyHash":"aa","walletEphemeralPubKey":"bb","encryptedPayload":"cc"},
+          "sessionKeyId":6,"publishedAt":1791539765792}]
+        """
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        XCTAssertEqual(store.load().map(\.sessionKeyId), [6])
+        store.save(store.load() + [Self.grant(sessionKeyId: 7)])
+        XCTAssertEqual(store.load().map(\.sessionKeyId), [6, 7])
+
+        let rows = try XCTUnwrap(
+            JSONSerialization.jsonObject(
+                with: try XCTUnwrap(defaults.data(forKey: "scope.app-connect-responses.v1"))) as? [[String: Any]])
+        XCTAssertEqual(rows.filter { $0["somethingNewer"] as? Bool == true }.count, 1)
+
+        // Clearing the readable grants must not clear the unreadable row.
+        store.save([])
+        XCTAssertNotNil(defaults.data(forKey: "scope.app-connect-responses.v1"))
+    }
+
+    func testAGrantedKeyMissingFromTheIdentityViewIsReportedNotAssumedGone() {
+        let grants = [9, 13].map { Self.grant(sessionKeyId: $0) }
+        let keys = [Self.key(keyId: 9, data: Data([9]), disabledAt: 1)]
+        XCTAssertEqual(AppConnect.sessionKeyIdsMissing(from: keys, for: grants), [13])
+        XCTAssertEqual(AppConnect.sessionKeyIdsMissing(from: keys, for: [grants[0]]), [])
+    }
+
     func testAGrantHasNothingToDeleteBeforeItIsPublishedOrAfterItsResponseIsGone() {
         var grant = Self.grant(sessionKeyId: 6)
         XCTAssertTrue(grant.hasDeletableResponse)

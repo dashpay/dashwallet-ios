@@ -87,11 +87,11 @@ struct ConnectionRow: View {
     }
 
     /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. Turning it off
-    /// downgrades the connection back to `.approved`. For a one-QR connection
-    /// the data source first disables the app's key on the identity, which is
-    /// what ends the app's access; for a two-QR connection the change is local
-    /// and the app keeps its keys (see `DashConnectDataSource.disconnect`).
+    /// only the off direction is reachable from here. What turning it off does
+    /// depends on the login that made the connection (see
+    /// `DashConnectDataSource.disconnect`): a one-QR connection has the app's
+    /// key disabled on the identity and its row removed; a two-QR connection
+    /// is downgraded to `.approved` locally and the app keeps its keys.
     private var activeSwitch: some View {
         ZStack {
             SwitchView(isOn: .constant(true))

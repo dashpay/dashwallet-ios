@@ -8,8 +8,9 @@ import SwiftDashSDK
 /// encrypted key to the App Connect system contract. There is no `dash-st:`
 /// step.
 ///
-/// Everything here is pure; `PlatformDashConnectDataSource` owns the Platform
-/// calls and their order.
+/// `AppConnect` holds the rules and is pure; `PlatformDashConnectDataSource`
+/// owns the Platform calls and their order. The grant records and their
+/// `UserDefaults` store are at the end of the file.
 enum AppConnect {
     /// The protocol version that registers the App Connect system contract.
     /// Below it the contract does not exist and the two-QR login is the only
@@ -120,6 +121,18 @@ enum AppConnect {
             .sorted()
     }
 
+    /// Granted session keys the given view of the identity does not contain.
+    /// Platform never removes a key, it only disables it, so a missing id
+    /// means the view is out of date — not that the key is gone. A disconnect
+    /// must stop on these instead of treating them as dealt with.
+    static func sessionKeyIdsMissing(
+        from currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        for grants: [AppConnectGrant]
+    ) -> [UInt32] {
+        let known = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        return Set(grants.map(\.sessionKeyId)).subtracting(known).sorted()
+    }
+
     /// The three values of a `loginKeyResponse`, as hex.
     struct ResponseValues: Codable, Equatable {
         let appEphemeralPubKeyHash: String
@@ -223,6 +236,14 @@ struct AppConnectGrant: Codable, Equatable {
     /// response; the record then only waits for that delete.
     var keyDisabled: Bool?
 
+    /// What makes two records the same grant: one session key given for one
+    /// request. Records are matched on this, never on whole-value equality —
+    /// `publishedAt` does not survive the store's millisecond round trip bit
+    /// for bit.
+    var key: String {
+        [identityId, appContractId, String(sessionKeyId), values.appEphemeralPubKeyHash].joined(separator: "|")
+    }
+
     /// Whether there is a response on Platform this record can still delete.
     var hasDeletableResponse: Bool {
         documentId != nil && responseDeleted != true
@@ -274,31 +295,53 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     }
 
     func load() -> [AppConnectGrant] {
-        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return [] }
-        do {
-            return try decoder.decode([AppConnectGrant].self, from: data)
-        } catch {
-            // Without the records the keys they named can no longer be told
-            // apart on the identity. A one-QR row whose records are gone
-            // refuses to disconnect (`grantRecordsMissing`) instead of
-            // pretending the key was disabled.
-            Self.logger.warning(
-                "AppConnectResponseStore: stored responses could not be decoded: \(error.localizedDescription, privacy: .public)")
-            return []
-        }
+        readRows().grants
     }
 
     func save(_ grants: [AppConnectGrant]) {
         guard let storageKey else { return }
-        guard !grants.isEmpty else {
+        // Rows this build cannot read are written back untouched: each one is
+        // the only record of a key on the identity, and dropping it would
+        // leave that key impossible to find.
+        let unreadable = readRows().unreadable
+        guard !grants.isEmpty || !unreadable.isEmpty else {
             defaults.removeObject(forKey: storageKey)
             return
         }
         do {
-            defaults.set(try encoder.encode(grants), forKey: storageKey)
+            let encoded = try grants.map { try JSONSerialization.jsonObject(with: encoder.encode($0)) }
+            defaults.set(
+                try JSONSerialization.data(withJSONObject: encoded + unreadable),
+                forKey: storageKey)
         } catch {
             Self.logger.error(
-                "AppConnectResponseStore: failed to encode responses: \(error.localizedDescription, privacy: .public)")
+                "AppConnectResponseStore: failed to encode grants: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Decodes row by row, like `UserDefaultsDashConnectStore`, so one
+    /// unreadable row costs one record instead of all of them.
+    private func readRows() -> (grants: [AppConnectGrant], unreadable: [Any]) {
+        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], []) }
+        guard let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
+            Self.logger.error("AppConnectResponseStore: stored value is not a JSON array; left in place")
+            return ([], [])
+        }
+        var grants: [AppConnectGrant] = []
+        var unreadable: [Any] = []
+        for row in rows {
+            if JSONSerialization.isValidJSONObject(row),
+               let rowData = try? JSONSerialization.data(withJSONObject: row),
+               let grant = try? decoder.decode(AppConnectGrant.self, from: rowData) {
+                grants.append(grant)
+            } else {
+                unreadable.append(row)
+            }
+        }
+        if !unreadable.isEmpty {
+            Self.logger.warning(
+                "AppConnectResponseStore: \(unreadable.count, privacy: .public) stored grant(s) could not be read; kept as stored")
+        }
+        return (grants, unreadable)
     }
 }

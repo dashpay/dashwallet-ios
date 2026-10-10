@@ -73,6 +73,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case unsupportedStateTransition(String)
     case sessionKeyUnusable
     case grantRecordsMissing
+    case identityKeysOutOfDate
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -120,6 +121,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "The scanned token purchase targets a different identity."
         case .tokenPurchaseTokenIdMismatch:
             return "The scanned token purchase names a token that does not belong to the contract and position it would buy from."
+        case .identityKeysOutOfDate:
+            return NSLocalizedString(
+                "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.",
+                comment: "DashConnect")
         case .grantRecordsMissing:
             return NSLocalizedString(
                 "This wallet has no record of the key it gave this app, so it cannot turn it off here.",
@@ -483,7 +488,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         if AppConnect.isAvailable(protocolVersion: protocolVersion) {
             Self.logger.info("🔗 DASHCONNECT :: authorized; protocol \(protocolVersion, privacy: .public), one-QR login")
-            return try await approveAppConnectLogin(request, context: context)
+            // The PIN prompt can outlast a wallet or identity switch, and this
+            // path puts a spend-capable key on the identity: sign with what is
+            // active now, and only if it is still the identity that was shown.
+            let authorized = try await requireContext()
+            guard authorized.identityId == context.identityId else {
+                throw DashConnectPlatformError.noIdentity
+            }
+            return try await approveAppConnectLogin(request, context: authorized)
         }
         Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
 
@@ -741,7 +753,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse published")
 
         updateGrants { grants in
-            guard let index = grants.firstIndex(of: grant) else { return }
+            guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
             grants[index].documentId = documentId.toBase58String()
         }
         return connection
@@ -795,7 +807,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     signer: signer
                 )
                 updateGrants { grants in
-                    guard let index = grants.firstIndex(of: grant) else { return }
+                    guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
                     if grants[index].keyDisabled == true {
                         grants.remove(at: index)
                     } else {
@@ -1177,8 +1189,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let currentPublicKeys = try context.wallet
             .managedIdentity(identityId: context.identityId)
             .getPublicKeys()
+        let granted = responseStore.load().filter(isGranted)
+        guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: granted).isEmpty else {
+            // A granted key the local view does not know cannot be shown to
+            // be disabled, so nothing is reported as turned off.
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
         let keyIds = AppConnect.sessionKeyIdsToDisable(
-            for: responseStore.load().filter(isGranted),
+            for: granted,
             currentIdentityPublicKeys: currentPublicKeys
         )
         if !keyIds.isEmpty {
