@@ -229,6 +229,14 @@ extension DWBasePayViewController {
             },
             onSendCompleted: onSendCompleted)
         let host = UIHostingController(rootView: screen)
+        // Kept set after the amount step is gone: it answers false then, and a
+        // later send from this controller gets the HUD instead.
+        sendInProgressHandler = { [weak viewModel, weak host] inProgress in
+            guard let viewModel, let host, host.navigationController != nil else { return false }
+            // The amount step shows the progress and closes its own ways out.
+            viewModel.setSendingCore(inProgress)
+            return true
+        }
         navigationController?.pushViewController(host, animated: true)
     }
 

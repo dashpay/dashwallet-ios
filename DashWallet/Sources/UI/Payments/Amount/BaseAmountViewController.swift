@@ -55,6 +55,44 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal let model: BaseAmountModel
 
+    /// From the tap that submits the amount to its outcome: the amount and the
+    /// keypad take no input — touch or a hardware keyboard, whose text field
+    /// is resigned and disabled — the action button keeps its spinner and
+    /// stays disabled through validation updates, and a second submission is
+    /// refused.
+    /// Ended by `hideActivityIndicator()`, which the payment flow calls with
+    /// the outcome.
+    private(set) var isSubmissionInFlight = false
+
+    /// Idempotent: a retry from the confirm sheet starts another broadcast of
+    /// the same submission.
+    internal func beginSubmission() {
+        guard !isSubmissionInFlight else { return }
+        isSubmissionInFlight = true
+        amountView?.isUserInteractionEnabled = false
+        keyboardContainer?.isUserInteractionEnabled = false
+        _ = amountView?.amountInputControl.resignFirstResponder()
+        amountView?.amountInputControl.textField.isEnabled = false
+        actionButton?.isEnabled = false
+        super.showActivityIndicator()
+    }
+
+    override func hideActivityIndicator() {
+        let wasInFlight = isSubmissionInFlight
+        isSubmissionInFlight = false
+        amountView?.isUserInteractionEnabled = true
+        keyboardContainer?.isUserInteractionEnabled = true
+        amountView?.amountInputControl.textField.isEnabled = true
+        super.hideActivityIndicator()
+        actionButton?.isEnabled = model.isAllowedToContinue
+        // Input back on the screen when it is the one showing — not under the
+        // confirm sheet, which stays up after a retryable failure.
+        if wasInFlight, viewIfLoaded?.window != nil, presentedViewController == nil,
+           navigationController?.presentedViewController == nil {
+            _ = amountView?.becomeFirstResponder()
+        }
+    }
+
     private func maxButtonAction() {
         model.selectAllFunds()
     }
@@ -96,13 +134,17 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     private func amountDidChange() {
-        actionButton?.isEnabled = model.isAllowedToContinue
+        actionButton?.isEnabled = model.isAllowedToContinue && !isSubmissionInFlight
         amountView.amountInputControl.reloadData()
         showErrorIfNeeded()
     }
 
     internal func show(error: Error) {
-        hideActivityIndicator()
+        // A validation message during a submission leaves it running: only the
+        // submission's outcome ends it.
+        if !isSubmissionInFlight {
+            hideActivityIndicator()
+        }
         present(error: error)
     }
 
@@ -141,8 +183,10 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        actionButton?.isEnabled = model.isAllowedToContinue
-        amountView.becomeFirstResponder()
+        actionButton?.isEnabled = model.isAllowedToContinue && !isSubmissionInFlight
+        if !isSubmissionInFlight {
+            amountView.becomeFirstResponder()
+        }
         showErrorIfNeeded()
     }
 
@@ -267,20 +311,25 @@ extension BaseAmountViewController: AmountInputControlDelegate {
         model.isCurrencySelectorHidden
     }
 
+    /// Ignored during a submission: the confirmed amount is what is sent.
     func updateInputField(with replacementText: String, in range: NSRange) {
+        guard !isSubmissionInFlight else { return }
         model.updateInputField(with: replacementText, in: range)
     }
 
     func amountInputControlDidSwapInputs() {
+        guard !isSubmissionInFlight else { return }
         model.amountInputControlDidSwapInputs()
         amountView.inputTypeSwitcher.reloadData()
     }
 
     func amountInputControlChangeCurrencyDidTap() {
+        guard !isSubmissionInFlight else { return }
         showCurrencyList()
     }
 
     func amountInputWantToPasteFromClipboard() {
+        guard !isSubmissionInFlight else { return }
         model.pasteFromClipboard()
     }
 }

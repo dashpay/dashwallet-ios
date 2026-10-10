@@ -213,7 +213,7 @@ class ToolsMenuViewModel: ObservableObject {
     func performCoinJoinSweep() async {
         DWLogger.log("ToolsMenuViewModel: sweep invoked from Tools menu (\(coinJoinLeftoverFormatted))")
         do {
-            _ = try await WalletSendService.shared.sweepCoinJoin()
+            _ = try await WalletSendService.shared.sweepCoinJoin(onNetworkWait: WindowProgressHUD.showMovingFunds)
         } catch {
             DWLogger.log("ToolsMenuViewModel: sweep failed: \(error)")
             // Auth-cancel is an expected no-op (nil message); a real failure

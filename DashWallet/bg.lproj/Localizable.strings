@@ -6755,3 +6755,8 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
+"Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";
+/* Notice: the user tried to switch tabs or open a notification while a payment or its result was on screen; nothing changed */
+"Finish or close the current screen first." = "Finish or close the current screen first.";

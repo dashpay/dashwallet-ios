@@ -33,11 +33,11 @@ protocol AppStateProvider: AnyObject {
 }
 
 /// Production provider over `UIApplication.shared.applicationState`, which
-/// is main-actor state — read through `SwiftDashSDKWalletSource.onMain`, so a
+/// is main-actor state — read through `MainThread.sync`, so a
 /// producer's background thread hops to the main thread first.
 final class UIApplicationStateProvider: AppStateProvider {
     var isApplicationActive: Bool {
-        SwiftDashSDKWalletSource.onMain { UIApplication.shared.applicationState == .active }
+        MainThread.sync { UIApplication.shared.applicationState == .active }
     }
 }
 
@@ -563,7 +563,7 @@ final class TransactionNotificationProducer {
         // uses, through the same main-thread trampoline: the
         // handles are read on the main actor, the DAO's own SQLite connection
         // serializes the query from whatever executor the scan landed on.
-        let handles: (walletId: Data, networkRaw: Int64)? = SwiftDashSDKWalletSource.onMain {
+        let handles: (walletId: Data, networkRaw: Int64)? = MainThread.sync {
             guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
                   let network = SwiftDashSDKHost.shared.runningNetwork else {
                 return nil

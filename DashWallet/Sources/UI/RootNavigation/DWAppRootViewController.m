@@ -101,6 +101,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
+    // Routing a deep link dismisses everything presented: never over what is
+    // on screen.
+    if ([DWPaymentInFlight refusesLinkOverRoot:self]) {
+        return;
+    }
+
     [self.mainController handleDeeplink:url definedUsername:nil];
 }
 #endif
@@ -117,6 +123,15 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     DWURLAction *action = [DWURLParser actionForURL:url];
+
+    // A link that would dismiss or replace what is on screen is refused with
+    // a notice while a send waits or anything is presented. An integration's
+    // sign-in callback replaces nothing and must not wait (its code expires);
+    // an unsupported URL (no action) only gets an alert.
+    if (action.replacesScreen && [DWPaymentInFlight refusesLinkOverRoot:self]) {
+        return;
+    }
+
     if (!action) {
         UIAlertController *alert = [UIAlertController
             alertControllerWithTitle:NSLocalizedString(@"Unsupported URL", nil)
@@ -182,6 +197,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    // The refusal notice sits above the keyboard, so it follows the keyboard
+    // from launch.
+    [DWPaymentInFlight prepareRefusalNotices];
 
     self.view.backgroundColor = [UIColor dw_backgroundColor];
 
@@ -271,6 +290,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             return;
         }
 
+        // The old network's sends are torn down with it.
+        [DWPaymentInFlight abandonHolds];
+
         // reset main controller stack
         strongSelf->_mainController = nil;
 
@@ -346,6 +368,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    // The wiped wallet's sends are torn down with it.
+    [DWPaymentInFlight abandonHolds];
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -392,6 +416,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
     self.walletWipeInProgress = YES;
+    // The wiped wallet's sends are torn down with it.
+    [DWPaymentInFlight abandonHolds];
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController

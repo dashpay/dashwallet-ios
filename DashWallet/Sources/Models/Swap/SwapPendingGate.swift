@@ -38,12 +38,36 @@ final class SwapPendingGate {
     private var pendingTxidWire: Data?
     private var registeredAt: Date?
     private var observer: NSObjectProtocol?
+    /// A swap deposit is being broadcast. The broadcast waits for the network
+    /// (up to about a minute) with the UI live, and `register` only runs once
+    /// it returns, so this closes the gap in between.
+    private var submitting = false
 
-    private init() {}
+    /// `shared` in the app; tests make their own.
+    init() {}
 
-    /// True while a previously-broadcast swap tx is still awaiting its InstantSend lock.
-    var isAwaitingISLock: Bool {
+    deinit {
+        if let observer { NotificationCenter.default.removeObserver(observer) }
+    }
+
+    /// Claim the one swap-submission slot before broadcasting a deposit; pair
+    /// with `endSubmission()`. False while another deposit is being broadcast
+    /// or is still awaiting its InstantSend lock.
+    func beginSubmission() -> Bool {
         lock.lock(); defer { lock.unlock() }
+        guard !submitting, !isAwaitingISLockLocked() else { return false }
+        submitting = true
+        return true
+    }
+
+    func endSubmission() {
+        lock.lock(); defer { lock.unlock() }
+        submitting = false
+    }
+
+    /// True while a previously-broadcast swap tx is still awaiting its
+    /// InstantSend lock. Must be called with `lock` held.
+    private func isAwaitingISLockLocked() -> Bool {
         guard pendingTxidWire != nil, let registeredAt else { return false }
         if Date().timeIntervalSince(registeredAt) > timeout {
             clearLocked()

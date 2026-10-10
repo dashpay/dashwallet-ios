@@ -398,9 +398,29 @@ extension TransferAmountViewModel: TransferAmountModelDelegate {
         syncCanContinue()
     }
 
+    /// `isProcessing` stays true: the wallet send this hands to the host owns
+    /// the screen until its outcome is reported (`walletPaymentDidEnd()`). The
+    /// host's window HUD blocks touches only, so the keypad's hardware-keyboard
+    /// input and Return are what this keeps off — a second Return would start
+    /// a second transfer.
     func initiatePayment(with input: DWPaymentInput) {
+        guard let onInitiatePayment else {
+            isProcessing = false
+            return
+        }
+        onInitiatePayment(input)
+    }
+
+    /// The wallet send's broadcast started; normally `isProcessing` is still
+    /// true from `transfer()`.
+    func walletPaymentDidStart() {
+        isProcessing = true
+    }
+
+    /// The wallet send started by `initiatePayment(with:)` reported its
+    /// outcome — sent, failed or cancelled — and the screen takes input again.
+    func walletPaymentDidEnd() {
         isProcessing = false
-        onInitiatePayment?(input)
     }
 }
 

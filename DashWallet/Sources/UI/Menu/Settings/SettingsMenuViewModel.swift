@@ -342,7 +342,7 @@ class SettingsMenuViewModel: ObservableObject {
     func performCoinJoinSweep() async {
         DWLogger.log("SettingsMenuViewModel: sweep invoked from Settings menu (\(coinJoinLeftoverFormatted))")
         do {
-            _ = try await WalletSendService.shared.sweepCoinJoin()
+            _ = try await WalletSendService.shared.sweepCoinJoin(onNetworkWait: WindowProgressHUD.showMovingFunds)
         } catch {
             DWLogger.log("SettingsMenuViewModel: sweep failed: \(error)")
             // Auth-cancel is an expected no-op (nil message); a real failure

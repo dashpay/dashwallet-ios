@@ -37,7 +37,8 @@ final class WalletLifecycleOverlayPresenter {
     private let state = WalletLifecycleTransitionState.shared
     private var cancellables = Set<AnyCancellable>()
     private var openingDelay: Task<Void, Never>?
-    private var lockScreenVisible = false
+    /// The lock screen is up (`DWWalletLifecycleOverlayBridge.setLockScreenVisible`).
+    private(set) var lockScreenVisible = false
     private var applicationActive = false
     /// Set around every PIN gate a card runs (the migration card's Export
     /// Logs, the wallet-open card's Backup recovery phrase and Reset). The
@@ -138,7 +139,8 @@ final class WalletLifecycleOverlayPresenter {
         overlayWindow?.isHidden = blockedByLock || authenticationPromptVisible || !applicationActive
     }
 
-    private static func currentWindowScene() -> UIWindowScene? {
+    /// The foreground scene, or the first connected one.
+    static func currentWindowScene() -> UIWindowScene? {
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
         return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
     }

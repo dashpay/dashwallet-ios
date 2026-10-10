@@ -180,8 +180,10 @@ public final class CrowdNode {
         // sendCoins broadcasts via SwiftDashSDK and throws on failure, and the
         // follow-up signal send polls the SDK's UTXO set itself before
         // spending the top-up — no extra spendability wait is needed here.
-        return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount,
-                                                    sessionAuthSufficient: sessionAuthSufficient)
+        // Unheld, like every CrowdNode send (hidden in this release): most of
+        // its sends run with no screen waiting for them.
+        return try await sendCoinsService.sendCoinsWithoutRoutingHold(address: accountAddress, amount: amount,
+                                                                      sessionAuthSufficient: sessionAuthSufficient)
     }
 }
 
@@ -577,16 +579,7 @@ extension CrowdNode {
         // the stored account rather than resetting it. false is returned only
         // for an address that cannot belong to this wallet (not a P2PKH
         // address of the running network).
-        let owns: CrowdNodeMessageSigner.Ownership
-        if Thread.isMainThread {
-            owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
-        } else {
-            var captured: CrowdNodeMessageSigner.Ownership = .walletUnavailable
-            DispatchQueue.main.sync {
-                captured = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
-            }
-            owns = captured
-        }
+        let owns = MainThread.sync { CrowdNodeMessageSigner.ownership(of: accountAddress) }
 
         switch CrowdNode.storedAccountVerdict(ownership: owns) {
         case .alien:
@@ -704,10 +697,10 @@ extension CrowdNode {
         // Capture BEFORE broadcast: the response always postdates the request,
         // and the observer's freshness floor keys off this instant.
         let requestSentAt = Date()
-        let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
-                                                            amount: requestValue,
-                                                            inputSelector: SingleInputAddressSelector(address: accountAddress),
-                                                            sessionAuthSufficient: true)
+        let signUpTx = try await sendCoinsService.sendCoinsWithoutRoutingHold(address: CrowdNode.crowdNodeAddress,
+                                                                              amount: requestValue,
+                                                                              inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                                              sessionAuthSufficient: true)
         DWLogger.log("CrowdNode SignUp tx hash: \(Transaction.displayHex(signUpTx))")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
@@ -726,10 +719,10 @@ extension CrowdNode {
     private func acceptTerms(_ accountAddress: String) async throws {
         let requestValue = CrowdNode.apiOffset + ApiCode.acceptTerms.rawValue
         let requestSentAt = Date()
-        let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
-                                                                   amount: requestValue,
-                                                                   inputSelector: SingleInputAddressSelector(address: accountAddress),
-                                                                   sessionAuthSufficient: true)
+        let termsAcceptedTx = try await sendCoinsService.sendCoinsWithoutRoutingHold(address: CrowdNode.crowdNodeAddress,
+                                                                                     amount: requestValue,
+                                                                                     inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                                                     sessionAuthSufficient: true)
         DWLogger.log("CrowdNode Terms Accepted tx hash: \(Transaction.displayHex(termsAcceptedTx))")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
@@ -764,10 +757,10 @@ extension CrowdNode {
         DWLogger.log("CrowdNode deposit topup tx hash: \(Transaction.displayHex(topUpTx))")
 
         let requestSentAt = Date()
-        let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
-                                                             amount: min(maxSendable, amount),
-                                                             inputSelector: SingleInputAddressSelector(address: accountAddress),
-                                                             sessionAuthSufficient: true)
+        let depositTx = try await sendCoinsService.sendCoinsWithoutRoutingHold(address: CrowdNode.crowdNodeAddress,
+                                                                               amount: min(maxSendable, amount),
+                                                                               inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                                               sessionAuthSufficient: true)
         DWLogger.log("CrowdNode deposit tx hash: \(Transaction.displayHex(depositTx))")
 
         Task {
@@ -1167,7 +1160,7 @@ extension CrowdNode {
             }
 
             do {
-                let forwardTx = try await sendCoinsService.sendCoins(
+                let forwardTx = try await sendCoinsService.sendCoinsWithoutRoutingHold(
                     address: CrowdNode.crowdNodeAddress,
                     amount: CrowdNode.apiConfirmationDashAmount,
                     inputSelector: SingleInputAddressSelector(address: address),

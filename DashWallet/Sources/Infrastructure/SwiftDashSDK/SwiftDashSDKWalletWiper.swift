@@ -345,11 +345,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // needs the host's manager and model container, which
         // `handleWalletWiped(completion:)` tears down. This body runs on the wipe
         // executor's background queue, so the main hop cannot deadlock.
-        DispatchQueue.main.sync {
-            MainActor.assumeIsolated {
-                TrackedMasternodeKeyVault.wipeAllTrackedState()
-            }
-        }
+        MainThread.sync { TrackedMasternodeKeyVault.wipeAllTrackedState() }
 
         // Tear down the app-owned runtime now that all wallet material is
         // gone (stops BLAST/SPV, drops the host-owned manager/wallet, clears
