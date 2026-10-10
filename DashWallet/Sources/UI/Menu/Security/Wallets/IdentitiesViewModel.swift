@@ -180,17 +180,21 @@ final class IdentitiesViewModel: ObservableObject {
         }
         let context = container.mainContext
         guard let identity = PersistentIdentity.fetch(in: context, identityId: row.identityId) else {
+            DWLogger.log("IdentitiesViewModel: main name not set — identity \(row.idBase58) is not in the store")
             errorMessage = NSLocalizedString("Something went wrong", comment: "")
+            reload()
             return
         }
-        let previousName = identity.mainDpnsName
-        PersistentIdentity.updateMainDpnsName(in: context, identityId: row.identityId, mainDpnsName: name)
+        let previous = (name: identity.mainDpnsName, lastUpdated: identity.lastUpdated)
+        identity.mainDpnsName = name
+        identity.lastUpdated = Date()
         do {
             try context.save()
         } catch {
             // An unsaved pick would show until relaunch and then revert.
             // Core Data errors carry paths and stored values: codes only.
-            identity.mainDpnsName = previousName
+            identity.mainDpnsName = previous.name
+            identity.lastUpdated = previous.lastUpdated
             let codes = WalletPreparationFailure(error: error).codes.joined(separator: ",")
             DWLogger.log("IdentitiesViewModel: main name save failed for identity \(row.idBase58): \(codes)")
             errorMessage = NSLocalizedString("Something went wrong", comment: "")
