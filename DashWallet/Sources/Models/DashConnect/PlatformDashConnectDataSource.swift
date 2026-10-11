@@ -29,24 +29,6 @@ struct DashConnectAppMetadata: Equatable {
     let url: String
 }
 
-enum DashConnectFallbackAppMetadata {
-    // Fallback-only branding keyed by the trustworthy contract id, not the spoofable QR label.
-    private static let knownApps: [String: DashConnectAppMetadata] = [
-        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr")
-    ]
-
-    static func resolve(contractId: String, unauthenticatedLabel: String) -> DashConnectAppMetadata {
-        if let known = knownApps[contractId] {
-            return known
-        }
-
-        return DashConnectAppMetadata(
-            name: unauthenticatedLabel.trimmingCharacters(in: .whitespacesAndNewlines),
-            url: ""
-        )
-    }
-}
-
 /// `Equatable` so tests can assert which failure occurred rather than matching
 /// on its message. Matches `DashConnectMockError`, which is already declared
 /// the same way; every associated value here is itself `Equatable`, so the
@@ -308,15 +290,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         subsystem: "org.dashfoundation.dash",
         category: "dashconnect.platform-data-source")
 
-    /// The pinned TESTNET `loginKeyResponse` contract id. Compile-time
-    /// constant, so the length check can never fire at runtime.
-    static let testnetLoginKeyExchangeContractId: Data = {
-        guard let data = Data.identifier(fromBase58: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"),
-              data.count == 32 else {
-            fatalError("DashConnect loginKeyResponse contract id must be a 32-byte identifier.")
-        }
-        return data
-    }()
     static let loginKeyExchangeDocumentType = "loginKeyResponse"
 
     private let supportedNetwork: DashConnectNetwork
@@ -326,28 +299,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
 
-    /// The DashConnect network matching the app's current network selection —
-    /// what the default data source serves. Mainnet maps to `.mainnet` for
-    /// completeness, but the real data source is never constructed there
-    /// (the feature is unavailable on mainnet; the mock is used instead).
-    static func currentEnvironmentNetwork() -> DashConnectNetwork {
-        switch WalletEnvironment.networkKind {
-        case .mainnet: return .mainnet
-        case .testnet: return .testnet
-        case .devnet: return .devnet
-        }
-    }
-
+    /// `supportedNetwork` defaults to the app's current network. The real data
+    /// source is only built for a network that has a key-exchange contract
+    /// (`DashConnectNetworkConfiguration.isAvailable(on:)`); elsewhere the
+    /// screen shows its unavailable state over the mock.
     init(
-        supportedNetwork: DashConnectNetwork = PlatformDashConnectDataSource.currentEnvironmentNetwork(),
+        supportedNetwork: DashConnectNetwork = DashConnectNetworkConfiguration.currentNetwork(),
         store: (any DashConnectStore)? = nil,
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
         now: @escaping () -> Date = Date.init
     ) {
         assert(
-            supportedNetwork == .testnet || supportedNetwork == .devnet,
-            "DashConnect Platform publish runs on testnet and devnet only.")
+            DashConnectNetworkConfiguration.isAvailable(on: supportedNetwork),
+            "DashConnect has no key-exchange contract on this network.")
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.authorizer = authorizer
@@ -1143,26 +1108,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// The `loginKeyResponse` contract id for the network this data source
-    /// serves. Testnet is pinned; devnet reads the user-entered id from
-    /// `DevnetConfiguration` and throws a normal, user-visible error when it
-    /// is absent or not a 32-byte base58 identifier — never a crash on
-    /// user input.
+    /// serves; see `DashConnectNetworkConfiguration.loginKeyExchangeContractId(for:)`.
     private func loginKeyExchangeContractId() throws -> Data {
-        switch supportedNetwork {
-        case .testnet:
-            return Self.testnetLoginKeyExchangeContractId
-        case .devnet:
-            guard let raw = DevnetConfiguration.dashConnectContractId,
-                  let data = Data.identifier(fromBase58: raw),
-                  data.count == 32 else {
-                throw DashConnectPlatformError.devnetLoginContractNotConfigured
-            }
-            return data
-        case .mainnet:
-            // Unreachable through the app (mainnet gets the mock data
-            // source); fail closed rather than publish against a guess.
-            throw DashConnectPlatformError.loginContractUnavailable
-        }
+        try DashConnectNetworkConfiguration.loginKeyExchangeContractId(for: supportedNetwork)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
@@ -1212,7 +1160,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: context missing: runningNetwork")
             throw DashConnectPlatformError.noWallet
         }
-        let expectedRuntimeNetwork: Network = supportedNetwork == .devnet ? .devnet : .testnet
+        let expectedRuntimeNetwork = DashConnectNetworkConfiguration.runtimeNetwork(for: supportedNetwork)
         guard network == expectedRuntimeNetwork else {
             Self.logger.error("🔗 DASHCONNECT :: wallet is on \(String(describing: network), privacy: .public), DashConnect here expects \(String(describing: expectedRuntimeNetwork), privacy: .public)")
             throw DashConnectPlatformError.unsupportedRuntimeNetwork(network)
@@ -1237,9 +1185,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     private func resolveAppMetadata(for request: DashKeyRequest, sdk: SDK) async -> DashConnectAppMetadata {
         let contractId = request.contractId.toBase58String()
-        let fallback = DashConnectFallbackAppMetadata.resolve(
+        let fallback = DashConnectNetworkConfiguration.appMetadata(
             contractId: contractId,
-            unauthenticatedLabel: request.label
+            unauthenticatedLabel: request.label,
+            on: request.network
         )
 
         do {
