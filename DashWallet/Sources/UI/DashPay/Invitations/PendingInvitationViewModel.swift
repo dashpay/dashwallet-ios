@@ -84,6 +84,9 @@ final class PendingInvitationViewModel: ObservableObject {
     /// by our own claim before the wallet has the identity, and report
     /// "already claimed" for an invitation that is being claimed.
     private let isRegistrationInFlight: @MainActor () -> Bool
+    /// Counts registration attempts seen starting. A check that began before
+    /// one and finished after it is discarded for the same reason.
+    private var registrationStarts = 0
     private var cancellables = Set<AnyCancellable>()
     private var observers: [NSObjectProtocol] = []
 
@@ -108,7 +111,7 @@ final class PendingInvitationViewModel: ObservableObject {
          isRegistrationInFlight: @escaping @MainActor () -> Bool = {
              DWIdentityRegistrationCoordinator.shared.isAttemptActive
          },
-         registrationEnded: AnyPublisher<Void, Never>? = nil,
+         registrationActivity: AnyPublisher<Bool, Never>? = nil,
          observesSyncMonitor: Bool = true,
          notReadyRetryDelay: UInt64 = 5_000_000_000) {
         self.store = store ?? .shared
@@ -138,16 +141,25 @@ final class PendingInvitationViewModel: ObservableObject {
             .sink { [weak self] in self?.discardUndeliveredOutcome() }
             .store(in: &cancellables)
 
-        // The checks skipped during a registration run when it ends, however
-        // it ends: a cancelled or failed attempt posts no status change.
-        (registrationEnded ?? DWIdentityRegistrationCoordinator.shared.$phase
+        // A registration starting marks the check in progress as overlapped.
+        // When it ends, however it ends (a cancelled or failed attempt posts
+        // no status change), the checks skipped or discarded meanwhile run
+        // afresh: a verdict from before the attempt says nothing about the
+        // voucher now.
+        (registrationActivity ?? DWIdentityRegistrationCoordinator.shared.$phase
             .map(\.isActive)
             .removeDuplicates()
-            .filter { !$0 }
-            .map { _ in }
             .eraseToAnyPublisher())
             .receive(on: RunLoop.main)
-            .sink { [weak self] in self?.validateIfPossible() }
+            .sink { [weak self] isActive in
+                guard let self else { return }
+                if isActive {
+                    self.registrationStarts += 1
+                } else {
+                    self.lastVerdict = nil
+                    self.validateIfPossible()
+                }
+            }
             .store(in: &cancellables)
 
         let center = NotificationCenter.default
@@ -295,11 +307,22 @@ final class PendingInvitationViewModel: ObservableObject {
         validationTask = task
         validationFor = invitation
         validationToken = token
+        let startsBefore = registrationStarts
         let verdict = await task.value
         if validationToken == token {
             validationTask = nil
             validationFor = nil
             validationToken = nil
+        }
+
+        // A registration began while the check ran. The query may have seen
+        // the voucher spent by our own claim before the wallet had the
+        // identity; its answer is dropped, whatever it is, and the end of
+        // the attempt starts a fresh check.
+        if registrationStarts != startsBefore || isRegistrationInFlight() {
+            refreshCardState()
+            validateIfPossible()
+            return nil
         }
 
         // The invitation may have been hidden, replaced or left behind by a

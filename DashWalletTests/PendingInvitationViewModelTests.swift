@@ -24,10 +24,12 @@ private final class ScriptedValidator {
 
     func validate(_ invitation: PendingInvitation) async -> InvitationValidation? {
         calls.append(invitation.rawLink)
+        // The answer is the one scripted when the check started.
+        let result = results[invitation.rawLink] ?? nil
         if invitation.rawLink == heldLink {
             await withCheckedContinuation { held = $0 }
         }
-        return results[invitation.rawLink] ?? nil
+        return result
     }
 
     var isHolding: Bool { held != nil }
@@ -49,7 +51,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
     private var validator: ScriptedValidator!
     private var isIneligible = false
     private var isRegistering = false
-    private var registrationEnded = PassthroughSubject<Void, Never>()
+    private var registrationActivity = PassthroughSubject<Bool, Never>()
     /// nil: every scope counts as active.
     private var activeScope: InvitationScope?
     private var rearms = 0
@@ -99,7 +101,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
             isReadyToValidate: { true },
             isSynced: { true },
             isRegistrationInFlight: { [unowned self] in self.isRegistering },
-            registrationEnded: registrationEnded.eraseToAnyPublisher(),
+            registrationActivity: registrationActivity.eraseToAnyPublisher(),
             observesSyncMonitor: false,
             notReadyRetryDelay: 1_000_000)
         viewModel.definitiveOutcomes
@@ -301,9 +303,88 @@ final class PendingInvitationViewModelTests: XCTestCase {
 
         // A cancelled PIN: the attempt ends and nothing else is posted.
         isRegistering = false
-        registrationEnded.send()
+        registrationActivity.send(false)
         await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA])
+    }
+
+    func testVerdictFromACheckOverlappingARegistrationIsDiscarded() async {
+        validator.heldLink = linkA
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { self.validator.isHolding }
+
+        // The user submits the form while the check is still on the network;
+        // the query then sees the voucher spent by that claim.
+        isRegistering = true
+        registrationActivity.send(true)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        validator.release()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertNotNil(store.pending, "our own claim must not remove the invitation")
+        XCTAssertTrue(outcomes.isEmpty)
+        XCTAssertNil(viewModel.undeliveredOutcome)
+
+        // The attempt failed without spending it: a fresh check decides.
+        validator.results[linkA] = valid
+        isRegistering = false
+        registrationActivity.send(false)
+        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        XCTAssertEqual(validator.calls, [linkA, linkA])
+        XCTAssertTrue(outcomes.isEmpty)
+    }
+
+    func testVerdictIsDiscardedWhenTheRegistrationEndedBeforeTheCheckDid() async {
+        validator.heldLink = linkA
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { self.validator.isHolding }
+
+        registrationActivity.send(true)
+        registrationActivity.send(false)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        validator.results[linkA] = valid
+        validator.release()
+
+        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        XCTAssertEqual(validator.calls, [linkA, linkA], "the overlapped answer is replaced by a fresh one")
+        XCTAssertTrue(outcomes.isEmpty)
+        XCTAssertNotNil(store.pending)
+    }
+
+    func testVerdictIsDiscardedWhileTheStartOfARegistrationIsNotYetReported() async {
+        validator.heldLink = linkA
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { self.validator.isHolding }
+
+        // The attempt is running, but its phase change has not arrived yet.
+        isRegistering = true
+        validator.results[linkA] = valid
+        validator.release()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertNotNil(store.pending)
+        XCTAssertTrue(outcomes.isEmpty)
+
+        isRegistering = false
+        registrationActivity.send(false)
+        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        XCTAssertEqual(validator.calls, [linkA, linkA])
+        XCTAssertTrue(outcomes.isEmpty)
+    }
+
+    func testCachedVerdictIsCheckedAgainWhenARegistrationEnds() async {
+        validator.results[linkA] = valid
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+
+        registrationActivity.send(true)
+        registrationActivity.send(false)
+        await settle { self.validator.calls.count == 2 }
     }
 
     // MARK: - Wipe
