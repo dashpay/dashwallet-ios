@@ -29,6 +29,10 @@ protocol SyncModel {
     var progressDidChange: ((Double) -> ())? { get set }
     var progress: Double { get }
 
+    /// See `SyncingActivityMonitor.isPersistingScannedHistory`.
+    var persistingDidChange: ((Bool) -> ())? { get set }
+    var isPersistingScannedHistory: Bool { get }
+
     func forceStartSyncingActivity()
 }
 
@@ -43,6 +47,9 @@ final class SyncModelImpl: SyncModel, ObservableObject {
     var progressDidChange: ((Double) -> ())?
     @Published private(set) var progress: Double
 
+    var persistingDidChange: ((Bool) -> ())?
+    @Published private(set) var isPersistingScannedHistory: Bool
+
     internal var reachabilityObserver: Any!
     private let syncMonitor: SyncingActivityMonitor
 
@@ -50,6 +57,7 @@ final class SyncModelImpl: SyncModel, ObservableObject {
         syncMonitor = SyncingActivityMonitor.shared
         state = syncMonitor.state
         progress = syncMonitor.progress
+        isPersistingScannedHistory = syncMonitor.isPersistingScannedHistory
         syncMonitor.add(observer: self)
 
         startNetworkMonitoring()
@@ -81,5 +89,10 @@ extension SyncModelImpl: SyncingActivityMonitorObserver {
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         self.state = state
         stateDidChage?(state)
+    }
+
+    func syncingActivityMonitorPersistingDidChange(_ isPersisting: Bool) {
+        isPersistingScannedHistory = isPersisting
+        persistingDidChange?(isPersisting)
     }
 }
