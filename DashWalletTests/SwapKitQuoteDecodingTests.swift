@@ -668,7 +668,7 @@ final class BuySwapOrderTests: XCTestCase {
         // Synced and read — but the wallet holds what may be their payouts, so it does not
         // vouch for "none arrived", and they are not let go on the provider's and the
         // chain's "nothing".
-        var wallet = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0")
+        var wallet = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0", historyPersisted: true)
         wallet.contested = resolution.contested
         for order in [first, second] {
             let walletReady = wallet.vouches(for: order, activeWalletId: "aa11", activeNetwork: "0")
@@ -753,13 +753,13 @@ final class BuySwapOrderTests: XCTestCase {
 
     func testAnotherWalletsSyncSaysNothingAboutAnOrder() {
         let order = buyOrder()   // made in wallet aa11 on network 0
-        let own = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0")
+        let own = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0", historyPersisted: true)
         XCTAssertTrue(own.vouches(for: order, activeWalletId: "aa11", activeNetwork: "0"))
         // The user switched to another, synced wallet.
-        let other = SwapTrackingService.WalletView(synced: true, walletId: "bb22", network: "0")
+        let other = SwapTrackingService.WalletView(synced: true, walletId: "bb22", network: "0", historyPersisted: true)
         XCTAssertTrue(order.isForeign(toWalletId: "bb22", network: "0"))
         XCTAssertFalse(other.vouches(for: order, activeWalletId: "bb22", activeNetwork: "0"))
-        XCTAssertFalse(SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "1")
+        XCTAssertFalse(SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "1", historyPersisted: true)
             .vouches(for: order, activeWalletId: "aa11", activeNetwork: "1"))
         // The wallet was switched while the cycle's requests were out.
         XCTAssertFalse(own.vouches(for: order, activeWalletId: "bb22", activeNetwork: "0"))
@@ -889,6 +889,41 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertEqual(SwapTrackingService.balanceAmount(" 0.000 "), 0)
         XCTAssertEqual(SwapTrackingService.balanceAmount("150.25"), Decimal(string: "150.25"))
         XCTAssertEqual(SwapTrackingService.balanceAmount(".5"), Decimal(string: "0.5"))
+        XCTAssertEqual(SwapTrackingService.balanceAmount("5."), 5)
+        XCTAssertNil(SwapTrackingService.balanceAmount(String(repeating: "9", count: 50_000) + "x"))
+    }
+
+    func testSyncDoneWithTheStoreBehindCannotLetAnUnpaidOrderGo() {
+        // The sync reports done at block 1000 and the store read succeeds — but the store
+        // has been written only part of the way, so an empty pool is not the wallet's word.
+        let order = buyOrder(id: "0xa", createdSecondsAgo: 6 * 86_400)
+        let walletId = Data([0xaa, 0x11])
+        func wallet(writtenTo height: UInt32?, of id: Data = walletId) -> SwapTrackingService.WalletView {
+            var wallet = SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0")
+            wallet.historyPersisted = SwapTrackingService.historyIsPersisted(
+                upTo: 1_000, watermark: (id, height), walletId: "aa11")
+            return wallet
+        }
+        func mayExpire(_ wallet: SwapTrackingService.WalletView) -> Bool {
+            mayLetGo(
+                sinceAgedOut: 365 * 86_400,
+                walletReady: wallet.vouches(for: order, activeWalletId: "aa11", activeNetwork: "0"),
+                lookup: .absent)
+        }
+        for behind in [wallet(writtenTo: 400), wallet(writtenTo: 999), wallet(writtenTo: nil),
+                       wallet(writtenTo: 1_000, of: Data([0xbb, 0x22]))] {
+            XCTAssertFalse(mayExpire(behind))
+        }
+        XCTAssertFalse(SwapTrackingService.historyIsPersisted(upTo: 1_000, watermark: nil, walletId: "aa11"))
+        XCTAssertFalse(SwapTrackingService.historyIsPersisted(upTo: 0, watermark: (walletId, 0), walletId: "aa11"))
+        // A wallet nobody asked about its store vouches for nothing.
+        XCTAssertFalse(mayExpire(SwapTrackingService.WalletView(synced: true, walletId: "aa11", network: "0")))
+
+        // The store catches up: the order, kept active, takes the payout that was on its
+        // way in — and only with none there would it be let go.
+        XCTAssertEqual(assignments([order], [payout("aa", secondsAgo: 5 * 86_400)]), ["0xa": "aa"])
+        XCTAssertTrue(mayExpire(wallet(writtenTo: 1_000)))
+        XCTAssertTrue(mayExpire(wallet(writtenTo: 1_001)))
     }
 
     func testAFailedWalletReadCannotLetAnUnpaidOrderGo() {

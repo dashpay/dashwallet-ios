@@ -82,15 +82,19 @@ final class SwapTrackingService {
         /// Ids of the orders a transaction in this wallet may be the payout of, without
         /// that being settled (`PayoutResolution.contested`).
         var contested: Set<String> = []
+        /// Whether the store holds this wallet's transactions up to the height its sync
+        /// reached (`historyIsPersisted`). Nil when the cycle did not ask.
+        var historyPersisted: Bool?
 
         /// Whether a decision about `order` may rest on this wallet's transactions: it is
-        /// synced, the order is not another wallet's, and it is still the active wallet
-        /// (`activeWalletId` / `activeNetwork`, read when the decision is made — the
-        /// requests in between are long enough for a switch). And the wallet has to be
+        /// synced and they are known to be in the store, not only scanned
+        /// (`historyPersisted`), the order is not another wallet's, and it is still the
+        /// active wallet (`activeWalletId` / `activeNetwork`, read when the decision is
+        /// made — the requests in between are long enough for a switch). And the wallet has to be
         /// clear about the order: with a transaction in it that may be the order's payout,
         /// "no payout arrived" is not something it says.
         func vouches(for order: SwapOrder, activeWalletId: String?, activeNetwork: String?) -> Bool {
-            synced && walletId == activeWalletId && network == activeNetwork
+            synced && historyPersisted == true && walletId == activeWalletId && network == activeNetwork
                 && !order.isForeign(toWalletId: walletId, network: network)
                 && !contested.contains(order.id)
         }
@@ -120,8 +124,9 @@ final class SwapTrackingService {
     private var visibleStatusOrderIDs: [String: Int] = [:]
 
     /// When each paced Buy order was last polled (unix s), and whether the wallet was synced
-    /// then, or its read failed; see `isDueForPoll`. In memory only — a relaunch simply polls again. An entry is
-    /// dropped once its order has ended.
+    /// then, or could not be relied on after all (`readFailed`: its read failed, or its
+    /// store was behind the sync); see `isDueForPoll`. In memory only — a relaunch simply
+    /// polls again. An entry is dropped once its order has ended.
     private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool, readFailed: Bool)] = [:]
     private let pacedPollLock = NSLock()
 
@@ -235,8 +240,32 @@ final class SwapTrackingService {
             // The wallet has to be synced for its transactions to mean anything: before
             // that a payout may simply not be visible yet. And they only mean something for
             // its own orders.
-            var wallet = await walletView()
+            let (view, scannedTip) = await walletView()
+            var wallet = view
             let due = active.filter { isDueForPoll($0, nowSeconds: nowSeconds, walletSynced: wallet.synced) }
+            // "Synced" is the network's word, and the transactions are read from the store.
+            // A decision resting on their absence needs them written there as well — asked
+            // only in a cycle with an order such a decision can come up for, after the tip
+            // was read and before the transactions are.
+            let awaitingTheWalletsWord = due.filter {
+                $0.isBuy && !$0.isForeign(toWalletId: wallet.walletId, network: wallet.network)
+                    && needsTheWalletsWord($0, nowSeconds: nowSeconds)
+            }
+            if wallet.synced, !awaitingTheWalletsWord.isEmpty {
+                let watermark = SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot()
+                let persisted = Self.historyIsPersisted(
+                    upTo: scannedTip, watermark: watermark, walletId: wallet.walletId)
+                wallet.historyPersisted = persisted
+                if !persisted {
+                    // Retried at the idle pace, not after a dormant interval.
+                    markWalletReadFailed(awaitingTheWalletsWord)
+                    let written = watermark?.height.map(String.init) ?? "unavailable"
+                    let ofThisWallet = watermark?.walletId.hexEncodedString() == wallet.walletId
+                    DWLogger.log(
+                        "SwapTrackingService: wallet store written to \(written) (this wallet's: \(ofThisWallet)),"
+                            + " synced to \(scannedTip) — the wallet does not vouch for a missing payout this cycle")
+                }
+            }
             // One wallet read per cycle serves both the orders being polled and the
             // expired ones whose payout may still turn up. The latter are only looked for
             // at the idle pace — nothing about them changes fast — and at the dormant pace
@@ -386,7 +415,7 @@ final class SwapTrackingService {
             && walletReady
             && finalStatus == .notStarted
             && order.providerDeniedAt == nil
-            && order.depositSeenAt.map { nowSeconds > $0 + order.stuckAfterSeconds } == true
+            && Self.isPastStuckThreshold(order, nowSeconds: nowSeconds)
 
         await record(
             finalStatus, for: order, answer: answer,
@@ -505,8 +534,32 @@ final class SwapTrackingService {
         await dao.update(dto: updated)
     }
 
+    /// Whether the store holds the wallet's transactions up to the height the sync reached.
+    ///
+    /// The sync state turns "done" on the network phases alone, while the transactions of
+    /// the blocks it scanned may still be on their way into the store — after a long gap
+    /// or a rescan the two can be far apart. The persisted sync height is the SDK's durable
+    /// claim that everything up to it has been written: it is stored in the same round as
+    /// the round's transactions, and held back for a wallet whose write failed. Until it
+    /// reaches the scanned tip, "no payout in the wallet" may only mean "not written yet".
+    /// A watermark that cannot be read, or belongs to another wallet, proves nothing.
+    ///
+    /// Only the decisions that rest on a missing payout need this (`WalletView.vouches`):
+    /// letting an unpaid order go, and calling one "Stuck". A wallet whose watermark stays
+    /// behind — the SDK stops advancing it for the session after a failed write — keeps
+    /// such orders as they are; payouts that are in the store are matched all the same.
+    static func historyIsPersisted(
+        upTo scannedTip: UInt32,
+        watermark: (walletId: Data, height: UInt32?)?,
+        walletId: String?
+    ) -> Bool {
+        guard scannedTip > 0, let watermark, let height = watermark.height else { return false }
+        return watermark.walletId.hexEncodedString() == walletId && height >= scannedTip
+    }
+
+    /// The cycle's wallet, and the height its sync has scanned to.
     @MainActor
-    private func walletView() -> WalletView {
+    private func walletView() -> (view: WalletView, scannedTip: UInt32) {
         let walletId = SwapOrder.currentOwnerWalletId
         // The sync state carries no wallet identity, and during a switch it still describes
         // the wallet being left. It counts only while the wallet actually bound is the
@@ -517,10 +570,12 @@ final class SwapTrackingService {
         let bound = host.wallet?.walletId.hexEncodedString()
         let isSelectedWallet = bound != nil && bound == walletId
             && host.runningNetwork != nil && host.runningNetwork == WalletEnvironment.network
-        return WalletView(
-            synced: SyncingActivityMonitor.shared.state == .syncDone && isSelectedWallet,
+        let monitor = SyncingActivityMonitor.shared
+        let view = WalletView(
+            synced: monitor.state == .syncDone && isSelectedWallet,
             walletId: walletId,
             network: SwapOrder.currentOwnerNetwork)
+        return (view, monitor.snapshot.lastTerminalBlockHeight)
     }
 
     // MARK: - Private: Letting go
@@ -531,9 +586,9 @@ final class SwapTrackingService {
     /// for good — so an order is let go only on answers, never on silence and never on
     /// elapsed time alone:
     /// - the provider has to have answered this cycle (`providerAnswered`);
-    /// - the order's own wallet has to be synced (`walletReady`): until then its payout may
-    ///   be in a wallet without being visible, and an expired unpaid order cannot claim it
-    ///   afterwards;
+    /// - the order's own wallet has to be synced and its transactions written to the store
+    ///   (`walletReady`): until then its payout may be in a wallet without being visible,
+    ///   and an expired unpaid order cannot claim it afterwards;
     /// - an unpaid order not before `settleSeconds` past its deadline — a transfer sent in
     ///   the last minutes still has to show up, at the provider or on chain;
     /// - an order whose deposit address we watch also needs that lookup to have answered
@@ -612,6 +667,19 @@ final class SwapTrackingService {
         nowSeconds > agedOutAt(order, finalStatus: finalStatus)
     }
 
+    /// Whether the provider has had the order's deposit for longer than it takes to notice it.
+    private static func isPastStuckThreshold(_ order: SwapOrder, nowSeconds: Int64) -> Bool {
+        order.depositSeenAt.map { nowSeconds > $0 + order.stuckAfterSeconds } == true
+    }
+
+    /// Whether this poll of a Buy order can come to a decision that rests on the wallet
+    /// holding no payout for it: letting it go past its window, or the "Stuck" stamp.
+    private func needsTheWalletsWord(_ order: SwapOrder, nowSeconds: Int64) -> Bool {
+        if hasAgedOut(order, nowSeconds: nowSeconds, finalStatus: order.status) { return true }
+        return order.status == .notStarted && order.providerDeniedAt == nil
+            && Self.isPastStuckThreshold(order, nowSeconds: nowSeconds)
+    }
+
     // MARK: - Private: Poll pacing
 
     /// Whether the order is polled this cycle. Every active order is, each cycle — except
@@ -631,8 +699,9 @@ final class SwapTrackingService {
     /// An order past its window cannot be let go while the wallet is syncing, so a poll made
     /// then never waits longer than `unpaidIdlePollIntervalSeconds`, and does not use up the
     /// slot of the first poll with the wallet synced — the one that can decide. A poll
-    /// whose wallet read failed (`markWalletReadFailed`) is followed at the idle pace:
-    /// not at the dormant one, and not every cycle while the read keeps failing.
+    /// whose wallet read failed, or whose store was still behind the sync
+    /// (`markWalletReadFailed`), is followed at the idle pace: not at the dormant one, and
+    /// not every cycle while that lasts.
     private func isDueForPoll(_ order: SwapOrder, nowSeconds: Int64, walletSynced: Bool) -> Bool {
         guard order.isBuy else { return true }
         let unpaid = order.status == .notStarted && order.depositSeenAt == nil
@@ -670,8 +739,8 @@ final class SwapTrackingService {
     }
 
     /// Restamps this cycle's paced polls as made without the wallet: the cycle started
-    /// with it synced and then failed to read it, and such a poll must not hold a dormant
-    /// slot against the one that can decide.
+    /// with it synced and then failed to read it, or found its store behind the sync, and
+    /// such a poll must not hold a dormant slot against the one that can decide.
     private func markWalletReadFailed(_ orders: [SwapOrder]) {
         pacedPollLock.lock()
         defer { pacedPollLock.unlock() }
@@ -711,7 +780,7 @@ final class SwapTrackingService {
     /// know and would read "0junk" or "0,5" as zero, and a negative amount is no balance.
     static func balanceAmount(_ raw: String?) -> Decimal? {
         guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines),
-              trimmed.range(of: #"^([0-9]+\.?[0-9]*|\.[0-9]+)$"#, options: .regularExpression) != nil
+              trimmed.range(of: #"\A(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)\z"#, options: .regularExpression) != nil
         else { return nil }
         return Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX"))
     }
