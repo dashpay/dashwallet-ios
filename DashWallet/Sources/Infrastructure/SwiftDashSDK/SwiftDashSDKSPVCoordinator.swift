@@ -244,6 +244,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private var switchPreparation = NetworkSwitchPreparationGate()
 
+    /// Set once a `stopSpv()` of this process failed. A client that did not
+    /// stop cleanly can keep its storage worker writing into the network's
+    /// chain store, so no store is deleted in-process afterwards (see
+    /// `rebuildChainStoreIfPending`). Never cleared: the worker lives as long
+    /// as the process does.
+    @MainActor
+    private var spvStopFailedThisSession = false
+
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
 
@@ -651,6 +659,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let appliedChainResync = await applyPendingChainResyncIfNeeded(
             for: network, dataDir: dataDir, manager: manager)
 
+        // A wallet imported from a recovery phrase since the last start: the
+        // store may be anchored above its history. Before startSpv for the
+        // same reason as the resync above.
+        let rebuiltChainStore = await rebuildChainStoreIfPending(
+            for: network, dataDir: dataDir, manager: manager,
+            storeAlreadyCleared: appliedChainResync)
+
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
             return .failure(StartError.superseded)
@@ -670,6 +685,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         if appliedChainResync {
             SPVChainResyncMarker.clear(for: network)
             Self.logger.info("🛰️ SPVCOORD :: chain resync applied on \(network.rawValue, privacy: .public)")
+        }
+
+        // Same contract as the resync marker: consumed only once the client
+        // that anchors the rebuilt store is running.
+        if rebuiltChainStore {
+            SPVChainStoreRebuild.clear(scope: network.persistenceScope)
         }
 
         runningNetwork = network
@@ -746,6 +767,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 }
                 self.lastError = error.localizedDescription
                 state = .error
+                spvStopFailedThisSession = true
                 throw StartError.stopSpv(error)
             }
         }
@@ -879,6 +901,68 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         Self.logger.info("🛰️ SPVCOORD :: chain store cleared for resync from height \(pending.fromHeight, privacy: .public)")
+        return true
+    }
+
+    /// Rebuild the chain store for wallets imported since the last start (see
+    /// `SPVChainStoreRebuild`): delete the network's SPV store so the upcoming
+    /// `startSpv` anchors at the lowest birth height now loaded, and rewind
+    /// the imported wallets' filter checkpoints to the import floor. A wallet
+    /// added beside a running one is walked by the live filter scan, from the
+    /// old anchor, before the restart that reaches this method; without the
+    /// rewind that scan's checkpoint would hide everything below the anchor
+    /// for good. The persisted checkpoint is lowered too, so a launch that
+    /// interrupts the rescan does not resume above the recovered range.
+    ///
+    /// Returns true when applied — the caller clears the marker once
+    /// `startSpv` succeeds. Returns false (marker retained, retried on the
+    /// next start) when nothing is pending, a stop failed earlier in this
+    /// process, or the delete or the rewind failed.
+    @MainActor
+    private func rebuildChainStoreIfPending(
+        for network: Network,
+        dataDir: String,
+        manager: PlatformWalletManager,
+        storeAlreadyCleared: Bool
+    ) async -> Bool {
+        let scope = network.persistenceScope
+        guard let pending = SPVChainStoreRebuild.pendingWalletIds(scope: scope) else { return false }
+        guard !spvStopFailedThisSession else {
+            Self.logger.error("🛰️ SPVCOORD :: chain store rebuild deferred to next launch — an SPV stop failed this session")
+            DWLogger.log("SPVCOORD chain store rebuild deferred scope=\(scope) reason=stop-failed")
+            return false
+        }
+
+        // Rewind before the delete: a failed rewind then leaves the store as
+        // it was, and a failed delete leaves only a rescan of the old store.
+        // Wallets removed since the import have nothing left to rescan.
+        let imported = pending.filter { manager.wallets[$0] != nil }
+        let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
+        do {
+            for walletId in imported {
+                try manager.spvRescanFilters(walletId: walletId, fromHeight: floor)
+            }
+            try persistLoweredCheckpoints(for: imported, floor: floor)
+        } catch {
+            Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log(
+                "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            return false
+        }
+
+        if !storeAlreadyCleared {
+            do {
+                try await Self.resetSPVStore(atPath: dataDir)
+            } catch {
+                Self.logger.error("🛰️ SPVCOORD :: chain store rebuild delete failed: \(String(describing: error), privacy: .public)")
+                DWLogger.log(
+                    "SPVCOORD chain store rebuild FAILED scope=\(scope) step=delete codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                return false
+            }
+        }
+
+        Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported wallet(s) on \(network.rawValue, privacy: .public)")
+        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) imported=\(imported.count) floor=\(floor)")
         return true
     }
 

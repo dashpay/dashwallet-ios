@@ -12,7 +12,7 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     tests = package / "Tests" / "WalletPreparationHarnessTests"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
-    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter"):
+    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter", "SPVChainStoreRebuild"):
         source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK" / f"{name}.swift"
         test = repository / "DashWalletTests" / f"{name}Tests.swift"
         (sources / source.name).symlink_to(source)

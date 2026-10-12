@@ -707,9 +707,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     func performAddWallet(mnemonic: String, isImported: Bool) async throws
         -> SwiftDashSDKHost.AddWalletResult {
         try await lifecycleQueue.enqueueAwaitable {
-            try await SwiftDashSDKHost.shared.addWallet(
+            let result = try await SwiftDashSDKHost.shared.addWallet(
                 mnemonic: mnemonic,
                 isImported: isImported)
+            // The import armed a chain store rebuild (`SPVChainStoreRebuild`),
+            // which only an SPV start applies. Restart Core now rather than
+            // leave the imported wallet on a store that may not reach its
+            // history until some later start.
+            let coordinator = SwiftDashSDKSPVCoordinator.shared
+            if isImported, coordinator.isRunning {
+                do {
+                    try await coordinator.restartAsync()
+                } catch {
+                    DWLogger.log(
+                        "RUNTIME add-wallet SPV restart FAILED codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                }
+            }
+            return result
         }
     }
 

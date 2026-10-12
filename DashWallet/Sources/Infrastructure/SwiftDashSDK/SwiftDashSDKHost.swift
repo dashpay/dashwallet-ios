@@ -886,6 +886,13 @@ final class SwiftDashSDKHost {
             throw HostError.walletCreationFailed(error)
         }
 
+        // An imported wallet may hold history below the anchor of a chain
+        // store an earlier, younger wallet left on this network. Recorded
+        // before the wallet exists, so an interrupted import still rebuilds.
+        if isImported {
+            SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
+        }
+
         let storage = WalletStorage()
         let previousMnemonic: String?
         do {
