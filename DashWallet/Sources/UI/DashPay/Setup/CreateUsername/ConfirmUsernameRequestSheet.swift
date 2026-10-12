@@ -61,9 +61,12 @@ struct ConfirmUsernameRequestSheet: View {
 
     var body: some View {
         content
-            // The acceptance covers the amount that was on screen: if the
-            // figure moves while the sheet is up, it has to be given again.
+            // The acceptance covers the amounts that were on screen: if
+            // either figure moves while the sheet is up, it has to be given
+            // again. An identity that already holds enough keeps its top-up
+            // at zero while the contest fee it pays changes.
             .onChange(of: amountDuffs) { _, _ in hasAccepted = false }
+            .onChange(of: identityPaidContestFeeDuffs) { _, _ in hasAccepted = false }
     }
 
     @ViewBuilder private var content: some View {
