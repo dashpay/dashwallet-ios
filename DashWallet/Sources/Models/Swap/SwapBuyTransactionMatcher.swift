@@ -195,7 +195,7 @@ enum SwapBuyTransactionMatcher {
     /// Orders left without a transaction because one they fit was held back are reported
     /// as `contested`: a payout that may be theirs is in the wallet, which is not the same
     /// as none having arrived. They stay so until the others stop claiming (refunded,
-    /// failed, let go unpaid and past their claim) or move to an earlier tier; orders that have all ended keep
+    /// failed) or move to an earlier tier; orders that have all ended keep
     /// sharing for good, and their payouts stay unlabelled. An order whose only fitting
     /// transaction went to an earlier tier is not contested: the provider says that
     /// order was paid, and the transaction is the one payout there is.
@@ -204,12 +204,11 @@ enum SwapBuyTransactionMatcher {
     /// `orders`.
     static func payoutResolution<T: SwapPayoutCandidate>(
         among orders: [SwapOrder],
-        in transactions: [T],
-        now: Date = Date()
+        in transactions: [T]
     ) -> PayoutResolution<T> {
         guard !transactions.isEmpty else { return PayoutResolution() }
         let claimants = orders
-            .filter { $0.isBuy && $0.mayStillBePaidOut(now: now) }
+            .filter { $0.isBuy && $0.mayStillBePaidOut }
             .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return PayoutResolution() }
 

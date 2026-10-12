@@ -43,6 +43,8 @@ class TxDetailModel: NSObject {
     /// transaction, block explorer — is not offered.
     private(set) var swapOrderPlaceholder: BuySwapOrderItem?
     private var swapOrderObservation: AnyCancellable?
+    private var swapAssignmentObservation: AnyCancellable?
+    private var swapExplorerLinkResolution = 0
 
     /// Header icon of a placeholder screen. Nothing has been received yet, so not the
     /// "received" arrow: the swap glyph the order's history row carries, drawn once at the
@@ -274,7 +276,7 @@ class TxDetailModel: NSObject {
     // MARK: - Dash DEX (swap) explorer
 
     /// A "View NEAR/Maya Explorer" action for a transaction that belongs to a Dash DEX swap.
-    struct SwapExplorerLink {
+    struct SwapExplorerLink: Equatable {
         let title: String
         let url: URL
     }
@@ -286,14 +288,35 @@ class TxDetailModel: NSObject {
     /// Looks up whether this transaction is the on-chain leg of a stored swap order and, if so,
     /// builds the provider explorer link. Runs off the main actor (DAO reads), then calls
     /// `completion` on the main actor so the caller can rebuild its rows.
+    ///
+    /// A Buy payout's order comes from the row labeller's assignment, which is worked out
+    /// in the background and can change — the screen may be opened before it is there, or
+    /// the transaction may turn out to be another order's. The link follows it: it is
+    /// looked up again on every change, and `completion` is called when it differs. A
+    /// lookup that finds no order does not take a link away: the assignment is also empty
+    /// while the wallet cannot be read, and that is not the order having gone.
     func resolveSwapExplorerLink(completion: @escaping () -> Void) {
         // A placeholder carries its order's link from init; there is no transaction to match.
         guard swapOrderPlaceholder == nil else { return }
+        refreshSwapExplorerLink(completion: completion)
+        swapAssignmentObservation = SwapOrderMetadataProvider.shared.assignmentsChanged
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.refreshSwapExplorerLink(completion: completion)
+            }
+    }
+
+    private func refreshSwapExplorerLink(completion: @escaping () -> Void) {
         let transaction = self.transaction
         let transactionId = self.transactionId
+        swapExplorerLinkResolution += 1
+        let resolution = swapExplorerLinkResolution
         Task {
             let link = await Self.swapExplorerLink(transaction: transaction, transactionId: transactionId)
             await MainActor.run {
+                // A later lookup has started: its answer is the one that counts.
+                guard resolution == self.swapExplorerLinkResolution else { return }
+                guard let link, link != self.swapExplorerLink else { return }
                 self.swapExplorerLink = link
                 completion()
             }
