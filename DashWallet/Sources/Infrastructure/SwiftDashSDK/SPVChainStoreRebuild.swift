@@ -17,10 +17,11 @@ import Foundation
 /// seconds with every older transaction missing.
 ///
 /// The marker records the imported wallet ids per network scope. The SPV
-/// coordinator consumes it before `startSpv`: it rewinds the recorded
+/// coordinator applies it before `startSpv`: it rewinds the recorded
 /// wallets' filter checkpoints to the import floor, in case the running scan
 /// already walked them on the old store, and deletes the store, so the client
-/// anchors at the lowest birth height now loaded. Kept in UserDefaults, so a
+/// anchors at the lowest birth height now loaded. The applied wallets are
+/// dropped from the marker once that start succeeds. Kept in UserDefaults, so a
 /// start on the other network, or one in a later launch, still rebuilds.
 ///
 /// Foundation-only so the wallet-preparation harness can compile it.
@@ -65,6 +66,45 @@ enum SPVChainStoreRebuild {
             defaults.removeObject(forKey: key(scope: scope))
         } else {
             defaults.set(remaining, forKey: key(scope: scope))
+        }
+    }
+
+    /// Run `start` and, once it returns, drop `walletIds` from the wallets
+    /// pending on `scope`. A start that throws leaves them pending, so the
+    /// next start applies the rebuild again.
+    static func finish(
+        walletIds: [Data],
+        scope: String,
+        defaults: UserDefaults = .standard,
+        afterStarting start: () throws -> Void
+    ) rethrows {
+        try start()
+        guard !walletIds.isEmpty else { return }
+        finish(walletIds: walletIds, scope: scope, defaults: defaults)
+    }
+
+    /// Lower each row's `checkpoint` to `floor`, never raising it, and
+    /// `save`. When the save throws the rows are put back, so a later save
+    /// on the same context cannot write a checkpoint this call reported as
+    /// not lowered.
+    static func lowerCheckpoints<Row: AnyObject>(
+        of rows: [Row],
+        to floor: UInt32,
+        checkpoint: ReferenceWritableKeyPath<Row, UInt32>,
+        save: () throws -> Void
+    ) throws {
+        var lowered: [(row: Row, from: UInt32)] = []
+        for row in rows where row[keyPath: checkpoint] > floor {
+            lowered.append((row, row[keyPath: checkpoint]))
+            row[keyPath: checkpoint] = floor
+        }
+        do {
+            try save()
+        } catch {
+            for (row, from) in lowered {
+                row[keyPath: checkpoint] = from
+            }
+            throw error
         }
     }
 

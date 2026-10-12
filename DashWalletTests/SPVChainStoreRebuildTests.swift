@@ -236,6 +236,78 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             [walletId(0xA1)])
     }
 
+    // MARK: - Consuming the marker and lowering checkpoints
+
+    private struct Failure: Error {}
+
+    private final class Row {
+        var syncedHeight: UInt32
+        init(_ syncedHeight: UInt32) { self.syncedHeight = syncedHeight }
+    }
+
+    func testAFailedStartKeepsTheAppliedWalletsPending() {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+
+        XCTAssertThrowsError(try SPVChainStoreRebuild.finish(
+            walletIds: [walletId(0xA1)], scope: "testnet", defaults: defaults,
+            afterStarting: { throw Failure() }))
+
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
+    func testASuccessfulStartConsumesOnlyTheAppliedWallets() throws {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", defaults: defaults)
+        var pendingDuringStart: [Data]?
+
+        try SPVChainStoreRebuild.finish(
+            walletIds: [walletId(0xA1)], scope: "testnet", defaults: defaults,
+            afterStarting: {
+                pendingDuringStart = SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: self.defaults)
+            })
+
+        XCTAssertEqual(pendingDuringStart, [walletId(0xA1), walletId(0xB2)])
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xB2)])
+    }
+
+    func testAStartWithNothingAppliedLeavesTheMarkerAlone() throws {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        var started = false
+
+        try SPVChainStoreRebuild.finish(
+            walletIds: [], scope: "testnet", defaults: defaults, afterStarting: { started = true })
+
+        XCTAssertTrue(started)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
+    func testLowerCheckpointsNeverRaisesARow() throws {
+        let rows = [Row(1_500_000), Row(100), Row(200_000)]
+        var saved: [[UInt32]] = []
+
+        try SPVChainStoreRebuild.lowerCheckpoints(
+            of: rows, to: 200_000, checkpoint: \.syncedHeight, save: { saved.append(rows.map(\.syncedHeight)) })
+
+        // One save, of the lowered values.
+        XCTAssertEqual(saved, [[200_000, 100, 200_000]])
+        XCTAssertEqual(rows.map(\.syncedHeight), [200_000, 100, 200_000])
+    }
+
+    func testAFailedSavePutsTheCheckpointsBack() {
+        let rows = [Row(1_500_000), Row(100)]
+
+        XCTAssertThrowsError(try SPVChainStoreRebuild.lowerCheckpoints(
+            of: rows, to: 0, checkpoint: \.syncedHeight, save: { throw Failure() }))
+
+        XCTAssertEqual(rows.map(\.syncedHeight), [1_500_000, 100])
+    }
+
     // MARK: - Emptying the store
 
     private func makeScratchDirectory() throws -> URL {

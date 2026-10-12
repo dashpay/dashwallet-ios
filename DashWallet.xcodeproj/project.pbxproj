@@ -1075,6 +1075,7 @@
 		A140F8C774E7518488729D67 /* BIP70PaymentService+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9155233A128831C0ABF18A3 /* BIP70PaymentService+App.swift */; };
 		A15ED0B9E7AAF29C694E4E16 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
 		A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
+		7D4F1A2B3C4D5E6F7A8B9D04 /* SPVChainStoreRebuildTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4F1A2B3C4D5E6F7A8B9D05 /* SPVChainStoreRebuildTests.swift */; };
 		A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */; };
 		A361573C34CF9107E6B8A221 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
 		A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */; };
@@ -3291,6 +3292,7 @@
 		A11E57A70002C0DE0002B002 /* DWInvitationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationService.swift; sourceTree = "<group>"; };
 		A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaimInvitationScreen.swift; sourceTree = "<group>"; };
 		A11E57A70009C0DE0009B009 /* SyncingAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingAlertView.swift; sourceTree = "<group>"; };
+		7D4F1A2B3C4D5E6F7A8B9D05 /* SPVChainStoreRebuildTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPVChainStoreRebuildTests.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
@@ -7554,6 +7556,7 @@
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
+				7D4F1A2B3C4D5E6F7A8B9D05 /* SPVChainStoreRebuildTests.swift */,
 				0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
@@ -10879,6 +10882,7 @@
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
+				7D4F1A2B3C4D5E6F7A8B9D04 /* SPVChainStoreRebuildTests.swift in Sources */,
 				D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,

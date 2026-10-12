@@ -683,8 +683,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
         switchPreparation.consume()
 
+        // The rebuild marker has the resync marker's contract (below): it
+        // survives a failed startSpv and is consumed only once the client
+        // that anchors the rebuilt store is running.
         do {
-            try manager.startSpv(config: config)
+            try SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
+                try manager.startSpv(config: config)
+            })
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.spvClient(error))
@@ -696,12 +701,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         if appliedChainResync {
             SPVChainResyncMarker.clear(for: network)
             Self.logger.info("🛰️ SPVCOORD :: chain resync applied on \(network.rawValue, privacy: .public)")
-        }
-
-        // Same contract as the resync marker: consumed only once the client
-        // that anchors the rebuilt store is running.
-        if !rebuiltForWalletIds.isEmpty {
-            SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope)
         }
 
         runningNetwork = network
@@ -1088,29 +1087,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             throw StartError.runtimeNotRunning
         }
         let context = container.mainContext
-        var lowered: [(row: PersistentWallet, from: UInt32)] = []
-        do {
-            for walletId in walletIds {
-                var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
-                descriptor.fetchLimit = 1
-                guard let row = try context.fetch(descriptor).first else {
-                    throw StartError.runtimeNotRunning
-                }
-                if row.syncedHeight > floor {
-                    lowered.append((row, row.syncedHeight))
-                    row.syncedHeight = floor
-                }
+        var rows: [PersistentWallet] = []
+        for walletId in walletIds {
+            var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+            descriptor.fetchLimit = 1
+            guard let row = try context.fetch(descriptor).first else {
+                throw StartError.runtimeNotRunning
             }
+            rows.append(row)
+        }
+        try SPVChainStoreRebuild.lowerCheckpoints(of: rows, to: floor, checkpoint: \.syncedHeight) {
             if context.hasChanges {
                 try context.save()
             }
-        } catch {
-            // Not saved: put the rows back, so a later save on this context
-            // cannot write a checkpoint this call reported as not lowered.
-            for (row, from) in lowered {
-                row.syncedHeight = from
-            }
-            throw error
         }
     }
 
