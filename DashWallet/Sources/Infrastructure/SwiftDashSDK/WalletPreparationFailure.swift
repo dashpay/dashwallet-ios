@@ -7,8 +7,15 @@ import SQLite3
 /// its userInfo: Core Data errors can contain paths and stored values.
 struct WalletPreparationFailure: Equatable, Identifiable {
     /// `keychain`: the store is not the problem — the wallet keys could not
-    /// be read or replayed from the keychain, and nothing was deleted.
+    /// be read or replayed from the keychain.
     enum Kind: String { case database, storage, legacyMigration, keychain }
+
+    /// The card's recovery policy, derived here so every card that renders a
+    /// failure reads one source: the phrase backup is offered unless the keys
+    /// themselves failed to read, and Export Logs authenticates first for the
+    /// cards that cannot rely on the lock screen having read the PIN.
+    var offersPhraseBackup: Bool { kind != .keychain }
+    var requiresAuthenticatedExport: Bool { kind == .keychain || kind == .legacyMigration }
 
     /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
     /// Only the migrator's terminal flag names leave this boundary.
@@ -118,9 +125,10 @@ struct WalletPreparationFailure: Equatable, Identifiable {
         }
         if kind == .keychain {
             // Neither "your keys are safe" nor "your keys are lost": a read
-            // failed, and the keychain is untouched by the app.
+            // failed. No claim about the stores either — this card can
+            // follow a reset that removed them.
             return NSLocalizedString(
-                "Your wallet keys could not be read from this device's secure storage. Nothing was deleted. Do not delete this app. Try again or contact support for help.",
+                "Your wallet keys could not be read from this device's secure storage. Do not delete this app. Try again or contact support for help.",
                 comment: "Wallet preparation failure")
         }
         return NSLocalizedString(

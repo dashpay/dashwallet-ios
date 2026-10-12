@@ -243,9 +243,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     func retryWalletPreparation() async {
         await enqueueAwaitable {
             let state = WalletLifecycleTransitionState.shared
-            guard case .failedWalletOpen = state.phase else { return }
+            guard case let .failedWalletOpen(shown) = state.phase else { return }
             if let failure = await self.refresh(trigger: .startIfReady) {
-                state.fail(.failedWalletOpen(failure))
+                // A record the open classified itself replaces the card. One
+                // built around the open — the wallet-presence gate, or the
+                // fallback for a start error the host left unclassified —
+                // carries the store copy's "keys are stored safely" and
+                // Backup, which must not replace a keys card.
+                let classifiedByOpen = state.preparationFailure == failure
+                if shown.kind == .keychain, !classifiedByOpen {
+                    state.fail(.failedWalletOpen(shown))
+                } else {
+                    state.fail(.failedWalletOpen(failure))
+                }
             }
         }.value
     }
@@ -923,6 +933,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 let failure = WalletLifecycleTransitionState.shared.preparationFailure ?? WalletPreparationFailure(error: error)
+                // os_log does not reach the diagnostic export; the file log does.
+                DWLogger.log("RUNTIME Core start failed category=\(failure.kind.rawValue) codes=\(failure.codes.joined(separator: ","))")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
                 return failure
             }

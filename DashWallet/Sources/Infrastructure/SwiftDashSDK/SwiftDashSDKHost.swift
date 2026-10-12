@@ -525,16 +525,24 @@ final class SwiftDashSDKHost {
     /// card; a bootstrap failure is a keys failure only when `keysFailure(in:)`
     /// recognizes its cause, otherwise it is a store failure too — a SwiftData
     /// write that failed while replaying the keychain, or a recovery marker
-    /// that could not be written — and the database card's Reset recreates the
-    /// rows from the keychain that was just read. Keys readable but nothing
-    /// eligible for the network (`walletNotFound`) keeps its existing flow
-    /// with no card: `WalletEnvironment.hasWallet` routes that inventory to
-    /// setup, and a blocking card would sit over it.
+    /// that could not be written — and `WalletPreparationFailure(error:)`
+    /// decides from its codes whether a reset is offered.
+    ///
+    /// Two bootstrap causes keep the no-card flow this path always had, so an
+    /// automatic kick (foreground, connectivity) retries instead of a pinned
+    /// card: keys readable but nothing eligible for the network
+    /// (`walletNotFound`) — `WalletEnvironment.hasWallet` routes that
+    /// inventory to setup, and a card would sit over it — and a keychain read
+    /// refused because protected data was unavailable
+    /// (`errSecInteractionNotAllowed`), which heals on unlock.
     nonisolated static func preparationFailure(forStartError error: Error) -> WalletPreparationFailure? {
+        let interactionNotAllowed: OSStatus = -25308 // errSecInteractionNotAllowed
         switch error {
         case HostError.modelContainerFailed(let underlying):
             return WalletPreparationFailure(error: underlying)
         case HostError.walletBootstrapFailed(HostError.walletNotFound):
+            return nil
+        case HostError.walletBootstrapFailed(WalletStorageError.keychainError(interactionNotAllowed)):
             return nil
         case HostError.walletBootstrapFailed(let underlying):
             if let keys = keysFailure(in: underlying) {
@@ -559,7 +567,11 @@ final class SwiftDashSDKHost {
             return (.notFound, nil)
         case SwiftDashSDKWalletDeletionError.invalidMnemonic,
              SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
-             HostError.invalidMnemonic:
+             HostError.invalidMnemonic,
+             is KeyWalletError:
+            // The resolver derives ids by constructing a wallet from the
+            // stored phrase; `KeyWalletError` is that construction refusing
+            // material that passed word validation.
             return (.unclassifiable, nil)
         case HostError.mnemonicRoundTripMismatch:
             return (.idMismatch, nil)
