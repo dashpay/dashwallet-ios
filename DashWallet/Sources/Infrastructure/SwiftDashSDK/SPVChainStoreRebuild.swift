@@ -7,7 +7,8 @@ import Foundation
 
 /// Durable "rebuild this network's SPV chain store before the next SPV start"
 /// marker, armed whenever a wallet is imported from a recovery phrase or
-/// recreated from the phrase kept in the Keychain.
+/// recreated from the phrase kept in the Keychain (there on a best-effort
+/// basis: a recovery whose marker cannot be written still opens the wallet).
 ///
 /// The chain store (`Documents/SPV/<scope>/`) is shared by every wallet on a
 /// network and dash-spv anchors it once, at the birth height of the wallets
@@ -71,7 +72,10 @@ enum SPVChainStoreRebuild {
     /// up to the directory that holds `directory`, are flushed to stable
     /// storage — also when the marker was there already, which an earlier
     /// arm may have written without managing to flush. Throws when they
-    /// could not be. Returns false when the wallet was pending already.
+    /// could not be; a marker written but not flushed is left in place — a
+    /// caller that goes on to create the wallet anyway is better served by
+    /// it than by none, and one for a wallet that is never created rebuilds
+    /// nothing. Returns false when the wallet was pending already.
     @discardableResult
     static func arm(
         walletId: Data,
@@ -124,15 +128,21 @@ enum SPVChainStoreRebuild {
         lock.lock(); defer { lock.unlock() }
         guard let root = directory ?? (try? defaultDirectory()) else { return }
         let scoped = root.appendingPathComponent(scope, isDirectory: true)
+        var removedAny = false
         for walletId in walletIds {
             do {
                 try fileManager.removeItem(at: scoped.appendingPathComponent(name(for: walletId), isDirectory: false))
+                removedAny = true
             } catch where isMissingFile(error) {
                 continue
             } catch {
                 DWLogger.log(
                     "SPVCOORD chain store rebuild marker not removed scope=\(scope) codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             }
+        }
+        // Best effort: a removal an interruption undoes only rebuilds once more.
+        if removedAny {
+            try? DurableMarkerFile.flushToStableStorage(scoped)
         }
     }
 

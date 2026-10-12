@@ -240,6 +240,17 @@ import XCTest
             SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()),
             [Data("wallet-b".utf8)])
     }
+    func testRecoveryStillOpensTheWalletWhenTheMarkerCannotBeWritten() async throws {
+        let host = HostRecoveryHarness()
+        // A file where the marker directory should be.
+        try Data([0]).write(to: try host.chainStoreRebuildDirectory())
+        _ = try await host.start(network: .mainnet)
+        XCTAssertEqual(PlatformWalletManager.createAttempts, ["wallet-a", "wallet-b"])
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+        XCTAssertNotNil(host.wallet)
+        XCTAssertFalse(try host.localStoreRecovery(for: .mainnet).isPending())
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()))
+    }
     func testHealthyStoreArmsNoChainStoreRebuild() async throws {
         for name in ["wallet-a", "wallet-b"] {
             PlatformWalletManager.rows[Data(name.utf8)] = .init(walletId: Data(name.utf8))

@@ -891,21 +891,26 @@ final class SwiftDashSDKHost {
         // before the wallet exists, so the rebuild does not depend on reaching
         // the code after the create; a wallet that is not loaded rebuilds
         // nothing. An import whose marker cannot be made durable is refused
-        // before it persists anything. The marker this call armed is
-        // withdrawn only when the import fails before the SDK was asked to
-        // create the wallet; once it was asked, the marker stays — the SDK
+        // before it stores the phrase or creates the wallet. The marker this
+        // call armed is withdrawn only when the import fails before the SDK
+        // was asked to create the wallet; once it was, the marker stays — the SDK
         // can throw after the wallet's rows landed, and a later start then
         // loads the wallet without passing through here again.
-        var armedRebuild = false
+        var armedRebuildDirectory: URL?
         var nativeCreateAttempted = false
         defer {
-            if armedRebuild, !nativeCreateAttempted {
-                SPVChainStoreRebuild.finish(walletIds: [walletId], scope: network.persistenceScope)
+            if let armedRebuildDirectory, !nativeCreateAttempted {
+                SPVChainStoreRebuild.finish(
+                    walletIds: [walletId], scope: network.persistenceScope, directory: armedRebuildDirectory)
             }
         }
         if isImported {
             do {
-                armedRebuild = try SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
+                let directory = try chainStoreRebuildDirectory()
+                if try SPVChainStoreRebuild.arm(
+                    walletId: walletId, scope: network.persistenceScope, directory: directory) {
+                    armedRebuildDirectory = directory
+                }
             } catch {
                 Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted: \(String(describing: error), privacy: .public)")
                 DWLogger.log("HOST chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")

@@ -105,6 +105,27 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertTrue(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
     }
 
+    func testAMarkerWrittenButNotFlushedStaysPending() throws {
+        // The marker root sits in a directory that can be traversed and
+        // written but not opened for the last flush — not for root.
+        try XCTSkipIf(getuid() == 0)
+        let parent = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SPVChainStoreRebuildTests-noflush-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+        try FileManager.default.setAttributes([.posixPermissions: 0o300], ofItemAtPath: parent.path)
+        addTeardownBlock {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: parent.path)
+            try? FileManager.default.removeItem(at: parent)
+        }
+        let root = parent.appendingPathComponent("ChainStoreRebuilds", isDirectory: true)
+
+        XCTAssertThrowsError(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: root))
+
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: root),
+            [walletId(0xA1)])
+    }
+
     func testUnrelatedFilesInAScopeDirectoryAreNotWalletIds() throws {
         try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         try Data().write(to: directory.appendingPathComponent("testnet/.DS_Store"))
