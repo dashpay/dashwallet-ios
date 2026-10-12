@@ -380,15 +380,18 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline {
             shared.enqueue {
                 // Idle, or a keys card: that card leaves automatic preparation
-                // on, and connectivity returning is one of the kicks meant to
-                // clear it. Every interactive transition still owns the runtime.
+                // on (unless one of its flows holds the window), and
+                // connectivity returning is one of the kicks meant to clear
+                // it. Every interactive transition still owns the runtime.
+                let state = WalletLifecycleTransitionState.shared
                 let admitted: Bool
-                switch WalletLifecycleTransitionState.shared.phase {
+                switch state.phase {
                 case .idle: admitted = true
-                case let .failedWalletOpen(failure): admitted = failure.kind == .keychain
+                case .failedWalletOpen: admitted = state.allowsAutomaticWalletPreparation
                 default: admitted = false
                 }
                 guard admitted else {
+                    state.recordDeferredAutomaticPreparation()
                     Self.logger.info(
                         "🧭 RUNTIME :: connectivity-return kick skipped — a lifecycle transition owns the runtime")
                     return
@@ -818,7 +821,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // Automatic kicks (including material-change notifications) must
             // leave Help and its unsent draft intact. Re-read on the serial
             // queue: opening may have failed since this kick was enqueued.
-            guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
+            let state = WalletLifecycleTransitionState.shared
+            guard state.allowsAutomaticWalletPreparation else {
+                // A keys card under one of its own flows: replayed on release.
+                state.recordDeferredAutomaticPreparation()
+                return
+            }
             await self?.refresh(trigger: trigger)
         }
     }

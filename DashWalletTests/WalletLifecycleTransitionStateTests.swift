@@ -240,6 +240,25 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertEqual(state.phase, phase)
     }
 
+    func testRecoveryPresentationHoldDefersKeysCardKicksAndReplaysOnRelease() {
+        let state = WalletLifecycleTransitionState()
+        state.fail(.failedWalletOpen(WalletPreparationFailure(keys: .unreadable, status: -25291)))
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        state.holdRecoveryPresentation()
+        XCTAssertFalse(state.allowsAutomaticWalletPreparation)
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "Nothing was refused")
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        XCTAssertTrue(state.releaseRecoveryPresentation())
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "Consumed")
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        // A store card refuses kicks on its own; the hold records nothing.
+        state.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))))
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        XCTAssertFalse(state.releaseRecoveryPresentation())
+    }
+
     func testUnrelatedStartupFailureKeepsExistingRecoveryFlow() async {
         let state = WalletLifecycleTransitionState()
         do {

@@ -752,6 +752,10 @@ enum RecoveryPhraseNavigation {
 final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
     private weak var navigationController: UINavigationController?
 
+    /// `true` when the modal goes up, `false` when this presenter takes it
+    /// down (Done, Back, resign, the host's own dismiss). The host uses it to
+    /// hold automatic wallet preparation while the phrase is on screen.
+    var onPresentationChanged: ((Bool) -> Void)?
 
     /// Presents `destination` from `anchor`. A `.phrase` arriving while the
     /// picker modal is up replaces the picker in place (the picker's select).
@@ -785,6 +789,7 @@ final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
         navigation.view.accessibilityViewIsModal = true
         navigationController = navigation
         anchor.present(navigation, animated: true)
+        onPresentationChanged?(true)
     }
 
     func dismiss(animated: Bool) {
@@ -794,6 +799,7 @@ final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
         // Addressed to the presenter: `dismiss` on the navigation controller
         // itself would only drop whatever it presented (the screenshot alert).
         presenter.dismiss(animated: animated)
+        onPresentationChanged?(false)
     }
 
     // The Objective-C protocol's requirements are nonisolated; UIKit calls

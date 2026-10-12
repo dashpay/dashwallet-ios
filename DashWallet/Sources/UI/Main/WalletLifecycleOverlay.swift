@@ -207,10 +207,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     @Published private(set) var phase: WalletLifecycleTransitionState.Phase
     @Published private(set) var preparationFailure: WalletPreparationFailure?
-    @Published var supportFailure: WalletPreparationFailure?
+    @Published var supportFailure: WalletPreparationFailure? { didSet { updateRecoveryPresentationHold() } }
     @Published private(set) var retryPending = false
-    @Published private(set) var isExportingLogs = false
-    @Published var exportedLogsURL: URL?
+    @Published private(set) var isExportingLogs = false { didSet { updateRecoveryPresentationHold() } }
+    @Published var exportedLogsURL: URL? { didSet { updateRecoveryPresentationHold() } }
     /// One alert for every gated action's refusal: no PIN on record,
     /// authentication failed, export or reset error.
     @Published var actionFailure: ActionFailure?
@@ -221,7 +221,28 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published var isConfirmingReset = false
     @Published private(set) var resetPending = false
     /// True while the overlay window is hidden behind the PIN prompt.
-    @Published private(set) var isAuthenticating = false
+    @Published private(set) var isAuthenticating = false { didSet { updateRecoveryPresentationHold() } }
+    /// True while the phrase picker or phrase screen is up in the overlay window.
+    private var isPresentingRecoveryPhrase = false { didSet { updateRecoveryPresentationHold() } }
+
+    /// Any flow that owns the window — the PIN prompt, log export and its
+    /// share sheet, the Help sheet and its composer, the phrase modal — holds
+    /// automatic wallet preparation: a keys card's self-healing start would
+    /// otherwise move the phase from under it and drop a phrase screen or an
+    /// unsent support message. A kick refused meanwhile is replayed on release.
+    private var ownsRecoveryPresentation: Bool {
+        isAuthenticating || isExportingLogs || exportedLogsURL != nil || supportFailure != nil
+            || isPresentingRecoveryPhrase
+    }
+
+    private func updateRecoveryPresentationHold() {
+        let state = WalletLifecycleTransitionState.shared
+        if ownsRecoveryPresentation {
+            if !state.recoveryPresentationHeld { state.holdRecoveryPresentation() }
+        } else if state.recoveryPresentationHeld, state.releaseRecoveryPresentation() {
+            SwiftDashSDKWalletRuntime.startIfReady()
+        }
+    }
 
     /// One operation at a time on a failure card: the share sheet, the PIN
     /// prompt, Try Again and Reset each own the window's presentation stack.
@@ -240,6 +261,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         phase = transitionState.phase
         preparationFailure = transitionState.preparationFailure
         apply(transitionState.phase)
+        recoveryPhraseModal.onPresentationChanged = { [weak self] presented in
+            self?.isPresentingRecoveryPhrase = presented
+        }
         transitionState.$phase
             .sink { [weak self] phase in self?.apply(phase) }
             .store(in: &cancellables)

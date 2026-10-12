@@ -869,6 +869,24 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         XCTAssertEqual(runtime.refreshCalls, 1)
         guard case .failedWalletOpen = state.phase else { return XCTFail("Store card dismissed by an automatic kick") }
     }
+    func testKicksAreDeferredWhileACardFlowHoldsTheWindowAndReplayedOnRelease() async {
+        let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
+        state.fail(.failedWalletOpen(keys))
+        // The phrase modal, Help or the share sheet is up: a connectivity or
+        // foreground kick must not move the phase from under it.
+        state.holdRecoveryPresentation()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(state.phase, .failedWalletOpen(keys))
+        // Release reports the refused kick; its replay clears the card.
+        XCTAssertTrue(state.releaseRecoveryPresentation())
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        XCTAssertEqual(state.phase, .idle)
+    }
 }
 ''')
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
