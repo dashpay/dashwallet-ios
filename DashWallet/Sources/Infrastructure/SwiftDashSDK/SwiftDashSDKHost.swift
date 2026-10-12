@@ -527,12 +527,15 @@ final class SwiftDashSDKHost {
     /// write that failed while replaying the keychain, or a recovery marker
     /// that could not be written — and the database card's Reset recreates the
     /// rows from the keychain that was just read. Keys readable but nothing
-    /// eligible for the network (`walletNotFound`) also stays on that card:
-    /// its "keys are stored safely" copy is true and the phrase backup works.
+    /// eligible for the network (`walletNotFound`) keeps its existing flow
+    /// with no card: `WalletEnvironment.hasWallet` routes that inventory to
+    /// setup, and a blocking card would sit over it.
     nonisolated static func preparationFailure(forStartError error: Error) -> WalletPreparationFailure? {
         switch error {
         case HostError.modelContainerFailed(let underlying):
             return WalletPreparationFailure(error: underlying)
+        case HostError.walletBootstrapFailed(HostError.walletNotFound):
+            return nil
         case HostError.walletBootstrapFailed(let underlying):
             if let keys = keysFailure(in: underlying) {
                 return WalletPreparationFailure(keys: keys.reason, status: keys.status)

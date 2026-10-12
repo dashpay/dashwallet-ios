@@ -342,12 +342,10 @@ import XCTest
         let store = HostRecoveryHarness.preparationFailure(forStartError: HostError.modelContainerFailed(swiftData))
         XCTAssertEqual(store?.kind, .database)
         XCTAssertEqual(store?.canResetLocalData, true)
-        // Keys readable, nothing eligible for the network: the database card's
-        // "keys are stored safely" is true there, and never a reset.
-        let notFound = HostRecoveryHarness.preparationFailure(
-            forStartError: HostError.walletBootstrapFailed(HostError.walletNotFound(.mainnet)))
-        XCTAssertEqual(notFound?.kind, .database)
-        XCTAssertEqual(notFound?.canResetLocalData, false)
+        // Keys readable, nothing eligible for the network: no card, the
+        // existing flow (hasWallet routes that inventory to setup) stays.
+        XCTAssertNil(HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(HostError.walletNotFound(.mainnet))))
         let mismatch = HostRecoveryHarness.preparationFailure(
             forStartError: HostError.walletBootstrapFailed(HostError.mnemonicRoundTripMismatch))
         XCTAssertEqual(mismatch?.codes, ["Keychain:idMismatch"])
