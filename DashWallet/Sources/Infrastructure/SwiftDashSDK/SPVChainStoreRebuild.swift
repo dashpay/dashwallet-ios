@@ -6,7 +6,8 @@
 import Foundation
 
 /// Durable "rebuild this network's SPV chain store before the next SPV start"
-/// marker, armed whenever a wallet is imported from a recovery phrase.
+/// marker, armed whenever a wallet is imported from a recovery phrase or
+/// recreated from the phrase kept in the Keychain.
 ///
 /// The chain store (`Documents/SPV/<scope>/`) is shared by every wallet on a
 /// network and dash-spv anchors it once, at the birth height of the wallets

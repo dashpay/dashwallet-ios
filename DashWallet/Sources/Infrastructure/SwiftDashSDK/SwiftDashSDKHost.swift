@@ -1472,6 +1472,13 @@ final class SwiftDashSDKHost {
 
         for entry in entries {
             if handles.manager.wallets[entry.walletId] != nil { continue }
+            // Recreated at the import floor like an import, so the chain
+            // store that survived the lost rows may be anchored above its
+            // history too (see `SPVChainStoreRebuild`). Armed per wallet and
+            // withdrawn only for the one whose creation fails: the wallets
+            // already recreated keep theirs for the next start.
+            let scope = handles.network.persistenceScope
+            let armedRebuild = SPVChainStoreRebuild.arm(walletId: entry.walletId, scope: scope)
             do {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
@@ -1495,6 +1502,9 @@ final class SwiftDashSDKHost {
                     throw HostError.mnemonicRoundTripMismatch
                 }
             } catch {
+                if armedRebuild {
+                    SPVChainStoreRebuild.finish(walletIds: [entry.walletId], scope: scope)
+                }
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
                 DWLogger.log("HOST keychain recovery failed for one entry: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
                 throw error
