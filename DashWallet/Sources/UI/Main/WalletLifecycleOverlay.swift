@@ -368,12 +368,11 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     /// Backup recovery phrase on the wallet-open failure card: the Security
     /// menu's flow (PIN, then one phrase or a wallet picker), hosted modally
-    /// in the overlay window because the card has no navigation stack. Not
-    /// on a keys failure: the phrase is what could not be read, and the card
-    /// does not show the button.
+    /// in the overlay window because the card has no navigation stack. Also
+    /// on a keys failure: the flow reads each stored phrase on its own, and
+    /// one entry failing the replay does not mean the others cannot be read.
     func backupRecoveryPhrase() {
         guard !isBusy,
-              preparationFailure?.offersPhraseBackup != false,
               requirePin(
                   for: NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"),
                   message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
@@ -524,7 +523,7 @@ struct WalletLifecycleOverlayView: View {
                         viewModel.retryWalletOpen()
                     }
                     .disabled(viewModel.isBusy)
-                    walletRecoveryActions(for: failure)
+                    walletRecoveryActions
                     preparationHelp(authenticatedExport: failure.requiresAuthenticatedExport)
                 }
             case let .failedLegacyMigration(failure):
@@ -587,7 +586,7 @@ struct WalletLifecycleOverlayView: View {
                         }
                         .disabled(viewModel.isBusy)
                     }
-                    if viewModel.showsLocalStoreRecovery { walletRecoveryActions(for: viewModel.preparationFailure) }
+                    if viewModel.showsLocalStoreRecovery { walletRecoveryActions }
                     preparationHelp(authenticatedExport: viewModel.preparationFailure?.requiresAuthenticatedExport ?? false)
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
@@ -653,16 +652,15 @@ struct WalletLifecycleOverlayView: View {
         .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
     }
 
-    /// Backup per the failure record's policy (never for a keys failure);
-    /// Reset only when the record and the keychain inventory allow it.
+    /// Backup on every failure card — a best-effort read of each stored
+    /// phrase, which a keys failure of one entry does not rule out; Reset
+    /// only when the record and the keychain inventory allow it.
     @ViewBuilder
-    private func walletRecoveryActions(for failure: WalletPreparationFailure?) -> some View {
-        if failure?.offersPhraseBackup != false {
-            actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
-                viewModel.backupRecoveryPhrase()
-            }
-            .disabled(viewModel.isBusy)
+    private var walletRecoveryActions: some View {
+        actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
+            viewModel.backupRecoveryPhrase()
         }
+        .disabled(viewModel.isBusy)
         if viewModel.canResetWalletData {
             actionButton(
                 NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),

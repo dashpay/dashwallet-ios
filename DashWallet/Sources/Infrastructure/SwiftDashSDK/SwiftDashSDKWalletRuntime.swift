@@ -245,17 +245,17 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             let state = WalletLifecycleTransitionState.shared
             guard case let .failedWalletOpen(shown) = state.phase else { return }
             if let failure = await self.refresh(trigger: .startIfReady) {
-                // A record the open classified itself replaces the card. One
-                // built around the open — the wallet-presence gate, or the
-                // fallback for a start error the host left unclassified —
-                // carries the store copy's "keys are stored safely" and
-                // Backup, which must not replace a keys card.
-                let classifiedByOpen = state.preparationFailure == failure
-                if shown.kind == .keychain, !classifiedByOpen {
-                    state.fail(.failedWalletOpen(shown))
-                } else {
-                    state.fail(.failedWalletOpen(failure))
-                }
+                // `prepareWallet` moves the phase the moment the open runs
+                // (to the record it classified, or to idle). A phase still
+                // showing the old record means the open was never reached:
+                // the wallet-presence gate refused, which for a keys card is
+                // the same keychain failure, and its store record ("keys are
+                // stored safely") must not replace the card. Once the open
+                // ran, the keys were read, and whatever the attempt returns
+                // is the card to show.
+                let openNotReached = state.phase == .failedWalletOpen(shown) && state.preparationFailure == shown
+                if shown.kind == .keychain, openNotReached { return }
+                state.fail(.failedWalletOpen(failure))
             }
         }.value
     }
@@ -933,8 +933,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 let failure = WalletLifecycleTransitionState.shared.preparationFailure ?? WalletPreparationFailure(error: error)
-                // os_log does not reach the diagnostic export; the file log does.
-                DWLogger.log("RUNTIME Core start failed category=\(failure.kind.rawValue) codes=\(failure.codes.joined(separator: ","))")
+                // os_log does not reach the diagnostic export; the file log
+                // does. Only a record the open classified names a category:
+                // the fallback for anything else (SPV start, devnet preflight)
+                // bridges to OtherError codes and would mislabel the cause.
+                if let classified = WalletLifecycleTransitionState.shared.preparationFailure {
+                    DWLogger.log("RUNTIME Core start failed category=\(classified.kind.rawValue) codes=\(classified.codes.joined(separator: ","))")
+                } else {
+                    DWLogger.log("RUNTIME Core start failed outside the wallet open codes=\(failure.codes.joined(separator: ","))")
+                }
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
                 return failure
             }

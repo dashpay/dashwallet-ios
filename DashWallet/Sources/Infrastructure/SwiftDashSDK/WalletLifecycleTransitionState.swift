@@ -128,9 +128,14 @@ final class WalletLifecycleTransitionState: ObservableObject {
 
     /// Automatic kicks must leave the failure card and any unsent support
     /// draft intact. Explicit Retry / Sync Now use their existing entry points.
+    /// A keys card leaves automatic preparation on: a keychain status that
+    /// failed the replay is often transient (the lock, securityd), and the
+    /// next foreground or connectivity kick is what heals it. A store card
+    /// keeps the kicks off until the user acts.
     var allowsAutomaticWalletPreparation: Bool {
         switch phase {
-        case .failedWalletOpen, .resettingLocalStores: return false
+        case let .failedWalletOpen(failure): return failure.kind == .keychain
+        case .resettingLocalStores: return false
         default: return true
         }
     }

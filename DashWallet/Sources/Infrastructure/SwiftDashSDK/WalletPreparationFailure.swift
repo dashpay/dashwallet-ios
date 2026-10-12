@@ -10,11 +10,9 @@ struct WalletPreparationFailure: Equatable, Identifiable {
     /// be read or replayed from the keychain.
     enum Kind: String { case database, storage, legacyMigration, keychain }
 
-    /// The card's recovery policy, derived here so every card that renders a
-    /// failure reads one source: the phrase backup is offered unless the keys
-    /// themselves failed to read, and Export Logs authenticates first for the
-    /// cards that cannot rely on the lock screen having read the PIN.
-    var offersPhraseBackup: Bool { kind != .keychain }
+    /// Export Logs authenticates first on the cards that cannot rely on the
+    /// lock screen having read the PIN. Derived here so every card that
+    /// renders a failure reads one source.
     var requiresAuthenticatedExport: Bool { kind == .keychain || kind == .legacyMigration }
 
     /// Why the DashSync → SwiftDashSDK key migration did not deliver a wallet.
@@ -41,8 +39,9 @@ struct WalletPreparationFailure: Equatable, Identifiable {
     }
 
     /// The store opened, but the wallet keys could not be read or replayed.
-    /// Never resettable: deleting the store cannot help, and the card offers
-    /// no phrase backup either, since the phrase is what could not be read.
+    /// Never resettable: deleting the store cannot help. The phrase backup
+    /// stays on the card as a best-effort read — one bad entry fails the
+    /// replay for every wallet, while the others may read fine.
     init(keys reason: KeysReason, status: OSStatus? = nil, now: Date = Date()) {
         id = UUID()
         occurredAt = now

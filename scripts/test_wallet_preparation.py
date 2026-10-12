@@ -128,7 +128,7 @@ extension WalletEnvironment {
 /// classification matches them by type.
 enum WalletStorageError: Error { case keychainError(OSStatus), mnemonicNotFound }
 enum SwiftDashSDKWalletDeletionError: Error { case invalidMnemonic, unrecognizedWalletNetwork }
-enum KeyWalletError: Error { case invalidMnemonic }
+enum KeyWalletError: Error { case invalidInput(String), invalidMnemonic(String), invalidState(String) }
 @MainActor final class HostRecoveryHarness {
     static let logger = Logger(subsystem: "wallet-preparation-tests", category: "recovery")
     enum HostError: Error {
@@ -326,15 +326,21 @@ import XCTest
         XCTAssertEqual(failure?.codes, ["Keychain:unreadable", "OSStatus:-25291"])
         XCTAssertEqual(failure?.canResetLocalData, false)
     }
-    func testLockedKeychainDuringTheReplayKeepsTheNoCardFlow() {
-        // errSecInteractionNotAllowed heals on unlock; a pinned card would
-        // turn the foreground kick off (`allowsAutomaticWalletPreparation`).
+    func testEveryKeychainStatusShowsTheKeysCardAndLeavesAutomaticPreparationOn() {
+        // Transient statuses (the lock, securityd) are not told apart here;
+        // the keys card leaves the automatic kicks on instead.
         typealias HostError = HostRecoveryHarness.HostError
-        XCTAssertNil(HostRecoveryHarness.preparationFailure(
-            forStartError: HostError.walletBootstrapFailed(WalletStorageError.keychainError(-25308))))
-        XCTAssertEqual(HostRecoveryHarness.preparationFailure(
-            forStartError: HostError.walletBootstrapFailed(WalletStorageError.keychainError(-25291)))?.codes,
-            ["Keychain:unreadable", "OSStatus:-25291"])
+        for status: OSStatus in [-25308, -25291, -34018] {
+            let failure = HostRecoveryHarness.preparationFailure(
+                forStartError: HostError.walletBootstrapFailed(WalletStorageError.keychainError(status)))
+            XCTAssertEqual(failure?.codes, ["Keychain:unreadable", "OSStatus:\(status)"])
+            let state = WalletLifecycleTransitionState()
+            state.fail(.failedWalletOpen(failure!))
+            XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        }
+        let store = WalletLifecycleTransitionState()
+        store.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))))
+        XCTAssertFalse(store.allowsAutomaticWalletPreparation)
     }
     func testUnclassifiableMaterialShowsTheKeysCard() async throws {
         HostRecoveryHarness.invalidMaterial = true
@@ -370,9 +376,14 @@ import XCTest
         XCTAssertEqual(resolver?.codes, ["Keychain:unclassifiable"])
         // The resolver constructs a wallet from the stored phrase; its refusal
         // of material that passed word validation is a keys failure too.
-        let construction = HostRecoveryHarness.preparationFailure(
-            forStartError: HostError.walletBootstrapFailed(KeyWalletError.invalidMnemonic))
-        XCTAssertEqual(construction?.codes, ["Keychain:unclassifiable"])
+        for material in [KeyWalletError.invalidMnemonic("bad"), .invalidInput("bad")] {
+            let construction = HostRecoveryHarness.preparationFailure(
+                forStartError: HostError.walletBootstrapFailed(material))
+            XCTAssertEqual(construction?.codes, ["Keychain:unclassifiable"])
+        }
+        // Its other cases say nothing about the stored material.
+        XCTAssertEqual(HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(KeyWalletError.invalidState("ffi")))?.kind, .database)
         XCTAssertNil(HostRecoveryHarness.preparationFailure(forStartError: HostError.sdkInitFailed(swiftData)))
         XCTAssertNil(HostRecoveryHarness.keysFailure(in: swiftData))
     }
@@ -484,6 +495,11 @@ import XCTest
     var refreshFailure: WalletPreparationFailure?
     /// Classified by the open itself (the `prepareWallet` failure closure).
     var openFailure: WalletPreparationFailure?
+    /// The open failed with a cause the host left unclassified (closure nil):
+    /// the production fallback record is returned after `finish()`.
+    var unclassifiedOpenFailure: WalletPreparationFailure?
+    /// The open succeeded and a later start step (SPV) failed.
+    var postOpenFailure: WalletPreparationFailure?
     @discardableResult
     func refresh(trigger: RefreshTrigger, runtimeAlreadyStopped: Bool = false) async -> WalletPreparationFailure? {
         refreshCalls += 1
@@ -496,8 +512,14 @@ import XCTest
             } failure: { _ in openFailure }
             return WalletLifecycleTransitionState.shared.preparationFailure ?? openFailure
         }
+        if let unclassifiedOpenFailure {
+            try? await WalletLifecycleTransitionState.shared.prepareWallet {
+                throw NSError(domain: "Open", code: 2)
+            } failure: { _ in nil }
+            return unclassifiedOpenFailure
+        }
         try? await WalletLifecycleTransitionState.shared.prepareWallet {} failure: { _ in nil }
-        return nil
+        return postOpenFailure
     }
     func resolveCurrentNetwork() -> Result<WalletEnvironment.NetworkKind, NSError> { .success(.testnet) }
     func isCoreRuntimeReady(for network: WalletEnvironment.NetworkKind) -> Bool {
@@ -549,6 +571,8 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         runtime.refreshCalls = 0
         runtime.refreshFailure = nil
         runtime.openFailure = nil
+        runtime.unclassifiedOpenFailure = nil
+        runtime.postOpenFailure = nil
         runtime.events = []
         SwiftDashSDKHost.shared.validationError = nil
         SwiftDashSDKHost.shared.releaseError = nil
@@ -794,27 +818,56 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         XCTAssertNil(state.preparationFailure)
         XCTAssertEqual(runtime.refreshCalls, 2)
     }
-    func testRetryFromTheKeysCardKeepsItUnlessTheOpenClassifiedTheFailure() async {
+    func testRetryFromTheKeysCardKeepsItOnlyWhenTheOpenWasNotReached() async {
         let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
         state.fail(.failedWalletOpen(keys))
-        // The presence gate or the unclassified-start fallback: a store
-        // record built around the open must not replace the keys card.
+        // The wallet-presence gate refused before the open: the same keychain
+        // failure, and its store record must not replace the keys card.
         runtime.refreshFailure = WalletPreparationFailure(error: NSError(domain: "Presence", code: 2))
         await runtime.retryWalletPreparation()
         XCTAssertEqual(state.phase, .failedWalletOpen(keys))
         XCTAssertEqual(state.preparationFailure, keys)
-        // A record the open itself classified replaces it.
+        // The open ran and classified a store failure: it replaces the card.
         runtime.refreshFailure = nil
         let store = WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))
         runtime.openFailure = store
         await runtime.retryWalletPreparation()
         XCTAssertEqual(state.phase, .failedWalletOpen(store))
-        // A store card keeps today's rule: any returned record replaces it.
+        // The open ran and failed unclassified (walletNotFound): the keys
+        // were read, so the fallback record is the card, not the stale one.
+        state.fail(.failedWalletOpen(keys))
         runtime.openFailure = nil
+        let fallback = WalletPreparationFailure(error: NSError(domain: "Fallback", code: 3))
+        runtime.unclassifiedOpenFailure = fallback
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(fallback))
+        // The open succeeded and SPV failed afterwards: same, the keys were read.
+        state.fail(.failedWalletOpen(keys))
+        runtime.unclassifiedOpenFailure = nil
+        let spv = WalletPreparationFailure(error: NSError(domain: "SPV", code: 4))
+        runtime.postOpenFailure = spv
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(spv))
+        // A store card keeps today's rule: any returned record replaces it.
+        runtime.postOpenFailure = nil
         let other = WalletPreparationFailure(error: NSError(domain: "Presence", code: 2))
         runtime.refreshFailure = other
         await runtime.retryWalletPreparation()
         XCTAssertEqual(state.phase, .failedWalletOpen(other))
+    }
+    func testKeysCardIsClearedByTheNextAutomaticKick() async {
+        state.fail(.failedWalletOpen(WalletPreparationFailure(keys: .unreadable, status: -25308)))
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+        // A store card still refuses the automatic kick.
+        await failOpen()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("Store card dismissed by an automatic kick") }
     }
 }
 ''')
