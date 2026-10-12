@@ -887,17 +887,16 @@ final class SwiftDashSDKHost {
         }
 
         // An imported wallet may hold history below the anchor of a chain
-        // store an earlier, younger wallet left on this network, and deep
-        // CoinJoin coins the network's one-time wide scan never looked for.
-        // Recorded before the wallet exists, so a kill right after the create
-        // still rebuilds; a wallet that is not loaded rebuilds nothing, and a
-        // failed import withdraws the marker below.
+        // store an earlier, younger wallet left on this network. Recorded
+        // before the wallet exists, so a kill right after the create still
+        // rebuilds; a wallet that is not loaded rebuilds nothing. A failed
+        // import withdraws the marker it armed, never one an earlier import
+        // of the same phrase left pending.
         var importSucceeded = false
-        if isImported {
-            SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
-        }
+        let armedRebuild = isImported
+            && SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
         defer {
-            if isImported, !importSucceeded {
+            if armedRebuild, !importSucceeded {
                 SPVChainStoreRebuild.finish(walletIds: [walletId], scope: network.persistenceScope)
             }
         }
@@ -959,7 +958,6 @@ final class SwiftDashSDKHost {
             if isImported {
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
                 importSucceeded = true
-                CoinJoinRecovery.shared.resetRecoveryFlag(scope: network.persistenceScope)
             } else {
                 GeneratedWalletIdentityMarker.mark(walletId: walletId)
             }

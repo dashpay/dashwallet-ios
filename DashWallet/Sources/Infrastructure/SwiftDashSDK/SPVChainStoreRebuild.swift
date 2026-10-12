@@ -31,13 +31,14 @@ enum SPVChainStoreRebuild {
     }
 
     /// Record that `walletId` was imported on `scope`. Adds to the wallets
-    /// already pending there.
-    static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) {
+    /// already pending there; returns false when it was pending already.
+    @discardableResult
+    static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) -> Bool {
         var pending = pendingWalletIds(scope: scope, defaults: defaults) ?? []
-        if !pending.contains(walletId) {
-            pending.append(walletId)
-        }
+        guard !pending.contains(walletId) else { return false }
+        pending.append(walletId)
         defaults.set(pending, forKey: key(scope: scope))
+        return true
     }
 
     /// The wallet ids pending on `scope`, or `nil` when no rebuild is pending.

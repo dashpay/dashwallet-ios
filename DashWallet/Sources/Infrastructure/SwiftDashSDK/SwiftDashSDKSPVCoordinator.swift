@@ -643,6 +643,30 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             startFromHeight: 0,
             devnetName: devnetName)
 
+        // Pending birth-height chain resync: with the store deleted BEFORE
+        // startSpv, the client re-anchors at the restored (lowered) birth
+        // height and the armed rescan walks the recovered range. Must also
+        // run before startSpv so the delete never races the sync loop's
+        // segment writes. See `SPVChainResyncMarker` for why this only
+        // happens on the launch after the marker was armed.
+        //
+        // Then the wallets imported from a recovery phrase since the last
+        // start: the store may be anchored above their history. Before
+        // startSpv for the same reason. A failed delete in either leaves the
+        // store half removed, so the start fails rather than run on it.
+        let appliedChainResync: Bool
+        let rebuiltForWalletIds: [Data]
+        do {
+            appliedChainResync = try await applyPendingChainResyncIfNeeded(
+                for: network, dataDir: dataDir, manager: manager)
+            rebuiltForWalletIds = try await rebuildChainStoreIfPending(
+                for: network, dataDir: dataDir, manager: manager,
+                storeAlreadyCleared: appliedChainResync)
+        } catch {
+            return .failure(StartError.dataDirectory(error))
+        }
+
+        // After the rebuild, which re-arms this scan for an imported wallet.
         // One-time wide CoinJoin recovery scan: on the first launch (per
         // network) of every wallet, widen the CoinJoin address gap (matching
         // DashSync) and pre-generate the addresses BEFORE startSpv, so the
@@ -650,27 +674,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // coins are found. Reverts to the default gap once the scan completes
         // (a near-empty one-time scan for wallets that never used CoinJoin).
         applyCoinJoinRecoveryGapIfNeeded(for: network)
-
-        // Pending birth-height chain resync: with the store deleted BEFORE
-        // startSpv, the client re-anchors at the restored (lowered) birth
-        // height and the armed rescan walks the recovered range. Must also
-        // run before startSpv so the delete never races the sync loop's
-        // segment writes. See `SPVChainResyncMarker` for why this only
-        // happens on the launch after the marker was armed.
-        let appliedChainResync = await applyPendingChainResyncIfNeeded(
-            for: network, dataDir: dataDir, manager: manager)
-
-        // A wallet imported from a recovery phrase since the last start: the
-        // store may be anchored above its history. Before startSpv for the
-        // same reason as the resync above.
-        let rebuiltForWalletIds: [Data]
-        do {
-            rebuiltForWalletIds = try await rebuildChainStoreIfPending(
-                for: network, dataDir: dataDir, manager: manager,
-                storeAlreadyCleared: appliedChainResync)
-        } catch {
-            return .failure(StartError.dataDirectory(error))
-        }
 
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
@@ -875,15 +878,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// Returns true when applied — the caller clears the marker once
     /// `startSpv` succeeds. Returns false (marker retained) when there is
     /// nothing pending, the marker was armed by this process (it must wait
-    /// for a launch that restores the lowered birth height into Rust), an SPV
-    /// stop failed earlier in this process, or the store delete failed
-    /// (retried next launch).
+    /// for a launch that restores the lowered birth height into Rust), or
+    /// this network's SPV stop failed earlier in this process. Throws when
+    /// the store delete fails: the store may be half removed, so the caller
+    /// must not start on it; the marker stays for the next start.
     @MainActor
     private func applyPendingChainResyncIfNeeded(
         for network: Network,
         dataDir: String,
         manager: PlatformWalletManager
-    ) async -> Bool {
+    ) async throws -> Bool {
         guard let pending = SPVChainResyncMarker.pending(for: network) else { return false }
         guard !pending.armedByThisSession else {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
@@ -900,7 +904,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             try await Self.resetSPVStore(atPath: dataDir)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: chain resync store delete failed: \(String(describing: error), privacy: .public)")
-            return false
+            throw error
         }
 
         do {
@@ -926,10 +930,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     ///
     /// Returns the wallet ids the rebuild was applied for — the caller drops
     /// them from the marker once `startSpv` succeeds. Returns none (marker
-    /// retained, retried on the next start) when nothing is pending, this
-    /// network's SPV stop failed earlier in this process, none of the pending
-    /// wallets is loaded, or the rewind failed. Throws when the delete fails:
-    /// the store may be half removed, so the caller must not start on it.
+    /// retained) when nothing is pending, none of the pending wallets is
+    /// loaded, the rewind failed (retried on the next start), or this
+    /// network's SPV stop failed earlier in this process (retried on a later
+    /// launch). Throws when the delete fails: the store may be half removed,
+    /// so the caller must not start on it.
+    ///
+    /// An applied rebuild also re-arms the scope's one-time wide CoinJoin
+    /// scan, so the scan from the import floor looks for the imported
+    /// wallet's deep mixed coins.
     @MainActor
     private func rebuildChainStoreIfPending(
         for network: Network,
@@ -977,6 +986,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             }
         }
 
+        CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
         Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported wallet(s) on \(network.rawValue, privacy: .public)")
         DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) imported=\(imported.count) floor=\(floor)")
         return imported

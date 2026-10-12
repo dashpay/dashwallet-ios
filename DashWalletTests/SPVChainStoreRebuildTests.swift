@@ -39,9 +39,9 @@ final class SPVChainStoreRebuildTests: XCTestCase {
     }
 
     func testSecondImportJoinsThePendingRebuildAndARepeatAddsNothing() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
+        XCTAssertTrue(SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults))
+        XCTAssertTrue(SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", defaults: defaults))
+        XCTAssertFalse(SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults))
 
         XCTAssertEqual(
             SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults),
