@@ -1563,12 +1563,137 @@ final class AppConnectLoginTests: XCTestCase {
             // 13 is not on the identity at all.
             Self.key(keyId: 14, data: Data([14])),
         ]
+        let app = Data(repeating: 0xA1, count: 32)
         XCTAssertEqual(
-            AppConnect.sessionKeyIdsToDisable(for: grants, currentIdentityPublicKeys: keys),
+            AppConnect.sessionKeyIdsToDisable(
+                for: grants, appContractId: app, bindings: [], currentIdentityPublicKeys: keys),
             [9])
         XCTAssertEqual(
-            AppConnect.sessionKeyIdsToDisable(for: [], currentIdentityPublicKeys: keys),
+            AppConnect.sessionKeyIdsToDisable(
+                for: [], appContractId: app, bindings: [], currentIdentityPublicKeys: keys),
             [])
+    }
+
+    func testDisconnectAlsoDisablesLiveKeysBoundToTheAppThatHaveNoGrantRecord() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let otherApp = Data(repeating: 0xB2, count: 32)
+        let keys = [
+            Self.key(keyId: 6, data: Data([6]), totalBudget: 5, expiresAt: 9_999),
+            Self.key(keyId: 7, data: Data([7]), totalBudget: 5, expiresAt: 9_999),
+            Self.key(keyId: 8, data: Data([8]), disabledAt: 1),
+            Self.key(keyId: 9, data: Data([9]), totalBudget: 5, expiresAt: 9_999),
+            Self.key(keyId: 10, data: Data([10]), totalBudget: 5, expiresAt: 9_999),
+            Self.key(keyId: 11, data: Data([11]), totalBudget: 5, expiresAt: 9_999),
+            // Bound to the app and of the same kind, but without limits and
+            // without a grant record: not a key this login registered.
+            Self.key(keyId: 13, data: Data([13])),
+            // Bound to the app, but not a key this login registers.
+            Self.key(
+                keyId: 12, purpose: .encryption, securityLevel: .medium, keyType: .ecdsaSecp256k1,
+                data: Data([12]), totalBudget: 5, expiresAt: 9_999),
+            // Bound to the app with one limit only.
+            Self.key(keyId: 14, data: Data([14]), expiresAt: 9_999),
+        ]
+        let bindings = [
+            AppConnect.KeyBinding(keyId: 6, data: Data([6]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 7, data: Data([7]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 8, data: Data([8]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 9, data: Data([9]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 10, data: Data([10]), singleContractId: otherApp),
+            // The stored row under this id is for a different key.
+            AppConnect.KeyBinding(keyId: 11, data: Data([0xFF]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 12, data: Data([12]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 13, data: Data([13]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 14, data: Data([14]), singleContractId: app),
+        ]
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [Self.grant(sessionKeyId: 9)],
+                appContractId: app,
+                bindings: bindings,
+                currentIdentityPublicKeys: keys),
+            [6, 7, 9])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [], appContractId: otherApp, bindings: bindings, currentIdentityPublicKeys: keys),
+            [10])
+    }
+
+    func testOnlyAWholeSingleContractBoundNamesTheApp() {
+        let app = Data(repeating: 0xA1, count: 32)
+        XCTAssertEqual(AppConnect.singleContractId(boundsKind: 1, boundIds: [app]), app)
+        XCTAssertNil(AppConnect.singleContractId(boundsKind: 0, boundIds: nil))
+        XCTAssertNil(AppConnect.singleContractId(boundsKind: 2, boundIds: [app]))
+        XCTAssertNil(AppConnect.singleContractId(boundsKind: 3, boundIds: [app]))
+        XCTAssertNil(AppConnect.singleContractId(boundsKind: 1, boundIds: []))
+        XCTAssertNil(AppConnect.singleContractId(boundsKind: 1, boundIds: [Data([1, 2])]))
+
+        for kind in [0, 2, 3] {
+            XCTAssertTrue(AppConnect.isReadableBound(boundsKind: kind, boundIds: kind == 0 ? nil : [app]))
+        }
+        XCTAssertTrue(AppConnect.isReadableBound(boundsKind: 1, boundIds: [app]))
+        XCTAssertFalse(AppConnect.isReadableBound(boundsKind: 1, boundIds: [Data([1, 2])]))
+        XCTAssertFalse(AppConnect.isReadableBound(boundsKind: 1, boundIds: nil))
+        XCTAssertFalse(AppConnect.isReadableBound(boundsKind: 4, boundIds: [app]))
+    }
+
+    func testAKeyBoundElsewhereOrNotAtAllIsNeitherDisabledNorUnknown() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let keys = [4, 5, 6].map {
+            Self.key(keyId: Int32($0), data: Data([UInt8($0)]), totalBudget: 5, expiresAt: 9_999)
+        }
+        let bindings = [
+            // A document-type bound and an unbounded key both store no single contract.
+            AppConnect.KeyBinding(keyId: 4, data: Data([4]), singleContractId: nil),
+            AppConnect.KeyBinding(keyId: 5, data: Data([5]), singleContractId: nil),
+            AppConnect.KeyBinding(keyId: 6, data: Data([6]), singleContractId: Data(repeating: 0xB2, count: 32)),
+        ]
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [], appContractId: app, bindings: bindings, currentIdentityPublicKeys: keys),
+            [])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: bindings, currentIdentityPublicKeys: keys),
+            [])
+    }
+
+    func testAStoredLiveKeyOfTheAppMissingFromTheIdentityViewIsReported() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let otherApp = Data(repeating: 0xB2, count: 32)
+        let keys = [Self.key(keyId: 6, data: Data([6]))]
+        let bindings = [
+            AppConnect.KeyBinding(keyId: 6, data: Data([6]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 7, data: Data([7]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 8, data: Data([8]), singleContractId: app, isDisabled: true),
+            AppConnect.KeyBinding(keyId: 9, data: Data([9]), singleContractId: otherApp),
+        ]
+        XCTAssertEqual(AppConnect.boundKeyIdsMissing(from: keys, appContractId: app, bindings: bindings), [7])
+    }
+
+    func testALiveSessionKeyTheStoreCannotPlaceStopsADisconnect() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let keys = [
+            Self.key(keyId: 0, securityLevel: .master, keyType: .ecdsaSecp256k1, data: Data([0])),
+            Self.key(keyId: 6, data: Data([6])),
+            Self.key(keyId: 7, data: Data([7])),
+            Self.key(keyId: 8, data: Data([8]), disabledAt: 1),
+            Self.key(keyId: 9, data: Data([9])),
+            Self.key(keyId: 11, data: Data([11])),
+        ]
+        let bindings = [
+            AppConnect.KeyBinding(keyId: 6, data: Data([6]), singleContractId: nil),
+            AppConnect.KeyBinding(keyId: 11, data: Data([0xFF]), singleContractId: app),
+            AppConnect.KeyBinding(keyId: 14, data: Data([14]), singleContractId: nil, hasUnreadableBound: true),
+        ]
+        // 0 and 8 cannot be session keys that sign; 6 is in the store; 9 has
+        // a grant record. 7 is unknown, so is 11 (its row is another key) and
+        // 14 (its stored bound cannot be read).
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsWithUnknownBinding(
+                for: [Self.grant(sessionKeyId: 9)],
+                bindings: bindings,
+                currentIdentityPublicKeys: keys + [Self.key(keyId: 14, data: Data([14]))]),
+            [7, 11, 14])
     }
 
     private static func grant(sessionKeyId: UInt32) -> AppConnectGrant {
@@ -1794,11 +1919,12 @@ final class AppConnectLoginTests: XCTestCase {
         keyType: KeyType = .ecdsaHash160,
         data: Data,
         disabledAt: Int64? = nil,
+        totalBudget: UInt64? = nil,
         expiresAt: Int64? = nil
     ) -> ManagedIdentity.IdentityPublicKeyInfo {
         ManagedIdentity.IdentityPublicKeyInfo(
             keyId: keyId, purpose: purpose, securityLevel: securityLevel, keyType: keyType,
-            readOnly: false, disabledAt: disabledAt, data: data, totalBudget: nil, expiresAt: expiresAt)
+            readOnly: false, disabledAt: disabledAt, data: data, totalBudget: totalBudget, expiresAt: expiresAt)
     }
 
     private static func data(hex: String) -> Data? {

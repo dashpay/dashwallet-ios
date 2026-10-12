@@ -101,23 +101,116 @@ enum AppConnect {
         )
     }
 
-    /// The session keys behind `grants` that can still sign: the ones a
-    /// disconnect has to disable. A key that is gone, already disabled, or no
-    /// longer the kind of key this login registers is left alone.
+    /// What the wallet's store of identity keys says about one key: its
+    /// payload, whether it is disabled there, and the contract it is bound to
+    /// when the bound is a whole single contract. The fetched key list
+    /// carries no bounds, so for a key without a grant record this is where
+    /// its app is read from.
+    struct KeyBinding: Equatable {
+        let keyId: UInt32
+        let data: Data
+        let singleContractId: Data?
+        var isDisabled = false
+        /// The stored key has the type, purpose, level and limits of a key
+        /// this login registers.
+        var isSessionKeyShaped = false
+        /// The store has a bound for the key that this build cannot read, so
+        /// the key's app is unknown rather than "another one".
+        var hasUnreadableBound = false
+    }
+
+    /// The most keys one identity update may disable (Platform consensus).
+    static let maxKeysDisabledPerUpdate = 10
+
+    /// Whether the store's bound for a key says which contract, if any, the
+    /// key is bound to: no bound (0), a 32-byte single contract (1), a
+    /// document type (2) or a contract group (3).
+    static func isReadableBound(boundsKind: Int, boundIds: [Data]?) -> Bool {
+        switch boundsKind {
+        case 0, 2, 3: return true
+        case 1: return boundIds?.first?.count == 32
+        default: return false
+        }
+    }
+
+    /// The contract a stored key is bound to as a whole. `boundsKind` is the
+    /// store's discriminant: 1 is a single contract; a document-type bound
+    /// (2), a contract group (3) and no bound (0) give nil.
+    static func singleContractId(boundsKind: Int, boundIds: [Data]?) -> Data? {
+        guard boundsKind == 1, let id = boundIds?.first, id.count == 32 else { return nil }
+        return id
+    }
+
+    private static func isLiveSessionKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
+        key.keyType == .ecdsaHash160
+            && key.purpose == .authentication
+            && key.securityLevel == .high
+            && key.disabledAt == nil
+    }
+
+    /// The keys a disconnect has to disable: the live ones behind `grants`,
+    /// plus every live key of the same kind that `bindings` shows bound to
+    /// `appContractId` and that carries a budget and an expiry, as every key
+    /// this login registers does. That covers the keys a reinstalled wallet
+    /// has no grant record for. A key that is gone, already disabled, or of
+    /// another shape is left alone, including one another wallet gave the
+    /// app with a document-type bound, a single limit or another key type.
     static func sessionKeyIdsToDisable(
         for grants: [AppConnectGrant],
+        appContractId: Data,
+        bindings: [KeyBinding],
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> [UInt32] {
         let granted = Set(grants.map(\.sessionKeyId))
         return currentIdentityPublicKeys
-            .filter {
-                granted.contains(UInt32(bitPattern: $0.keyId))
-                    && $0.keyType == .ecdsaHash160
-                    && $0.purpose == .authentication
-                    && $0.securityLevel == .high
-                    && $0.disabledAt == nil
+            .filter { key in
+                guard isLiveSessionKey(key) else { return false }
+                let keyId = UInt32(bitPattern: key.keyId)
+                if granted.contains(keyId) { return true }
+                guard key.totalBudget != nil, key.expiresAt != nil else { return false }
+                return bindings.contains {
+                    $0.keyId == keyId && $0.data == key.data && $0.singleContractId == appContractId
+                }
             }
             .map { UInt32(bitPattern: $0.keyId) }
+            .sorted()
+    }
+
+    /// Live session keys whose bound contract is unknown: not behind
+    /// `grants`, and either absent from `bindings` or stored with a bound
+    /// that cannot be read. Any of them could belong to the app being
+    /// disconnected, so a disconnect must stop on these instead of reporting
+    /// every key as turned off.
+    static func sessionKeyIdsWithUnknownBinding(
+        for grants: [AppConnectGrant],
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [UInt32] {
+        let granted = Set(grants.map(\.sessionKeyId))
+        return currentIdentityPublicKeys
+            .filter { key in
+                guard isLiveSessionKey(key) else { return false }
+                let keyId = UInt32(bitPattern: key.keyId)
+                return !granted.contains(keyId) && !bindings.contains {
+                    $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound
+                }
+            }
+            .map { UInt32(bitPattern: $0.keyId) }
+            .sorted()
+    }
+
+    /// Keys the store holds as live and bound to `appContractId` that the
+    /// given view of the identity does not contain. As with a missing granted
+    /// key, the view is out of date and a disconnect must stop.
+    static func boundKeyIdsMissing(
+        from currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        appContractId: Data,
+        bindings: [KeyBinding]
+    ) -> [UInt32] {
+        let known = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        return bindings
+            .filter { $0.singleContractId == appContractId && !$0.isDisabled && !known.contains($0.keyId) }
+            .map(\.keyId)
             .sorted()
     }
 
@@ -269,8 +362,8 @@ enum AppConnect {
 ///
 /// The response type is index-only on Platform: there is no lookup by app and
 /// a delete has to carry the original values, so this record is the only way
-/// back to the entry — and the only place that knows which key on the
-/// identity belongs to which app.
+/// back to the entry. It also names the key; without it a disconnect finds
+/// the key by its contract bound, and the entry not at all.
 struct AppConnectGrant: Codable, Equatable {
     /// Base58 ids.
     let identityId: String
@@ -317,7 +410,7 @@ struct AppConnectGrant: Codable, Equatable {
 
 protocol AppConnectResponseStore {
     /// Whether `save` keeps anything. A login must not register a key the
-    /// store cannot record: nothing could find that key again.
+    /// store cannot record: its response could not be found again.
     var canPersist: Bool { get }
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
@@ -375,8 +468,8 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     func save(_ grants: [AppConnectGrant]) {
         guard let storageKey else { return }
         // Rows this build cannot read are written back untouched: each one is
-        // the only record of a key on the identity, and dropping it would
-        // leave that key impossible to find.
+        // the only record of a response on Platform, and dropping it would
+        // leave that response impossible to find.
         let unreadable = readRows().unreadable
         guard !grants.isEmpty || !unreadable.isEmpty else {
             defaults.removeObject(forKey: storageKey)

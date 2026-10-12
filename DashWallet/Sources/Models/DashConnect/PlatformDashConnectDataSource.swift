@@ -72,7 +72,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case tokenPurchaseTokenIdMismatch
     case unsupportedStateTransition(String)
     case sessionKeyUnusable
-    case grantRecordsMissing
     case identityKeysOutOfDate
     case grantOnAnotherIdentity
     case grantStoreUnavailable
@@ -133,10 +132,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 comment: "DashConnect")
         case .grantStoreUnavailable:
             return "This wallet cannot record the key it would give the app, so the sign-in was not started."
-        case .grantRecordsMissing:
-            return NSLocalizedString(
-                "This wallet has no record of the key it gave this app, so it cannot turn it off here.",
-                comment: "DashConnect")
         case .sessionKeyUnusable:
             return NSLocalizedString(
                 "This sign-in request can no longer be approved. Ask the app for a new code.",
@@ -844,9 +839,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// the encrypted key of a request the app has already finished with.
     ///
     /// A grant whose key is still live keeps its record, marked as having no
-    /// response left, because the record is what lets a later disconnect find
-    /// and disable that key. A grant whose key is already disabled has no
-    /// further use and is dropped.
+    /// response left: a later disconnect picks the keys it has records for
+    /// without looking their app up in the wallet's key store. A grant whose
+    /// key is already disabled has no further use and is dropped.
     private func deleteAppConnectResponses(
         where matches: (AppConnectGrant) -> Bool,
         responseContractId: Data,
@@ -899,8 +894,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Records that a grant has no response on Platform any more. The record
-    /// of a live key stays, because it is what lets a disconnect find that
-    /// key; the record of a disabled key has no further use.
+    /// of a live key stays for a disconnect to disable that key by; the
+    /// record of a disabled key has no further use.
     private func markAppConnectResponseGone(_ grant: AppConnectGrant) {
         updateGrants { grants in
             guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
@@ -1251,7 +1246,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let isOneQR = subject.value.first { $0.id == id }?.loginKind == .oneQR
         let hasGrants = responseStore.load().contains { $0.appContractId == id }
         if isOneQR || hasGrants {
-            let liveElsewhere = try await revokeAppConnectGrants(appContractId: id, requiresGrants: isOneQR)
+            let liveElsewhere = try await revokeAppConnectGrants(appContractId: id, checksUnrecordedKeys: isOneQR)
             // The row stands for the app, and the app still holds a key on
             // another identity of this wallet. That key can only be disabled
             // while its identity is the active one, so the row stays to get
@@ -1290,14 +1285,26 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// that could not be deleted afterwards stays recorded, with its key
     /// marked disabled, and is retried by the next login with this identity.
     ///
-    /// Returns whether the app still has a live key on another identity of
-    /// this wallet. When this identity gave it none, that is thrown instead:
-    /// nothing was turned off.
+    /// The keys are the ones recorded here plus the live keys on the identity
+    /// that are bound to the app's contract and shaped as this login
+    /// registers them, so the keys a reinstalled wallet kept no record of go
+    /// too. A key another wallet gave the app in a different shape stays.
+    /// TODO(app-connect-orphan-responses): the response behind a key with no
+    /// record stays on Platform. It can only be found by its request hash,
+    /// which the record held.
     ///
-    /// `requiresGrants` is set for a row made by the one-QR login: finding no
-    /// record for it means the key cannot be identified, and that is an error
-    /// rather than a silent success.
-    private func revokeAppConnectGrants(appContractId: String, requiresGrants: Bool) async throws -> Bool {
+    /// Returns whether a grant record shows the app with a live key on
+    /// another identity of this wallet. When this identity gave it none, that
+    /// is thrown instead: nothing was turned off.
+    /// TODO(app-connect-other-identity-keys): a key on another identity that
+    /// has no grant record is not seen, so the row can go while that key is
+    /// live. Only the active identity's keys are looked up.
+    ///
+    /// `checksUnrecordedKeys` is set for a row made by the one-QR login: with
+    /// no record for this identity the keys are still looked for on it. When
+    /// it holds none bound to the app, there was nothing to turn off here and
+    /// the call returns without an error.
+    private func revokeAppConnectGrants(appContractId: String, checksUnrecordedKeys: Bool) async throws -> Bool {
         var context = try await requireContext()
         let identityId = context.identityId.toBase58String()
         func isGranted(_ grant: AppConnectGrant) -> Bool {
@@ -1308,10 +1315,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 $0.appContractId == appContractId && $0.identityId != identityId && $0.keyDisabled != true
             }
         }
-        guard responseStore.load().contains(where: isGranted) else {
-            if hasLiveGrantElsewhere() { throw DashConnectPlatformError.grantOnAnotherIdentity }
-            if requiresGrants { throw DashConnectPlatformError.grantRecordsMissing }
-            return false
+        guard let appContract = Self.decodeIdentifier(appContractId) else {
+            throw DashConnectPlatformError.loginContractUnavailable
+        }
+        if !responseStore.load().contains(where: isGranted) {
+            // Before the PIN prompt, from the store alone: whether this
+            // identity holds a key of the app's that has no record.
+            let holdsUnrecordedKey = try checksUnrecordedKeys && Self
+                .storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+                .contains { $0.singleContractId == appContract && !$0.isDisabled && $0.isSessionKeyShaped }
+            if !holdsUnrecordedKey {
+                if hasLiveGrantElsewhere() { throw DashConnectPlatformError.grantOnAnotherIdentity }
+                if !checksUnrecordedKeys { return false }
+            }
         }
 
         try await authorize()
@@ -1331,17 +1347,43 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // so nothing is reported as turned off.
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
+        let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+        guard AppConnect.sessionKeyIdsWithUnknownBinding(
+            for: granted,
+            bindings: bindings,
+            currentIdentityPublicKeys: currentPublicKeys
+        ).isEmpty, AppConnect.boundKeyIdsMissing(
+            from: currentPublicKeys,
+            appContractId: appContract,
+            bindings: bindings
+        ).isEmpty else {
+            // A live session key the wallet's store cannot place may be this
+            // app's, and a stored key of the app's that the fetched list
+            // lacks means the list is behind. Either way nothing is reported
+            // as turned off.
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
         let keyIds = AppConnect.sessionKeyIdsToDisable(
             for: granted,
+            appContractId: appContract,
+            bindings: bindings,
             currentIdentityPublicKeys: currentPublicKeys
         )
+        if granted.isEmpty, keyIds.isEmpty, hasLiveGrantElsewhere() {
+            throw DashConnectPlatformError.grantOnAnotherIdentity
+        }
         if !keyIds.isEmpty {
             Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) session key(s)")
-            try await context.wallet.updateIdentity(
-                identityId: context.identityId,
-                disablePublicKeyIds: keyIds,
-                signer: signer
-            )
+            // Platform takes a limited number of keys per update. A failure
+            // part way leaves the rest live and the row in place; the next
+            // attempt picks up what is still live.
+            for start in stride(from: 0, to: keyIds.count, by: AppConnect.maxKeysDisabledPerUpdate) {
+                try await context.wallet.updateIdentity(
+                    identityId: context.identityId,
+                    disablePublicKeyIds: Array(keyIds[start ..< min(start + AppConnect.maxKeysDisabledPerUpdate, keyIds.count)]),
+                    signer: signer
+                )
+            }
             Self.logger.info("🔗 DASHCONNECT :: session key(s) disabled")
         }
 
@@ -1732,6 +1774,39 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return try context.wallet
             .managedIdentity(identityId: context.identityId)
             .getPublicKeys()
+    }
+
+    /// What the wallet's store holds for each key of the identity. The store
+    /// is written by the SDK as it loads and updates the identity.
+    private static func storedKeyBindings(
+        identityId: String,
+        modelContainer: ModelContainer
+    ) throws -> [AppConnect.KeyBinding] {
+        let descriptor = FetchDescriptor<PersistentPublicKey>(predicate: #Predicate { $0.identityId == identityId })
+        let modelContext = ModelContext(modelContainer)
+        // The rows are only readable while their context is alive.
+        return try withExtendedLifetime(modelContext) {
+            try modelContext.fetch(descriptor).map {
+                AppConnect.KeyBinding(
+                    keyId: UInt32(bitPattern: $0.keyId),
+                    data: $0.publicKeyData,
+                    singleContractId: AppConnect.singleContractId(
+                        boundsKind: $0.effectiveContractBoundsKind,
+                        boundIds: $0.contractBounds
+                    ),
+                    isDisabled: $0.disabledAt != nil,
+                    isSessionKeyShaped: $0.keyTypeEnum == .ecdsaHash160
+                        && $0.purposeEnum == .authentication
+                        && $0.securityLevelEnum == .high
+                        && $0.totalBudget != nil
+                        && $0.expiresAt != nil,
+                    hasUnreadableBound: !AppConnect.isReadableBound(
+                        boundsKind: $0.effectiveContractBoundsKind,
+                        boundIds: $0.contractBounds
+                    )
+                )
+            }
+        }
     }
 
     private func requireContext() async throws -> Context {
