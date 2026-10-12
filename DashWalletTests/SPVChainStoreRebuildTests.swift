@@ -285,7 +285,8 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         let scratch = try makeScratchDirectory()
         let store = try makeStore(in: scratch)
         let trash = scratch.appendingPathComponent("trash", isDirectory: true)
-        // A read-only parent refuses the rename itself.
+        // A read-only parent refuses the rename itself — not for root.
+        try XCTSkipIf(getuid() == 0)
         let parent = store.deletingLastPathComponent()
         try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: parent.path)
         addTeardownBlock {
@@ -313,6 +314,18 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(
             try Data(contentsOf: store.appendingPathComponent("headers/segment_0000.dat")),
             Data([1, 2, 3]))
+    }
+
+    func testEmptyStoreReplacesAFileSittingAtTheTrashPath() throws {
+        let scratch = try makeScratchDirectory()
+        let store = try makeStore(in: scratch)
+        let trash = scratch.appendingPathComponent("trash")
+        try Data([0]).write(to: trash)
+
+        try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)
+
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: store.path), [])
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: trash.path), [])
     }
 
     func testEmptyStoreCreatesAMissingStoreDirectory() throws {

@@ -970,7 +970,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
         Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported wallet(s) on \(network.rawValue, privacy: .public)")
-        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) imported=\(imported.count) floor=\(floor)")
+        let stillPending = (SPVChainStoreRebuild.pendingWalletIds(scope: scope)?.count ?? 0) - imported.count
+        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) imported=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
         return imported
     }
 
@@ -1087,18 +1088,29 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             throw StartError.runtimeNotRunning
         }
         let context = container.mainContext
-        for walletId in walletIds {
-            var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
-            descriptor.fetchLimit = 1
-            guard let row = try context.fetch(descriptor).first else {
-                throw StartError.runtimeNotRunning
+        var lowered: [(row: PersistentWallet, from: UInt32)] = []
+        do {
+            for walletId in walletIds {
+                var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
+                descriptor.fetchLimit = 1
+                guard let row = try context.fetch(descriptor).first else {
+                    throw StartError.runtimeNotRunning
+                }
+                if row.syncedHeight > floor {
+                    lowered.append((row, row.syncedHeight))
+                    row.syncedHeight = floor
+                }
             }
-            if row.syncedHeight > floor {
-                row.syncedHeight = floor
+            if context.hasChanges {
+                try context.save()
             }
-        }
-        if context.hasChanges {
-            try context.save()
+        } catch {
+            // Not saved: put the rows back, so a later save on this context
+            // cannot write a checkpoint this call reported as not lowered.
+            for (row, from) in lowered {
+                row.syncedHeight = from
+            }
+            throw error
         }
     }
 
@@ -1504,13 +1516,6 @@ extension SPVChainStoreRebuild {
     static func clearAll() {
         for scope in DevnetConfiguration.allPersistenceScopes() {
             clear(scope: scope)
-        }
-    }
-
-    /// Drop a removed wallet from the rebuilds pending on every scope.
-    static func forget(walletId: Data) {
-        for scope in DevnetConfiguration.allPersistenceScopes() {
-            finish(walletIds: [walletId], scope: scope)
         }
     }
 }

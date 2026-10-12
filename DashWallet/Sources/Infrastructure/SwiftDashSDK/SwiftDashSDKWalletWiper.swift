@@ -907,7 +907,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil,
         keepsWalletOnAnotherScope: Bool = false,
-        scope: String? = nil
+        scope: String
     ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
@@ -941,11 +941,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             // One wallet id covers every devnet scope it has rows in, so
             // only the rebuild pending on the scope whose rows were just
             // deleted is dropped; the wallet's other scopes keep theirs.
-            if let scope {
-                SPVChainStoreRebuild.finish(walletIds: [walletId], scope: scope)
-            } else {
-                SPVChainStoreRebuild.forget(walletId: walletId)
-            }
+            SPVChainStoreRebuild.finish(walletIds: [walletId], scope: scope)
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on

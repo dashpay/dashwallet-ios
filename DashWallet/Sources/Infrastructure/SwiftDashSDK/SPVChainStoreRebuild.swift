@@ -82,8 +82,8 @@ enum SPVChainStoreRebuild {
     /// loaded stays pending and deletes nothing: the import may have armed it
     /// for a start that has not seen the wallet yet.
     ///
-    /// `rewind` runs per wallet, before `clearStore`, and returns whether the
-    /// wallet's checkpoint was lowered. A wallet whose rewind failed stays
+    /// `rewind` runs per wallet, before `clearStore`, and returns whether it
+    /// succeeded. A wallet whose rewind failed stays
     /// pending without holding back the others; when none was rewound the
     /// store is left as it was. When the clear is refused instead, the
     /// rewound wallets are only rescanned on the old store.
@@ -111,6 +111,10 @@ enum SPVChainStoreRebuild {
     /// left behind is removed by the next clear (or purged by the system),
     /// and `startSpv` creates the data directory itself.
     static func emptyStore(at store: URL, movingInto trash: URL, fileManager: FileManager = FileManager()) throws {
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: trash.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+            try? fileManager.removeItem(at: trash)
+        }
         // Copies an earlier clear moved away but was interrupted deleting.
         // Entry by entry, so the directory another clear is moving into stays.
         for leftover in (try? fileManager.contentsOfDirectory(atPath: trash.path)) ?? [] {
