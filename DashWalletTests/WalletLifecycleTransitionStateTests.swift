@@ -259,6 +259,20 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         XCTAssertFalse(state.releaseRecoveryPresentation())
     }
 
+    /// The overlay window and its view model are released at idle; a hold
+    /// they never released must not block the next keys card's kicks.
+    func testFinishDropsARecoveryPresentationHoldItsOwnerNeverReleased() {
+        let state = WalletLifecycleTransitionState()
+        let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
+        state.fail(.failedWalletOpen(keys))
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        state.finish()
+        state.fail(.failedWalletOpen(keys))
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "No kick carried over from the released card")
+    }
+
     func testUnrelatedStartupFailureKeepsExistingRecoveryFlow() async {
         let state = WalletLifecycleTransitionState()
         do {

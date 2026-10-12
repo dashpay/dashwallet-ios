@@ -247,6 +247,11 @@ final class WalletLifecycleTransitionState: ObservableObject {
         }
         phase = .idle
         preparationFailure = nil
+        // The overlay window, and with it any card flow that held it, is
+        // released at idle; a hold its owner never released must not block
+        // the automatic kicks of the next keys card.
+        recoveryPresentationHeld = false
+        automaticPreparationDeferred = false
     }
 
     func fail(_ failure: Phase) {
