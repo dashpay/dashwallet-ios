@@ -15,6 +15,15 @@ struct DashKeyRequest: Equatable {
     let network: DashConnectNetwork
 }
 
+/// A `dash-key:` URI carrying an App Connect request v2.
+struct AppConnectUri: Equatable {
+    let request: AppConnectRequest
+    let network: DashConnectNetwork
+    /// The `cb` return URL: absolute `https`, no credentials. Checked for
+    /// form only; whether its host belongs to the app is not decided here.
+    let callback: URL?
+}
+
 struct DashStRequest: Equatable {
     let transitionBytes: Data
     let network: DashConnectNetwork
