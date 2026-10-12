@@ -292,9 +292,10 @@ class TxDetailModel: NSObject {
     /// A Buy payout's order comes from the row labeller's assignment, which is worked out
     /// in the background and can change — the screen may be opened before it is there, or
     /// the transaction may turn out to be another order's. The link follows it: it is
-    /// looked up again on every change, and `completion` is called when it differs. A
-    /// lookup that finds no order does not take a link away: the assignment is also empty
-    /// while the wallet cannot be read, and that is not the order having gone.
+    /// looked up again on every change, and `completion` is called when it differs. The
+    /// link is taken away when the wallet was read and the transaction is no order's
+    /// (`SwapLinkLookup.unassigned`), but not when the lookup merely finds nothing: the
+    /// assignment is also empty while the wallet cannot be read.
     func resolveSwapExplorerLink(completion: @escaping () -> Void) {
         // A placeholder carries its order's link from init; there is no transaction to match.
         guard swapOrderPlaceholder == nil else { return }
@@ -312,33 +313,50 @@ class TxDetailModel: NSObject {
         swapExplorerLinkResolution += 1
         let resolution = swapExplorerLinkResolution
         Task {
-            let link = await Self.swapExplorerLink(transaction: transaction, transactionId: transactionId)
+            let lookup = await Self.swapExplorerLink(transaction: transaction, transactionId: transactionId)
             await MainActor.run {
                 // A later lookup has started: its answer is the one that counts.
                 guard resolution == self.swapExplorerLinkResolution else { return }
-                guard let link, link != self.swapExplorerLink else { return }
+                let link: SwapExplorerLink?
+                switch lookup {
+                case .link(let found): link = found
+                case .unassigned: link = nil
+                case .unknown: return
+                }
+                guard link != self.swapExplorerLink else { return }
                 self.swapExplorerLink = link
                 completion()
             }
         }
     }
 
-    private static func swapExplorerLink(transaction: Transaction, transactionId: String) async -> SwapExplorerLink? {
+    /// What a lookup of this transaction's swap order established.
+    private enum SwapLinkLookup {
+        case link(SwapExplorerLink)
+        /// The transaction was looked at and is no order's — or not settled whose.
+        case unassigned
+        /// Nothing is known: no order was found, which a wallet that could not be read
+        /// looks like as well.
+        case unknown
+    }
+
+    private static func swapExplorerLink(transaction: Transaction, transactionId: String) async -> SwapLinkLookup {
         let dao = SwapOrdersDAOImpl.shared
 
         // Sell: the swap order id IS the Dash deposit tx id (display-order hex == transactionId).
         if let order = await dao.get(byId: transactionId), order.direction == "sell" {
-            return link(for: order, dashTxId: transactionId)
+            return link(for: order, dashTxId: transactionId).map { .link($0) } ?? .unknown
         }
 
         // Buy: the incoming Dash tx belongs to the order the row label assigned it to —
         // the same assignment, so the link opens the order the row shows.
-        if let orderID = SwapOrderMetadataProvider.shared.orderID(forTxHashData: transaction.txHashData),
+        let assignments = SwapOrderMetadataProvider.shared
+        if let orderID = assignments.orderID(forTxHashData: transaction.txHashData),
            let order = await dao.get(byId: orderID), order.isBuy {
-            return link(for: order, dashTxId: transactionId)
+            return link(for: order, dashTxId: transactionId).map { .link($0) } ?? .unknown
         }
 
-        return nil
+        return assignments.isUnassigned(txHashData: transaction.txHashData) ? .unassigned : .unknown
     }
 
     private static func link(for order: SwapOrder, dashTxId: String) -> SwapExplorerLink? {

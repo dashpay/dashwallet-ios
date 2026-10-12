@@ -555,6 +555,37 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertTrue(resolution.contested.isEmpty)
     }
 
+    func testCompletedOrdersThatNameNoPayoutAreAskedOnce() {
+        let named = buyOrder(
+            id: "0xa", status: .completed, finalisedSecondsAgo: 3_600, payoutHash: String(repeating: "a", count: 64))
+        let unnamed = buyOrder(id: "0xb", status: .completed, finalisedSecondsAgo: 3_600)
+        let sourceHash = buyOrder(id: "0xc", status: .completed, finalisedSecondsAgo: 3_600, payoutHash: "0xsource")
+        var legacy = buyOrder(
+            id: "0xd", status: .completed, finalisedSecondsAgo: 3_600, payoutHash: String(repeating: "b", count: 64))
+        legacy.fromAmount = nil
+        let live = buyOrder(id: "0xe", status: .pending)
+        // Just completed: the provider may still add the Dash leg to its answer.
+        let fresh = buyOrder(id: "0xf", status: .completed, finalisedSecondsAgo: 60)
+        func ids(asked: [SwapOrder]) -> [String] {
+            SwapTrackingService.ordersToAskForPayoutIdentity(
+                among: [named, unnamed, sourceHash, legacy, live, fresh],
+                asked: Set(asked.map(SwapTrackingService.payoutIdentityKey(for:))),
+                nowSeconds: Int64(now.timeIntervalSince1970)).map(\.id)
+        }
+        // Not the one that names its payout, nor one still in flight. A record saved before
+        // this version is asked whatever its hash looks like: it may be the deposit's.
+        XCTAssertEqual(ids(asked: []), ["0xb", "0xc", "0xd"])
+        XCTAssertEqual(ids(asked: [unnamed, legacy]), ["0xc"])
+        // A later order on the same deposit address is another order.
+        var earlier = unnamed
+        earlier.timestamp -= 86_400_000
+        XCTAssertEqual(ids(asked: [earlier, legacy]), ["0xb", "0xc"])
+        // The provider's hash is taken only in the shape of a Dash transaction id.
+        XCTAssertEqual(SwapOrder.dashTxId(from: " " + String(repeating: "A", count: 64)), String(repeating: "a", count: 64))
+        XCTAssertNil(SwapOrder.dashTxId(from: "0x" + String(repeating: "a", count: 64)))
+        XCTAssertNil(SwapOrder.dashTxId(from: "  "))
+    }
+
     func testANamedPayoutIsNotBoundedByItsDate() {
         // Completed four hours ago. Its payout sat unmined for three and now carries a
         // block time past the order's bound: unnamed, the order would lose it there.

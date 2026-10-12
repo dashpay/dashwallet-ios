@@ -42,6 +42,9 @@ struct PayoutResolution<T> {
     /// The ones of `assigned` whose transaction no other order fits: nothing that turns up
     /// later can make it somebody else's.
     var unshared: Set<String> = []
+    /// The transactions that were looked at and given to no order: nobody's, or held back
+    /// while it is not settled whose they are.
+    var unassigned: [T] = []
 }
 
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
@@ -312,7 +315,8 @@ enum SwapBuyTransactionMatcher {
             !claimants.contains { $0.id != id && !$0.namesItsPayout && fits($0, anyOf: [tx]) }
         }
         return PayoutResolution(
-            assigned: assigned, contested: contested, contestedWithEnough: enough, unshared: Set(unshared.keys))
+            assigned: assigned, contested: contested, contestedWithEnough: enough, unshared: Set(unshared.keys),
+            unassigned: Array(free.values) + withheld)
     }
 
     private static func matches<T: SwapPayoutCandidate>(

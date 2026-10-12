@@ -59,6 +59,12 @@ final class SwapTrackingService {
         /// past its window — its wallet may be gone from the device, or its chain's lookup
         /// may never answer. It is not let go on silence, so it is asked rarely instead.
         static let dormantPollIntervalSeconds: Int64 = 6 * 3_600
+        /// How many completed orders are asked for their payout's hash in one cycle
+        /// (`recoverPayoutIdentities`).
+        static let payoutIdentityAsksPerCycle = 2
+        /// `UserDefaults` key: the completed Buy orders the provider has given a final
+        /// answer about (`payoutIdentityKey`).
+        static let payoutIdentityAskedKey = "swapTracking.v1.payoutIdentityAsked"
     }
 
     /// What one look at an order's deposit address established.
@@ -142,6 +148,10 @@ final class SwapTrackingService {
     /// nothing is left to settle for them (`settleLatePayouts`). In memory only, and
     /// touched only by the poll loop.
     private var ordersNamingTheirPayout: Set<String> = []
+
+    /// The orders asked for their payout's hash since launch (`recoverPayoutIdentities`),
+    /// whatever came of it. In memory only, and touched only by the poll loop.
+    private var payoutIdentityTried: Set<String> = []
 
     private init() {}
 
@@ -313,6 +323,7 @@ final class SwapTrackingService {
                 markWalletReadFailed(due)
                 await pollOrders(due, payouts: [:], wallet: wallet)
             }
+            await recoverPayoutIdentities(among: orders)
 
             try? await Task.sleep(nanoseconds: Constants.pollIntervalNs)
         }
@@ -745,6 +756,66 @@ final class SwapTrackingService {
             }
             await dao.update(dto: updated)
         }
+    }
+
+    // MARK: - Private: Payout identity
+
+    /// What identifies an order in the persisted list of the ones already asked: a Buy
+    /// order's id is its deposit address, which a later order can have again.
+    static func payoutIdentityKey(for order: SwapOrder) -> String { "\(order.id)|\(order.timestamp)" }
+
+    /// The completed Buy orders still to be asked which Dash transaction paid them out:
+    /// those that do not name it for sure (`SwapOrder.namesItsPayout`) — saved before the
+    /// provider's Dash leg was read, or completed by an answer without one. Not within
+    /// `unpaidIdlePollIntervalSeconds` of completing: the answer that completed the order
+    /// had no such leg, and the provider may add it shortly after.
+    static func ordersToAskForPayoutIdentity(
+        among orders: [SwapOrder],
+        asked: Set<String>,
+        nowSeconds: Int64
+    ) -> [SwapOrder] {
+        orders.filter {
+            $0.isBuy && $0.status == .completed && !$0.namesItsPayout
+                && nowSeconds - $0.finalisedAt >= Constants.unpaidIdlePollIntervalSeconds
+                && !asked.contains(payoutIdentityKey(for: $0))
+        }
+    }
+
+    /// A completed order that does not name its payout is matched to a wallet transaction
+    /// by address, amount and date — and the date moves when the transaction is mined.
+    /// The provider knows the payout: each such order is asked, a few per cycle, and the
+    /// Dash hash it answers with is written into the order, which then has that
+    /// transaction by name. An order is asked once for good when the provider's answer is
+    /// final about it — completed, with or without a Dash leg, or no longer known — and
+    /// once per launch otherwise.
+    private func recoverPayoutIdentities(among orders: [SwapOrder]) async {
+        let defaults = UserDefaults.standard
+        let persisted = Set(defaults.stringArray(forKey: Constants.payoutIdentityAskedKey) ?? [])
+        // Entries of orders that are gone are dropped with the next write.
+        var asked = persisted.intersection(orders.map(Self.payoutIdentityKey(for:)))
+        let toAsk = Self.ordersToAskForPayoutIdentity(
+            among: orders, asked: asked.union(payoutIdentityTried), nowSeconds: Int64(Date().timeIntervalSince1970))
+            .prefix(Constants.payoutIdentityAsksPerCycle)
+        for order in toAsk {
+            let key = Self.payoutIdentityKey(for: order)
+            payoutIdentityTried.insert(key)
+            guard let result = try? await SwapKitSwapProvider().fetchSwapStatus(
+                txid: order.id, depositAddress: order.depositAddress ?? order.id) else { continue }
+            let answer = Self.answer(from: result, outHash: nil)
+            guard answer.answered, answer.status == .completed || answer.status == .notStarted else { continue }
+            // The order as it is now: it may have been named, or replaced, since the cycle
+            // began.
+            guard let current = await dao.get(byId: order.id), current.timestamp == order.timestamp else { continue }
+            if current.status == .completed, !current.namesItsPayout,
+               let hash = SwapOrder.dashTxId(from: result.dashPayoutHash), hash != current.dashShapedOutHash {
+                var updated = current
+                updated.outboundTxHash = hash
+                DWLogger.log("SwapTrackingService: order \(order.id) completed, payout named by the provider")
+                await dao.update(dto: updated)
+            }
+            asked.insert(key)
+        }
+        if asked != persisted { defaults.set(asked.sorted(), forKey: Constants.payoutIdentityAskedKey) }
     }
 
     // MARK: - Private: Age-out

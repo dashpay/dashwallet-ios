@@ -61,6 +61,9 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     /// Ids of the completed orders that share possible payouts with others, one for each
     /// (`PayoutResolution.contestedWithEnough`).
     private var _unsettledOrderIds: Set<String> = []
+    /// Wire-order txids of the transactions the last reading looked at and gave to no order
+    /// (`PayoutResolution.unassigned`).
+    private var _unassignedTxs: Set<Data> = []
     /// The wallet and network the assignment was read from; nil while that wallet is not
     /// the one bound.
     private var _readWallet: (walletId: String?, network: String?)?
@@ -69,6 +72,14 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     func orderID(forTxHashData txHashData: Data) -> String? {
         metadataQueue.sync { _orderIdByTx[txHashData] }
+    }
+
+    /// Whether the last reading looked at this transaction and gave it to no order. That
+    /// is a settled "no order" — unlike a transaction merely missing from
+    /// `orderID(forTxHashData:)`, which is also what a wallet that could not be read
+    /// looks like.
+    func isUnassigned(txHashData: Data) -> Bool {
+        metadataQueue.sync { _unassignedTxs.contains(txHashData) }
     }
 
     /// What the wallet `walletId` on `network` says about the order's Dash payout.
@@ -157,6 +168,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             among: orders, walletId: walletId, network: network, strict: false)
         let payouts = resolution?.assigned ?? [:]
         let unsettled = resolution?.contestedWithEnough ?? []
+        let unassigned = Set((resolution?.unassigned ?? []).map(\.txHashData))
         let readWallet = resolution.map { _ in (walletId: walletId, network: network) }
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
@@ -174,11 +186,13 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             self._availableMetadata = current
             let ownersChanged = self._orderIdByTx != owners
                 || self._unsettledOrderIds != unsettled
+                || self._unassignedTxs != unassigned
                 || self._readWallet?.walletId != readWallet?.walletId
                 || self._readWallet?.network != readWallet?.network
                 || (self._readWallet == nil) != (readWallet == nil)
             self._orderIdByTx = owners
             self._unsettledOrderIds = unsettled
+            self._unassignedTxs = unassigned
             self._readWallet = readWallet
             DispatchQueue.main.async {
                 for key in changedKeys {

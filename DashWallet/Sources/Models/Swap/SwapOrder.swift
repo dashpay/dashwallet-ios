@@ -287,8 +287,11 @@ extension SwapOrder {
 
     /// `outboundTxHash` as a Dash transaction id — trimmed, lower-cased, 64 hex digits — or
     /// nil when it is empty or has another shape (an EVM hash with its `0x`, say).
-    var dashShapedOutHash: String? {
-        guard let hash = outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+    var dashShapedOutHash: String? { SwapOrder.dashTxId(from: outboundTxHash) }
+
+    /// `hash` as a Dash transaction id — trimmed, lower-cased — when it is 64 hex digits.
+    static func dashTxId(from hash: String?) -> String? {
+        guard let hash = hash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
               hash.count == 64, hash.allSatisfy(\.isHexDigit) else { return nil }
         return hash
     }
