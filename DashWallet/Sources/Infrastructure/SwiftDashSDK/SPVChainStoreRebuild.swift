@@ -72,4 +72,56 @@ enum SPVChainStoreRebuild {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: key(scope: scope))
     }
+
+    /// Apply `scope`'s pending rebuild ahead of an SPV start and return the
+    /// wallet ids it was applied for; the caller drops those from the marker
+    /// once the start succeeds. Nothing is consumed here, so a rebuild that
+    /// stops at any step is tried again by the next start.
+    ///
+    /// Only a wallet this start loads can be rescanned. One that is not
+    /// loaded stays pending and deletes nothing: the import may have armed it
+    /// for a start that has not seen the wallet yet.
+    ///
+    /// `rewind` runs before `clearStore`: a failed rewind then leaves the
+    /// store as it was. When the clear is refused instead, the rewound
+    /// wallets are only rescanned on the old store.
+    @MainActor
+    static func apply(
+        scope: String,
+        defaults: UserDefaults = .standard,
+        isLoaded: (Data) -> Bool,
+        rewind: ([Data]) throws -> Void,
+        clearStore: () async -> Bool
+    ) async -> [Data] {
+        guard let pending = pendingWalletIds(scope: scope, defaults: defaults) else { return [] }
+        let imported = pending.filter(isLoaded)
+        guard !imported.isEmpty else { return [] }
+        do {
+            try rewind(imported)
+        } catch {
+            return []
+        }
+        guard await clearStore() else { return [] }
+        return imported
+    }
+
+    /// Empty the SPV store at `store` in one step: the directory is renamed
+    /// into `trash` (same volume, so the rename is atomic) and only then
+    /// deleted, so a failure never leaves the store half removed — it throws
+    /// with the store untouched, or the store is gone. Deleting the moved
+    /// copy and recreating the empty directory are best effort: `trash` holds
+    /// nothing else, so a copy left behind is removed by the next clear (or
+    /// purged by the system), and `startSpv` creates the data directory
+    /// itself.
+    static func emptyStore(at store: URL, movingInto trash: URL, fileManager: FileManager = FileManager()) throws {
+        // Copies an earlier clear moved away but was interrupted deleting.
+        try? fileManager.removeItem(at: trash)
+        if fileManager.fileExists(atPath: store.path) {
+            try fileManager.createDirectory(at: trash, withIntermediateDirectories: true)
+            let removed = trash.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try fileManager.moveItem(at: store, to: removed)
+            try? fileManager.removeItem(at: trash)
+        }
+        try? fileManager.createDirectory(at: store, withIntermediateDirectories: true)
+    }
 }

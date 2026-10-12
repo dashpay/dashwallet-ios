@@ -931,7 +931,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
-            SPVChainStoreRebuild.forget(walletId: walletId)
+            // One wallet id covers every devnet scope it has rows in, so a
+            // store-only sweep of one scope leaves the pending rebuilds to
+            // the deletion that removes the wallet itself.
+            if !keepsWalletOnAnotherScope {
+                SPVChainStoreRebuild.forget(walletId: walletId)
+            }
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on

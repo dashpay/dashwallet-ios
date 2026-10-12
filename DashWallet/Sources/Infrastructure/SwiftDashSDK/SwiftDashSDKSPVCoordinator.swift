@@ -945,32 +945,26 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         manager: PlatformWalletManager,
         storeAlreadyCleared: Bool
     ) async -> [Data] {
-        guard let pending = SPVChainStoreRebuild.pendingWalletIds(scope: scope) else { return [] }
-
-        // Only a wallet this start loads can be rescanned. One that is not
-        // loaded stays pending and deletes nothing: the import may have armed
-        // it for a start that has not seen the wallet yet.
-        let imported = pending.filter { manager.wallets[$0] != nil }
+        var floor: UInt32 = 0
+        let imported = await SPVChainStoreRebuild.apply(
+            scope: scope,
+            isLoaded: { manager.wallets[$0] != nil },
+            rewind: { walletIds in
+                do {
+                    floor = try self.rewindToImportFloor(walletIds: walletIds, network: network, manager: manager)
+                } catch {
+                    Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
+                    DWLogger.log(
+                        "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                    throw error
+                }
+            },
+            clearStore: {
+                if storeAlreadyCleared { return true }
+                return await self.clearChainStoreBeforeStart(
+                    scope: scope, dataDir: dataDir, reason: "chain store rebuild")
+            })
         guard !imported.isEmpty else { return [] }
-
-        // Rewind before the delete: a failed rewind then leaves the store as
-        // it was. When the delete is refused instead, the rewound wallets are
-        // only rescanned on the old store, and the next start tries again.
-        let floor: UInt32
-        do {
-            floor = try rewindToImportFloor(walletIds: imported, network: network, manager: manager)
-        } catch {
-            Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
-            DWLogger.log(
-                "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
-            return []
-        }
-
-        if !storeAlreadyCleared {
-            guard await clearChainStoreBeforeStart(scope: scope, dataDir: dataDir, reason: "chain store rebuild") else {
-                return []
-            }
-        }
 
         CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
         Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported wallet(s) on \(network.rawValue, privacy: .public)")
@@ -997,32 +991,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         return floor
     }
 
-    /// Empty the SPV store at `dataDir` in one step: the directory is renamed
-    /// into the temporary directory (same volume, so the rename is atomic) and
-    /// only then deleted, so a failure never leaves the store half removed —
-    /// it throws with the store untouched, or the store is gone. Deleting the
-    /// moved copy and recreating the empty directory are best effort: a copy
-    /// left behind is removed by the next clear (or purged by the system), and
-    /// `startSpv` creates the data directory itself. Never performed on
-    /// MainActor.
+    /// Empty the SPV store at `dataDir` (see `SPVChainStoreRebuild.emptyStore`).
+    /// Never performed on MainActor.
     private nonisolated static func resetSPVStore(atPath dataDir: String) async throws {
         try await Task.detached(priority: .userInitiated) {
             let fileManager = FileManager()
-            let dir = URL(fileURLWithPath: dataDir, isDirectory: true)
-            let movedPrefix = "spv-store-"
-            // Copies an earlier clear moved away but was interrupted deleting.
-            let temporary = fileManager.temporaryDirectory
-            for leftover in (try? fileManager.contentsOfDirectory(atPath: temporary.path)) ?? []
-            where leftover.hasPrefix(movedPrefix) {
-                try? fileManager.removeItem(at: temporary.appendingPathComponent(leftover))
-            }
-            if fileManager.fileExists(atPath: dir.path) {
-                let removed = temporary
-                    .appendingPathComponent("\(movedPrefix)\(UUID().uuidString)", isDirectory: true)
-                try fileManager.moveItem(at: dir, to: removed)
-                try? fileManager.removeItem(at: removed)
-            }
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+            try SPVChainStoreRebuild.emptyStore(
+                at: URL(fileURLWithPath: dataDir, isDirectory: true),
+                movingInto: fileManager.temporaryDirectory
+                    .appendingPathComponent("spv-store-trash", isDirectory: true),
+                fileManager: fileManager)
         }.value
     }
 

@@ -92,4 +92,188 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: reopened),
             [walletId(0xC3)])
     }
+
+    // MARK: - Applying a pending rebuild
+
+    private struct RewindFailure: Error {}
+
+    @MainActor
+    func testApplyRewindsThenClearsAndReturnsOnlyLoadedWallets() async {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", defaults: defaults)
+        var steps: [String] = []
+
+        let applied = await SPVChainStoreRebuild.apply(
+            scope: "testnet",
+            defaults: defaults,
+            isLoaded: { $0 == self.walletId(0xA1) },
+            rewind: { walletIds in
+                XCTAssertEqual(walletIds, [self.walletId(0xA1)])
+                steps.append("rewind")
+            },
+            clearStore: {
+                steps.append("clear")
+                return true
+            })
+
+        XCTAssertEqual(applied, [walletId(0xA1)])
+        XCTAssertEqual(steps, ["rewind", "clear"])
+        // Consumed by the caller, after the start, and only for what was applied.
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1), walletId(0xB2)])
+        SPVChainStoreRebuild.finish(walletIds: applied, scope: "testnet", defaults: defaults)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xB2)])
+    }
+
+    @MainActor
+    func testApplyTouchesNothingWhenNoPendingWalletIsLoaded() async {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        var steps: [String] = []
+
+        let applied = await SPVChainStoreRebuild.apply(
+            scope: "testnet",
+            defaults: defaults,
+            isLoaded: { _ in false },
+            rewind: { _ in steps.append("rewind") },
+            clearStore: {
+                steps.append("clear")
+                return true
+            })
+
+        XCTAssertEqual(applied, [])
+        XCTAssertEqual(steps, [])
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
+    @MainActor
+    func testApplyDoesNothingWhenNothingIsPending() async {
+        var steps: [String] = []
+
+        let applied = await SPVChainStoreRebuild.apply(
+            scope: "testnet",
+            defaults: defaults,
+            isLoaded: { _ in true },
+            rewind: { _ in steps.append("rewind") },
+            clearStore: {
+                steps.append("clear")
+                return true
+            })
+
+        XCTAssertEqual(applied, [])
+        XCTAssertEqual(steps, [])
+    }
+
+    @MainActor
+    func testFailedRewindLeavesTheStoreAndTheMarker() async {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        var cleared = false
+
+        let applied = await SPVChainStoreRebuild.apply(
+            scope: "testnet",
+            defaults: defaults,
+            isLoaded: { _ in true },
+            rewind: { _ in throw RewindFailure() },
+            clearStore: {
+                cleared = true
+                return true
+            })
+
+        XCTAssertEqual(applied, [])
+        XCTAssertFalse(cleared)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
+    @MainActor
+    func testRefusedClearKeepsTheMarkerForTheNextStart() async {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+
+        let applied = await SPVChainStoreRebuild.apply(
+            scope: "testnet",
+            defaults: defaults,
+            isLoaded: { _ in true },
+            rewind: { _ in },
+            clearStore: { false })
+
+        XCTAssertEqual(applied, [])
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
+    // MARK: - Emptying the store
+
+    private func makeScratchDirectory() throws -> URL {
+        let scratch = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SPVChainStoreRebuildTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: scratch) }
+        return scratch
+    }
+
+    private func makeStore(in scratch: URL) throws -> URL {
+        let store = scratch.appendingPathComponent("SPV/testnet", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: store.appendingPathComponent("headers", isDirectory: true),
+            withIntermediateDirectories: true)
+        try Data([1, 2, 3]).write(to: store.appendingPathComponent("headers/segment_0000.dat"))
+        return store
+    }
+
+    func testEmptyStoreLeavesAnEmptyDirectoryAndNoMovedCopy() throws {
+        let scratch = try makeScratchDirectory()
+        let store = try makeStore(in: scratch)
+        let trash = scratch.appendingPathComponent("trash", isDirectory: true)
+
+        try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)
+
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: store.path), [])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: trash.path))
+    }
+
+    func testEmptyStoreSweepsACopyAnInterruptedClearLeftBehind() throws {
+        let scratch = try makeScratchDirectory()
+        let store = try makeStore(in: scratch)
+        let trash = scratch.appendingPathComponent("trash", isDirectory: true)
+        let leftover = trash.appendingPathComponent("earlier", isDirectory: true)
+        try FileManager.default.createDirectory(at: leftover, withIntermediateDirectories: true)
+        let neighbour = scratch.appendingPathComponent("unrelated.tmp")
+        try Data([9]).write(to: neighbour)
+
+        try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: leftover.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: neighbour.path))
+    }
+
+    func testEmptyStoreThatCannotMoveLeavesTheStoreWhole() throws {
+        let scratch = try makeScratchDirectory()
+        let store = try makeStore(in: scratch)
+        // A file where the trash's parent should be: nothing can be moved in.
+        let blocker = scratch.appendingPathComponent("blocker")
+        try Data([0]).write(to: blocker)
+        let trash = blocker.appendingPathComponent("trash", isDirectory: true)
+
+        XCTAssertThrowsError(try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash))
+
+        XCTAssertEqual(
+            try Data(contentsOf: store.appendingPathComponent("headers/segment_0000.dat")),
+            Data([1, 2, 3]))
+    }
+
+    func testEmptyStoreCreatesAMissingStoreDirectory() throws {
+        let scratch = try makeScratchDirectory()
+        let store = scratch.appendingPathComponent("SPV/testnet", isDirectory: true)
+        let trash = scratch.appendingPathComponent("trash", isDirectory: true)
+
+        try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)
+
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: store.path), [])
+    }
 }
