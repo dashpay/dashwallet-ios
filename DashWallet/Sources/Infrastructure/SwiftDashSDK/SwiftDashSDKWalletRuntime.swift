@@ -246,15 +246,21 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             guard case let .failedWalletOpen(shown) = state.phase else { return }
             if let failure = await self.refresh(trigger: .startIfReady) {
                 // `prepareWallet` moves the phase the moment the open runs
-                // (to the record it classified, or to idle). A phase still
-                // showing the old record means the open was never reached:
-                // the wallet-presence gate refused, which for a keys card is
-                // the same keychain failure, and its store record ("keys are
-                // stored safely") must not replace the card. Once the open
-                // ran, the keys were read, and whatever the attempt returns
-                // is the card to show.
-                let openNotReached = state.phase == .failedWalletOpen(shown) && state.preparationFailure == shown
-                if shown.kind == .keychain, openNotReached { return }
+                // (to the record it classified, or to idle). From a keys card
+                // the retry follows the automatic kick's rule: a phase still
+                // showing the old record means the open was never reached
+                // (the wallet-presence gate refused, or a step before the
+                // open failed — the same keychain failure, or no keychain
+                // read at all), so the card stays; a phase at idle means the
+                // open ran and classified nothing, and the fallback record
+                // (`OtherError`, "keys are stored safely") is no card at all,
+                // exactly as the kick would leave it. Only a record the open
+                // classified replaces the card. A store card keeps today's
+                // rule: any returned record replaces it.
+                if shown.kind == .keychain {
+                    let openNotReached = state.phase == .failedWalletOpen(shown) && state.preparationFailure == shown
+                    if openNotReached || state.phase == .idle { return }
+                }
                 state.fail(.failedWalletOpen(failure))
             }
         }.value

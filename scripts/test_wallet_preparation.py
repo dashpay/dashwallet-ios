@@ -833,23 +833,23 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         runtime.openFailure = store
         await runtime.retryWalletPreparation()
         XCTAssertEqual(state.phase, .failedWalletOpen(store))
-        // The open ran and failed unclassified (walletNotFound): the keys
-        // were read, so the fallback record is the card, not the stale one.
+        // The open ran and classified nothing (walletNotFound, SDK init): the
+        // automatic kick's rule — the fallback record is no card at all.
         state.fail(.failedWalletOpen(keys))
         runtime.openFailure = nil
-        let fallback = WalletPreparationFailure(error: NSError(domain: "Fallback", code: 3))
-        runtime.unclassifiedOpenFailure = fallback
+        runtime.unclassifiedOpenFailure = WalletPreparationFailure(error: NSError(domain: "Fallback", code: 3))
         await runtime.retryWalletPreparation()
-        XCTAssertEqual(state.phase, .failedWalletOpen(fallback))
-        // The open succeeded and SPV failed afterwards: same, the keys were read.
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+        // The open succeeded and SPV failed afterwards: same, no card.
         state.fail(.failedWalletOpen(keys))
         runtime.unclassifiedOpenFailure = nil
-        let spv = WalletPreparationFailure(error: NSError(domain: "SPV", code: 4))
-        runtime.postOpenFailure = spv
+        runtime.postOpenFailure = WalletPreparationFailure(error: NSError(domain: "SPV", code: 4))
         await runtime.retryWalletPreparation()
-        XCTAssertEqual(state.phase, .failedWalletOpen(spv))
+        XCTAssertEqual(state.phase, .idle)
         // A store card keeps today's rule: any returned record replaces it.
         runtime.postOpenFailure = nil
+        await failOpen()
         let other = WalletPreparationFailure(error: NSError(domain: "Presence", code: 2))
         runtime.refreshFailure = other
         await runtime.retryWalletPreparation()
