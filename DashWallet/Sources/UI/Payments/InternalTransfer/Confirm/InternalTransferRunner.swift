@@ -46,6 +46,7 @@ struct InternalTransferRequest: Equatable {
     /// Frozen with the submitted amount, so a capacity refresh only rewrites
     /// a figure the user derived with Max.
     let platformShieldAmountWasMax: Bool
+    var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
 }
 
 /// Runs an internal transfer and outlives whatever presented it.
@@ -126,6 +127,7 @@ final class InternalTransferRunner: ObservableObject {
         /// Accepted by the network but not yet confirmed — a shielded spend
         /// whose receipt has not landed.
         case submitted
+        case drainPending
         case failed(String)
     }
 
@@ -138,6 +140,7 @@ final class InternalTransferRunner: ObservableObject {
     /// Held across the authorization gate, which is the window `phase` cannot
     /// cover: it is still `.idle` while the PIN prompt is up.
     private var isAwaitingAuthorization = false
+    private var isCoreDrainRecovery = false
 
     private init() {
         coordinator.$phase
@@ -205,7 +208,58 @@ final class InternalTransferRunner: ObservableObject {
         return .started
     }
 
-    // No retry here. A Core-funded route that fails after committing its asset
+    /// Recovery reuses the UUID's exact outpoint. A missing outpoint permits
+    /// only status lookup; it must never fall back to building another lock.
+    func resumeCoreDrain(context: CoreShieldedDrainContext) async {
+        guard phase != .inFlight, !isAwaitingAuthorization else { notice = .busy; return }
+        isAwaitingAuthorization = true
+        defer { isAwaitingAuthorization = false }
+        let service = CoreShieldedDrainService()
+        var attemptedResume = false
+        do {
+            guard let pending = try await service.operationStatus(context) else { return }
+            if pending.outcome.state == .completed {
+                phase = .success
+                notice = .succeeded
+                return
+            }
+            guard pending.outcome.state == .pending,
+                  let outpoint = pending.outcome.outpoint else { return }
+            do { try await authorizer.authorize() } catch { return }
+            _ = try service.manager(for: context)
+            isCoreDrainRecovery = true
+            defer { isCoreDrainRecovery = false }
+            coordinator.reset()
+            phase = .inFlight
+            attemptedResume = true
+            await DWIdentityAuthorizer.preauthorized {
+                await coordinator.resumeAssetLock(
+                    outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
+                    expectedDrainContext: context)
+            }
+            let status = try await service.status(for: pending.operation)
+            if status.state == .completed {
+                // A concurrent resume can consume the lock while authorization
+                // is open. The generic resume reports AlreadyConsumed as
+                // unconfirmed; the UUID lookup supplies authenticated evidence.
+                phase = .success
+                notice = .succeeded
+            } else if status.state == .pending {
+                phase = .submittedUnconfirmed
+                notice = .drainPending
+            }
+        } catch {
+            if attemptedResume {
+                phase = .submittedUnconfirmed
+                notice = .drainPending
+            } else {
+                phase = .failed(error.localizedDescription)
+                notice = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    // Legacy Core-funded failures are recovered from history. A Core-funded route that fails after committing its asset
     // lock is recovered by the home screen: the pending transaction row is
     // tappable and opens `ShieldedRecoverySheet`, which resumes that exact
     // outpoint. A second entry point would risk building a second lock.
@@ -234,7 +288,11 @@ final class InternalTransferRunner: ObservableObject {
     private func runRoute(_ route: InternalTransferRoute, _ request: InternalTransferRequest) async {
         switch route {
         case .coreToShielded:
-            await coordinator.performAssetLock(recipientAmountDuffs: request.amountDuffsUnsigned)
+            if let drain = request.coreShieldedDrain {
+                await coordinator.performWalletDrain(drain)
+            } else {
+                await coordinator.performAssetLock(recipientAmountDuffs: request.amountDuffsUnsigned)
+            }
         case .platformToShielded:
             await coordinator.performShield(amountCredits: request.creditsAmount)
         case .shieldedToCore:
@@ -321,7 +379,9 @@ final class InternalTransferRunner: ObservableObject {
     private func apply(_ routePhase: ShieldedTransferCoordinator.Phase) {
         // Identity transfers drive `phase` directly; the coordinator is idle
         // then and must not overwrite them.
-        guard case .route? = request?.kind else { return }
+        if !isCoreDrainRecovery {
+            guard case .route? = request?.kind else { return }
+        }
 
         switch routePhase {
         case .signing, .locking, .proving, .broadcasting:
@@ -331,7 +391,7 @@ final class InternalTransferRunner: ObservableObject {
             notice = .succeeded
         case .submittedUnconfirmed:
             phase = .submittedUnconfirmed
-            notice = .submitted
+            notice = request?.coreShieldedDrain != nil || isCoreDrainRecovery ? .drainPending : .submitted
         case .failed(let message):
             phase = .failed(message)
             notice = .failed(message)

@@ -72,7 +72,7 @@ private struct InternalTransferToastModifier: ViewModifier {
     private func style(for notice: InternalTransferRunner.Notice) -> ToastStyle {
         switch notice {
         case .started: return .loading
-        case .busy: return .warning
+        case .busy, .drainPending: return .warning
         case .succeeded, .submitted: return .success
         case .failed: return .error
         }
@@ -96,6 +96,10 @@ private struct InternalTransferToastModifier: ViewModifier {
             return NSLocalizedString(
                 "Transfer sent — waiting for the network to confirm it",
                 comment: "Internal transfer accepted but not yet confirmed")
+        case .drainPending:
+            return NSLocalizedString(
+                "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.",
+                comment: "A wallet drain has an unresolved outcome")
         case .failed(let reason):
             return reason
         }

@@ -308,6 +308,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        do { try CoreShieldedDrainFileStore().clear() }
+        catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
         AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
@@ -899,6 +901,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            do { try CoreShieldedDrainFileStore().clear(walletId: walletId) }
+            catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
 
