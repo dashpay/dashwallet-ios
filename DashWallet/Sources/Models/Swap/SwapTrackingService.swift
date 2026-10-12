@@ -366,8 +366,9 @@ final class SwapTrackingService {
         }
         let depositSeenNow = lookup == .seen
 
-        // The wallet's word, for this order: taken now, after the requests above.
-        let walletReady = wallet.vouches(
+        // The wallet's word, for this order. Its transactions are the cycle's read, from
+        // before the requests above; that it is still the active wallet is checked now.
+        var walletReady = wallet.vouches(
             for: order,
             activeWalletId: SwapOrder.currentOwnerWalletId,
             activeNetwork: SwapOrder.currentOwnerNetwork)
@@ -381,15 +382,26 @@ final class SwapTrackingService {
         var agingOrder = order
         if order.depositSeenAt == nil, depositSeenNow || answer.depositProven { agingOrder.depositSeenAt = nowSeconds }
         if finalStatus.isActive, hasAgedOut(agingOrder, nowSeconds: nowSeconds, finalStatus: finalStatus) {
-            let mayLetGo = !order.isBuy || Self.mayLetGo(
+            let sinceAgedOut = nowSeconds - agedOutAt(agingOrder, finalStatus: finalStatus)
+            var mayLetGo = !order.isBuy || Self.mayLetGo(
                 fundsInFlight: Self.fundsInFlight(agingOrder, finalStatus: finalStatus),
                 depositOnRecord: agingOrder.hasDepositOnRecord,
-                sinceAgedOut: nowSeconds - agedOutAt(agingOrder, finalStatus: finalStatus),
+                sinceAgedOut: sinceAgedOut,
                 settleSeconds: order.settleSeconds,
                 providerAnswered: answer.answered,
                 walletReady: walletReady,
                 watchesDeposit: watchesDeposit,
                 lookup: lookup)
+            // The wallet's transactions were read before the requests above, and a payout
+            // can have been written while they ran. An order let go on that read is asked
+            // about again, now; one that goes on its deposit and grace alone keeps its
+            // claim to a late payout and needs no such look. A wallet that no longer says
+            // "no payout" does not say it for the "Stuck" stamp below either.
+            let goesOnGraceAlone = agingOrder.hasDepositOnRecord && sinceAgedOut > SwapOrder.fundedGraceSeconds
+            if order.isBuy, mayLetGo, !goesOnGraceAlone {
+                walletReady = await walletStillHoldsNoPayout(for: order, asReadBy: wallet)
+                mayLetGo = walletReady
+            }
             if mayLetGo {
                 DWLogger.log("SwapTrackingService: order \(order.id) unresolved past its tracking window → expired")
                 finalStatus = .expired
@@ -534,6 +546,41 @@ final class SwapTrackingService {
         await dao.update(dto: updated)
     }
 
+    /// A second look at the wallet for an order about to be let go, with everything the
+    /// cycle's first look needed read afresh: the same wallet still synced and bound, its
+    /// store written up to the tip, and the payouts worked out again over all orders.
+    /// An order it keeps is polled again at the idle pace.
+    private func walletStillHoldsNoPayout(for order: SwapOrder, asReadBy first: WalletView) async -> Bool {
+        let (wallet, scannedTip) = await walletView()
+        var refusal: String?
+        if !wallet.synced || wallet.walletId != first.walletId || wallet.network != first.network {
+            refusal = "the wallet is no longer the synced one the cycle read"
+        } else if !Self.historyIsPersisted(
+            upTo: scannedTip,
+            watermark: SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot(),
+            walletId: wallet.walletId) {
+            refusal = "the wallet store is behind the sync"
+        } else {
+            let resolution = walletPayouts(for: [order], among: await dao.all(), in: wallet)
+            if resolution == nil {
+                refusal = "the wallet could not be read"
+            } else if !Self.holdsNoPayout(for: order, in: resolution) {
+                refusal = "a transaction that may be its payout is in the wallet now"
+            }
+        }
+        guard let refusal else { return true }
+        markWalletReadFailed([order])
+        DWLogger.log("SwapTrackingService: order \(order.id) not let go on a second look — \(refusal)")
+        return false
+    }
+
+    /// Whether a wallet read says it holds no payout for `order`: the read succeeded, gave
+    /// the order no transaction, and left none that may be its payout unsettled.
+    static func holdsNoPayout(for order: SwapOrder, in resolution: PayoutResolution<String>?) -> Bool {
+        guard let resolution else { return false }
+        return resolution.assigned[order.id] == nil && !resolution.contested.contains(order.id)
+    }
+
     /// Whether the store holds the wallet's transactions up to the height the sync reached.
     ///
     /// The sync state turns "done" on the network phases alone, while the transactions of
@@ -595,6 +642,8 @@ final class SwapTrackingService {
     ///   "nothing there".
     /// An order with funds in flight has had its grace already, so the first two are all it
     /// needs.
+    /// The wallet's word here is the cycle's read; the caller asks the wallet once more
+    /// before acting on a yes (`walletStillHoldsNoPayout`).
     /// Until the answers come the order stays, polled at a slow pace (`isDueForPoll`). The
     /// one exception is an order whose deposit is on record: expiring it loses nothing — it
     /// keeps its row and is still matched to a late payout (`mayStillBePaidOut`) — so

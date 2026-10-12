@@ -926,6 +926,26 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertTrue(mayExpire(wallet(writtenTo: 1_001)))
     }
 
+    func testAPayoutWrittenDuringThePollKeepsTheOrder() {
+        // The cycle's first read found nothing for the order, and the provider's and the
+        // chain's "nothing" came back. Before it is let go the wallet is read again.
+        let order = buyOrder(id: "0xa", createdSecondsAgo: 6 * 86_400)
+        let twin = buyOrder(id: "0xb", createdSecondsAgo: 6 * 86_400)
+        func secondLook(_ orders: [SwapOrder], _ transactions: [PayoutFixture]) -> PayoutResolution<String> {
+            let resolution = SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions)
+            return PayoutResolution(
+                assigned: resolution.assigned.mapValues(\.txHashHexString), contested: resolution.contested)
+        }
+        XCTAssertTrue(SwapTrackingService.holdsNoPayout(for: order, in: secondLook([order], [])))
+        // Its payout was written meanwhile: it stays, for a later poll to complete.
+        let written = [payout("aa", secondsAgo: 5 * 86_400)]
+        XCTAssertFalse(SwapTrackingService.holdsNoPayout(for: order, in: secondLook([order], written)))
+        // So it does with a transaction that may be its payout or another order's.
+        XCTAssertFalse(SwapTrackingService.holdsNoPayout(for: order, in: secondLook([order, twin], written)))
+        // And when the second read fails.
+        XCTAssertFalse(SwapTrackingService.holdsNoPayout(for: order, in: nil))
+    }
+
     func testAFailedWalletReadCannotLetAnUnpaidOrderGo() {
         // A wallet read that failed leaves the cycle's wallet unsynced, so it vouches for
         // nothing — and without the wallet's word no order is let go.
