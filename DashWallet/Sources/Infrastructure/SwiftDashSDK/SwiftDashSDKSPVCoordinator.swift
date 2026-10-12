@@ -575,6 +575,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.dataDirectory(HostUnsupportedNetwork(network: network)))
         }
 
+        // The scope the data directory is built from. A devnet's scope
+        // follows the configured devnet name, which can change across the
+        // awaits below; everything keyed by scope here uses this one.
+        let scope = network.persistenceScope
         let dataDir: String
         do {
             dataDir = try makeSPVDataDirectory(for: network).path
@@ -659,9 +663,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // start: the store may be anchored above their history. Before
         // startSpv for the same reason.
         let appliedChainResync = await applyPendingChainResyncIfNeeded(
-            for: network, dataDir: dataDir, manager: manager)
+            for: network, scope: scope, dataDir: dataDir, manager: manager)
         let rebuiltForWalletIds = await rebuildChainStoreIfPending(
-            for: network, dataDir: dataDir, manager: manager,
+            for: network, scope: scope, dataDir: dataDir, manager: manager,
             storeAlreadyCleared: appliedChainResync)
 
         // After the rebuild, which re-arms this scan for an imported wallet.
@@ -697,11 +701,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // Same contract as the resync marker: consumed only once the client
         // that anchors the rebuilt store is running.
         if !rebuiltForWalletIds.isEmpty {
-            SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: network.persistenceScope)
+            SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope)
         }
 
         runningNetwork = network
-        runningScope = network.persistenceScope
+        runningScope = scope
         lastError = nil
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
@@ -777,8 +781,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 }
                 self.lastError = error.localizedDescription
                 state = .error
-                // Only a stop that was actually issued can leave a client
-                // behind; a failed `isSpvRunning()` query cannot.
+                // A failed `isSpvRunning()` query leaves no client behind.
+                // Any throw from `stopSpv()` counts, including one the SDK
+                // raises before the native stop: the two are not told apart.
                 if stopAttempted,
                    let stopping = runningScope ?? SwiftDashSDKHost.shared.runningNetwork?.persistenceScope {
                     spvStopFailedScopes.insert(stopping)
@@ -887,6 +892,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func applyPendingChainResyncIfNeeded(
         for network: Network,
+        scope: String,
         dataDir: String,
         manager: PlatformWalletManager
     ) async -> Bool {
@@ -895,7 +901,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
             return false
         }
-        guard await clearChainStoreBeforeStart(for: network, dataDir: dataDir, reason: "chain resync") else {
+        guard await clearChainStoreBeforeStart(scope: scope, dataDir: dataDir, reason: "chain resync") else {
             return false
         }
 
@@ -934,11 +940,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func rebuildChainStoreIfPending(
         for network: Network,
+        scope: String,
         dataDir: String,
         manager: PlatformWalletManager,
         storeAlreadyCleared: Bool
     ) async -> [Data] {
-        let scope = network.persistenceScope
         guard let pending = SPVChainStoreRebuild.pendingWalletIds(scope: scope) else { return [] }
 
         // Only a wallet this start loads can be rescanned. One that is not
@@ -961,7 +967,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         if !storeAlreadyCleared {
-            guard await clearChainStoreBeforeStart(for: network, dataDir: dataDir, reason: "chain store rebuild") else {
+            guard await clearChainStoreBeforeStart(scope: scope, dataDir: dataDir, reason: "chain store rebuild") else {
                 return []
             }
         }
@@ -995,16 +1001,24 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// into the temporary directory (same volume, so the rename is atomic) and
     /// only then deleted, so a failure never leaves the store half removed —
     /// it throws with the store untouched, or the store is gone. Deleting the
-    /// moved copy and recreating the empty directory are best effort: the
-    /// system purges the temporary directory, and `startSpv` creates the data
-    /// directory itself. Never performed on MainActor.
+    /// moved copy and recreating the empty directory are best effort: a copy
+    /// left behind is removed by the next clear (or purged by the system), and
+    /// `startSpv` creates the data directory itself. Never performed on
+    /// MainActor.
     private nonisolated static func resetSPVStore(atPath dataDir: String) async throws {
         try await Task.detached(priority: .userInitiated) {
             let fileManager = FileManager()
             let dir = URL(fileURLWithPath: dataDir, isDirectory: true)
+            let movedPrefix = "spv-store-"
+            // Copies an earlier clear moved away but was interrupted deleting.
+            let temporary = fileManager.temporaryDirectory
+            for leftover in (try? fileManager.contentsOfDirectory(atPath: temporary.path)) ?? []
+            where leftover.hasPrefix(movedPrefix) {
+                try? fileManager.removeItem(at: temporary.appendingPathComponent(leftover))
+            }
             if fileManager.fileExists(atPath: dir.path) {
-                let removed = fileManager.temporaryDirectory
-                    .appendingPathComponent("spv-store-\(UUID().uuidString)", isDirectory: true)
+                let removed = temporary
+                    .appendingPathComponent("\(movedPrefix)\(UUID().uuidString)", isDirectory: true)
                 try fileManager.moveItem(at: dir, to: removed)
                 try? fileManager.removeItem(at: removed)
             }
@@ -1012,13 +1026,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }.value
     }
 
-    /// Clear `network`'s chain store ahead of `startSpv`, for the birth-height
-    /// resync and the import rebuild alike. Returns false, with the store
-    /// untouched, when this scope's SPV stop failed earlier in this process
-    /// (see `spvStopFailedScopes`) or the store could not be moved away.
+    /// Clear `scope`'s chain store at `dataDir` ahead of `startSpv`, for the
+    /// birth-height resync and the import rebuild alike. Returns false, with
+    /// the store untouched, when this scope's SPV stop failed earlier in this
+    /// process (see `spvStopFailedScopes`) or the store could not be moved
+    /// away.
     @MainActor
-    private func clearChainStoreBeforeStart(for network: Network, dataDir: String, reason: String) async -> Bool {
-        let scope = network.persistenceScope
+    private func clearChainStoreBeforeStart(scope: String, dataDir: String, reason: String) async -> Bool {
         guard !spvStopFailedScopes.contains(scope) else {
             Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
             DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
