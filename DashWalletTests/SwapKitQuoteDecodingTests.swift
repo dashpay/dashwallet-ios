@@ -494,11 +494,57 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertFalse(buyOrder(status: .refunded).mayStillBePaidOut)
         XCTAssertFalse(buyOrder(status: .failed).mayStillBePaidOut)
         // Expired is us no longer asking; a late payout still belongs to a funded order,
-        // however long ago it expired — but an expired order nobody paid claims nothing.
+        // however long ago it expired. One nobody paid keeps a claim to what was there as
+        // it was let go (`latestPayoutDate`), and gives it up `latePayoutSeconds` later.
         XCTAssertTrue(buyOrder(
             status: .expired, depositSeenSecondsAgo: 86_400, finalisedSecondsAgo: 10 * SwapOrder.latePayoutSeconds
         ).mayStillBePaidOut)
-        XCTAssertFalse(buyOrder(status: .expired, finalisedSecondsAgo: 60).mayStillBePaidOut)
+        let letGo = buyOrder(status: .expired, finalisedSecondsAgo: 60)
+        XCTAssertTrue(letGo.mayStillBePaidOut(now: now))
+        XCTAssertFalse(letGo.mayStillBePaidOut(now: now.addingTimeInterval(TimeInterval(SwapOrder.latePayoutSeconds))))
+    }
+
+    func testAnOrderLetGoBesideItsPayoutStillTakesIt() {
+        // Let go unpaid five hours ago — and its payout had been written a moment before,
+        // unread. The order takes it and is completed after all, also once the payout is
+        // mined and carries its block's time, a little after the order was let go.
+        let letGo = buyOrder(
+            id: "0xa", status: .expired, finalisedSecondsAgo: 5 * 3_600, createdSecondsAgo: 6 * 86_400)
+        XCTAssertEqual(assignments([letGo], [payout("aa", secondsAgo: 5 * 3_600 + 60)]), ["0xa": "aa"])
+        XCTAssertEqual(assignments([letGo], [payout("aa", secondsAgo: 5 * 3_600 - 600)]), ["0xa": "aa"])
+        // A receive that came hours after it was let go is not its payout.
+        XCTAssertEqual(assignments([letGo], [payout("bb", secondsAgo: 3_600)]), [:])
+        // It only takes what the others left: a live order for the same amount comes first,
+        // and is not held up by it.
+        let live = buyOrder(id: "0xb", createdSecondsAgo: 5 * 86_400)
+        let resolution = SwapBuyTransactionMatcher.payoutResolution(
+            among: [letGo, live], in: [payout("aa", secondsAgo: 5 * 3_600 + 60)], now: now)
+        XCTAssertEqual(resolution.assigned.mapValues(\.txHashHexString), ["0xb": "aa"])
+        XCTAssertTrue(resolution.contested.isEmpty)
+    }
+
+    func testANamedPayoutIsNotBoundedByItsDate() {
+        // Completed four hours ago. Its payout sat unmined for three and now carries a
+        // block time past the order's bound: unnamed, the order would lose it there.
+        let order = buyOrder(
+            id: "0xa", status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: 4 * 3_600,
+            createdSecondsAgo: 86_400)
+        XCTAssertEqual(assignments([order], [payout("aa", secondsAgo: 4 * 3_600)]), ["0xa": "aa"])
+        XCTAssertEqual(assignments([order], [payout("aa", secondsAgo: 3_600)]), [:])
+        // The tracker writes the hash into the order while the first holds, and then it
+        // stays matched.
+        var named = order
+        named.outboundTxHash = "aa"
+        XCTAssertEqual(assignments([named], [payout("aa", secondsAgo: 3_600)]), ["0xa": "aa"])
+        // Only a match nothing can change is written down: with a live order beside it
+        // that fits the same transaction, the completed one has it for now, unnamed.
+        let live = buyOrder(id: "0xb", createdSecondsAgo: 12 * 3_600)
+        let early = [payout("aa", secondsAgo: 4 * 3_600)]
+        XCTAssertEqual(
+            SwapBuyTransactionMatcher.payoutResolution(among: [order], in: early, now: now).unshared, ["0xa"])
+        let shared = SwapBuyTransactionMatcher.payoutResolution(among: [order, live], in: early, now: now)
+        XCTAssertEqual(shared.assigned.mapValues(\.txHashHexString), ["0xa": "aa"])
+        XCTAssertTrue(shared.unshared.isEmpty)
     }
 
     func testOrdersSavedBeforeDepositsWereRecordedKeepTheirOldMatching() {
@@ -538,7 +584,7 @@ final class BuySwapOrderTests: XCTestCase {
     }
 
     private func assignments(_ orders: [SwapOrder], _ transactions: [PayoutFixture]) -> [String: String] {
-        SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions).assigned.mapValues(\.txHashHexString)
+        SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions, now: now).assigned.mapValues(\.txHashHexString)
     }
 
     func testALiveOrderDoesNotTakeAnExpiredOrdersLatePayout() {
@@ -552,7 +598,8 @@ final class BuySwapOrderTests: XCTestCase {
         // Two payouts do not settle it either: nothing says they arrive in the order the
         // attempts were made.
         XCTAssertEqual(assignments([funded, live], [payout("aa", secondsAgo: 300), payout("bb", secondsAgo: 60)]), [:])
-        // An expired order nobody paid is no claimant, so it stands in nobody's way.
+        // An expired order nobody paid only claims what was there about when it was let
+        // go, and only what the others left: it stands in nobody's way.
         let unpaid = buyOrder(id: "0xa", status: .expired, finalisedSecondsAgo: 86_400, createdSecondsAgo: 6 * 86_400)
         XCTAssertEqual(assignments([unpaid, live], [payout("aa", secondsAgo: 60)]), ["0xb": "aa"])
     }
@@ -932,7 +979,7 @@ final class BuySwapOrderTests: XCTestCase {
         let order = buyOrder(id: "0xa", createdSecondsAgo: 6 * 86_400)
         let twin = buyOrder(id: "0xb", createdSecondsAgo: 6 * 86_400)
         func secondLook(_ orders: [SwapOrder], _ transactions: [PayoutFixture]) -> PayoutResolution<String> {
-            let resolution = SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions)
+            let resolution = SwapBuyTransactionMatcher.payoutResolution(among: orders, in: transactions, now: now)
             return PayoutResolution(
                 assigned: resolution.assigned.mapValues(\.txHashHexString), contested: resolution.contested)
         }

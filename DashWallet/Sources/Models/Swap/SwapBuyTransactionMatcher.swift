@@ -39,6 +39,9 @@ struct PayoutResolution<T> {
     /// transactions they fit as there are completed orders fitting those: each can have
     /// its payout there. With fewer, somebody's has not arrived.
     var contestedWithEnough: Set<String> = []
+    /// The ones of `assigned` whose transaction no other order fits: nothing that turns up
+    /// later can make it somebody else's.
+    var unshared: Set<String> = []
 }
 
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
@@ -80,18 +83,28 @@ enum SwapBuyTransactionMatcher {
     }
 
     /// The latest date a transaction may carry and still be `order`'s payout; nil when there
-    /// is no such bound.
+    /// is no such bound. That date is the time the wallet first saw the transaction until
+    /// it is mined, and its block's time from then on — the store keeps no other — so a
+    /// match made on it can lapse on confirmation. The tracker therefore writes a matched
+    /// payout's hash into the order while the bound still holds (`settleLatePayouts`),
+    /// when no other order fits that transaction: an order that names its payout is not
+    /// bounded by date.
     /// - A completed order's payout exists by the time it is finalised (plus
     ///   `timestampSlack`), so a later one is somebody else's.
     /// - An expired order with a deposit on record is owed a payout that arrives within
     ///   `SwapOrder.latePayoutSeconds` of the expiry. The bound is on the transaction, so a
     ///   payout that arrived in time is still found however late the wallet is looked at.
+    /// - An expired order nobody paid is owed nothing new. It can still take a transaction
+    ///   from about the time it was let go (`timestampSlack`) — one it would have taken a
+    ///   moment earlier, had the wallet shown it.
     static func latestPayoutDate(for order: SwapOrder) -> TimeInterval? {
         guard order.finalisedAt > 0 else { return nil }
         switch order.status {
         case .completed: return TimeInterval(order.finalisedAt) + timestampSlack
         case .expired where !order.isLegacyRecord:
-            return TimeInterval(order.finalisedAt + SwapOrder.latePayoutSeconds)
+            return order.hasDepositOnRecord
+                ? TimeInterval(order.finalisedAt + SwapOrder.latePayoutSeconds)
+                : TimeInterval(order.finalisedAt) + timestampSlack
         default: return nil
         }
     }
@@ -160,7 +173,8 @@ enum SwapBuyTransactionMatcher {
     /// 3. orders that are still owed a payout: the ones in flight (an active status) and the
     ///    expired ones with a deposit on record. Expiry is us no longer asking, not the
     ///    provider's word, so an expired order's late payout is not a newer order's to take;
-    /// 4. orders saved before deposits were recorded that have ended — these only take what
+    /// 4. ended orders with no deposit to go by: the ones saved before deposits were
+    ///    recorded, and the expired ones nobody paid — these only take what
     ///    the others left, so an old attempt cannot stand between a live order and its payout.
     ///    Within each of tiers 2–4: an order that is alone on its transactions takes the
     ///    earliest. Orders that share any transaction get none of them, however many there
@@ -173,14 +187,14 @@ enum SwapBuyTransactionMatcher {
     ///    tier says who is served first, not which transaction is whose. With a single
     ///    transaction there is nothing to mix up, and the earlier tier has it. An order
     ///    that fits a transaction held back this way takes no other one either.
-    ///    Whether an order's deposit is on record does not rank it here — that record can
-    ///    lag behind a payout that is already in the wallet.
+    ///    Among orders in flight a deposit on record does not rank one above another —
+    ///    that record can lag behind a payout that is already in the wallet.
     /// Orders that can no longer be paid out (`mayStillBePaidOut`) claim nothing.
     ///
     /// Orders left without a transaction because one they fit was held back are reported
     /// as `contested`: a payout that may be theirs is in the wallet, which is not the same
     /// as none having arrived. They stay so until the others stop claiming (refunded,
-    /// failed, let go unpaid) or move to an earlier tier; orders that have all ended keep
+    /// failed, let go unpaid and past their claim) or move to an earlier tier; orders that have all ended keep
     /// sharing for good, and their payouts stay unlabelled. An order whose only fitting
     /// transaction went to an earlier tier is not contested: the provider says that
     /// order was paid, and the transaction is the one payout there is.
@@ -189,11 +203,12 @@ enum SwapBuyTransactionMatcher {
     /// `orders`.
     static func payoutResolution<T: SwapPayoutCandidate>(
         among orders: [SwapOrder],
-        in transactions: [T]
+        in transactions: [T],
+        now: Date = Date()
     ) -> PayoutResolution<T> {
         guard !transactions.isEmpty else { return PayoutResolution() }
         let claimants = orders
-            .filter { $0.isBuy && $0.mayStillBePaidOut }
+            .filter { $0.isBuy && $0.mayStillBePaidOut(now: now) }
             .sorted { $0.timestamp < $1.timestamp }
         guard !claimants.isEmpty else { return PayoutResolution() }
 
@@ -237,7 +252,9 @@ enum SwapBuyTransactionMatcher {
         let unnamed = claimants.filter { assigned[$0.id] == nil }
         let completed = unnamed.filter { $0.status == .completed }
         let open = unnamed.filter { $0.status != .completed }
-        let isOwed: (SwapOrder) -> Bool = { $0.status.isActive || !$0.isLegacyRecord }
+        // An expired order nobody paid ranks with the legacy ones: it only takes what the
+        // others left.
+        let isOwed: (SwapOrder) -> Bool = { $0.status.isActive || (!$0.isLegacyRecord && $0.hasDepositOnRecord) }
         for var tier in [completed, open.filter(isOwed), open.filter { !isOwed($0) }] {
             // An order that fits a held-back transaction is part of that open question: it
             // takes nothing, and what else it fits is held back with it.
@@ -289,7 +306,11 @@ enum SwapBuyTransactionMatcher {
             let sharing = paid.filter { fits($0, anyOf: reachable) }
             if !reachable.isEmpty, reachable.count >= sharing.count { enough.insert(order.id) }
         }
-        return PayoutResolution(assigned: assigned, contested: contested, contestedWithEnough: enough)
+        let unshared = assigned.filter { id, tx in
+            !claimants.contains { $0.id != id && fits($0, anyOf: [tx]) }
+        }
+        return PayoutResolution(
+            assigned: assigned, contested: contested, contestedWithEnough: enough, unshared: Set(unshared.keys))
     }
 
     private static func matches<T: SwapPayoutCandidate>(

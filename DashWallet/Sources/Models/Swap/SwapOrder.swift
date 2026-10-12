@@ -349,16 +349,23 @@ extension SwapOrder {
     /// expiry is us no longer asking, and a deposit handed to the provider later is paid out
     /// all the same; the tracker completes the order when it is. Which transactions it may
     /// still take is bounded by their date (`SwapBuyTransactionMatcher.latestPayoutDate`),
-    /// not by when anybody looks. An expired order nobody paid can not, and must not claim
-    /// an unrelated receive of a similar amount.
-    var mayStillBePaidOut: Bool {
+    /// not by when anybody looks. An expired order nobody paid must not claim an unrelated
+    /// later receive of a similar amount, but a payout that was there as it was let go and
+    /// had not been read yet is still its own: it is bounded to that moment, and stops
+    /// claiming altogether `latePayoutSeconds` later.
+    var mayStillBePaidOut: Bool { mayStillBePaidOut(now: Date()) }
+
+    func mayStillBePaidOut(now: Date) -> Bool {
         // An order saved before deposits were recorded has no such record to judge by. It
         // keeps what it had: any of them could be matched to its payout, whatever its status
         // — otherwise payouts already labelled "Converted" would lose the label on upgrade.
         guard !isLegacyRecord else { return true }
         switch status {
         case .refunded, .failed: return false
-        case .expired: return hasDepositOnRecord && finalisedAt > 0
+        case .expired:
+            guard finalisedAt > 0 else { return false }
+            return hasDepositOnRecord
+                || Int64(now.timeIntervalSince1970) <= finalisedAt + SwapOrder.latePayoutSeconds
         case .notStarted, .pending, .swapping, .unknown, .completed: return true
         }
     }

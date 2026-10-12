@@ -130,9 +130,14 @@ final class SwapTrackingService {
     private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool, readFailed: Bool)] = [:]
     private let pacedPollLock = NSLock()
 
-    /// When expired orders were last checked for a late payout (unix s). Read and written
+    /// When ended orders were last checked for a late payout (unix s). Read and written
     /// only by the poll loop itself, between cycles.
     private var lastLatePayoutCheck: Int64 = 0
+
+    /// Completed Buy orders found to name a transaction of the wallet as their payout:
+    /// nothing is left to settle for them (`settleLatePayouts`). In memory only, and
+    /// touched only by the poll loop.
+    private var ordersNamingTheirPayout: Set<String> = []
 
     private init() {}
 
@@ -266,26 +271,37 @@ final class SwapTrackingService {
                             + " synced to \(scannedTip) — the wallet does not vouch for a missing payout this cycle")
                 }
             }
-            // One wallet read per cycle serves both the orders being polled and the
-            // expired ones whose payout may still turn up. The latter are only looked for
-            // at the idle pace — nothing about them changes fast — and at the dormant pace
-            // once every one of them is past its late-payout window: a transaction dated
-            // inside it can then only surface through a rescan or a settled ambiguity.
-            let expiredFunded = !wallet.synced ? [] : orders.filter {
-                $0.isBuy && !$0.isLegacyRecord && $0.status == .expired && $0.mayStillBePaidOut
-                    && !$0.isForeign(toWalletId: wallet.walletId, network: wallet.network)
+            // One wallet read per cycle serves both the orders being polled and the ended
+            // ones whose payout may still turn up: the expired ones that still claim, and
+            // the completed ones still inside their window (`settleLatePayouts`). They are
+            // only looked for at the idle pace — nothing about them changes fast — and at
+            // the dormant pace once every one of them is past its window: a transaction
+            // dated inside it can then only surface through a rescan or a settled
+            // ambiguity. The window counts one dormant interval longer, so an order let go
+            // a moment before its payout became readable is not left for hours.
+            let inWindow: (SwapOrder) -> Bool = {
+                SwapBuyTransactionMatcher.latestPayoutDate(for: $0).map {
+                    TimeInterval(nowSeconds - Constants.dormantPollIntervalSeconds) <= $0
+                } ?? true
             }
-            let anyInWindow = expiredFunded.contains {
-                SwapBuyTransactionMatcher.latestPayoutDate(for: $0).map { TimeInterval(nowSeconds) <= $0 } ?? true
+            let lateClaimants = !wallet.synced ? [] : orders.filter {
+                guard $0.isBuy, !$0.isForeign(toWalletId: wallet.walletId, network: wallet.network)
+                else { return false }
+                switch $0.status {
+                case .expired: return !$0.isLegacyRecord && $0.mayStillBePaidOut
+                case .completed:
+                    return $0.finalisedAt > 0 && inWindow($0) && !ordersNamingTheirPayout.contains($0.id)
+                default: return false
+                }
             }
-            let lateInterval = anyInWindow
+            let lateInterval = lateClaimants.contains(where: inWindow)
                 ? Constants.unpaidIdlePollIntervalSeconds : Constants.dormantPollIntervalSeconds
-            let lateCandidates = nowSeconds - lastLatePayoutCheck >= lateInterval ? expiredFunded : []
+            let lateCandidates = nowSeconds - lastLatePayoutCheck >= lateInterval ? lateClaimants : []
             if let resolution = walletPayouts(for: due + lateCandidates, among: orders, in: wallet) {
                 let payouts = resolution.assigned
                 wallet.contested = resolution.contested
                 if !lateCandidates.isEmpty { lastLatePayoutCheck = nowSeconds }
-                await completeExpiredOrders(lateCandidates, paidOutBy: payouts)
+                await settleLatePayouts(lateCandidates, paidOutBy: payouts, unshared: resolution.unshared)
                 await pollOrders(due, payouts: payouts, wallet: wallet)
             } else {
                 // The wallet could not be read: nothing about it is known this cycle.
@@ -635,7 +651,7 @@ final class SwapTrackingService {
     /// - the provider has to have answered this cycle (`providerAnswered`);
     /// - the order's own wallet has to be synced and its transactions written to the store
     ///   (`walletReady`): until then its payout may be in a wallet without being visible,
-    ///   and an expired unpaid order cannot claim it afterwards;
+    ///   and an expired unpaid order can only claim it afterwards if it existed by then;
     /// - an unpaid order not before `settleSeconds` past its deadline — a transfer sent in
     ///   the last minutes still has to show up, at the provider or on chain;
     /// - an order whose deposit address we watch also needs that lookup to have answered
@@ -668,21 +684,44 @@ final class SwapTrackingService {
 
     // MARK: - Private: Late payouts
 
-    /// An expired Buy order with a deposit on record is no longer polled, but its payout can
-    /// still arrive — the user handed the deposit to the provider, or the provider was just
-    /// slow. When a transaction dated within `SwapOrder.latePayoutSeconds` of the expiry is
-    /// in the wallet, the order is completed after all, so it does not stay "Not confirmed"
-    /// beside its own payout.
-    private func completeExpiredOrders(_ candidates: [SwapOrder], paidOutBy payouts: [String: String]) async {
+    /// An ended Buy order is no longer polled, but its payout can still turn up in the wallet.
+    /// - An expired order with a deposit on record: the user handed the deposit to the
+    ///   provider, or the provider was just slow. With a transaction dated within
+    ///   `SwapOrder.latePayoutSeconds` of the expiry in the wallet, the order is completed
+    ///   after all, so it does not stay "Not confirmed" beside its own payout.
+    /// - An expired order nobody paid, let go a moment before its payout became readable:
+    ///   completed the same way, and the payout is the proof of its deposit.
+    /// - A completed order that does not name the transaction it is matched to (the
+    ///   provider's answer carries no Dash payout hash): the hash is written into it, so
+    ///   the match no longer depends on the transaction's date, which changes when it is
+    ///   mined. Only for a transaction no other order fits (`unshared`) — a match that
+    ///   another order's payout turning up could still change is not made permanent.
+    private func settleLatePayouts(
+        _ candidates: [SwapOrder],
+        paidOutBy payouts: [String: String],
+        unshared: Set<String>
+    ) async {
         for order in candidates {
-            guard let txHash = payouts[order.id],
-                  var updated = await dao.get(byId: order.id), updated.status == .expired else { continue }
+            guard let txHash = payouts[order.id], var updated = await dao.get(byId: order.id) else { continue }
             let nowSeconds = Int64(Date().timeIntervalSince1970)
-            updated.status = .completed
-            updated.outboundTxHash = txHash
-            updated.lastChecked = nowSeconds
-            updated.finalisedAt = nowSeconds
-            DWLogger.log("SwapTrackingService: order \(order.id) expired → completed, payout in the wallet")
+            switch updated.status {
+            case .expired:
+                updated.status = .completed
+                updated.outboundTxHash = txHash
+                if updated.depositSeenAt == nil { updated.depositSeenAt = nowSeconds }
+                updated.lastChecked = nowSeconds
+                updated.finalisedAt = nowSeconds
+                DWLogger.log("SwapTrackingService: order \(order.id) expired → completed, payout in the wallet")
+            case .completed where updated.outboundTxHash?.lowercased() == txHash.lowercased():
+                ordersNamingTheirPayout.insert(order.id)
+                continue
+            case .completed where unshared.contains(order.id):
+                updated.outboundTxHash = txHash
+                ordersNamingTheirPayout.insert(order.id)
+                DWLogger.log("SwapTrackingService: order \(order.id) completed, payout found in the wallet")
+            default:
+                continue
+            }
             await dao.update(dto: updated)
         }
     }
@@ -909,7 +948,7 @@ final class SwapTrackingService {
         guard !wantedBuys.isEmpty else { return PayoutResolution() }
         guard let resolution = SwapBuyTransactionMatcher.walletAssignments(
             among: orders, walletId: wallet.walletId, network: wallet.network, strict: true) else { return nil }
-        var result = PayoutResolution<String>(contested: resolution.contested)
+        var result = PayoutResolution<String>(contested: resolution.contested, unshared: resolution.unshared)
         for order in wantedBuys {
             if let tx = resolution.assigned[order.id] { result.assigned[order.id] = tx.txHashHexString }
         }
