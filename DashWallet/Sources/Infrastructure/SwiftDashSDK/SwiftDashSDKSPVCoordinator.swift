@@ -1500,12 +1500,3 @@ enum SPVChainResyncMarker {
     }
 }
 
-extension SPVChainStoreRebuild {
-    /// Clear every pending rebuild: the wallets they name are gone (wallet
-    /// wipe or local-store reset).
-    static func clearAll() {
-        for scope in DevnetConfiguration.allPersistenceScopes() {
-            clear(scope: scope)
-        }
-    }
-}

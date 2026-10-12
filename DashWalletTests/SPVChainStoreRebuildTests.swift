@@ -8,16 +8,15 @@ import XCTest
 #endif
 
 final class SPVChainStoreRebuildTests: XCTestCase {
-    private var suiteName: String!
-    private var defaults: UserDefaults!
+    private var directory: URL!
 
     override func setUp() {
-        suiteName = "SPVChainStoreRebuildTests.\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suiteName)
+        directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SPVChainStoreRebuildTests-markers-\(UUID().uuidString)", isDirectory: true)
     }
 
     override func tearDown() {
-        defaults.removePersistentDomain(forName: suiteName)
+        try? FileManager.default.removeItem(at: directory)
     }
 
     private func walletId(_ byte: UInt8) -> Data {
@@ -25,85 +24,110 @@ final class SPVChainStoreRebuildTests: XCTestCase {
     }
 
     func testNothingIsPendingUntilAnImportArmsIt() {
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory))
     }
 
-    func testImportArmsOnlyItsOwnScope() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testImportArmsOnlyItsOwnScope() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
 
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults))
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet-sakura", defaults: defaults))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet-sakura", directory: directory))
     }
 
-    func testSecondImportJoinsThePendingRebuildAndARepeatAddsNothing() {
-        XCTAssertTrue(SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults))
-        XCTAssertTrue(SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", defaults: defaults))
-        XCTAssertFalse(SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults))
+    func testSecondImportJoinsThePendingRebuildAndARepeatAddsNothing() throws {
+        XCTAssertTrue(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory))
+        XCTAssertTrue(try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", directory: directory))
+        XCTAssertFalse(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory))
 
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory),
             [walletId(0xA1), walletId(0xB2)])
     }
 
-    func testFinishDropsOnlyTheRebuiltWalletsAndKeepsOnesArmedMeanwhile() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", defaults: defaults)
+    func testFinishDropsOnlyTheRebuiltWalletsAndKeepsOnesArmedMeanwhile() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", directory: directory)
 
-        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", defaults: defaults)
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", directory: directory)
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory),
             [walletId(0xB2)])
 
-        SPVChainStoreRebuild.finish(walletIds: [walletId(0xB2)], scope: "mainnet", defaults: defaults)
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults))
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xB2)], scope: "mainnet", directory: directory)
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
     }
 
-    func testFinishOfAWalletThatIsNotPendingChangesNothing() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testFinishOfAWalletThatIsNotPendingChangesNothing() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
 
-        SPVChainStoreRebuild.finish(walletIds: [walletId(0xEE)], scope: "testnet", defaults: defaults)
-        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", defaults: defaults)
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xEE)], scope: "testnet", directory: directory)
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", directory: directory)
 
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
-    func testClearFinishesOneScopeAndLeavesTheOther() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testClearFinishesOneScopeAndLeavesTheOther() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
 
-        SPVChainStoreRebuild.clear(scope: "mainnet", defaults: defaults)
+        SPVChainStoreRebuild.clear(scope: "mainnet", directory: directory)
 
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
-    func testPendingRebuildSurvivesANewDefaultsInstance() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xC3), scope: "testnet", defaults: defaults)
+    func testClearAllDropsEveryScope() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "devnet-sakura", directory: directory)
 
-        let reopened = UserDefaults(suiteName: suiteName)!
+        SPVChainStoreRebuild.clearAll(directory: directory)
+
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "devnet-sakura", directory: directory))
+    }
+
+    func testArmedMarkerIsAFileOnDiskBeforeArmReturns() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xC3), scope: "testnet", directory: directory)
+
+        let marker = directory.appendingPathComponent("testnet").appendingPathComponent(String(repeating: "c3", count: 32))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: marker.path))
+    }
+
+    func testArmThrowsWhenTheMarkerCannotBeWritten() throws {
+        // A file where the marker directory should be.
+        try Data([0]).write(to: directory)
+
+        XCTAssertThrowsError(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory))
+    }
+
+    func testUnrelatedFilesInAScopeDirectoryAreNotWalletIds() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try Data().write(to: directory.appendingPathComponent("testnet/.DS_Store"))
+
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: reopened),
-            [walletId(0xC3)])
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
+            [walletId(0xA1)])
     }
 
     // MARK: - Applying a pending rebuild
 
     @MainActor
-    func testApplyRewindsThenClearsAndReturnsOnlyLoadedWallets() async {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", defaults: defaults)
+    func testApplyRewindsThenClearsAndReturnsOnlyLoadedWallets() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", directory: directory)
         var steps: [String] = []
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { $0 == self.walletId(0xA1) },
             rewind: { walletId in
                 XCTAssertEqual(walletId, self.walletId(0xA1))
@@ -119,22 +143,22 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(steps, ["rewind", "clear"])
         // Consumed by the caller, after the start, and only for what was applied.
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1), walletId(0xB2)])
-        SPVChainStoreRebuild.finish(walletIds: applied, scope: "testnet", defaults: defaults)
+        SPVChainStoreRebuild.finish(walletIds: applied, scope: "testnet", directory: directory)
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xB2)])
     }
 
     @MainActor
-    func testApplyTouchesNothingWhenNoPendingWalletIsLoaded() async {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testApplyTouchesNothingWhenNoPendingWalletIsLoaded() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         var steps: [String] = []
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { _ in false },
             rewind: { _ in
                 steps.append("rewind")
@@ -148,7 +172,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(applied, [])
         XCTAssertEqual(steps, [])
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
@@ -158,7 +182,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { _ in true },
             rewind: { _ in
                 steps.append("rewind")
@@ -174,13 +198,13 @@ final class SPVChainStoreRebuildTests: XCTestCase {
     }
 
     @MainActor
-    func testFailedRewindLeavesTheStoreAndTheMarker() async {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testFailedRewindLeavesTheStoreAndTheMarker() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         var cleared = false
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { _ in true },
             rewind: { _ in false },
             clearStore: {
@@ -191,19 +215,19 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(applied, [])
         XCTAssertFalse(cleared)
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
     @MainActor
-    func testOneFailedRewindDoesNotHoldBackTheOtherWallets() async {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", defaults: defaults)
+    func testOneFailedRewindDoesNotHoldBackTheOtherWallets() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", directory: directory)
         var cleared = false
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { _ in true },
             rewind: { $0 == self.walletId(0xB2) },
             clearStore: {
@@ -213,26 +237,26 @@ final class SPVChainStoreRebuildTests: XCTestCase {
 
         XCTAssertEqual(applied, [walletId(0xB2)])
         XCTAssertTrue(cleared)
-        SPVChainStoreRebuild.finish(walletIds: applied, scope: "testnet", defaults: defaults)
+        SPVChainStoreRebuild.finish(walletIds: applied, scope: "testnet", directory: directory)
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
     @MainActor
-    func testRefusedClearKeepsTheMarkerForTheNextStart() async {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testRefusedClearKeepsTheMarkerForTheNextStart() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
 
         let applied = await SPVChainStoreRebuild.apply(
             scope: "testnet",
-            defaults: defaults,
+            directory: directory,
             isLoaded: { _ in true },
             rewind: { _ in true },
             clearStore: { false })
 
         XCTAssertEqual(applied, [])
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
@@ -245,45 +269,45 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         init(_ syncedHeight: UInt32) { self.syncedHeight = syncedHeight }
     }
 
-    func testAFailedStartKeepsTheAppliedWalletsPending() {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+    func testAFailedStartKeepsTheAppliedWalletsPending() throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
 
         XCTAssertThrowsError(try SPVChainStoreRebuild.finish(
-            walletIds: [walletId(0xA1)], scope: "testnet", defaults: defaults,
+            walletIds: [walletId(0xA1)], scope: "testnet", directory: directory,
             afterStarting: { throw Failure() }))
 
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 
     func testASuccessfulStartConsumesOnlyTheAppliedWallets() throws {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
-        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", defaults: defaults)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", directory: directory)
         var pendingDuringStart: [Data]?
 
         try SPVChainStoreRebuild.finish(
-            walletIds: [walletId(0xA1)], scope: "testnet", defaults: defaults,
+            walletIds: [walletId(0xA1)], scope: "testnet", directory: directory,
             afterStarting: {
-                pendingDuringStart = SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: self.defaults)
+                pendingDuringStart = SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: self.directory)
             })
 
         XCTAssertEqual(pendingDuringStart, [walletId(0xA1), walletId(0xB2)])
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xB2)])
     }
 
     func testAStartWithNothingAppliedLeavesTheMarkerAlone() throws {
-        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         var started = false
 
         try SPVChainStoreRebuild.finish(
-            walletIds: [], scope: "testnet", defaults: defaults, afterStarting: { started = true })
+            walletIds: [], scope: "testnet", directory: directory, afterStarting: { started = true })
 
         XCTAssertTrue(started)
         XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
     }
 

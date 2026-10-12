@@ -20,6 +20,10 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
     /// `Documents/SwiftDashSDK/ResetIntents/<scope>.coinjoin-rescan` — the
     /// reset's durable per-scope intent, outside every deleted directory.
     let resetIntents: URL
+    /// `Documents/SwiftDashSDK/ChainStoreRebuilds/<scope>/<wallet id>` — the
+    /// pending import rebuilds (see `SPVChainStoreRebuild`), outside every
+    /// deleted directory.
+    let chainStoreRebuilds: URL
 
     init(documents: URL) {
         let sdk = documents.appendingPathComponent("SwiftDashSDK", isDirectory: true)
@@ -27,6 +31,7 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
         shielded = sdk.appendingPathComponent("Shielded", isDirectory: true)
         spv = documents.appendingPathComponent("SPV", isDirectory: true)
         resetIntents = sdk.appendingPathComponent("ResetIntents", isDirectory: true)
+        chainStoreRebuilds = sdk.appendingPathComponent("ChainStoreRebuilds", isDirectory: true)
     }
 
     /// The roots under the user's Documents directory (created if missing,
@@ -133,7 +138,7 @@ struct WalletLocalStoreResetIntent: Sendable {
 
     /// `F_FULLFSYNC` on the file or directory: the strongest flush the
     /// platform offers (an `fsync` alone may stop at the drive cache).
-    private static func flushToStableStorage(_ url: URL) throws {
+    static func flushToStableStorage(_ url: URL) throws {
         let fd = open(url.path, O_RDONLY)
         guard fd >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
         defer { close(fd) }

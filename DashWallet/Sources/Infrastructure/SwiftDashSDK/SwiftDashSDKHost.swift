@@ -892,9 +892,16 @@ final class SwiftDashSDKHost {
         // the code after the create; a wallet that is not loaded rebuilds
         // nothing. Never withdrawn when the import fails: the SDK can throw
         // after the wallet's rows landed, and a later start then loads the
-        // wallet without passing through here again.
+        // wallet without passing through here again. An import whose marker
+        // cannot be made durable is refused before it persists anything.
         if isImported {
-            SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
+            do {
+                try SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
+            } catch {
+                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                throw HostError.walletCreationFailed(error)
+            }
         }
 
         let storage = WalletStorage()
@@ -1467,17 +1474,17 @@ final class SwiftDashSDKHost {
 
         let scope = handles.network.persistenceScope
         for entry in entries {
-            // Recreated at the import floor like an import, so a chain store
-            // that survived the lost rows may be anchored above the wallet's
-            // history too (see `SPVChainStoreRebuild`). Armed for every
-            // entry, loaded or not: a wallet an interrupted earlier attempt
-            // recreated is indistinguishable here from one that never left,
-            // and its marker may not have reached disk. Never withdrawn on
-            // failure — the SDK can throw after the wallet's rows landed, and
-            // a marker for a wallet that is not loaded deletes nothing.
-            SPVChainStoreRebuild.arm(walletId: entry.walletId, scope: scope)
             if handles.manager.wallets[entry.walletId] != nil { continue }
             do {
+                // Recreated at the import floor like an import, so a chain
+                // store that survived the lost rows may be anchored above the
+                // wallet's history too (see `SPVChainStoreRebuild`). Durable
+                // before the create, so a wallet an interrupted attempt
+                // recreated is still pending when a later start finds it
+                // loaded. Never withdrawn on failure — the SDK can throw
+                // after the wallet's rows landed, and a marker for a wallet
+                // that is not loaded deletes nothing.
+                try SPVChainStoreRebuild.arm(walletId: entry.walletId, scope: scope)
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
                     network: handles.network,

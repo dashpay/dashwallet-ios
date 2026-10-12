@@ -22,52 +22,93 @@ import Foundation
 /// wallets' filter checkpoints to the import floor, in case the running scan
 /// already walked them on the old store, and deletes the store, so the client
 /// anchors at the lowest birth height now loaded. The applied wallets are
-/// dropped from the marker once that start succeeds. Kept in UserDefaults, so a
-/// start on the other network, or one in a later launch, still rebuilds.
+/// dropped from the marker once that start succeeds.
+///
+/// One empty file per wallet, `<directory>/<scope>/<wallet id hex>`, flushed
+/// to stable storage before the import writes its first row: the wallet's
+/// rows are a synchronous database commit, and a marker that reached disk
+/// after them could be lost by an interruption that keeps the rows. A start
+/// on the other network, or one in a later launch, still rebuilds.
 ///
 /// Foundation-only so the wallet-preparation harness can compile it.
 enum SPVChainStoreRebuild {
 
-    /// Serializes the read-modify-write of a scope's pending list: imports
-    /// and the Keychain recovery arm on the main actor while the wallet wipe
-    /// clears from its own queue.
-    private static let lock = NSLock()
-
-    private static func key(scope: String) -> String {
-        "spvChainStoreRebuild.v1.pending.\(scope)"
+    /// The marker directory under the user's Documents directory.
+    static func defaultDirectory() throws -> URL {
+        try WalletLocalStoreRoots.inDocuments().chainStoreRebuilds
     }
 
-    /// Record that `walletId` was imported or recreated on `scope`. Adds to the wallets
-    /// already pending there; returns false when it was pending already.
+    private static func scopeDirectory(_ scope: String, in directory: URL?) throws -> URL {
+        try (directory ?? defaultDirectory()).appendingPathComponent(scope, isDirectory: true)
+    }
+
+    private static func name(for walletId: Data) -> String {
+        walletId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func walletId(named name: String) -> Data? {
+        guard !name.isEmpty, name.count.isMultiple(of: 2) else { return nil }
+        var bytes: [UInt8] = []
+        var index = name.startIndex
+        while index < name.endIndex {
+            let next = name.index(index, offsetBy: 2)
+            guard let byte = UInt8(name[index..<next], radix: 16) else { return nil }
+            bytes.append(byte)
+            index = next
+        }
+        return Data(bytes)
+    }
+
+    /// Record that `walletId` was imported or recreated on `scope`, durably:
+    /// it returns only once the marker and the directory entries naming it
+    /// are flushed to stable storage, and throws when they could not be —
+    /// the caller must then not create the wallet. Returns false when the
+    /// wallet was pending already.
     @discardableResult
-    static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) -> Bool {
-        lock.lock(); defer { lock.unlock() }
-        var pending = pendingWalletIds(scope: scope, defaults: defaults) ?? []
-        guard !pending.contains(walletId) else { return false }
-        pending.append(walletId)
-        defaults.set(pending, forKey: key(scope: scope))
+    static func arm(
+        walletId: Data,
+        scope: String,
+        directory: URL? = nil,
+        fileManager: FileManager = .default
+    ) throws -> Bool {
+        let scoped = try scopeDirectory(scope, in: directory)
+        let marker = scoped.appendingPathComponent(name(for: walletId), isDirectory: false)
+        guard !fileManager.fileExists(atPath: marker.path) else { return false }
+        try fileManager.createDirectory(at: scoped, withIntermediateDirectories: true)
+        try Data().write(to: marker, options: .atomic)
+        try WalletLocalStoreResetIntent.flushToStableStorage(marker)
+        try WalletLocalStoreResetIntent.flushToStableStorage(scoped)
+        try WalletLocalStoreResetIntent.flushToStableStorage(scoped.deletingLastPathComponent())
         return true
     }
 
-    /// The wallet ids pending on `scope`, or `nil` when no rebuild is pending.
-    static func pendingWalletIds(scope: String, defaults: UserDefaults = .standard) -> [Data]? {
-        guard let pending = defaults.array(forKey: key(scope: scope)) as? [Data], !pending.isEmpty else {
+    /// The wallet ids pending on `scope`, in a stable order, or `nil` when no
+    /// rebuild is pending.
+    static func pendingWalletIds(
+        scope: String,
+        directory: URL? = nil,
+        fileManager: FileManager = .default
+    ) -> [Data]? {
+        guard let scoped = try? scopeDirectory(scope, in: directory),
+              let names = try? fileManager.contentsOfDirectory(atPath: scoped.path) else {
             return nil
         }
-        return pending
+        let pending = names.sorted().compactMap(walletId(named:))
+        return pending.isEmpty ? nil : pending
     }
 
     /// Drop `walletIds` from the wallets pending on `scope`: their rebuild
-    /// ran or the wallet was removed. Ids armed
-    /// meanwhile stay pending.
-    static func finish(walletIds: [Data], scope: String, defaults: UserDefaults = .standard) {
-        lock.lock(); defer { lock.unlock() }
-        let remaining = (pendingWalletIds(scope: scope, defaults: defaults) ?? [])
-            .filter { !walletIds.contains($0) }
-        if remaining.isEmpty {
-            defaults.removeObject(forKey: key(scope: scope))
-        } else {
-            defaults.set(remaining, forKey: key(scope: scope))
+    /// ran or the wallet was removed. Ids armed meanwhile stay pending. A
+    /// marker that could not be removed stays pending and rebuilds once more.
+    static func finish(
+        walletIds: [Data],
+        scope: String,
+        directory: URL? = nil,
+        fileManager: FileManager = .default
+    ) {
+        guard let scoped = try? scopeDirectory(scope, in: directory) else { return }
+        for walletId in walletIds {
+            try? fileManager.removeItem(at: scoped.appendingPathComponent(name(for: walletId), isDirectory: false))
         }
     }
 
@@ -77,12 +118,12 @@ enum SPVChainStoreRebuild {
     static func finish(
         walletIds: [Data],
         scope: String,
-        defaults: UserDefaults = .standard,
+        directory: URL? = nil,
         afterStarting start: () throws -> Void
     ) rethrows {
         try start()
         guard !walletIds.isEmpty else { return }
-        finish(walletIds: walletIds, scope: scope, defaults: defaults)
+        finish(walletIds: walletIds, scope: scope, directory: directory)
     }
 
     /// Lower each row's `checkpoint` to `floor`, never raising it, and
@@ -110,9 +151,16 @@ enum SPVChainStoreRebuild {
         }
     }
 
-    static func clear(scope: String, defaults: UserDefaults = .standard) {
-        lock.lock(); defer { lock.unlock() }
-        defaults.removeObject(forKey: key(scope: scope))
+    static func clear(scope: String, directory: URL? = nil, fileManager: FileManager = .default) {
+        guard let scoped = try? scopeDirectory(scope, in: directory) else { return }
+        try? fileManager.removeItem(at: scoped)
+    }
+
+    /// Clear every pending rebuild: the wallets they name are gone (wallet
+    /// wipe or local-store reset).
+    static func clearAll(directory: URL? = nil, fileManager: FileManager = .default) {
+        guard let directory = directory ?? (try? defaultDirectory()) else { return }
+        try? fileManager.removeItem(at: directory)
     }
 
     /// Apply `scope`'s pending rebuild ahead of an SPV start and return the
@@ -132,12 +180,12 @@ enum SPVChainStoreRebuild {
     @MainActor
     static func apply(
         scope: String,
-        defaults: UserDefaults = .standard,
+        directory: URL? = nil,
         isLoaded: (Data) -> Bool,
         rewind: (Data) -> Bool,
         clearStore: () async -> Bool
     ) async -> [Data] {
-        guard let pending = pendingWalletIds(scope: scope, defaults: defaults) else { return [] }
+        guard let pending = pendingWalletIds(scope: scope, directory: directory) else { return [] }
         let rewound = pending.filter { isLoaded($0) && rewind($0) }
         guard !rewound.isEmpty else { return [] }
         guard await clearStore() else { return [] }
