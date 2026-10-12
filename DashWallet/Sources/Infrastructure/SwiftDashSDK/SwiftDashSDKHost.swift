@@ -888,10 +888,10 @@ final class SwiftDashSDKHost {
 
         // An imported wallet may hold history below the anchor of a chain
         // store an earlier, younger wallet left on this network. Recorded
-        // before the wallet exists, so a kill right after the create still
-        // rebuilds; a wallet that is not loaded rebuilds nothing. A failed
-        // import withdraws the marker it armed, never one an earlier import
-        // of the same phrase left pending.
+        // before the wallet exists, so the rebuild does not depend on reaching
+        // the code after the create; a wallet that is not loaded rebuilds
+        // nothing. A failed import withdraws the marker it armed, never one an
+        // earlier import of the same phrase left pending.
         var importSucceeded = false
         let armedRebuild = isImported
             && SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)

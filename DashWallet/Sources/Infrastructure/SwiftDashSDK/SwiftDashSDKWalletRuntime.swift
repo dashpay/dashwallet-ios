@@ -341,9 +341,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 #endif
     }
 
-    /// The one-time CoinJoin wide-gap scan flags and every pending birth-height
-    /// resync marker describe the stores that are now gone. Runs only after a
-    /// complete deletion.
+    /// The one-time CoinJoin wide-gap scan flags, every pending birth-height
+    /// resync marker and every pending import rebuild describe the stores that
+    /// are now gone. Runs only after a complete deletion.
     private func clearLocalStoreMaintenanceFlags() {
         CoinJoinRecovery.shared.resetRecoveryFlags()
         SPVChainResyncMarker.clearAll()

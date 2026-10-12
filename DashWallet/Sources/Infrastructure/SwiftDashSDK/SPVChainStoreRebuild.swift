@@ -20,11 +20,15 @@ import Foundation
 /// coordinator consumes it before `startSpv`: it rewinds the recorded
 /// wallets' filter checkpoints to the import floor, in case the running scan
 /// already walked them on the old store, and deletes the store, so the client
-/// anchors at the lowest birth height now loaded. Durable, so a start on the
-/// other network, or one in a later launch, still rebuilds.
+/// anchors at the lowest birth height now loaded. Kept in UserDefaults, so a
+/// start on the other network, or one in a later launch, still rebuilds.
 ///
 /// Foundation-only so the wallet-preparation harness can compile it.
 enum SPVChainStoreRebuild {
+
+    /// Serializes the read-modify-write of a scope's pending list: imports
+    /// arm on the main actor while the wallet wipe clears from its own queue.
+    private static let lock = NSLock()
 
     private static func key(scope: String) -> String {
         "spvChainStoreRebuild.v1.pending.\(scope)"
@@ -34,6 +38,7 @@ enum SPVChainStoreRebuild {
     /// already pending there; returns false when it was pending already.
     @discardableResult
     static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) -> Bool {
+        lock.lock(); defer { lock.unlock() }
         var pending = pendingWalletIds(scope: scope, defaults: defaults) ?? []
         guard !pending.contains(walletId) else { return false }
         pending.append(walletId)
@@ -53,16 +58,18 @@ enum SPVChainStoreRebuild {
     /// ran, their import failed, or the wallet was removed. Ids armed
     /// meanwhile stay pending.
     static func finish(walletIds: [Data], scope: String, defaults: UserDefaults = .standard) {
+        lock.lock(); defer { lock.unlock() }
         let remaining = (pendingWalletIds(scope: scope, defaults: defaults) ?? [])
             .filter { !walletIds.contains($0) }
         if remaining.isEmpty {
-            clear(scope: scope, defaults: defaults)
+            defaults.removeObject(forKey: key(scope: scope))
         } else {
             defaults.set(remaining, forKey: key(scope: scope))
         }
     }
 
     static func clear(scope: String, defaults: UserDefaults = .standard) {
+        lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: key(scope: scope))
     }
 }
