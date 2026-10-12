@@ -71,18 +71,6 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             [walletId(0xA1)])
     }
 
-    func testClearFinishesOneScopeAndLeavesTheOther() throws {
-        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory)
-        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
-
-        SPVChainStoreRebuild.clear(scope: "mainnet", directory: directory)
-
-        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
-        XCTAssertEqual(
-            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
-            [walletId(0xA1)])
-    }
-
     func testClearAllDropsEveryScope() throws {
         try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", directory: directory)
         try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "devnet-sakura", directory: directory)
@@ -106,6 +94,15 @@ final class SPVChainStoreRebuildTests: XCTestCase {
 
         XCTAssertThrowsError(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
         XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory))
+    }
+
+    func testArmingAPendingWalletAgainStillSucceeds() throws {
+        XCTAssertTrue(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
+        XCTAssertFalse(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
+
+        // After a clear the same wallet arms from nothing, directories included.
+        SPVChainStoreRebuild.clearAll(directory: directory)
+        XCTAssertTrue(try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory))
     }
 
     func testUnrelatedFilesInAScopeDirectoryAreNotWalletIds() throws {

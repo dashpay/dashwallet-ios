@@ -33,13 +33,14 @@ import Foundation
 /// Foundation-only so the wallet-preparation harness can compile it.
 enum SPVChainStoreRebuild {
 
+    /// Serializes the multi-step file operations: imports and the Keychain
+    /// recovery arm on the main actor while the wallet wipe clears from its
+    /// own queue.
+    private static let lock = NSLock()
+
     /// The marker directory under the user's Documents directory.
     static func defaultDirectory() throws -> URL {
         try WalletLocalStoreRoots.inDocuments().chainStoreRebuilds
-    }
-
-    private static func scopeDirectory(_ scope: String, in directory: URL?) throws -> URL {
-        try (directory ?? defaultDirectory()).appendingPathComponent(scope, isDirectory: true)
     }
 
     private static func name(for walletId: Data) -> String {
@@ -59,11 +60,18 @@ enum SPVChainStoreRebuild {
         return Data(bytes)
     }
 
+    private static func isMissingFile(_ error: Error) -> Bool {
+        let error = error as NSError
+        return error.domain == NSCocoaErrorDomain
+            && [NSFileNoSuchFileError, NSFileReadNoSuchFileError].contains(error.code)
+    }
+
     /// Record that `walletId` was imported or recreated on `scope`, durably:
-    /// it returns only once the marker and the directory entries naming it
-    /// are flushed to stable storage, and throws when they could not be —
-    /// the caller must then not create the wallet. Returns false when the
-    /// wallet was pending already.
+    /// it returns only once the marker and every directory entry naming it,
+    /// up to the directory that holds `directory`, are flushed to stable
+    /// storage — also when the marker was there already, which an earlier
+    /// arm may have written without managing to flush. Throws when they
+    /// could not be. Returns false when the wallet was pending already.
     @discardableResult
     static func arm(
         walletId: Data,
@@ -71,15 +79,19 @@ enum SPVChainStoreRebuild {
         directory: URL? = nil,
         fileManager: FileManager = .default
     ) throws -> Bool {
-        let scoped = try scopeDirectory(scope, in: directory)
+        lock.lock(); defer { lock.unlock() }
+        let root = try directory ?? defaultDirectory()
+        let scoped = root.appendingPathComponent(scope, isDirectory: true)
         let marker = scoped.appendingPathComponent(name(for: walletId), isDirectory: false)
-        guard !fileManager.fileExists(atPath: marker.path) else { return false }
+        let wasPending = fileManager.fileExists(atPath: marker.path)
         try fileManager.createDirectory(at: scoped, withIntermediateDirectories: true)
-        try Data().write(to: marker, options: .atomic)
-        try WalletLocalStoreResetIntent.flushToStableStorage(marker)
-        try WalletLocalStoreResetIntent.flushToStableStorage(scoped)
-        try WalletLocalStoreResetIntent.flushToStableStorage(scoped.deletingLastPathComponent())
-        return true
+        if wasPending {
+            try DurableMarkerFile.flushToStableStorage(marker)
+        } else {
+            try DurableMarkerFile.write(at: marker)
+        }
+        try DurableMarkerFile.flushDirectories(from: scoped, through: root.deletingLastPathComponent())
+        return !wasPending
     }
 
     /// The wallet ids pending on `scope`, in a stable order, or `nil` when no
@@ -89,8 +101,9 @@ enum SPVChainStoreRebuild {
         directory: URL? = nil,
         fileManager: FileManager = .default
     ) -> [Data]? {
-        guard let scoped = try? scopeDirectory(scope, in: directory),
-              let names = try? fileManager.contentsOfDirectory(atPath: scoped.path) else {
+        guard let root = directory ?? (try? defaultDirectory()),
+              let names = try? fileManager.contentsOfDirectory(
+                atPath: root.appendingPathComponent(scope, isDirectory: true).path) else {
             return nil
         }
         let pending = names.sorted().compactMap(walletId(named:))
@@ -98,17 +111,28 @@ enum SPVChainStoreRebuild {
     }
 
     /// Drop `walletIds` from the wallets pending on `scope`: their rebuild
-    /// ran or the wallet was removed. Ids armed meanwhile stay pending. A
-    /// marker that could not be removed stays pending and rebuilds once more.
+    /// ran, the wallet was removed, or its import failed before anything was
+    /// created. Ids armed meanwhile stay pending. A marker that could not be
+    /// removed stays pending, rebuilds again on the next start, and is
+    /// logged.
     static func finish(
         walletIds: [Data],
         scope: String,
         directory: URL? = nil,
         fileManager: FileManager = .default
     ) {
-        guard let scoped = try? scopeDirectory(scope, in: directory) else { return }
+        lock.lock(); defer { lock.unlock() }
+        guard let root = directory ?? (try? defaultDirectory()) else { return }
+        let scoped = root.appendingPathComponent(scope, isDirectory: true)
         for walletId in walletIds {
-            try? fileManager.removeItem(at: scoped.appendingPathComponent(name(for: walletId), isDirectory: false))
+            do {
+                try fileManager.removeItem(at: scoped.appendingPathComponent(name(for: walletId), isDirectory: false))
+            } catch where isMissingFile(error) {
+                continue
+            } catch {
+                DWLogger.log(
+                    "SPVCOORD chain store rebuild marker not removed scope=\(scope) codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            }
         }
     }
 
@@ -151,16 +175,19 @@ enum SPVChainStoreRebuild {
         }
     }
 
-    static func clear(scope: String, directory: URL? = nil, fileManager: FileManager = .default) {
-        guard let scoped = try? scopeDirectory(scope, in: directory) else { return }
-        try? fileManager.removeItem(at: scoped)
-    }
-
     /// Clear every pending rebuild: the wallets they name are gone (wallet
     /// wipe or local-store reset).
     static func clearAll(directory: URL? = nil, fileManager: FileManager = .default) {
-        guard let directory = directory ?? (try? defaultDirectory()) else { return }
-        try? fileManager.removeItem(at: directory)
+        lock.lock(); defer { lock.unlock() }
+        guard let root = directory ?? (try? defaultDirectory()) else { return }
+        do {
+            try fileManager.removeItem(at: root)
+        } catch where isMissingFile(error) {
+            return
+        } catch {
+            DWLogger.log(
+                "SPVCOORD chain store rebuild markers not cleared codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+        }
     }
 
     /// Apply `scope`'s pending rebuild ahead of an SPV start and return the

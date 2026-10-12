@@ -310,6 +310,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
+        // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
