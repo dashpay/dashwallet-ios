@@ -373,7 +373,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     nonisolated static func startIfReadyWhenLifecycleIdle() {
         dispatchOnPipeline {
             shared.enqueue {
-                guard WalletLifecycleTransitionState.shared.phase == .idle else {
+                // Idle, or a keys card: that card leaves automatic preparation
+                // on, and connectivity returning is one of the kicks meant to
+                // clear it. Every interactive transition still owns the runtime.
+                let admitted: Bool
+                switch WalletLifecycleTransitionState.shared.phase {
+                case .idle: admitted = true
+                case let .failedWalletOpen(failure): admitted = failure.kind == .keychain
+                default: admitted = false
+                }
+                guard admitted else {
                     Self.logger.info(
                         "🧭 RUNTIME :: connectivity-return kick skipped — a lifecycle transition owns the runtime")
                     return
