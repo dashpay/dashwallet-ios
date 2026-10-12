@@ -691,11 +691,12 @@ final class SwapTrackingService {
     ///   after all, so it does not stay "Not confirmed" beside its own payout.
     /// - An expired order nobody paid, let go a moment before its payout became readable:
     ///   completed the same way, and the payout is the proof of its deposit.
-    /// - A completed order that does not name the transaction it is matched to (the
-    ///   provider's answer carries no Dash payout hash): the hash is written into it, so
-    ///   the match no longer depends on the transaction's date, which changes when it is
-    ///   mined. Only for a transaction no other order fits (`unshared`) — a match that
-    ///   another order's payout turning up could still change is not made permanent.
+    /// - A completed order that names no payout (the provider's answer carried no Dash leg):
+    ///   the hash of the transaction it is matched to is written into it, so the match no
+    ///   longer depends on the transaction's date, which changes when it is mined. Only for
+    ///   a transaction no other order fits (`unshared`) — a match that another order's
+    ///   payout turning up could still change is not made permanent. A hash the order
+    ///   already has is left alone: it may be the provider's, for a payout still to arrive.
     private func settleLatePayouts(
         _ candidates: [SwapOrder],
         paidOutBy payouts: [String: String],
@@ -715,7 +716,7 @@ final class SwapTrackingService {
             case .completed where updated.outboundTxHash?.lowercased() == txHash.lowercased():
                 ordersNamingTheirPayout.insert(order.id)
                 continue
-            case .completed where unshared.contains(order.id):
+            case .completed where unshared.contains(order.id) && (updated.outboundTxHash ?? "").isEmpty:
                 updated.outboundTxHash = txHash
                 ordersNamingTheirPayout.insert(order.id)
                 DWLogger.log("SwapTrackingService: order \(order.id) completed, payout found in the wallet")

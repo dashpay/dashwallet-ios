@@ -990,9 +990,18 @@ final class SwapKitSwapProvider: SwapProvider {
     }
 
     private func extractOutHashes(from response: SwapKitTrackResponse) -> [String] {
-        // Prefer outbound leg hashes. Deposit-address tracking can include the inbound DASH
-        // leg alongside the destination chain leg(s); filter DASH out first.
         let legs = response.legs ?? []
+        // A swap into DASH is paid out on the Dash chain: that leg's hash is the payout,
+        // the one transaction of the swap the wallet holds. An answer without such a leg
+        // names no payout — the other legs' hashes are the deposit's, on other chains.
+        if response.toAsset?.uppercased() == "DASH.DASH" {
+            return legs.compactMap { leg -> String? in
+                guard leg.chainId?.lowercased() == "dash", let hash = leg.hash, !hash.isEmpty else { return nil }
+                return hash
+            }
+        }
+        // Otherwise prefer outbound leg hashes. Deposit-address tracking can include the
+        // inbound DASH leg alongside the destination chain leg(s); filter DASH out first.
         let outboundHashes = legs.compactMap { leg -> String? in
             guard let hash = leg.hash, !hash.isEmpty else { return nil }
             if leg.chainId?.lowercased() == "dash" { return nil }

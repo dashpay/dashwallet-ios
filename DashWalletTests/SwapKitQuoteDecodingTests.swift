@@ -433,6 +433,32 @@ final class BuySwapOrderTests: XCTestCase {
     }
 
     @MainActor
+    func testACompletedSwapIntoDashNamesItsDashPayout() throws {
+        // The shape `/track` answers with for a finished ETH → DASH swap: the source-chain
+        // leg, the router's leg, and the payout sent on the Dash chain.
+        let buy = try track(#"""
+        {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"DASH.DASH","legs":[
+          {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"ETH.ETH"},
+          {"status":"completed","chainId":"mayachain-mainnet-v1","hash":"source","fromAsset":"ETH.ETH","toAsset":"DASH.DASH"},
+          {"status":"completed","chainId":"dash","hash":"dashpayout","fromAsset":"DASH.DASH","toAsset":"DASH.DASH"}]}
+        """#)
+        XCTAssertEqual(buy.outHashes, ["dashpayout"])
+        // Without a Dash leg no payout is named: the deposit's hash is not one.
+        let unnamed = try track(#"""
+        {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"DASH.DASH","legs":[
+          {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"ETH.ETH"}]}
+        """#)
+        XCTAssertEqual(unnamed.outHashes, [])
+        // A swap out of DASH still names the destination chain's leg, not the Dash deposit.
+        let sell = try track(#"""
+        {"status":"completed","chainId":"dash","hash":"dashdeposit","fromAsset":"DASH.DASH","toAsset":"ETH.ETH","legs":[
+          {"status":"completed","chainId":"dash","hash":"dashdeposit","fromAsset":"DASH.DASH","toAsset":"DASH.DASH"},
+          {"status":"completed","chainId":"1","hash":"0xpayout","fromAsset":"DASH.DASH","toAsset":"ETH.ETH"}]}
+        """#)
+        XCTAssertEqual(sell.outHashes, ["0xpayout"])
+    }
+
+    @MainActor
     func testTrackStatusesThatProveNothing() throws {
         let notStarted = try track(#"{"status":"not_started"}"#)
         XCTAssertFalse(notStarted.isObserved)
@@ -534,7 +560,7 @@ final class BuySwapOrderTests: XCTestCase {
         // The tracker writes the hash into the order while the first holds, and then it
         // stays matched.
         var named = order
-        named.outboundTxHash = "aa"
+        named.outboundTxHash = "AA"
         XCTAssertEqual(assignments([named], [payout("aa", secondsAgo: 3_600)]), ["0xa": "aa"])
         // Only a match nothing can change is written down: with a live order beside it
         // that fits the same transaction, the completed one has it for now, unnamed.
