@@ -243,8 +243,24 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     func retryWalletPreparation() async {
         await enqueueAwaitable {
             let state = WalletLifecycleTransitionState.shared
-            guard case .failedWalletOpen = state.phase else { return }
+            guard case let .failedWalletOpen(shown) = state.phase else { return }
             if let failure = await self.refresh(trigger: .startIfReady) {
+                // `prepareWallet` moves the phase the moment the open runs
+                // (to the record it classified, or to idle). From a keys card
+                // the retry follows the automatic kick's rule: a phase still
+                // showing the old record means the open was never reached
+                // (the wallet-presence gate refused, or a step before the
+                // open failed — the same keychain failure, or no keychain
+                // read at all), so the card stays; a phase at idle means the
+                // open ran and classified nothing, and the fallback record
+                // (`OtherError`, "keys are stored safely") is no card at all,
+                // exactly as the kick would leave it. Only a record the open
+                // classified replaces the card. A store card keeps today's
+                // rule: any returned record replaces it.
+                if shown.kind == .keychain {
+                    let openNotReached = state.phase == .failedWalletOpen(shown) && state.preparationFailure == shown
+                    if openNotReached || state.phase == .idle { return }
+                }
                 state.fail(.failedWalletOpen(failure))
             }
         }.value
@@ -363,7 +379,19 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     nonisolated static func startIfReadyWhenLifecycleIdle() {
         dispatchOnPipeline {
             shared.enqueue {
-                guard WalletLifecycleTransitionState.shared.phase == .idle else {
+                // Idle, or a keys card: that card leaves automatic preparation
+                // on (unless one of its flows holds the window), and
+                // connectivity returning is one of the kicks meant to clear
+                // it. Every interactive transition still owns the runtime.
+                let state = WalletLifecycleTransitionState.shared
+                let admitted: Bool
+                switch state.phase {
+                case .idle: admitted = true
+                case .failedWalletOpen: admitted = state.allowsAutomaticWalletPreparation
+                default: admitted = false
+                }
+                guard admitted else {
+                    state.recordDeferredAutomaticPreparation()
                     Self.logger.info(
                         "🧭 RUNTIME :: connectivity-return kick skipped — a lifecycle transition owns the runtime")
                     return
@@ -793,7 +821,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // Automatic kicks (including material-change notifications) must
             // leave Help and its unsent draft intact. Re-read on the serial
             // queue: opening may have failed since this kick was enqueued.
-            guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
+            let state = WalletLifecycleTransitionState.shared
+            guard state.allowsAutomaticWalletPreparation else {
+                // A keys card under one of its own flows: replayed on release.
+                state.recordDeferredAutomaticPreparation()
+                return
+            }
             await self?.refresh(trigger: trigger)
         }
     }
@@ -913,12 +946,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 WalletLifecycleOverlayPresenter.shared.ensureActive()
                 let (manager, wallet) = try await WalletLifecycleTransitionState.shared.prepareWallet {
                     try await SwiftDashSDKHost.shared.start(network: network)
-                } failure: { error in
-                    if case let SwiftDashSDKHost.HostError.modelContainerFailed(underlying) = error {
-                        return WalletPreparationFailure(error: underlying)
-                    }
-                    return nil
-                }
+                } failure: { SwiftDashSDKHost.preparationFailure(forStartError: $0) }
                 PlatformAddressSyncCoordinator.shared.prepareLocalPlatformState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
@@ -928,6 +956,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 let failure = WalletLifecycleTransitionState.shared.preparationFailure ?? WalletPreparationFailure(error: error)
+                // os_log does not reach the diagnostic export; the file log
+                // does. Only a record the open classified names a category:
+                // the fallback for anything else (SPV start, devnet preflight)
+                // bridges to OtherError codes and would mislabel the cause.
+                if let classified = WalletLifecycleTransitionState.shared.preparationFailure {
+                    DWLogger.log("RUNTIME Core start failed category=\(classified.kind.rawValue) codes=\(classified.codes.joined(separator: ","))")
+                } else {
+                    DWLogger.log("RUNTIME Core start failed outside the wallet open codes=\(failure.codes.joined(separator: ","))")
+                }
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
                 return failure
             }

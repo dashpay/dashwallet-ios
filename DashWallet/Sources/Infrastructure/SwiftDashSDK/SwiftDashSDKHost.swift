@@ -519,6 +519,67 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// The wallet-open card's record for a failed `start(network:)`, or nil
+    /// for errors that keep their existing recovery flow (devnet preflight,
+    /// SDK init, configure). A store that would not open keeps the database
+    /// card; a bootstrap failure is a keys failure only when `keysFailure(in:)`
+    /// recognizes its cause, otherwise it is a store failure too — a SwiftData
+    /// write that failed while replaying the keychain, or a recovery marker
+    /// that could not be written. Those bridge to `OtherError` codes, so the
+    /// database card they get never offers a reset; only a store that would
+    /// not open can.
+    ///
+    /// Keys readable but nothing eligible for the network (`walletNotFound`)
+    /// keeps the no-card flow this path always had: `WalletEnvironment.hasWallet`
+    /// routes that inventory to setup, and a card would sit over it. A
+    /// transient keychain status (the lock, securityd unavailable) gets the
+    /// keys card, but that card leaves automatic preparation on
+    /// (`WalletLifecycleTransitionState.allowsAutomaticWalletPreparation`),
+    /// so the next foreground or connectivity kick clears it.
+    nonisolated static func preparationFailure(forStartError error: Error) -> WalletPreparationFailure? {
+        switch error {
+        case HostError.modelContainerFailed(let underlying):
+            return WalletPreparationFailure(error: underlying)
+        case HostError.walletBootstrapFailed(HostError.walletNotFound):
+            return nil
+        case HostError.walletBootstrapFailed(let underlying):
+            if let keys = keysFailure(in: underlying) {
+                return WalletPreparationFailure(keys: keys.reason, status: keys.status)
+            }
+            return WalletPreparationFailure(error: underlying)
+        default:
+            return nil
+        }
+    }
+
+    /// Only a cause this host knows to be about the keys classifies as one;
+    /// every other error is treated as a store failure. Matched by type, not
+    /// by NSError domain: app enums bridge to domains carrying the module
+    /// name, and `WalletStorageError.keychainError` loses its status when
+    /// bridged.
+    nonisolated static func keysFailure(in error: Error) -> (reason: WalletPreparationFailure.KeysReason, status: OSStatus?)? {
+        switch error {
+        case WalletStorageError.keychainError(let status):
+            return (.unreadable, status)
+        case WalletStorageError.mnemonicNotFound:
+            return (.notFound, nil)
+        case SwiftDashSDKWalletDeletionError.invalidMnemonic,
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
+             KeyWalletError.invalidMnemonic,
+             KeyWalletError.invalidInput:
+            // The resolver derives ids by constructing a wallet from the
+            // stored phrase; these two `KeyWalletError` cases are that
+            // construction refusing material that passed word validation.
+            // Its other cases (allocation, network, state) say nothing about
+            // the keys and stay a store failure.
+            return (.unclassifiable, nil)
+        case HostError.mnemonicRoundTripMismatch:
+            return (.idMismatch, nil)
+        default:
+            return nil
+        }
+    }
+
     private struct RuntimeHandles {
         let sdk: SDK
         let manager: PlatformWalletManager

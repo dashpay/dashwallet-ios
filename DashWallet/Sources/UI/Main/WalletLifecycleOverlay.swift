@@ -207,10 +207,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     @Published private(set) var phase: WalletLifecycleTransitionState.Phase
     @Published private(set) var preparationFailure: WalletPreparationFailure?
-    @Published var supportFailure: WalletPreparationFailure?
+    @Published var supportFailure: WalletPreparationFailure? { didSet { updateRecoveryPresentationHold() } }
     @Published private(set) var retryPending = false
-    @Published private(set) var isExportingLogs = false
-    @Published var exportedLogsURL: URL?
+    @Published private(set) var isExportingLogs = false { didSet { updateRecoveryPresentationHold() } }
+    @Published var exportedLogsURL: URL? { didSet { updateRecoveryPresentationHold() } }
     /// One alert for every gated action's refusal: no PIN on record,
     /// authentication failed, export or reset error.
     @Published var actionFailure: ActionFailure?
@@ -221,7 +221,28 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     @Published var isConfirmingReset = false
     @Published private(set) var resetPending = false
     /// True while the overlay window is hidden behind the PIN prompt.
-    @Published private(set) var isAuthenticating = false
+    @Published private(set) var isAuthenticating = false { didSet { updateRecoveryPresentationHold() } }
+    /// True while the phrase picker or phrase screen is up in the overlay window.
+    private var isPresentingRecoveryPhrase = false { didSet { updateRecoveryPresentationHold() } }
+
+    /// Any flow that owns the window — the PIN prompt, log export and its
+    /// share sheet, the Help sheet and its composer, the phrase modal — holds
+    /// automatic wallet preparation: a keys card's self-healing start would
+    /// otherwise move the phase from under it and drop a phrase screen or an
+    /// unsent support message. A kick refused meanwhile is replayed on release.
+    private var ownsRecoveryPresentation: Bool {
+        isAuthenticating || isExportingLogs || exportedLogsURL != nil || supportFailure != nil
+            || isPresentingRecoveryPhrase
+    }
+
+    private func updateRecoveryPresentationHold() {
+        let state = WalletLifecycleTransitionState.shared
+        if ownsRecoveryPresentation {
+            if !state.recoveryPresentationHeld { state.holdRecoveryPresentation() }
+        } else if state.recoveryPresentationHeld, state.releaseRecoveryPresentation() {
+            SwiftDashSDKWalletRuntime.startIfReady()
+        }
+    }
 
     /// One operation at a time on a failure card: the share sheet, the PIN
     /// prompt, Try Again and Reset each own the window's presentation stack.
@@ -240,6 +261,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
         phase = transitionState.phase
         preparationFailure = transitionState.preparationFailure
         apply(transitionState.phase)
+        recoveryPhraseModal.onPresentationChanged = { [weak self] presented in
+            self?.isPresentingRecoveryPhrase = presented
+        }
         transitionState.$phase
             .sink { [weak self] phase in self?.apply(phase) }
             .store(in: &cancellables)
@@ -368,7 +392,9 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
 
     /// Backup recovery phrase on the wallet-open failure card: the Security
     /// menu's flow (PIN, then one phrase or a wallet picker), hosted modally
-    /// in the overlay window because the card has no navigation stack.
+    /// in the overlay window because the card has no navigation stack. Also
+    /// on a keys failure: the flow reads each stored phrase on its own, and
+    /// one entry failing the replay does not mean the others cannot be read.
     func backupRecoveryPhrase() {
         guard !isBusy,
               requirePin(
@@ -522,7 +548,7 @@ struct WalletLifecycleOverlayView: View {
                     }
                     .disabled(viewModel.isBusy)
                     walletRecoveryActions
-                    preparationHelp
+                    preparationHelp(authenticatedExport: failure.requiresAuthenticatedExport)
                 }
             case let .failedLegacyMigration(failure):
                 // No Create/Recover here: the wallet is still in the keychain.
@@ -532,7 +558,7 @@ struct WalletLifecycleOverlayView: View {
                         viewModel.retryLegacyMigration()
                     }
                     .disabled(viewModel.isExportingLogs)
-                    preparationHelp(authenticatedExport: true)
+                    preparationHelp(authenticatedExport: failure.requiresAuthenticatedExport)
                 }
             case let .switchingNetwork(_, to):
                 progressCard(
@@ -585,7 +611,7 @@ struct WalletLifecycleOverlayView: View {
                         .disabled(viewModel.isBusy)
                     }
                     if viewModel.showsLocalStoreRecovery { walletRecoveryActions }
-                    preparationHelp
+                    preparationHelp(authenticatedExport: viewModel.preparationFailure?.requiresAuthenticatedExport ?? false)
                 }
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
                 card {
@@ -602,7 +628,7 @@ struct WalletLifecycleOverlayView: View {
                         }
                         .disabled(viewModel.isExportingLogs)
                     }
-                    preparationHelp
+                    preparationHelp(authenticatedExport: viewModel.preparationFailure?.requiresAuthenticatedExport ?? false)
                 }
             case let .failedWalletRemoval(message):
                 card {
@@ -650,6 +676,9 @@ struct WalletLifecycleOverlayView: View {
         .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
     }
 
+    /// Backup on every failure card — a best-effort read of each stored
+    /// phrase, which a keys failure of one entry does not rule out; Reset
+    /// only when the record and the keychain inventory allow it.
     @ViewBuilder
     private var walletRecoveryActions: some View {
         actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
@@ -667,12 +696,10 @@ struct WalletLifecycleOverlayView: View {
         }
     }
 
-    private var preparationHelp: some View {
-        preparationHelp(authenticatedExport: false)
-    }
-
-    /// `authenticatedExport`: the card shows before the lock screen, so
-    /// Export Logs authenticates first (see `exportDiagnosticLogs`).
+    /// `authenticatedExport` comes from the failure record's
+    /// `requiresAuthenticatedExport`: the migration card shows before the
+    /// lock screen and the keys card cannot rely on it, so Export Logs
+    /// authenticates first (see `exportDiagnosticLogs`).
     @ViewBuilder
     private func preparationHelp(authenticatedExport: Bool) -> some View {
         if viewModel.preparationFailure != nil {
