@@ -244,13 +244,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private var switchPreparation = NetworkSwitchPreparationGate()
 
-    /// Set once a `stopSpv()` of this process failed. A client that did not
-    /// stop cleanly can keep its storage worker writing into the network's
-    /// chain store, so `applyPendingChainResyncIfNeeded` and
-    /// `rebuildChainStoreIfPending` leave their store deletes to a later
-    /// launch. Never cleared: the worker lives as long as the process does.
+    /// The persistence scopes whose `stopSpv()` failed in this process. A
+    /// client that did not stop cleanly can keep its storage worker writing
+    /// into its network's chain store, so `applyPendingChainResyncIfNeeded`
+    /// and `rebuildChainStoreIfPending` leave that scope's store delete to a
+    /// later launch. Never cleared: the worker lives as long as the process
+    /// does.
     @MainActor
-    private var spvStopFailedThisSession = false
+    private var spvStopFailedScopes: Set<String> = []
 
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
@@ -662,9 +663,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // A wallet imported from a recovery phrase since the last start: the
         // store may be anchored above its history. Before startSpv for the
         // same reason as the resync above.
-        let rebuiltForWalletIds = await rebuildChainStoreIfPending(
-            for: network, dataDir: dataDir, manager: manager,
-            storeAlreadyCleared: appliedChainResync)
+        let rebuiltForWalletIds: [Data]
+        do {
+            rebuiltForWalletIds = try await rebuildChainStoreIfPending(
+                for: network, dataDir: dataDir, manager: manager,
+                storeAlreadyCleared: appliedChainResync)
+        } catch {
+            return .failure(StartError.dataDirectory(error))
+        }
 
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
@@ -767,7 +773,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 }
                 self.lastError = error.localizedDescription
                 state = .error
-                spvStopFailedThisSession = true
+                // Whichever network this coordinator or the host last ran.
+                if let stopping = runningNetwork ?? SwiftDashSDKHost.shared.runningNetwork {
+                    spvStopFailedScopes.insert(stopping.persistenceScope)
+                }
                 throw StartError.stopSpv(error)
             }
         }
@@ -880,7 +889,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
             return false
         }
-        guard !spvStopFailedThisSession else {
+        guard !spvStopFailedScopes.contains(network.persistenceScope) else {
             Self.logger.error("🛰️ SPVCOORD :: chain resync deferred to next launch — an SPV stop failed this session")
             return false
         }
@@ -917,16 +926,17 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     ///
     /// Returns the wallet ids the rebuild was applied for — the caller drops
     /// them from the marker once `startSpv` succeeds. Returns none (marker
-    /// retained, retried on the next start) when nothing is pending, an SPV
-    /// stop failed earlier in this process, none of the pending wallets is
-    /// loaded, or the rewind or the delete failed.
+    /// retained, retried on the next start) when nothing is pending, this
+    /// network's SPV stop failed earlier in this process, none of the pending
+    /// wallets is loaded, or the rewind failed. Throws when the delete fails:
+    /// the store may be half removed, so the caller must not start on it.
     @MainActor
     private func rebuildChainStoreIfPending(
         for network: Network,
         dataDir: String,
         manager: PlatformWalletManager,
         storeAlreadyCleared: Bool
-    ) async -> [Data] {
+    ) async throws -> [Data] {
         let scope = network.persistenceScope
         guard let pending = SPVChainStoreRebuild.pendingWalletIds(scope: scope) else { return [] }
 
@@ -936,14 +946,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let imported = pending.filter { manager.wallets[$0] != nil }
         guard !imported.isEmpty else { return [] }
 
-        guard !spvStopFailedThisSession else {
+        guard !spvStopFailedScopes.contains(scope) else {
             Self.logger.error("🛰️ SPVCOORD :: chain store rebuild deferred to next launch — an SPV stop failed this session")
             DWLogger.log("SPVCOORD chain store rebuild deferred scope=\(scope) reason=stop-failed")
             return []
         }
 
         // Rewind before the delete: a failed rewind then leaves the store as
-        // it was, and a failed delete leaves only a rescan of the old store.
+        // it was.
         let floor: UInt32
         do {
             floor = try rewindToImportFloor(walletIds: imported, network: network, manager: manager)
@@ -955,13 +965,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         if !storeAlreadyCleared {
+            isApplyingChainResync = true
+            defer { isApplyingChainResync = false }
             do {
                 try await Self.resetSPVStore(atPath: dataDir)
             } catch {
                 Self.logger.error("🛰️ SPVCOORD :: chain store rebuild delete failed: \(String(describing: error), privacy: .public)")
                 DWLogger.log(
                     "SPVCOORD chain store rebuild FAILED scope=\(scope) step=delete codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
-                return []
+                throw error
             }
         }
 
@@ -1458,11 +1470,8 @@ enum SPVChainResyncMarker {
     /// rewind the next fresh sync's checkpoint. Clears every startable
     /// network, mirroring `CoinJoinRecovery.resetRecoveryFlags`.
     static func clearAll() {
-        clear(for: .mainnet)
-        clear(for: .testnet)
-        clear(for: .devnet)
-        // Markers armed on devnets other than the one configured now.
-        for scope in DevnetConfiguration.persistedDevnetScopes() {
+        // Includes markers armed on devnets other than the one configured now.
+        for scope in DevnetConfiguration.allPersistenceScopes() {
             UserDefaults.standard.removeObject(forKey: key(scope: scope))
         }
     }
@@ -1475,14 +1484,17 @@ enum SPVChainResyncMarker {
 
 extension SPVChainStoreRebuild {
     /// Clear every pending rebuild: the wallets they name are gone (wallet
-    /// wipe or local-store reset). Same scopes as
-    /// `SPVChainResyncMarker.clearAll`.
+    /// wipe or local-store reset).
     static func clearAll() {
-        for network in [Network.mainnet, .testnet, .devnet] {
-            clear(scope: network.persistenceScope)
-        }
-        for scope in DevnetConfiguration.persistedDevnetScopes() {
+        for scope in DevnetConfiguration.allPersistenceScopes() {
             clear(scope: scope)
+        }
+    }
+
+    /// Drop a removed wallet from the rebuilds pending on every scope.
+    static func forget(walletId: Data) {
+        for scope in DevnetConfiguration.allPersistenceScopes() {
+            finish(walletIds: [walletId], scope: scope)
         }
     }
 }

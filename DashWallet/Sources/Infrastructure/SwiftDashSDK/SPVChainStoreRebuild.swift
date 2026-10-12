@@ -49,7 +49,8 @@ enum SPVChainStoreRebuild {
     }
 
     /// Drop `walletIds` from the wallets pending on `scope`: their rebuild
-    /// ran, or their import failed. Ids armed meanwhile stay pending.
+    /// ran, their import failed, or the wallet was removed. Ids armed
+    /// meanwhile stay pending.
     static func finish(walletIds: [Data], scope: String, defaults: UserDefaults = .standard) {
         let remaining = (pendingWalletIds(scope: scope, defaults: defaults) ?? [])
             .filter { !walletIds.contains($0) }
