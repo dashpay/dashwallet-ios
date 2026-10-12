@@ -968,7 +968,9 @@ final class SwapKitSwapProvider: SwapProvider {
 
         case "completed":
             let outHashes = extractOutHashes(from: response)
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes, depositProven: true)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes, depositProven: true,
+                dashPayoutHash: dashPayoutHash(from: response))
 
         case "refunded":
             return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil, depositProven: true)
@@ -989,19 +991,20 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
+    /// The payout of a swap into DASH: the hash of its leg on the Dash chain, the one
+    /// transaction of the swap the wallet holds. Nil unless the answer says the swap ends
+    /// in DASH and has such a leg — any other hash in it is the deposit's or the router's.
+    private func dashPayoutHash(from response: SwapKitTrackResponse) -> String? {
+        guard response.toAsset?.uppercased() == "DASH.DASH" else { return nil }
+        return (response.legs ?? []).first { leg in
+            leg.chainId?.lowercased() == "dash" && leg.hash?.isEmpty == false
+        }?.hash
+    }
+
     private func extractOutHashes(from response: SwapKitTrackResponse) -> [String] {
+        // Prefer outbound leg hashes. Deposit-address tracking can include the inbound DASH
+        // leg alongside the destination chain leg(s); filter DASH out first.
         let legs = response.legs ?? []
-        // A swap into DASH is paid out on the Dash chain: that leg's hash is the payout,
-        // the one transaction of the swap the wallet holds. An answer without such a leg
-        // names no payout — the other legs' hashes are the deposit's, on other chains.
-        if response.toAsset?.uppercased() == "DASH.DASH" {
-            return legs.compactMap { leg -> String? in
-                guard leg.chainId?.lowercased() == "dash", let hash = leg.hash, !hash.isEmpty else { return nil }
-                return hash
-            }
-        }
-        // Otherwise prefer outbound leg hashes. Deposit-address tracking can include the
-        // inbound DASH leg alongside the destination chain leg(s); filter DASH out first.
         let outboundHashes = legs.compactMap { leg -> String? in
             guard let hash = leg.hash, !hash.isEmpty else { return nil }
             if leg.chainId?.lowercased() == "dash" { return nil }

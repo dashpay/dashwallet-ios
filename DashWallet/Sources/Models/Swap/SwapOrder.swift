@@ -285,6 +285,19 @@ extension SwapOrder {
     /// the deposit and the owner with every order.
     var isLegacyRecord: Bool { isBuy && fromAmount == nil }
 
+    /// `outboundTxHash` as a Dash transaction id — trimmed, lower-cased, 64 hex digits — or
+    /// nil when it is empty or has another shape (an EVM hash with its `0x`, say).
+    var dashShapedOutHash: String? {
+        guard let hash = outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+              hash.count == 64, hash.allSatisfy(\.isHexDigit) else { return nil }
+        return hash
+    }
+
+    /// Whether a Buy order says which Dash transaction paid it out: the provider named it,
+    /// or the tracker found it in the wallet. An order saved before this version may carry
+    /// a hash from the deposit's chain there instead, so its hash names nothing for sure.
+    var namesItsPayout: Bool { isBuy && !isLegacyRecord && dashShapedOutHash != nil }
+
     /// How long past its deadline an unpaid order is still given before it is let go: a
     /// transfer sent in the last minutes has to show up first, and on a slow chain that
     /// takes a while — twice the chain's stuck wait, an hour at least.

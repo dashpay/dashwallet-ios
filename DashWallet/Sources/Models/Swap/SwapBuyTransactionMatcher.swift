@@ -76,8 +76,8 @@ enum SwapBuyTransactionMatcher {
 
     /// The `firstSeen` cutoff of the pool `payoutResolution(among:in:)` needs for `orders`:
     /// far enough back for every order that can claim a transaction, not only the ones the
-    /// caller is asking about — an order whose own payout is missing from the pool takes
-    /// somebody else's. Nil when no order can claim anything.
+    /// caller is asking about — an order matched by date whose own payout is missing from
+    /// the pool takes somebody else's. Nil when no order can claim anything.
     static func fetchCutoff(forAssignmentsAmong orders: [SwapOrder]) -> Date? {
         orders.filter { $0.isBuy && $0.mayStillBePaidOut }.map(fetchCutoff(for:)).min()
     }
@@ -167,7 +167,8 @@ enum SwapBuyTransactionMatcher {
     /// address both match the one payout that arrived. Here each transaction goes to at
     /// most one order, and an order only takes one dated within its own bound
     /// (`latestPayoutDate`). Settled in this priority:
-    /// 1. the order that already names it as its payout (`outboundTxHash`), provided the
+    /// 1. the order that already names it as its payout (`outboundTxHash`) — and such an
+    ///    order takes no other transaction (`SwapOrder.namesItsPayout`) — provided the
     ///    transaction also fits the order;
     /// 2. orders the provider reports as completed — it paid them out;
     /// 3. orders that are still owed a payout: the ones in flight (an active status) and the
@@ -249,7 +250,9 @@ enum SwapBuyTransactionMatcher {
             take(recorded, for: claimant)
         }
 
-        let unnamed = claimants.filter { assigned[$0.id] == nil }
+        // An order that names its payout takes that transaction or none: while it is not
+        // in the pool, a look-alike is not it.
+        let unnamed = claimants.filter { assigned[$0.id] == nil && !$0.namesItsPayout }
         let completed = unnamed.filter { $0.status == .completed }
         let open = unnamed.filter { $0.status != .completed }
         // An expired order nobody paid ranks with the legacy ones: it only takes what the
@@ -307,7 +310,7 @@ enum SwapBuyTransactionMatcher {
             if !reachable.isEmpty, reachable.count >= sharing.count { enough.insert(order.id) }
         }
         let unshared = assigned.filter { id, tx in
-            !claimants.contains { $0.id != id && fits($0, anyOf: [tx]) }
+            !claimants.contains { $0.id != id && !$0.namesItsPayout && fits($0, anyOf: [tx]) }
         }
         return PayoutResolution(
             assigned: assigned, contested: contested, contestedWithEnough: enough, unshared: Set(unshared.keys))

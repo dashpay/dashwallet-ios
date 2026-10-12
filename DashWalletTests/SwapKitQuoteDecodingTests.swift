@@ -442,13 +442,19 @@ final class BuySwapOrderTests: XCTestCase {
           {"status":"completed","chainId":"mayachain-mainnet-v1","hash":"source","fromAsset":"ETH.ETH","toAsset":"DASH.DASH"},
           {"status":"completed","chainId":"dash","hash":"dashpayout","fromAsset":"DASH.DASH","toAsset":"DASH.DASH"}]}
         """#)
-        XCTAssertEqual(buy.outHashes, ["dashpayout"])
+        XCTAssertEqual(buy.dashPayoutHash, "dashpayout")
         // Without a Dash leg no payout is named: the deposit's hash is not one.
         let unnamed = try track(#"""
         {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"DASH.DASH","legs":[
           {"status":"completed","chainId":"1","hash":"0xsource","fromAsset":"ETH.ETH","toAsset":"ETH.ETH"}]}
         """#)
-        XCTAssertEqual(unnamed.outHashes, [])
+        XCTAssertNil(unnamed.dashPayoutHash)
+        // Nor when the answer does not say where the swap ends.
+        let unknown = try track(#"""
+        {"status":"completed","chainId":"1","hash":"0xsource","legs":[
+          {"status":"completed","chainId":"dash","hash":"dashleg"}]}
+        """#)
+        XCTAssertNil(unknown.dashPayoutHash)
         // A swap out of DASH still names the destination chain's leg, not the Dash deposit.
         let sell = try track(#"""
         {"status":"completed","chainId":"dash","hash":"dashdeposit","fromAsset":"DASH.DASH","toAsset":"ETH.ETH","legs":[
@@ -456,6 +462,7 @@ final class BuySwapOrderTests: XCTestCase {
           {"status":"completed","chainId":"1","hash":"0xpayout","fromAsset":"DASH.DASH","toAsset":"ETH.ETH"}]}
         """#)
         XCTAssertEqual(sell.outHashes, ["0xpayout"])
+        XCTAssertNil(sell.dashPayoutHash)
     }
 
     @MainActor
@@ -756,20 +763,30 @@ final class BuySwapOrderTests: XCTestCase {
 
     func testThePoolReachesBackToEveryOrderThatCanClaim() {
         // A completed long ago and names its payout; B is new, for the same amount.
+        let aa = String(repeating: "a", count: 64)
         let old = buyOrder(
             id: "0xa", status: .completed, depositSeenSecondsAgo: 40 * 86_400, finalisedSecondsAgo: 600,
-            createdSecondsAgo: 40 * 86_400, payoutHash: "aa")
+            createdSecondsAgo: 40 * 86_400, payoutHash: aa)
         let live = buyOrder(id: "0xb", status: .pending, createdSecondsAgo: 3_600)
-        let own = payout("aa", secondsAgo: 40 * 86_400 - 600)
+        let own = payout(aa, secondsAgo: 40 * 86_400 - 600)
         let new = payout("bb", secondsAgo: 60)
 
-        // Cut to the live order alone, the pool lacks A's payout and A takes B's.
-        XCTAssertEqual(assignments([old, live], [new]), ["0xa": "bb"])
+        // Cut to the live order alone, the pool lacks A's payout. A names its own, so it
+        // takes no look-alike; a completed order that names none would take B's — and so
+        // would one whose hash is not a Dash transaction's.
+        XCTAssertTrue(old.namesItsPayout)
+        XCTAssertEqual(assignments([old, live], [new]), ["0xb": "bb"])
+        for hash in [nil, "0x" + aa, "0xsource"] {
+            var unnamedOld = old
+            unnamedOld.outboundTxHash = hash
+            XCTAssertFalse(unnamedOld.namesItsPayout)
+            XCTAssertEqual(assignments([unnamedOld, live], [new]), ["0xa": "bb"])
+        }
         // So the cutoff is the oldest claimant's, and with that pool each has its own.
         XCTAssertEqual(
             SwapBuyTransactionMatcher.fetchCutoff(forAssignmentsAmong: [old, live]),
             SwapBuyTransactionMatcher.fetchCutoff(for: old))
-        XCTAssertEqual(assignments([old, live], [own, new]), ["0xa": "aa", "0xb": "bb"])
+        XCTAssertEqual(assignments([old, live], [own, new]), ["0xa": aa, "0xb": "bb"])
         // Orders that can claim nothing do not widen it.
         let refunded = buyOrder(id: "0xc", status: .refunded, createdSecondsAgo: 90 * 86_400)
         XCTAssertEqual(

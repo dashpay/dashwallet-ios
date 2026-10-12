@@ -130,6 +130,10 @@ final class SwapTrackingService {
     private var lastPacedPoll: [String: (at: Int64, walletSynced: Bool, readFailed: Bool)] = [:]
     private let pacedPollLock = NSLock()
 
+    /// Since when (unix s) each watched order's deposit address has been found empty by
+    /// every poll in a row. Guarded by `pacedPollLock`, in memory only.
+    private var depositAddressEmptySince: [String: Int64] = [:]
+
     /// When ended orders were last checked for a late payout (unix s). Read and written
     /// only by the poll loop itself, between cycles.
     private var lastLatePayoutCheck: Int64 = 0
@@ -381,6 +385,7 @@ final class SwapTrackingService {
             }
         }
         let depositSeenNow = lookup == .seen
+        let emptySince = watchesDeposit ? noteDepositAddress(of: order, empty: lookup == .absent, at: nowSeconds) : nil
 
         // The wallet's word, for this order. Its transactions are the cycle's read, from
         // before the requests above; that it is still the active wallet is checked now.
@@ -415,8 +420,19 @@ final class SwapTrackingService {
             // "no payout" does not say it for the "Stuck" stamp below either.
             let goesOnGraceAlone = agingOrder.hasDepositOnRecord && sinceAgedOut > SwapOrder.fundedGraceSeconds
             if order.isBuy, mayLetGo, !goesOnGraceAlone {
-                walletReady = await walletStillHoldsNoPayout(for: order, asReadBy: wallet)
-                mayLetGo = walletReady
+                // An order that goes on its deposit address being empty needs that from two
+                // polls apart: one "nothing there" may be an indexer behind its chain.
+                if watchesDeposit, emptySince.map({ nowSeconds - $0 >= Constants.unpaidPollIntervalSeconds }) != true {
+                    mayLetGo = false
+                    markWalletReadFailed([order])
+                    DWLogger.log(
+                        "SwapTrackingService: order \(order.id) — deposit address seen empty once,"
+                            + " asked again before it is let go")
+                }
+                if mayLetGo {
+                    walletReady = await walletStillHoldsNoPayout(for: order, asReadBy: wallet)
+                    mayLetGo = walletReady
+                }
             }
             if mayLetGo {
                 DWLogger.log("SwapTrackingService: order \(order.id) unresolved past its tracking window → expired")
@@ -463,7 +479,9 @@ final class SwapTrackingService {
             txid: order.id,
             depositAddress: order.depositAddress ?? order.id
         )
-        var answer = Self.answer(from: result)
+        // A Buy order's out hash is its Dash payout or nothing: the other hashes of the
+        // answer are the deposit's, on another chain.
+        var answer = Self.answer(from: result, outHash: result.dashPayoutHash)
         guard answer.answered else { return answer }
         answer.depositProven = result.depositProven
         // `observedStatus` folds "failed", "unknown" and anything new into
@@ -506,17 +524,17 @@ final class SwapTrackingService {
                 depositAddress: nil
             )
         }
-        return Self.answer(from: result)
+        return Self.answer(from: result, outHash: result.outHashes?.first)
     }
 
     /// Only treat the response as authoritative when the provider has observed the tx,
     /// or returned cleanly. When isObserved = true, a non-nil error is often a non-critical
     /// warning alongside valid status data (e.g. Maya returns both fields on completion).
-    private static func answer(from result: SwapStatusResult) -> ProviderAnswer {
+    private static func answer(from result: SwapStatusResult, outHash: String?) -> ProviderAnswer {
         guard !result.requestFailed, result.isObserved || result.error == nil else { return ProviderAnswer() }
         return ProviderAnswer(
             status: SwapOrderStatus.from(trackStatus: result.observedStatus, isObserved: result.isObserved),
-            firstOutHash: result.outHashes?.first,
+            firstOutHash: outHash,
             actualAmount: result.actualToAmount,
             answered: true)
     }
@@ -696,7 +714,9 @@ final class SwapTrackingService {
     ///   longer depends on the transaction's date, which changes when it is mined. Only for
     ///   a transaction no other order fits (`unshared`) — a match that another order's
     ///   payout turning up could still change is not made permanent. A hash the order
-    ///   already has is left alone: it may be the provider's, for a payout still to arrive.
+    ///   already has in the shape of a Dash transaction id is left alone: it may be the
+    ///   provider's, for a transaction still to arrive. One of another shape — an older
+    ///   record's hash from the deposit's chain — is replaced.
     private func settleLatePayouts(
         _ candidates: [SwapOrder],
         paidOutBy payouts: [String: String],
@@ -713,10 +733,10 @@ final class SwapTrackingService {
                 updated.lastChecked = nowSeconds
                 updated.finalisedAt = nowSeconds
                 DWLogger.log("SwapTrackingService: order \(order.id) expired → completed, payout in the wallet")
-            case .completed where updated.outboundTxHash?.lowercased() == txHash.lowercased():
+            case .completed where updated.dashShapedOutHash == txHash.lowercased():
                 ordersNamingTheirPayout.insert(order.id)
                 continue
-            case .completed where unshared.contains(order.id) && (updated.outboundTxHash ?? "").isEmpty:
+            case .completed where unshared.contains(order.id) && updated.dashShapedOutHash == nil:
                 updated.outboundTxHash = txHash
                 ordersNamingTheirPayout.insert(order.id)
                 DWLogger.log("SwapTrackingService: order \(order.id) completed, payout found in the wallet")
@@ -843,6 +863,21 @@ final class SwapTrackingService {
         pacedPollLock.lock()
         defer { pacedPollLock.unlock() }
         lastPacedPoll.removeValue(forKey: orderID)
+        depositAddressEmptySince.removeValue(forKey: orderID)
+    }
+
+    /// Records what a poll found at the order's deposit address and returns since when
+    /// (unix s) every poll has found it empty; nil when this one did not.
+    private func noteDepositAddress(of order: SwapOrder, empty: Bool, at nowSeconds: Int64) -> Int64? {
+        pacedPollLock.lock()
+        defer { pacedPollLock.unlock() }
+        guard empty else {
+            depositAddressEmptySince.removeValue(forKey: order.id)
+            return nil
+        }
+        let since = depositAddressEmptySince[order.id] ?? nowSeconds
+        depositAddressEmptySince[order.id] = since
+        return since
     }
 
     // MARK: - Private: Source-chain deposit check

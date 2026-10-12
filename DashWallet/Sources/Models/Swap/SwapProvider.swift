@@ -65,6 +65,10 @@ struct SwapStatusResult {
     /// several of them together ("failed" and "unknown" read "refunded" there); a caller
     /// that must not state a refund nobody reported reads this instead.
     let providerStatus: String?
+    /// The Dash transaction a swap into DASH was paid out with, when the provider names it.
+    /// Nil when it does not, or when the answer does not say the swap ends in DASH —
+    /// `outHashes` may then hold the deposit's hash, which is no payout.
+    let dashPayoutHash: String?
 
     init(
         error: String?,
@@ -74,7 +78,8 @@ struct SwapStatusResult {
         actualToAmount: String? = nil,
         requestFailed: Bool = false,
         depositProven: Bool = false,
-        providerStatus: String? = nil
+        providerStatus: String? = nil,
+        dashPayoutHash: String? = nil
     ) {
         self.error = error
         self.isObserved = isObserved
@@ -84,6 +89,7 @@ struct SwapStatusResult {
         self.requestFailed = requestFailed
         self.depositProven = depositProven
         self.providerStatus = providerStatus
+        self.dashPayoutHash = dashPayoutHash
     }
 }
 
