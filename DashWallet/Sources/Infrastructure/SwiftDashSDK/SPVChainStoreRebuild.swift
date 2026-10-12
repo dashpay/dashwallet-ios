@@ -82,45 +82,45 @@ enum SPVChainStoreRebuild {
     /// loaded stays pending and deletes nothing: the import may have armed it
     /// for a start that has not seen the wallet yet.
     ///
-    /// `rewind` runs before `clearStore`: a failed rewind then leaves the
-    /// store as it was. When the clear is refused instead, the rewound
-    /// wallets are only rescanned on the old store.
+    /// `rewind` runs per wallet, before `clearStore`, and returns whether the
+    /// wallet's checkpoint was lowered. A wallet whose rewind failed stays
+    /// pending without holding back the others; when none was rewound the
+    /// store is left as it was. When the clear is refused instead, the
+    /// rewound wallets are only rescanned on the old store.
     @MainActor
     static func apply(
         scope: String,
         defaults: UserDefaults = .standard,
         isLoaded: (Data) -> Bool,
-        rewind: ([Data]) throws -> Void,
+        rewind: (Data) -> Bool,
         clearStore: () async -> Bool
     ) async -> [Data] {
         guard let pending = pendingWalletIds(scope: scope, defaults: defaults) else { return [] }
-        let imported = pending.filter(isLoaded)
-        guard !imported.isEmpty else { return [] }
-        do {
-            try rewind(imported)
-        } catch {
-            return []
-        }
+        let rewound = pending.filter { isLoaded($0) && rewind($0) }
+        guard !rewound.isEmpty else { return [] }
         guard await clearStore() else { return [] }
-        return imported
+        return rewound
     }
 
-    /// Empty the SPV store at `store` in one step: the directory is renamed
-    /// into `trash` (same volume, so the rename is atomic) and only then
-    /// deleted, so a failure never leaves the store half removed — it throws
-    /// with the store untouched, or the store is gone. Deleting the moved
-    /// copy and recreating the empty directory are best effort: `trash` holds
-    /// nothing else, so a copy left behind is removed by the next clear (or
-    /// purged by the system), and `startSpv` creates the data directory
-    /// itself.
+    /// Empty the SPV store at `store`: the directory is renamed into `trash`
+    /// and only then deleted. The caller passes a `trash` on the store's
+    /// volume, where the rename is atomic, so a failure never leaves the
+    /// store half removed — it throws with the store untouched, or the store
+    /// is gone. Deleting the moved copy and recreating the empty directory
+    /// are best effort: `trash` holds nothing but moved stores, so a copy
+    /// left behind is removed by the next clear (or purged by the system),
+    /// and `startSpv` creates the data directory itself.
     static func emptyStore(at store: URL, movingInto trash: URL, fileManager: FileManager = FileManager()) throws {
         // Copies an earlier clear moved away but was interrupted deleting.
-        try? fileManager.removeItem(at: trash)
+        // Entry by entry, so the directory another clear is moving into stays.
+        for leftover in (try? fileManager.contentsOfDirectory(atPath: trash.path)) ?? [] {
+            try? fileManager.removeItem(at: trash.appendingPathComponent(leftover))
+        }
         if fileManager.fileExists(atPath: store.path) {
             try fileManager.createDirectory(at: trash, withIntermediateDirectories: true)
             let removed = trash.appendingPathComponent(UUID().uuidString, isDirectory: true)
             try fileManager.moveItem(at: store, to: removed)
-            try? fileManager.removeItem(at: trash)
+            try? fileManager.removeItem(at: removed)
         }
         try? fileManager.createDirectory(at: store, withIntermediateDirectories: true)
     }

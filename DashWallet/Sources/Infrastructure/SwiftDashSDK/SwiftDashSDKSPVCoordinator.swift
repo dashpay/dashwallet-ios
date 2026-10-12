@@ -927,9 +927,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// anchor for good.
     ///
     /// Returns the wallet ids the rebuild was applied for — the caller drops
-    /// them from the marker once `startSpv` succeeds. Returns none (marker
-    /// retained) when nothing is pending, none of the pending wallets is
-    /// loaded, the rewind failed, or the store was not cleared (see
+    /// them from the marker once `startSpv` succeeds. A wallet that is not
+    /// loaded, or whose rewind failed, is left out and stays pending. Returns
+    /// none (marker retained) when nothing is pending, no pending wallet was
+    /// rewound, or the store was not cleared (see
     /// `clearChainStoreBeforeStart`); the imported wallets then sync on the
     /// old store, without their older history, until a later start applies
     /// the rebuild.
@@ -945,18 +946,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         manager: PlatformWalletManager,
         storeAlreadyCleared: Bool
     ) async -> [Data] {
-        var floor: UInt32 = 0
+        let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
         let imported = await SPVChainStoreRebuild.apply(
             scope: scope,
             isLoaded: { manager.wallets[$0] != nil },
-            rewind: { walletIds in
+            rewind: { walletId in
                 do {
-                    floor = try self.rewindToImportFloor(walletIds: walletIds, network: network, manager: manager)
+                    _ = try self.rewindToImportFloor(walletIds: [walletId], network: network, manager: manager)
+                    return true
                 } catch {
                     Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
                     DWLogger.log(
                         "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
-                    throw error
+                    return false
                 }
             },
             clearStore: {
