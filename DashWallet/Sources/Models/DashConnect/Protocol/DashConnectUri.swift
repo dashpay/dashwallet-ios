@@ -90,6 +90,14 @@ enum DashConnectUri {
     /// would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
     private static let maxStPayloadLength = 4 * 1024
+    /// The largest App Connect request the format defines today (a 64-byte
+    /// label, four auth bindings with full-length names, two encryption
+    /// bindings and every optional field) is 734 bytes. The rest is room for optional
+    /// fields a newer app may add, which this decoder has to skip, at a
+    /// decode cost that stays small.
+    private static let maxAppConnectPayloadLength = 1024
+    private static let appConnectVersion = "2"
+    private static let maxCallbackLength = 512
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -180,6 +188,83 @@ enum DashConnectUri {
             label: label,
             network: envelope.network
         )
+    }
+
+    /// Parses a `dash-key:` URI of version 2. A version 1 URI is
+    /// `unsupported` here: it belongs to `parseKeyRequest`.
+    static func parseAppConnectRequest(_ uri: String) throws -> AppConnectUri {
+        // Scalars, not characters: a combining mark after the scheme or a
+        // delimiter must not hide it.
+        guard uri.unicodeScalars.starts(with: keyScheme.unicodeScalars) else {
+            throw AppConnectRequestError.invalid("not a dash-key URI")
+        }
+        let remainder = uri.unicodeScalars.dropFirst(keyScheme.unicodeScalars.count)
+        guard let queryIndex = remainder.firstIndex(of: "?") else {
+            throw AppConnectRequestError.invalid("URI has no query")
+        }
+        let body = String(remainder[..<queryIndex])
+
+        // The query as the app's `URLSearchParams` reads it: names and values
+        // are form-decoded before they are compared.
+        var query = remainder[remainder.index(after: queryIndex)...]
+        if query.first == "?" { query = query.dropFirst() }
+        var parameters: [String: String] = [:]
+        for item in query.split(separator: "&") {
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            let name = formDecoded(parts[0])
+            guard ["n", "v", "cb"].contains(name) else { continue }
+            guard parameters[name] == nil else {
+                throw AppConnectRequestError.invalid("query parameter \(name) is repeated")
+            }
+            parameters[name] = parts.count == 2 ? formDecoded(parts[1]) : ""
+        }
+
+        guard parameters["v"] == appConnectVersion else {
+            throw AppConnectRequestError.unsupported("URI version \(parameters["v"] ?? "(none)")")
+        }
+        guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
+            throw AppConnectRequestError.invalid("unknown network")
+        }
+        // Before the decode, as for the other two formats: its cost is
+        // quadratic in the encoded length.
+        guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
+            throw AppConnectRequestError.invalid("request is too long")
+        }
+        guard let payload = base58Decode(body) else {
+            throw AppConnectRequestError.invalid("request is not base58")
+        }
+        guard payload.count <= maxAppConnectPayloadLength else {
+            throw AppConnectRequestError.invalid("request is too long")
+        }
+        let callback = try parameters["cb"].map(parseCallback)
+
+        return AppConnectUri(request: try AppConnectRequest.decode(payload), network: network, callback: callback)
+    }
+
+    /// `+` is a space and `%XX` a byte. When any sequence in the text does
+    /// not decode, none is decoded.
+    private static func formDecoded(_ scalars: Substring.UnicodeScalarView) -> String {
+        let text = String(scalars).replacingOccurrences(of: "+", with: " ")
+        return text.removingPercentEncoding ?? text
+    }
+
+    /// `cb` is an absolute `https` URL without credentials, already
+    /// form-decoded. The app's own check takes anything a browser's URL
+    /// parser repairs; this takes only a URL that is valid as written, with a
+    /// host written without percent-encoding and a port that is a port. The
+    /// host is what the user will be shown.
+    private static func parseCallback(_ text: String) throws -> URL {
+        guard text.utf16.count <= maxCallbackLength,
+              let components = URLComponents(string: text, encodingInvalidCharacters: false),
+              components.scheme?.lowercased() == "https",
+              // Presence, not the decoded value: that is nil for bytes that are not UTF-8.
+              components.rangeOfUser == nil, components.rangeOfPassword == nil,
+              let hostRange = components.rangeOfHost, !hostRange.isEmpty, !text[hostRange].contains("%"),
+              components.rangeOfPort == nil || components.port.map({ (0 ... 65535).contains($0) }) == true,
+              let url = components.url else {
+            throw AppConnectRequestError.invalid("callback is not an https URL without credentials")
+        }
+        return url
     }
 
     static func parseStRequest(_ uri: String) throws -> DashStRequest {
