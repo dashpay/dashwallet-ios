@@ -58,7 +58,7 @@ enum SPVChainStoreRebuild {
     }
 
     /// Drop `walletIds` from the wallets pending on `scope`: their rebuild
-    /// ran, their import failed, or the wallet was removed. Ids armed
+    /// ran or the wallet was removed. Ids armed
     /// meanwhile stay pending.
     static func finish(walletIds: [Data], scope: String, defaults: UserDefaults = .standard) {
         lock.lock(); defer { lock.unlock() }

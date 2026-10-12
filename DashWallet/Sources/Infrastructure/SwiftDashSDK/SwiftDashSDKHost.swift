@@ -890,15 +890,11 @@ final class SwiftDashSDKHost {
         // store an earlier, younger wallet left on this network. Recorded
         // before the wallet exists, so the rebuild does not depend on reaching
         // the code after the create; a wallet that is not loaded rebuilds
-        // nothing. A failed import withdraws the marker it armed, never one an
-        // earlier import of the same phrase left pending.
-        var importSucceeded = false
-        let armedRebuild = isImported
-            && SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
-        defer {
-            if armedRebuild, !importSucceeded {
-                SPVChainStoreRebuild.finish(walletIds: [walletId], scope: network.persistenceScope)
-            }
+        // nothing. Never withdrawn when the import fails: the SDK can throw
+        // after the wallet's rows landed, and a later start then loads the
+        // wallet without passing through here again.
+        if isImported {
+            SPVChainStoreRebuild.arm(walletId: walletId, scope: network.persistenceScope)
         }
 
         let storage = WalletStorage()
@@ -957,7 +953,6 @@ final class SwiftDashSDKHost {
                 })
             if isImported {
                 GeneratedWalletIdentityMarker.clear(walletId: walletId)
-                importSucceeded = true
             } else {
                 GeneratedWalletIdentityMarker.mark(walletId: walletId)
             }
