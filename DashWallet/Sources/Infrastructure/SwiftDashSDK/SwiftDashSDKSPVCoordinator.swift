@@ -659,7 +659,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // segment writes. See `SPVChainResyncMarker` for why this only
         // happens on the launch after the marker was armed.
         //
-        // Then the wallets imported from a recovery phrase since the last
+        // Then the wallets imported, or recreated from the Keychain, since the last
         // start: the store may be anchored above their history. Before
         // startSpv for the same reason.
         let appliedChainResync = await applyPendingChainResyncIfNeeded(
@@ -916,7 +916,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         return true
     }
 
-    /// Rebuild the chain store for wallets imported since the last start (see
+    /// Rebuild the chain store for wallets imported, or recreated from the
+    /// Keychain, since the last start (see
     /// `SPVChainStoreRebuild`): rewind the imported wallets' filter
     /// checkpoints to the import floor and delete the network's SPV store, so
     /// the upcoming `startSpv` anchors at the lowest birth height now loaded.
@@ -968,9 +969,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         guard !imported.isEmpty else { return [] }
 
         CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
-        Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported wallet(s) on \(network.rawValue, privacy: .public)")
+        Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported or recovered wallet(s) on \(network.rawValue, privacy: .public)")
         let stillPending = (SPVChainStoreRebuild.pendingWalletIds(scope: scope)?.count ?? 0) - imported.count
-        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) imported=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
+        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) wallets=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
         return imported
     }
 

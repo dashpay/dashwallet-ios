@@ -17,7 +17,7 @@ import Foundation
 /// the first one — was scanned only from that anchor: sync completed in
 /// seconds with every older transaction missing.
 ///
-/// The marker records the imported wallet ids per network scope. The SPV
+/// The marker records those wallet ids per network scope. The SPV
 /// coordinator applies it before `startSpv`: it rewinds the recorded
 /// wallets' filter checkpoints to the import floor, in case the running scan
 /// already walked them on the old store, and deletes the store, so the client
@@ -29,14 +29,15 @@ import Foundation
 enum SPVChainStoreRebuild {
 
     /// Serializes the read-modify-write of a scope's pending list: imports
-    /// arm on the main actor while the wallet wipe clears from its own queue.
+    /// and the Keychain recovery arm on the main actor while the wallet wipe
+    /// clears from its own queue.
     private static let lock = NSLock()
 
     private static func key(scope: String) -> String {
         "spvChainStoreRebuild.v1.pending.\(scope)"
     }
 
-    /// Record that `walletId` was imported on `scope`. Adds to the wallets
+    /// Record that `walletId` was imported or recreated on `scope`. Adds to the wallets
     /// already pending there; returns false when it was pending already.
     @discardableResult
     static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) -> Bool {
