@@ -39,7 +39,8 @@ protocol DashConnectDataSource {
     /// Turns a connection off. For a one-QR connection this disables the key
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
-    /// stays as it was. For a two-QR connection it only changes the local
+    /// stays as it was. The connection also stays, without an error, while
+    /// the app holds a key on another identity of the wallet. For a two-QR connection it only changes the local
     /// status: that login derives the same key every time and Platform never
     /// re-adds a disabled key, so disabling it would lock the app out for good.
     func disconnect(id: String) async throws

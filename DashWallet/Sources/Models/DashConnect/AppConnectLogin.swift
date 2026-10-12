@@ -133,6 +133,63 @@ enum AppConnect {
         return Set(grants.map(\.sessionKeyId)).subtracting(known).sorted()
     }
 
+    /// The query for one identity's response to one request, in the order of
+    /// the contract's only index. A byte-array value travels as base64.
+    static func responseLookupWhereClause(appEphemeralPubKeyHash: Data, ownerIdentityId: Data) -> String {
+        """
+        [["appEphemeralPubKeyHash","==","\(appEphemeralPubKeyHash.base64EncodedString())"],\
+        ["$ownerId","==","\(ownerIdentityId.toBase58String())"]]
+        """
+    }
+
+    /// The values of a response read back from Platform, or `nil` when the
+    /// document is not the response to `appEphemeralPubKeyHash` or cannot be
+    /// read. A delete has to carry the values that are on Platform, and those
+    /// are this wallet's own only when it recorded them before publishing.
+    ///
+    /// The SDK returns a byte field as base64 text. An array of numbers and
+    /// hex text are read as well, so a change of that encoding does not turn
+    /// every lookup into a failure.
+    static func responseValues(
+        fromDocument document: [String: Any],
+        appEphemeralPubKeyHash: Data
+    ) -> ResponseValues? {
+        func field(_ name: String) -> Any? {
+            document[name] ?? (document["properties"] as? [String: Any])?[name]
+        }
+        func bytes(_ value: Any?, _ decode: (String) -> Data?) -> Data? {
+            if let text = value as? String { return decode(text) }
+            guard let numbers = value as? [Int], numbers.allSatisfy({ (0 ... 255).contains($0) }) else { return nil }
+            return Data(numbers.map(UInt8.init))
+        }
+        let decoders: [(String) -> Data?] = [{ Data(base64Encoded: $0) }, { data(fromHex: $0) }]
+        for decode in decoders {
+            guard bytes(field("appEphemeralPubKeyHash"), decode) == appEphemeralPubKeyHash,
+                  let walletEphemeralPubKey = bytes(field("walletEphemeralPubKey"), decode),
+                  walletEphemeralPubKey.count == 33,
+                  let encryptedPayload = bytes(field("encryptedPayload"), decode),
+                  (60 ... 572).contains(encryptedPayload.count) else { continue }
+            return ResponseValues(
+                appEphemeralPubKeyHash: appEphemeralPubKeyHash.toHexString(),
+                walletEphemeralPubKey: walletEphemeralPubKey.toHexString(),
+                encryptedPayload: encryptedPayload.toHexString())
+        }
+        return nil
+    }
+
+    static func data(fromHex hex: String) -> Data? {
+        guard hex.count.isMultiple(of: 2) else { return nil }
+        var data = Data(capacity: hex.count / 2)
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            let next = hex.index(index, offsetBy: 2)
+            guard let byte = UInt8(hex[index ..< next], radix: 16) else { return nil }
+            data.append(byte)
+            index = next
+        }
+        return data
+    }
+
     /// The three values of a `loginKeyResponse`, as hex.
     struct ResponseValues: Codable, Equatable {
         let appEphemeralPubKeyHash: String
@@ -222,18 +279,20 @@ struct AppConnectGrant: Codable, Equatable {
     /// before publishing, so a publish whose outcome is unknown still leaves
     /// a key that can be disabled.
     var documentId: String?
-    let values: AppConnect.ResponseValues
+    /// Replaced only by values read back from Platform.
+    var values: AppConnect.ResponseValues
     let sessionKeyId: UInt32
-    /// `nil` when the key was found already registered and its limits were
-    /// not read back.
+    /// The limits the key was registered with; `nil` for one without.
     let totalBudget: UInt64?
     let expiresAt: UInt64?
     let publishedAt: Date
-    /// Set once the response was deleted from Platform while the key stays
-    /// live (a later login to the same app). Absent means not deleted.
+    /// Set once the response is known to be gone from Platform while the key
+    /// stays live: deleted by a later login to the same app, or never there
+    /// after a publish that did not land. Absent means not known to be gone.
     var responseDeleted: Bool?
-    /// Set once a disconnect disabled the key but could not delete the
-    /// response; the record then only waits for that delete.
+    /// Set once a disconnect disabled the key while its response could not
+    /// be deleted, or could not be shown to be absent; the record then only
+    /// waits for that.
     var keyDisabled: Bool?
 
     /// What makes two records the same grant: one session key given for one
@@ -248,11 +307,24 @@ struct AppConnectGrant: Codable, Equatable {
     var hasDeletableResponse: Bool {
         documentId != nil && responseDeleted != true
     }
+
+    /// A publish was started and never confirmed: the response may be on
+    /// Platform or not.
+    var hasUnconfirmedResponse: Bool {
+        documentId == nil && responseDeleted != true
+    }
 }
 
 protocol AppConnectResponseStore {
+    /// Whether `save` keeps anything. A login must not register a key the
+    /// store cannot record: nothing could find that key again.
+    var canPersist: Bool { get }
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
+}
+
+extension AppConnectResponseStore {
+    var canPersist: Bool { true }
 }
 
 /// Wallet- and network-scoped, like `UserDefaultsDashConnectStore`, whose
@@ -293,6 +365,8 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     private var storageKey: String? {
         scopeKeyProvider().map { "\($0).app-connect-responses.v1" }
     }
+
+    var canPersist: Bool { storageKey != nil }
 
     func load() -> [AppConnectGrant] {
         readRows().grants

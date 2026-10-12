@@ -74,6 +74,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case sessionKeyUnusable
     case grantRecordsMissing
     case identityKeysOutOfDate
+    case grantOnAnotherIdentity
+    case grantStoreUnavailable
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -125,6 +127,12 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.",
                 comment: "DashConnect")
+        case .grantOnAnotherIdentity:
+            return NSLocalizedString(
+                "This app has a key on another identity of this wallet. Switch to that identity to turn it off.",
+                comment: "DashConnect")
+        case .grantStoreUnavailable:
+            return "This wallet cannot record the key it would give the app, so the sign-in was not started."
         case .grantRecordsMissing:
             return NSLocalizedString(
                 "This wallet has no record of the key it gave this app, so it cannot turn it off here.",
@@ -619,6 +627,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else {
             throw DashConnectPlatformError.loginContractUnavailable
         }
+        guard responseStore.canPersist else {
+            throw DashConnectPlatformError.grantStoreUnavailable
+        }
 
         let requestId = AppConnect.requestId(appEphemeralPubKey: request.appEphemeralPubKey)
         // `deriveConnectKey` is main-actor isolated in the SDK. Only the two
@@ -647,13 +658,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let appContractId = request.contractId.toBase58String()
         let requestHash = sealed.appEphemeralPubKeyHash.toHexString()
         let signer = KeychainSigner(modelContainer: context.modelContainer)
-        // TODO(app-connect-stale-keys): this is the SDK's local view of the
-        // identity, refreshed only when an identity update returns success. A
-        // registration that landed but whose wait failed is not in it, and
-        // approving the same QR then tries to add the key a second time.
-        let currentPublicKeys = try context.wallet
-            .managedIdentity(identityId: context.identityId)
-            .getPublicKeys()
+        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
 
         let sessionKeyId: UInt32
         var totalBudget: UInt64?
@@ -668,6 +673,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         case .usable(let keyId):
             Self.logger.info("🔗 DASHCONNECT :: session key already registered")
             sessionKeyId = keyId
+            let registered = currentPublicKeys.first { UInt32(bitPattern: $0.keyId) == keyId }
+            totalBudget = registered?.totalBudget
+            expiresAt = registered?.expiresAt.map { UInt64(max(0, $0)) }
         case .absent:
             let keyId = AppConnect.nextKeyId(currentIdentityPublicKeys: currentPublicKeys)
             let budget = AppConnect.sessionKeyBudgetCredits
@@ -727,15 +735,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         current.append(connection)
         persistAndSend(current)
 
-        guard grant.documentId == nil else {
+        // A response deleted by a later login to this app is published again
+        // when its own request comes back.
+        guard !grant.hasDeletableResponse else {
             Self.logger.info("🔗 DASHCONNECT :: response already published for this request")
             return connection
         }
 
+        // Besides this app's earlier responses, this takes whatever an earlier
+        // disconnect of any app left behind for this identity: its row is
+        // gone, so a login is the only moment left to finish that cleanup.
         await deleteAppConnectResponses(
             where: {
-                $0.identityId == identityId && $0.appContractId == appContractId
-                    && $0.values.appEphemeralPubKeyHash != requestHash
+                guard $0.identityId == identityId else { return false }
+                return $0.keyDisabled == true
+                    || ($0.appContractId == appContractId && $0.values.appEphemeralPubKeyHash != requestHash)
             },
             responseContractId: responseContractId,
             context: context,
@@ -743,20 +757,73 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
 
         Self.logger.info("🔗 DASHCONNECT :: publishing loginKeyResponse")
-        let (documentId, _) = try await context.wallet.createDocument(
-            ownerIdentityId: context.identityId,
-            contractId: responseContractId,
-            documentType: AppConnect.documentType,
-            propertiesJSON: try grant.values.propertiesJSON(),
-            signer: signer
-        )
-        Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse published")
+        let documentId: Data
+        var publishedValues = grant.values
+        do {
+            (documentId, _) = try await context.wallet.createDocument(
+                ownerIdentityId: context.identityId,
+                contractId: responseContractId,
+                documentType: AppConnect.documentType,
+                propertiesJSON: try grant.values.propertiesJSON(),
+                signer: signer
+            )
+            Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse published")
+        } catch {
+            // A publish can land without confirming, and the response is
+            // unique per request and identity, so the retry is then refused.
+            // If the response is there, this login is complete; if it is not,
+            // or that cannot be told, the failure stands.
+            guard let published = try? await findAppConnectResponse(
+                ownerIdentityId: context.identityId,
+                appEphemeralPubKeyHash: sealed.appEphemeralPubKeyHash,
+                responseContractId: responseContractId,
+                sdk: context.sdk
+            ) else {
+                throw error
+            }
+            Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse was already published")
+            documentId = published.documentId
+            publishedValues = published.values
+        }
 
         updateGrants { grants in
             guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
             grants[index].documentId = documentId.toBase58String()
+            grants[index].values = publishedValues
+            grants[index].responseDeleted = nil
         }
         return connection
+    }
+
+    /// This identity's response to one request, with the values it has on
+    /// Platform, or `nil` when there is none; a failed lookup or a response
+    /// that cannot be read throws.
+    private func findAppConnectResponse(
+        ownerIdentityId: Data,
+        appEphemeralPubKeyHash: Data,
+        responseContractId: Data,
+        sdk: SDK
+    ) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
+        let response = try await sdk.documentList(
+            dataContractId: responseContractId.toBase58String(),
+            documentType: AppConnect.documentType,
+            whereClause: AppConnect.responseLookupWhereClause(
+                appEphemeralPubKeyHash: appEphemeralPubKeyHash,
+                ownerIdentityId: ownerIdentityId
+            ),
+            limit: 1
+        )
+        guard let documents = response["documents"] as? [[String: Any]] else {
+            throw DashConnectPlatformError.existingDocumentLookupFailed
+        }
+        guard let document = documents.first else { return nil }
+        guard let id = document["$id"] as? String,
+              let identifier = Self.decodeIdentifier(id), identifier.count == 32,
+              let values = AppConnect.responseValues(
+                  fromDocument: document, appEphemeralPubKeyHash: appEphemeralPubKeyHash) else {
+            throw DashConnectPlatformError.existingDocumentLookupFailed
+        }
+        return (identifier, values)
     }
 
     /// Reads, changes and writes the grant records in one step with no
@@ -772,8 +839,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// Deletes, by their original values, the responses of the matching
     /// grants that are still on Platform. Best effort: a response that cannot
-    /// be deleted now stays recorded and is tried again by the next login or
-    /// disconnect. It does not hold the caller back — the entry it leaves is
+    /// be deleted now stays recorded and is tried again by the next login
+    /// with this identity. It does not hold the caller back — the entry it leaves is
     /// the encrypted key of a request the app has already finished with.
     ///
     /// A grant whose key is still live keeps its record, marked as having no
@@ -786,6 +853,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         context: Context,
         signer: KeychainSigner
     ) async {
+        await resolveUnconfirmedAppConnectResponses(
+            where: matches, responseContractId: responseContractId, context: context)
         let pending = responseStore.load().filter { matches($0) && $0.hasDeletableResponse }
         for grant in pending {
             do {
@@ -806,17 +875,73 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     signingKeyId: signingKeyId,
                     signer: signer
                 )
-                updateGrants { grants in
-                    guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
-                    if grants[index].keyDisabled == true {
-                        grants.remove(at: index)
-                    } else {
-                        grants[index].responseDeleted = true
-                    }
-                }
+                markAppConnectResponseGone(grant)
             } catch {
                 Self.logger.error(
                     "🔗 DASHCONNECT :: previous loginKeyResponse not deleted — \(error.localizedDescription, privacy: .public)")
+                // A delete can land without confirming, and every retry is
+                // then refused because there is nothing left to delete. Only
+                // Platform can say which failure this was.
+                guard let hash = AppConnect.data(fromHex: grant.values.appEphemeralPubKeyHash) else { continue }
+                do {
+                    let remaining = try await findAppConnectResponse(
+                        ownerIdentityId: context.identityId,
+                        appEphemeralPubKeyHash: hash,
+                        responseContractId: responseContractId,
+                        sdk: context.sdk
+                    )
+                    if remaining == nil { markAppConnectResponseGone(grant) }
+                } catch {
+                    continue
+                }
+            }
+        }
+    }
+
+    /// Records that a grant has no response on Platform any more. The record
+    /// of a live key stays, because it is what lets a disconnect find that
+    /// key; the record of a disabled key has no further use.
+    private func markAppConnectResponseGone(_ grant: AppConnectGrant) {
+        updateGrants { grants in
+            guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
+            if grants[index].keyDisabled == true {
+                grants.remove(at: index)
+            } else {
+                grants[index].responseDeleted = true
+            }
+        }
+    }
+
+    /// Settles the matching grants whose publish never confirmed, by asking
+    /// Platform. A response that is there gets its id and its values on
+    /// Platform, so it can be deleted; one that is not there needs nothing
+    /// more. A lookup that fails leaves the record as it is for the next try.
+    private func resolveUnconfirmedAppConnectResponses(
+        where matches: (AppConnectGrant) -> Bool,
+        responseContractId: Data,
+        context: Context
+    ) async {
+        for grant in responseStore.load() where matches(grant) && grant.hasUnconfirmedResponse {
+            guard let hash = AppConnect.data(fromHex: grant.values.appEphemeralPubKeyHash) else { continue }
+            do {
+                let published = try await findAppConnectResponse(
+                    ownerIdentityId: context.identityId,
+                    appEphemeralPubKeyHash: hash,
+                    responseContractId: responseContractId,
+                    sdk: context.sdk
+                )
+                guard let published else {
+                    markAppConnectResponseGone(grant)
+                    continue
+                }
+                updateGrants { grants in
+                    guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
+                    grants[index].documentId = published.documentId.toBase58String()
+                    grants[index].values = published.values
+                }
+            } catch {
+                Self.logger.error(
+                    "🔗 DASHCONNECT :: unconfirmed loginKeyResponse not resolved — \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -1126,7 +1251,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let isOneQR = subject.value.first { $0.id == id }?.loginKind == .oneQR
         let hasGrants = responseStore.load().contains { $0.appContractId == id }
         if isOneQR || hasGrants {
-            try await revokeAppConnectGrants(appContractId: id, requiresGrants: isOneQR)
+            let liveElsewhere = try await revokeAppConnectGrants(appContractId: id, requiresGrants: isOneQR)
+            // The row stands for the app, and the app still holds a key on
+            // another identity of this wallet. That key can only be disabled
+            // while its identity is the active one, so the row stays to get
+            // there; this identity's key is off.
+            if liveElsewhere { return }
         }
         if isOneQR {
             // Nothing is left of a one-QR connection once its key is disabled:
@@ -1158,20 +1288,30 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ///
     /// The key goes first because it is what the app signs with. A response
     /// that could not be deleted afterwards stays recorded, with its key
-    /// marked disabled, and is retried by the next login or disconnect.
+    /// marked disabled, and is retried by the next login with this identity.
+    ///
+    /// Returns whether the app still has a live key on another identity of
+    /// this wallet. When this identity gave it none, that is thrown instead:
+    /// nothing was turned off.
     ///
     /// `requiresGrants` is set for a row made by the one-QR login: finding no
     /// record for it means the key cannot be identified, and that is an error
     /// rather than a silent success.
-    private func revokeAppConnectGrants(appContractId: String, requiresGrants: Bool) async throws {
+    private func revokeAppConnectGrants(appContractId: String, requiresGrants: Bool) async throws -> Bool {
         var context = try await requireContext()
         let identityId = context.identityId.toBase58String()
         func isGranted(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
         }
+        func hasLiveGrantElsewhere() -> Bool {
+            responseStore.load().contains {
+                $0.appContractId == appContractId && $0.identityId != identityId && $0.keyDisabled != true
+            }
+        }
         guard responseStore.load().contains(where: isGranted) else {
+            if hasLiveGrantElsewhere() { throw DashConnectPlatformError.grantOnAnotherIdentity }
             if requiresGrants { throw DashConnectPlatformError.grantRecordsMissing }
-            return
+            return false
         }
 
         try await authorize()
@@ -1183,16 +1323,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         let signer = KeychainSigner(modelContainer: context.modelContainer)
-        // TODO(app-connect-stale-keys): the SDK's local view of the identity;
-        // a disable that landed but whose wait failed is not in it, and the
-        // retry is then refused by Platform until the view refreshes.
-        let currentPublicKeys = try context.wallet
-            .managedIdentity(identityId: context.identityId)
-            .getPublicKeys()
+        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         let granted = responseStore.load().filter(isGranted)
         guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: granted).isEmpty else {
-            // A granted key the local view does not know cannot be shown to
-            // be disabled, so nothing is reported as turned off.
+            // Platform never removes a key, so the node that answered is
+            // behind. A key it does not know cannot be shown to be disabled,
+            // so nothing is reported as turned off.
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
         let keyIds = AppConnect.sessionKeyIdsToDisable(
@@ -1209,22 +1345,26 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.info("🔗 DASHCONNECT :: session key(s) disabled")
         }
 
-        // Every key of this app is now off. Records with nothing left to
-        // delete are done; the rest wait for their response to go.
+        // Every key this identity gave the app is now off. Records whose
+        // response is known to be gone are done; the rest wait for their
+        // response to be deleted, or to be found if its publish never
+        // confirmed.
         updateGrants { grants in
-            grants.removeAll { isGranted($0) && !$0.hasDeletableResponse }
+            grants.removeAll { isGranted($0) && $0.responseDeleted == true }
             for index in grants.indices where isGranted(grants[index]) {
                 grants[index].keyDisabled = true
             }
         }
 
-        guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else { return }
-        await deleteAppConnectResponses(
-            where: isGranted,
-            responseContractId: responseContractId,
-            context: context,
-            signer: signer
-        )
+        if let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
+            await deleteAppConnectResponses(
+                where: isGranted,
+                responseContractId: responseContractId,
+                context: context,
+                signer: signer
+            )
+        }
+        return hasLiveGrantElsewhere()
     }
 
     static func buildLoginKeyResponseDraft(
@@ -1575,6 +1715,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch {
             throw DashConnectPlatformError.authorizationFailed
         }
+    }
+
+    /// The identity's keys as Platform has them now. The SDK's own copy is
+    /// only replaced when an identity update returns success, so a
+    /// registration or a disable that landed without confirming is missing
+    /// from it; deciding from that copy would add the key twice or disable it
+    /// twice. The reload also replaces the copy the SDK signs the next update
+    /// against.
+    private func refreshedIdentityPublicKeys(
+        context: Context
+    ) async throws -> [ManagedIdentity.IdentityPublicKeyInfo] {
+        guard try await context.wallet.loadIdentity(atIndex: context.identityIndex) == context.identityId else {
+            throw DashConnectPlatformError.noIdentity
+        }
+        return try context.wallet
+            .managedIdentity(identityId: context.identityId)
+            .getPublicKeys()
     }
 
     private func requireContext() async throws -> Context {

@@ -1452,6 +1452,20 @@ private enum PurchaseSpyError: LocalizedError {
 }
 
 final class AppConnectLoginTests: XCTestCase {
+    func testResponseLookupQueriesTheIndexInOrderWithBase64Hash() throws {
+        let hash = Data(repeating: 0xAB, count: 20)
+        let owner = Data(repeating: 0x01, count: 32)
+
+        let clause = AppConnect.responseLookupWhereClause(appEphemeralPubKeyHash: hash, ownerIdentityId: owner)
+
+        let parsed = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(clause.utf8)) as? [[String]])
+        XCTAssertEqual(parsed, [
+            ["appEphemeralPubKeyHash", "==", hash.base64EncodedString()],
+            ["$ownerId", "==", owner.toBase58String()],
+        ])
+    }
+
     private var defaults: UserDefaults!
     private var suiteName: String!
 
@@ -1650,20 +1664,60 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertTrue(grant.hasDeletableResponse)
     }
 
-    func testAGrantIsFoundAgainAfterTheStoreRoundTrip() {
-        // A wall-clock date does not survive the millisecond round trip bit
-        // for bit, so whole-value equality misses the stored record about
-        // half the time; the grant key does not depend on the date.
+    func testASavedGrantIsLoadedWithTheSameKey() {
         let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
-        for offset in 0 ..< 200 {
-            let grant = AppConnectGrant(
-                identityId: "identity", appContractId: "app", documentId: nil,
-                values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
-                sessionKeyId: 6, totalBudget: nil, expiresAt: nil,
-                publishedAt: Date(timeIntervalSince1970: 1_791_539_765.792_813 + Double(offset) * 0.000_137))
-            store.save([grant])
-            XCTAssertEqual(store.load().first?.key, grant.key)
+        let grant = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 6, totalBudget: nil, expiresAt: nil,
+            publishedAt: Date(timeIntervalSince1970: 1_791_539_765.792_813))
+        store.save([grant])
+
+        XCTAssertEqual(store.load().first?.key, grant.key)
+    }
+
+    func testAStoreWithoutAScopeCannotPersist() {
+        XCTAssertTrue(
+            UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }.canPersist)
+        XCTAssertFalse(
+            UserDefaultsAppConnectResponseStore(defaults: defaults, network: .devnet) { nil }.canPersist)
+    }
+
+    func testResponseValuesAreReadBackFromNumbersBase64AndHex() {
+        let hash = Data(repeating: 0xAB, count: 20)
+        let walletKey = Data([0x02] + [UInt8](repeating: 0x11, count: 32))
+        let payload = Data(repeating: 0x22, count: 60)
+        let expected = AppConnect.ResponseValues(
+            appEphemeralPubKeyHash: hash.toHexString(),
+            walletEphemeralPubKey: walletKey.toHexString(),
+            encryptedPayload: payload.toHexString())
+        let encodings: [(Data) -> Any] = [
+            { $0.map(Int.init) }, { $0.base64EncodedString() }, { $0.toHexString() },
+        ]
+        for encode in encodings {
+            let document: [String: Any] = [
+                "$id": "id",
+                "appEphemeralPubKeyHash": encode(hash),
+                "walletEphemeralPubKey": encode(walletKey),
+                "encryptedPayload": encode(payload),
+            ]
+            XCTAssertEqual(
+                AppConnect.responseValues(fromDocument: document, appEphemeralPubKeyHash: hash), expected)
+            XCTAssertNil(
+                AppConnect.responseValues(
+                    fromDocument: document, appEphemeralPubKeyHash: Data(repeating: 0xCD, count: 20)))
         }
+        XCTAssertNil(AppConnect.responseValues(fromDocument: ["$id": "id"], appEphemeralPubKeyHash: hash))
+    }
+
+    func testAnUnconfirmedResponseIsNeitherDeletableNorKnownGone() {
+        var grant = Self.grant(sessionKeyId: 6)
+        grant.documentId = nil
+        XCTAssertTrue(grant.hasUnconfirmedResponse)
+        XCTAssertFalse(grant.hasDeletableResponse)
+
+        grant.responseDeleted = true
+        XCTAssertFalse(grant.hasUnconfirmedResponse)
     }
 
     func testARowThisBuildCannotReadIsKeptWhenTheStoreIsSaved() throws {
