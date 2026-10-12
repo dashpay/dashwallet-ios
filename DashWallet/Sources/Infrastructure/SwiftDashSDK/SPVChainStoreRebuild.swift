@@ -17,11 +17,11 @@ import Foundation
 /// seconds with every older transaction missing.
 ///
 /// The marker records the imported wallet ids per network scope. The SPV
-/// coordinator consumes it before `startSpv`: it deletes the store, so the
-/// client anchors at the lowest birth height now loaded, and rewinds the
-/// recorded wallets' filter checkpoints to the import floor, in case the
-/// running scan already walked them on the old store. Durable, so an
-/// interrupted import or a start on the other network still rebuilds.
+/// coordinator consumes it before `startSpv`: it rewinds the recorded
+/// wallets' filter checkpoints to the import floor, in case the running scan
+/// already walked them on the old store, and deletes the store, so the client
+/// anchors at the lowest birth height now loaded. Durable, so a start on the
+/// other network, or one in a later launch, still rebuilds.
 ///
 /// Foundation-only so the wallet-preparation harness can compile it.
 enum SPVChainStoreRebuild {
@@ -33,36 +33,34 @@ enum SPVChainStoreRebuild {
     /// Record that `walletId` was imported on `scope`. Adds to the wallets
     /// already pending there.
     static func arm(walletId: Data, scope: String, defaults: UserDefaults = .standard) {
-        var pending = defaults.stringArray(forKey: key(scope: scope)) ?? []
-        let hex = walletId.map { String(format: "%02x", $0) }.joined()
-        if !pending.contains(hex) {
-            pending.append(hex)
+        var pending = pendingWalletIds(scope: scope, defaults: defaults) ?? []
+        if !pending.contains(walletId) {
+            pending.append(walletId)
         }
         defaults.set(pending, forKey: key(scope: scope))
     }
 
     /// The wallet ids pending on `scope`, or `nil` when no rebuild is pending.
     static func pendingWalletIds(scope: String, defaults: UserDefaults = .standard) -> [Data]? {
-        guard let pending = defaults.stringArray(forKey: key(scope: scope)), !pending.isEmpty else {
+        guard let pending = defaults.array(forKey: key(scope: scope)) as? [Data], !pending.isEmpty else {
             return nil
         }
-        return pending.compactMap(walletId(hex:))
+        return pending
+    }
+
+    /// Drop `walletIds` from the wallets pending on `scope`: their rebuild
+    /// ran, or their import failed. Ids armed meanwhile stay pending.
+    static func finish(walletIds: [Data], scope: String, defaults: UserDefaults = .standard) {
+        let remaining = (pendingWalletIds(scope: scope, defaults: defaults) ?? [])
+            .filter { !walletIds.contains($0) }
+        if remaining.isEmpty {
+            clear(scope: scope, defaults: defaults)
+        } else {
+            defaults.set(remaining, forKey: key(scope: scope))
+        }
     }
 
     static func clear(scope: String, defaults: UserDefaults = .standard) {
         defaults.removeObject(forKey: key(scope: scope))
-    }
-
-    private static func walletId(hex: String) -> Data? {
-        guard hex.count.isMultiple(of: 2) else { return nil }
-        var bytes = Data(capacity: hex.count / 2)
-        var index = hex.startIndex
-        while index < hex.endIndex {
-            let next = hex.index(index, offsetBy: 2)
-            guard let byte = UInt8(hex[index..<next], radix: 16) else { return nil }
-            bytes.append(byte)
-            index = next
-        }
-        return bytes
     }
 }

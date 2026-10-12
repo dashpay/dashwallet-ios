@@ -48,6 +48,30 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             [walletId(0xA1), walletId(0xB2)])
     }
 
+    func testFinishDropsOnlyTheRebuiltWalletsAndKeepsOnesArmedMeanwhile() {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
+        SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", defaults: defaults)
+
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", defaults: defaults)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults),
+            [walletId(0xB2)])
+
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xB2)], scope: "mainnet", defaults: defaults)
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", defaults: defaults))
+    }
+
+    func testFinishOfAWalletThatIsNotPendingChangesNothing() {
+        SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
+
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xEE)], scope: "testnet", defaults: defaults)
+        SPVChainStoreRebuild.finish(walletIds: [walletId(0xA1)], scope: "mainnet", defaults: defaults)
+
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", defaults: defaults),
+            [walletId(0xA1)])
+    }
+
     func testClearFinishesOneScopeAndLeavesTheOther() {
         SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "mainnet", defaults: defaults)
         SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", defaults: defaults)
