@@ -375,7 +375,7 @@ final class DashConnectUriTests: XCTestCase {
             // Credentials that do not decode as text are still credentials.
             "https%3A%2F%2F%25FF%40yap.pr%2F", "https%3A%2F%2Fyap.pr%25FF%40evil.example%2F",
             "https%3A%2F%2Fyap.pr%25FF%3A%25FF%40evil.example%2F",
-            "yap.pr%2Fconnect", "https%3A%2F%2Fyap.pr%2F" + String(repeating: "a", count: 512),
+            "yap.pr%2Fconnect", "https%3A%2F%2Fyap.pr%2F" + String(repeating: "a", count: 513 - "https://yap.pr/".count),
         ] {
             XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(base + "&cb=" + callback), callback) { error in
                 guard case .invalid = error as? AppConnectRequestError else { return XCTFail("\(error)") }
@@ -431,6 +431,26 @@ final class DashConnectUriTests: XCTestCase {
         }
         // A combining mark after a delimiter does not swallow it.
         XCTAssertEqual(try parse("v=2&\u{301}x=1&n=t").network, .testnet)
+
+        // `+` is a space, which no parameter here may contain.
+        XCTAssertEqual(try parse("n=t&v=2&cb=https://yap.pr/a-b").callback?.path, "/a-b")
+        XCTAssertThrowsError(try parse("n=t&v=2&cb=https://yap.pr/a+b"))
+        XCTAssertThrowsError(try parse("n=t&v=+2"))
+        // Each sequence decodes on its own: the `%3F` here opens a query
+        // even though `%FF` is not text, and the result is then not a URL
+        // as written.
+        XCTAssertEqual(try parse("n=t&v=2&cb=https://yap.pr/a%3Fr%3D1").callback?.query, "r=1")
+        XCTAssertThrowsError(try parse("n=t&v=2&cb=https://yap.pr/a%3Fr%3D1%FF"))
+        // A `%` without two hex digits stands as written, at the end too.
+        XCTAssertThrowsError(try parse("n=t&v=2&cb=https://yap.pr/a%"))
+        for version in ["%", "%4", ""] {
+            XCTAssertThrowsError(try parse("n=t&v=" + version), version) { error in
+                XCTAssertEqual(error as? AppConnectRequestError, .unsupported("URI version (unreadable)"))
+            }
+        }
+        XCTAssertThrowsError(try parse("n=t&v=" + String(repeating: "9", count: 4))) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .unsupported("URI version (unreadable)"))
+        }
     }
 
     func testAppConnectCallbackHostMustReadAsWritten() throws {
@@ -441,7 +461,15 @@ final class DashConnectUriTests: XCTestCase {
         // Decodes to `https://yap.pr%2F.evil.example/`: a host that only looks like yap.pr.
         for callback in ["https%3A%2F%2Fyap.pr%252F.evil.example%2F", "https%3A%2F%2Fyap.pr%2540evil.example%2F",
                          "https%3A%2F%2Fyap.pr%3A99999%2F", "https%3A%2F%2Fyap.pr%3A99999999999999999999%2F",
-                         "https%3A%2F%2Fb%C3%BCcher.example%2F"] {
+                         "https%3A%2F%2Fb%C3%BCcher.example%2F",
+                         // Bracketed text reads back without its brackets.
+                         "https%3A%2F%2F%5Byap.pr%5D%2F", "https%3A%2F%2F%5B%5D%2F", "https%3A%2F%2F%5Byap.pr%3Aevil.example%5D%2F",
+                         // Addresses, in the spellings a browser takes.
+                         "https%3A%2F%2F%5B%3A%3A1%5D%2F", "https%3A%2F%2F1.2.3.4%2F", "https%3A%2F%2F2130706433%2F",
+                         "https%3A%2F%2F0x7f.1%2F", "https%3A%2F%2Ffoo.123%2F", "https%3A%2F%2F1.2.3.0x4%2F", "https%3A%2F%2F0x7f000001%2F",
+                         // A browser lowercases the host: `paypaI.com` opens `paypai.com`.
+                         "https%3A%2F%2FpaypaI.com%2F", "https%3A%2F%2FYAP.PR%2F",
+                         "https%3A%2F%2Fyap..pr%2F", "https%3A%2F%2Fyap.pr.%2F", "https%3A%2F%2Fyap_pr.example%2F"] {
             XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(base + "&cb=" + callback), callback)
         }
         // An international host is written in its ASCII form.

@@ -230,7 +230,16 @@ final class KeyExchangeCryptoTests: XCTestCase {
             appEphemeralPub: AppConnectVector.appEphemeralPub,
             ownerId: AppConnectVector.ownerId)
 
+        let second = try KeyExchangeCrypto.encryptAppConnectSlots(
+            AppConnectVector.slots,
+            walletEphemeralPriv: AppConnectVector.walletEphemeralPriv,
+            appEphemeralPub: AppConnectVector.appEphemeralPub,
+            ownerId: AppConnectVector.ownerId)
+
+        // A nonce of its own every time.
         XCTAssertNotEqual(payload.prefix(12), AppConnectVector.nonce)
+        XCTAssertNotEqual(payload.prefix(12), second.prefix(12))
+        XCTAssertNotEqual(payload.prefix(12), Data(count: 12))
         XCTAssertEqual(
             try KeyExchangeCrypto.decryptAppConnectSlots(
                 payload,
