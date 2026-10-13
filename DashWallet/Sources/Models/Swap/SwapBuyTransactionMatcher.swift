@@ -21,6 +21,8 @@ import Foundation
 protocol SwapPayoutCandidate {
     var txHashHexString: String { get }
     var date: Date { get }
+    /// When the wallet's store first held the transaction, if it is known.
+    var firstStored: Date? { get }
     var direction: TransactionDirection { get }
     var outputReceiveAddresses: [String] { get }
     var dashAmount: UInt64 { get }
@@ -45,8 +47,9 @@ struct PayoutResolution<T> {
     /// The transactions that were looked at and given to no order: nobody's, or held back
     /// while it is not settled whose they are.
     var unassigned: [T] = []
-    /// Order id → ids of the transactions the order fits that are dated within its bound
-    /// right now, earliest first, for the orders that have one and do not name their
+    /// Order id → ids of the transactions the order fits that arrived within its bound
+    /// as the wallet tells it right now (`SwapBuyTransactionMatcher.arrival`), earliest
+    /// first, for the orders that have one and do not name their
     /// payout. Not the transactions another order has by name. The tracker keeps them
     /// with the order (`SwapOrder.payoutCandidates`).
     var datedInTime: [String: [String]] = [:]
@@ -74,6 +77,21 @@ enum SwapBuyTransactionMatcher {
     /// still far tighter than the address + amount checks, which do the real disambiguation.
     private static let timestampSlack: TimeInterval = 2 * 60 * 60
 
+    /// When `tx` reached the wallet, for matching it to `order`: its date — the time the
+    /// wallet first saw it until it is mined, its block's time from then on — or the time
+    /// the store first held it (`SwapPayoutCandidate.firstStored`, to the second), when
+    /// that is earlier. A row is only written for a transaction the wallet has seen, so
+    /// the store's time is never before the transaction existed; it is later than the
+    /// block's for one the wallet met already mined.
+    /// The store's time is the device's clock at one moment, as the order's own time is.
+    /// One from before the order was made cannot be its payout's and is not used: the
+    /// date decides then, as it does where the order's time is checked (`matches`).
+    static func arrival<T: SwapPayoutCandidate>(of tx: T, for order: SwapOrder) -> Date {
+        guard let stored = tx.firstStored?.timeIntervalSince1970,
+              stored >= TimeInterval(order.timestamp) / 1000.0 else { return tx.date }
+        return min(tx.date, Date(timeIntervalSince1970: stored.rounded(.down)))
+    }
+
     /// The `firstSeen` fetch cutoff for matching `order`: order time minus
     /// `timestampSlack` (the matcher's own below-order-time allowance on the
     /// display date) minus a day for the firstSeen-vs-display-date skew
@@ -94,17 +112,23 @@ enum SwapBuyTransactionMatcher {
         orders.filter { $0.isBuy && $0.mayStillBePaidOut }.map(fetchCutoff(for:)).min()
     }
 
-    /// The latest date a transaction may carry and still be `order`'s payout; nil when there
-    /// is no such bound. That date is the time the wallet first saw the transaction until
-    /// it is mined, and its block's time from then on — the store keeps no other — so a
-    /// match made on it could lapse on confirmation. Two things keep it:
+    /// The latest time a transaction may have reached the wallet and still be `order`'s
+    /// payout; nil when there is no such bound. A transaction's date is the time the wallet first saw the transaction until
+    /// it is mined, and its block's time from then on, so a match made on it alone could
+    /// lapse on confirmation. The bound is therefore put on the transaction's arrival
+    /// (`arrival(of:for:)`): one written to the wallet in time stays in time when it is
+    /// mined later, also when nobody read the wallet in between. The store's own time is
+    /// lost when the row is written anew — the wallet restored, the transaction dropped
+    /// and seen again — and two more things keep a match then:
     /// - the tracker writes a matched payout's hash into the order while the bound still
     ///   holds (`settleLatePayouts`), when no other order fits that transaction, and asks
     ///   the provider for it otherwise: an order that names its payout is not bounded by
     ///   date;
-    /// - a transaction the order was seen to fit while dated within the bound is kept with
+    /// - a transaction the order was seen to fit while within the bound is kept with
     ///   the order (`SwapOrder.payoutCandidates`) and stays within it, whatever date it
     ///   carries later. That says the order may still take it, not that it is the order's.
+    ///
+    /// The bound, by the order's status:
     /// - A completed order's payout exists by the time it is finalised (plus
     ///   `timestampSlack`), so a later one is somebody else's.
     /// - An expired order with a deposit on record is owed a payout that arrives within
@@ -181,7 +205,7 @@ enum SwapBuyTransactionMatcher {
     ///
     /// Looked at one order at a time, two orders for the same amount to the same receive
     /// address both match the one payout that arrived. Here each transaction goes to at
-    /// most one order, and an order only takes one dated within its own bound
+    /// most one order, and an order only takes one that arrived within its own bound
     /// (`latestPayoutDate`). Settled in this priority:
     /// 1. the order that already names it as its payout (`outboundTxHash`) — and such an
     ///    order takes no other transaction (`SwapOrder.namesItsPayout`) — provided the
@@ -250,18 +274,23 @@ enum SwapBuyTransactionMatcher {
         let remembered = Dictionary(
             claimants.map { ($0.id, $0.inTimePayoutIds) }, uniquingKeysWith: { first, _ in first })
         func isDatedInTime(_ tx: T, for order: SwapOrder) -> Bool {
-            latestPayoutDate(for: order).map { tx.date.timeIntervalSince1970 <= $0 } ?? true
+            latestPayoutDate(for: order).map { arrival(of: tx, for: order).timeIntervalSince1970 <= $0 } ?? true
         }
         func isInTime(_ tx: T, for order: SwapOrder) -> Bool {
             isDatedInTime(tx, for: order)
                 || remembered[order.id]?.contains(tx.txHashHexString.lowercased()) == true
         }
+        /// Ids of `pool`, the one that reached the wallet first for `order` first.
+        func earliestFirst(_ pool: [T], for order: SwapOrder) -> [String] {
+            pool.map { (arrival: arrival(of: $0, for: order), id: $0.txHashHexString) }
+                .sorted { ($0.arrival, $0.id) < ($1.arrival, $1.id) }
+                .map { $0.id.lowercased() }
+        }
         /// Ids of the free transactions `order` fits, earliest first.
         func fitting(_ order: SwapOrder) -> [String] {
-            matchingTransactions(for: order, in: Array(free.values))
-                .filter { isInTime($0, for: order) }
-                .sorted { ($0.date, $0.txHashHexString) < ($1.date, $1.txHashHexString) }
-                .map { $0.txHashHexString.lowercased() }
+            earliestFirst(
+                matchingTransactions(for: order, in: Array(free.values)).filter { isInTime($0, for: order) },
+                for: order)
         }
 
         // The orders whose hash is established as their payout come first: an older
@@ -340,10 +369,9 @@ enum SwapBuyTransactionMatcher {
         let namedTxIds = Set(takenByName.values)
         for order in claimants where !order.namesItsPayout && latestPayoutDate(for: order) != nil {
             let othersByName = takenByName[order.id].map { namedTxIds.subtracting([$0]) } ?? namedTxIds
-            let txIds = matchingTransactions(for: order, in: transactions)
-                .filter { isDatedInTime($0, for: order) }
-                .sorted { ($0.date, $0.txHashHexString) < ($1.date, $1.txHashHexString) }
-                .map { $0.txHashHexString.lowercased() }
+            let txIds = earliestFirst(
+                matchingTransactions(for: order, in: transactions).filter { isDatedInTime($0, for: order) },
+                for: order)
                 .filter { !othersByName.contains($0) }
             if !txIds.isEmpty { datedInTime[order.id] = txIds }
         }

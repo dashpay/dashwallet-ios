@@ -102,7 +102,7 @@ struct SwapOrder: RowDecodable {
     var payoutNamedAt: Int64?    // Buy: unix s — when `outboundTxHash` was established as the
                                  // Dash payout: named by the provider, or found in the wallet
     var payoutCandidates: String? // Buy: ids of the wallet transactions the order was seen to
-                                 // fit while they were dated within its bound, space-separated
+                                 // fit while they were within its bound, space-separated
 
     // MARK: - SQLite schema
 
@@ -319,9 +319,10 @@ extension SwapOrder {
     /// How many transactions `payoutCandidates` keeps.
     static let maximumPayoutCandidates = 8
 
-    /// The wallet transactions the order was seen to fit while they were dated within its
+    /// The wallet transactions the order was seen to fit while they were within its
     /// bound (`SwapBuyTransactionMatcher.latestPayoutDate`). A transaction's date moves
-    /// when it is mined; one remembered here stays the order's to fit.
+    /// when it is mined; one remembered here stays the order's to fit — also when the
+    /// store no longer tells when it first held it (`SwapBuyTransactionMatcher.arrival`).
     var inTimePayoutIds: Set<String> {
         Set((payoutCandidates ?? "").split(separator: " ").map(String.init))
     }
@@ -401,11 +402,12 @@ extension SwapOrder {
     /// ended it without one. An expired order still can when its deposit is on record —
     /// expiry is us no longer asking, and a deposit handed to the provider later is paid out
     /// all the same; the tracker completes the order when it is. Which transactions it may
-    /// still take is bounded by their date (`SwapBuyTransactionMatcher.latestPayoutDate`),
+    /// still take is bounded by their arrival (`SwapBuyTransactionMatcher.latestPayoutDate`),
     /// not by when anybody looks. An expired order nobody paid must not claim an unrelated
     /// later receive of a similar amount, but a payout that was there as it was let go and
-    /// had not been read yet is still its own: it is bounded to that moment by the
-    /// transaction's date, however much later the wallet is looked at.
+    /// had not been read yet is still its own: it is bounded to that moment by when the
+    /// transaction reached the wallet (`SwapBuyTransactionMatcher.arrival`), however much
+    /// later the wallet is looked at.
     var mayStillBePaidOut: Bool {
         // An order saved before deposits were recorded has no such record to judge by. It
         // keeps what it had: any of them could be matched to its payout, whatever its status

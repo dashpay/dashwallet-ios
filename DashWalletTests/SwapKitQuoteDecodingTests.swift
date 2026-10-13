@@ -19,6 +19,7 @@
 
 @testable import dashpay
 import Moya
+import SwiftDashSDK
 import XCTest
 
 /// Anchors `Bundle(for:)` for the JSON fixtures shared by the test cases in this file.
@@ -297,6 +298,7 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
 private struct PayoutFixture: SwapPayoutCandidate {
     let txHashHexString: String
     let date: Date
+    let firstStored: Date?
     let direction: TransactionDirection
     let outputReceiveAddresses: [String]
     let dashAmount: UInt64
@@ -765,6 +767,67 @@ final class BuySwapOrderTests: XCTestCase {
             ["0xz", "0xa"])
     }
 
+    func testAPayoutWrittenAsTheOrderWasLetGoIsItsOwnAfterItIsMined() {
+        // Let go unpaid a day ago. Its payout was written to the wallet in that moment,
+        // unread, and nothing was kept of it with the order; by the next look it is mined
+        // and carries its block's time, three hours after the order was let go.
+        let letGo = buyOrder(
+            id: "0xa", status: .expired, finalisedSecondsAgo: 86_400, createdSecondsAgo: 4 * 86_400)
+        XCTAssertNil(letGo.payoutCandidates)
+        let mined = payout("aa", secondsAgo: 86_400 - 3 * 3_600, storedSecondsAgo: 86_400 - 30)
+        XCTAssertEqual(assignments([letGo], [mined]), ["0xa": "aa"])
+        // And it is kept with the order from that reading on.
+        XCTAssertEqual(
+            SwapBuyTransactionMatcher.payoutResolution(among: [letGo], in: [mined]).datedInTime, ["0xa": ["aa"]])
+        // A receive the wallet first held hours after the order was let go is not its
+        // payout, whenever it was mined…
+        XCTAssertEqual(
+            assignments([letGo], [payout("bb", secondsAgo: 86_400 - 3 * 3_600, storedSecondsAgo: 86_400 - 3 * 3_600)]),
+            [:])
+        // …and one mined in time is, though the store holds it only since a rescan.
+        XCTAssertEqual(
+            assignments([letGo], [payout("cc", secondsAgo: 86_400 + 60, storedSecondsAgo: 600)]), ["0xa": "cc"])
+        // The same for a completed order whose payout was mined past its bound.
+        let completed = buyOrder(
+            id: "0xb", status: .completed, finalisedSecondsAgo: 86_400, createdSecondsAgo: 2 * 86_400)
+        XCTAssertEqual(assignments([completed], [mined]), ["0xb": "aa"])
+        // It still only takes what the others left: a live order for the same amount
+        // comes first.
+        let live = buyOrder(id: "0xc", createdSecondsAgo: 3 * 86_400)
+        XCTAssertEqual(assignments([letGo, live], [mined]), ["0xc": "aa"])
+        // Of two it fits, the completed order takes the one that reached the wallet
+        // first, not the one mined first.
+        let minedFirst = payout("dd", secondsAgo: 86_400 - 3_600)
+        XCTAssertEqual(assignments([completed], [minedFirst, mined]), ["0xb": "aa"])
+        // A time the store gives from before the order was made is not believed: the
+        // date decides. A receive held since then and mined after the order was let go
+        // is not its payout…
+        let early = payout("ee", secondsAgo: 86_400 - 3 * 3_600, storedSecondsAgo: 4 * 86_400 + 60)
+        XCTAssertEqual(assignments([letGo], [early]), [:])
+        // …and a payout mined in time is, whatever the device's clock said as it was stored.
+        XCTAssertEqual(
+            assignments([letGo], [payout("ff", secondsAgo: 86_400 + 60, storedSecondsAgo: 4 * 86_400 + 60)]),
+            ["0xa": "ff"])
+        // The store's time counts to the second, as the date does: on the bound is in time.
+        let onTheBound = PayoutFixture(
+            txHashHexString: "ab",
+            date: now.addingTimeInterval(-TimeInterval(86_400 - 3 * 3_600)),
+            firstStored: now.addingTimeInterval(-TimeInterval(86_400 - 2 * 3_600) + 0.9),
+            direction: .received,
+            outputReceiveAddresses: ["XdestinationAddress"],
+            dashAmount: 251_000_000)
+        XCTAssertEqual(assignments([letGo], [onTheBound]), ["0xa": "ab"])
+    }
+
+    func testTheStoresTimeIsTheRowsCreationTime() {
+        let row = PersistentTransaction(
+            txid: Data(repeating: 7, count: 32), transactionData: Data(), firstSeen: 1_700_000_000)
+        row.blockTimestamp = 1_700_010_800
+        let transaction = Transaction(persistentTransaction: row)
+        XCTAssertEqual(transaction.date, Date(timeIntervalSince1970: 1_700_010_800))
+        XCTAssertEqual(transaction.firstStored, row.createdAt)
+    }
+
     func testOrdersSavedBeforeDepositsWereRecordedKeepTheirOldMatching() {
         for status in [SwapOrderStatus.expired, .refunded, .failed] {
             var legacy = buyOrder(status: status)
@@ -792,10 +855,12 @@ final class BuySwapOrderTests: XCTestCase {
     // MARK: Payout assignment
 
     /// A received transaction of 2.51 DASH to the orders' address, `secondsAgo` before `now`.
-    private func payout(_ hash: String, secondsAgo: Int64) -> PayoutFixture {
+    /// `storedSecondsAgo`: when the wallet's store first held it; not known when nil.
+    private func payout(_ hash: String, secondsAgo: Int64, storedSecondsAgo: Int64? = nil) -> PayoutFixture {
         PayoutFixture(
             txHashHexString: hash,
             date: now.addingTimeInterval(-TimeInterval(secondsAgo)),
+            firstStored: storedSecondsAgo.map { now.addingTimeInterval(-TimeInterval($0)) },
             direction: .received,
             outputReceiveAddresses: ["XdestinationAddress"],
             dashAmount: 251_000_000)

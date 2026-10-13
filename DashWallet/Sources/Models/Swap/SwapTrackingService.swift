@@ -728,7 +728,7 @@ final class SwapTrackingService {
 
     /// An ended Buy order is no longer polled, but its payout can still turn up in the wallet.
     /// - An expired order with a deposit on record: the user handed the deposit to the
-    ///   provider, or the provider was just slow. With a transaction dated within
+    ///   provider, or the provider was just slow. With a transaction that arrived within
     ///   `SwapOrder.latePayoutSeconds` of the expiry in the wallet, the order is completed
     ///   after all, so it does not stay "Not confirmed" beside its own payout.
     /// - An expired order nobody paid, let go a moment before its payout became readable:
@@ -785,7 +785,7 @@ final class SwapTrackingService {
     }
 
     /// Keeps with the orders what a reading of the wallet showed about their payouts:
-    /// - the transactions an order fits while they are dated within its bound
+    /// - the transactions an order fits while they are within its bound
     ///   (`SwapOrder.payoutCandidates`): the date moves when a transaction is mined, and
     ///   what was the order's to take before stays so after;
     /// - that an older record's hash is the wallet transaction it was given by name: the
