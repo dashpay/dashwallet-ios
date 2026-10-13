@@ -193,6 +193,10 @@ extension PaymentsViewController: PayViewControllerDelegate {
     func payViewControllerDidFinishPayment(_ controller: PayViewController, txidWire: Data) {
         delegate?.paymentsViewControllerDidFinishPayment(self, txidWire: txidWire)
     }
+
+    func payViewControllerDidSubmitWithUnknownOutcome(_ controller: PayViewController) {
+        delegate?.paymentsViewControllerDidCancel(self)
+    }
 }
 
 // MARK: ReceiveViewControllerDelegate

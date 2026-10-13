@@ -78,12 +78,41 @@ enum ScriptAddressCodec {
 
     // MARK: - Address → script (refund_to)
 
+    /// The longest string that can be an address: Base58 of the 25 bytes an
+    /// address encodes (version + 20-byte hash + 4-byte checksum) is at most
+    /// 35 characters (25 × log 256 / log 58 = 34.14, rounded up). Dash's own
+    /// version bytes give 34; 35 is the ceiling of the format on any network.
+    static let maxAddressLength = 35
+
+    /// Whether the whole of `string` is a Base58Check address: at most
+    /// `maxAddressLength` bytes, every one in the Base58 alphabet, a valid
+    /// checksum, a version byte and a 20-byte hash. It says nothing about
+    /// the network.
+    ///
+    /// The SDK validates and pays an address as a C string, which ends at
+    /// the first NUL: `<address>\0<anything>` reads there as `<address>`.
+    /// A string that passes this has no byte for that to happen on, so the
+    /// address the app compares, stores and shows is the one that is paid.
+    static func isWellFormedAddress(_ string: String) -> Bool {
+        decodedAddress(string) != nil
+    }
+
+    /// The version byte and the 20-byte hash of an address, or `nil` when
+    /// `string` is not one as a whole (see `isWellFormedAddress`).
+    private static func decodedAddress(_ string: String) -> (version: UInt8, hash160: [UInt8])? {
+        guard let decoded = base58CheckDecode(string, maxLength: maxAddressLength),
+              decoded.count == 21 else { return nil }
+        return (decoded[decoded.startIndex], Array(decoded.dropFirst()))
+    }
+
     /// Base58Check address → P2PKH or P2SH scriptPubKey, chosen by the decoded version byte.
     /// Returns `nil` if the address can't be decoded or its version doesn't belong to `network`.
+    ///
+    /// A string longer than `maxAddressLength` is refused before decoding
+    /// (`base58CheckDecode`): an address can come from outside (a payment
+    /// URI).
     static func scriptPubKey(forAddress address: String, network: PaymentNetwork) -> Data? {
-        guard let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
-        let version = decoded[decoded.startIndex]
-        let hash160 = Array(decoded[decoded.index(after: decoded.startIndex)...]) // 20 bytes
+        guard let (version, hash160) = decodedAddress(address) else { return nil }
 
         if version == network.pubkeyHashVersion {
             return Data([0x76, 0xa9, 0x14] + hash160 + [0x88, 0xac])
@@ -137,8 +166,15 @@ enum ScriptAddressCodec {
         return base58Encode(payload)
     }
 
-    private static func base58CheckDecode(_ string: String) -> Data? {
-        guard let raw = base58Decode(string), raw.count >= 4 else { return nil }
+    /// Base58Check → payload (checksum verified and removed), or nil.
+    ///
+    /// - Parameter maxLength: the longest `string` (UTF-8 bytes) worth
+    ///   decoding; a longer one is refused without decoding. Required, so
+    ///   every decode is bounded: `base58Decode` allocates a buffer
+    ///   proportional to its input and walks it once per input byte.
+    static func base58CheckDecode(_ string: String, maxLength: Int) -> Data? {
+        guard string.utf8.count <= maxLength,
+              let raw = base58Decode(string), raw.count >= 4 else { return nil }
         let payload = Data(raw.prefix(raw.count - 4))
         let checksum = Data(raw.suffix(4))
         guard doubleSHA256(payload).prefix(4) == checksum else { return nil }

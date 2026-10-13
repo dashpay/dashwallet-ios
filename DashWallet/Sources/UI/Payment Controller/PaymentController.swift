@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import DashUIKit
+import SwiftUI
 import UIKit
 
 typealias PaymentControllerPresentationAnchor = UIViewController
@@ -32,6 +34,17 @@ protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
+    /// The broadcast got no answer from the network; the send now waits in the
+    /// history (`PendingSendOutcomes`). Called once the "Waiting for the
+    /// network" notice the controller presents first is gone — closed and
+    /// dismissed, or never shown. The delegate leaves the paying flow itself,
+    /// a legacy amount step included; for a delegate without this method the
+    /// controller pops that step.
+    @objc optional func paymentControllerDidSubmitWithUnknownOutcome(_ controller: PaymentController, txidWire: Data)
+    /// The broadcast got no answer, told at once — before the notice — for
+    /// bookkeeping that must not wait for the user (and is not lost if the
+    /// app is killed while the notice is up).
+    @objc optional func paymentControllerDidReceiveUnknownOutcome(_ controller: PaymentController, txidWire: Data)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -90,6 +103,14 @@ final class PaymentController: NSObject {
     /// screen shows that progress itself; when it does not (or no handler is
     /// set), a "Sending" HUD covers the window for the wait.
     @objc var sendInProgressHandler: ((Bool) -> Bool)?
+    /// The active wallet's payment to an address still waiting for the
+    /// network (`PendingSendOutcomes.waitingPayment(toAnyOf:)`); tests replace it.
+    var waitingPayment: @MainActor ([String]) -> PendingSendOutcomes.Entry? = {
+        PendingSendOutcomes.shared.waitingPayment(toAnyOf: $0)
+    }
+    /// The TXSEND log line sink (`DWLogger`, so it reaches exported logs);
+    /// tests replace it.
+    var log: (String) -> Void = { DWLogger.log($0) }
 
     private var paymentProcessor: DWPaymentProcessor
     private var fiatCurrency: String = App.fiatCurrency
@@ -199,9 +220,113 @@ extension PaymentController: DWPaymentProcessorDelegate {
         provideAmountViewController = vc
     }
 
+    /// A payment to an address that still has one waiting for the network is
+    /// not made: the earlier one may yet arrive, and the recipient would get
+    /// both. The user is told to wait, and OK returns to the paying screen —
+    /// before the PIN prompt and the build, nothing is built or signed. Not
+    /// asked while a confirm sheet is on screen (it was checked when it
+    /// opened); a sheet no longer on screen is forgotten first. Other
+    /// addresses are not interrupted.
+    ///
+    /// `addresses` are all the payment's addresses (one for a plain send;
+    /// every recipient of a BIP70 request and, when payable on this
+    /// network, the address of the URI it came from): one of them waiting
+    /// is enough.
+    ///
+    /// Decided from memory, before the call returns: no row is read on the
+    /// payment's path (`PendingSendOutcomes.waitingPayment(toAnyOf:)`).
+    func paymentProcessor(_ processor: DWPaymentProcessor, shouldPayAddresses addresses: [String], isBIP70: Bool, completion: @escaping (Bool) -> Void) {
+        dropOffScreenConfirm()
+        guard confirmViewController == nil,
+              let waiting = MainActor.assumeIsolated({ waitingPayment(addresses) }) else {
+            completion(true)
+            return
+        }
+        // The address this payment shares with the waiting one, for the log.
+        let address = addresses.first(where: waiting.addresses.contains) ?? addresses.first
+        let route = paymentRoute(isBIP70: isBIP70)
+        let age = Int(Date().timeIntervalSince(waiting.sentAt))
+        log("💸 TXSEND :: repeat payment refused — route=\(route) to=\(PendingSendOutcomes.masked(address))"
+            + " pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)) age=\(age)s"
+            + " wallet=\(PendingSendOutcomes.walletTag(waiting.walletId)) chain=\(waiting.chainScope ?? "not stored")"
+            + " reason=still followed: no lock or block seen on its row yet,"
+            + " within the \(PendingSendOutcomes.maxFollowDays)-day window; rows re-read in the background")
+        refuseRepeating(waiting) { [weak self] in
+            self?.log("💸 TXSEND :: repeat payment cancelled on OK — route=\(route) pending=\(PendingSendOutcomes.shortTxid(waiting.txidWire)); no PIN, nothing built")
+            completion(false)
+        }
+    }
+
+    /// Which flow is paying, for logs.
+    private func paymentRoute(isBIP70: Bool) -> String {
+        if isBIP70 { return "BIP70" }
+        // Only while it is on screen: the weak reference outlives a screen
+        // left in a navigation stack.
+        if provideAmountViewController?.viewIfLoaded?.window != nil {
+            return "legacy amount screen"
+        }
+        switch delegate {
+        case is TransferAmountHostingController: return "Coinbase transfer"
+        case is PayViewController: return "Pay tab"
+        case .some(let delegate): return "standard (\(type(of: delegate)))"
+        case .none: return "standard"
+        }
+    }
+
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         self.paymentOutput = paymentOutput
+        presentConfirm(for: paymentOutput)
+    }
 
+    /// Tells the user the previous payment to this address must be confirmed
+    /// first; `done` runs once the notice is gone (or could not be shown).
+    private func refuseRepeating(_ waiting: PendingSendOutcomes.Entry, done: @escaping () -> Void) {
+        let sentAt = "\(DWDateFormatter.sharedInstance.shortStringFromDate(waiting.sentAt)) \(DWDateFormatter.sharedInstance.timeOnly(from: waiting.sentAt))"
+        // A route that does not know the amount records 0: the time alone
+        // then. So too for a waiting payment followed under several
+        // addresses: its amount is the whole payment's, which need not be
+        // what this address was paid (or it was not paid at all: a BIP72
+        // URI's own address).
+        let message = waiting.amount > 0 && waiting.otherAddresses == nil
+            ? String(
+                format: NSLocalizedString(
+                    "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
+                    comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent"),
+                waiting.amount.formattedDashAmount, sentAt)
+            : String(
+                format: NSLocalizedString(
+                    "Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again.",
+                    comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made; %@ is when the earlier payment was sent"),
+                sentAt)
+        let removeHint = NSLocalizedString(
+            "If it never arrives, you can remove it from your history.",
+            comment: "Send: refused repeat payment; the pending payment can be removed from the history if it never reaches the network")
+        guard let presenter = presentationAnchor?.topController() else {
+            DWLogger.log("PaymentController: no screen to show the repeat-payment notice on; not sending")
+            done()
+            return
+        }
+        Self.presentDialog(
+            on: presenter,
+            heading: NSLocalizedString("Previous payment still in progress", comment: "Send: a payment to an address whose earlier payment is still waiting for the network is not made"),
+            message: message,
+            note: removeHint,
+            buttonText: NSLocalizedString("OK", comment: ""),
+            log: "the repeat-payment notice",
+            onClosed: done)
+    }
+
+    /// A confirm sheet no longer on screen (or on its way out) is not the one
+    /// a payment uses:
+    /// forgotten, so a new one opens.
+    private func dropOffScreenConfirm() {
+        if let vc = confirmViewController, vc.presentingViewController == nil || vc.isBeingDismissed {
+            confirmViewController = nil
+        }
+    }
+
+    private func presentConfirm(for paymentOutput: DWPaymentOutput) {
+        dropOffScreenConfirm()
         if let vc = confirmViewController {
             vc.update(with: paymentOutput)
         } else {
@@ -271,6 +396,131 @@ extension PaymentController: DWPaymentProcessorDelegate {
             finishBlock()
         }
     }
+
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithUnknownOutcomeTxidWire txidWire: Data) {
+        presentationAnchor?.topController().view.dw_hideProgressHUD()
+        delegate?.paymentControllerDidReceiveUnknownOutcome?(self, txidWire: txidWire)
+
+        // The notice first; the paying screen goes on once it is gone. Presented
+        // in the same turn as the outcome's report when no confirm sheet is up,
+        // so the router sees a presented modal from the routing hold's end on;
+        // after a confirm sheet, once that sheet is gone. The legacy amount
+        // screen keeps its input off until then: a hardware keyboard under the
+        // notice would otherwise still edit it.
+        let showNotice = {
+            let closed = { [weak self] in
+                guard let self else { return }
+                if let delegate = self.delegate,
+                   (delegate as? NSObject)?.responds(
+                       to: #selector(PaymentControllerDelegate.paymentControllerDidSubmitWithUnknownOutcome(_:txidWire:))) == true {
+                    // The paying screen leaves the whole flow itself (one
+                    // navigation change, not a pop racing its own).
+                    delegate.paymentControllerDidSubmitWithUnknownOutcome?(self, txidWire: txidWire)
+                } else if let amountScreen = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
+                    // As after a sent payment: the amount step is done.
+                    amountScreen.navigationController?.popViewController(animated: true)
+                } else {
+                    self.provideAmountViewController?.hideActivityIndicator()
+                }
+            }
+            guard let top = self.presentationAnchor?.topController() else {
+                DWLogger.log("PaymentController: no screen to show the unknown-outcome notice on")
+                closed()
+                return
+            }
+            Self.showUnknownOutcomeNotice(on: top, onClosed: closed)
+        }
+        guard let vc = confirmViewController else {
+            showNotice()
+            return
+        }
+        vc.dismiss(animated: true) { showNotice() }
+    }
+
+    /// The "Waiting for the network" notice for a send whose broadcast got no
+    /// answer, presented on `viewController`. `onClosed` runs exactly once,
+    /// when the notice is gone (see `presentDialog`) — a paying screen waiting
+    /// for it is never stranded.
+    static func showUnknownOutcomeNotice(on viewController: UIViewController, onClosed: (() -> Void)? = nil) {
+        presentDialog(
+            on: viewController,
+            heading: NSLocalizedString("Waiting for the network", comment: "Sent transaction whose broadcast got no answer from the network yet"),
+            message: unknownOutcomeMessage,
+            buttonText: NSLocalizedString("OK", comment: ""),
+            log: "the unknown-outcome notice") { onClosed?() }
+    }
+
+    /// A warning dialog with one button whose close is reported exactly once,
+    /// from its own host: `onClosed` runs once the dialog's dismissal has
+    /// finished (so it can present or dismiss in turn), when it was torn down
+    /// any other way, or right away when UIKit did not present it at all. A
+    /// flow waiting on it always goes on.
+    static func presentDialog(
+        on viewController: UIViewController,
+        heading: String,
+        message: String,
+        note: String? = nil,
+        buttonText: String,
+        log: String,
+        onClosed: @escaping () -> Void
+    ) {
+        var closed = false
+        let close = {
+            guard !closed else { return }
+            closed = true
+            onClosed()
+        }
+        let host = DialogHostingController(rootView: ModalDialog(
+            style: .warning,
+            icon: .system("exclamationmark.triangle"),
+            heading: heading,
+            textBlock1: message,
+            textBlock2: note,
+            positiveButtonText: buttonText,
+            positiveButtonAction: {}))
+        var tapped = false
+        host.rootView.positiveButtonAction = { [weak host] in
+            // A second tap during the dismissal would reach the presenter.
+            guard !tapped else { return }
+            tapped = true
+            host?.dismiss(animated: true)
+        }
+        host.onDisappear = close
+        host.modalPresentationStyle = .overFullScreen
+        host.modalTransitionStyle = .crossDissolve
+        host.view.backgroundColor = UIColor(Color.dash.backgroundOverlay)
+        viewController.present(host, animated: true)
+        if host.presentingViewController == nil {
+            DWLogger.log("PaymentController: \(log) could not be shown")
+            close()
+        }
+    }
+
+    /// A dialog's host: reports when it has left the screen — dismissed
+    /// itself, or freed when a controller below it was dismissed.
+    private final class DialogHostingController: UIHostingController<ModalDialog> {
+        /// Set once on the main actor before presentation; read again only
+        /// by `deinit`, after every other reference is gone.
+        nonisolated(unsafe) var onDisappear: (() -> Void)?
+
+        override func viewDidDisappear(_ animated: Bool) {
+            super.viewDidDisappear(animated)
+            // Gone, not merely covered by something presented over it.
+            guard isBeingDismissed || presentingViewController == nil else { return }
+            onDisappear?()
+        }
+
+        deinit {
+            // `onDisappear` reports once; this catches a teardown that left no
+            // trace in `viewDidDisappear`.
+            let report = onDisappear
+            DispatchQueue.main.async { report?() }
+        }
+    }
+
+    static let unknownOutcomeMessage = NSLocalizedString(
+        "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again.",
+        comment: "Send: the broadcast got no answer; the payment is followed in the history")
 
     /// While the send waits, its screen must stay: swiped away, the outcome
     /// would have nowhere to show, and a live screen would take a second tap —

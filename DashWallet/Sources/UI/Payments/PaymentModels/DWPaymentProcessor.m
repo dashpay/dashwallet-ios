@@ -179,14 +179,27 @@ static NSString *DWReversedHexString(NSData *data) {
         [preparedSend broadcastAndReturnError:&error];
 
         dispatch_async(dispatch_get_main_queue(), ^{
+            // Ends the in-flight state (exit holds, HUD) on every outcome, the
+            // unknown one included; the routing hold lasts through the report.
             [self reportBroadcastOutcome:^{
-                if (error) {
+                if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
+                    // No answer is not a failure: the payment may well have gone
+                    // through. The send service has put it in the history as
+                    // "Waiting for the network"; no error invites sending it again.
+                    // No payack to a requesting app: the network has not taken
+                    // the payment, and a merchant would hand over the goods.
+                    [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:preparedSend.txidWire];
+                    [self reset];
+                }
+                else if (error) {
                     NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
-                    if ([DWWalletSendService isBroadcastUnknownError:error]) {
-                        title = NSLocalizedString(@"Transaction status unknown", nil);
-                    }
-                    else if ([DWWalletSendService isBroadcastRejectedError:error]) {
+                    if ([DWWalletSendService isBroadcastRejectedError:error]) {
                         title = NSLocalizedString(@"Transaction not sent", nil);
+                    }
+                    else if ([DWWalletSendService isBroadcastUnknownError:error]) {
+                        // Not followed in the history: the error's own copy says
+                        // what is known, without pointing at a row that won't say it.
+                        title = NSLocalizedString(@"Transaction status unknown", nil);
                     }
                     [self failedWithError:error
                                     title:title
@@ -227,6 +240,7 @@ static NSString *DWReversedHexString(NSData *data) {
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
                                    callbackScheme:parsed.callbackScheme
+                                  fallbackAddress:parsed.address
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
                                            if (!strongSelf) {
@@ -256,9 +270,27 @@ static NSString *DWReversedHexString(NSData *data) {
 #pragma mark - App-side BIP70 (Swift orchestrator)
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
+/// The delegate is asked first, as for a plain send, with every recipient of
+/// the request (the sheet shows only the first) and the URI's fallback
+/// address: a payment to any address whose earlier payment still waits for
+/// the network is refused before the sheet.
 - (void)confirmBIP70Output:(id)bip70Confirmation {
     DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
-    [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+    NSArray<NSString *> *recipients = [(DWBIP70ConfirmationBox *)bip70Confirmation repeatCheckAddresses];
+    if (recipients.count == 0) {
+        [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+        return;
+    }
+    [self.delegate paymentProcessor:self
+                 shouldPayAddresses:recipients
+                            isBIP70:YES
+                         completion:^(BOOL proceed) {
+                             if (!proceed) {
+                                 [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                 return;
+                             }
+                             [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+                         }];
 }
 
 /// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.
@@ -296,9 +328,26 @@ static NSString *DWReversedHexString(NSData *data) {
                      completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
                          self.bip70Coordinator = nil;
                          [self reportBroadcastOutcome:^{
+                             if (error && [DWWalletSendService isFollowedUnknownOutcomeError:error]) {
+                                 // As the plain send: no answer is not a failure, and
+                                 // the payment waits in the history.
+                                 NSData *txidWire = error.userInfo[DWWalletSendService.unknownTxidWireKey];
+                                 if (txidWire) {
+                                     [self.delegate paymentProcessor:self didSendWithUnknownOutcomeTxidWire:txidWire];
+                                     [self reset];
+                                     return;
+                                 }
+                             }
                              if (error || result == nil) {
+                                 NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                                 if (error && [DWWalletSendService isBroadcastUnknownError:error]) {
+                                     title = NSLocalizedString(@"Transaction status unknown", nil);
+                                 }
+                                 else if (error && [DWWalletSendService isFundsAwaitingNetworkError:error]) {
+                                     title = DWWalletSendService.fundsAwaitingNetworkTitle;
+                                 }
                                  [self failedWithError:error
-                                                 title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                 title:title
                                                message:error.localizedDescription];
                                  return;
                              }
@@ -359,7 +408,29 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 /// Shared SwiftDashSDK build+sign then show the confirmation UI with the real fee.
+/// The delegate is asked first, before the PIN prompt and the build.
 - (void)confirmSwiftDashSDKSendToAddress:(NSString *)address
+                                  amount:(uint64_t)amount
+                                    name:(nullable NSString *)name
+                                    memo:(nullable NSString *)memo
+                           localCurrency:(nullable NSString *)localCurrency {
+    [self.delegate paymentProcessor:self
+                 shouldPayAddresses:@[ address ]
+                            isBIP70:NO
+                         completion:^(BOOL proceed) {
+                             if (!proceed) {
+                                 [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                 return;
+                             }
+                             [self prepareSwiftDashSDKSendToAddress:address
+                                                             amount:amount
+                                                               name:name
+                                                               memo:memo
+                                                      localCurrency:localCurrency];
+                         }];
+}
+
+- (void)prepareSwiftDashSDKSendToAddress:(NSString *)address
                                   amount:(uint64_t)amount
                                     name:(nullable NSString *)name
                                     memo:(nullable NSString *)memo
@@ -374,8 +445,12 @@ static NSString *DWReversedHexString(NSData *data) {
                                                        return;
                                                    }
 
+                                                   NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                                                   if (error && [DWWalletSendService isFundsAwaitingNetworkError:error]) {
+                                                       title = DWWalletSendService.fundsAwaitingNetworkTitle;
+                                                   }
                                                    [self failedWithError:error
-                                                                   title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                                   title:title
                                                                  message:error.localizedDescription];
                                                    return;
                                                }

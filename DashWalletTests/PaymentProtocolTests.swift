@@ -367,6 +367,18 @@ final class PaymentProtocolTests: XCTestCase {
 }
 
 final class PreparedStandardSendBroadcastTests: XCTestCase {
+    /// An unknown outcome is followed in the host app's store when a wallet
+    /// runs there: the sends these tests make up must not stay behind.
+    override func tearDown() {
+        let address = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+        MainThread.sync {
+            let made = PendingSendOutcomes.shared.entries.values
+                .filter { $0.address == address && $0.amount == 100_000 }
+                .map(\.txidWire)
+            PendingSendOutcomes.shared.forget(txidsWire: made, reason: "test send")
+        }
+        super.tearDown()
+    }
     private func prepared(
         hashByte: UInt8,
         ensureOnline: @escaping () throws -> Void = {},

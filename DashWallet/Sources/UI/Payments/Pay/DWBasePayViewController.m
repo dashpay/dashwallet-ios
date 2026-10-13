@@ -249,6 +249,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self presentSendSuccessWithTxidWire:txidWire];
 }
 
+- (void)paymentControllerDidSubmitWithUnknownOutcome:(PaymentController *)controller txidWire:(NSData *)txidWire {
+    // The network gave no answer, and the notice saying so is gone: the
+    // payment waits in the history, which says so on its row and tells when it
+    // goes through.
+    [self finishSendFlow];
+}
+
 #pragma mark - Send success
 
 - (void)presentSendSuccessWithTxidWire:(NSData *)txidWire {

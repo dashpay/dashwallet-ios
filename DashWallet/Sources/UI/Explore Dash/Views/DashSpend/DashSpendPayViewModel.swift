@@ -370,13 +370,24 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
 
-            txidWire = try await sendCoinsService.sendCoins(
-                address: giftCardInfo.paymentAddress,
-                amount: dashAmountInSatoshis
-            )
-
-
             giftCardNote = buildPiggyOrderNote(orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities)
+            do {
+                txidWire = try await sendCoinsService.sendCoins(
+                    address: giftCardInfo.paymentAddress,
+                    amount: dashAmountInSatoshis
+                )
+            } catch {
+                guard let unconfirmedTxIdWire = WalletSendService.unknownOutcomeTxidWire(of: error) else {
+                    throw error
+                }
+                // The payment may still settle: record the order against its txid,
+                // as the CTX branch does, so the card is not lost.
+                let reason = ((error as NSError).userInfo[WalletSendService.diagnosticKey] as? String)
+                    ?? error.localizedDescription
+                DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote)
+                throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
+            }
         #endif
         }
 

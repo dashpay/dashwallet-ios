@@ -19,9 +19,16 @@ import SwiftDashSDK
 final class SwiftDashSDKWalletSending: WalletSending {
 
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
-        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
+        let (tx, txHash, origin): (FinalizedCoreTransaction, Data, WalletChainScope)
+        do {
+            (tx, txHash, origin) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
+        } catch {
+            // Coins still waiting for the network: the same copy as every other route.
+            throw WalletSendService.sendBuildError(from: error)
+        }
         return PreparedSend(
-            txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx)
+            txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx,
+            origin: origin)
     }
 
     func broadcast(_ prepared: PreparedSend) async throws -> String {
@@ -37,14 +44,15 @@ final class SwiftDashSDKWalletSending: WalletSending {
         let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx)
         do {
             _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
-        } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
+        } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason, _) {
             // "Unknown" is not "failed": the SDK's acceptance detector only watches for a
             // relay-back from the withheld peer, so a transaction that is already in the
             // mempool (and even InstantLocked) lands here whenever no peer echoes it back in
             // time. Carry the app-computed tx hash out with the error so the caller can
             // record the spend it just made instead of losing it. Rejections keep throwing
             // `SendError.transactionRejected` unchanged.
-            throw BIP70Error.broadcastOutcomeUnknown(txHashDisplay: prepared.txHashDisplay, reason: reason)
+            throw BIP70Error.broadcastOutcomeUnknown(
+                txHashDisplay: prepared.txHashDisplay, origin: prepared.origin, reason: reason)
         }
         // Return contract is the display-order txid hex; keep the deterministic
         // app-computed value (the sender logs the SDK-reported txid alongside).

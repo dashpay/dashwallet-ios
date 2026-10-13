@@ -6756,7 +6756,41 @@
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
 
+/* Send blocked until unconfirmed coins are confirmed */
+"Payment can't be made yet" = "Payment can't be made yet";
+
+/* Send blocked until unconfirmed coins are confirmed */
+"Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment." = "Some of your funds are waiting for the network to confirm an earlier payment. Try again in a moment.";
+
+/* Sent transaction whose broadcast got no answer from the network yet */
+"Waiting for the network" = "Waiting for the network";
+
+/* A payment that had been waiting for the network was confirmed; %@ is the amount */
+"Payment of %@ went through" = "Payment of %@ went through";
+
+/* Send: the broadcast got no answer; the payment is followed in the history */
+"The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again." = "The network hasn't confirmed this payment yet. It's in your history as \"Waiting for the network\" — don't send it again.";
+
+/* Home balance: the part a payment can't use until the network confirms it; %@ is the amount */
+"%@ waiting for confirmation" = "%@ waiting for confirmation";
+
+/* Several payments that had been waiting for the network were confirmed; %1$ld is how many, %2$@ their total amount */
+"%1$ld payments went through, %2$@ in total" = "%1$ld payments went through, %2$@ in total";
+
 /* Notice: a link was opened while a send was in progress or another screen was open; the link was ignored */
 "Finish or close the current screen first, then open the link again." = "Finish or close the current screen first, then open the link again.";
 /* Notice: the user tried to switch tabs or open a notification while a payment or its result was on screen; nothing changed */
 "Finish or close the current screen first." = "Finish or close the current screen first.";
+
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made */
+"Previous payment still in progress" = "Previous payment still in progress";
+
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made; %1$@ is the earlier payment's amount, %2$@ when it was sent */
+"Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again." = "Your previous payment to this address (%1$@, %2$@) is still being processed by the network. Wait until it is confirmed before paying this address again.";
+
+/* Send: a payment to an address whose earlier payment is still waiting for the network is not made; %@ is when the earlier payment was sent */
+"Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again." = "Your previous payment to this address (%@) is still being processed by the network. Wait until it is confirmed before paying this address again.";
+
+/* Send: refused repeat payment; the pending payment can be removed from the history if it never reaches the network */
+"If it never arrives, you can remove it from your history." = "If it never arrives, you can remove it from your history.";
+

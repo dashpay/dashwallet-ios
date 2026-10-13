@@ -178,6 +178,12 @@ final class SwiftDashSDKHost {
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
+    /// The persistence scope `modelContainer` was opened for
+    /// (`Network.persistenceScope` as it was when the store was built): the
+    /// chain the bound wallet is on. Published and cleared with the store,
+    /// so it never names another devnet than the one whose rows are bound,
+    /// whatever the devnet configuration says by now.
+    private(set) var runningPersistenceScope: String?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
     private let storeLifetimes = WalletLocalStoreLifetimeBarrier()
     /// Monotonic for this process. Native destroy may leave storage workers
@@ -524,6 +530,8 @@ final class SwiftDashSDKHost {
         let manager: PlatformWalletManager
         let modelContainer: ModelContainer
         let network: Network
+        /// The scope `modelContainer` was opened for.
+        let persistenceScope: String
     }
 
     /// Start the host for `network`. Idempotent: re-entering with the same
@@ -1022,6 +1030,7 @@ final class SwiftDashSDKHost {
         sdk = nil
         modelContainer = nil
         runningNetwork = nil
+        runningPersistenceScope = nil
 
         Self.logger.info("🪺 HOST :: stopped")
         DWLogger.log("HOST stopped")
@@ -1167,6 +1176,15 @@ final class SwiftDashSDKHost {
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
+            // Ask the network again about a send whose broadcast outcome was
+            // unknown, so its row can resolve instead of staying "Sending".
+            // Read-only: the probe resubmits bytes already signed and changes
+            // nothing in the wallet. A failure leaves sends unresolved, not broken.
+            do {
+                try newManager.setBroadcastProbeEnabled(true)
+            } catch {
+                DWLogger.log("HOST broadcast probe could not be enabled: \(error)")
+            }
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)
@@ -1176,7 +1194,8 @@ final class SwiftDashSDKHost {
             sdk: newSDK,
             manager: newManager,
             modelContainer: container,
-            network: network)
+            network: network,
+            persistenceScope: configurationIdentity.scope)
     }
 
     /// A persistence handler over `network`'s SwiftData store, built without
@@ -1713,6 +1732,10 @@ final class SwiftDashSDKHost {
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        runningPersistenceScope = handles.persistenceScope
+        // After the wallet and its store are published: its first reconcile
+        // reads them.
+        PendingSendOutcomes.shared.observeVerdicts(of: handles.manager)
     }
 
     // MARK: - ModelContainer

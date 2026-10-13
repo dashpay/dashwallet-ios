@@ -439,8 +439,15 @@ extension String {
     /// which the SDK resolves itself. The app's single
     /// expression of this rule — replaces DashSync's
     /// `isValidDashAddress(on: DSChain)` at every call site.
+    ///
+    /// The whole string must be an address first
+    /// (`ScriptAddressCodec.isWellFormedAddress`): the SDK reads it as a C
+    /// string and would take `<address>\0<anything>` for `<address>`, while
+    /// the app keeps the full string — as the key the repeat-payment check
+    /// compares, among others.
     var isValidDashAddressForCurrentNetwork: Bool {
-        guard let network = WalletEnvironment.network else { return false }
+        guard ScriptAddressCodec.isWellFormedAddress(self),
+              let network = WalletEnvironment.network else { return false }
         return Address.validate(self, network: network)
     }
 }
