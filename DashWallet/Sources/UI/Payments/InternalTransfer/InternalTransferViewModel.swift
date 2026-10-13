@@ -407,22 +407,6 @@ enum PlatformShieldAmountPolicy {
         return requestedCredits <= capacity.maxShieldableCredits
     }
 
-    /// Informational remainder against the balance card's aggregate. The
-    /// preflight account remains the validation authority; `max` only avoids a
-    /// transient smaller published snapshot understating what is held back.
-    static func heldBackCredits(
-        displayedPlatformCredits: UInt64,
-        accountBalanceCredits: UInt64,
-        submittedDuffs: UInt64
-    ) -> UInt64 {
-        let submitted = submittedDuffs.multipliedReportingOverflow(by: 1000)
-        guard !submitted.overflow else { return 0 }
-        let displayedAggregate = max(displayedPlatformCredits, accountBalanceCredits)
-        return displayedAggregate > submitted.partialValue
-            ? displayedAggregate - submitted.partialValue
-            : 0
-    }
-
     /// A refreshed capacity may rewrite only an amount explicitly derived from
     /// Max. Manually entered text must remain untouched for the user to review.
     static func amountAfterCapacityChange(
@@ -452,6 +436,8 @@ final class InternalTransferViewModel: ObservableObject {
     @Published private(set) var isCoreDrainLoading = false
     @Published private(set) var coreShieldedDrainConfirmation: CoreShieldedDrainConfirmation?
     @Published private(set) var coreDrainPending = false
+    @Published private(set) var coreDrainCompleted = false
+    private var coreDrainOperation: CoreShieldedDrainOperation?
     private var coreDrainHasOutpoint = false
     private var coreDrainContext: CoreShieldedDrainContext?
     private var coreDrainTask: Task<Void, Never>?
@@ -481,8 +467,15 @@ final class InternalTransferViewModel: ObservableObject {
         isCoreShieldedDrain && coreShieldedDrainConfirmation != nil ? maxNotice : nil
     }
 
+    var coreDrainCompletionNotice: String? {
+        coreDrainCompleted
+            ? NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+            : nil
+    }
+
     var coreDrainActionTitle: String? {
         guard isCoreShieldedDrain, !isCoreDrainLoading else { return nil }
+        if coreDrainCompleted { return NSLocalizedString("New transfer", comment: "Start a separate transfer") }
         if coreDrainPending {
             return coreDrainHasOutpoint
                 ? NSLocalizedString("Resume transfer", comment: "Resume the same asset lock")
@@ -497,17 +490,38 @@ final class InternalTransferViewModel: ObservableObject {
         if coreDrainPending, coreDrainHasOutpoint, let context = coreDrainContext {
             isCoreDrainLoading = true
             // The shared runner owns execution even if this form goes away.
+            let generation = coreDrainGeneration
+            let operation = coreDrainOperation
             Task { [weak self] in
-                await InternalTransferRunner.shared.resumeCoreDrain(context: context)
-                self?.refreshCoreDrainPreview()
+                let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
+                    context: context, operation: operation)
+                guard let self, generation == self.coreDrainGeneration else { return }
+                if outcome?.state == .completed {
+                    self.showCoreDrainCompletion()
+                } else {
+                    self.refreshCoreDrainPreview()
+                }
             }
         } else {
+            if coreDrainCompleted {
+                coreDrainCompleted = false
+                coreDrainOperation = nil
+            }
             refreshCoreDrainPreview()
         }
     }
 
+    private func showCoreDrainCompletion() {
+        coreDrainCompleted = true
+        coreDrainPending = false
+        coreDrainHasOutpoint = false
+        isCoreDrainLoading = false
+        coreShieldedDrainConfirmation = nil
+        maxNotice = nil
+    }
+
     private func refreshCoreDrainPreview() {
-        guard isCoreShieldedDrain else { return }
+        guard isCoreShieldedDrain, !coreDrainCompleted else { return }
         coreDrainTask?.cancel()
         let generation = UUID()
         coreDrainGeneration = generation
@@ -526,8 +540,21 @@ final class InternalTransferViewModel: ObservableObject {
                 }
                 self.coreDrainContext = context
                 let service = CoreShieldedDrainService()
-                let pending = try await service.pending(context)
+                let outcome: WalletDrainOutcome?
+                if let operation = self.coreDrainOperation {
+                    outcome = try await service.status(for: operation)
+                } else {
+                    let status = try await service.operationStatus(context)
+                    guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
+                    self.coreDrainOperation = status?.operation
+                    outcome = status?.outcome
+                }
                 guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
+                if outcome?.state == .completed {
+                    self.showCoreDrainCompletion()
+                    return
+                }
+                let pending = outcome?.state == .pending ? outcome : nil
                 self.coreDrainPending = pending != nil
                 self.coreDrainHasOutpoint = pending?.outpoint != nil
                 if pending != nil {
@@ -569,9 +596,8 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// Why Max produced the amount it did — a held-back fee, a pending sweep
-    /// remainder, or why it could not produce one at all. Surfaced through
-    /// `amountValidationMessage` so tapping Max is never a silent no-op.
+    /// Why Max could not produce an amount, is still resolving one, or has
+    /// an estimate to explain. Estimates are shown separately from errors.
     @Published private(set) var maxNotice: String?
     /// Exact duff amount selected by Max. Fiat text is presentation-only and
     /// may round to two decimals, so reparsing it must never move the transfer
@@ -1552,6 +1578,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
+        if coreDrainCompleted { return nil }
         if isCoreShieldedDrain && !isChainSynced {
             return CoreShieldedDrainService.ServiceError.requiresSync.localizedDescription
         }
@@ -1767,7 +1794,8 @@ final class InternalTransferViewModel: ObservableObject {
             return Self.identityWithdrawalMinimumMessage
         }
         let spendable = IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
         guard creditsPreview > spendable else { return nil }
         return TransferSpendAmountPolicy.insufficientBalanceMessage(
             balanceName: Self.identityBalanceName,
@@ -1892,7 +1920,8 @@ final class InternalTransferViewModel: ObservableObject {
             return false
         }
         return creditsPreview <= IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
     }
 
     private var canContinueToIdentity: Bool {
@@ -1919,7 +1948,8 @@ final class InternalTransferViewModel: ObservableObject {
         if isIdentitySource {
             // Charged to the identity on top of the amount, and unpriced by
             // the SDK — the conservative reserve is what bounds the spend.
-            return IdentityWithdrawViewModel.feeHeadroomCredits
+            return IdentityWithdrawViewModel.feeReserveCredits(
+                target: resolvedWithdrawalTarget)
         }
         if isIdentityDestination {
             switch source {
@@ -2217,13 +2247,10 @@ final class InternalTransferViewModel: ObservableObject {
                 route == .shieldedToCore ? .withdrawal : .unshield
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
             case .ready(let plan):
+                // A remainder the plan leaves behind gets no notice either:
+                // the slot under the amount carries errors only.
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
-                if plan.remainingCredits > 0 {
-                    maxNotice = Self.shieldedRemainderMessage(
-                        plan.remainingCredits,
-                        followUpCredits: plan.followUpCredits)
-                }
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
                 maxNotice = Self.shieldedConfirmingMessage(credits)
@@ -2260,6 +2287,10 @@ final class InternalTransferViewModel: ObservableObject {
     /// Identity Max: the credit balance less the fee reserve the transition
     /// is charged on top. Wait for the shared balance refresh before deriving
     /// an amount from the persisted snapshot.
+    ///
+    /// A Max below the balance card is not worth a notice — the slot under
+    /// the amount carries errors only, and the fee belongs on the confirm
+    /// sheet, not in a line that reads as one.
     private func fillIdentityWithdrawalMax() {
         guard !isIdentityBalanceRefreshing else {
             maxNotice = Self.identityBalanceRefreshingMessage
@@ -2267,19 +2298,19 @@ final class InternalTransferViewModel: ObservableObject {
         }
         clearMaxSelection()
         let spendable = IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
-        if spendable == 0 {
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
+        // Credits below one duff cannot be sent either, so a remainder under
+        // 1000 credits fills "0" just like an empty one and needs the same
+        // explanation.
+        let spendableDuffs = spendable / 1000
+        if spendableDuffs == 0 {
             maxNotice = Self.feeReserveExceedsIdentityBalanceMessage
-        } else {
-            // The card shows the whole credit balance, so a Max that lands
-            // below it reads as a bug unless the reserve is accounted for.
-            maxNotice = Self.identityHeldBackMessage(
-                identityBalanceCredits - spendable)
         }
 
         isApplyingMax = true
         defer { isApplyingMax = false }
-        applyMaxAmountText(spendable / 1000)
+        applyMaxAmountText(spendableDuffs)
     }
 
     private static let identityBalanceRefreshingMessage = NSLocalizedString(
@@ -2288,14 +2319,6 @@ final class InternalTransferViewModel: ObservableObject {
     private static let feeReserveExceedsIdentityBalanceMessage = NSLocalizedString(
         "Your Identity balance is too low to cover the transfer fee.",
         comment: "Identity withdrawal — balance below the fee reserve")
-
-    private static func identityHeldBackMessage(_ heldBackCredits: UInt64) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is held back to cover the transfer fee.",
-                comment: "Identity withdrawal — Max reserve note"),
-            (heldBackCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
-    }
 
     /// Platform Max is asynchronous because only the Rust wallet knows which
     /// address suffix its shield builder can select. If that answer is not
@@ -2337,15 +2360,9 @@ final class InternalTransferViewModel: ObservableObject {
             maxNotice = capacity.accountBalanceCredits > 0
                 ? Self.platformShieldHeadroomUnavailableMessage
                 : Self.emptyBalanceMessage(.platform)
-        } else {
-            let heldBackCredits = PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: platformCredits,
-                accountBalanceCredits: capacity.accountBalanceCredits,
-                submittedDuffs: sourceDuffs)
-            if heldBackCredits > 0 {
-                maxNotice = Self.platformShieldHeldBackMessage(heldBackCredits)
-            }
         }
+        // No notice for a Max below the balance card — same reason as the
+        // Core branches of `fillMaxFromWallet`.
     }
 
     /// Render Max in the selected input unit while retaining `duffs` as the
@@ -2382,6 +2399,8 @@ final class InternalTransferViewModel: ObservableObject {
         isCoreDrainLoading = false
         coreShieldedDrainConfirmation = nil
         coreDrainPending = false
+        coreDrainCompleted = false
+        coreDrainOperation = nil
         coreDrainHasOutpoint = false
         coreDrainContext = nil
         maxAmountDuffs = nil
@@ -2630,15 +2649,6 @@ final class InternalTransferViewModel: ObservableObject {
         "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
         comment: "Platform balance cannot fund shield selection headroom")
 
-    private static func platformShieldHeldBackMessage(_ credits: UInt64) -> String {
-        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH remains in Platform because some address funds cannot be selected and transfer headroom is reserved.",
-                comment: "Platform Shield Max leaves selection headroom and unselectable funds"),
-            formatted)
-    }
-
     private static func platformShieldCapacityChangedMessage(
         maxShieldableCredits: UInt64
     ) -> String {
@@ -2692,31 +2702,6 @@ final class InternalTransferViewModel: ObservableObject {
             formatted)
     }
 
-    /// Why Max offered less than the balance card shows — `nil` when the answer
-    /// is "tap Max again in a minute".
-    ///
-    /// A remainder that a later sweep can move is not worth a line in the slot
-    /// that carries errors: the user repeats Max once this transaction settles
-    /// and the rest follows. A remainder that no sweep can ever move is the
-    /// opposite — silence there would leave a permanent gap between the balance
-    /// and what the wallet will ever offer to send.
-    private static func shieldedRemainderMessage(
-        _ credits: UInt64,
-        followUpCredits: UInt64
-    ) -> String? {
-        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        guard followUpCredits > 0 else {
-            // Spending these notes costs more than they hold, so no later
-            // sweep can move them — do not send the user round that loop.
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them.",
-                    comment: "Shielded Max dust remainder"),
-                formatted)
-        }
-        return nil
-    }
-
     // MARK: - Conversion on unit toggle
 
     private func convertAmountText(from old: InternalTransferUnit, to new: InternalTransferUnit) {
@@ -2753,6 +2738,17 @@ final class InternalTransferViewModel: ObservableObject {
         formatter.decimalSeparator = "."
         let rounded = NSDecimalNumber(decimal: value)
         return formatter.string(from: rounded) ?? "\(value)"
+    }
+
+    /// Whether keypad text stays within what `unit` can express: 8 decimals
+    /// for DASH (one duff), 2 for fiat. A ninth DASH decimal is below a duff,
+    /// so the amount would read as zero duffs — Continue disabled with no
+    /// message to say why — so the keypad refuses that digit instead.
+    static func typedTextFitsPrecision(_ text: String, unit: InternalTransferUnit) -> Bool {
+        let maxFractionDigits = unit == .dash ? 8 : 2
+        let normalized = text.replacingOccurrences(of: ",", with: ".")
+        guard let separator = normalized.firstIndex(of: ".") else { return true }
+        return normalized[normalized.index(after: separator)...].count <= maxFractionDigits
     }
 }
 

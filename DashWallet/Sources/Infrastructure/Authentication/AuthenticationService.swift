@@ -455,6 +455,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// non-monetary gates.
     @MainActor
     func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthOutcome {
+        guard !Task.isCancelled else { return .cancelled }
         guard usesAuthentication else { return .authenticated(usedBiometrics: false) }
 
         let biometricsPermitted: Bool = {
@@ -464,7 +465,9 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         }()
 
         if biometricsPermitted {
-            switch await evaluateBiometrics() {
+            let result = await evaluateBiometrics()
+            guard !Task.isCancelled else { return .cancelled }
+            switch result {
             case .success:
                 didAuthenticate = true
                 if let amount = spendAmount { updateBiometricsAmountLeft(afterSpending: amount) }
@@ -517,16 +520,24 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         reason: String = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
     ) async -> BiometricResult {
         let context = LAContext()
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
-                if success {
-                    continuation.resume(returning: .success)
-                } else if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel || laError.code == .systemCancel {
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                guard !Task.isCancelled else {
                     continuation.resume(returning: .cancelled)
-                } else {
-                    continuation.resume(returning: .failed)
+                    return
+                }
+                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
+                    if success {
+                        continuation.resume(returning: .success)
+                    } else if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel || laError.code == .systemCancel {
+                        continuation.resume(returning: .cancelled)
+                    } else {
+                        continuation.resume(returning: .failed)
+                    }
                 }
             }
+        } onCancel: {
+            context.invalidate()
         }
     }
 

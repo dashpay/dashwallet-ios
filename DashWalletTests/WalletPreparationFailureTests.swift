@@ -58,4 +58,60 @@ final class WalletPreparationFailureTests: XCTestCase {
         }
         XCTAssertEqual(WalletPreparationFailure(error: nested).codes.count, 8)
     }
+
+    func testOnlyDatabaseFailuresOfferTheLocalDataReset() {
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(EACCES))).canResetLocalData)
+        XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: "NSSQLiteErrorDomain", code: 13)).canResetLocalData)
+        XCTAssertFalse(WalletPreparationFailure(legacyMigration: .failed).canResetLocalData)
+    }
+
+    func testTransientUnderlyingErrorsVetoGenericSwiftDataReset() {
+        for (domain, code) in [(NSPOSIXErrorDomain, Int(EPERM)), (NSCocoaErrorDomain, 257),
+                               ("NSSQLiteErrorDomain", 5), ("NSSQLiteErrorDomain", 6),
+                               ("NSSQLiteErrorDomain", 266)] {
+            let error = NSError(domain: "SwiftData.SwiftDataError", code: 1, userInfo: [
+                NSUnderlyingErrorKey: NSError(domain: domain, code: code)
+            ])
+            XCTAssertFalse(WalletPreparationFailure(error: error).canResetLocalData, "\(domain):\(code)")
+        }
+        for (domain, code) in [(NSCocoaErrorDomain, 134100), ("NSSQLiteErrorDomain", 11),
+                               ("NSSQLiteErrorDomain", 26)] {
+            XCTAssertTrue(WalletPreparationFailure(error: NSError(domain: domain, code: code)).canResetLocalData)
+        }
+        XCTAssertFalse(WalletPreparationFailure(error: NSError(domain: "unknown", code: 1)).canResetLocalData)
+    }
+
+    func testLegacyMigrationFailureCarriesOnlyTheMigratorReason() {
+        let failure = WalletPreparationFailure(legacyMigration: .timedOut, now: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(failure.kind, .legacyMigration)
+        XCTAssertEqual(failure.codes, ["KeyMigrator:timedOut"])
+        XCTAssertNotEqual(failure.title, WalletPreparationFailure(error: NSError(domain: NSPOSIXErrorDomain, code: 1)).title)
+        let report = failure.diagnosticReport(appVersion: "1", systemVersion: "2")
+        XCTAssertTrue(report.contains("Category: legacyMigration"))
+        XCTAssertTrue(report.contains("KeyMigrator:timedOut"))
+        XCTAssertEqual(WalletPreparationFailure(legacyMigration: .unreadableKeychain).codes, ["KeyMigrator:unreadableKeychain"])
+    }
+
+    func testKeysFailureIsNeverResettableAndCarriesOnlyReasonAndStatus() {
+        let failure = WalletPreparationFailure(keys: .unreadable, status: -25308, now: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(failure.kind, .keychain)
+        XCTAssertEqual(failure.codes, ["Keychain:unreadable", "OSStatus:-25308"])
+        XCTAssertFalse(failure.canResetLocalData)
+        XCTAssertTrue(failure.requiresAuthenticatedExport)
+        let database = WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))
+        XCTAssertFalse(database.requiresAuthenticatedExport)
+        XCTAssertTrue(WalletPreparationFailure(legacyMigration: .failed).requiresAuthenticatedExport)
+        XCTAssertNotEqual(failure.title, database.title)
+        XCTAssertNotEqual(failure.title, WalletPreparationFailure(legacyMigration: .failed).title)
+        // Neither claim: the keys were not read, and nothing was deleted.
+        XCTAssertFalse(failure.message.contains("stored safely"))
+        XCTAssertFalse(failure.message.lowercased().contains("lost"))
+        let report = failure.diagnosticReport(appVersion: "1", systemVersion: "2")
+        XCTAssertTrue(report.contains("Category: keychain"))
+        XCTAssertTrue(report.contains("Keychain:unreadable\nOSStatus:-25308"))
+        XCTAssertEqual(WalletPreparationFailure(keys: .notFound).codes, ["Keychain:notFound"])
+        XCTAssertEqual(WalletPreparationFailure(keys: .idMismatch).codes, ["Keychain:idMismatch"])
+    }
 }

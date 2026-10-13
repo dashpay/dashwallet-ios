@@ -12,16 +12,32 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     tests = package / "Tests" / "WalletPreparationHarnessTests"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
-    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure"):
+    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter"):
         source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK" / f"{name}.swift"
         test = repository / "DashWalletTests" / f"{name}Tests.swift"
         (sources / source.name).symlink_to(source)
         (tests / test.name).symlink_to(test)
+    source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift"
+    (sources / source.name).symlink_to(source)
     # Only unrelated app dependencies are substituted; state and diagnostics
     # are the production files, including their real Combine publishers.
     (sources / "AppDependencies.swift").write_text('''
 enum WalletEnvironment { enum NetworkKind { case mainnet, testnet, devnet } }
 enum DWLogger { static func log(_ message: String) {} }
+@MainActor final class SwiftDashSDKHost {
+    static let shared = SwiftDashSDKHost()
+    var suspended = false
+    var validationError: Error?
+    var releaseError: Error?
+    func validateLocalStoreReset() async throws {
+        if let validationError { throw validationError }
+    }
+    func waitForLocalStoreRelease() async throws {
+        if let releaseError { throw releaseError }
+    }
+    func suspendModelContainerOpens() async { suspended = true }
+    func resumeModelContainerOpens() { suspended = false }
+}
 @MainActor final class SwiftDashSDKSPVCoordinator {
     static let shared = SwiftDashSDKSPVCoordinator()
     var preparations = 0
@@ -51,9 +67,409 @@ enum DWLogger { static func log(_ message: String) {} }
             closing += 1
         return source[offset:closing]
 
+    host = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift").read_text()
+    # Run the real startup/recovery control flow against a persister that can
+    # fail one wallet creation. A fresh host/manager reads the same rows and
+    # real on-disk recovery marker, reproducing the next-launch boundary.
+    recovery_methods = "\n".join(declaration(host, start).replace("private func", "func", 1) for start in (
+        "    func start(network:",
+        "    private func loadPersistedWallet(",
+        "    private func resolveActiveWallet(",
+        "    private func registryNetworkKind(",
+        "    private func recoverPersistedWallet(",
+        "    func validateLocalStoreReset()",
+        # The wallet-open card's classification of a failed start: keys vs store.
+        "    nonisolated static func preparationFailure(forStartError",
+        "    nonisolated static func keysFailure(in",
+    ))
+    (sources / "HostRecoveryHarness.swift").write_text(r'''
+import Foundation
+import CoreFoundation
+import OSLog
+enum Network: String {
+    case mainnet, testnet, devnet, regtest
+    var networkName: String { rawValue }
+    var persistenceScope: String { rawValue }
+}
+struct ManagedPlatformWallet { let walletId: Data }
+final class CoinJoinRecovery {
+    static let shared = CoinJoinRecovery()
+    /// Scopes whose wide-scan flag the host re-armed, in order.
+    var resetScopes: [String] = []
+    func resetRecoveryFlag(scope: String) { resetScopes.append(scope) }
+}
+extension WalletEnvironment {
+    static var active: [NetworkKind: Data] = [:]
+    static func activeWalletId(for kind: NetworkKind) -> Data? { active[kind] }
+    static func setActiveWalletId(_ id: Data, for kind: NetworkKind) { active[kind] = id }
+}
+@MainActor final class PlatformWalletManager {
+    static var rows: [Data: ManagedPlatformWallet] = [:]
+    static var failingMnemonic: String?
+    static var createAttempts: [String] = []
+    static var shutdowns = 0
+    var wallets: [Data: ManagedPlatformWallet] = [:]
+    var firstWallet: ManagedPlatformWallet? { wallets.values.first }
+    func loadFromPersistor() async throws -> [ManagedPlatformWallet] {
+        wallets = Self.rows
+        return Array(wallets.values)
+    }
+    func createWallet(mnemonic: String, network: Network, name: String,
+                      createDefaultAccounts: Bool, birthHeight: UInt32) throws -> ManagedPlatformWallet {
+        Self.createAttempts.append(mnemonic)
+        if mnemonic == Self.failingMnemonic { throw NSError(domain: "InjectedWrite", code: 1) }
+        let wallet = ManagedPlatformWallet(walletId: Data(mnemonic.utf8))
+        wallets[wallet.walletId] = wallet
+        Self.rows[wallet.walletId] = wallet
+        return wallet
+    }
+    func deleteWallet(walletId: Data) throws { wallets[walletId] = nil; Self.rows[walletId] = nil }
+    func shutdown() async { Self.shutdowns += 1 }
+}
+/// The SDK's keychain error and the app's resolver error, as the host's keys
+/// classification matches them by type.
+enum WalletStorageError: Error { case keychainError(OSStatus), mnemonicNotFound }
+enum SwiftDashSDKWalletDeletionError: Error { case invalidMnemonic, unrecognizedWalletNetwork }
+enum KeyWalletError: Error { case invalidInput(String), invalidMnemonic(String), invalidState(String) }
+@MainActor final class HostRecoveryHarness {
+    static let logger = Logger(subsystem: "wallet-preparation-tests", category: "recovery")
+    enum HostError: Error {
+        case sdkInitFailed(Error), modelContainerFailed(Error), walletNotFound(Network), walletBootstrapFailed(Error)
+        case mnemonicRoundTripMismatch, invalidMnemonic
+    }
+    struct RuntimeHandles { let manager: PlatformWalletManager; let network: Network }
+    static var directory: URL!
+    nonisolated(unsafe) static var unreadableKeychain = false
+    nonisolated(unsafe) static var invalidMaterial = false
+    nonisolated(unsafe) static var nulMaterial = false
+    var manager: PlatformWalletManager?
+    var wallet: ManagedPlatformWallet?
+    var runningNetwork: Network?
+    var hasConfiguredStoreRuntime = false
+    func buildRuntime(for network: Network) async throws -> RuntimeHandles {
+        hasConfiguredStoreRuntime = true
+        return .init(manager: .init(), network: network)
+    }
+    func publish(handles: RuntimeHandles, wallet: ManagedPlatformWallet) {
+        manager = handles.manager; self.wallet = wallet; runningNetwork = handles.network
+    }
+    func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? { nil }
+    func unlockDashPayContactCrypto(manager: PlatformWalletManager, wallet: ManagedPlatformWallet) {}
+    nonisolated static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
+        if unreadableKeychain { throw WalletStorageError.keychainError(-25291) } // errSecNotAvailable
+        if nulMaterial { return [(Data("wallet-a".utf8), "wallet-a\u{0}trailing bytes")] }
+        return ["wallet-a", "wallet-b"].map { (Data($0.utf8), $0) }
+    }
+    nonisolated static func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network> {
+        // Production resolves ids through SwiftDashSDKStoredWalletNetworkResolver,
+        // whose refusal is this error.
+        if invalidMaterial { throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork }
+        return [.mainnet]
+    }
+    static func recoverablePersistedMnemonics(_ entries: [(walletId: Data, mnemonic: String)],
+                                             for network: Network) -> [(walletId: Data, mnemonic: String)] { entries }
+    static func importedWalletBirthHeight(for network: Network) -> UInt32 { 200000 }
+    func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
+        WalletLocalStoreRecovery(directory: Self.directory)
+    }
+    func resetIntent() throws -> WalletLocalStoreResetIntent {
+        WalletLocalStoreResetIntent(directory: Self.directory.appendingPathComponent("ResetIntents"))
+    }
+''' + recovery_methods + "\n}\n")
+    (tests / "HostRecoveryTests.swift").write_text(r'''
+import XCTest
+@testable import WalletPreparationHarness
+@MainActor final class HostRecoveryTests: XCTestCase {
+    override func setUp() async throws {
+        HostRecoveryHarness.directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: HostRecoveryHarness.directory, withIntermediateDirectories: true)
+        HostRecoveryHarness.unreadableKeychain = false
+        HostRecoveryHarness.invalidMaterial = false
+        HostRecoveryHarness.nulMaterial = false
+        PlatformWalletManager.rows = [:]
+        PlatformWalletManager.failingMnemonic = nil
+        PlatformWalletManager.createAttempts = []
+        PlatformWalletManager.shutdowns = 0
+        WalletEnvironment.active = [:]
+        CoinJoinRecovery.shared.resetScopes = []
+    }
+    override func tearDown() async throws {
+        try FileManager.default.removeItem(at: HostRecoveryHarness.directory)
+    }
+    func testRecreatingWalletRowsReArmsTheWideCoinJoinScanForTheNetwork() async throws {
+        // An empty store, however it came to be empty (interrupted reset, a
+        // flag write that never reached disk, a reinstall), recreates rows
+        // from the keychain and must re-arm the one-time wide scan.
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet"])
+        // A resumed partial recovery passes through the same branch.
+        PlatformWalletManager.rows = [:]
+        PlatformWalletManager.failingMnemonic = "wallet-b"
+        do { _ = try await HostRecoveryHarness().start(network: .mainnet) } catch {}
+        PlatformWalletManager.failingMnemonic = nil
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet", "mainnet", "mainnet"])
+    }
+    func testPendingResetIntentReconcilesKeychainAgainstSurvivingRows() async throws {
+        // A WAL-only interruption: wallet A survives in the main database,
+        // wallet B's rows were lost with the WAL, no recovery marker exists.
+        let a = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[a] = .init(walletId: a)
+        WalletEnvironment.active[.mainnet] = Data("wallet-b".utf8)
+        let host = HostRecoveryHarness()
+        try host.resetIntent().record(scopes: ["mainnet"])
+
+        let resolved = try await host.start(network: .mainnet)
+
+        XCTAssertEqual(PlatformWalletManager.createAttempts, ["wallet-b"], "Only the missing wallet is recreated")
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+        XCTAssertEqual(resolved.wallet.walletId, Data("wallet-b".utf8), "The active wallet is not replaced by the survivor")
+        XCTAssertFalse(try host.localStoreRecovery(for: .mainnet).isPending())
+        XCTAssertTrue(try host.resetIntent().isPending(scope: "mainnet"), "The intent outlives the start, until the scan completes")
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, ["mainnet"])
+        // A later start with every wallet present changes nothing.
+        PlatformWalletManager.createAttempts = []
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
+    }
+    func testHealthyStoreKeepsTheCompletedWideScanFlag() async throws {
+        let id = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[id] = .init(walletId: id)
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(CoinJoinRecovery.shared.resetScopes, [])
+    }
+    func testPartialRecoveryFailsThenNextLaunchCreatesOnlyMissingWallet() async throws {
+        PlatformWalletManager.failingMnemonic = "wallet-b"
+        let first = HostRecoveryHarness()
+        do {
+            _ = try await first.start(network: .mainnet)
+            XCTFail("One restored wallet must not mask another's failure")
+        } catch {}
+        XCTAssertNil(first.wallet)
+        XCTAssertEqual(PlatformWalletManager.rows.count, 1)
+        XCTAssertEqual(PlatformWalletManager.shutdowns, 1)
+        XCTAssertTrue(try first.localStoreRecovery(for: .mainnet).isPending())
+        PlatformWalletManager.failingMnemonic = nil
+        let nextLaunch = HostRecoveryHarness()
+        _ = try await nextLaunch.start(network: .mainnet)
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+        XCTAssertEqual(PlatformWalletManager.createAttempts, ["wallet-a", "wallet-b", "wallet-b"])
+        XCTAssertFalse(try nextLaunch.localStoreRecovery(for: .mainnet).isPending())
+    }
+    func testUnreadableKeychainKeepsRecoveryPendingAndRetriesLater() async throws {
+        HostRecoveryHarness.unreadableKeychain = true
+        let first = HostRecoveryHarness()
+        do { _ = try await first.start(network: .mainnet); XCTFail("Expected strict read failure") } catch {}
+        XCTAssertTrue(try first.localStoreRecovery(for: .mainnet).isPending())
+        XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
+        HostRecoveryHarness.unreadableKeychain = false
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+    }
+    func testCrashAfterAllRowsBeforeMarkerRemovalDoesNotRecreateWallets() async throws {
+        for name in ["wallet-a", "wallet-b"] {
+            let id = Data(name.utf8)
+            PlatformWalletManager.rows[id] = .init(walletId: id)
+        }
+        let host = HostRecoveryHarness()
+        try host.localStoreRecovery(for: .mainnet).begin()
+        _ = try await host.start(network: .mainnet)
+        XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
+        XCTAssertFalse(try host.localStoreRecovery(for: .mainnet).isPending())
+    }
+    func testHealthyStoreDoesNotRequireReadingEveryMnemonic() async throws {
+        let id = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[id] = .init(walletId: id)
+        HostRecoveryHarness.unreadableKeychain = true
+        _ = try await HostRecoveryHarness().start(network: .mainnet)
+        XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
+    }
+    /// `XCTAssertThrowsError` has no async form.
+    private func preflightError(_ host: HostRecoveryHarness) async -> Error? {
+        do { try await host.validateLocalStoreReset(); return nil } catch { return error }
+    }
+    func testNativeRuntimeLatchSurvivesShutdownAndRequiresFreshHost() async throws {
+        let host = HostRecoveryHarness()
+        try await host.validateLocalStoreReset()
+        let handles = try await host.buildRuntime(for: .testnet)
+        await handles.manager.shutdown()
+        let latched = await preflightError(host)
+        XCTAssertEqual(latched as? WalletLocalStoreResetError, .restartRequired)
+        try await HostRecoveryHarness().validateLocalStoreReset()
+    }
+    func testResetPreflightRejectsUnreadableOrMalformedRecoveryMaterial() async throws {
+        HostRecoveryHarness.unreadableKeychain = true
+        let unreadable = await preflightError(HostRecoveryHarness())
+        XCTAssertNotNil(unreadable)
+        HostRecoveryHarness.unreadableKeychain = false
+        HostRecoveryHarness.invalidMaterial = true
+        let malformed = await preflightError(HostRecoveryHarness())
+        XCTAssertNotNil(malformed)
+        HostRecoveryHarness.invalidMaterial = false
+        // A valid phrase followed by an embedded NUL passes C-string validation
+        // and id derivation but can never sign; it must not authorize deletion.
+        HostRecoveryHarness.nulMaterial = true
+        let nul = await preflightError(HostRecoveryHarness())
+        guard case HostRecoveryHarness.HostError.invalidMnemonic? = nul else {
+            return XCTFail("Expected invalidMnemonic, got \(String(describing: nul))")
+        }
+    }
+    /// The card record the runtime shows for a failed start, or nil when the
+    /// start succeeded or the error keeps its existing flow.
+    private func startFailure(_ host: HostRecoveryHarness) async -> WalletPreparationFailure? {
+        do { _ = try await host.start(network: .mainnet); return nil } catch {
+            return HostRecoveryHarness.preparationFailure(forStartError: error)
+        }
+    }
+    func testUnreadableKeychainShowsTheKeysCardWithItsStatus() async throws {
+        HostRecoveryHarness.unreadableKeychain = true
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .keychain)
+        XCTAssertEqual(failure?.codes, ["Keychain:unreadable", "OSStatus:-25291"])
+        XCTAssertEqual(failure?.canResetLocalData, false)
+    }
+    func testEveryKeychainStatusShowsTheKeysCardAndLeavesAutomaticPreparationOn() {
+        // Transient statuses (the lock, securityd) are not told apart here;
+        // the keys card leaves the automatic kicks on instead.
+        typealias HostError = HostRecoveryHarness.HostError
+        for status: OSStatus in [-25308, -25291, -34018] {
+            let failure = HostRecoveryHarness.preparationFailure(
+                forStartError: HostError.walletBootstrapFailed(WalletStorageError.keychainError(status)))
+            XCTAssertEqual(failure?.codes, ["Keychain:unreadable", "OSStatus:\(status)"])
+            let state = WalletLifecycleTransitionState()
+            state.fail(.failedWalletOpen(failure!))
+            XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        }
+        let store = WalletLifecycleTransitionState()
+        store.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))))
+        XCTAssertFalse(store.allowsAutomaticWalletPreparation)
+    }
+    func testUnclassifiableMaterialShowsTheKeysCard() async throws {
+        HostRecoveryHarness.invalidMaterial = true
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .keychain)
+        XCTAssertEqual(failure?.codes, ["Keychain:unclassifiable"])
+    }
+    func testStoreWriteFailureWhileReplayingTheKeychainKeepsTheDatabaseCard() async throws {
+        PlatformWalletManager.failingMnemonic = "wallet-a"
+        let failure = await startFailure(HostRecoveryHarness())
+        XCTAssertEqual(failure?.kind, .database)
+        XCTAssertEqual(failure?.codes, ["OtherError:1"])
+        XCTAssertEqual(failure?.canResetLocalData, false)
+    }
+    func testOnlyKnownKeysCausesClassifyAsKeys() {
+        typealias HostError = HostRecoveryHarness.HostError
+        let swiftData = NSError(domain: "SwiftData.SwiftDataError", code: 1)
+        let store = HostRecoveryHarness.preparationFailure(forStartError: HostError.modelContainerFailed(swiftData))
+        XCTAssertEqual(store?.kind, .database)
+        XCTAssertEqual(store?.canResetLocalData, true)
+        // Keys readable, nothing eligible for the network: no card, the
+        // existing flow (hasWallet routes that inventory to setup) stays.
+        XCTAssertNil(HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(HostError.walletNotFound(.mainnet))))
+        let mismatch = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(HostError.mnemonicRoundTripMismatch))
+        XCTAssertEqual(mismatch?.codes, ["Keychain:idMismatch"])
+        let missing = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(WalletStorageError.mnemonicNotFound))
+        XCTAssertEqual(missing?.codes, ["Keychain:notFound"])
+        let resolver = HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork))
+        XCTAssertEqual(resolver?.codes, ["Keychain:unclassifiable"])
+        // The resolver constructs a wallet from the stored phrase; its refusal
+        // of material that passed word validation is a keys failure too.
+        for material in [KeyWalletError.invalidMnemonic("bad"), .invalidInput("bad")] {
+            let construction = HostRecoveryHarness.preparationFailure(
+                forStartError: HostError.walletBootstrapFailed(material))
+            XCTAssertEqual(construction?.codes, ["Keychain:unclassifiable"])
+        }
+        // Its other cases say nothing about the stored material.
+        XCTAssertEqual(HostRecoveryHarness.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(KeyWalletError.invalidState("ffi")))?.kind, .database)
+        XCTAssertNil(HostRecoveryHarness.preparationFailure(forStartError: HostError.sdkInitFailed(swiftData)))
+        XCTAssertNil(HostRecoveryHarness.keysFailure(in: swiftData))
+    }
+}
+''')
+    (sources / "ProcessNetworkValueCache.swift").write_text(
+        "import Foundation\n@MainActor\n" + declaration(host, "final class ProcessNetworkValueCache<"))
+    cache_tests = (repository / "DashWalletTests/SwiftDashSDKCoreLifecycleTests.swift").read_text()
+    import re
+    methods_to_test = re.findall(r"    func (testProcessCache\w+)\(", cache_tests)
+    (tests / "ProcessNetworkValueCacheTests.swift").write_text(
+        "import XCTest\n@testable import WalletPreparationHarness\nprivate enum CoreLifecycleTestError: Error { case start }\n@MainActor final class ProcessNetworkValueCacheTests: XCTestCase {\n"
+        + "\n".join(declaration(cache_tests, "    func " + name + "(") for name in methods_to_test) + "\n}\n")
+
+    send_service = (repository / "DashWallet/Sources/Models/Transactions/WalletSendService.swift").read_text()
+    (sources / "AuthenticationGate.swift").write_text(
+        "import Foundation\n" + declaration(send_service, "enum AuthenticationGate {") + r"""
+@MainActor enum WalletSendService {
+    struct Logger { func info(_ message: String) {} }
+    static let logger = Logger()
+}
+@MainActor final class AuthenticationService {
+    enum AuthOutcome { case authenticated, cancelled, failed }
+    static let shared = AuthenticationService()
+    var didAuthenticate = false
+    var cancelled = false
+    var started = false
+    var continuation: CheckedContinuation<AuthOutcome, Never>?
+    func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthOutcome {
+        started = true
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation = $0 }
+        } onCancel: {
+            Task { @MainActor in self.cancelled = true }
+        }
+    }
+    func finishDismissal(_ result: AuthOutcome) {
+        let pending = continuation
+        continuation = nil
+        pending?.resume(returning: result)
+    }
+}
+""")
+    (tests / "AuthenticationGateTests.swift").write_text(r"""
+import XCTest
+@testable import WalletPreparationHarness
+@MainActor final class AuthenticationGateTests: XCTestCase {
+    func testTimeoutCancelsRequestAndWaitsForPromptDismissal() async throws {
+        let service = AuthenticationService.shared
+        service.cancelled = false
+        service.started = false
+        var returned = false
+        let request = Task {
+            let result = await AuthenticationGate.authenticate(biometric: false, timeout: 0.01)
+            returned = true
+            return result
+        }
+        while !service.cancelled { await Task.yield() }
+        XCTAssertTrue(service.started)
+        XCTAssertFalse(returned, "The overlay must stay hidden until the PIN modal is dismissed")
+        service.finishDismissal(.cancelled)
+        let result = await request.value
+        XCTAssertEqual(result, .timedOut)
+    }
+    func testSuccessfulRequestIsNotCancelledByItsOldWatchdog() async throws {
+        let service = AuthenticationService.shared
+        service.cancelled = false
+        service.started = false
+        let request = Task { await AuthenticationGate.authenticate(biometric: false, timeout: 0.01) }
+        while !service.started { await Task.yield() }
+        service.finishDismissal(.authenticated)
+        let result = await request.value
+        XCTAssertEqual(result, .ok)
+        try await Task.sleep(nanoseconds: 30_000_000)
+        XCTAssertFalse(service.cancelled)
+    }
+}
+""")
+
     methods = "\n".join(declaration(runtime, start).replace("private func", "func", 1) for start in (
         "    enum RefreshTrigger: String {",
         "    func retryWalletPreparation() async {",
+        "    enum LocalStoreResetOutcome",
+        "    func resetLocalStoresAndRetry(",
         "    private func enqueueRefresh(trigger:",
         "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
@@ -72,20 +488,81 @@ enum DWLogger { static func log(_ message: String) {} }
     static let shared = SwiftDashSDKWalletRuntime()
     let lifecycleQueue = SerialAsyncLifecycleQueue()
     var refreshCalls = 0
+    /// Order of the reset operation's steps, for the ordering assertions.
+    var events: [String] = []
     func enqueue(_ op: @escaping @MainActor () async -> Void) { lifecycleQueue.enqueue(op) }
     func drain() async { await lifecycleQueue.enqueue {}.value }
-    func refresh(trigger: RefreshTrigger) async {
+    /// Returned around the open, as the wallet-presence gate and the
+    /// unclassified-start fallback do in production.
+    var refreshFailure: WalletPreparationFailure?
+    /// Classified by the open itself (the `prepareWallet` failure closure).
+    var openFailure: WalletPreparationFailure?
+    /// The open failed with a cause the host left unclassified (closure nil):
+    /// the production fallback record is returned after `finish()`.
+    var unclassifiedOpenFailure: WalletPreparationFailure?
+    /// The open succeeded and a later start step (SPV) failed.
+    var postOpenFailure: WalletPreparationFailure?
+    @discardableResult
+    func refresh(trigger: RefreshTrigger, runtimeAlreadyStopped: Bool = false) async -> WalletPreparationFailure? {
         refreshCalls += 1
+        events.append("refresh")
+        if runtimeAlreadyStopped { assert(WalletLifecycleTransitionState.shared.phase == .resettingLocalStores) }
+        if let refreshFailure { return refreshFailure }
+        if let openFailure {
+            try? await WalletLifecycleTransitionState.shared.prepareWallet {
+                throw NSError(domain: "Open", code: 1)
+            } failure: { _ in openFailure }
+            return WalletLifecycleTransitionState.shared.preparationFailure ?? openFailure
+        }
+        if let unclassifiedOpenFailure {
+            try? await WalletLifecycleTransitionState.shared.prepareWallet {
+                throw NSError(domain: "Open", code: 2)
+            } failure: { _ in nil }
+            return unclassifiedOpenFailure
+        }
         try? await WalletLifecycleTransitionState.shared.prepareWallet {} failure: { _ in nil }
+        return postOpenFailure
     }
     func resolveCurrentNetwork() -> Result<WalletEnvironment.NetworkKind, NSError> { .success(.testnet) }
     func isCoreRuntimeReady(for network: WalletEnvironment.NetworkKind) -> Bool {
         WalletLifecycleTransitionState.shared.phase == .idle
     }
+    func fullReset(lastError: String?, forWipe: Bool) async { events.append("fullReset") }
+    func dropLocalStoreDerivedState() { events.append("drop") }
+    func clearLocalStoreMaintenanceFlags() { events.append("flags") }
+    func selectSolePersistedNetworkIfNeeded(currentNetwork: WalletEnvironment.NetworkKind) -> Bool {
+        events.append("soleNetwork")
+        return false
+    }
+    func publishActiveWalletDidChange(reason: String) { events.append("publish") }
 ''' + methods + "\n}\n")
     (tests / "AutomaticPreparationTests.swift").write_text(r'''
 import XCTest
 @testable import WalletPreparationHarness
+
+/// Stands in for `WalletLocalStoreResetter`: records the call in the
+/// runtime's event order and throws on request.
+final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
+    var error: WalletLocalStoreResetError?
+    var calls = 0
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+        calls += 1
+        await MainActor.run { SwiftDashSDKWalletRuntime.shared.events.append("delete") }
+        if let error { throw error }
+        return WalletLocalStoreResetReport(removed: [.init(root: "Platform", scope: "testnet")])
+    }
+}
+
+actor SuspendingResetter: WalletLocalStoreResetting {
+    var started = false
+    var continuation: CheckedContinuation<Void, Never>?
+    func resetAllScopes() async throws -> WalletLocalStoreResetReport {
+        started = true
+        await withCheckedContinuation { continuation = $0 }
+        return WalletLocalStoreResetReport(removed: [])
+    }
+    func release() { continuation?.resume() }
+}
 
 @MainActor final class AutomaticPreparationTests: XCTestCase {
     let state = WalletLifecycleTransitionState.shared
@@ -94,6 +571,13 @@ import XCTest
         await runtime.drain()
         state.finish()
         runtime.refreshCalls = 0
+        runtime.refreshFailure = nil
+        runtime.openFailure = nil
+        runtime.unclassifiedOpenFailure = nil
+        runtime.postOpenFailure = nil
+        runtime.events = []
+        SwiftDashSDKHost.shared.validationError = nil
+        SwiftDashSDKHost.shared.releaseError = nil
         SwiftDashSDKSPVCoordinator.shared.preparations = 0
         PlatformAddressSyncCoordinator.shared.preparations = 0
     }
@@ -165,6 +649,166 @@ import XCTest
         XCTAssertTrue(ready)
         XCTAssertEqual(runtime.refreshCalls, 1)
     }
+    func testResetSkipsWhenNoFailureIsShowing() async throws {
+        let resetter = FakeResetter()
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(runtime.events, [])
+    }
+    func testResetSkipsStorageFailures() async throws {
+        do {
+            try await state.prepareWallet { throw NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC)) }
+                failure: { WalletPreparationFailure(error: $0) }
+        } catch {}
+        let resetter = FakeResetter()
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testResetOrdersTeardownDropDeleteFlagsRefreshThenPublish() async throws {
+        await failOpen()
+        runtime.events = []
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        XCTAssertEqual(outcome, .reset)
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete", "flags", "soleNetwork", "refresh", "publish"])
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+    }
+    func testResetFailsClosedWhenDeletionFails() async throws {
+        await failOpen()
+        let failure = state.preparationFailure
+        let resetter = FakeResetter()
+        resetter.error = .removalFailed(root: "Shielded", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the deletion error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(state.preparationFailure, failure)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testEnumerationFailureKeepsEveryMaintenanceFlag() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        resetter.error = .enumerationFailed(root: "SPV", code: "NSCocoaErrorDomain:257")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the enumeration error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        // No store was touched, so the next launch still applies every
+        // armed resync marker and wide-scan flag to the surviving stores.
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete"])
+    }
+    func testRemovalFailureKeepsEveryMaintenanceFlag() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        // Whatever was removed before the failure is rebuilt by the host,
+        // which re-arms the CoinJoin scan as it recreates rows; the resync
+        // markers stay for every surviving header store.
+        resetter.error = .removalFailed(root: "SPV", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected the removal error")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, resetter.error)
+        }
+        XCTAssertEqual(runtime.events, ["fullReset", "drop", "delete"])
+        guard case .failedWalletOpen = state.phase else { return XCTFail("The card must stay") }
+    }
+    func testNativeRuntimeRequiresRelaunchWithoutDeletingOrClearingFlags() async throws {
+        await failOpen()
+        let originalPhase = state.phase
+        SwiftDashSDKHost.shared.validationError = WalletLocalStoreResetError.restartRequired
+        let resetter = FakeResetter()
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Reset must refuse native workers from an earlier runtime")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .restartRequired)
+        }
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(runtime.events, [])
+        XCTAssertEqual(state.phase, originalPhase)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testRetainedStoreAfterTeardownCannotReachFileDeletion() async throws {
+        await failOpen()
+        let originalPhase = state.phase
+        SwiftDashSDKHost.shared.releaseError = WalletLocalStoreResetError.storesStillInUse
+        let resetter = FakeResetter()
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("A retained store must block deletion")
+        } catch let error as WalletLocalStoreResetError {
+            XCTAssertEqual(error, .storesStillInUse)
+        }
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(runtime.events, ["fullReset", "drop"])
+        XCTAssertEqual(state.phase, originalPhase)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testResetRejectsConcurrentWipeWhileDeletionIsSuspended() async throws {
+        await failOpen()
+        let resetter = SuspendingResetter()
+        let reset = Task { try await runtime.resetLocalStoresAndRetry(resetter: resetter) }
+        while await !resetter.started { await Task.yield() }
+        XCTAssertEqual(state.phase, .resettingLocalStores)
+        XCTAssertTrue(SwiftDashSDKHost.shared.suspended)
+        XCTAssertFalse(state.tryBegin(.wiping(title: nil)))
+        XCTAssertFalse(state.tryBegin(.switchingNetwork(from: .testnet, to: .mainnet)))
+        await resetter.release()
+        _ = try await reset.value
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testResetFailureDuringRestartKeepsFreshDiagnostic() async throws {
+        await failOpen()
+        let failure = WalletPreparationFailure(error: NSError(domain: "SDKBootstrap", code: 42))
+        runtime.refreshFailure = failure
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        XCTAssertEqual(outcome, .failed(failure))
+        XCTAssertEqual(state.phase, .failedWalletOpen(failure))
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testResetFromNetworkSwitchFailureRestoresOriginalCardOnDeletionError() async throws {
+        let phase = WalletLifecycleTransitionState.Phase.failedNetworkSwitch(from: .mainnet, target: .testnet, message: "failure")
+        let failure = WalletPreparationFailure(error: NSError(domain: NSCocoaErrorDomain, code: 134100))
+        state.restoreAfterLocalStoreReset(phase: phase, failure: failure)
+        let resetter = FakeResetter()
+        resetter.error = .removalFailed(root: "Platform", scope: "testnet", code: "NSCocoaErrorDomain:513")
+        do {
+            _ = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+            XCTFail("Expected failure")
+        } catch {}
+        XCTAssertEqual(state.phase, phase)
+        XCTAssertEqual(state.preparationFailure, failure)
+        XCTAssertFalse(SwiftDashSDKHost.shared.suspended)
+    }
+    func testQueuedRetryAheadOfResetMakesItSkip() async throws {
+        await failOpen()
+        let resetter = FakeResetter()
+        runtime.enqueue { await self.runtime.refresh(trigger: .startIfReady) }
+        let outcome = try await runtime.resetLocalStoresAndRetry(resetter: resetter)
+        XCTAssertEqual(outcome, .skipped)
+        XCTAssertEqual(resetter.calls, 0)
+        XCTAssertEqual(state.phase, .idle)
+    }
+    func testRetryAfterResetFailureDoesNotDismissAnUnresolvedStartupError() async throws {
+        await failOpen()
+        let failure = WalletPreparationFailure(error: NSError(domain: "SDKBootstrap", code: 42))
+        runtime.refreshFailure = failure
+        _ = try await runtime.resetLocalStoresAndRetry(resetter: FakeResetter())
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(failure))
+    }
     func testExplicitRetryAndSyncNowCanStillRecover() async {
         await failOpen()
         await runtime.retryWalletPreparation()
@@ -175,6 +819,75 @@ import XCTest
         XCTAssertEqual(state.phase, .idle)
         XCTAssertNil(state.preparationFailure)
         XCTAssertEqual(runtime.refreshCalls, 2)
+    }
+    func testRetryFromTheKeysCardKeepsItOnlyWhenTheOpenWasNotReached() async {
+        let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
+        state.fail(.failedWalletOpen(keys))
+        // The wallet-presence gate refused before the open: the same keychain
+        // failure, and its store record must not replace the keys card.
+        runtime.refreshFailure = WalletPreparationFailure(error: NSError(domain: "Presence", code: 2))
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(keys))
+        XCTAssertEqual(state.preparationFailure, keys)
+        // The open ran and classified a store failure: it replaces the card.
+        runtime.refreshFailure = nil
+        let store = WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))
+        runtime.openFailure = store
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(store))
+        // The open ran and classified nothing (walletNotFound, SDK init): the
+        // automatic kick's rule — the fallback record is no card at all.
+        state.fail(.failedWalletOpen(keys))
+        runtime.openFailure = nil
+        runtime.unclassifiedOpenFailure = WalletPreparationFailure(error: NSError(domain: "Fallback", code: 3))
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+        // The open succeeded and SPV failed afterwards: same, no card.
+        state.fail(.failedWalletOpen(keys))
+        runtime.unclassifiedOpenFailure = nil
+        runtime.postOpenFailure = WalletPreparationFailure(error: NSError(domain: "SPV", code: 4))
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .idle)
+        // A store card keeps today's rule: any returned record replaces it.
+        runtime.postOpenFailure = nil
+        await failOpen()
+        let other = WalletPreparationFailure(error: NSError(domain: "Presence", code: 2))
+        runtime.refreshFailure = other
+        await runtime.retryWalletPreparation()
+        XCTAssertEqual(state.phase, .failedWalletOpen(other))
+    }
+    func testKeysCardIsClearedByTheNextAutomaticKick() async {
+        state.fail(.failedWalletOpen(WalletPreparationFailure(keys: .unreadable, status: -25308)))
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        XCTAssertEqual(state.phase, .idle)
+        XCTAssertNil(state.preparationFailure)
+        // A store card still refuses the automatic kick.
+        await failOpen()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        guard case .failedWalletOpen = state.phase else { return XCTFail("Store card dismissed by an automatic kick") }
+    }
+    func testKicksAreDeferredWhileACardFlowHoldsTheWindowAndReplayedOnRelease() async {
+        let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
+        state.fail(.failedWalletOpen(keys))
+        // The phrase modal, Help or the share sheet is up: a connectivity or
+        // foreground kick must not move the phase from under it.
+        state.holdRecoveryPresentation()
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        runtime.handleObservedNetworkChange()
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 0)
+        XCTAssertEqual(state.phase, .failedWalletOpen(keys))
+        // Release reports the refused kick; its replay clears the card.
+        XCTAssertTrue(state.releaseRecoveryPresentation())
+        runtime.enqueueRefresh(trigger: .startIfReady)
+        await runtime.drain()
+        XCTAssertEqual(runtime.refreshCalls, 1)
+        XCTAssertEqual(state.phase, .idle)
     }
 }
 ''')

@@ -188,6 +188,16 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var syncStateCancellable: AnyCancellable?
     private var shieldedEventCancellable: AnyCancellable?
     private var shieldedFreshnessTask: Task<Void, Never>?
+    /// Same-seed identity recovery left running by a start that did not await
+    /// it (`identityRecoveryInBackground`). `performStop` and the wallet wipe
+    /// cancel it and wait for it (`cancelAndAwaitIdentityRecovery`) before
+    /// tearing anything down or deleting wallet data.
+    private var identityRecoveryTask: Task<Void, Never>?
+    /// Shielded-sync stops `performStop` started without waiting for them
+    /// (`startShieldedStop(on:)`). The slot holds the latest one, and each
+    /// stop task also waits for the one it replaced, so waiting on the slot
+    /// (`awaitPendingShieldedStop`) covers every stop still in flight.
+    private var pendingShieldedStop: Task<Void, Never>?
     private var shieldedMonitoringStartedAt = Date()
     private var lastFullShieldedSyncAt: Date?
     private var shieldedReconciliationTask: Task<Void, Never>?
@@ -399,6 +409,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func prepareShieldedForRecovery() async throws {
+        // The SDK refuses `startShieldedSync` while a stop is in flight.
+        await awaitPendingShieldedStop()
+        // Every recovery generation bump also cancels this operation. Past a
+        // cancelled wait, the generation read below is already the new one
+        // and would pass `isCurrentSession`.
+        try Task.checkCancellation()
         guard let recoveryNetwork = WalletEnvironment.network,
               SwiftDashSDKWalletRuntime.shared.isCoreRuntimeReady(for: recoveryNetwork) else {
             throw CancellationError()
@@ -493,9 +509,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // Used by `SwiftDashSDKWalletRuntime`'s single async lifecycle pipeline.
     // The nonisolated/objc wrappers above stay for fire-and-forget callers.
 
+    /// `identityRecoveryInBackground`: return once the sync loops are up and
+    /// leave the same-seed identity recovery running (see `performStart`)
+    /// instead of awaiting its DAPI round trips.
     @MainActor
-    public func startAsync(for network: Network) async throws {
-        await performStart(network: network)
+    public func startAsync(for network: Network, identityRecoveryInBackground: Bool = false) async throws {
+        await performStart(network: network, identityRecoveryInBackground: identityRecoveryInBackground)
         if isRunning && runningNetwork == network {
             return
         }
@@ -510,6 +529,88 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @MainActor
     public static func stopForWipeAsync() async {
         await shared.performStop(deletingPersistedWallet: true)
+    }
+
+    /// Release the `ModelContainer` kept across `stopAsync` (see
+    /// `performStop`: it is retained so persister contexts do not dangle while
+    /// tokio winds down). Only the local-store reset calls this, after the
+    /// host's native teardown has returned; with a manager still bound the
+    /// call is refused and logged, because that manager may still write
+    /// through the container.
+    @MainActor
+    func dropRetainedModelContainer() {
+        guard walletManager == nil, shieldedPreparedManager == nil else {
+            DWLogger.log("🧹 STORE-RESET container release rejected: BLAST manager still bound")
+            return
+        }
+        modelContainer = nil
+    }
+
+    /// Cancel the background identity recovery (see `performStart`) and wait
+    /// until it has returned; on return no recovery task is left. The slot is
+    /// cleared only after the task returns, so a concurrent caller finds the
+    /// same task and waits for it too, and the loop also waits for a recovery
+    /// a start put in the slot meanwhile.
+    ///
+    /// The recovery checks for cancellation between its steps; a step already
+    /// running finishes first. Discovery is a single FFI call covering the
+    /// whole gap-limit scan, so this can wait for that entire scan.
+    public func cancelAndAwaitIdentityRecovery() async {
+        while let recovery = identityRecoveryTask {
+            recovery.cancel()
+            await recovery.value
+            if identityRecoveryTask == recovery {
+                identityRecoveryTask = nil
+            }
+        }
+    }
+
+    /// Wait until every shielded-sync stop `performStop` started has
+    /// returned. The SDK's async stop cancels the loop at once, then waits up
+    /// to 10 s off the main thread for a pass in flight; one that times out
+    /// returns while that pass keeps running. While a stop is in flight the
+    /// SDK refuses to start the loop again and to run its synchronous wallet
+    /// deletion, and building a new manager blocks until the drain ends, so
+    /// the callers that do any of these wait here first, as does the
+    /// runtime's `fullReset` before the host teardown.
+    public func awaitPendingShieldedStop() async {
+        while let stop = pendingShieldedStop {
+            await stop.value
+            if pendingShieldedStop == stop {
+                pendingShieldedStop = nil
+            }
+        }
+    }
+
+    /// Start stopping `manager`'s shielded sync loop without waiting for it:
+    /// the SDK's async `stopShieldedSync()` cancels the loop at once and
+    /// drains a pass in flight off the main thread. Never suspends.
+    private func startShieldedStop(on manager: PlatformWalletManager) {
+        let previous = pendingShieldedStop
+        pendingShieldedStop = Task {
+            await Self.stopShieldedSync(on: manager)
+            await previous?.value
+        }
+    }
+
+    private static func stopShieldedSync(on manager: PlatformWalletManager) async {
+        let started = CFAbsoluteTimeGetCurrent()
+        let result: String
+        do {
+            try await manager.stopShieldedSync()
+            result = "ok"
+            logger.info("🛡️ SHIELD :: stopped")
+        } catch PlatformWalletError.shutdownIncomplete {
+            result = "shutdownIncomplete"
+            logger.error("🛡️ SHIELD :: stop timed out; the pass in flight keeps running")
+        } catch {
+            result = "error"
+            logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
+        }
+        let milliseconds = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+        // DWLogger on purpose: os_log doesn't reach diagnostic exports, and
+        // the host's shutdown line no longer includes this wait.
+        DWLogger.log("🛡️ SHIELD stop result=\(result) in \(milliseconds)ms")
     }
 
     enum StartError: LocalizedError {
@@ -1013,6 +1114,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// funds for the whole transition.
     public func prepareForNetworkSwitch() {
         lifecycleGeneration &+= 1
+        // Stop the background identity recovery at its next network step; the
+        // switch's teardown (`performStop`) waits for it to finish.
+        identityRecoveryTask?.cancel()
         isShieldedRunning = false
         stopShieldedRecoveryMonitoring()
         detachSyncSubscriptions()
@@ -1061,7 +1165,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         await performStart(network: network)
     }
 
-    private func performStart(network: Network) async {
+    private func performStart(network: Network, identityRecoveryInBackground: Bool = false) async {
         if let manager = walletManager, let walletId = wallet?.walletId,
            runningNetwork == network, SwiftDashSDKHost.shared.manager === manager,
            isSelectedWalletScope(walletId: walletId, network: network) {
@@ -1082,9 +1186,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         if walletManager != nil {
             await performStop(deletingPersistedWallet: false)
         }
-
         lifecycleGeneration &+= 1
         let generation = lifecycleGeneration
+        // A shielded stop started by that stop, or by an earlier one, must
+        // return before this start restarts the loop, possibly on the same
+        // manager: the SDK refuses `startShieldedSync` while one is in flight.
+        // A network switch or stop during the wait supersedes this start.
+        await awaitPendingShieldedStop()
+        guard lifecycleGeneration == generation else { return }
 
         Self.logger.info("🛰️ PLATFORM-ADDR :: starting for \(network.rawValue, privacy: .public)")
 
@@ -1249,11 +1358,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // start it hands its verdict to the coordinator
         // (`recordStartupDiscovery`), and `recoverIfNeeded` skips the repeat
         // discovery for a seed that pass found no identity for.
+        //
+        // The recovery refreshes DPNS names over DAPI. With
+        // `identityRecoveryInBackground` the start returns without waiting for
+        // it; `performStop` cancels the task and waits for it, so it never
+        // outlives the manager it runs against.
         if let container = SwiftDashSDKHost.shared.modelContainer {
-            await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
-                wallet: resolvedWallet,
-                modelContainer: container,
-                network: network)
+            if identityRecoveryInBackground {
+                identityRecoveryTask?.cancel()
+                identityRecoveryTask = Task {
+                    await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                        wallet: resolvedWallet,
+                        modelContainer: container,
+                        network: network)
+                }
+            } else {
+                await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                    wallet: resolvedWallet,
+                    modelContainer: container,
+                    network: network)
+            }
         }
 #endif
 
@@ -1262,6 +1386,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     private func performStop(deletingPersistedWallet: Bool, preservingRecovery: Bool = false) async {
         lifecycleGeneration &+= 1
+        // A background identity recovery (see `performStart`) holds the wallet
+        // it runs against, and on a wipe it could still write identity rows
+        // after the deletion below. Let it wind down first; see
+        // `cancelAndAwaitIdentityRecovery` for how long that can take.
+        // Everything after this point runs without suspending.
+        await cancelAndAwaitIdentityRecovery()
         isShieldedRunning = false
         if preservingRecovery {
             shieldedRecovery.suspendForRuntimeRestart()
@@ -1305,22 +1435,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 Self.logger.error("🛰️ PLATFORM-ADDR :: stopPlatformAddressSync threw: \(String(describing: error), privacy: .public)")
             }
             // Stop the shielded sync loop alongside BLAST so it doesn't outlive
-            // the manager (also covers network switch — performStart calls
-            // performStop first). Independent do/catch so a shielded-stop throw
-            // can't skip, and isn't skipped by, the BLAST stop above.
-            do {
-                if try manager.isShieldedSyncRunning() {
-                    try manager.stopShieldedSync()
-                }
-                Self.logger.info("🛡️ SHIELD :: stopped")
-            } catch {
-                Self.logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
-            }
+            // the manager. This only starts the stop, so the teardown still
+            // runs in one main-actor turn: the SDK's async stop cancels the
+            // loop at once and drains a pass in flight off the main thread,
+            // and callers that need it finished wait in
+            // `awaitPendingShieldedStop()`. Started whenever a manager exists:
+            // a direct `syncShieldedNow()` pass runs outside the loop, so
+            // `isShieldedSyncRunning()` can miss it.
+            startShieldedStop(on: manager)
 #if DASHPAY
             // Stop the DashPay sync loop alongside BLAST/shielded so it
             // doesn't outlive the manager (also covers network switch —
-            // performStart calls performStop first). Independent do/catch,
-            // same isolation rationale as the shielded stop above.
+            // performStart calls performStop first). Independent do/catch so a
+            // DashPay-stop throw can't skip, and isn't skipped by, the stops
+            // above.
             do {
                 if try manager.isDashPaySyncRunning() {
                     try manager.stopDashPaySync()

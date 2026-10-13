@@ -316,6 +316,8 @@ final class SwapConvertViewModel: ObservableObject {
                 comment: "Dash DEX / dex_error_no_route"
             )
         } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
+            // Keeps the chain-specific wording this screen already had: the address was entered a
+            // step earlier, so the user needs to be told which chain it has to belong to.
             let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
             errorMessage = String(
                 format: NSLocalizedString(
@@ -327,10 +329,7 @@ final class SwapConvertViewModel: ObservableObject {
                 chainLabel
             )
         } else {
-            errorMessage = NSLocalizedString(
-                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
-                comment: "Dash DEX / dex_error_no_route"
-            )
+            errorMessage = SwapKitErrorCopy.message(for: apiError, coin: coin)
         }
     }
 
@@ -697,10 +696,13 @@ private extension SwapConvertViewModel {
             amountText = "\(formatted) \(coin.code)"
         }
 
+        // Short form per the redesign, e.g. "Max $205.32" — mirrors Android's
+        // `maya_max_amount_error` (Figma 24034:44864), which replaced the long
+        // "The maximum transaction amount is …" sentence on this screen.
         return String(
             format: NSLocalizedString(
-                "The maximum transaction amount is %@",
-                comment: "Dash DEX"
+                "Max %@",
+                comment: "Dash DEX / maya_max_amount_error"
             ),
             amountText
         )

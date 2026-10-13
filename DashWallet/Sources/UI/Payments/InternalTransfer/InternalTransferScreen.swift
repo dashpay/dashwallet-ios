@@ -120,6 +120,13 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
+                        if let completion = viewModel.coreDrainCompletionNotice {
+                            Text(completion)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                        }
                         if let estimateNotice = viewModel.coreDrainEstimateNotice {
                             Text(estimateNotice)
                                 .font(.footnote)
@@ -130,12 +137,21 @@ struct InternalTransferScreen: View {
                             Button(action) { viewModel.performCoreDrainAction() }
                                 .disabled(viewModel.isCoreDrainLoading)
                         }
-                        if viewModel.canShowTransferPreview {
-                            // Sits under the cards, not in the middle of the
-                            // gap above the keypad: a spacer on each side used
-                            // to split the slack evenly, which floated the line
-                            // away from the form it belongs to. 20pt from the
-                            // cards — the stack's own 16 plus 4.
+                        // Sits under the cards, not in the middle of the gap
+                        // above the keypad: a spacer on each side used to split
+                        // the slack evenly, which floated the line away from
+                        // the form it belongs to. 20pt from the cards — the
+                        // stack's own 16 plus 4. An error takes the preview's
+                        // place; the amount row carries only the fiat figure.
+                        if let message = viewModel.amountValidationMessage {
+                            Text(message)
+                                .dashFont(.caption1)
+                                .foregroundColor(Color.dash.errorText)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 4)
+                                .padding(.horizontal, 20)
+                        } else if viewModel.canShowTransferPreview {
                             TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                                 .padding(.top, 4)
                                 .padding(.horizontal, 20)
@@ -233,8 +249,7 @@ struct InternalTransferScreen: View {
                 : { viewModel.fillMaxFromWallet() },
             onSwap: toggleAmountUnit,
             onCurrencyTap: toggleAmountUnit,
-            onSelectInputType: selectAmountCurrency,
-            errorMessage: viewModel.amountValidationMessage
+            onSelectInputType: selectAmountCurrency
         )
     }
 
@@ -336,7 +351,10 @@ struct InternalTransferScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                // Shorter text always passes: a unit switch can leave more decimals than
+                // the new unit allows, and refusing backspace would lock the field.
+                } else if newValue.count < viewModel.amountText.count
+                    || InternalTransferViewModel.typedTextFitsPrecision(newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })

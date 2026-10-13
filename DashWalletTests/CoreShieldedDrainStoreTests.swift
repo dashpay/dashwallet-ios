@@ -66,4 +66,36 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         try Data().write(to: directory)
         XCTAssertThrowsError(try store.save(CoreShieldedDrainOperation(id: UUID(), context: context)))
     }
+    func testSaveFlushesMarkerAndDirectoryAncestorsBeforeReturning() throws {
+        let nested = directory.appendingPathComponent("new-parent/markers", isDirectory: true)
+        var flushed: [URL] = []
+        let store = CoreShieldedDrainFileStore(directory: nested) { url in
+            // Exercise the real barrier, recording only successfully flushed paths.
+            try DurableFileStorage.flush(url)
+            flushed.append(url.standardizedFileURL)
+        }
+        try store.save(CoreShieldedDrainOperation(id: UUID(), context: context))
+        XCTAssertEqual(flushed.first?.pathExtension, "json")
+        XCTAssertEqual(Array(flushed.dropFirst().prefix(3)), [nested, nested.deletingLastPathComponent(), directory!].map(\.standardizedFileURL))
+    }
+
+    func testEveryDurabilityFailurePreventsDispatchAndRetryKeepsSameUUID() throws {
+        enum Failure: Error { case flush }
+        let operation = CoreShieldedDrainOperation(id: UUID(), context: context)
+        // File, containing directory, and newly-created directory's parent.
+        for failureIndex in 0..<3 {
+            var calls = 0
+            let failing = CoreShieldedDrainFileStore(directory: directory) { _ in
+                defer { calls += 1 }
+                if calls == failureIndex { throw Failure.flush }
+            }
+            var dispatched = false
+            XCTAssertThrowsError(try { try failing.save(operation); dispatched = true }())
+            XCTAssertFalse(dispatched)
+            XCTAssertEqual(try store.load(context), operation)
+            try store.save(operation)
+            XCTAssertEqual(try store.load(context), operation)
+        }
+    }
+
 }

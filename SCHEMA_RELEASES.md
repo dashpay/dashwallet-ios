@@ -84,10 +84,11 @@ at whichever models happen to be current.
    `SCHEMA_RELEASE_TOKEN` in both repositories (or an organization secret limited
    to them). The existing App Store Connect key stays in the iOS `testflight`
    environment; Platform does not need it.
-2. Merge the Platform schema release support into `v4.2-dev`, then merge this
-   repository's support into `develop`. These must remain the default branches
-   for the workflows to appear and the schedule to run. Complete initialization
-   before starting the next `internal` or `external` build.
+2. Merge the Platform schema release support into Platform's default branch, then
+   merge this repository's support into `develop`. These must remain the default
+   branches for the workflows to appear and the schedule to run; the tooling reads
+   Platform's default branch at run time, so renaming it needs no code change.
+   Complete initialization before starting the next `internal` or `external` build.
 3. In **Freeze published App Store schema**, choose `bootstrap` and keep
    `dry_run` enabled. Confirm the version printed is the already accepted first
    App Store release and matches the verified historical binding in Platform's

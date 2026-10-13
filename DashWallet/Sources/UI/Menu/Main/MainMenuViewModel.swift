@@ -15,8 +15,9 @@
 //  limitations under the License.
 //
 
-import SwiftUI
 import Combine
+import DashUIKit
+import SwiftUI
 
 enum MainMenuNavigationDestination {
     case explore
@@ -27,6 +28,9 @@ enum MainMenuNavigationDestination {
     case settings
     case tools
     case support
+    #if DASHPAY
+    case voting
+    #endif
     case governance
 }
 
@@ -41,9 +45,6 @@ class MainMenuViewModel: ObservableObject {
     
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: MainMenuNavigationDestination?
-    @Published var showCreditsWarning: Bool = false
-    @Published var creditsWarningHeading: String = ""
-    @Published var creditsWarningMessage: String = ""
     
     #if DASHPAY
     let dashPayReady: DWDashPayReadyProtocol?
@@ -51,6 +52,15 @@ class MainMenuViewModel: ObservableObject {
     let userProfileModel: CurrentUserProfileModel?
     @Published private(set) var showJoinDashpay: Bool = false
     @Published private(set) var isSyncing: Bool = false
+    /// The username this wallet actually owns, or nil while it owns none.
+    ///
+    /// Drives the Profile entry: once a name is the user's — a plain
+    /// registration, an instant companion, or a contested request that won its
+    /// vote — More leads to their profile instead of offering to join.
+    /// Contested labels still out for a vote are excluded by
+    /// `DWCurrentUserIdentityInfo` itself, so a pending request never shows a
+    /// profile that does not exist yet.
+    @Published private(set) var profileUsername: String?
     #endif
 
     weak var delegate: MainMenuViewModelDelegate?
@@ -92,6 +102,35 @@ class MainMenuViewModel: ObservableObject {
         userProfileModel?.$isSyncing
             .receive(on: DispatchQueue.main)
             .assign(to: &$isSyncing)
+
+        refreshProfileUsername()
+        // The same notifications the banner policy listens to: registration
+        // finishing, a contest resolving in our favour, or a wallet/network
+        // switch changing whose names these are.
+        for name in [
+            Notification.Name.DWDashPayRegistrationStatusUpdated,
+            SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            NSNotification.Name.DWCurrentNetworkDidChange
+        ] {
+            NotificationCenter.default.publisher(for: name)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.refreshProfileUsername() }
+                .store(in: &cancellableBag)
+        }
+    }
+
+    func refreshProfileUsername() {
+        // Only names this identity actually owns.
+        //
+        // `DWGlobalOptions.dashpayUsername` used to stand in for them, and it
+        // cannot: it is one global value, cleared on a network change but not
+        // on a wallet change, and `namesAreLoaded` is also true for an identity
+        // that owns nothing. Switching between two wallets on one network then
+        // showed the first wallet's username on the second wallet's profile
+        // row — and opened the editor against the second wallet's identity.
+        let identity = MainActor.assumeIsolated { DWCurrentUserIdentityInfo.shared.refreshedSnapshot() }
+        let username = identity.usernames.first
+        profileUsername = (username?.isEmpty == false) ? username : nil
     }
 
     func refreshJoinDashPayBanner() {
@@ -131,7 +170,7 @@ class MainMenuViewModel: ObservableObject {
             // Wallets
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Wallets", comment: ""),
-                icon: .custom("image.wallets", maxHeight: 30),
+                icon: .custom(DashIcon.Menu.wallet.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .wallets
                 }
@@ -140,7 +179,7 @@ class MainMenuViewModel: ObservableObject {
             // Identities — the device's Dash Platform identities (under Wallets)
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Identities", comment: "Identities"),
-                icon: .system("person.crop.circle"),
+                icon: .custom(DashIcon.Menu.identities.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .identities
                 }
@@ -150,7 +189,7 @@ class MainMenuViewModel: ObservableObject {
         // Security
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Security", comment: ""),
-            icon: .custom("image.security", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.security.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .security
             }
@@ -159,7 +198,7 @@ class MainMenuViewModel: ObservableObject {
         // Settings
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Settings", comment: ""),
-            icon: .custom("image.settings", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.settings.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .settings
             }
@@ -168,31 +207,48 @@ class MainMenuViewModel: ObservableObject {
         // Tools
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Tools", comment: ""),
-            icon: .custom("image.tools", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.tools.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .tools
             }
         ))
         
+        #if DASHPAY
+        // Voting — between Tools and Support, where Android has it. Not an
+        // advanced-mode row: a masternode owner votes whatever mode the
+        // wallet is in. Behind Settings → "Enable Voting".
+        if VotingPrefs.shared.votingEnabled {
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Voting", comment: ""),
+                icon: .custom(DashIcon.Menu.voting.rawValue, bundle: .dashUIKit, maxHeight: 30),
+                action: { [weak self] in
+                    self?.navigationDestination = .voting
+                }
+            ))
+        }
+        #endif
+
         // Support
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Support", comment: ""),
-            icon: .custom("image.support", maxHeight: 30),
+            icon: .custom(DashIcon.Menu.support.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .support
             }
         ))
         
-        // Governance — Masternodes plus (on DashPay builds, when enabled)
-        // username Voting. Not DashPay-gated: Masternodes is a Core-side
-        // surface that every build configuration can reach.
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Governance", comment: "Governance"),
-            icon: .custom("menu_voting", maxHeight: 30),
-            action: { [weak self] in
-                self?.navigationDestination = .governance
-            }
-        ))
+        // Governance — Masternodes, the operator's tools. Advanced mode only;
+        // voting moved out of it to its own row above. Not DashPay-gated:
+        // Masternodes is a Core-side surface every build configuration has.
+        if showsAdvancedRows {
+            allItems.append(MenuItemModel(
+                title: NSLocalizedString("Governance", comment: "Governance"),
+                icon: .system("server.rack"),
+                action: { [weak self] in
+                    self?.navigationDestination = .governance
+                }
+            ))
+        }
         
         self.items = allItems
     }
@@ -203,9 +259,4 @@ class MainMenuViewModel: ObservableObject {
         navigationDestination = nil
     }
     
-    func showCreditsWarning(heading: String, message: String) {
-        creditsWarningHeading = heading
-        creditsWarningMessage = message
-        showCreditsWarning = true
-    }
 }

@@ -21,7 +21,10 @@ protocol CoreShieldedDrainStoring {
 struct CoreShieldedDrainFileStore: CoreShieldedDrainStoring {
     let directory: URL
 
-    init(directory: URL? = nil) {
+    private let flush: (URL) throws -> Void
+
+    init(directory: URL? = nil, flush: @escaping (URL) throws -> Void = DurableFileStorage.flush) {
+        self.flush = flush
         self.directory = directory ?? FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("CoreShieldedDrain", isDirectory: true)
@@ -54,9 +57,22 @@ struct CoreShieldedDrainFileStore: CoreShieldedDrainStoring {
         }
         let destination = file(operation.context)
         try JSONEncoder().encode(operation).write(to: destination, options: .atomic)
-        let handle = try FileHandle(forWritingTo: destination)
-        defer { try? handle.close() }
-        try handle.synchronize()
+        try flush(destination)
+        // The atomic rename and every potentially new ancestor must reach disk
+        // before the SDK may dispatch. Flush existing ancestors too: an earlier
+        // failed save may have created them without completing its barrier.
+        // The OS-created app container is the durable boundary; never open
+        // directories outside the iOS sandbox. Injected host-test locations
+        // outside the home directory terminate at the filesystem root instead.
+        let container = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true).standardizedFileURL
+        var ancestor = directory.standardizedFileURL
+        while true {
+            try flush(ancestor)
+            if ancestor.path == container.path || ancestor.path == "/" { break }
+            let parent = ancestor.deletingLastPathComponent().standardizedFileURL
+            guard parent.path != ancestor.path else { break }
+            ancestor = parent
+        }
     }
 
     func remove(_ operation: CoreShieldedDrainOperation) throws {
