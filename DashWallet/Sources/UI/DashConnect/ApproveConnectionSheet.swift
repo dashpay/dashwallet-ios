@@ -75,7 +75,7 @@ struct ApproveConnectionSheet: View {
                     // too, and when it replaces a two-QR connection.
                     if request.login == .unresolved {
                         Text(NSLocalizedString(
-                            "This wallet could not check with the network what this sign-in would give the app.",
+                            "This wallet could not check what this sign-in would give the app.",
                             comment: "DashConnect"))
                             .font(.subhead)
                             .foregroundColor(.primaryText)

@@ -91,8 +91,7 @@ struct ConnectionRow: View {
     /// depends on the login that made the connection (see
     /// `DashConnectDataSource.disconnect`): a one-QR connection has the app's
     /// key disabled on the identity and its row removed; a two-QR connection
-    /// is downgraded to `.approved` locally and the app keeps its keys. A
-    /// one-QR connection that replaced a two-QR one gets both.
+    /// is downgraded to `.approved` locally and the app keeps its keys.
     private var activeSwitch: some View {
         ZStack {
             SwitchView(isOn: .constant(true))

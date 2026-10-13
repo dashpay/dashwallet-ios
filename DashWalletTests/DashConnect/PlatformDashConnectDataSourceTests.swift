@@ -919,17 +919,16 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         )
     }
 
-    /// A disconnect of a one-QR connection keeps the row while either key of
-    /// an earlier two-QR login is live: the app can still use that one.
-    func testEitherLiveTwoQrLoginKeyCountsAsRemainingAccess() {
+    /// Turning off a one-QR connection that replaced a two-QR one disables
+    /// what is left of the two-QR login's keys as well.
+    func testADisconnectFindsTheLiveTwoQrLoginKeysByTheirDerivedPayload() {
         let authentication = Data(repeating: 0x51, count: 20)
         let encryption = Data(repeating: 0x52, count: 33)
-        func remains(_ keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
-            PlatformDashConnectDataSource.hasAnyRegisteredLoginKey(
+        func live(_ keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> [UInt32] {
+            PlatformDashConnectDataSource.liveLoginKeyIds(
                 authenticationPublicKeyHash160: authentication,
                 encryptionPublicKey: encryption,
-                currentIdentityPublicKeys: keys,
-                now: Date(timeIntervalSince1970: 1_000))
+                currentIdentityPublicKeys: keys)
         }
         let authenticationKey = makeIdentityPublicKeyInfo(
             keyId: 100, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: authentication)
@@ -944,19 +943,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             keyId: 102, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
             data: Data(repeating: 0x53, count: 20))
 
-        XCTAssertTrue(remains([authenticationKey, encryptionKey]))
-        XCTAssertTrue(remains([authenticationKey]))
-        XCTAssertTrue(remains([disabledAuthenticationKey, encryptionKey]))
-        XCTAssertFalse(remains([disabledAuthenticationKey, sessionKey]))
-        XCTAssertFalse(remains([]))
-        // A `dash-st:` registration may have put an expiry on the key.
-        func expiringAuthenticationKey(expiresAt: Int64) -> ManagedIdentity.IdentityPublicKeyInfo {
-            ManagedIdentity.IdentityPublicKeyInfo(
-                keyId: 100, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
-                readOnly: false, disabledAt: nil, data: authentication, totalBudget: 5, expiresAt: expiresAt)
-        }
-        XCTAssertFalse(remains([expiringAuthenticationKey(expiresAt: 1_000_000)]))
-        XCTAssertTrue(remains([expiringAuthenticationKey(expiresAt: 1_000_001)]))
+        XCTAssertEqual(live([encryptionKey, sessionKey, authenticationKey]), [100, 101])
+        XCTAssertEqual(live([disabledAuthenticationKey, encryptionKey]), [101])
+        XCTAssertEqual(live([disabledAuthenticationKey, sessionKey]), [])
+        XCTAssertEqual(live([]), [])
     }
 
     func testMissingKeyRegistrationKeysReturnsOnlyMissingEncryptionKey() throws {

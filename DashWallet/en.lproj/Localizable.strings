@@ -6108,7 +6108,7 @@
 "Help" = "Help";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
 "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
-"The app's key was added to your identity, but this wallet could not record it, so the sign-in was not completed. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it, so the sign-in was not completed. Turn the app off in Connections to remove the key.";
+"The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.";
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
@@ -6116,8 +6116,7 @@
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
 "This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
 "This wallet cannot record the key it would give the app, so the sign-in was not started." = "This wallet cannot record the key it would give the app, so the sign-in was not started.";
-"This wallet could not check every key the app may hold, so the app may still have access. Try again." = "This wallet could not check every key the app may hold, so the app may still have access. Try again.";
-"This wallet could not check with the network what this sign-in would give the app." = "This wallet could not check with the network what this sign-in would give the app.";
+"This wallet could not check what this sign-in would give the app." = "This wallet could not check what this sign-in would give the app.";
 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
 "Your Dash balance" = "Your Dash balance";
 "Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";

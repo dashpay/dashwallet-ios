@@ -220,9 +220,10 @@ enum AppConnect {
     /// has no grant record for. A key that is gone, already disabled, or of
     /// another shape is left alone, including one another wallet gave the
     /// app with a document-type bound, a single limit or another key type.
-    /// So is the two-QR login's authentication key, named by
-    /// `twoQRAuthenticationKeyHash160`: it has the same kind and bound, and a
-    /// `dash-st:` registration may have put limits on it.
+    /// The two-QR login's authentication key, named by
+    /// `twoQRAuthenticationKeyHash160`, is not picked here either: it has the
+    /// same kind and bound, a `dash-st:` registration may have put limits on
+    /// it, and whether it goes is the caller's decision.
     static func sessionKeyIdsToDisable(
         for grants: [AppConnectGrant],
         appContractId: Data,
