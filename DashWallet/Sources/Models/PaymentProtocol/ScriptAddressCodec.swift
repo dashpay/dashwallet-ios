@@ -84,6 +84,27 @@ enum ScriptAddressCodec {
     /// version bytes give 34; 35 is the ceiling of the format on any network.
     static let maxAddressLength = 35
 
+    /// Whether the whole of `string` is a Base58Check address: at most
+    /// `maxAddressLength` bytes, every one in the Base58 alphabet, a valid
+    /// checksum, a version byte and a 20-byte hash. It says nothing about
+    /// the network.
+    ///
+    /// The SDK validates and pays an address as a C string, which ends at
+    /// the first NUL: `<address>\0<anything>` reads there as `<address>`.
+    /// A string that passes this has no byte for that to happen on, so the
+    /// address the app compares, stores and shows is the one that is paid.
+    static func isWellFormedAddress(_ string: String) -> Bool {
+        decodedAddress(string) != nil
+    }
+
+    /// The version byte and the 20-byte hash of an address, or `nil` when
+    /// `string` is not one as a whole (see `isWellFormedAddress`).
+    private static func decodedAddress(_ string: String) -> (version: UInt8, hash160: [UInt8])? {
+        guard let decoded = base58CheckDecode(string, maxLength: maxAddressLength),
+              decoded.count == 21 else { return nil }
+        return (decoded[decoded.startIndex], Array(decoded.dropFirst()))
+    }
+
     /// Base58Check address → P2PKH or P2SH scriptPubKey, chosen by the decoded version byte.
     /// Returns `nil` if the address can't be decoded or its version doesn't belong to `network`.
     ///
@@ -91,10 +112,7 @@ enum ScriptAddressCodec {
     /// (`base58CheckDecode`): an address can come from outside (a payment
     /// URI).
     static func scriptPubKey(forAddress address: String, network: PaymentNetwork) -> Data? {
-        guard let decoded = base58CheckDecode(address, maxLength: maxAddressLength),
-              decoded.count == 21 else { return nil }
-        let version = decoded[decoded.startIndex]
-        let hash160 = Array(decoded[decoded.index(after: decoded.startIndex)...]) // 20 bytes
+        guard let (version, hash160) = decodedAddress(address) else { return nil }
 
         if version == network.pubkeyHashVersion {
             return Data([0x76, 0xa9, 0x14] + hash160 + [0x88, 0xac])

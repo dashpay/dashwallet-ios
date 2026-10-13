@@ -99,6 +99,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///   read in the same main-actor hop as the build, so an outcome is
     ///   booked under them whatever is bound when it arrives.
     static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (tx: FinalizedCoreTransaction, txHash: Data, origin: WalletChainScope) {
+        try recipients.forEach { try requireWellFormedRecipient($0.address) }
         DWLogger.log("💸 TXSEND :: building+signing \(recipients.count) recipient(s) via PlatformWalletManager.coreWallet")
 
         let build = { @MainActor () throws -> (FinalizedCoreTransaction, WalletChainScope) in
@@ -142,6 +143,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         amountDuffs: UInt64,
         memo: String
     ) throws -> (tx: FinalizedCoreTransaction, txHash: Data, origin: WalletChainScope) {
+        try requireWellFormedRecipient(vaultAddress)
         let memoData = Data(memo.utf8)
         guard memoData.count <= Self.maxSwapMemoBytes else {
             throw SendError.invalidSwapMemo("Swap memo is too long. Please refresh and try again.")
@@ -251,6 +253,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         to address: String, under origin: WalletChainScope, on network: Network
     ) throws -> CoinJoinSweepOutcome {
         assert(!Thread.isMainThread, "sweepCoinJoin waits for network acceptance of every chunk")
+        try requireWellFormedRecipient(address)
         DWLogger.log("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
         // The host, the manager and its account reads are main-actor state, so
@@ -433,6 +436,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         adjustAmountDownwards: Bool,
         holdingRouting: Bool
     ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
+        try requireWellFormedRecipient(address)
         DWLogger.log("💸 TXSEND :: selected-input send — amount=\(amount) adjust=\(adjustAmountDownwards)")
 
         // Resolve the sender address to its P2PKH/P2SH script for byte-exact
@@ -813,6 +817,24 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     // MARK: - Errors
+
+    /// A recipient must be a whole Base58Check address before anything is
+    /// built for it (`ScriptAddressCodec.isWellFormedAddress`). The SDK takes
+    /// the address as a C string and would pay `<address>` for
+    /// `<address>\0<anything>`, while callers keep, compare and record the
+    /// string they passed. Each function here that adds an output for an
+    /// address it is given checks first, so a recipient from a server (a
+    /// swap vault, a merchant) is held to the same rule as one the user
+    /// typed; `WalletSendService` checks before it asks for authorisation.
+    /// The network is the SDK's to check.
+    static func requireWellFormedRecipient(_ address: String) throws {
+        guard ScriptAddressCodec.isWellFormedAddress(address) else {
+            throw SendError.invalidInput(notAnAddressReason)
+        }
+    }
+
+    /// The reason `requireWellFormedRecipient` refuses with.
+    static let notAnAddressReason = "the recipient is not a Dash address"
 
     enum SendError: LocalizedError {
         case invalidInput(String)

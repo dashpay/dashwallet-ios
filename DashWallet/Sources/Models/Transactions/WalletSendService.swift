@@ -379,6 +379,9 @@ final class WalletSendService: NSObject {
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         DWLogger.log("💸 TXSEND :: preparing standard send")
         try Self.ensureInitialRestoreSyncCompleted()
+        // Before the prompt: a send that cannot be built must not ask for
+        // the PIN or use up the biometric allowance.
+        try SwiftDashSDKTransactionSender.requireWellFormedRecipient(address)
         try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         DWLogger.log("💸 TXSEND :: standard send prepared")
@@ -430,6 +433,8 @@ final class WalletSendService: NSObject {
         // Also covers the selected-input path below, whose `buildAndSignFromAddress`
         // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
+        // Before any prompt (see `prepareStandardSendForConfirmation`).
+        try SwiftDashSDKTransactionSender.requireWellFormedRecipient(address)
         if let inputSelector {
             DWLogger.log("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
@@ -493,6 +498,8 @@ final class WalletSendService: NSObject {
     func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
+        // Before the prompt (see `prepareStandardSendForConfirmation`).
+        try SwiftDashSDKTransactionSender.requireWellFormedRecipient(vaultAddress)
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         do {

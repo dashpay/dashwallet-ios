@@ -86,7 +86,13 @@ struct BIP70URI {
             addressPart = rest
             queryPart = nil
         }
-        address = addressPart.isEmpty ? nil : (addressPart.removingPercentEncoding ?? addressPart)
+        // Trimmed here, for every consumer: an address kept with whitespace
+        // around it is not equal to the same address elsewhere (the
+        // repeat-payment check compares strings), and the classifier trims
+        // before it judges. Nothing left is no address.
+        let decodedAddress = (addressPart.removingPercentEncoding ?? addressPart)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        address = decodedAddress.isEmpty ? nil : decodedAddress
 
         // Parse the query string.
         var amount: UInt64?

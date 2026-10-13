@@ -12,6 +12,7 @@
 
 import Combine
 import os
+import SwiftDashSDK
 import SwiftUI
 import UIKit
 import XCTest
@@ -1345,6 +1346,109 @@ final class UnknownOutcomeWalletTests: XCTestCase {
         XCTAssertLessThan(Date().timeIntervalSince(started), 10, "not decoded")
         XCTAssertNil(confirmation.fallbackAddress)
         XCTAssertEqual(confirmation.repeatCheckAddresses, confirmation.recipients.map(\.address))
+    }
+
+    /// The SDK reads an address as a C string, so it takes
+    /// `<address>\0<anything>` for `<address>`, while the app keeps the whole
+    /// string — as the key the repeat-payment check compares, among others.
+    /// The app's own check is on the whole string and refuses it, so what
+    /// the app holds as the recipient is what is paid.
+    func testAnAddressWithAnEmbeddedNulIsNotAnAddress() {
+        let address = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+        XCTAssertTrue(ScriptAddressCodec.isWellFormedAddress(address))
+
+        // `Address.validate` of the SDK takes each of the first two (measured
+        // on the SDK this was written against); not asserted, so an SDK that
+        // stops doing so does not fail this.
+        for notAnAddress in [address + "\0" + "anything", address + "\0", "\0" + address] {
+            XCTAssertFalse(ScriptAddressCodec.isWellFormedAddress(notAnAddress), notAnAddress.debugDescription)
+        }
+    }
+
+    /// No send is built for a recipient that is not a whole address, and
+    /// the refusal comes before a wallet is looked for: a recipient from a
+    /// server (a swap vault, a merchant) is held to the same rule as a typed
+    /// one.
+    func testNoSendIsBuiltForARecipientThatIsNotAWholeAddress() async throws {
+        let address = try addressOnTheCurrentNetwork()
+        let refused: (Error) -> Bool = { error in
+            if case SwiftDashSDKTransactionSender.SendError.invalidInput(let reason) = error {
+                return reason == SwiftDashSDKTransactionSender.notAnAddressReason
+            }
+            return false
+        }
+        for recipient in [address + "\0" + "anything", address + " ", "not an address"] {
+            XCTAssertThrowsError(try SwiftDashSDKTransactionSender.buildAndSign(address: recipient, amount: 1_000)) {
+                XCTAssertTrue(refused($0), "\($0)")
+            }
+            XCTAssertThrowsError(try SwiftDashSDKTransactionSender.buildAndSign(
+                recipients: [(address: address, amountDuffs: 1_000), (address: recipient, amountDuffs: 1_000)])) {
+                XCTAssertTrue(refused($0), "\($0)")
+            }
+            XCTAssertThrowsError(try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+                vaultAddress: recipient, amountDuffs: 1_000, memo: "memo")) {
+                XCTAssertTrue(refused($0), "\($0)")
+            }
+            do {
+                _ = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
+                    fromAddress: address, to: recipient, amount: 1_000,
+                    adjustAmountDownwards: false, holdingRouting: false)
+                XCTFail("built for \(recipient.debugDescription)")
+            } catch {
+                XCTAssertTrue(refused(error), "\(error)")
+            }
+        }
+    }
+
+    /// The app's one address check (`isValidDashAddressForCurrentNetwork`)
+    /// is on the whole string: an address with anything after a NUL is not
+    /// valid, and a payment URI carrying one has no valid address.
+    func testTheAppsAddressCheckRefusesAnAddressWithAnEmbeddedNul() throws {
+        let address = try addressOnTheCurrentNetwork()
+        XCTAssertTrue(address.isValidDashAddressForCurrentNetwork, "a control: the address itself is valid")
+        XCTAssertFalse((address + "\0" + "x").isValidDashAddressForCurrentNetwork)
+
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "dash:\(address)?amount=1").isAddressValidForCurrentNetwork)
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(address)%00x?amount=1").isAddressValidForCurrentNetwork)
+    }
+
+    /// A payment URI's address is kept trimmed, for the headless route too
+    /// (it reads `BIP70URI` directly): the string a send and the
+    /// repeat-payment check see is the address and nothing around it.
+    func testAPaymentURIKeepsItsAddressTrimmed() throws {
+        let address = try addressOnTheCurrentNetwork()
+        for raw in ["dash:\(address)%20?amount=1", "dash:\(address)%0A?amount=1", "dash:%20\(address)?amount=1"] {
+            XCTAssertEqual(BIP70URI(paymentString: raw)?.address, address, raw)
+            XCTAssertEqual(ParsedPaymentURI.parse(paymentString: raw).address, address, raw)
+        }
+        XCTAssertNil(BIP70URI(paymentString: "dash:%20?amount=1")?.address, "whitespace alone is no address")
+    }
+
+    /// Only a whole Base58Check address is well formed: nothing before or
+    /// after it, no character outside the alphabet, a valid checksum.
+    func testOnlyAWholeBase58CheckAddressIsWellFormed() throws {
+        let address = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+        for notAnAddress in ["", " " + address, address + " ", address + "\n",
+                             // Last character flipped: checksum mismatch.
+                             "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLX",
+                             // Outside the Base58 alphabet.
+                             "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGL0",
+                             String(repeating: "1", count: ScriptAddressCodec.maxAddressLength + 1)] {
+            XCTAssertFalse(ScriptAddressCodec.isWellFormedAddress(notAnAddress), notAnAddress.debugDescription)
+        }
+        // What the codec produces is well formed, on every network.
+        let script = try XCTUnwrap(ScriptAddressCodec.scriptPubKey(forAddress: address, network: .testnet))
+        for network in [PaymentNetwork.mainnet, .testnet, .devnet] {
+            let produced = try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: network))
+            XCTAssertTrue(ScriptAddressCodec.isWellFormedAddress(produced), produced)
+        }
+    }
+
+    /// A P2PKH address on the network the test host runs on.
+    private func addressOnTheCurrentNetwork() throws -> String {
+        let script = try XCTUnwrap(ScriptAddressCodec.scriptPubKey(
+            forAddress: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", network: .testnet))
+        return try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: PaymentNetworkResolver.current()))
     }
 
     /// The codec itself refuses a string longer than its bound without
