@@ -5,6 +5,7 @@ on:
     paths:
       - 'DashWallet/Sources/UI/Payments/InternalTransfer/**'
       - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift'
+      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift'
       - 'DashWalletTests/CoreShieldedDrainStoreTests.swift'
       - 'scripts/test_core_drain.py'
       - 'scripts/core_drain_recovery_harness.py'

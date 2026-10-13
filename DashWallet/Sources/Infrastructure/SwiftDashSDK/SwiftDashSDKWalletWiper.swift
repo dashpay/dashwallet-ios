@@ -901,7 +901,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         _ walletId: Data,
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil,
-        keepsWalletOnAnotherScope: Bool = false
+        keepsWalletOnAnotherScope: Bool = false,
+        drainStore: CoreShieldedDrainFileStore = CoreShieldedDrainFileStore()
     ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
@@ -931,8 +932,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
-            do { try CoreShieldedDrainFileStore().clear(walletId: walletId) }
-            catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
+            // A wallet ID can be shared by several devnet scopes. Preserve
+            // their recovery UUIDs until authoritative wallet deletion succeeds.
+            if !keepsWalletOnAnotherScope {
+                do { try drainStore.clear(walletId: walletId) }
+                catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
+            }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
 

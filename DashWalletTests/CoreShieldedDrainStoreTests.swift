@@ -98,4 +98,33 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testPartialDevnetDeletionPreservesRecoveryUntilAuthoritativeDeletionSucceeds() throws {
+        enum DeletionFailure: Error { case unavailable }
+        let walletId = context.walletId
+        let a = CoreShieldedDrainContext(walletId: walletId, networkScope: "devnet-a")
+        let b = CoreShieldedDrainContext(walletId: walletId, networkScope: "devnet-b")
+        let other = CoreShieldedDrainContext(walletId: Data([99]), networkScope: "devnet-b")
+        let operations = [a, b, other].map { CoreShieldedDrainOperation(id: UUID(), context: $0) }
+        for operation in operations { try store.save(operation) }
+
+        // Scope A's rows are removed, but the same mnemonic/wallet still
+        // exists in B. B's authoritative deletion then fails.
+        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId, deleteWallet: { _ in }, keepsWalletOnAnotherScope: true, drainStore: store)
+        XCTAssertEqual(try store.load(b), operations[1])
+        XCTAssertThrowsError(try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId, deleteWallet: { _ in throw DeletionFailure.unavailable }, drainStore: store))
+        let reopened = CoreShieldedDrainFileStore(directory: directory)
+        XCTAssertEqual(try reopened.load(a), operations[0])
+        XCTAssertEqual(try reopened.load(b), operations[1])
+
+        // A successful retry of the authoritative deletion can now remove
+        // this wallet's markers, while retaining another wallet's operation.
+        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId, deleteWallet: { _ in }, drainStore: reopened)
+        XCTAssertNil(try reopened.load(a))
+        XCTAssertNil(try reopened.load(b))
+        XCTAssertEqual(try reopened.load(other), operations[2])
+    }
+
 }

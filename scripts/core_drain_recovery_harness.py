@@ -19,6 +19,7 @@ def write_recovery_harness(repository, sources, tests):
         "    func performCoreDrainAction()",
         "    private func showCoreDrainCompletion()",
         "    private func refreshCoreDrainPreview()",
+        "    private func clearMaxSelection()",
     ))
     # No duplicate implementation of the status/quote decision: those methods
     # above are extracted verbatim from the app. Only external dependencies and
@@ -46,7 +47,7 @@ struct Quote {
     let poolFeeCredits: UInt64 = 0
 }
 @MainActor struct CoreShieldedDrainService {
-    static let context = CoreShieldedDrainContext(walletId: Data([1]), networkScope: "testnet")
+    static var context = CoreShieldedDrainContext(walletId: Data([1]), networkScope: "testnet")
     static var recorded: CoreShieldedDrainOperation?
     static var outcome = WalletDrainOutcome(state: .pending, outpoint: nil)
     static var quotes = 0
@@ -87,8 +88,18 @@ struct Quote {
 }
 @MainActor final class InternalTransferRunner {
     static let shared = InternalTransferRunner()
+    var resumeGate: CheckedContinuation<Void, Never>?
+    var didStartResume: (() -> Void)?
+    var didFinishResume: (() -> Void)?
     func resumeCoreDrain(context: CoreShieldedDrainContext, operation: CoreShieldedDrainOperation?) async -> WalletDrainOutcome? {
+        if didStartResume != nil {
+            await withCheckedContinuation { continuation in
+                resumeGate = continuation
+                didStartResume?()
+            }
+        }
         CoreShieldedDrainService.recorded = nil
+        defer { didFinishResume?() }
         return WalletDrainOutcome(state: .completed, outpoint: 1)
     }
 }
@@ -103,11 +114,16 @@ struct Quote {
     var coreDrainContext: CoreShieldedDrainContext?
     var coreDrainTask: Task<Void, Never>?
     var coreDrainGeneration = UUID()
+    var coreDrainSelection = UUID()
+    var isFullShieldedSweep = false
+    var shieldedSweepAmountCredits: UInt64?
+    var isPlatformShieldMaxDerived = false
+    var isPlatformShieldMaxQueued = false
+    var hasPlatformShieldCapacityChangeNotice = false
     var maxNotice: String?
     var amountText = "0"
     var maxAmountDuffs: UInt64?
     var isApplyingMax = false
-    func clearMaxSelection() { isCoreShieldedDrain = false }
     func applyMaxAmountText(_ amount: UInt64) { amountText = String(amount) }
 ''' + methods + "\n}\n")
     (tests / "RecoveryFormTests.swift").write_text(r'''
@@ -115,6 +131,10 @@ import XCTest
 @testable import CoreDrainHarness
 final class RecoveryFormTests: XCTestCase {
     @MainActor private func reset() -> CoreShieldedDrainOperation {
+        CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "testnet")
+        InternalTransferRunner.shared.resumeGate = nil
+        InternalTransferRunner.shared.didStartResume = nil
+        InternalTransferRunner.shared.didFinishResume = nil
         let operation = CoreShieldedDrainOperation(id: UUID(), context: CoreShieldedDrainService.context)
         CoreShieldedDrainService.recorded = operation
         CoreShieldedDrainService.quotes = 0
@@ -187,6 +207,75 @@ final class RecoveryFormTests: XCTestCase {
         XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
+    @MainActor private func suspendedResume() async -> RecoveryForm {
+        _ = reset()
+        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: 1)
+        let form = RecoveryForm()
+        form.refreshCoreDrainPreview()
+        await form.coreDrainTask?.value
+        let started = expectation(description: "Resume awaits authorization/execution")
+        InternalTransferRunner.shared.didStartResume = { started.fulfill() }
+        form.performCoreDrainAction()
+        await fulfillment(of: [started], timeout: 2)
+        return form
+    }
+    @MainActor private func completeResume() async {
+        let finished = expectation(description: "Resume completed")
+        InternalTransferRunner.shared.didFinishResume = { finished.fulfill() }
+        InternalTransferRunner.shared.resumeGate?.resume()
+        InternalTransferRunner.shared.resumeGate = nil
+        await fulfillment(of: [finished], timeout: 2)
+    }
+    @MainActor func testResumeCompletionSurvivesOverlappingPendingBalanceRefresh() async {
+        let form = await suspendedResume()
+        form.refreshCoreDrainPreview()
+        await form.coreDrainTask?.value
+        XCTAssertTrue(form.coreDrainPending)
+        await completeResume()
+        XCTAssertTrue(form.coreDrainCompleted)
+        XCTAssertFalse(form.coreDrainPending)
+        XCTAssertNil(form.maxNotice)
+        XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
+    }
+    @MainActor func testResumeCompletionInvalidatesStillSuspendedPendingPreview() async {
+        let form = await suspendedResume()
+        CoreShieldedDrainService.suspendNextStatus = true
+        let lookupStarted = expectation(description: "Pending lookup suspended")
+        CoreShieldedDrainService.didRemoveMarker = { lookupStarted.fulfill() }
+        form.refreshCoreDrainPreview()
+        let preview = form.coreDrainTask
+        await fulfillment(of: [lookupStarted], timeout: 2)
+        await completeResume()
+        CoreShieldedDrainService.statusGate?.resume()
+        CoreShieldedDrainService.statusGate = nil
+        await preview?.value
+        XCTAssertTrue(form.coreDrainCompleted)
+        XCTAssertFalse(form.coreDrainPending)
+        XCTAssertNil(form.maxNotice)
+    }
+    @MainActor func testResumeCompletionIsRejectedAfterReselectingSameOperation() async {
+        let form = await suspendedResume()
+        form.clearMaxSelection()
+        form.isCoreShieldedDrain = true
+        form.refreshCoreDrainPreview()
+        await form.coreDrainTask?.value
+        await completeResume()
+        XCTAssertFalse(form.coreDrainCompleted)
+        XCTAssertTrue(form.coreDrainPending)
+    }
+    @MainActor func testResumeCompletionIsRejectedAfterLeavingMax() async {
+        let form = await suspendedResume()
+        form.clearMaxSelection()
+        await completeResume()
+        XCTAssertFalse(form.coreDrainCompleted)
+        XCTAssertFalse(form.isCoreShieldedDrain)
+    }
+    @MainActor func testResumeCompletionIsRejectedWhenNetworkChangesBeforeNotification() async {
+        let form = await suspendedResume()
+        CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "devnet-b")
+        await completeResume()
+        XCTAssertFalse(form.coreDrainCompleted)
+    }
     @MainActor func testSuccessfulResumeShowsSuccessAfterRunnerClearsMarker() async throws {
         _ = reset()
         CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: 1)
@@ -202,3 +291,32 @@ final class RecoveryFormTests: XCTestCase {
     }
 }
 ''')
+
+    source = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift").read_text()
+    deletion = declaration("    static func deleteWalletFromSDK(")
+    (sources / "WalletDeletion.swift").write_text(r'''
+import Foundation
+import OSLog
+// Only unrelated app state and SDK deletion are substituted. Tests inject
+// deletion success/failure and use the real drain store on temporary files.
+enum SwiftDashSDKWalletDeletionError: Error { case managerUnavailable }
+@MainActor final class SwiftDashSDKHost {
+    static let shared = SwiftDashSDKHost()
+    var manager: Manager? { nil }
+    final class Manager {
+        func deleteWallet(walletId: Data) throws { fatalError("Tests must inject SDK deletion") }
+    }
+}
+final class UnrelatedPerWalletState {
+    static let shared = UnrelatedPerWalletState()
+    func clearPerWalletKeys(forWalletIdHex: String) {}
+    func clearForWallet(walletIdHex: String) {}
+}
+typealias CrowdNodeDefaults = UnrelatedPerWalletState
+typealias CoinJoinWithdrawalStore = UnrelatedPerWalletState
+typealias ShieldedWithdrawalStore = UnrelatedPerWalletState
+typealias AssetLockProbeStore = UnrelatedPerWalletState
+enum GeneratedWalletIdentityMarker { static func clear(walletId: Data) {} }
+@MainActor enum SwiftDashSDKWalletWiper {
+    static let logger = Logger(subsystem: "core-drain-tests", category: "deletion")
+''' + deletion + "\n}\n")

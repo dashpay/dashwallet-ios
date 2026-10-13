@@ -442,6 +442,8 @@ final class InternalTransferViewModel: ObservableObject {
     private var coreDrainContext: CoreShieldedDrainContext?
     private var coreDrainTask: Task<Void, Never>?
     private var coreDrainGeneration = UUID()
+    // Selection lifetime survives balance-only refreshes, unlike preview tasks.
+    private var coreDrainSelection = UUID()
 
     var coreDrainDashDisplay: String? {
         guard isCoreShieldedDrain else { return nil }
@@ -490,12 +492,16 @@ final class InternalTransferViewModel: ObservableObject {
         if coreDrainPending, coreDrainHasOutpoint, let context = coreDrainContext {
             isCoreDrainLoading = true
             // The shared runner owns execution even if this form goes away.
-            let generation = coreDrainGeneration
+            let selection = coreDrainSelection
             let operation = coreDrainOperation
             Task { [weak self] in
                 let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
                     context: context, operation: operation)
-                guard let self, generation == self.coreDrainGeneration else { return }
+                guard let self, self.isCoreShieldedDrain,
+                      selection == self.coreDrainSelection,
+                      self.coreDrainContext == context,
+                      self.coreDrainOperation == operation,
+                      (try? CoreShieldedDrainService.currentContext()) == context else { return }
                 if outcome?.state == .completed {
                     self.showCoreDrainCompletion()
                 } else {
@@ -504,6 +510,7 @@ final class InternalTransferViewModel: ObservableObject {
             }
         } else {
             if coreDrainCompleted {
+                coreDrainSelection = UUID()
                 coreDrainCompleted = false
                 coreDrainOperation = nil
             }
@@ -512,6 +519,9 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func showCoreDrainCompletion() {
+        // Terminal evidence supersedes any still-running balance preview.
+        coreDrainTask?.cancel()
+        coreDrainGeneration = UUID()
         coreDrainCompleted = true
         coreDrainPending = false
         coreDrainHasOutpoint = false
@@ -2398,6 +2408,7 @@ final class InternalTransferViewModel: ObservableObject {
         coreDrainTask?.cancel()
         coreDrainTask = nil
         coreDrainGeneration = UUID()
+        coreDrainSelection = UUID()
         isCoreShieldedDrain = false
         isCoreDrainLoading = false
         coreShieldedDrainConfirmation = nil
