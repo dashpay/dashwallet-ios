@@ -534,6 +534,9 @@ protocol AppConnectResponseStore {
     var canPersist: Bool { get }
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
+    /// This store fixed to one wallet, and to the network scope it has now,
+    /// like `DashConnectStore.pinned(toWalletIdHex:)`.
+    func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectResponseStore
 }
 
 extension AppConnectResponseStore {
@@ -545,7 +548,7 @@ extension AppConnectResponseStore {
 /// chain and the key ids are visible on the identity.
 final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     private let defaults: UserDefaults
-    private let scopeKeyProvider: () -> String?
+    private let scope: Scope
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
@@ -553,18 +556,28 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
         subsystem: "org.dashfoundation.dash",
         category: "dashconnect.app-connect-store")
 
-    init(
+    /// Where the scope comes from.
+    enum Scope {
+        /// Borrowed from a connection store, so both keep one wallet's data.
+        case connections(UserDefaultsDashConnectStore)
+        /// Handed in as it is; it names no wallet.
+        case key(() -> String?)
+    }
+
+    convenience init(
         defaults: UserDefaults = .standard,
         network: DashConnectNetwork,
         scopeKeyProvider: (() -> String?)? = nil
     ) {
+        self.init(
+            defaults: defaults,
+            scope: scopeKeyProvider.map(Scope.key)
+                ?? .connections(UserDefaultsDashConnectStore(defaults: defaults, network: network)))
+    }
+
+    init(defaults: UserDefaults, scope: Scope) {
         self.defaults = defaults
-        if let scopeKeyProvider {
-            self.scopeKeyProvider = scopeKeyProvider
-        } else {
-            let connections = UserDefaultsDashConnectStore(defaults: defaults, network: network)
-            self.scopeKeyProvider = { connections.storageKey }
-        }
+        self.scope = scope
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .millisecondsSince1970
@@ -576,7 +589,25 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     }
 
     private var storageKey: String? {
-        scopeKeyProvider().map { "\($0).app-connect-responses.v1" }
+        let scopeKey: String?
+        switch scope {
+        case .connections(let connections): scopeKey = connections.storageKey
+        case .key(let provider): scopeKey = provider()
+        }
+        return scopeKey.map { "\($0).app-connect-responses.v1" }
+    }
+
+    func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectResponseStore {
+        switch scope {
+        case .connections(let connections):
+            return UserDefaultsAppConnectResponseStore(
+                defaults: defaults, scope: .connections(connections.pinnedStore(toWalletIdHex: walletIdHex)))
+        case .key(let provider):
+            // A handed-in scope names no wallet to replace: it is fixed to
+            // the value it has now.
+            let scopeKey = provider()
+            return UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .key { scopeKey })
+        }
     }
 
     /// False as well while the stored value is not a list of rows: `save`

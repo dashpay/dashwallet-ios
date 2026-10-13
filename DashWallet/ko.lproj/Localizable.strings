@@ -6222,6 +6222,7 @@
 "Retry loading identity" = "Retry loading identity";
 "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
 "The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
 "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
 "The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";

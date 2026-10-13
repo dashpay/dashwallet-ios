@@ -23,6 +23,13 @@ import os
 protocol DashConnectStore {
     func load() -> [DAppConnection]
     func save(_ connections: [DAppConnection])
+    /// Names the wallet and network whose rows this store reads and writes
+    /// right now; `nil` when it has no scope.
+    var scopeKey: String? { get }
+    /// This store fixed to one wallet, and to the network scope it has now.
+    /// An operation that outlasts a wallet switch reads and writes through
+    /// it, so its rows stay with the wallet it ran for.
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore
 }
 
 final class UserDefaultsDashConnectStore: DashConnectStore {
@@ -74,6 +81,22 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             !walletScope.isEmpty else { return nil }
         guard let networkScope else { return nil }
         return "dashconnect.connections.v1.\(networkScope).\(walletScope)"
+    }
+
+    var scopeKey: String? { storageKey }
+
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore {
+        pinnedStore(toWalletIdHex: walletIdHex)
+    }
+
+    func pinnedStore(toWalletIdHex walletIdHex: String) -> UserDefaultsDashConnectStore {
+        let devnetName = devnetNameProvider()
+        return UserDefaultsDashConnectStore(
+            defaults: defaults,
+            network: network,
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName }
+        )
     }
 
     private var networkScope: String? {
