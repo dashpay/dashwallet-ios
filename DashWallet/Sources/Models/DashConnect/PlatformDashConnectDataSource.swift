@@ -1219,11 +1219,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return UInt32(bitPattern: existing.keyId)
         }
         // A grant already recorded for this request must name exactly these
-        // keys: its response carries them.
+        // keys: its response carries them. A key recorded for another app or
+        // request is that one's: a request repeating its ephemeral key derives
+        // the same payload, and must not take it over.
         let reused = Set(authKeyIds.compactMap { $0 })
-        if !reused.isEmpty, let recorded = stores.grants.load().first(where: isGrantForRequest),
-           Set(recorded.keyIds) != reused || authKeyIds.contains(nil) {
-            throw DashConnectPlatformError.sessionKeyUnusable
+        if !reused.isEmpty {
+            let grants = stores.grants.load().filter { $0.identityId == identityId }
+            if let recorded = grants.first(where: isGrantForRequest),
+               Set(recorded.keyIds) != reused || authKeyIds.contains(nil) {
+                throw DashConnectPlatformError.sessionKeyUnusable
+            }
+            if grants.contains(where: { !isGrantForRequest($0) && !reused.isDisjoint(with: $0.keyIds) }) {
+                throw DashConnectPlatformError.sessionKeyUnusable
+            }
         }
 
         // Wallet rule 7: re-send the identity's key for the app when this
