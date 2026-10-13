@@ -509,6 +509,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr {
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        if DashConnectUri.isAppConnectUri(trimmed) {
+            let uri: AppConnectUri
+            do {
+                uri = try DashConnectUri.parseAppConnectRequest(trimmed)
+            } catch let error as AppConnectRequestError {
+                throw AppConnect.Refusal(error)
+            }
+            try validateNetwork(uri.network)
+            return .login(DashKeyRequest(
+                appEphemeralPubKey: uri.request.appEphemeralPubKey,
+                contractId: uri.request.appId,
+                label: uri.request.label,
+                network: uri.network,
+                appConnect: uri))
+        }
+
         if DashConnectUri.isKeyUri(trimmed) {
             let request = try DashConnectUri.parseKeyRequest(trimmed)
             try validateNetwork(request.network)
@@ -562,6 +578,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             protocolVersion = nil
             unresolvedLoginReason = error.localizedDescription
         }
+        var login = protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved
+        if let appConnect = loginRequest.appConnect, let protocolVersion {
+            (login, unresolvedLoginReason) = await appConnectLogin(
+                appConnect, protocolVersion: protocolVersion, context: context)
+        }
 
         return ConnectionRequest(
             loginRequest: loginRequest,
@@ -570,7 +591,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletUsername: walletUsername,
             walletIdentityId: context.identityId.toBase58String(),
             existingConnection: existingConnection,
-            login: protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved,
+            login: login,
             unresolvedLoginReason: unresolvedLoginReason
         )
     }
@@ -592,6 +613,87 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    /// The login a v2 request gets: its grant plan once the request is fresh,
+    /// meant for this identity, and every contract and group it names belongs
+    /// to the app's owner; otherwise why it is refused. Unresolved, with the
+    /// reason, when the network could not be asked.
+    private func appConnectLogin(
+        _ uri: AppConnectUri,
+        protocolVersion: UInt32,
+        context: Context
+    ) async -> (AppConnect.Login, String?) {
+        guard AppConnect.isAvailable(protocolVersion: protocolVersion) else {
+            return (.refused(AppConnect.Refusal(.unsupported, NSLocalizedString(
+                "This network does not support this kind of sign-in yet.",
+                comment: "DashConnect App Connect v2"))), nil)
+        }
+        do {
+            let plan = try AppConnect.grantPlan(for: uri, now: now())
+            if let hint = plan.identityHint, hint != context.identityId {
+                return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
+                    "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
+                    comment: "DashConnect App Connect v2"))), nil)
+            }
+            if let refusal = try await appConnectOwnershipRefusal(plan, sdk: context.sdk) {
+                return (.refused(refusal), nil)
+            }
+            return (.appConnect(plan), nil)
+        } catch let refusal as AppConnect.Refusal {
+            return (.refused(refusal), nil)
+        } catch {
+            Self.logger.error("🔗 DASHCONNECT :: App Connect request not checked — \(error.localizedDescription, privacy: .public)")
+            return (.unresolved, error.localizedDescription)
+        }
+    }
+
+    /// Reads the owners wallet rule 3 compares from Platform. A group the
+    /// network proves absent counts as not the app's; any other failure to
+    /// read throws, so the sheet offers to try again.
+    private func appConnectOwnershipRefusal(_ plan: AppConnect.GrantPlan, sdk: SDK) async throws -> AppConnect.Refusal? {
+        func ownerId(of contract: [String: Any]) -> Data? {
+            (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
+        }
+        let app = try await sdk.dataContractGet(id: plan.appId.toBase58String())
+        guard let appOwnerId = ownerId(of: app) else {
+            return AppConnect.Refusal(.invalid, NSLocalizedString(
+                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2"))
+        }
+        var groupOwners: [Data: Data] = [:]
+        var contractOwners: [Data: Data] = [plan.appId: appOwnerId]
+        for grant in plan.auth {
+            let id = grant.binding.id
+            switch grant.binding.kind {
+            case .contractGroup:
+                guard groupOwners[id] == nil else { continue }
+                do {
+                    let info = try await sdk.getContractGroupInfo(contractGroupId: id.toBase58String())
+                    groupOwners[id] = (info["ownerId"] as? String).flatMap(Self.decodeIdentifier)
+                } catch SDKError.notFound {
+                    continue
+                }
+            case .singleContract, .documentType:
+                let name = grant.binding.documentTypeName ?? ""
+                guard contractOwners[id] == nil,
+                      !AppConnect.allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") else { continue }
+                contractOwners[id] = ownerId(of: try await sdk.dataContractGet(id: id.toBase58String()))
+            }
+        }
+        let config = app["config"] as? [String: Any] ?? [:]
+        var boundedKeyPurposes: Set<KeyPurpose> = []
+        if config["requiresIdentityEncryptionBoundedKey"].map({ !($0 is NSNull) }) == true {
+            boundedKeyPurposes.insert(.encryption)
+        }
+        if config["requiresIdentityDecryptionBoundedKey"].map({ !($0 is NSNull) }) == true {
+            boundedKeyPurposes.insert(.decryption)
+        }
+        return AppConnect.ownershipRefusal(
+            for: plan,
+            appOwnerId: appOwnerId,
+            groupOwners: groupOwners,
+            contractOwners: contractOwners,
+            appBoundedKeyPurposes: boundedKeyPurposes)
+    }
+
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         try await gated { try await approveLoginInTurn(request, consent: consent) }
     }
@@ -603,7 +705,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Self.logger.info("🔗 DASHCONNECT :: approveLogin started")
         try validateNetwork(request.network)
         await showActiveWalletRows()
-        guard consent.appContractId == request.contractId.toBase58String(), consent.login != .unresolved else {
+        guard consent.appContractId == request.contractId.toBase58String(), consent.login.isApprovable else {
             throw DashConnectPlatformError.approvalOutOfDate
         }
 
@@ -634,7 +736,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // for the identity that was on the sheet: it has to be the active
         // one here, and again after the PIN prompt.
         let login = AppConnect.login(protocolVersion: protocolVersion)
-        guard consent.login == login,
+        // A v2 request was approved with the plan the sheet showed. It has
+        // to be the plan for this request, and the network has to still take
+        // App Connect.
+        let approvedLogin: Bool
+        if let appConnect = request.appConnect {
+            guard let plan = consent.login.grantPlan else {
+                throw DashConnectPlatformError.approvalOutOfDate
+            }
+            let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
+            approvedLogin = AppConnect.isAvailable(protocolVersion: protocolVersion)
+                && plan.appEphemeralPubKeyHash == requestHash
+        } else {
+            approvedLogin = consent.login == login
+        }
+        guard approvedLogin,
               consent.walletIdentityId == context.identityId.toBase58String() else {
             Self.logger.error("🔗 DASHCONNECT :: the approved sign-in no longer matches the network or the identity")
             throw DashConnectPlatformError.approvalOutOfDate
@@ -652,6 +768,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             context = try await contextAfterAuthorization(matching: context)
         } catch DashConnectPlatformError.walletChanged {
             throw DashConnectPlatformError.approvalOutOfDate
+        }
+        if let appConnect = request.appConnect, let plan = consent.login.grantPlan {
+            Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
+            return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
         }
         if let terms = login.sessionKeyTerms {
             Self.logger.info("🔗 DASHCONNECT :: authorized; protocol \(protocolVersion, privacy: .public), one-QR login")
@@ -1004,6 +1124,270 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             grants[index].documentId = documentId.toBase58String()
             grants[index].values = publishedValues
         }
+    }
+
+    /// App Connect request v2 (Yappr `docs/APP_CONNECT_PROFILE.md`): one key
+    /// per auth binding, the identity's encryption key for the app, and the
+    /// previous grant on the same connection disabled, all in one
+    /// MASTER-signed identity update; then the grant and the connection row
+    /// are recorded and the sealed response is published, as for the one-QR
+    /// login.
+    ///
+    /// Approving the same request again finds its keys registered and
+    /// recorded, registers nothing and publishes the recorded response if it
+    /// is not on Platform yet.
+    private func approveAppConnectV2Login(
+        _ uri: AppConnectUri,
+        plan: AppConnect.GrantPlan,
+        consent: ConnectionRequest,
+        context: Context
+    ) async throws -> DAppConnection {
+        guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else {
+            throw DashConnectPlatformError.loginContractUnavailable
+        }
+        let stores = context.stores
+        guard stores.grants.canPersist else {
+            throw DashConnectPlatformError.grantStoreUnavailable
+        }
+        // The app stops looking for an answer ten minutes after it asked.
+        guard uri.request.age(now: now()) == .fresh else {
+            throw AppConnect.Refusal(.stale, NSLocalizedString(
+                "This sign-in request has expired. Ask the app for a new one.",
+                comment: "DashConnect App Connect v2"))
+        }
+        let request = uri.request
+        let identityId = context.identityId.toBase58String()
+        let appId = plan.appId.toBase58String()
+        let requestHash = plan.appEphemeralPubKeyHash.toHexString()
+        let connectionId = plan.connectionId?.toHexString()
+        func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
+            grant.identityId == identityId && grant.appContractId == appId
+                && grant.values.appEphemeralPubKeyHash == requestHash
+        }
+
+        // `deriveConnectKey` is main-actor isolated in the SDK. Only the two
+        // buffers leave the closure, so the arrays below own the private keys
+        // and the deferred wipe reaches the real bytes.
+        var authKeys: [(publicKeyHash160: Data, privateKey: Data)] = []
+        var encryptionKeys: [(publicKey: Data, privateKey: Data)] = []
+        defer {
+            for index in authKeys.indices { Self.zero(&authKeys[index].privateKey) }
+            for index in encryptionKeys.indices { Self.zero(&encryptionKeys[index].privateKey) }
+        }
+        for grant in plan.auth {
+            let leaf = AppConnect.authKeyLeaf(
+                appEphemeralPubKey: request.appEphemeralPubKey, bindingIndex: grant.bindingIndex)
+            let (publicKey, privateKey) = try await MainActor.run {
+                let key = try context.wallet.deriveConnectKey(
+                    subFeature: .sessionAuthentication,
+                    identityId: context.identityId,
+                    leaf: leaf,
+                    network: context.network
+                )
+                return (key.publicKeyData, key.privateKeyData)
+            }
+            authKeys.append((try KeyExchangeCrypto.hash160(publicKey), privateKey))
+        }
+        for grant in plan.encryption {
+            encryptionKeys.append(try await MainActor.run {
+                let key = try context.wallet.deriveConnectKey(
+                    subFeature: .appEncryption,
+                    identityId: context.identityId,
+                    leaf: grant.binding.contractId,
+                    purpose: grant.connectPurpose,
+                    network: context.network
+                )
+                return (key.publicKeyData, key.privateKeyData)
+            })
+        }
+
+        let signer = KeychainSigner(modelContainer: context.modelContainer)
+        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
+        let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+
+        // An auth key already on the identity is this request answered
+        // before: only this wallet derives it, for this request and binding.
+        // It is sent again while it can still sign within the plan's terms;
+        // Platform never re-adds a key, so otherwise the app has to ask again.
+        var authKeyIds: [UInt32?] = try zip(plan.auth, authKeys).map { grant, key in
+            guard let existing = currentPublicKeys.first(where: {
+                $0.keyType == .ecdsaHash160 && $0.data == key.publicKeyHash160
+            }) else { return nil }
+            guard AppConnect.canResendAuthKey(existing, for: grant, now: now()) else {
+                throw DashConnectPlatformError.sessionKeyUnusable
+            }
+            return UInt32(bitPattern: existing.keyId)
+        }
+        // A grant already recorded for this request must name exactly these
+        // keys: its response carries them.
+        let reused = Set(authKeyIds.compactMap { $0 })
+        if !reused.isEmpty, let recorded = stores.grants.load().first(where: isGrantForRequest),
+           Set(recorded.keyIds) != reused || authKeyIds.contains(nil) {
+            throw DashConnectPlatformError.sessionKeyUnusable
+        }
+
+        // Wallet rule 7: re-send the identity's key for the app when this
+        // wallet made it, register it when there is none, leave it out when
+        // another wallet made it.
+        var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
+        for (index, grant) in plan.encryption.enumerated() {
+            switch AppConnect.encryptionKeyState(
+                derivedPublicKey: encryptionKeys[index].publicKey,
+                purpose: grant.keyPurpose,
+                contractId: grant.binding.contractId,
+                currentIdentityPublicKeys: currentPublicKeys,
+                bindings: bindings
+            ) {
+            case .current(let keyId):
+                encryptionSlots.append((index, keyId))
+            case .absent:
+                encryptionSlots.append((index, nil))
+            case .notThisWallets:
+                Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's; slot left out")
+            }
+        }
+
+        // Wallet rule 8: this connection's previous grant goes in the same
+        // update. A key of it the fetched list lacks means the list is
+        // behind, and it could not be shown to be off.
+        func isSuperseded(_ grant: AppConnectGrant) -> Bool {
+            connectionId != nil && grant.identityId == identityId && grant.appContractId == appId
+                && grant.connectionId == connectionId && !isGrantForRequest(grant)
+        }
+        let superseded = stores.grants.load().filter(isSuperseded)
+        guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: superseded).isEmpty else {
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
+        let disable = Array(AppConnect.supersededKeyIds(
+            grants: superseded,
+            identityId: identityId,
+            appId: appId,
+            connectionId: connectionId,
+            keeping: reused,
+            currentIdentityPublicKeys: currentPublicKeys
+        ).prefix(AppConnect.maxKeysDisabledPerUpdate))
+        // The grants whose every key is off once the update lands.
+        let liveAfterUpdate = Set(currentPublicKeys.filter(AppConnect.isLiveGrantedKey)
+            .map { UInt32(bitPattern: $0.keyId) }).subtracting(disable)
+        let retiredGrantKeys = Set(superseded.filter { !$0.keyIds.contains(where: liveAfterUpdate.contains) }.map(\.key))
+
+        guard var nextKeyId = AppConnect.nextKeyId(currentIdentityPublicKeys: currentPublicKeys) else {
+            throw DashConnectPlatformError.noFreeKeyId
+        }
+        var add: [ManagedPlatformWallet.IdentityPubkey] = []
+        var signingKeys: [(publicKey: Data, privateKey: Data)] = []
+        for (index, grant) in plan.auth.enumerated() where authKeyIds[index] == nil {
+            add.append(AppConnect.authIdentityPubkey(
+                grant, keyId: nextKeyId, publicKeyHash160: authKeys[index].publicKeyHash160))
+            signingKeys.append((authKeys[index].publicKeyHash160, authKeys[index].privateKey))
+            authKeyIds[index] = nextKeyId
+            nextKeyId += 1
+        }
+        for slot in encryptionSlots.indices where encryptionSlots[slot].keyId == nil {
+            let keyIndex = encryptionSlots[slot].keyIndex
+            add.append(AppConnect.encryptionIdentityPubkey(
+                plan.encryption[keyIndex], keyId: nextKeyId, publicKey: encryptionKeys[keyIndex].publicKey))
+            signingKeys.append((encryptionKeys[keyIndex].publicKey, encryptionKeys[keyIndex].privateKey))
+            encryptionSlots[slot].keyId = nextKeyId
+            nextKeyId += 1
+        }
+        defer { for index in signingKeys.indices { Self.zero(&signingKeys[index].privateKey) } }
+
+        if !add.isEmpty || !disable.isEmpty {
+            Self.logger.info(
+                "🔗 DASHCONNECT :: registering \(add.count, privacy: .public) key(s), disabling \(disable.count, privacy: .public)")
+            do {
+                try await signer.withAdditionalSigningKeys(signingKeys) {
+                    try await context.wallet.updateIdentity(
+                        identityId: context.identityId,
+                        addPublicKeys: add,
+                        disablePublicKeyIds: disable,
+                        signer: signer
+                    )
+                }
+            } catch {
+                // An update can land without confirming, and the node asked
+                // next may not have it yet. If every new key shows up and
+                // every replaced key is off, it went through.
+                func landed(_ keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
+                    add.allSatisfy { new in keys.contains {
+                        UInt32(bitPattern: $0.keyId) == new.keyId && $0.data == new.pubkeyBytes && $0.disabledAt == nil
+                    } } && disable.allSatisfy { id in keys.contains {
+                        UInt32(bitPattern: $0.keyId) == id && $0.disabledAt != nil
+                    } }
+                }
+                var confirmed = false
+                for attempt in 0 ..< 3 where !confirmed {
+                    if attempt > 0 { try? await Task.sleep(nanoseconds: 3_000_000_000) }
+                    if let refreshed = try? await refreshedIdentityPublicKeys(context: context) {
+                        confirmed = landed(refreshed)
+                    }
+                }
+                guard confirmed else { throw error }
+                Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
+            }
+            Self.logger.info("🔗 DASHCONNECT :: identity updated")
+        }
+
+        // Slots: the auth keys in request order, then the encryption keys
+        // that are sent.
+        var slots = authKeys.map(\.privateKey) + encryptionSlots.map { encryptionKeys[$0.keyIndex].privateKey }
+        defer { for index in slots.indices { Self.zero(&slots[index]) } }
+        var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
+        defer { Self.zero(&walletEphemeralPrivateKey) }
+        let values = AppConnect.ResponseValues(
+            appEphemeralPubKeyHash: requestHash,
+            walletEphemeralPubKey: try Secp256k1.compressedPublicKey(privateKey: walletEphemeralPrivateKey).toHexString(),
+            encryptedPayload: try KeyExchangeCrypto.encryptAppConnectSlots(
+                slots,
+                walletEphemeralPriv: walletEphemeralPrivateKey,
+                appEphemeralPub: request.appEphemeralPubKey,
+                ownerId: context.identityId
+            ).toHexString()
+        )
+
+        // From here the keys are on the identity. Record them, and show the
+        // connection, before anything else can fail. The grants this one
+        // replaces are done: their keys are off. A grant already recorded
+        // for this request keeps its values: if an earlier publish landed
+        // without confirming, those are the ones on Platform.
+        let grantedKeyIds = authKeyIds.compactMap { $0 }
+        let primary = plan.auth[0]
+        let grant = updateGrants(in: stores) { grants -> AppConnectGrant in
+            AppConnect.markKeysDisabled(in: &grants) { retiredGrantKeys.contains($0.key) }
+            if let existing = grants.first(where: { isGrantForRequest($0) && $0.sessionKeyId == grantedKeyIds[0] }) {
+                return existing
+            }
+            let new = AppConnectGrant(
+                identityId: identityId,
+                appContractId: appId,
+                documentId: nil,
+                values: values,
+                sessionKeyId: grantedKeyIds[0],
+                totalBudget: primary.totalBudget,
+                expiresAt: primary.expiresAt,
+                publishedAt: now(),
+                additionalKeyIds: Array(grantedKeyIds.dropFirst()),
+                connectionId: connectionId
+            )
+            grants.append(new)
+            return new
+        }
+
+        let connection = Self.makeConnection(
+            preview: consent, status: .active, updatedAt: now(), loginKind: .oneQR)
+        await updateRows(in: stores) { rows in
+            rows.filter { $0.id != connection.id } + [connection]
+        }
+
+        try await publishAppConnectResponse(
+            grant: grant,
+            appEphemeralPubKeyHash: plan.appEphemeralPubKeyHash,
+            responseContractId: responseContractId,
+            context: context,
+            signer: signer
+        )
+        return connection
     }
 
     /// This identity's response to one request, with the values it has on
