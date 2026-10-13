@@ -1,0 +1,410 @@
+import CryptoKit
+import Foundation
+import SwiftDashSDK
+
+/// The App Connect request v2 login (Yappr `docs/APP_CONNECT_PROFILE.md`):
+/// the rules a wallet applies between decoding a request
+/// (`AppConnectRequest`) and registering the keys it names. Pure, like the
+/// rest of `AppConnect`; `PlatformDashConnectDataSource` owns the Platform
+/// calls and their order.
+extension AppConnect {
+    // MARK: Limits (profile wallet rule 5)
+
+    /// The most budget the wallet grants any key, whatever the app proposes.
+    static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
+    /// The longest a key the wallet grants may live.
+    static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
+    /// The lifetime a key gets when its binding asks for no expiry, so every
+    /// auth key carries a limit.
+    static let v2DefaultLifetime: TimeInterval = 90 * 24 * 60 * 60
+
+    /// The DashPay contract, the same id on every network.
+    static let dashPayContractId = "Bwr4WHCPz5rFVAD87RqTs3izo4zpzwsEdKPWUT1NS1C7"
+    /// Profile wallet rule 3: the only document types on a contract the app
+    /// does not own that a binding may name. Never DashPay `contactRequest`,
+    /// never DPNS.
+    static let allowedForeignDocumentTypes: Set<String> = ["\(dashPayContractId)/profile"]
+    /// Platform's system contracts (dashpay/platform `data-contracts`), the
+    /// same ids on every network. None of them is an app: a request naming
+    /// one as its app, or binding a key to one, is refused, except for the
+    /// document types allowlisted above.
+    static let systemContractIds: Set<String> = [
+        "4fJLR2GYTPFdomuTVvNy3VRrvWgvkKPzqehEBpNf2nk6", // withdrawals
+        "rUnsWrFu3PKyRMGk2mxmZVBPbQuZx2qtHeFjURoQevX", // masternode reward shares
+        "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec", // DPNS
+        dashPayContractId,
+        "7CSFGeF4WNzgDmx94zwvHkYaG3Dx4XEe5LFsFgJswLbm", // wallet utils
+        "43gujrzZgXqcKBiScLa4T8XTDnRhenR9BLx8GWVHjPxF", // token history
+        "BsjE6tQxG47wffZCRQCovFx5rYrAYYC3rTVRWKro27LA", // keyword search
+        "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD", // document history
+        contractId, // App Connect
+        "EG7RGfV8fDTayC2FyVr8HwdpJh3fXDbVztcfE94UmN88", // moderation charters
+    ]
+
+    // MARK: What an approval grants
+
+    /// One auth key the approval registers, with the limits the wallet
+    /// settled on: the app's proposal, clamped.
+    struct AuthGrant: Equatable {
+        /// The binding's position in the request. It is part of the key's
+        /// derivation, so the key does not depend on what else is granted.
+        let bindingIndex: Int
+        let binding: AppConnectRequest.AuthBinding
+        /// Set exactly when the binding asked for a budget.
+        let totalBudget: UInt64?
+        /// Block time in milliseconds. Always set.
+        let expiresAt: UInt64
+
+        var securityLevel: SecurityLevel {
+            binding.securityLevel == .critical ? .critical : .high
+        }
+
+        var contractBounds: ManagedPlatformWallet.ContractBounds {
+            switch binding.kind {
+            case .singleContract:
+                return .singleContract(id: binding.id)
+            case .documentType:
+                return .singleContractDocumentType(id: binding.id, documentTypeName: binding.documentTypeName ?? "")
+            case .contractGroup:
+                return .contractGroup(id: binding.id)
+            }
+        }
+    }
+
+    /// One encryption (or decryption) key the response carries: the
+    /// identity's key for the app, shared by every device.
+    struct EncryptionGrant: Equatable {
+        let bindingIndex: Int
+        let binding: AppConnectRequest.EncryptionBinding
+
+        var keyPurpose: KeyPurpose {
+            binding.purpose == .encryption ? .encryption : .decryption
+        }
+
+        var connectPurpose: ManagedPlatformWallet.ConnectKeyPurpose {
+            binding.purpose == .encryption ? .encryption : .decryption
+        }
+    }
+
+    /// What approving a v2 request gives the app, as the approval sheet
+    /// shows it. The keys are registered with exactly these terms.
+    struct GrantPlan: Equatable {
+        let appId: Data
+        /// `hash160(appEphPub)`: names the request the plan was made for.
+        let appEphemeralPubKeyHash: Data
+        let auth: [AuthGrant]
+        let encryption: [EncryptionGrant]
+        let connectionId: Data?
+        let identityHint: Data?
+        /// Milliseconds since the epoch.
+        let createdAt: UInt64
+        /// Where the wallet returns when it is done; shown on the sheet.
+        let callbackHost: String?
+
+        /// The largest budget among the keys, for the summary line.
+        var totalBudget: UInt64? {
+            auth.compactMap(\.totalBudget).max()
+        }
+
+        /// The latest expiry among the keys.
+        var expiresAt: UInt64? {
+            auth.map(\.expiresAt).max()
+        }
+    }
+
+    /// The `ac=` statuses of the profile's callback.
+    enum CallbackStatus: String {
+        case ok
+        case declined
+        case stale
+        case unsupported
+        case invalid
+        case failed
+    }
+
+    /// A v2 request the wallet does not answer, with the status its callback
+    /// reports.
+    struct Refusal: LocalizedError, Equatable {
+        let status: CallbackStatus
+        let reason: String
+
+        var errorDescription: String? { reason }
+
+        init(_ status: CallbackStatus, _ reason: String) {
+            self.status = status
+            self.reason = reason
+        }
+
+        init(_ error: AppConnectRequestError) {
+            switch error {
+            case .unsupported(let reason): self.init(.unsupported, reason)
+            case .invalid(let reason): self.init(.invalid, reason)
+            }
+        }
+    }
+
+    /// The plan for `uri` at `now`: every binding granted, the proposals
+    /// clamped to the caps. A wallet may lower a proposal but must never drop
+    /// a limit the app asked for, and every key gets an expiry.
+    ///
+    /// A renewal (`MODE = 1`) is answered as a new login carrying the same
+    /// connection id, which supersedes the old keys (the profile's phase-1
+    /// renewal); raising the limits of existing keys is not implemented.
+    static func grantPlan(for uri: AppConnectUri, now: Date) throws -> GrantPlan {
+        let request = uri.request
+        switch request.age(now: now) {
+        case .fresh: break
+        case .stale: throw Refusal(.stale, NSLocalizedString(
+                "The sign-in request is more than 10 minutes old.",
+                comment: "DashConnect App Connect v2"))
+        case .future: throw Refusal(.stale, NSLocalizedString(
+                "The sign-in request is dated in the future. Check this device's clock.",
+                comment: "DashConnect App Connect v2"))
+        }
+        let nowMilliseconds = milliseconds(now)
+        let auth = try request.authBindings.enumerated().map { index, binding -> AuthGrant in
+            if let expiresAt = binding.expiresAt, expiresAt <= nowMilliseconds {
+                throw Refusal(.invalid, NSLocalizedString(
+                "The app asks for a key that has already expired.",
+                comment: "DashConnect App Connect v2"))
+            }
+            return AuthGrant(
+                bindingIndex: index,
+                binding: binding,
+                totalBudget: binding.totalBudget.map { min($0, v2BudgetCapCredits) },
+                expiresAt: binding.expiresAt.map { min($0, milliseconds(now.addingTimeInterval(v2LifetimeCap))) }
+                    ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime))
+            )
+        }
+        let encryption = try request.encryptionBindings.enumerated().map { index, binding -> EncryptionGrant in
+            // Wallet rule 3: the identity's encryption key for the app lives
+            // on the app's own contract.
+            guard binding.contractId == request.appId else {
+                throw Refusal(.invalid, NSLocalizedString(
+                "The app asks for an encryption key on a contract other than its own.",
+                comment: "DashConnect App Connect v2"))
+            }
+            return EncryptionGrant(bindingIndex: index, binding: binding)
+        }
+        return GrantPlan(
+            appId: request.appId,
+            appEphemeralPubKeyHash: try KeyExchangeCrypto.hash160(request.appEphemeralPubKey),
+            auth: auth,
+            encryption: encryption,
+            connectionId: request.connectionId,
+            identityHint: request.identityHint,
+            createdAt: request.createdAt,
+            callbackHost: uri.callback?.host
+        )
+    }
+
+    /// Wallet rule 3, owner consistency, from what the network says:
+    /// - a contract group must be owned by the owner of `appId`;
+    /// - a contract, or a document type's contract, must be owned by that
+    ///   owner, unless the document type is on the allowlist;
+    /// - `appId` must opt in to bounded keys of each encryption purpose asked.
+    ///
+    /// `groupOwners` and `contractOwners` map ids to owner ids; an id missing
+    /// from them does not exist. Returns why the request is refused, or nil.
+    static func ownershipRefusal(
+        for plan: GrantPlan,
+        appOwnerId: Data,
+        groupOwners: [Data: Data],
+        contractOwners: [Data: Data],
+        appBoundedKeyPurposes: Set<KeyPurpose>
+    ) -> Refusal? {
+        if systemContractIds.contains(plan.appId.toBase58String()) {
+            return Refusal(.invalid, NSLocalizedString(
+                "The request names a Dash Platform system contract as the app.",
+                comment: "DashConnect App Connect v2"))
+        }
+        for grant in plan.auth {
+            let binding = grant.binding
+            switch binding.kind {
+            case .contractGroup:
+                guard groupOwners[binding.id] == appOwnerId else {
+                    return Refusal(.invalid, NSLocalizedString(
+                "The app asks for a key on a contract group it does not own.",
+                comment: "DashConnect App Connect v2"))
+                }
+            case .singleContract, .documentType:
+                if binding.kind == .documentType,
+                   allowedForeignDocumentTypes.contains("\(binding.id.toBase58String())/\(binding.documentTypeName ?? "")") {
+                    continue
+                }
+                guard !systemContractIds.contains(binding.id.toBase58String()),
+                      contractOwners[binding.id] == appOwnerId else {
+                    return Refusal(.invalid, NSLocalizedString(
+                "The app asks for a key on a contract it does not own.",
+                comment: "DashConnect App Connect v2"))
+                }
+            }
+        }
+        for grant in plan.encryption where !appBoundedKeyPurposes.contains(grant.keyPurpose) {
+            return Refusal(.invalid, NSLocalizedString(
+                "The app's contract does not take encryption keys bound to it.",
+                comment: "DashConnect App Connect v2"))
+        }
+        return nil
+    }
+
+    // MARK: Keys
+
+    /// The DIP-13 leaf of binding `bindingIndex`'s auth key:
+    /// `hash256(appEphPub ‖ u8(bindingIndex))`, under the session
+    /// authentication sub-feature (`…/6'/0'/identityId'/leaf'`).
+    ///
+    /// The profile only needs each granted key to be distinct and stable for
+    /// one request: the app finds the keys on chain and never derives them.
+    /// Folding the index into the leaf gives that with the SDK's
+    /// `deriveConnectKey` as it is. Folding it in for binding 0 as well keeps
+    /// a v2 key apart from the v1 session key of the same ephemeral key.
+    static func authKeyLeaf(appEphemeralPubKey: Data, bindingIndex: Int) -> Data {
+        var input = appEphemeralPubKey
+        input.append(UInt8(truncatingIfNeeded: bindingIndex))
+        return Data(SHA256.hash(data: Data(SHA256.hash(data: input))))
+    }
+
+    /// An auth key as it is registered: ECDSA_HASH160, as the v1 session key.
+    static func authIdentityPubkey(
+        _ grant: AuthGrant,
+        keyId: UInt32,
+        publicKeyHash160: Data
+    ) -> ManagedPlatformWallet.IdentityPubkey {
+        ManagedPlatformWallet.IdentityPubkey(
+            keyId: keyId,
+            keyType: .ecdsaHash160,
+            purpose: .authentication,
+            securityLevel: grant.securityLevel,
+            pubkeyBytes: publicKeyHash160,
+            contractBounds: grant.contractBounds,
+            totalBudget: grant.totalBudget,
+            expiresAt: grant.expiresAt
+        )
+    }
+
+    /// An encryption key as it is registered: ECDSA_SECP256K1 (peers need the
+    /// point), MEDIUM, bound to the app's contract, with no limits.
+    static func encryptionIdentityPubkey(
+        _ grant: EncryptionGrant,
+        keyId: UInt32,
+        publicKey: Data
+    ) -> ManagedPlatformWallet.IdentityPubkey {
+        ManagedPlatformWallet.IdentityPubkey(
+            keyId: keyId,
+            keyType: .ecdsaSecp256k1,
+            purpose: grant.keyPurpose,
+            securityLevel: .medium,
+            pubkeyBytes: publicKey,
+            contractBounds: .singleContract(id: grant.binding.contractId),
+            totalBudget: nil,
+            expiresAt: nil
+        )
+    }
+
+    /// What the identity holds for the app's encryption key of one purpose
+    /// (wallet rule 7).
+    enum EncryptionKeyState: Equatable {
+        /// Its current key is the one this wallet derives: send it again.
+        case current(keyId: UInt32)
+        /// It has none: register the one this wallet derives.
+        case absent
+        /// Its current key is another wallet's, or the one this wallet
+        /// derives was disabled: leave the slot out. Replacing it would be a
+        /// rotation, which orphans what peers encrypted to it; that is an
+        /// explicit user action, never part of a login.
+        case notThisWallets
+    }
+
+    /// Rotation 0 only: the key at DIP-13 `7'` for (identity, contract,
+    /// purpose). The current key is the newest live one, as
+    /// `identities.contractKeys` resolves it for the app's
+    /// `MultipleReferenceToLatest` requirement; this wallet's key is sent
+    /// only while it is that one. A live key of the purpose whose bound the
+    /// wallet's store cannot place counts as the app's, so a key of unknown
+    /// origin is never shadowed by a second one.
+    static func encryptionKeyState(
+        derivedPublicKey: Data,
+        purpose: KeyPurpose,
+        contractId: Data,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> EncryptionKeyState {
+        let live = currentIdentityPublicKeys.filter { key in
+            guard key.purpose == purpose, key.disabledAt == nil else { return false }
+            let keyId = UInt32(bitPattern: key.keyId)
+            guard let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
+                  !stored.hasUnreadableBound else { return true }
+            return stored.singleContractId == contractId
+        }
+        if let latest = live.max(by: { UInt32(bitPattern: $0.keyId) < UInt32(bitPattern: $1.keyId) }),
+           latest.keyType == .ecdsaSecp256k1, latest.data == derivedPublicKey {
+            return .current(keyId: UInt32(bitPattern: latest.keyId))
+        }
+        if !live.isEmpty || currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey }) {
+            return .notThisWallets
+        }
+        return .absent
+    }
+
+    /// Wallet rule 8: the live auth keys of this wallet's earlier grants to
+    /// the app on the same connection, which the new grant replaces in the
+    /// same identity update. None without a connection id. `keeping` holds
+    /// the keys the new grant sends again (a retry of the same request).
+    static func supersededKeyIds(
+        grants: [AppConnectGrant],
+        identityId: String,
+        appId: String,
+        connectionId: String?,
+        keeping: Set<UInt32>,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [UInt32] {
+        guard let connectionId else { return [] }
+        let previous = Set(grants
+            .filter { $0.identityId == identityId && $0.appContractId == appId && $0.connectionId == connectionId }
+            .flatMap(\.keyIds))
+            .subtracting(keeping)
+        return currentIdentityPublicKeys
+            .filter {
+                previous.contains(UInt32(bitPattern: $0.keyId)) && isLiveGrantedKey($0)
+            }
+            .map { UInt32(bitPattern: $0.keyId) }
+            .sorted()
+    }
+
+    /// A live auth key a login could have granted: HASH160 and never MASTER,
+    /// so a damaged record cannot get the identity's own keys disabled.
+    static func isLiveGrantedKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
+        key.purpose == .authentication && key.keyType == .ecdsaHash160
+            && key.securityLevel != .master && key.disabledAt == nil
+    }
+
+    /// Whether a key already on the identity at this binding's derived
+    /// payload can be sent again for it: an earlier answer to the same
+    /// request (a retry, or an update that landed without confirming). Only
+    /// this wallet derives that payload, for this request and binding. It
+    /// still has to be live and carry the level the plan grants, and limits
+    /// no wider than the plan's (`clockTolerance` covers a clock moved back
+    /// between two tries).
+    static func canResendAuthKey(
+        _ key: ManagedIdentity.IdentityPublicKeyInfo,
+        for grant: AuthGrant,
+        now: Date
+    ) -> Bool {
+        guard isLiveGrantedKey(key), key.securityLevel == grant.securityLevel,
+              key.totalBudget == grant.totalBudget,
+              let expiresAt = key.expiresAt, expiresAt > Int64(milliseconds(now)) else { return false }
+        return UInt64(expiresAt) <= grant.expiresAt + UInt64(clockTolerance * 1000)
+    }
+
+    /// `callback` with `ac=<status>` appended, keeping its query.
+    static func callbackURL(_ callback: URL, status: CallbackStatus) -> URL? {
+        guard var components = URLComponents(url: callback, resolvingAgainstBaseURL: false) else { return nil }
+        components.queryItems = (components.queryItems ?? []) + [URLQueryItem(name: "ac", value: status.rawValue)]
+        return components.url
+    }
+
+    static func milliseconds(_ date: Date) -> UInt64 {
+        UInt64(max(0, (date.timeIntervalSince1970 * 1000).rounded()))
+    }
+}
