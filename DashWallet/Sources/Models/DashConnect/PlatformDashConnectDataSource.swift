@@ -1331,8 +1331,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // The row stands for the app, and the app still holds a key on
             // another identity of this wallet. That key can only be disabled
             // while its identity is the active one, so the row stays to get
-            // there; this identity's keys are off.
-            if liveElsewhere { return }
+            // there, and the user is told; this identity's keys are off.
+            if liveElsewhere { throw DashConnectPlatformError.grantOnAnotherIdentity }
         }
         if isOneQR {
             // The session keys are disabled, and so are the keys of an
@@ -1474,7 +1474,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // For a one-QR row, the keys on another identity that no grant
         // record shows. `nil` when that could not be told.
-        let heldOnAnotherIdentity: Bool? = checksUnrecordedKeys
+        let heldOnAnotherIdentity: Bool? = checksUnrecordedKeys && !hasLiveGrantElsewhere()
             ? await anotherIdentityHoldsAppKeys(appContractId: appContract, context: context)
             : false
         if granted.isEmpty, keyIds.isEmpty, hasLiveGrantElsewhere() || heldOnAnotherIdentity == true {
@@ -1517,21 +1517,41 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Whether the wallet's store shows another identity of this wallet with
     /// a live key of the app that no grant record names: a session key bound
     /// to the app's contract, or a key the two-QR login derives for it.
-    /// `nil` when the store could not be read or the keys not derived.
-    ///
-    /// The store is as fresh as each identity's last load, and an identity
-    /// it does not hold is not seen.
+    /// `nil` when no identity shows one and at least one could not be told:
+    /// its keys are not in the store, a live session-shaped key there has a
+    /// bound this build cannot read, or its two-QR keys could not be derived.
+    /// TODO(app-connect-other-identity-keys): the store is as fresh as each
+    /// identity's last load from Platform, and an identity it does not hold
+    /// is not seen, so the row can go while such a key is live.
     private func anotherIdentityHoldsAppKeys(appContractId: Data, context: Context) async -> Bool? {
+        let others: [(identityId: Data, identityIndex: UInt32)]
         do {
-            let others = try Self.storedWalletIdentities(
+            others = try Self.storedWalletIdentities(
                 walletId: context.wallet.walletId,
                 network: context.network,
                 modelContainer: context.modelContainer
             ).filter { $0.identityId != context.identityId }
-            for other in others {
+        } catch {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: other identities not read — \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
+        // One identity that cannot be told does not hide a key found on
+        // another.
+        var hasUnknown = false
+        for other in others {
+            do {
                 let bindings = try Self.storedKeyBindings(
                     identityId: other.identityId.toBase58String(), modelContainer: context.modelContainer)
                 if AppConnect.holdsLiveSessionKey(appContractId: appContractId, bindings: bindings) { return true }
+                // An identity always has keys, so none stored means not
+                // loaded; and a session-shaped key with an unreadable bound
+                // may be the app's.
+                if bindings.isEmpty || bindings.contains(where: {
+                    !$0.isDisabled && $0.isSessionKeyShaped && $0.hasUnreadableBound
+                }) {
+                    hasUnknown = true
+                }
                 // Derive only for an identity that has a live key of either
                 // two-QR kind at all.
                 guard bindings.contains(where: {
@@ -1549,13 +1569,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 ) {
                     return true
                 }
+            } catch {
+                Self.logger.error(
+                    "🔗 DASHCONNECT :: keys of another identity not checked — \(error.localizedDescription, privacy: .public)")
+                hasUnknown = true
             }
-            return false
-        } catch {
-            Self.logger.error(
-                "🔗 DASHCONNECT :: keys on other identities not checked — \(error.localizedDescription, privacy: .public)")
-            return nil
         }
+        return hasUnknown ? nil : false
     }
 
     /// The identities the SDK's store attaches to this wallet on `network`.
