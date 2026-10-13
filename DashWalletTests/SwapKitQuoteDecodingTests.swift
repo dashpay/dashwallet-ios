@@ -1023,16 +1023,50 @@ final class BuySwapOrderTests: XCTestCase {
 
     // MARK: Payout assignment
 
-    /// A received transaction of 2.51 DASH to the orders' address, `secondsAgo` before `now`.
+    /// A received transaction of 2.51 DASH, or of `duffs`, to the orders' address, `secondsAgo` before `now`.
     /// `storedSecondsAgo`: when the wallet's store first held it; not known when nil.
-    private func payout(_ hash: String, secondsAgo: Int64, storedSecondsAgo: Int64? = nil) -> PayoutFixture {
+    private func payout(
+        _ hash: String, secondsAgo: Int64, storedSecondsAgo: Int64? = nil, duffs: UInt64 = 251_000_000
+    ) -> PayoutFixture {
         PayoutFixture(
             txHashHexString: hash,
             date: now.addingTimeInterval(-TimeInterval(secondsAgo)),
             firstStored: storedSecondsAgo.map { now.addingTimeInterval(-TimeInterval($0)) },
             direction: .received,
             outputReceiveAddresses: ["XdestinationAddress"],
-            dashAmount: 251_000_000)
+            dashAmount: duffs)
+    }
+
+    func testOfTwoReceivesMinedTogetherTheOneNearerTheExpectedAmountIsThePayout() {
+        // The order expects 2.51 DASH. Its payout and another receive to the same
+        // address, 2.40 DASH and so within the tolerance too, are mined in one block
+        // before the wallet stores either: they arrive at the same time.
+        let order = buyOrder(status: .pending, depositSeenSecondsAgo: 1_800)
+        let other = payout("aa", secondsAgo: 600, duffs: 240_000_000)
+        let exact = payout("bb", secondsAgo: 600)
+        XCTAssertEqual(assignments([order], [other]), ["0xdeposit": "aa"])
+        // The hash does not decide it, whichever sorts first.
+        XCTAssertEqual(assignments([order], [other, exact]), ["0xdeposit": "bb"])
+        let first = payout("00", secondsAgo: 600)
+        XCTAssertEqual(assignments([order], [first, other]), ["0xdeposit": "00"])
+        // An earlier arrival still comes before a nearer amount.
+        let earlier = payout("cc", secondsAgo: 900, duffs: 240_000_000)
+        XCTAssertEqual(assignments([order], [exact, earlier]), ["0xdeposit": "cc"])
+        // Two as far from the amount as each other: the lower hash, as before.
+        let under = payout("ee", secondsAgo: 600, duffs: 250_000_000)
+        let over = payout("dd", secondsAgo: 600, duffs: 252_000_000)
+        XCTAssertEqual(assignments([order], [under, over]), ["0xdeposit": "dd"])
+
+        // The same when the time of arrival is the store's, and in the list of the
+        // transactions an ended order is seen to fit.
+        let letGo = buyOrder(status: .expired, finalisedSecondsAgo: 5 * 3_600, createdSecondsAgo: 6 * 86_400)
+        let stored = [
+            payout("aa", secondsAgo: 3_600, storedSecondsAgo: 6 * 3_600, duffs: 240_000_000),
+            payout("bb", secondsAgo: 3_600, storedSecondsAgo: 6 * 3_600),
+        ]
+        let resolution = SwapBuyTransactionMatcher.payoutResolution(among: [letGo], in: stored)
+        XCTAssertEqual(resolution.assigned.mapValues(\.txHashHexString), ["0xdeposit": "bb"])
+        XCTAssertEqual(resolution.datedInTime, ["0xdeposit": ["bb", "aa"]])
     }
 
     private func assignments(_ orders: [SwapOrder], _ transactions: [PayoutFixture]) -> [String: String] {

@@ -49,7 +49,7 @@ struct PayoutResolution<T> {
     var unassigned: [T] = []
     /// Order id → ids of the transactions the order fits that arrived within its bound
     /// as the wallet tells it right now (`SwapBuyTransactionMatcher.arrival`), earliest
-    /// first, for the orders that have one and do not name their
+    /// first and of those that arrived together the nearest in amount first, for the orders that have one and do not name their
     /// payout. Not the transactions another order has by name. The tracker keeps them
     /// with the order (`SwapOrder.payoutCandidates`).
     var datedInTime: [String: [String]] = [:]
@@ -218,7 +218,7 @@ enum SwapBuyTransactionMatcher {
     ///    recorded, and the expired ones nobody paid — these only take what
     ///    the others left, so an old attempt cannot stand between a live order and its payout.
     ///    Within each of tiers 2–4: an order that is alone on its transactions takes the
-    ///    earliest. Orders that share any transaction get none of them, however many there
+    ///    earliest — of those that arrived together, the nearest in amount. Orders that share any transaction get none of them, however many there
     ///    are: nothing ties the sequence of payouts to the sequence the orders were made
     ///    in — a later order can be paid first — and a wrong guess would finalise the other
     ///    attempt as paid, or show one order's payout under another. That holds for
@@ -280,13 +280,19 @@ enum SwapBuyTransactionMatcher {
             isDatedInTime(tx, for: order)
                 || remembered[order.id]?.contains(tx.txHashHexString.lowercased()) == true
         }
-        /// Ids of `pool`, the one that reached the wallet first for `order` first.
+        /// Ids of `pool` — transactions `order` fits, so both amounts are known — the one
+        /// that reached the wallet first for `order` first; of those with one time of
+        /// arrival, the one nearest the amount the order expects, then the lowest hash.
         func earliestFirst(_ pool: [T], for order: SwapOrder) -> [String] {
-            pool.map { (arrival: arrival(of: $0, for: order), id: $0.txHashHexString) }
-                .sorted { ($0.arrival, $0.id) < ($1.arrival, $1.id) }
-                .map { $0.id.lowercased() }
+            guard let expected = expectedDashAmount(for: order) else { return [] }
+            return pool.compactMap { tx -> (arrival: Date, off: Decimal, id: String)? in
+                guard let received = receivedDashAmount(for: tx) else { return nil }
+                return (arrival(of: tx, for: order), amountDistance(received, from: expected), tx.txHashHexString)
+            }
+            .sorted { ($0.arrival, $0.off, $0.id) < ($1.arrival, $1.off, $1.id) }
+            .map { $0.id.lowercased() }
         }
-        /// Ids of the free transactions `order` fits, earliest first.
+        /// Ids of the free transactions `order` fits, in `earliestFirst` order.
         func fitting(_ order: SwapOrder) -> [String] {
             earliestFirst(
                 matchingTransactions(for: order, in: Array(free.values)).filter { isInTime($0, for: order) },
@@ -419,9 +425,11 @@ enum SwapBuyTransactionMatcher {
         expectedDashAmount: Decimal,
         receivedDashAmount: Decimal
     ) -> Bool {
-        let delta = receivedDashAmount - expectedDashAmount
-        let absoluteDelta = delta < 0 ? -delta : delta
         let tolerance = expectedDashAmount * maximumRelativeAmountDifference
-        return absoluteDelta <= tolerance
+        return amountDistance(receivedDashAmount, from: expectedDashAmount) <= tolerance
+    }
+
+    private static func amountDistance(_ received: Decimal, from expected: Decimal) -> Decimal {
+        abs(received - expected)
     }
 }
