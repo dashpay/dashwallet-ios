@@ -304,7 +304,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", directory: directory)
         var pendingDuringStart: [Data]?
 
-        try SPVChainStoreRebuild.finish(
+        SPVChainStoreRebuild.finish(
             walletIds: [walletId(0xA1)], scope: "testnet", directory: directory,
             afterStarting: {
                 pendingDuringStart = SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: self.directory)
@@ -320,7 +320,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         var started = false
 
-        try SPVChainStoreRebuild.finish(
+        SPVChainStoreRebuild.finish(
             walletIds: [], scope: "testnet", directory: directory, afterStarting: { started = true })
 
         XCTAssertTrue(started)
