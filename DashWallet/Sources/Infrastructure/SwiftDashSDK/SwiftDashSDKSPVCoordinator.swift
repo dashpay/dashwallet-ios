@@ -244,13 +244,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private var switchPreparation = NetworkSwitchPreparationGate()
 
-    /// The persistence scopes whose `stopSpv()` failed in this process. A
-    /// client that did not stop cleanly can keep its storage worker writing
-    /// into its network's chain store, so `clearChainStoreBeforeStart` leaves
-    /// that scope's store delete to a later launch. Never cleared: the worker
-    /// lives as long as the process does.
+    /// The persistence scopes whose `stopSpv()` failed in this process:
+    /// `clearChainStoreBeforeStart` leaves such a scope's store delete to a
+    /// later launch (see `SPVChainStoreRebuild.StoreClearGate`).
     @MainActor
-    private var spvStopFailedScopes: Set<String> = []
+    private var storeClearGate = SPVChainStoreRebuild.StoreClearGate()
 
     /// The persistence scope the running client was started on. Kept apart
     /// from `runningNetwork`, whose devnet scope follows the configured devnet
@@ -784,7 +782,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 // raises before the native stop: the two are not told apart.
                 if stopAttempted,
                    let stopping = runningScope ?? SwiftDashSDKHost.shared.runningNetwork?.persistenceScope {
-                    spvStopFailedScopes.insert(stopping)
+                    storeClearGate.recordFailedStop(scope: stopping)
                 }
                 throw StartError.stopSpv(error)
             }
@@ -1010,11 +1008,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// Clear `scope`'s chain store at `dataDir` ahead of `startSpv`, for the
     /// birth-height resync and the import rebuild alike. Returns false, with
     /// the store untouched, when this scope's SPV stop failed earlier in this
-    /// process (see `spvStopFailedScopes`) or the store could not be moved
+    /// process (see `storeClearGate`) or the store could not be moved
     /// away.
     @MainActor
     private func clearChainStoreBeforeStart(scope: String, dataDir: String, reason: String) async -> Bool {
-        guard !spvStopFailedScopes.contains(scope) else {
+        guard storeClearGate.allowsClearing(scope: scope) else {
             Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
             DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
             return false

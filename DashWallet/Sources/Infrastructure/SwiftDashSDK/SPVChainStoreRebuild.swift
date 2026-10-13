@@ -229,6 +229,23 @@ enum SPVChainStoreRebuild {
         return rewound
     }
 
+    /// The persistence scopes whose SPV stop failed in this process. A client
+    /// that did not stop cleanly can keep its storage worker writing into its
+    /// network's chain store, so that scope's store is not cleared until a
+    /// later launch; the other scopes' stores are unaffected. Nothing takes a
+    /// scope out again: the worker lives as long as the process does.
+    struct StoreClearGate {
+        private var stopFailedScopes: Set<String> = []
+
+        mutating func recordFailedStop(scope: String) {
+            stopFailedScopes.insert(scope)
+        }
+
+        func allowsClearing(scope: String) -> Bool {
+            !stopFailedScopes.contains(scope)
+        }
+    }
+
     /// Empty the SPV store at `store`: the directory is renamed into `trash`
     /// and only then deleted. The caller passes a `trash` on the store's
     /// volume, where the rename is atomic, so a failure never leaves the

@@ -442,6 +442,67 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: trash.path), [])
     }
 
+    // MARK: - A scope whose SPV stop failed
+
+    func testAFailedStopClosesOnlyItsOwnScope() {
+        var gate = SPVChainStoreRebuild.StoreClearGate()
+        XCTAssertTrue(gate.allowsClearing(scope: "testnet"))
+
+        gate.recordFailedStop(scope: "testnet")
+
+        XCTAssertFalse(gate.allowsClearing(scope: "testnet"))
+        XCTAssertTrue(gate.allowsClearing(scope: "mainnet"))
+        XCTAssertTrue(gate.allowsClearing(scope: "testnet-sakura"))
+    }
+
+    /// The rebuild as the coordinator composes it: the clear asks the gate,
+    /// then empties the scope's store.
+    @MainActor
+    private func rebuild(scope: String, store: URL, trash: URL, gate: SPVChainStoreRebuild.StoreClearGate) async -> [Data] {
+        await SPVChainStoreRebuild.apply(
+            scope: scope,
+            directory: directory,
+            isLoaded: { _ in true },
+            rewind: { _ in true },
+            clearStore: {
+                guard gate.allowsClearing(scope: scope) else { return false }
+                return (try? SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)) != nil
+            })
+    }
+
+    @MainActor
+    func testAFailedStopKeepsItsScopesStoreAndMarkerWhileAnotherScopeRebuilds() async throws {
+        let scratch = try makeScratchDirectory()
+        let testnetStore = try makeStore(in: scratch)
+        let mainnetStore = scratch.appendingPathComponent("SPV/mainnet", isDirectory: true)
+        try FileManager.default.createDirectory(at: mainnetStore, withIntermediateDirectories: true)
+        try Data([4, 5, 6]).write(to: mainnetStore.appendingPathComponent("segment_0000.dat"))
+        let trash = scratch.appendingPathComponent("trash", isDirectory: true)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", directory: directory)
+        var gate = SPVChainStoreRebuild.StoreClearGate()
+        gate.recordFailedStop(scope: "testnet")
+
+        let testnet = await rebuild(scope: "testnet", store: testnetStore, trash: trash, gate: gate)
+        let mainnet = await rebuild(scope: "mainnet", store: mainnetStore, trash: trash, gate: gate)
+
+        // Nothing applied on the failed-stop scope: the store is whole and
+        // the start that follows consumes nothing.
+        XCTAssertEqual(testnet, [])
+        XCTAssertEqual(
+            try Data(contentsOf: testnetStore.appendingPathComponent("headers/segment_0000.dat")),
+            Data([1, 2, 3]))
+        try SPVChainStoreRebuild.finish(walletIds: testnet, scope: "testnet", directory: directory, afterStarting: {})
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
+            [walletId(0xA1)])
+
+        XCTAssertEqual(mainnet, [walletId(0xB2)])
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: mainnetStore.path), [])
+        try SPVChainStoreRebuild.finish(walletIds: mainnet, scope: "mainnet", directory: directory, afterStarting: {})
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
+    }
+
     func testEmptyStoreCreatesAMissingStoreDirectory() throws {
         let scratch = try makeScratchDirectory()
         let store = scratch.appendingPathComponent("SPV/testnet", isDirectory: true)
