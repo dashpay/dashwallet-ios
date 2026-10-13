@@ -819,6 +819,49 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertEqual(assignments([letGo], [onTheBound]), ["0xa": "ab"])
     }
 
+    func testALinkIsWithdrawnWhenItsOrderGivesUpThePayout() {
+        // The details screen holds the link of the order a receive was assigned to.
+        let order = buyOrder(id: "0xa", status: .pending)
+        let linked = TxDetailModel.LinkedBuyOrder(order)
+        func withdrawn(_ current: SwapOrder?) -> Bool {
+            TxDetailModel.hasGivenUpItsPayout(linked, current: current)
+        }
+        // The provider then ends the order without a payout: it claims nothing any more,
+        // and with no claimant left the wallet is not read — the link goes on the
+        // order's own word.
+        for status in [SwapOrderStatus.refunded, .failed] {
+            var ended = order
+            ended.status = status
+            ended.finalisedAt = Int64(now.timeIntervalSince1970)
+            XCTAssertTrue(withdrawn(ended), "\(status)")
+        }
+        // An order that can still be paid out keeps it: the assignment may be empty only
+        // because the wallet could not be read…
+        for status in [SwapOrderStatus.notStarted, .pending, .swapping, .unknown, .completed] {
+            var open = order
+            open.status = status
+            XCTAssertFalse(withdrawn(open), "\(status)")
+        }
+        var expired = order
+        expired.status = .expired
+        expired.finalisedAt = Int64(now.timeIntervalSince1970)
+        XCTAssertFalse(withdrawn(expired))
+        // An expired order with no time of expiry on record claims nothing.
+        expired.finalisedAt = -1
+        XCTAssertTrue(withdrawn(expired))
+        // …as does one saved before deposits were recorded, which claims in any status.
+        var legacy = order
+        legacy.status = .refunded
+        legacy.fromAmount = nil
+        XCTAssertFalse(withdrawn(legacy))
+        // A newer order on the same deposit address is not the one the link was built from.
+        var newer = order
+        newer.timestamp += 60_000
+        XCTAssertTrue(withdrawn(newer))
+        // A row that could not be read tells nothing.
+        XCTAssertFalse(withdrawn(nil))
+    }
+
     func testTheStoresTimeIsTheRowsCreationTime() {
         let row = PersistentTransaction(
             txid: Data(repeating: 7, count: 32), transactionData: Data(), firstSeen: 1_700_000_000)

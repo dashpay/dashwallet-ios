@@ -44,7 +44,11 @@ class TxDetailModel: NSObject {
     private(set) var swapOrderPlaceholder: BuySwapOrderItem?
     private var swapOrderObservation: AnyCancellable?
     private var swapAssignmentObservation: AnyCancellable?
+    private var swapLinkOrderObservation: AnyCancellable?
     private var swapExplorerLinkResolution = 0
+    /// The Buy order the transaction was assigned to when `swapExplorerLink` was last set
+    /// from that assignment.
+    private var linkedBuyOrder: LinkedBuyOrder?
 
     /// Header icon of a placeholder screen. Nothing has been received yet, so not the
     /// "received" arrow: the swap glyph the order's history row carries, drawn once at the
@@ -293,9 +297,12 @@ class TxDetailModel: NSObject {
     /// in the background and can change — the screen may be opened before it is there, or
     /// the transaction may turn out to be another order's. The link follows it: it is
     /// looked up again on every change, and `completion` is called when it differs. The
-    /// link is taken away when the wallet was read and the transaction is no order's
-    /// (`SwapLinkLookup.unassigned`), but not when the lookup merely finds nothing: the
-    /// assignment is also empty while the wallet cannot be read.
+    /// link is taken away when the wallet was read and the transaction is no order's, or
+    /// when the order the link was built from has given the transaction up
+    /// (`SwapLinkLookup.unassigned`, `hasGivenUpItsPayout`), but not when the lookup
+    /// merely finds nothing: the assignment is also empty while the wallet cannot be
+    /// read. An order ending changes no assignment when nothing is assigned at that
+    /// moment, so the orders are followed as well while a Buy order's link is shown.
     func resolveSwapExplorerLink(completion: @escaping () -> Void) {
         // A placeholder carries its order's link from init; there is no transaction to match.
         guard swapOrderPlaceholder == nil else { return }
@@ -305,6 +312,16 @@ class TxDetailModel: NSObject {
             .sink { [weak self] in
                 self?.refreshSwapExplorerLink(completion: completion)
             }
+        // The DAO re-emits the whole table on any order's write; look again only when the
+        // order the link was built from has given the transaction up.
+        swapLinkOrderObservation = SwapOrdersDAOImpl.shared.observeAll()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] orders in
+                guard let self, let linked = self.linkedBuyOrder,
+                      Self.hasGivenUpItsPayout(linked, current: orders.first { $0.id == linked.id })
+                else { return }
+                self.refreshSwapExplorerLink(completion: completion)
+            }
     }
 
     private func refreshSwapExplorerLink(completion: @escaping () -> Void) {
@@ -312,15 +329,21 @@ class TxDetailModel: NSObject {
         let transactionId = self.transactionId
         swapExplorerLinkResolution += 1
         let resolution = swapExplorerLinkResolution
+        let linkedBuyOrder = self.linkedBuyOrder
         Task {
-            let lookup = await Self.swapExplorerLink(transaction: transaction, transactionId: transactionId)
+            let lookup = await Self.swapExplorerLink(
+                transaction: transaction, transactionId: transactionId, linkedBuyOrder: linkedBuyOrder)
             await MainActor.run {
                 // A later lookup has started: its answer is the one that counts.
                 guard resolution == self.swapExplorerLinkResolution else { return }
                 let link: SwapExplorerLink?
                 switch lookup {
-                case .link(let found): link = found
-                case .unassigned: link = nil
+                case .link(let found, let buyOrder):
+                    link = found
+                    self.linkedBuyOrder = buyOrder
+                case .unassigned:
+                    link = nil
+                    self.linkedBuyOrder = nil
                 case .unknown: return
                 }
                 guard link != self.swapExplorerLink else { return }
@@ -332,31 +355,70 @@ class TxDetailModel: NSObject {
 
     /// What a lookup of this transaction's swap order established.
     private enum SwapLinkLookup {
-        case link(SwapExplorerLink)
-        /// The transaction was looked at and is no order's — or not settled whose.
+        /// `buyOrder`: the Buy order the transaction is assigned to; nil for a Sell order.
+        case link(SwapExplorerLink, buyOrder: LinkedBuyOrder?)
+        /// The transaction was looked at and is no order's — or not settled whose — or
+        /// the order it was assigned to has given it up.
         case unassigned
         /// Nothing is known: no order was found, which a wallet that could not be read
         /// looks like as well.
         case unknown
     }
 
-    private static func swapExplorerLink(transaction: Transaction, transactionId: String) async -> SwapLinkLookup {
+    /// A Buy order as a link was built from it. Its id is the deposit address, which a
+    /// later order can have again; the creation time tells the two apart.
+    struct LinkedBuyOrder: Equatable {
+        let id: String
+        let timestamp: Int64
+
+        init(_ order: SwapOrder) {
+            id = order.id
+            timestamp = order.timestamp
+        }
+    }
+
+    /// Whether the order a transaction's link was built from has given the transaction
+    /// up for good, as far as the stored row `current` tells: the provider ended it
+    /// without a payout (`SwapOrder.mayStillBePaidOut`), or its id now belongs to a newer
+    /// order. Such an order claims nothing when the wallet is read next — and with no
+    /// claimant left the wallet is not read at all — so no reading has to report the
+    /// transaction as looked at. A row that cannot be read tells nothing.
+    static func hasGivenUpItsPayout(_ linked: LinkedBuyOrder, current: SwapOrder?) -> Bool {
+        guard let current else { return false }
+        return LinkedBuyOrder(current) != linked || !current.mayStillBePaidOut
+    }
+
+    private static func swapExplorerLink(
+        transaction: Transaction,
+        transactionId: String,
+        linkedBuyOrder: LinkedBuyOrder?
+    ) async -> SwapLinkLookup {
         let dao = SwapOrdersDAOImpl.shared
 
         // Sell: the swap order id IS the Dash deposit tx id (display-order hex == transactionId).
         if let order = await dao.get(byId: transactionId), order.direction == "sell" {
-            return link(for: order, dashTxId: transactionId).map { .link($0) } ?? .unknown
+            return link(for: order, dashTxId: transactionId).map { .link($0, buyOrder: nil) } ?? .unknown
         }
 
         // Buy: the incoming Dash tx belongs to the order the row label assigned it to —
         // the same assignment, so the link opens the order the row shows.
         let assignments = SwapOrderMetadataProvider.shared
-        if let orderID = assignments.orderID(forTxHashData: transaction.txHashData),
-           let order = await dao.get(byId: orderID), order.isBuy {
-            return link(for: order, dashTxId: transactionId).map { .link($0) } ?? .unknown
+        if let orderID = assignments.orderID(forTxHashData: transaction.txHashData) {
+            // Assigned: to this order, or — its row not readable right now — not known.
+            guard let order = await dao.get(byId: orderID), order.isBuy else { return .unknown }
+            // The assignment is worked out after the orders are written: for a moment it
+            // can still name an id that a newer order has taken. The order first linked
+            // under that id stays the one the link is judged by.
+            let linked = linkedBuyOrder.flatMap { $0.id == order.id ? $0 : nil } ?? LinkedBuyOrder(order)
+            return link(for: order, dashTxId: transactionId).map { .link($0, buyOrder: linked) } ?? .unknown
         }
 
-        return assignments.isUnassigned(txHashData: transaction.txHashData) ? .unassigned : .unknown
+        if assignments.isUnassigned(txHashData: transaction.txHashData) { return .unassigned }
+        if let linkedBuyOrder,
+           hasGivenUpItsPayout(linkedBuyOrder, current: await dao.get(byId: linkedBuyOrder.id)) {
+            return .unassigned
+        }
+        return .unknown
     }
 
     private static func link(for order: SwapOrder, dashTxId: String) -> SwapExplorerLink? {
