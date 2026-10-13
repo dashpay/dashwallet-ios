@@ -125,21 +125,10 @@ struct WalletLocalStoreResetIntent: Sendable {
         for scope in scopes {
             let url = marker(for: scope)
             try Data().write(to: url, options: .atomic)
-            try Self.flushToStableStorage(url)
+            try DurableFileStorage.flush(url)
         }
-        try Self.flushToStableStorage(directory)
-        try Self.flushToStableStorage(directory.deletingLastPathComponent())
-    }
-
-    /// `F_FULLFSYNC` on the file or directory: the strongest flush the
-    /// platform offers (an `fsync` alone may stop at the drive cache).
-    private static func flushToStableStorage(_ url: URL) throws {
-        let fd = open(url.path, O_RDONLY)
-        guard fd >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
-        defer { close(fd) }
-        if fcntl(fd, F_FULLFSYNC) < 0, fsync(fd) < 0 {
-            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
-        }
+        try DurableFileStorage.flush(directory)
+        try DurableFileStorage.flush(directory.deletingLastPathComponent())
     }
 
     func isPending(scope: String, fileManager: FileManager = .default) -> Bool {

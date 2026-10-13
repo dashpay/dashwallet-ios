@@ -17,6 +17,8 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
         test = repository / "DashWalletTests" / f"{name}Tests.swift"
         (sources / source.name).symlink_to(source)
         (tests / test.name).symlink_to(test)
+    source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift"
+    (sources / source.name).symlink_to(source)
     # Only unrelated app dependencies are substituted; state and diagnostics
     # are the production files, including their real Combine publishers.
     (sources / "AppDependencies.swift").write_text('''

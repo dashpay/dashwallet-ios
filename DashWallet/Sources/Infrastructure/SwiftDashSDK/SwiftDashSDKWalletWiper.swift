@@ -308,6 +308,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        do { try CoreShieldedDrainFileStore().clear() }
+        catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
         AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
         // Without this a contested submission outlived the wallet that made it:
@@ -636,6 +638,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         do {
                             try deleteWalletFromSDK(
                                 walletId,
+                                networkScope: network.persistenceScope,
                                 deleteWallet: { id in
                                     try backend.delete(id)
                                 })
@@ -716,7 +719,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         // The shared devnet mnemonic is left alone: it still
                         // names rows in the scopes not yet swept, and the
                         // configured scope's own deletion removes it last.
-                        try deleteWalletFromSDK(walletId, deleteWallet: {
+                        try deleteWalletFromSDK(walletId, networkScope: scope, deleteWallet: {
                             try backend.delete($0, preservingSharedSecrets: true)
                         }, keepsWalletOnAnotherScope: true)
                     } catch {
@@ -793,6 +796,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
         struct PendingDeletion {
             let network: Network
+            let networkScope: String
             let walletId: Data
             let backend: DeletionBackend
             /// True for the extra devnet scopes swept ahead of the configured
@@ -832,6 +836,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             scope: scope)
                         deletions.append(PendingDeletion(
                             network: .devnet,
+                            networkScope: scope,
                             walletId: walletId,
                             backend: .offline(handler),
                             preservesSharedSecrets: true))
@@ -841,6 +846,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 if storedWalletIds.contains(walletId) || backend.loadedWalletIds.contains(walletId) {
                     deletions.append(PendingDeletion(
                         network: network,
+                        networkScope: network.persistenceScope,
                         walletId: walletId,
                         backend: backend))
                 } else {
@@ -858,6 +864,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             for deletion in deletions {
                 try deleteWalletFromSDK(
                     deletion.walletId,
+                    networkScope: deletion.networkScope,
                     deleteWallet: { walletId in
                         try deletion.backend.delete(
                             walletId,
@@ -897,9 +904,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
     @MainActor
     static func deleteWalletFromSDK(
         _ walletId: Data,
+        networkScope: String,
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil,
-        keepsWalletOnAnotherScope: Bool = false
+        keepsWalletOnAnotherScope: Bool = false,
+        drainStore: CoreShieldedDrainFileStore = CoreShieldedDrainFileStore()
     ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
@@ -929,6 +938,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // The full wipe can continue after another scope's deletion fails.
+            // Clear only this successfully deleted scope, regardless of order.
+            do { try drainStore.clear(context: .init(walletId: walletId, networkScope: networkScope)) }
+            catch { NSLog("Core drain marker cleanup failed: %@", error.localizedDescription) }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
         }
 
