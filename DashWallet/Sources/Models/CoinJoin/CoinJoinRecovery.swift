@@ -177,8 +177,11 @@ final class CoinJoinRecovery: NSObject {
     /// restored wallet's network is unknown. Thread-safe.
     func resetRecoveryFlags() {
         lock.lock(); defer { lock.unlock() }
-        // Includes flags written on devnets other than the one configured now.
-        for scope in DevnetConfiguration.allPersistenceScopes() {
+        defaults.removeObject(forKey: recoveredKey(.mainnet))
+        defaults.removeObject(forKey: recoveredKey(.testnet))
+        defaults.removeObject(forKey: recoveredKey(.devnet))
+        // Flags written on devnets other than the one configured now.
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
             defaults.removeObject(forKey: recoveredKey(tag: scope))
         }
         Self.logger.info(
@@ -190,11 +193,9 @@ final class CoinJoinRecovery: NSObject {
     /// keychain. The host calls this on every such recreation, so the loss is
     /// handled where it is observed, independently of how the store came to be
     /// empty (a completed or interrupted local-store reset, a kill before an
-    /// earlier flag write reached disk, a reinstall). The SPV coordinator also
-    /// calls it when it rebuilds the chain store for an imported wallet, whose
-    /// deep coins no earlier scan on this scope looked for. The next start
-    /// re-runs the idempotent one-time scan. `scope` is a
-    /// `Network.persistenceScope` value. Thread-safe.
+    /// earlier flag write reached disk, a reinstall). The next start re-runs
+    /// the idempotent one-time scan. `scope` is a `Network.persistenceScope`
+    /// value. Thread-safe.
     func resetRecoveryFlag(scope: String) {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(tag: scope))
@@ -209,7 +210,10 @@ final class CoinJoinRecovery: NSObject {
     func resetForWipe() {
         resetRecoveryFlags()
         lock.lock(); defer { lock.unlock() }
-        for scope in DevnetConfiguration.allPersistenceScopes() {
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
             defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(tag: scope))
         }
         Self.logger.info(

@@ -203,16 +203,6 @@ extension DevnetConfiguration {
         }
         return scopes.sorted()
     }
-
-    /// Every persistence scope a per-scope record can exist under: the
-    /// startable networks' current scopes plus `persistedDevnetScopes()`.
-    static func allPersistenceScopes() -> [String] {
-        var scopes = Set(persistedDevnetScopes())
-        for network in [SwiftDashSDK.Network.mainnet, .testnet, .devnet] {
-            scopes.insert(network.persistenceScope)
-        }
-        return scopes.sorted()
-    }
 }
 
 extension SwiftDashSDK.Network {

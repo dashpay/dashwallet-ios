@@ -652,6 +652,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             startFromHeight: 0,
             devnetName: devnetName)
 
+        // One-time wide CoinJoin recovery scan: on the first launch (per
+        // network) of every wallet, widen the CoinJoin address gap (matching
+        // DashSync) and pre-generate the addresses BEFORE startSpv, so the
+        // initial filter already covers the full window and scattered mixed
+        // coins are found. Reverts to the default gap once the scan completes
+        // (a near-empty one-time scan for wallets that never used CoinJoin).
+        applyCoinJoinRecoveryGapIfNeeded(for: network)
+
         // Pending birth-height chain resync: with the store deleted BEFORE
         // startSpv, the client re-anchors at the restored (lowered) birth
         // height and the armed rescan walks the recovered range. Must also
@@ -667,15 +675,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         let rebuiltForWalletIds = await rebuildChainStoreIfPending(
             for: network, scope: scope, dataDir: dataDir, manager: manager,
             storeAlreadyCleared: appliedChainResync)
-
-        // After the rebuild, which re-arms this scan for an imported wallet.
-        // One-time wide CoinJoin recovery scan: on the first launch (per
-        // network) of every wallet, widen the CoinJoin address gap (matching
-        // DashSync) and pre-generate the addresses BEFORE startSpv, so the
-        // initial filter already covers the full window and scattered mixed
-        // coins are found. Reverts to the default gap once the scan completes
-        // (a near-empty one-time scan for wallets that never used CoinJoin).
-        applyCoinJoinRecoveryGapIfNeeded(for: network)
 
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
@@ -935,9 +934,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// old store, without their older history, until a later start applies
     /// the rebuild.
     ///
-    /// An applied rebuild also re-arms the scope's one-time wide CoinJoin
-    /// scan, so the scan from the import floor looks for the imported
-    /// wallet's deep mixed coins.
+    /// The scope's one-time wide CoinJoin scan is left as it is: the rebuilt
+    /// scan walks the wallets at whatever gap that scan's own state gives
+    /// this start — the default one on a scope where it already completed,
+    /// also when it completed on the old store while the rebuild was
+    /// deferred.
     @MainActor
     private func rebuildChainStoreIfPending(
         for network: Network,
@@ -968,7 +969,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             })
         guard !imported.isEmpty else { return [] }
 
-        CoinJoinRecovery.shared.resetRecoveryFlag(scope: scope)
         Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported or recovered wallet(s) on \(network.rawValue, privacy: .public)")
         let stillPending = (SPVChainStoreRebuild.pendingWalletIds(scope: scope)?.count ?? 0) - imported.count
         DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) wallets=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
@@ -1488,8 +1488,11 @@ enum SPVChainResyncMarker {
     /// rewind the next fresh sync's checkpoint. Clears every startable
     /// network, mirroring `CoinJoinRecovery.resetRecoveryFlags`.
     static func clearAll() {
-        // Includes markers armed on devnets other than the one configured now.
-        for scope in DevnetConfiguration.allPersistenceScopes() {
+        clear(for: .mainnet)
+        clear(for: .testnet)
+        clear(for: .devnet)
+        // Markers armed on devnets other than the one configured now.
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
             UserDefaults.standard.removeObject(forKey: key(scope: scope))
         }
     }
@@ -1499,4 +1502,3 @@ enum SPVChainResyncMarker {
         clearAll()
     }
 }
-
