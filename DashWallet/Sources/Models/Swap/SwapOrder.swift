@@ -99,6 +99,10 @@ struct SwapOrder: RowDecodable {
                                  // this order's alone; nil = unknown, saved before this field)
     var ownerWalletId: String?   // Buy: hex id of the wallet the order was made in (nil = unknown)
     var ownerNetwork: String?    // Buy: network that wallet was on (nil = unknown)
+    var payoutNamedAt: Int64?    // Buy: unix s — when `outboundTxHash` was established as the
+                                 // Dash payout: named by the provider, or found in the wallet
+    var payoutCandidates: String? // Buy: ids of the wallet transactions the order was seen to
+                                 // fit while they were dated within its bound, space-separated
 
     // MARK: - SQLite schema
 
@@ -125,6 +129,8 @@ struct SwapOrder: RowDecodable {
     static let colDepositMemo = Expression<String?>("depositMemo")
     static let colOwnerWalletId = Expression<String?>("ownerWalletId")
     static let colOwnerNetwork = Expression<String?>("ownerNetwork")
+    static let colPayoutNamedAt = Expression<Int64?>("payoutNamedAt")
+    static let colPayoutCandidates = Expression<String?>("payoutCandidates")
 
     // MARK: - RowDecodable
 
@@ -154,6 +160,8 @@ struct SwapOrder: RowDecodable {
         depositMemo = (try? row.get(SwapOrder.colDepositMemo)) ?? nil
         ownerWalletId = (try? row.get(SwapOrder.colOwnerWalletId)) ?? nil
         ownerNetwork = (try? row.get(SwapOrder.colOwnerNetwork)) ?? nil
+        payoutNamedAt = (try? row.get(SwapOrder.colPayoutNamedAt)) ?? nil
+        payoutCandidates = (try? row.get(SwapOrder.colPayoutCandidates)) ?? nil
     }
 
     // MARK: - Memberwise init
@@ -180,7 +188,9 @@ struct SwapOrder: RowDecodable {
         providerDeniedAt: Int64? = nil,
         depositMemo: String? = nil,
         ownerWalletId: String? = nil,
-        ownerNetwork: String? = nil
+        ownerNetwork: String? = nil,
+        payoutNamedAt: Int64? = nil,
+        payoutCandidates: String? = nil
     ) {
         self.id = id
         self.direction = direction
@@ -204,6 +214,8 @@ struct SwapOrder: RowDecodable {
         self.depositMemo = depositMemo
         self.ownerWalletId = ownerWalletId
         self.ownerNetwork = ownerNetwork
+        self.payoutNamedAt = payoutNamedAt
+        self.payoutCandidates = payoutCandidates
     }
 }
 
@@ -298,8 +310,33 @@ extension SwapOrder {
 
     /// Whether a Buy order says which Dash transaction paid it out: the provider named it,
     /// or the tracker found it in the wallet. An order saved before this version may carry
-    /// a hash from the deposit's chain there instead, so its hash names nothing for sure.
-    var namesItsPayout: Bool { isBuy && !isLegacyRecord && dashShapedOutHash != nil }
+    /// a hash from the deposit's chain there instead, so its hash names nothing for sure —
+    /// until this version establishes it (`payoutNamedAt`).
+    var namesItsPayout: Bool {
+        isBuy && dashShapedOutHash != nil && (!isLegacyRecord || payoutNamedAt != nil)
+    }
+
+    /// How many transactions `payoutCandidates` keeps.
+    static let maximumPayoutCandidates = 8
+
+    /// The wallet transactions the order was seen to fit while they were dated within its
+    /// bound (`SwapBuyTransactionMatcher.latestPayoutDate`). A transaction's date moves
+    /// when it is mined; one remembered here stays the order's to fit.
+    var inTimePayoutIds: Set<String> {
+        Set((payoutCandidates ?? "").split(separator: " ").map(String.init))
+    }
+
+    /// `payoutCandidates` with `txIds` added, in the order given, up to
+    /// `maximumPayoutCandidates` in all — what is remembered already is kept — or nil
+    /// when nothing new fits in.
+    func payoutCandidates(adding txIds: [String]) -> String? {
+        var kept = (payoutCandidates ?? "").split(separator: " ").map(String.init)
+        let new = txIds.filter { !kept.contains($0) }
+            .prefix(max(0, SwapOrder.maximumPayoutCandidates - kept.count))
+        guard !new.isEmpty else { return nil }
+        kept += new
+        return kept.joined(separator: " ")
+    }
 
     /// How long past its deadline an unpaid order is still given before it is let go: a
     /// transfer sent in the last minutes has to show up first, and on a slow chain that

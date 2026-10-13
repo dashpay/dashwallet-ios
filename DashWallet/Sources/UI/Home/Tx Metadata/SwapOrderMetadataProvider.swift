@@ -170,6 +170,15 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         let unsettled = resolution?.contestedWithEnough ?? []
         let unassigned = Set((resolution?.unassigned ?? []).map(\.txHashData))
         let readWallet = resolution.map { _ in (walletId: walletId, network: network) }
+        // This reading follows the wallet's transactions as they change; the tracker's
+        // comes minutes apart. What it shows about the orders' payouts is kept with them.
+        if let datedInTime = resolution?.datedInTime, let takenByName = resolution?.takenByName,
+           !(datedInTime.isEmpty && takenByName.isEmpty) {
+            Task {
+                await SwapTrackingService.shared.recordWalletEvidence(
+                    datedInTime: datedInTime, takenByName: takenByName, among: orders)
+            }
+        }
         var current: [Data: TxRowMetadata] = [:]
         var owners: [Data: String] = [:]
         for order in orders {

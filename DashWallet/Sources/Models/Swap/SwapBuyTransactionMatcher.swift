@@ -45,6 +45,15 @@ struct PayoutResolution<T> {
     /// The transactions that were looked at and given to no order: nobody's, or held back
     /// while it is not settled whose they are.
     var unassigned: [T] = []
+    /// Order id → ids of the transactions the order fits that are dated within its bound
+    /// right now, earliest first, for the orders that have one and do not name their
+    /// payout. Not the transactions another order has by name. The tracker keeps them
+    /// with the order (`SwapOrder.payoutCandidates`).
+    var datedInTime: [String: [String]] = [:]
+    /// Ids of the orders that were given the transaction their recorded hash names
+    /// without that hash being established as their payout yet
+    /// (`SwapOrder.namesItsPayout`), and that are alone in recording it.
+    var takenByName: Set<String> = []
 }
 
 /// Shared buy-transaction matcher used by swap tracking and tx-history metadata.
@@ -88,10 +97,14 @@ enum SwapBuyTransactionMatcher {
     /// The latest date a transaction may carry and still be `order`'s payout; nil when there
     /// is no such bound. That date is the time the wallet first saw the transaction until
     /// it is mined, and its block's time from then on — the store keeps no other — so a
-    /// match made on it can lapse on confirmation. The tracker therefore writes a matched
-    /// payout's hash into the order while the bound still holds (`settleLatePayouts`),
-    /// when no other order fits that transaction: an order that names its payout is not
-    /// bounded by date.
+    /// match made on it could lapse on confirmation. Two things keep it:
+    /// - the tracker writes a matched payout's hash into the order while the bound still
+    ///   holds (`settleLatePayouts`), when no other order fits that transaction, and asks
+    ///   the provider for it otherwise: an order that names its payout is not bounded by
+    ///   date;
+    /// - a transaction the order was seen to fit while dated within the bound is kept with
+    ///   the order (`SwapOrder.payoutCandidates`) and stays within it, whatever date it
+    ///   carries later. That says the order may still take it, not that it is the order's.
     /// - A completed order's payout exists by the time it is finalised (plus
     ///   `timestampSlack`), so a later one is somebody else's.
     /// - An expired order with a deposit on record is owed a payout that arrives within
@@ -234,8 +247,14 @@ enum SwapBuyTransactionMatcher {
             guard let tx = free.removeValue(forKey: txId) else { return }
             assigned[order.id] = tx
         }
-        func isInTime(_ tx: T, for order: SwapOrder) -> Bool {
+        let remembered = Dictionary(
+            claimants.map { ($0.id, $0.inTimePayoutIds) }, uniquingKeysWith: { first, _ in first })
+        func isDatedInTime(_ tx: T, for order: SwapOrder) -> Bool {
             latestPayoutDate(for: order).map { tx.date.timeIntervalSince1970 <= $0 } ?? true
+        }
+        func isInTime(_ tx: T, for order: SwapOrder) -> Bool {
+            isDatedInTime(tx, for: order)
+                || remembered[order.id]?.contains(tx.txHashHexString.lowercased()) == true
         }
         /// Ids of the free transactions `order` fits, earliest first.
         func fitting(_ order: SwapOrder) -> [String] {
@@ -245,13 +264,16 @@ enum SwapBuyTransactionMatcher {
                 .map { $0.txHashHexString.lowercased() }
         }
 
-        for claimant in claimants {
+        // The orders whose hash is established as their payout come first: an older
+        // record can carry the same hash without it being its own.
+        for claimant in claimants.filter(\.namesItsPayout) + claimants.filter({ !$0.namesItsPayout }) {
             guard let recorded = claimant.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
                   let tx = free[recorded],
                   !matchingTransactions(for: claimant, in: [tx]).isEmpty else { continue }
             take(recorded, for: claimant)
         }
 
+        let takenByName = assigned.mapValues { $0.txHashHexString.lowercased() }
         // An order that names its payout takes that transaction or none: while it is not
         // in the pool, a look-alike is not it.
         let unnamed = claimants.filter { assigned[$0.id] == nil && !$0.namesItsPayout }
@@ -314,9 +336,24 @@ enum SwapBuyTransactionMatcher {
         let unshared = assigned.filter { id, tx in
             !claimants.contains { $0.id != id && !$0.namesItsPayout && fits($0, anyOf: [tx]) }
         }
+        var datedInTime: [String: [String]] = [:]
+        let namedTxIds = Set(takenByName.values)
+        for order in claimants where !order.namesItsPayout && latestPayoutDate(for: order) != nil {
+            let othersByName = takenByName[order.id].map { namedTxIds.subtracting([$0]) } ?? namedTxIds
+            let txIds = matchingTransactions(for: order, in: transactions)
+                .filter { isDatedInTime($0, for: order) }
+                .sorted { ($0.date, $0.txHashHexString) < ($1.date, $1.txHashHexString) }
+                .map { $0.txHashHexString.lowercased() }
+                .filter { !othersByName.contains($0) }
+            if !txIds.isEmpty { datedInTime[order.id] = txIds }
+        }
         return PayoutResolution(
             assigned: assigned, contested: contested, contestedWithEnough: enough, unshared: Set(unshared.keys),
-            unassigned: Array(free.values) + withheld)
+            unassigned: Array(free.values) + withheld, datedInTime: datedInTime,
+            takenByName: Set(claimants.filter { order in
+                guard !order.namesItsPayout, let txId = takenByName[order.id] else { return false }
+                return !claimants.contains { $0.id != order.id && $0.dashShapedOutHash == txId }
+            }.map(\.id)))
     }
 
     private static func matches<T: SwapPayoutCandidate>(

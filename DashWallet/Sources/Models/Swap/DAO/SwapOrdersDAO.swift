@@ -62,7 +62,23 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
 
     func save(dto: SwapOrder) async throws {
         await hydration.value
+        try store(dto)
+    }
 
+    /// Changes the row `id` as it is now: read, changed and written with nothing in
+    /// between, so this write undoes nothing another writer stored. (A `save` of a row
+    /// read earlier still replaces what an `amend` stored in between.) `change` returns
+    /// false to leave the row alone. Returns whether the row was written.
+    @discardableResult
+    func amend(id: String, _ change: @Sendable (inout SwapOrder) -> Bool) async throws -> Bool {
+        await hydration.value
+        let rows: [SwapOrder] = try read(SwapOrder.table.filter(SwapOrder.colId == id))
+        guard var order = rows.first, change(&order) else { return false }
+        try store(order)
+        return true
+    }
+
+    private func store(_ dto: SwapOrder) throws {
         let insert = SwapOrder.table.insert(
             or: .replace,
             SwapOrder.colId <- dto.id,
@@ -86,7 +102,9 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             SwapOrder.colProviderDeniedAt <- dto.providerDeniedAt,
             SwapOrder.colDepositMemo <- dto.depositMemo,
             SwapOrder.colOwnerWalletId <- dto.ownerWalletId,
-            SwapOrder.colOwnerNetwork <- dto.ownerNetwork
+            SwapOrder.colOwnerNetwork <- dto.ownerNetwork,
+            SwapOrder.colPayoutNamedAt <- dto.payoutNamedAt,
+            SwapOrder.colPayoutCandidates <- dto.payoutCandidates
         )
         try execute(insert)
         cache[dto.id] = dto

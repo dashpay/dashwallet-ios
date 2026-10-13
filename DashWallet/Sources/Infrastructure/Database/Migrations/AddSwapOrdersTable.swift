@@ -59,3 +59,14 @@ struct AddBuyTrackingColumnsToSwapOrders: Migration {
         try db.run(SwapOrder.table.addColumn(SwapOrder.colOwnerNetwork))
     }
 }
+
+/// Buy orders: when the recorded hash was established as the Dash payout, and which wallet
+/// transactions the order was seen to fit while they were dated within its bound.
+struct AddPayoutIdentityColumnsToSwapOrders: Migration {
+    var version: Int64 = 20261013100000
+
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colPayoutNamedAt))
+        try db.run(SwapOrder.table.addColumn(SwapOrder.colPayoutCandidates))
+    }
+}

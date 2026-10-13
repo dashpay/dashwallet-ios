@@ -610,6 +610,103 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertTrue(shared.unshared.isEmpty)
     }
 
+    func testATransactionSeenInTimeStaysTheOrdersAfterItsDateMoves() {
+        // Completed four hours ago, with a live order beside it that fits the same
+        // transaction: the completed one has it, but not by name.
+        let order = buyOrder(
+            id: "0xa", status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: 4 * 3_600,
+            createdSecondsAgo: 86_400)
+        let live = buyOrder(id: "0xb", createdSecondsAgo: 12 * 3_600)
+        let early = SwapBuyTransactionMatcher.payoutResolution(
+            among: [order, live], in: [payout("aa", secondsAgo: 4 * 3_600)])
+        XCTAssertEqual(early.assigned.mapValues(\.txHashHexString), ["0xa": "aa"])
+        // What the tracker keeps with the order: only for the one with a date bound.
+        XCTAssertEqual(early.datedInTime, ["0xa": ["aa"]])
+        // Mined three hours later, the transaction is dated past the bound. Not kept, it
+        // would go to the live order…
+        let mined = [payout("aa", secondsAgo: 3_600)]
+        XCTAssertEqual(assignments([order, live], mined), ["0xb": "aa"])
+        // …kept, it is still the completed order's, and nothing new is reported to keep.
+        var remembering = order
+        remembering.payoutCandidates = remembering.payoutCandidates(adding: ["aa"])
+        let late = SwapBuyTransactionMatcher.payoutResolution(among: [remembering, live], in: mined)
+        XCTAssertEqual(late.assigned.mapValues(\.txHashHexString), ["0xa": "aa"])
+        XCTAssertTrue(late.datedInTime.isEmpty)
+        // Another transaction dated past the bound is not the order's for that.
+        XCTAssertEqual(assignments([remembering], [payout("bb", secondsAgo: 3_600)]), [:])
+
+        // Nothing is written when there is nothing to add, and the list does not grow
+        // without end.
+        XCTAssertNil(remembering.payoutCandidates(adding: ["aa"]))
+        XCTAssertEqual(remembering.payoutCandidates(adding: ["cc", "aa", "bb"]), "aa cc bb")
+        // A transaction another order has by name is not kept as this one's to take.
+        let namedHash = String(repeating: "c", count: 64)
+        let naming = buyOrder(
+            id: "0xc", status: .completed, finalisedSecondsAgo: 4 * 3_600, createdSecondsAgo: 86_400,
+            payoutHash: namedHash)
+        let both = SwapBuyTransactionMatcher.payoutResolution(
+            among: [order, naming],
+            in: [payout(namedHash, secondsAgo: 4 * 3_600 + 60), payout("aa", secondsAgo: 4 * 3_600)])
+        XCTAssertEqual(both.datedInTime, ["0xa": ["aa"]])
+        var full = order
+        full.payoutCandidates = (0..<SwapOrder.maximumPayoutCandidates).map { "t\($0)" }.joined(separator: " ")
+        XCTAssertNil(full.payoutCandidates(adding: ["zz"]))
+    }
+
+    func testAnOlderRecordNamedByTheProviderTakesNoOtherTransaction() {
+        // Saved before this version; the provider has since named its payout, which this
+        // wallet read does not show. The one transaction there is the live order's.
+        var repaired = buyOrder(
+            id: "0xa", status: .completed, finalisedSecondsAgo: 3_600, createdSecondsAgo: 7_200,
+            payoutHash: String(repeating: "a", count: 64))
+        repaired.fromAmount = nil
+        let live = buyOrder(id: "0xb", createdSecondsAgo: 5_400)
+        let other = [payout("bb", secondsAgo: 3_000)]
+        // With nothing but the hash, an older record's names nothing for sure: it may be
+        // the deposit's, and the order is matched by date.
+        XCTAssertFalse(repaired.namesItsPayout)
+        XCTAssertEqual(assignments([repaired, live], other), ["0xa": "bb"])
+        // When the wallet shows the transaction the hash names, the order has it by name,
+        // and the tracker is told so.
+        let own = SwapBuyTransactionMatcher.payoutResolution(
+            among: [repaired, live], in: [payout(String(repeating: "a", count: 64), secondsAgo: 3_000)])
+        XCTAssertEqual(own.assigned.keys.sorted(), ["0xa"])
+        XCTAssertEqual(own.takenByName, ["0xa"])
+        // Not when another order records the same hash: whose it is, is not settled by that.
+        var twin = repaired
+        twin.id = "0xc"
+        XCTAssertTrue(SwapBuyTransactionMatcher.payoutResolution(
+            among: [repaired, twin], in: [payout(String(repeating: "a", count: 64), secondsAgo: 3_000)])
+            .takenByName.isEmpty)
+        // And the one for which the hash is established has the transaction, though the
+        // other was made first.
+        twin.payoutNamedAt = Int64(now.timeIntervalSince1970)
+        twin.timestamp += 60_000
+        XCTAssertEqual(
+            assignments([repaired, twin], [payout(String(repeating: "a", count: 64), secondsAgo: 3_000)]),
+            ["0xc": String(repeating: "a", count: 64)])
+        repaired.payoutNamedAt = Int64(now.timeIntervalSince1970)
+        XCTAssertTrue(repaired.namesItsPayout)
+        XCTAssertEqual(assignments([repaired, live], other), ["0xb": "bb"])
+        XCTAssertEqual(
+            SwapTrackingService.ordersToAskForPayoutIdentity(
+                among: [repaired], asked: [], nowSeconds: Int64(now.timeIntervalSince1970)).map(\.id),
+            [])
+    }
+
+    func testAnAnswerWithoutADashLegIsNotTheLastWordAtOnce() {
+        let nowSeconds = Int64(now.timeIntervalSince1970)
+        func isFinal(completedSecondsAgo: Int64) -> Bool {
+            SwapTrackingService.isFinalWithoutPayoutIdentity(
+                finalisedAt: nowSeconds - completedSecondsAgo, nowSeconds: nowSeconds)
+        }
+        // Completed lately: the provider may still add the leg, so the order is asked again.
+        XCTAssertFalse(isFinal(completedSecondsAgo: 3_600))
+        XCTAssertTrue(isFinal(completedSecondsAgo: SwapOrder.latePayoutSeconds))
+        // A record with no completion time is an old one.
+        XCTAssertTrue(SwapTrackingService.isFinalWithoutPayoutIdentity(finalisedAt: -1, nowSeconds: nowSeconds))
+    }
+
     func testOrdersSavedBeforeDepositsWereRecordedKeepTheirOldMatching() {
         for status in [SwapOrderStatus.expired, .refunded, .failed] {
             var legacy = buyOrder(status: status)
