@@ -69,7 +69,7 @@ enum SwapOrderStatus: String, Equatable {
 
 // MARK: - SwapOrder
 
-struct SwapOrder: RowDecodable {
+struct SwapOrder: RowDecodable, Equatable {
     /// Primary key.
     /// - Sell: DASH `txHashHexString` (Bitcoin-convention reversed hex, used for API tracking).
     /// - Buy:  deposit address (no local DASH tx at order creation time).

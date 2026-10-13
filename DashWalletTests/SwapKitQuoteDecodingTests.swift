@@ -18,6 +18,7 @@
 //
 
 @testable import dashpay
+import Combine
 import Moya
 import SwiftDashSDK
 import XCTest
@@ -302,6 +303,37 @@ private struct PayoutFixture: SwapPayoutCandidate {
     let direction: TransactionDirection
     let outputReceiveAddresses: [String]
     let dashAmount: UInt64
+}
+
+/// A read of the orders table that fails the first `failures` times it is made.
+private final class FlakyOrdersRead: @unchecked Sendable {
+    private let lock = NSLock()
+    private var failures: Int
+    private var made = 0
+    private let orders: [SwapOrder]
+
+    /// How many reads were made, failed ones included.
+    var reads: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return made
+    }
+
+    init(failures: Int, orders: [SwapOrder]) {
+        self.failures = failures
+        self.orders = orders
+    }
+
+    func read() throws -> [SwapOrder] {
+        lock.lock()
+        defer { lock.unlock() }
+        made += 1
+        guard failures == 0 else {
+            failures -= 1
+            throw CocoaError(.fileReadUnknown)
+        }
+        return orders
+    }
 }
 
 final class BuySwapOrderTests: XCTestCase {
@@ -817,6 +849,52 @@ final class BuySwapOrderTests: XCTestCase {
             outputReceiveAddresses: ["XdestinationAddress"],
             dashAmount: 251_000_000)
         XCTAssertEqual(assignments([letGo], [onTheBound]), ["0xa": "ab"])
+    }
+
+    func testOrdersReadAfterTheFirstReadsFailedReachTheSnapshot() async {
+        // A funded order the provider refunded: it is not polled or written again, so
+        // nothing but a read can bring it to the snapshot Home builds its row from.
+        let order = buyOrder(status: .refunded, depositSeenSecondsAgo: 1_800, finalisedSecondsAgo: 600)
+        let table = FlakyOrdersRead(failures: 2, orders: [order])
+        let dao = SwapOrdersDAOImpl(readingAll: { try table.read() })
+
+        for _ in 0..<2 {
+            let failed = await dao.all()
+            XCTAssertEqual(failed, [])
+            XCTAssertEqual(dao.currentOrders, [])
+        }
+        let read = await dao.all()
+        XCTAssertEqual(read, [order])
+        XCTAssertEqual(dao.currentOrders, [order])
+        XCTAssertEqual(table.reads, 3)
+
+        // A read that brings nothing new publishes nothing — subscribers read in answer
+        // to a publication — and subscribing reads nothing once the table has been read.
+        var publications = 0
+        let observation = dao.observeAll().dropFirst().sink { _ in publications += 1 }
+        defer { observation.cancel() }
+        _ = await dao.all()
+        XCTAssertEqual(publications, 0)
+        XCTAssertEqual(table.reads, 4)
+    }
+
+    func testSubscribingReadsTheOrdersAFailedFirstReadLeftOut() async {
+        let order = buyOrder(status: .refunded, depositSeenSecondsAgo: 1_800, finalisedSecondsAgo: 600)
+        let table = FlakyOrdersRead(failures: 1, orders: [order])
+        let dao = SwapOrdersDAOImpl(readingAll: { try table.read() })
+        let failed = await dao.all()
+        XCTAssertEqual(failed, [])
+
+        // Home only observes: its subscription alone has to bring the stored orders.
+        let published = expectation(description: "the stored orders are published")
+        let observation = dao.observeAll().filter { !$0.isEmpty }.first().sink { orders in
+            XCTAssertEqual(orders, [order])
+            published.fulfill()
+        }
+        defer { observation.cancel() }
+        await fulfillment(of: [published], timeout: 5)
+        XCTAssertEqual(dao.currentOrders, [order])
+        XCTAssertEqual(table.reads, 2)
     }
 
     func testALinkIsWithdrawnWhenItsOrderGivesUpThePayout() {

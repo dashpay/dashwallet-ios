@@ -38,16 +38,26 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     static let shared = SwapOrdersDAOImpl()
     private nonisolated(unsafe) let allOrdersSubject = CurrentValueSubject<[SwapOrder], Never>([])
     private var cache: [String: SwapOrder] = [:]
-    // `lazy` so the bootstrap Task is created on first access (after init), avoiding a
-    // "self captured before all members were initialized" error. First read/write awaits it.
-    private lazy var hydration: Task<Void, Never> = Task { [weak self] in
-        await self?.bootstrap()
-    }
+    /// Whether the cache has been filled from the table: the first read can fail, and until
+    /// one succeeds the cache holds only the rows written or read one by one since.
+    private var isHydrated = false
+    private var hasLoggedHydrationFailure = false
 
     private init() {}
 
+    #if DEBUG
+    /// Stands in for the read of the whole table, so a test can make a read fail. Nothing
+    /// else is replaced: single-row reads and writes still go to the database.
+    private var readingAll: (@Sendable () throws -> [SwapOrder])?
+
+    init(readingAll: @escaping @Sendable () throws -> [SwapOrder]) {
+        self.readingAll = readingAll
+    }
+    #endif
+
     /// The last published snapshot, for synchronous readers (the Home timeline rebuild runs
-    /// off the main actor and cannot await). Empty until the first read hydrates the cache.
+    /// off the main actor and cannot await). Until a read of the table succeeds it is the
+    /// cache as of the last write: the orders written or read one by one since launch.
     nonisolated var currentOrders: [SwapOrder] { allOrdersSubject.value }
 
     // MARK: - Protocol
@@ -61,7 +71,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func save(dto: SwapOrder) async throws {
-        await hydration.value
+        hydrate()
         try store(dto)
     }
 
@@ -71,7 +81,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     /// false to leave the row alone. Returns whether the row was written.
     @discardableResult
     func amend(id: String, _ change: @Sendable (inout SwapOrder) -> Bool) async throws -> Bool {
-        await hydration.value
+        hydrate()
         let rows: [SwapOrder] = try read(SwapOrder.table.filter(SwapOrder.colId == id))
         guard var order = rows.first, change(&order) else { return false }
         try store(order)
@@ -112,7 +122,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func get(byId id: String) async -> SwapOrder? {
-        await hydration.value
+        hydrate()
 
         let query = SwapOrder.table.filter(SwapOrder.colId == id)
         do {
@@ -139,7 +149,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func delete(byId id: String) async {
-        await hydration.value
+        hydrate()
 
         do {
             let deleteQuery = SwapOrder.table.filter(SwapOrder.colId == id).delete()
@@ -152,12 +162,8 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func all() async -> [SwapOrder] {
-        await hydration.value
-
         do {
-            let orders: [SwapOrder] = try read(SwapOrder.table)
-            cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
-            return orders
+            return try reload()
         } catch {
             DWLogger.log("SwapOrdersDAO: all failed: \(error)")
             return Array(cache.values)
@@ -165,12 +171,12 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     nonisolated func observeAll() -> AnyPublisher<[SwapOrder], Never> {
-        Task { await hydration.value }
+        Task { await hydrate() }
         return allOrdersSubject.eraseToAnyPublisher()
     }
 
     nonisolated func observeActive() -> AnyPublisher<[SwapOrder], Never> {
-        Task { await hydration.value }
+        Task { await hydrate() }
         return allOrdersSubject
             .map { $0.filter { $0.status.isActive } }
             .eraseToAnyPublisher()
@@ -178,14 +184,41 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
 
     // MARK: - Private
 
-    private func bootstrap() async {
+    /// Fills the cache from the table while no read of it has succeeded: the first one
+    /// can fail, and the snapshot would otherwise stay without the stored orders until
+    /// something read the whole table.
+    private func hydrate() {
+        guard !isHydrated else { return }
         do {
-            let orders: [SwapOrder] = try read(SwapOrder.table)
-            cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
-            emitUpdate()
+            try reload()
         } catch {
-            DWLogger.log("SwapOrdersDAO: bootstrap failed: \(error)")
+            // Every entry point retries: one line, not one per call.
+            guard !hasLoggedHydrationFailure else { return }
+            hasLoggedHydrationFailure = true
+            DWLogger.log("SwapOrdersDAO: hydration failed: \(error)")
         }
+    }
+
+    /// Reads the whole table into the cache and publishes it when it differs from the
+    /// last snapshot. An unchanged read publishes nothing — subscribers read the table
+    /// in answer to a publication.
+    @discardableResult
+    private func reload() throws -> [SwapOrder] {
+        let orders = try readAll()
+        cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
+        isHydrated = true
+        let published = Dictionary(uniqueKeysWithValues: allOrdersSubject.value.map { ($0.id, $0) })
+        if published != cache {
+            emitUpdate()
+        }
+        return orders
+    }
+
+    private func readAll() throws -> [SwapOrder] {
+        #if DEBUG
+        if let readingAll { return try readingAll() }
+        #endif
+        return try read(SwapOrder.table)
     }
 
     private func emitUpdate() {
