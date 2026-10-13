@@ -2212,6 +2212,19 @@ final class AppConnectLoginTests: XCTestCase {
             store.save([])
             XCTAssertEqual(defaults.data(forKey: key), stored)
         }
+        // A value that is not data at all is left alone the same way.
+        let others: [NSObject] = ["rows" as NSString, ["rows": NSArray()] as NSDictionary, 7 as NSNumber]
+        for stored in others {
+            defaults.set(stored, forKey: key)
+            XCTAssertFalse(store.canPersist)
+            XCTAssertEqual(store.load().count, 0)
+            store.save([Self.grant(sessionKeyId: 7)])
+            XCTAssertEqual(defaults.object(forKey: key) as? NSObject, stored)
+            store.save([])
+            XCTAssertEqual(defaults.object(forKey: key) as? NSObject, stored)
+        }
+        defaults.removeObject(forKey: key)
+        XCTAssertTrue(store.canPersist)
     }
 
     func testAGrantedKeyMissingFromTheIdentityViewIsReportedNotAssumedGone() {
@@ -2509,6 +2522,28 @@ final class AppConnectLoginTests: XCTestCase {
     private actor OperationLog {
         private(set) var entries: [String] = []
         func add(_ entry: String) { entries.append(entry) }
+    }
+
+    func testAnApprovalIsForTheIdentityWalletAndNetworkItsRequestWasResolvedFor() {
+        let request = ConnectionRequest(
+            loginRequest: MockDashConnectDataSource.sampleLoginRequest,
+            appLabel: "App",
+            appUrl: "",
+            walletUsername: nil,
+            walletIdentityId: "identity-a",
+            existingConnection: nil,
+            login: .twoQR,
+            scope: "wallet-a devnet-one")
+
+        XCTAssertTrue(request.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
+        XCTAssertFalse(request.wasResolved(forIdentityId: "identity-b", scope: "wallet-a devnet-one"))
+        XCTAssertFalse(
+            request.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-two"),
+            "the same wallet and identity on another devnet")
+        // A request that was not resolved against a wallet approves nothing.
+        var unscoped = request
+        unscoped.scope = nil
+        XCTAssertFalse(unscoped.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
     }
 
     func testDisconnectWithNoActiveWalletIsRefused() async {

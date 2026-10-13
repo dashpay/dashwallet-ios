@@ -701,8 +701,11 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     /// Decodes row by row, like `UserDefaultsDashConnectStore`, so one
     /// unreadable row costs one record instead of all of them.
     private func readRows() -> (grants: [AppConnectGrant], unreadable: [Any], isNotRowList: Bool) {
-        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], [], false) }
-        guard let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
+        guard let storageKey, let stored = defaults.object(forKey: storageKey) else { return ([], [], false) }
+        // A value of another kind is as much not this build's to replace as
+        // data that is not a list.
+        guard let data = stored as? Data,
+              let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
             Self.logger.error("AppConnectResponseStore: stored value is not a JSON array; left in place")
             return ([], [], true)
         }

@@ -571,7 +571,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdentityId: context.identityId.toBase58String(),
             existingConnection: existingConnection,
             login: protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved,
-            unresolvedLoginReason: unresolvedLoginReason
+            unresolvedLoginReason: unresolvedLoginReason,
+            scope: context.stores.scope
         )
     }
 
@@ -620,6 +621,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: no context — \(error.localizedDescription, privacy: .public)")
             throw error
         }
+        // The sheet was resolved for one identity of one wallet on one
+        // network, and either login acts for that identity: it has to be
+        // the active one here, and again after the PIN prompt. The same
+        // wallet and identity under another devnet name is not what was
+        // shown.
+        guard consent.wasResolved(
+            forIdentityId: context.identityId.toBase58String(), scope: context.stores.scope) else {
+            Self.logger.error("🔗 DASHCONNECT :: the approved sign-in was resolved for another identity, wallet or network")
+            throw DashConnectPlatformError.approvalOutOfDate
+        }
         // Which login this network can answer is decided before the PIN
         // prompt: from protocol version 14 the response goes to the App
         // Connect system contract and the wallet registers the key itself;
@@ -636,13 +647,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // The sheet showed the login `makeConnectionRequest` resolved, with
         // its terms for the one-QR login. If the network now gets the other
-        // one, what was approved is not what would run. Either login acts
-        // for the identity that was on the sheet: it has to be the active
-        // one here, and again after the PIN prompt.
+        // one, what was approved is not what would run.
         let login = AppConnect.login(protocolVersion: protocolVersion)
-        guard consent.login == login,
-              consent.walletIdentityId == context.identityId.toBase58String() else {
-            Self.logger.error("🔗 DASHCONNECT :: the approved sign-in no longer matches the network or the identity")
+        guard consent.login == login else {
+            Self.logger.error("🔗 DASHCONNECT :: the network now answers with the other login than the one approved")
             throw DashConnectPlatformError.approvalOutOfDate
         }
         do {

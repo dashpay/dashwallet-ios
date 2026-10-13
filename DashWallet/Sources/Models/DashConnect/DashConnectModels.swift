@@ -208,6 +208,10 @@ struct ConnectionRequest: Equatable {
     var login: AppConnect.Login = .unresolved
     /// Why the login is unresolved, when the wallet knows.
     var unresolvedLoginReason: String? = nil
+    /// Names the wallet and network this request was resolved for; `nil`
+    /// when it was not resolved against one. An approval runs only while it
+    /// is still the active one.
+    var scope: String? = nil
 }
 
 extension ConnectionRequest {
@@ -237,7 +241,8 @@ extension ConnectionRequest {
         walletIdentityId: String?,
         existingConnection: DAppConnection?,
         login: AppConnect.Login = .unresolved,
-        unresolvedLoginReason: String? = nil
+        unresolvedLoginReason: String? = nil,
+        scope: String? = nil
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -247,8 +252,15 @@ extension ConnectionRequest {
             walletIdentityId: walletIdentityId,
             existingConnection: existingConnection,
             login: login,
-            unresolvedLoginReason: unresolvedLoginReason
+            unresolvedLoginReason: unresolvedLoginReason,
+            scope: scope
         )
+    }
+
+    /// Whether this request, as a sheet showed it, was resolved for the
+    /// identity, wallet and network an approval is about to run for.
+    func wasResolved(forIdentityId identityId: String, scope: String) -> Bool {
+        walletIdentityId == identityId && self.scope == scope
     }
 }
 

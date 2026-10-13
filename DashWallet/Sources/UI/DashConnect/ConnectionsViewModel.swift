@@ -217,9 +217,9 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingLoginRequest = nil
                 self.approveError = nil
             } catch DashConnectPlatformError.approvalOutOfDate {
-                // Another identity became active, or the network now answers
-                // with the other login: what the sheet showed is not what
-                // would run. Nothing was signed. The sheet is rebuilt from
+                // Another identity, wallet or network became active, or the
+                // network now answers with the other login: what the sheet
+                // showed is not what would run. Nothing was signed. The sheet is rebuilt from
                 // the same request as it stands now, for a new decision.
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
