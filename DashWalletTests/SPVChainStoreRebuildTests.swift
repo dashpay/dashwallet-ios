@@ -455,8 +455,8 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertTrue(gate.allowsClearing(scope: "testnet-sakura"))
     }
 
-    /// The rebuild as the coordinator composes it: the clear asks the gate,
-    /// then empties the scope's store.
+    /// A rebuild whose store clear goes through the gate, the step the
+    /// coordinator's clear runs.
     @MainActor
     private func rebuild(scope: String, store: URL, trash: URL, gate: SPVChainStoreRebuild.StoreClearGate) async -> [Data] {
         await SPVChainStoreRebuild.apply(
@@ -465,9 +465,34 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             isLoaded: { _ in true },
             rewind: { _ in true },
             clearStore: {
-                guard gate.allowsClearing(scope: scope) else { return false }
-                return (try? SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)) != nil
+                (try? await gate.clear(scope: scope) {
+                    try SPVChainStoreRebuild.emptyStore(at: store, movingInto: trash)
+                }) ?? false
             })
+    }
+
+    @MainActor
+    func testTheGateRunsAClearOnlyForAScopeWhoseStopDidNotFail() async {
+        var gate = SPVChainStoreRebuild.StoreClearGate()
+        gate.recordFailedStop(scope: "testnet")
+        var cleared: [String] = []
+
+        let testnet = await gate.clear(scope: "testnet") { cleared.append("testnet") }
+        let mainnet = await gate.clear(scope: "mainnet") { cleared.append("mainnet") }
+
+        XCTAssertFalse(testnet)
+        XCTAssertTrue(mainnet)
+        XCTAssertEqual(cleared, ["mainnet"])
+    }
+
+    @MainActor
+    func testAClearThatThrowsIsNotReportedAsCleared() async {
+        let gate = SPVChainStoreRebuild.StoreClearGate()
+
+        do {
+            _ = try await gate.clear(scope: "testnet") { throw Failure() }
+            XCTFail("the clear's error was swallowed")
+        } catch {}
     }
 
     @MainActor
@@ -492,14 +517,14 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         XCTAssertEqual(
             try Data(contentsOf: testnetStore.appendingPathComponent("headers/segment_0000.dat")),
             Data([1, 2, 3]))
-        try SPVChainStoreRebuild.finish(walletIds: testnet, scope: "testnet", directory: directory, afterStarting: {})
+        SPVChainStoreRebuild.finish(walletIds: testnet, scope: "testnet", directory: directory)
         XCTAssertEqual(
             SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
             [walletId(0xA1)])
 
         XCTAssertEqual(mainnet, [walletId(0xB2)])
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: mainnetStore.path), [])
-        try SPVChainStoreRebuild.finish(walletIds: mainnet, scope: "mainnet", directory: directory, afterStarting: {})
+        SPVChainStoreRebuild.finish(walletIds: mainnet, scope: "mainnet", directory: directory)
         XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: directory))
     }
 

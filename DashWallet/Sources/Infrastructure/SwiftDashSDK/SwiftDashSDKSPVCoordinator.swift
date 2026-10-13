@@ -1012,16 +1012,17 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// away.
     @MainActor
     private func clearChainStoreBeforeStart(scope: String, dataDir: String, reason: String) async -> Bool {
-        guard storeClearGate.allowsClearing(scope: scope) else {
-            Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
-            DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
-            return false
-        }
-        isApplyingChainResync = true
-        defer { isApplyingChainResync = false }
         do {
-            try await Self.resetSPVStore(atPath: dataDir)
-            return true
+            let cleared = try await storeClearGate.clear(scope: scope) {
+                isApplyingChainResync = true
+                defer { isApplyingChainResync = false }
+                try await Self.resetSPVStore(atPath: dataDir)
+            }
+            if !cleared {
+                Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
+                DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
+            }
+            return cleared
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) store delete failed: \(String(describing: error), privacy: .public)")
             DWLogger.log(

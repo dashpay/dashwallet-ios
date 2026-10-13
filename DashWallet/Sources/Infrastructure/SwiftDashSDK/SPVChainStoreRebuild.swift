@@ -234,6 +234,9 @@ enum SPVChainStoreRebuild {
     /// network's chain store, so that scope's store is not cleared until a
     /// later launch; the other scopes' stores are unaffected. Nothing takes a
     /// scope out again: the worker lives as long as the process does.
+    ///
+    /// Both store clears ahead of an SPV start go through it: this rebuild
+    /// and the birth-height resync (`SPVChainResyncMarker`).
     struct StoreClearGate {
         private var stopFailedScopes: Set<String> = []
 
@@ -243,6 +246,15 @@ enum SPVChainStoreRebuild {
 
         func allowsClearing(scope: String) -> Bool {
             !stopFailedScopes.contains(scope)
+        }
+
+        /// Run `clear` for `scope`'s store and return true, or return false
+        /// without running it when that scope's stop failed.
+        @MainActor
+        func clear(scope: String, _ clear: () async throws -> Void) async rethrows -> Bool {
+            guard allowsClearing(scope: scope) else { return false }
+            try await clear()
+            return true
         }
     }
 
