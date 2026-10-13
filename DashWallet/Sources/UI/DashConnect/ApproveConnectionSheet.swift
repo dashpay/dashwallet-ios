@@ -38,6 +38,9 @@ struct ApproveConnectionSheet: View {
     /// would otherwise see nothing at all.
     var errorText: String?
     var onApprove: () -> Void
+    /// Asks again which login this would be. The sheet offers it in place of
+    /// Approve while that is unresolved.
+    var onRetry: () -> Void = {}
     var onDeny: () -> Void
 
     var body: some View {
@@ -79,6 +82,11 @@ struct ApproveConnectionSheet: View {
                             comment: "DashConnect"))
                             .font(.subhead)
                             .foregroundColor(.primaryText)
+                        if let reason = request.unresolvedLoginReason {
+                            Text(reason)
+                                .font(.footnote)
+                                .foregroundColor(.secondaryText)
+                        }
                     } else if let terms = request.login.sessionKeyTerms {
                         sessionKeyPermissions(terms)
                     } else if isRelogin {
@@ -127,8 +135,7 @@ struct ApproveConnectionSheet: View {
                 }
 
                 DashButton(
-                    // With the login unresolved there is nothing to approve:
-                    // the same action asks the network again instead.
+                    // With the login unresolved there is nothing to approve.
                     text: request.login == .unresolved
                         ? NSLocalizedString("Try again", comment: "")
                         : NSLocalizedString("Approve", comment: "DashConnect"),
@@ -137,7 +144,7 @@ struct ApproveConnectionSheet: View {
                     stretch: true,
                     isEnabled: !isLoading,
                     isLoading: isLoading,
-                    action: onApprove
+                    action: request.login == .unresolved ? onRetry : onApprove
                 )
 
                 DashButton(

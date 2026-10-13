@@ -200,20 +200,16 @@ final class ConnectionsViewModel: ObservableObject {
         // `isResolvingRequest` guards the window where a newer request has been
         // accepted but has not published yet: approving during it would
         // authorize the request on screen moments before it is replaced.
-        guard let consent = pendingRequest, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+        // An unresolved login has nothing to approve; the sheet offers
+        // `retryPendingRequest` for it instead.
+        guard let consent = pendingRequest, consent.login != .unresolved,
+              let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
         approveError = nil
 
         Task {
             defer { isApproving = false }
-
-            // The wallet could not tell which login this would be, so the
-            // sheet offered no approval, only another try at finding out.
-            guard consent.login != .unresolved else {
-                self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
-                return
-            }
 
             do {
                 _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
@@ -234,6 +230,20 @@ final class ConnectionsViewModel: ObservableObject {
                     error.localizedDescription
                 )
             }
+        }
+    }
+
+    /// Builds the pending request again, for a sheet that could not tell
+    /// which login it would run. Approves nothing.
+    func retryPendingRequest() {
+        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+
+        isApproving = true
+        approveError = nil
+
+        Task {
+            defer { isApproving = false }
+            self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
     }
 

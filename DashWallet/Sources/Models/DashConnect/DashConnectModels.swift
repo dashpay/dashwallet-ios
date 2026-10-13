@@ -201,6 +201,8 @@ struct ConnectionRequest: Equatable {
     let existingConnection: DAppConnection?
     /// The login approving this request would run.
     var login: AppConnect.Login = .unresolved
+    /// Why the login is unresolved, when the wallet knows.
+    var unresolvedLoginReason: String? = nil
 }
 
 extension ConnectionRequest {
@@ -229,7 +231,8 @@ extension ConnectionRequest {
         walletUsername: String?,
         walletIdentityId: String?,
         existingConnection: DAppConnection?,
-        login: AppConnect.Login = .unresolved
+        login: AppConnect.Login = .unresolved,
+        unresolvedLoginReason: String? = nil
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -238,7 +241,8 @@ extension ConnectionRequest {
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
             existingConnection: existingConnection,
-            login: login
+            login: login,
+            unresolvedLoginReason: unresolvedLoginReason
         )
     }
 }

@@ -111,6 +111,7 @@ struct ConnectionsScreen: View {
             isLoading: viewModel.isApproving,
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
+            onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
         // The one-QR terms make the sheet longer than the fixed height

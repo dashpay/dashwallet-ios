@@ -1368,6 +1368,8 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { viewModel.pendingRequest != nil }
         XCTAssertEqual(viewModel.pendingRequest?.login, .unresolved)
         viewModel.approvePendingRequest()
+        XCTAssertFalse(viewModel.isApproving, "an unresolved login cannot be approved")
+        viewModel.retryPendingRequest()
         await waitUntil { !viewModel.isApproving }
 
         XCTAssertEqual(viewModel.pendingRequest, resolved)
