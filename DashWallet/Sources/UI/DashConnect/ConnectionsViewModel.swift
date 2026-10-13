@@ -200,7 +200,10 @@ final class ConnectionsViewModel: ObservableObject {
         // `isResolvingRequest` guards the window where a newer request has been
         // accepted but has not published yet: approving during it would
         // authorize the request on screen moments before it is replaced.
-        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+        // An unresolved login has nothing to approve; the sheet offers
+        // `retryPendingRequest` for it instead.
+        guard let consent = pendingRequest, consent.login != .unresolved,
+              let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
         approveError = nil
@@ -209,10 +212,17 @@ final class ConnectionsViewModel: ObservableObject {
             defer { isApproving = false }
 
             do {
-                _ = try await dataSource.approveLogin(pendingLoginRequest)
+                _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+            } catch DashConnectPlatformError.approvalOutOfDate {
+                // Another identity became active, or the network now answers
+                // with the other login: what the sheet showed is not what
+                // would run. Nothing was signed. The sheet is rebuilt from
+                // the same request as it stands now, for a new decision.
+                self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 self.approveError = String(
@@ -220,6 +230,20 @@ final class ConnectionsViewModel: ObservableObject {
                     error.localizedDescription
                 )
             }
+        }
+    }
+
+    /// Builds the pending request again, for a sheet that could not tell
+    /// which login it would run. Approves nothing.
+    func retryPendingRequest() {
+        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+
+        isApproving = true
+        approveError = nil
+
+        Task {
+            defer { isApproving = false }
+            self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
     }
 
@@ -296,7 +320,7 @@ final class ConnectionsViewModel: ObservableObject {
             guard let self else { return }
             defer { self.isDisconnecting = false }
             do {
-                try await self.dataSource.disconnect(id: connection.id)
+                try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
             } catch {
                 self.message = ConnectionsScreenMessage(
                     kind: .error,
@@ -309,7 +333,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     func removeConnection(_ connection: DAppConnection) {
         Task {
-            await dataSource.remove(id: connection.id)
+            await dataSource.remove(id: connection.id, scope: connection.scope)
         }
     }
 

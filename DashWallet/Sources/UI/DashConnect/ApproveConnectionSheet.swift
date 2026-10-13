@@ -38,6 +38,9 @@ struct ApproveConnectionSheet: View {
     /// would otherwise see nothing at all.
     var errorText: String?
     var onApprove: () -> Void
+    /// Asks again which login this would be. The sheet offers it in place of
+    /// Approve while that is unresolved.
+    var onRetry: () -> Void = {}
     var onDeny: () -> Void
 
     var body: some View {
@@ -70,7 +73,23 @@ struct ApproveConnectionSheet: View {
                         reloginNotice(existingConnection)
                     }
 
-                    if isRelogin {
+                    // The one-QR login gives the app a key with limits of its
+                    // own, so its terms are spelled out on a repeat sign-in
+                    // too, and when it replaces a two-QR connection.
+                    if request.login == .unresolved {
+                        Text(NSLocalizedString(
+                            "This wallet could not check what this sign-in would give the app.",
+                            comment: "DashConnect"))
+                            .font(.subhead)
+                            .foregroundColor(.primaryText)
+                        if let reason = request.unresolvedLoginReason {
+                            Text(reason)
+                                .font(.footnote)
+                                .foregroundColor(.secondaryText)
+                        }
+                    } else if let terms = request.login.sessionKeyTerms {
+                        sessionKeyPermissions(terms)
+                    } else if isRelogin {
                         reloginPermissionsSummary
                     } else {
                         fullPermissions
@@ -116,13 +135,16 @@ struct ApproveConnectionSheet: View {
                 }
 
                 DashButton(
-                    text: NSLocalizedString("Approve", comment: "DashConnect"),
+                    // With the login unresolved there is nothing to approve.
+                    text: request.login == .unresolved
+                        ? NSLocalizedString("Try again", comment: "")
+                        : NSLocalizedString("Approve", comment: "DashConnect"),
                     style: .filledBlue,
                     size: .large,
                     stretch: true,
                     isEnabled: !isLoading,
                     isLoading: isLoading,
-                    action: onApprove
+                    action: request.login == .unresolved ? onRetry : onApprove
                 )
 
                 DashButton(
@@ -168,20 +190,65 @@ struct ApproveConnectionSheet: View {
     }
 
     private var fullPermissions: some View {
+        permissions(
+            granted: [
+                NSLocalizedString("See your username", comment: "DashConnect"),
+                NSLocalizedString("Verify your identity", comment: "DashConnect"),
+            ],
+            withheld: [
+                NSLocalizedString("Your private keys", comment: "DashConnect"),
+                NSLocalizedString("Withdraw funds", comment: "DashConnect"),
+            ]
+        )
+    }
+
+    /// The one-QR login gives the app a key of its own on the identity, so
+    /// the sheet names what that key can spend and when it stops working.
+    private func sessionKeyPermissions(_ terms: AppConnect.SessionKeyTerms) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            permissions(
+                granted: [
+                    NSLocalizedString("See your username", comment: "DashConnect"),
+                    NSLocalizedString("Verify your identity", comment: "DashConnect"),
+                    NSLocalizedString("Act as you in this app without asking each time", comment: "DashConnect one-QR login"),
+                    // Per sign-in: an earlier sign-in to the app keeps its
+                    // own key and limit until the app is disconnected.
+                    String(
+                        format: NSLocalizedString(
+                            "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.",
+                            comment: "DashConnect one-QR login: the placeholder is an amount with its unit, e.g. 0.05 DASH"),
+                        terms.budgetText
+                    ),
+                ],
+                withheld: [
+                    NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect one-QR login"),
+                    NSLocalizedString("Your Dash balance", comment: "DashConnect one-QR login"),
+                ]
+            )
+
+            Text(
+                String(
+                    format: NSLocalizedString(
+                        "This access ends after %d days, or when you disconnect the app.",
+                        comment: "DashConnect one-QR login"),
+                    terms.lifetimeDays
+                )
+            )
+            .font(.footnote)
+            .foregroundColor(.secondaryText)
+        }
+    }
+
+    private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
                 Text(NSLocalizedString("This app will be able to:", comment: "DashConnect"))
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                PermissionRow(
-                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                    text: NSLocalizedString("See your username", comment: "DashConnect")
-                )
-                PermissionRow(
-                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                    text: NSLocalizedString("Verify your identity", comment: "DashConnect")
-                )
+                ForEach(granted, id: \.self) { text in
+                    PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: text)
+                }
             }
 
             VStack(alignment: .leading, spacing: 12) {
@@ -189,14 +256,9 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                PermissionRow(
-                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                    text: NSLocalizedString("Your private keys", comment: "DashConnect")
-                )
-                PermissionRow(
-                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                    text: NSLocalizedString("Withdraw funds", comment: "DashConnect")
-                )
+                ForEach(withheld, id: \.self) { text in
+                    PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: text)
+                }
             }
         }
     }
@@ -248,13 +310,14 @@ private struct PermissionRow: View {
     let text: String
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .top, spacing: 6) {
             Icon(name: icon)
                 .frame(width: 18, height: 18)
 
             Text(text)
                 .font(.subhead)
                 .foregroundColor(.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -309,6 +372,22 @@ private let dashConnectTruncateMiddleCheck: Bool = {
     )
 }
 
+#Preview("Approve One-QR") {
+    ApproveConnectionSheet(
+        request: ConnectionRequest(
+            loginRequest: MockDashConnectDataSource.sampleLoginRequest,
+            appLabel: "Yappr",
+            appUrl: "yap.pr",
+            walletUsername: "dashuser",
+            walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
+            existingConnection: nil,
+            login: .oneQR(.current)
+        ),
+        onApprove: {},
+        onDeny: {}
+    )
+}
+
 #Preview("Approve Re-Login") {
     ApproveConnectionSheet(
         request: ConnectionRequest(
@@ -317,7 +396,8 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             appUrl: "yap.pr",
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
-            existingConnection: MockDashConnectDataSource.sample(.active)
+            existingConnection: MockDashConnectDataSource.sample(.active),
+            login: .twoQR
         ),
         onApprove: {},
         onDeny: {}

@@ -189,6 +189,11 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let status: ConnectionStatus
     let updatedAt: Date
     var loginKind: DashConnectLoginKind = .twoQR
+    /// Names the wallet and network a data source published this row for;
+    /// `nil` on a row that was built or read from a store. Not stored. It
+    /// goes back with a disconnect or a remove, so a row picked from a list
+    /// that has since changed wallets is not acted on in the new one.
+    var scope: String? = nil
 }
 
 /// A pending request derived from a scanned login QR code.
@@ -199,6 +204,10 @@ struct ConnectionRequest: Equatable {
     let walletUsername: String?
     let walletIdentityId: String?
     let existingConnection: DAppConnection?
+    /// The login approving this request would run.
+    var login: AppConnect.Login = .unresolved
+    /// Why the login is unresolved, when the wallet knows.
+    var unresolvedLoginReason: String? = nil
 }
 
 extension ConnectionRequest {
@@ -226,7 +235,9 @@ extension ConnectionRequest {
         appUrl: String,
         walletUsername: String?,
         walletIdentityId: String?,
-        existingConnection: DAppConnection?
+        existingConnection: DAppConnection?,
+        login: AppConnect.Login = .unresolved,
+        unresolvedLoginReason: String? = nil
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -234,7 +245,21 @@ extension ConnectionRequest {
             appContractId: loginRequest.contractId.toBase58String(),
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
-            existingConnection: existingConnection
+            existingConnection: existingConnection,
+            login: login,
+            unresolvedLoginReason: unresolvedLoginReason
         )
+    }
+}
+
+extension AppConnect.SessionKeyTerms {
+    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
+    var budgetText: String {
+        PlatformCreditsFormatter.dashString(budgetCredits)
+    }
+
+    /// The lifetime in whole days.
+    var lifetimeDays: Int {
+        Int(lifetime / (24 * 60 * 60))
     }
 }

@@ -111,9 +111,12 @@ struct ConnectionsScreen: View {
             isLoading: viewModel.isApproving,
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
+            onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApproving)
+        // The one-QR terms make the sheet longer than the fixed height
+        // shows; who pays and when access ends must not sit below the fold.
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {

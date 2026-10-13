@@ -28,8 +28,46 @@ enum AppConnect {
     static let sessionKeyBudgetCredits: UInt64 = 5_000_000_000 // 0.05 DASH
     static let sessionKeyLifetime: TimeInterval = 90 * 24 * 60 * 60
 
+    /// What a one-QR approval gives the app: how many of the identity's
+    /// credits its key may spend and for how long the key works. The approval
+    /// sheet shows these values and the key is registered with them.
+    struct SessionKeyTerms: Equatable {
+        let budgetCredits: UInt64
+        let lifetime: TimeInterval
+
+        static let current = SessionKeyTerms(
+            budgetCredits: sessionKeyBudgetCredits,
+            lifetime: sessionKeyLifetime)
+
+        func expiresAt(from now: Date) -> UInt64 {
+            UInt64((now.addingTimeInterval(lifetime).timeIntervalSince1970 * 1000).rounded())
+        }
+    }
+
     static func isAvailable(protocolVersion: UInt32) -> Bool {
         protocolVersion >= minimumProtocolVersion
+    }
+
+    /// Which login an approval would run, as far as the wallet could tell
+    /// when it built the approval sheet.
+    enum Login: Equatable {
+        /// The network did not say which login it takes, so what approving
+        /// would give the app is unknown and there is nothing to approve.
+        case unresolved
+        /// Registers no key at approval.
+        case twoQR
+        /// Registers a session key with these terms.
+        case oneQR(SessionKeyTerms)
+
+        var sessionKeyTerms: SessionKeyTerms? {
+            if case .oneQR(let terms) = self { return terms }
+            return nil
+        }
+    }
+
+    /// The login a network at `protocolVersion` gets.
+    static func login(protocolVersion: UInt32) -> Login {
+        isAvailable(protocolVersion: protocolVersion) ? .oneQR(.current) : .twoQR
     }
 
     /// The DIP-13 leaf of the session key: `hash256` of the app's ephemeral
@@ -39,24 +77,42 @@ enum AppConnect {
         Data(SHA256.hash(data: Data(SHA256.hash(data: appEphemeralPubKey))))
     }
 
-    static func expiresAt(from now: Date) -> UInt64 {
-        UInt64((now.addingTimeInterval(sessionKeyLifetime).timeIntervalSince1970 * 1000).rounded())
-    }
-
     /// What the identity already holds for a derived session key.
     enum SessionKeyState: Equatable {
         /// Not on the identity: register it.
         case absent
-        /// Registered and able to sign: publish without an identity update.
+        /// Registered, able to sign, and shown to be this app's key within
+        /// the approved terms: publish without an identity update.
         case usable(keyId: UInt32)
-        /// Registered but disabled or expired. Platform never re-adds a key,
-        /// so this request cannot be answered; the app has to ask again.
+        /// Registered but disabled or expired, or not shown to be this app's
+        /// key within the approved terms. Platform never re-adds a key, so
+        /// this request cannot be answered; the app has to ask again.
         case unusable
     }
 
+    /// How far the device clock may have moved back since a key was
+    /// registered before that key's expiry counts as later than the terms
+    /// allow. Without it a clock correction between two tries of one request
+    /// would turn the wallet's own key away.
+    static let clockTolerance: TimeInterval = 60 * 60
+
+    /// The session key is derived from the identity and the request's
+    /// ephemeral key, not from the app's contract, so a request that repeats
+    /// another app's ephemeral key derives that app's key. A registered key
+    /// is therefore reused only when it is bound to `appContractId` and
+    /// carries limits no wider than `terms`.
+    ///
+    /// The fetched key list carries no bounds. The bound is read from
+    /// `bindings`; a key the store cannot place counts as this app's only
+    /// when `grantedKeyIds` holds it — the keys this wallet recorded giving
+    /// this app for this request.
     static func sessionKeyState(
         publicKeyHash160: Data,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        appContractId: Data,
+        bindings: [KeyBinding],
+        grantedKeyIds: Set<UInt32>,
+        terms: SessionKeyTerms,
         now: Date
     ) -> SessionKeyState {
         guard let key = currentIdentityPublicKeys.first(where: {
@@ -68,16 +124,28 @@ enum AppConnect {
         guard key.purpose == .authentication,
               key.securityLevel == .high,
               key.disabledAt == nil,
-              key.expiresAt.map({ $0 > nowMilliseconds }) ?? true else {
+              let totalBudget = key.totalBudget,
+              totalBudget <= terms.budgetCredits,
+              let expiresAt = key.expiresAt,
+              expiresAt > nowMilliseconds,
+              UInt64(expiresAt) <= terms.expiresAt(from: now.addingTimeInterval(clockTolerance)) else {
             return .unusable
         }
-        return .usable(keyId: UInt32(bitPattern: key.keyId))
+        let keyId = UInt32(bitPattern: key.keyId)
+        let stored = bindings.first { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
+        guard stored.map({ $0.singleContractId == appContractId }) ?? grantedKeyIds.contains(keyId) else {
+            return .unusable
+        }
+        return .usable(keyId: keyId)
     }
 
+    /// The id for a new key: one above the highest on the identity, disabled
+    /// keys included. `nil` when that id is the last one a key can have.
     static func nextKeyId(
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> UInt32 {
-        (currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0) + 1
+    ) -> UInt32? {
+        let highest = currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0
+        return highest == .max ? nil : highest + 1
     }
 
     /// The key an app is given: it can only sign for the contract the request
@@ -117,6 +185,31 @@ enum AppConnect {
         /// The store has a bound for the key that this build cannot read, so
         /// the key's app is unknown rather than "another one".
         var hasUnreadableBound = false
+        /// The stored key has the type, purpose and level of the two-QR
+        /// login's authentication key, or of its encryption key.
+        var isTwoQRAuthenticationKeyShaped = false
+        var isTwoQREncryptionKeyShaped = false
+    }
+
+    /// Whether the store shows either key of the two-QR login, not disabled,
+    /// in the kind that login registers it. A two-QR login leaves no grant
+    /// record, so on an identity that is not the active one this is how its
+    /// keys are recognised.
+    static func holdsLiveTwoQRLoginKey(
+        authenticationPublicKeyHash160: Data,
+        encryptionPublicKey: Data,
+        bindings: [KeyBinding]
+    ) -> Bool {
+        bindings.contains {
+            !$0.isDisabled
+                && (($0.isTwoQRAuthenticationKeyShaped && $0.data == authenticationPublicKeyHash160)
+                    || ($0.isTwoQREncryptionKeyShaped && $0.data == encryptionPublicKey))
+        }
+    }
+
+    /// Whether the store shows a live session key bound to `appContractId`.
+    static func holdsLiveSessionKey(appContractId: Data, bindings: [KeyBinding]) -> Bool {
+        bindings.contains { $0.singleContractId == appContractId && !$0.isDisabled && $0.isSessionKeyShaped }
     }
 
     /// The most keys one identity update may disable (Platform consensus).
@@ -155,11 +248,17 @@ enum AppConnect {
     /// has no grant record for. A key that is gone, already disabled, or of
     /// another shape is left alone, including one another wallet gave the
     /// app with a document-type bound, a single limit or another key type.
+    /// A key without a grant record whose payload is
+    /// `twoQRAuthenticationKeyHash160` is left alone as well: the two-QR
+    /// login's authentication key has the same kind and bound, and a
+    /// `dash-st:` registration may have put limits on it. The caller passes
+    /// it when that key is to stay.
     static func sessionKeyIdsToDisable(
         for grants: [AppConnectGrant],
         appContractId: Data,
         bindings: [KeyBinding],
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        twoQRAuthenticationKeyHash160: Data? = nil
     ) -> [UInt32] {
         let granted = Set(grants.map(\.sessionKeyId))
         return currentIdentityPublicKeys
@@ -167,7 +266,8 @@ enum AppConnect {
                 guard isLiveSessionKey(key) else { return false }
                 let keyId = UInt32(bitPattern: key.keyId)
                 if granted.contains(keyId) { return true }
-                guard key.totalBudget != nil, key.expiresAt != nil else { return false }
+                guard key.totalBudget != nil, key.expiresAt != nil,
+                      key.data != twoQRAuthenticationKeyHash160 else { return false }
                 return bindings.contains {
                     $0.keyId == keyId && $0.data == key.data && $0.singleContractId == appContractId
                 }
@@ -224,6 +324,17 @@ enum AppConnect {
     ) -> [UInt32] {
         let known = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
         return Set(grants.map(\.sessionKeyId)).subtracting(known).sorted()
+    }
+
+    /// What a disconnect leaves of the matching records once their keys are
+    /// disabled. A record whose response is known to be gone is done; the
+    /// rest stay, marked, until their response is deleted, or found if its
+    /// publish never confirmed.
+    static func markKeysDisabled(in grants: inout [AppConnectGrant], where matches: (AppConnectGrant) -> Bool) {
+        grants.removeAll { matches($0) && $0.responseDeleted == true }
+        for index in grants.indices where matches(grants[index]) {
+            grants[index].keyDisabled = true
+        }
     }
 
     /// The query for one identity's response to one request, in the order of
@@ -396,6 +507,15 @@ struct AppConnectGrant: Codable, Equatable {
         [identityId, appContractId, String(sessionKeyId), values.appEphemeralPubKeyHash].joined(separator: "|")
     }
 
+    /// Call before a publish is submitted. Until Platform confirms it, the
+    /// response may be there or not, whatever the record said before: a
+    /// response an earlier login deleted is published again when its request
+    /// comes back.
+    mutating func markPublishStarted() {
+        documentId = nil
+        responseDeleted = nil
+    }
+
     /// Whether there is a response on Platform this record can still delete.
     var hasDeletableResponse: Bool {
         documentId != nil && responseDeleted != true
@@ -414,6 +534,9 @@ protocol AppConnectResponseStore {
     var canPersist: Bool { get }
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
+    /// This store fixed to one wallet, and to the network scope it has now,
+    /// like `DashConnectStore.pinned(toWalletIdHex:)`.
+    func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectResponseStore
 }
 
 extension AppConnectResponseStore {
@@ -425,7 +548,7 @@ extension AppConnectResponseStore {
 /// chain and the key ids are visible on the identity.
 final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     private let defaults: UserDefaults
-    private let scopeKeyProvider: () -> String?
+    private let scope: Scope
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
@@ -433,18 +556,28 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
         subsystem: "org.dashfoundation.dash",
         category: "dashconnect.app-connect-store")
 
-    init(
+    /// Where the scope comes from.
+    enum Scope {
+        /// Borrowed from a connection store, so both keep one wallet's data.
+        case connections(UserDefaultsDashConnectStore)
+        /// Handed in as it is; it names no wallet.
+        case key(() -> String?)
+    }
+
+    convenience init(
         defaults: UserDefaults = .standard,
         network: DashConnectNetwork,
         scopeKeyProvider: (() -> String?)? = nil
     ) {
+        self.init(
+            defaults: defaults,
+            scope: scopeKeyProvider.map(Scope.key)
+                ?? .connections(UserDefaultsDashConnectStore(defaults: defaults, network: network)))
+    }
+
+    init(defaults: UserDefaults, scope: Scope) {
         self.defaults = defaults
-        if let scopeKeyProvider {
-            self.scopeKeyProvider = scopeKeyProvider
-        } else {
-            let connections = UserDefaultsDashConnectStore(defaults: defaults, network: network)
-            self.scopeKeyProvider = { connections.storageKey }
-        }
+        self.scope = scope
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .millisecondsSince1970
@@ -456,10 +589,30 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     }
 
     private var storageKey: String? {
-        scopeKeyProvider().map { "\($0).app-connect-responses.v1" }
+        let scopeKey: String?
+        switch scope {
+        case .connections(let connections): scopeKey = connections.storageKey
+        case .key(let provider): scopeKey = provider()
+        }
+        return scopeKey.map { "\($0).app-connect-responses.v1" }
     }
 
-    var canPersist: Bool { storageKey != nil }
+    func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectResponseStore {
+        switch scope {
+        case .connections(let connections):
+            return UserDefaultsAppConnectResponseStore(
+                defaults: defaults, scope: .connections(connections.pinnedStore(toWalletIdHex: walletIdHex)))
+        case .key(let provider):
+            // A handed-in scope names no wallet to replace: it is fixed to
+            // the value it has now.
+            let scopeKey = provider()
+            return UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .key { scopeKey })
+        }
+    }
+
+    /// False as well while the stored value is not a list of rows: `save`
+    /// leaves such a value alone, so nothing new would be kept.
+    var canPersist: Bool { storageKey != nil && !readRows().isNotRowList }
 
     func load() -> [AppConnectGrant] {
         readRows().grants

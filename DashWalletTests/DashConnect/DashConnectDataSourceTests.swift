@@ -122,7 +122,8 @@ final class DashConnectDataSourceTests: XCTestCase {
         )
         let dataSource = MockDashConnectDataSource(initial: [existing])
 
-        _ = try await dataSource.approveLogin(MockDashConnectDataSource.sampleLoginRequest)
+        _ = try await dataSource.approveLogin(
+            MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
         XCTAssertEqual(dataSource.connectionsSnapshot.count, 1)
         XCTAssertEqual(dataSource.connectionsSnapshot.first?.id, existing.id)
