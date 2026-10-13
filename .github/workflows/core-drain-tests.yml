@@ -19,5 +19,7 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Test durable markers and form recovery
         run: python3 scripts/test_core_drain.py

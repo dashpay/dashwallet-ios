@@ -51,11 +51,24 @@ struct Quote {
     static var outcome = WalletDrainOutcome(state: .pending, outpoint: nil)
     static var quotes = 0
     static var lookups: [UUID] = []
+    static var suspendNextStatus = false
+    static var statusGate: CheckedContinuation<Void, Never>?
+    static var didRemoveMarker: (() -> Void)?
+    var store: Self { self }
+    func load(_ context: CoreShieldedDrainContext) throws -> CoreShieldedDrainOperation? { Self.recorded }
     static func currentContext() throws -> CoreShieldedDrainContext { context }
     func status(for operation: CoreShieldedDrainOperation) async throws -> WalletDrainOutcome {
         Self.lookups.append(operation.id)
-        if Self.outcome.state != .pending { Self.recorded = nil }
-        return Self.outcome
+        let outcome = Self.outcome
+        if outcome.state != .pending { Self.recorded = nil }
+        if Self.suspendNextStatus {
+            Self.suspendNextStatus = false
+            await withCheckedContinuation { continuation in
+                Self.statusGate = continuation
+                Self.didRemoveMarker?()
+            }
+        }
+        return outcome
     }
     func operationStatus(_ context: CoreShieldedDrainContext) async throws
         -> (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)? {
@@ -106,6 +119,9 @@ final class RecoveryFormTests: XCTestCase {
         CoreShieldedDrainService.recorded = operation
         CoreShieldedDrainService.quotes = 0
         CoreShieldedDrainService.lookups = []
+        CoreShieldedDrainService.suspendNextStatus = false
+        CoreShieldedDrainService.statusGate = nil
+        CoreShieldedDrainService.didRemoveMarker = nil
         return operation
     }
     @MainActor func testCompletedStatusShowsSuccessWithZeroCoreWithoutRequestingNewQuote() async {
@@ -143,6 +159,31 @@ final class RecoveryFormTests: XCTestCase {
         form.performCoreDrainAction()
         await form.coreDrainTask?.value
         XCTAssertTrue(form.coreDrainCompleted)
+        XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
+        XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
+    }
+    @MainActor func testBalanceRefreshDuringInitialCompletionRetainsUUIDAfterMarkerRemoval() async {
+        let operation = reset()
+        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: 1)
+        CoreShieldedDrainService.suspendNextStatus = true
+        let markerRemoved = expectation(description: "Status removed marker but has not delivered completion")
+        CoreShieldedDrainService.didRemoveMarker = { markerRemoved.fulfill() }
+        let form = RecoveryForm()
+        form.refreshCoreDrainPreview()
+        let initialTask = form.coreDrainTask
+        await fulfillment(of: [markerRemoved], timeout: 2)
+        XCTAssertNil(CoreShieldedDrainService.recorded)
+        XCTAssertEqual(form.coreDrainOperation?.id, operation.id)
+        // This is the balance subscriber's refresh while the initial status
+        // task is suspended in the post-completion projection refresh.
+        form.refreshCoreDrainPreview()
+        await form.coreDrainTask?.value
+        CoreShieldedDrainService.statusGate?.resume()
+        CoreShieldedDrainService.statusGate = nil
+        await initialTask?.value
+        XCTAssertTrue(form.coreDrainCompleted)
+        XCTAssertNotNil(form.coreDrainCompletionNotice)
+        XCTAssertNil(form.maxNotice)
         XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }

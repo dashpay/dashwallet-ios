@@ -540,14 +540,17 @@ final class InternalTransferViewModel: ObservableObject {
                 }
                 self.coreDrainContext = context
                 let service = CoreShieldedDrainService()
+                // Retain the UUID before status can clear its marker and
+                // suspend. An overlapping balance refresh must query this same
+                // operation even when it cancels the first status task.
+                if self.coreDrainOperation == nil {
+                    self.coreDrainOperation = try service.store.load(context)
+                }
                 let outcome: WalletDrainOutcome?
                 if let operation = self.coreDrainOperation {
                     outcome = try await service.status(for: operation)
                 } else {
-                    let status = try await service.operationStatus(context)
-                    guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
-                    self.coreDrainOperation = status?.operation
-                    outcome = status?.outcome
+                    outcome = nil
                 }
                 guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
                 if outcome?.state == .completed {
