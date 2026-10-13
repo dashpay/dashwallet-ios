@@ -2396,6 +2396,121 @@ final class AppConnectLoginTests: XCTestCase {
         await fulfillment(of: [moved], timeout: 2)
     }
 
+    func testOperationsForOneWalletRunOneAtATimeInArrivalOrder() async {
+        let gate = DashConnectOperationGate()
+        let log = OperationLog()
+        let firstStarted = expectation(description: "the first operation is running")
+        let secondWaits = expectation(description: "the second operation waits")
+        let thirdWaits = expectation(description: "the third operation waits")
+        let release = AsyncStream<Void>.makeStream()
+
+        let first = Task {
+            await gate.run(for: "wallet-a") {
+                await log.add("first starts")
+                firstStarted.fulfill()
+                for await _ in release.stream { break }
+                await log.add("first ends")
+            }
+        }
+        await fulfillment(of: [firstStarted], timeout: 2)
+        let second = Task {
+            await gate.run(for: "wallet-a", onWait: { secondWaits.fulfill() }) { await log.add("second runs") }
+        }
+        await fulfillment(of: [secondWaits], timeout: 2)
+        let third = Task {
+            await gate.run(for: "wallet-a", onWait: { thirdWaits.fulfill() }) { await log.add("third runs") }
+        }
+        await fulfillment(of: [thirdWaits], timeout: 2)
+        // Another wallet does not wait for this one.
+        await gate.run(for: "wallet-b") { await log.add("other wallet runs") }
+        release.continuation.yield()
+        await first.value
+        await second.value
+        await third.value
+
+        let entries = await log.entries
+        XCTAssertEqual(
+            entries, ["first starts", "other wallet runs", "first ends", "second runs", "third runs"])
+    }
+
+    func testADisconnectWaitsForAnOperationAnotherDataSourceIsRunning() async throws {
+        let gate = DashConnectOperationGate()
+        let active = ActiveWallet("wallet-a")
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row], operationGate: gate)
+        let shown = Self.shownRows(dataSource)
+        let otherStarted = expectation(description: "the other operation is running")
+        let release = AsyncStream<Void>.makeStream()
+        // What another data source of the same wallet would be doing.
+        let other = Task {
+            await gate.run(for: "wallet-a") {
+                otherStarted.fulfill()
+                for await _ in release.stream { break }
+                // It wrote a row of its own meanwhile.
+                connections.save([row, Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)])
+            }
+        }
+        await fulfillment(of: [otherStarted], timeout: 2)
+
+        let disconnect = Task { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(connections.load().map(\.status), [.active], "the disconnect has not run yet")
+
+        release.continuation.yield()
+        await other.value
+        try await disconnect.value
+
+        let rows = connections.load()
+        XCTAssertEqual(rows.count, 2, "the row the other operation wrote is kept")
+        XCTAssertEqual(rows.first { $0.id == row.id }?.status, .approved)
+    }
+
+    func testAnOperationDoesNotStartForAWalletThatIsNoLongerActiveWhenItsTurnComes() async {
+        let gate = DashConnectOperationGate()
+        let active = ActiveWallet("wallet-a")
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row], operationGate: gate)
+        let shown = Self.shownRows(dataSource)
+        let otherStarted = expectation(description: "the other operation is running")
+        let release = AsyncStream<Void>.makeStream()
+        let other = Task {
+            await gate.run(for: "wallet-a") {
+                otherStarted.fulfill()
+                for await _ in release.stream { break }
+            }
+        }
+        await fulfillment(of: [otherStarted], timeout: 2)
+
+        let disconnect = Task {
+            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
+        }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        active.idHex = "wallet-b"
+        release.continuation.yield()
+        await other.value
+        await disconnect.value
+
+        active.idHex = "wallet-a"
+        XCTAssertEqual(connections.load(), [row])
+    }
+
+    func testAFailedOperationHandsTheTurnOn() async {
+        let gate = DashConnectOperationGate()
+
+        do {
+            try await gate.run(for: "wallet-a") { throw DashConnectPlatformError.noWallet }
+            XCTFail("the failure was swallowed")
+        } catch {}
+        let ran = await gate.run(for: "wallet-a") { true }
+
+        XCTAssertTrue(ran)
+    }
+
+    private actor OperationLog {
+        private(set) var entries: [String] = []
+        func add(_ entry: String) { entries.append(entry) }
+    }
+
     func testDisconnectWithNoActiveWalletIsRefused() async {
         let active = ActiveWallet(nil)
         let (dataSource, _) = makeScopedDataSource(active: active)
@@ -2443,7 +2558,8 @@ final class AppConnectLoginTests: XCTestCase {
     private func makeScopedDataSource(
         active: ActiveWallet,
         rows: [DAppConnection] = [],
-        notificationCenter: NotificationCenter = NotificationCenter()
+        notificationCenter: NotificationCenter = NotificationCenter(),
+        operationGate: DashConnectOperationGate = DashConnectOperationGate()
     ) -> (PlatformDashConnectDataSource, UserDefaultsDashConnectStore) {
         let connections = UserDefaultsDashConnectStore(
             defaults: defaults,
@@ -2457,7 +2573,8 @@ final class AppConnectLoginTests: XCTestCase {
             store: connections,
             responseStore: UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections)),
             activeWalletIdHex: { active.idHex },
-            notificationCenter: notificationCenter
+            notificationCenter: notificationCenter,
+            operationGate: operationGate
         )
         return (dataSource, connections)
     }

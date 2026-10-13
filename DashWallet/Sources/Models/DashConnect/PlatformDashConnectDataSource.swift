@@ -448,6 +448,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let responseStore: any AppConnectResponseStore
     private let subject: CurrentValueSubject<[DAppConnection], Never>
     private let shownRows: ShownRows
+    private let operationGate: DashConnectOperationGate
     private let activeWalletIdHex: () -> String?
     private var walletChangeObserver: AnyCancellable?
     private let authorizer: DWIdentityAuthorizer
@@ -474,6 +475,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
         notificationCenter: NotificationCenter = .default,
+        operationGate: DashConnectOperationGate = .shared,
         now: @escaping () -> Date = Date.init
     ) {
         assert(
@@ -486,6 +488,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.stateTransitionParser = stateTransitionParser
         self.now = now
         self.activeWalletIdHex = activeWalletIdHex
+        self.operationGate = operationGate
         let active = Self.pinnedStores(
             walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore)
         self.shownRows = ShownRows(scope: active?.scope)
@@ -541,7 +544,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
         }
 
-        let existingConnection = await rows(in: context.stores).first { $0.id == fallback.appContractId }
+        let existingConnection = rows(in: context.stores).first { $0.id == fallback.appContractId }
 
         // Which login this network gets is settled here, so the sheet can
         // show what the app is given. With the version unknown the request
@@ -572,7 +575,31 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
+    /// One approval, key registration or disconnect at a time for the active
+    /// wallet, whichever data source it came through. The turn is for the
+    /// wallet that was active when it was asked for: if another one is
+    /// active when it comes, the operation does not start.
+    private func gated<T>(_ operation: () async throws -> T) async throws -> T {
+        let walletIdHex = activeWalletIdHex() ?? ""
+        return try await operationGate.run(
+            for: walletIdHex,
+            onWait: { Self.logger.info("🔗 DASHCONNECT :: waiting for another DashConnect operation to finish") }
+        ) {
+            guard (activeWalletIdHex() ?? "") == walletIdHex else {
+                throw DashConnectPlatformError.walletChanged
+            }
+            return try await operation()
+        }
+    }
+
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
+        try await gated { try await approveLoginInTurn(request, consent: consent) }
+    }
+
+    private func approveLoginInTurn(
+        _ request: DashKeyRequest,
+        consent: ConnectionRequest
+    ) async throws -> DAppConnection {
         Self.logger.info("🔗 DASHCONNECT :: approveLogin started")
         try validateNetwork(request.network)
         await showActiveWalletRows()
@@ -986,9 +1013,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return (identifier, values)
     }
 
-    /// Reads, changes and writes the grant records in one step with no
-    /// suspension point in between, so an approval and a disconnect that
-    /// overlap cannot write a stale copy over each other's change.
+    /// Reads, changes and writes the grant records in one step, from the
+    /// store each time. Every caller runs inside `gated`, so no other
+    /// operation of this wallet writes them in between.
     @discardableResult
     private func updateGrants<T>(in stores: Stores, _ change: (inout [AppConnectGrant]) -> T) -> T {
         var grants = stores.grants.load()
@@ -1119,7 +1146,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         switch parsed {
         case .keyRegistration(let transition):
-            try await completeKeyRegistration(transition, context: context)
+            // Only this branch changes the identity and the rows.
+            try await gated { try await completeKeyRegistration(transition, context: context) }
             return .keyRegistrationCompleted
         case .tokenPurchase(let purchase):
             return .tokenPurchaseApprovalRequired(
@@ -1142,7 +1170,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // recently approved connection instead would derive app B's keys for
         // a QR scanned from app A.
         let pendingConnection = try Self.pendingApprovedConnectionForKeyRegistration(
-            in: await rows(in: context.stores),
+            in: rows(in: context.stores),
             boundContractId: Self.boundAppContractId(in: transition)
         )
         guard let pendingAppContractId = Self.decodeIdentifier(pendingConnection.id) else {
@@ -1286,7 +1314,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return DashConnectTokenPurchaseRequest(
             // A connection approved earlier for the same contract names the
             // app; otherwise the sheet falls back to the contract id.
-            appName: await rows(in: context.stores).first { $0.id == contractIdBase58 }?.name,
+            appName: rows(in: context.stores).first { $0.id == contractIdBase58 }?.name,
             ownerId: purchase.ownerId,
             dataContractId: purchase.dataContractId,
             tokenId: purchase.tokenId,
@@ -1417,6 +1445,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     func disconnect(id: String, scope: String?) async throws {
+        try await gated { try await disconnectInTurn(id: id, scope: scope) }
+    }
+
+    private func disconnectInTurn(id: String, scope: String?) async throws {
         guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
         }
@@ -1427,7 +1459,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard scope == stores.scope else {
             throw DashConnectPlatformError.walletChanged
         }
-        let isOneQR = await rows(in: stores).first { $0.id == id }?.loginKind == .oneQR
+        let isOneQR = rows(in: stores).first { $0.id == id }?.loginKind == .oneQR
         let hasGrants = stores.grants.load().contains { $0.appContractId == id }
         if isOneQR || hasGrants {
             let liveElsewhere = try await revokeAppConnectGrants(
@@ -1602,12 +1634,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.info("🔗 DASHCONNECT :: app key(s) disabled")
         }
 
-        // Every session key this identity gave the app is now off.
-        updateGrants(in: stores) { AppConnect.markKeysDisabled(in: &$0, where: isGranted) }
+        // The session keys of the grants read above are now off, and only
+        // those are marked.
+        let revoked = Set(granted.map(\.key))
+        func isRevoked(_ grant: AppConnectGrant) -> Bool { revoked.contains(grant.key) }
+        updateGrants(in: stores) { AppConnect.markKeysDisabled(in: &$0, where: isRevoked) }
 
         if let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
             await deleteAppConnectResponses(
-                where: isGranted,
+                where: isRevoked,
                 responseContractId: responseContractId,
                 context: context,
                 signer: signer
@@ -2059,11 +2094,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return active
     }
 
-    /// The rows of the wallet `stores` belongs to: the published list while
-    /// it is that wallet's, the stored rows otherwise.
-    @MainActor
+    /// The rows of the wallet `stores` belongs to, as stored. Not the
+    /// published list: another data source over the same store may have
+    /// written since this one loaded it.
     private func rows(in stores: Stores) -> [DAppConnection] {
-        shownRows.scope == stores.scope ? Stores.stored(subject.value) : stores.connections.load()
+        stores.connections.load()
     }
 
     @MainActor
