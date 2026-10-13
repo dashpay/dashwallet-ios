@@ -77,6 +77,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case grantStoreUnavailable
     case approvalOutOfDate
     case grantNotRecorded
+    case noFreeKeyId
+    case otherIdentitiesNotChecked
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -140,6 +142,12 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.",
                 comment: "DashConnect")
+        case .otherIdentitiesNotChecked:
+            return NSLocalizedString(
+                "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.",
+                comment: "DashConnect")
+        case .noFreeKeyId:
+            return NSLocalizedString("This identity cannot take another key.", comment: "DashConnect")
         case .approvalOutOfDate:
             return NSLocalizedString(
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
@@ -743,7 +751,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             totalBudget = registered?.totalBudget
             expiresAt = registered?.expiresAt.map { UInt64(max(0, $0)) }
         case .absent:
-            let keyId = AppConnect.nextKeyId(currentIdentityPublicKeys: currentPublicKeys)
+            guard let keyId = AppConnect.nextKeyId(currentIdentityPublicKeys: currentPublicKeys) else {
+                throw DashConnectPlatformError.noFreeKeyId
+            }
             let budget = terms.budgetCredits
             let expiry = terms.expiresAt(from: now())
             let key = AppConnect.sessionIdentityPubkey(
@@ -1373,9 +1383,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Returns whether a grant record shows the app with a live key on
     /// another identity of this wallet. When this identity gave it none, that
     /// is thrown instead: nothing was turned off.
-    /// TODO(app-connect-other-identity-keys): a key on another identity that
-    /// has no grant record is not seen, so the row can go while that key is
-    /// live. Only the active identity's keys are looked up.
+    /// For a row made by the one-QR login that also covers keys on another
+    /// identity that no grant record names, as far as the wallet's store
+    /// shows them.
     ///
     /// `checksUnrecordedKeys` is set for a row made by the one-QR login: with
     /// no record for this identity the keys are still looked for on it. When
@@ -1462,7 +1472,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 currentIdentityPublicKeys: currentPublicKeys
             ))).sorted()
         }
-        if granted.isEmpty, keyIds.isEmpty, hasLiveGrantElsewhere() {
+        // For a one-QR row, the keys on another identity that no grant
+        // record shows. `nil` when that could not be told.
+        let heldOnAnotherIdentity: Bool? = checksUnrecordedKeys
+            ? await anotherIdentityHoldsAppKeys(appContractId: appContract, context: context)
+            : false
+        if granted.isEmpty, keyIds.isEmpty, hasLiveGrantElsewhere() || heldOnAnotherIdentity == true {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
         if !keyIds.isEmpty {
@@ -1491,17 +1506,99 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 signer: signer
             )
         }
-        return hasLiveGrantElsewhere()
+        if hasLiveGrantElsewhere() || heldOnAnotherIdentity == true { return true }
+        // This identity's keys are off. Whether another one holds a key of
+        // the app could not be read from the store, so the row stays, with
+        // an error rather than without one.
+        guard heldOnAnotherIdentity != nil else { throw DashConnectPlatformError.otherIdentitiesNotChecked }
+        return false
     }
 
-    /// The public halves of the keys the two-QR login derives for this
-    /// identity and app.
+    /// Whether the wallet's store shows another identity of this wallet with
+    /// a live key of the app that no grant record names: a session key bound
+    /// to the app's contract, or a key the two-QR login derives for it.
+    /// `nil` when the store could not be read or the keys not derived.
+    ///
+    /// The store is as fresh as each identity's last load, and an identity
+    /// it does not hold is not seen.
+    private func anotherIdentityHoldsAppKeys(appContractId: Data, context: Context) async -> Bool? {
+        do {
+            let others = try Self.storedWalletIdentities(
+                walletId: context.wallet.walletId,
+                network: context.network,
+                modelContainer: context.modelContainer
+            ).filter { $0.identityId != context.identityId }
+            for other in others {
+                let bindings = try Self.storedKeyBindings(
+                    identityId: other.identityId.toBase58String(), modelContainer: context.modelContainer)
+                if AppConnect.holdsLiveSessionKey(appContractId: appContractId, bindings: bindings) { return true }
+                // Derive only for an identity that has a live key of either
+                // two-QR kind at all.
+                guard bindings.contains(where: {
+                    !$0.isDisabled && ($0.isTwoQRAuthenticationKeyShaped || $0.isTwoQREncryptionKeyShaped)
+                }) else { continue }
+                let twoQRKeys = try await twoQRLoginPublicKeys(
+                    appContractId: appContractId,
+                    identityId: other.identityId,
+                    identityIndex: other.identityIndex,
+                    context: context)
+                if AppConnect.holdsLiveTwoQRLoginKey(
+                    authenticationPublicKeyHash160: twoQRKeys.authenticationPublicKeyHash160,
+                    encryptionPublicKey: twoQRKeys.encryptionPublicKey,
+                    bindings: bindings
+                ) {
+                    return true
+                }
+            }
+            return false
+        } catch {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: keys on other identities not checked — \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
+    }
+
+    /// The identities the SDK's store attaches to this wallet on `network`.
+    private static func storedWalletIdentities(
+        walletId: Data,
+        network: Network,
+        modelContainer: ModelContainer
+    ) throws -> [(identityId: Data, identityIndex: UInt32)] {
+        let descriptor = FetchDescriptor<PersistentIdentity>(predicate: PersistentIdentity.predicate(network: network))
+        let modelContext = ModelContext(modelContainer)
+        // The rows are only readable while their context is alive.
+        return try withExtendedLifetime(modelContext) {
+            try modelContext.fetch(descriptor)
+                .filter { $0.wallet?.walletId == walletId }
+                .map { ($0.identityId, $0.identityIndex) }
+        }
+    }
+
+    /// The public halves of the keys the two-QR login derives for the active
+    /// identity and an app.
     private func twoQRLoginPublicKeys(
         appContractId: Data,
         context: Context
     ) async throws -> (authenticationPublicKeyHash160: Data, encryptionPublicKey: Data) {
+        try await twoQRLoginPublicKeys(
+            appContractId: appContractId,
+            identityId: context.identityId,
+            identityIndex: context.identityIndex,
+            context: context)
+    }
+
+    /// The same for any identity of the active wallet, by its index.
+    private func twoQRLoginPublicKeys(
+        appContractId: Data,
+        identityId: Data,
+        identityIndex: UInt32,
+        context: Context
+    ) async throws -> (authenticationPublicKeyHash160: Data, encryptionPublicKey: Data) {
         var derivedMaterial = try await deriveKeyRegistrationMaterial(
-            appContractId: appContractId, context: context)
+            appContractId: appContractId,
+            identityId: identityId,
+            identityIndex: identityIndex,
+            context: context)
         defer {
             Self.zero(&derivedMaterial.loginKey)
             Self.zero(&derivedMaterial.authenticationPrivateKey)
@@ -1575,10 +1672,24 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         appContractId: Data,
         context: Context
     ) async throws -> DashConnectKeyRegistrationDerivedMaterial {
+        try await deriveKeyRegistrationMaterial(
+            appContractId: appContractId,
+            identityId: context.identityId,
+            identityIndex: context.identityIndex,
+            context: context)
+    }
+
+    /// The same for any identity of the active wallet, by its index.
+    private func deriveKeyRegistrationMaterial(
+        appContractId: Data,
+        identityId: Data,
+        identityIndex: UInt32,
+        context: Context
+    ) async throws -> DashConnectKeyRegistrationDerivedMaterial {
         // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
         var chainKey = try await MainActor.run {
             try context.wallet.deriveIdentityAuthKeyAtSlot(
-                identityIndex: context.identityIndex,
+                identityIndex: identityIndex,
                 keyId: UInt32(LoginKeyDerivation.defaultKeyIndex),
                 network: context.network
             ).privateKeyData
@@ -1586,7 +1697,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         defer { Self.zero(&chainKey) }
         return try Self.deriveKeyRegistrationMaterial(
             chainKeyPrivateBytes: chainKey,
-            identityId: context.identityId,
+            identityId: identityId,
             appContractId: appContractId
         )
     }
@@ -1947,7 +2058,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     hasUnreadableBound: !AppConnect.isReadableBound(
                         boundsKind: $0.effectiveContractBoundsKind,
                         boundIds: $0.contractBounds
-                    )
+                    ),
+                    isTwoQRAuthenticationKeyShaped: $0.keyTypeEnum == .ecdsaHash160
+                        && $0.purposeEnum == .authentication
+                        && $0.securityLevelEnum == .high,
+                    isTwoQREncryptionKeyShaped: $0.keyTypeEnum == .ecdsaSecp256k1
+                        && $0.purposeEnum == .encryption
+                        && $0.securityLevelEnum == .medium
                 )
             }
         }

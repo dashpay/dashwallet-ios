@@ -1792,6 +1792,17 @@ final class AppConnectLoginTests: XCTestCase {
             8)
     }
 
+    func testThereIsNoNextKeyIdAfterTheLastOne() {
+        // A key id is a UInt32 the SDK carries as an Int32 bit pattern.
+        let last = Self.key(keyId: -1, data: Data([1]))
+        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [last]))
+        let disabledLast = Self.key(keyId: -1, data: Data([1]), disabledAt: 1)
+        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: 3, data: Data([3])), disabledLast]))
+        XCTAssertEqual(
+            AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: -2, data: Data([2]))]),
+            .max)
+    }
+
     func testDisconnectDisablesOnlyTheLiveSessionKeysItGranted() {
         let grants = [9, 11, 12, 13].map { Self.grant(sessionKeyId: $0) }
         let keys = [
@@ -1870,6 +1881,45 @@ final class AppConnectLoginTests: XCTestCase {
                 currentIdentityPublicKeys: keys,
                 twoQRAuthenticationKeyHash160: Data([7])),
             [6, 9])
+    }
+
+    /// Keys of the app on an identity that is not the active one are
+    /// recognised from the wallet's store: no grant record names them.
+    func testTheStoreShowsAnAppKeyHeldOnAnotherIdentityWhileItIsLive() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let authentication = Data(repeating: 0x51, count: 20)
+        let encryption = Data(repeating: 0x52, count: 33)
+        func holdsTwoQR(_ bindings: [AppConnect.KeyBinding]) -> Bool {
+            AppConnect.holdsLiveTwoQRLoginKey(
+                authenticationPublicKeyHash160: authentication, encryptionPublicKey: encryption, bindings: bindings)
+        }
+        func authenticationKey(data: Data = authentication, isDisabled: Bool = false) -> AppConnect.KeyBinding {
+            AppConnect.KeyBinding(
+                keyId: 3, data: data, singleContractId: app, isDisabled: isDisabled,
+                isTwoQRAuthenticationKeyShaped: true)
+        }
+        let encryptionKey = AppConnect.KeyBinding(
+            keyId: 4, data: encryption, singleContractId: nil, isTwoQREncryptionKeyShaped: true)
+
+        XCTAssertTrue(holdsTwoQR([authenticationKey()]))
+        XCTAssertTrue(holdsTwoQR([authenticationKey(isDisabled: true), encryptionKey]))
+        XCTAssertFalse(holdsTwoQR([authenticationKey(isDisabled: true)]))
+        // Another app's key: same kind, another payload.
+        XCTAssertFalse(holdsTwoQR([authenticationKey(data: Data(repeating: 0x53, count: 20))]))
+        // The same bytes under another kind are not that key.
+        XCTAssertFalse(holdsTwoQR([AppConnect.KeyBinding(keyId: 5, data: authentication, singleContractId: app)]))
+        XCTAssertFalse(holdsTwoQR([]))
+
+        let sessionKey = AppConnect.KeyBinding(
+            keyId: 6, data: Data([6]), singleContractId: app, isSessionKeyShaped: true)
+        var disabledSessionKey = sessionKey
+        disabledSessionKey.isDisabled = true
+        XCTAssertTrue(AppConnect.holdsLiveSessionKey(appContractId: app, bindings: [sessionKey]))
+        XCTAssertFalse(AppConnect.holdsLiveSessionKey(appContractId: app, bindings: [disabledSessionKey]))
+        XCTAssertFalse(
+            AppConnect.holdsLiveSessionKey(appContractId: Data(repeating: 0xB2, count: 32), bindings: [sessionKey]))
+        // The two-QR authentication key is bound to the app but carries no limits.
+        XCTAssertFalse(AppConnect.holdsLiveSessionKey(appContractId: app, bindings: [authenticationKey()]))
     }
 
     func testOnlyAWholeSingleContractBoundNamesTheApp() {

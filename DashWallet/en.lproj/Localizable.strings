@@ -6109,10 +6109,12 @@
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
 "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
 "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
+"The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Do not delete this app.";
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This identity cannot take another key." = "This identity cannot take another key.";
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
 "This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
 "This wallet cannot record the key it would give the app, so the sign-in was not started." = "This wallet cannot record the key it would give the app, so the sign-in was not started.";

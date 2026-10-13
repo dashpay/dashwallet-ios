@@ -139,10 +139,13 @@ enum AppConnect {
         return .usable(keyId: keyId)
     }
 
+    /// The id for a new key: one above the highest on the identity, disabled
+    /// keys included. `nil` when that id is the last one a key can have.
     static func nextKeyId(
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> UInt32 {
-        (currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0) + 1
+    ) -> UInt32? {
+        let highest = currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0
+        return highest == .max ? nil : highest + 1
     }
 
     /// The key an app is given: it can only sign for the contract the request
@@ -182,6 +185,31 @@ enum AppConnect {
         /// The store has a bound for the key that this build cannot read, so
         /// the key's app is unknown rather than "another one".
         var hasUnreadableBound = false
+        /// The stored key has the type, purpose and level of the two-QR
+        /// login's authentication key, or of its encryption key.
+        var isTwoQRAuthenticationKeyShaped = false
+        var isTwoQREncryptionKeyShaped = false
+    }
+
+    /// Whether the store shows either key of the two-QR login, not disabled,
+    /// in the kind that login registers it. A two-QR login leaves no grant
+    /// record, so on an identity that is not the active one this is how its
+    /// keys are recognised.
+    static func holdsLiveTwoQRLoginKey(
+        authenticationPublicKeyHash160: Data,
+        encryptionPublicKey: Data,
+        bindings: [KeyBinding]
+    ) -> Bool {
+        bindings.contains {
+            !$0.isDisabled
+                && (($0.isTwoQRAuthenticationKeyShaped && $0.data == authenticationPublicKeyHash160)
+                    || ($0.isTwoQREncryptionKeyShaped && $0.data == encryptionPublicKey))
+        }
+    }
+
+    /// Whether the store shows a live session key bound to `appContractId`.
+    static func holdsLiveSessionKey(appContractId: Data, bindings: [KeyBinding]) -> Bool {
+        bindings.contains { $0.singleContractId == appContractId && !$0.isDisabled && $0.isSessionKeyShaped }
     }
 
     /// The most keys one identity update may disable (Platform consensus).
