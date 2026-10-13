@@ -1424,12 +1424,24 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    var disconnectFailure: Error?
-    private(set) var disconnectedIds: [String] = []
+    private var storedDisconnectFailure: Error?
+    private var storedDisconnectedIds: [String] = []
+
+    var disconnectFailure: Error? {
+        get { lock.withLock { storedDisconnectFailure } }
+        set { lock.withLock { storedDisconnectFailure = newValue } }
+    }
+
+    var disconnectedIds: [String] {
+        lock.withLock { storedDisconnectedIds }
+    }
 
     func disconnect(id: String) async throws {
-        disconnectedIds.append(id)
-        if let disconnectFailure { throw disconnectFailure }
+        let failure = lock.withLock { () -> Error? in
+            storedDisconnectedIds.append(id)
+            return storedDisconnectFailure
+        }
+        if let failure { throw failure }
     }
 
     func remove(id: String) async {
@@ -1867,6 +1879,23 @@ final class AppConnectLoginTests: XCTestCase {
         // Clearing the readable grants must not clear the unreadable row.
         store.save([])
         XCTAssertNotNil(defaults.data(forKey: "scope.app-connect-responses.v1"))
+    }
+
+    func testAStoredValueThatIsNotARowListIsNeverReplaced() {
+        let suiteName = "AppConnectResponseStoreTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let key = "scope.app-connect-responses.v1"
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        for stored in [Data(#"{"rows":[]}"#.utf8), Data([0xFF, 0x00])] {
+            defaults.set(stored, forKey: key)
+            XCTAssertEqual(store.load().count, 0)
+            store.save([Self.grant(sessionKeyId: 7)])
+            XCTAssertEqual(defaults.data(forKey: key), stored)
+            store.save([])
+            XCTAssertEqual(defaults.data(forKey: key), stored)
+        }
     }
 
     func testAGrantedKeyMissingFromTheIdentityViewIsReportedNotAssumedGone() {
