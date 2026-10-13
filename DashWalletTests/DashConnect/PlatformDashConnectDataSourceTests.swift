@@ -928,7 +928,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             PlatformDashConnectDataSource.hasAnyRegisteredLoginKey(
                 authenticationPublicKeyHash160: authentication,
                 encryptionPublicKey: encryption,
-                currentIdentityPublicKeys: keys)
+                currentIdentityPublicKeys: keys,
+                now: Date(timeIntervalSince1970: 1_000))
         }
         let authenticationKey = makeIdentityPublicKeyInfo(
             keyId: 100, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: authentication)
@@ -948,6 +949,14 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertTrue(remains([disabledAuthenticationKey, encryptionKey]))
         XCTAssertFalse(remains([disabledAuthenticationKey, sessionKey]))
         XCTAssertFalse(remains([]))
+        // A `dash-st:` registration may have put an expiry on the key.
+        func expiringAuthenticationKey(expiresAt: Int64) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: 100, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+                readOnly: false, disabledAt: nil, data: authentication, totalBudget: 5, expiresAt: expiresAt)
+        }
+        XCTAssertFalse(remains([expiringAuthenticationKey(expiresAt: 1_000_000)]))
+        XCTAssertTrue(remains([expiringAuthenticationKey(expiresAt: 1_000_001)]))
     }
 
     func testMissingKeyRegistrationKeysReturnsOnlyMissingEncryptionKey() throws {
@@ -1357,6 +1366,25 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
+    /// With the login unresolved the sheet's action asks again and approves
+    /// nothing.
+    func testAnUnresolvedLoginIsAskedForAgainInsteadOfApproved() async {
+        let unresolved = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        let resolved = Self.consent(identityId: "identity-a", terms: .current)
+        let spy = LoginApprovalSpy(shown: [unresolved, resolved])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertEqual(viewModel.pendingRequest?.login, .unresolved)
+        viewModel.approvePendingRequest()
+        await waitUntil { !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest, resolved)
+        XCTAssertEqual(spy.approvedConsents, [])
+        XCTAssertNil(viewModel.approveError)
+    }
+
     func testApprovingALoginPassesTheRequestAsTheSheetShowedIt() async {
         let shown = Self.consent(identityId: "identity-a", terms: .current)
         let spy = LoginApprovalSpy(shown: [shown])
@@ -1404,7 +1432,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
             walletUsername: nil,
             walletIdentityId: identityId,
             existingConnection: nil,
-            sessionKeyTerms: terms)
+            login: terms.map(AppConnect.Login.oneQR) ?? .twoQR)
     }
 
     private static let connection = DAppConnection(
@@ -1721,8 +1749,13 @@ final class AppConnectLoginTests: XCTestCase {
     }
 
     func testTheOneQrLoginHasTermsAndTheTwoQrLoginHasNone() {
-        XCTAssertNil(AppConnect.sessionKeyTerms(protocolVersion: 13))
-        XCTAssertEqual(AppConnect.sessionKeyTerms(protocolVersion: 14), .current)
+        XCTAssertEqual(AppConnect.login(protocolVersion: 13), .twoQR)
+        XCTAssertEqual(AppConnect.login(protocolVersion: 14), .oneQR(.current))
+        XCTAssertNil(AppConnect.Login.twoQR.sessionKeyTerms)
+        XCTAssertNil(AppConnect.Login.unresolved.sessionKeyTerms)
+        XCTAssertEqual(AppConnect.Login.oneQR(.current).sessionKeyTerms, .current)
+        // A request built without asking the network is not a two-QR one.
+        XCTAssertEqual(ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest).login, .unresolved)
         XCTAssertEqual(AppConnect.SessionKeyTerms.current.budgetCredits, AppConnect.sessionKeyBudgetCredits)
         XCTAssertEqual(AppConnect.SessionKeyTerms.current.lifetime, AppConnect.sessionKeyLifetime)
     }

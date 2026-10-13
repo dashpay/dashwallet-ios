@@ -131,7 +131,11 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         network: .testnet
     )
     static let sampleLoginQRCode = DashConnectSampleQR.keyUri(for: sampleLoginRequest)
-    static let sampleRequest = ConnectionRequest(loginRequest: sampleLoginRequest)
+    static let sampleRequest: ConnectionRequest = {
+        var request = ConnectionRequest(loginRequest: sampleLoginRequest)
+        request.login = .twoQR
+        return request
+    }()
 
     static func sample(_ status: ConnectionStatus) -> DAppConnection {
         DAppConnection(
@@ -215,7 +219,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             throw DashConnectMockError.approveFailed
         }
 
-        let connectionRequest = consent
+        let connectionRequest = await makeConnectionRequest(from: request)
         let connection = DAppConnection(
             id: connectionRequest.appContractId,
             name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
@@ -238,7 +242,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             appUrl: fallback.appUrl,
             walletUsername: nil,
             walletIdentityId: nil,
-            existingConnection: existingConnection(for: fallback.appContractId)
+            existingConnection: existingConnection(for: fallback.appContractId),
+            login: .twoQR
         )
     }
 

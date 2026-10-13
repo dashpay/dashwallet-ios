@@ -73,13 +73,13 @@ struct ApproveConnectionSheet: View {
                     // The one-QR login gives the app a key with limits of its
                     // own, so its terms are spelled out on a repeat sign-in
                     // too, and when it replaces a two-QR connection.
-                    if request.isLoginUnresolved {
+                    if request.login == .unresolved {
                         Text(NSLocalizedString(
-                            "This wallet could not check with the network what this sign-in would give the app. Deny it and scan the code again.",
+                            "This wallet could not check with the network what this sign-in would give the app.",
                             comment: "DashConnect"))
                             .font(.subhead)
                             .foregroundColor(.primaryText)
-                    } else if let terms = request.sessionKeyTerms {
+                    } else if let terms = request.login.sessionKeyTerms {
                         sessionKeyPermissions(terms)
                     } else if isRelogin {
                         reloginPermissionsSummary
@@ -127,11 +127,15 @@ struct ApproveConnectionSheet: View {
                 }
 
                 DashButton(
-                    text: NSLocalizedString("Approve", comment: "DashConnect"),
+                    // With the login unresolved there is nothing to approve:
+                    // the same action asks the network again instead.
+                    text: request.login == .unresolved
+                        ? NSLocalizedString("Try again", comment: "")
+                        : NSLocalizedString("Approve", comment: "DashConnect"),
                     style: .filledBlue,
                     size: .large,
                     stretch: true,
-                    isEnabled: !isLoading && !request.isLoginUnresolved,
+                    isEnabled: !isLoading,
                     isLoading: isLoading,
                     action: onApprove
                 )
@@ -370,7 +374,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
             existingConnection: nil,
-            sessionKeyTerms: .current
+            login: .oneQR(.current)
         ),
         onApprove: {},
         onDeny: {}
@@ -385,7 +389,8 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             appUrl: "yap.pr",
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
-            existingConnection: MockDashConnectDataSource.sample(.active)
+            existingConnection: MockDashConnectDataSource.sample(.active),
+            login: .twoQR
         ),
         onApprove: {},
         onDeny: {}

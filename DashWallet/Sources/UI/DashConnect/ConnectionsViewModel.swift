@@ -208,6 +208,13 @@ final class ConnectionsViewModel: ObservableObject {
         Task {
             defer { isApproving = false }
 
+            // The wallet could not tell which login this would be, so the
+            // sheet offered no approval, only another try at finding out.
+            guard consent.login != .unresolved else {
+                self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                return
+            }
+
             do {
                 _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
                 self.pendingRequest = nil

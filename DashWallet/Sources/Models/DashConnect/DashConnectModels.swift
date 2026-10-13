@@ -199,12 +199,8 @@ struct ConnectionRequest: Equatable {
     let walletUsername: String?
     let walletIdentityId: String?
     let existingConnection: DAppConnection?
-    /// What the one-QR login gives the app. `nil` for the two-QR login, which
-    /// registers no key at approval.
-    var sessionKeyTerms: AppConnect.SessionKeyTerms? = nil
-    /// The network did not say which login it takes, so what approving would
-    /// give the app is unknown and there is nothing to approve yet.
-    var isLoginUnresolved = false
+    /// The login approving this request would run.
+    var login: AppConnect.Login = .unresolved
 }
 
 extension ConnectionRequest {
@@ -233,8 +229,7 @@ extension ConnectionRequest {
         walletUsername: String?,
         walletIdentityId: String?,
         existingConnection: DAppConnection?,
-        sessionKeyTerms: AppConnect.SessionKeyTerms? = nil,
-        isLoginUnresolved: Bool = false
+        login: AppConnect.Login = .unresolved
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -243,8 +238,7 @@ extension ConnectionRequest {
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
             existingConnection: existingConnection,
-            sessionKeyTerms: sessionKeyTerms,
-            isLoginUnresolved: isLoginUnresolved
+            login: login
         )
     }
 }

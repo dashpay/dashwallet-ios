@@ -143,7 +143,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 comment: "DashConnect")
         case .twoQRKeysNotChecked:
             return NSLocalizedString(
-                "The app's sign-in key was turned off, but this wallet could not check for keys from an earlier sign-in. Try again.",
+                "This wallet could not check every key the app may hold, so the app may still have access. Try again.",
                 comment: "DashConnect")
         case .approvalOutOfDate:
             return NSLocalizedString(
@@ -492,15 +492,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletUsername: walletUsername,
             walletIdentityId: context.identityId.toBase58String(),
             existingConnection: existingConnection,
-            sessionKeyTerms: protocolVersion.flatMap(AppConnect.sessionKeyTerms(protocolVersion:)),
-            isLoginUnresolved: protocolVersion == nil
+            login: protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved
         )
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         Self.logger.info("🔗 DASHCONNECT :: approveLogin started")
         try validateNetwork(request.network)
-        guard consent.appContractId == request.contractId.toBase58String(), !consent.isLoginUnresolved else {
+        guard consent.appContractId == request.contractId.toBase58String(), consent.login != .unresolved else {
             throw DashConnectPlatformError.approvalOutOfDate
         }
 
@@ -525,13 +524,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: protocol version unknown — \(error.localizedDescription, privacy: .public)")
             throw error
         }
-        // The sheet showed the login `makeConnectionRequest` resolved: its
-        // terms, or none for the two-QR login. If the network now gets the
-        // other one, what was approved is not what would run. Either login
-        // acts for the identity that was on the sheet: it has to be the
-        // active one here, and again after the PIN prompt.
-        let terms = AppConnect.sessionKeyTerms(protocolVersion: protocolVersion)
-        guard consent.sessionKeyTerms == terms,
+        // The sheet showed the login `makeConnectionRequest` resolved, with
+        // its terms for the one-QR login. If the network now gets the other
+        // one, what was approved is not what would run. Either login acts
+        // for the identity that was on the sheet: it has to be the active
+        // one here, and again after the PIN prompt.
+        let login = AppConnect.login(protocolVersion: protocolVersion)
+        guard consent.login == login,
               consent.walletIdentityId == context.identityId.toBase58String() else {
             Self.logger.error("🔗 DASHCONNECT :: the approved sign-in no longer matches the network or the identity")
             throw DashConnectPlatformError.approvalOutOfDate
@@ -550,9 +549,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.approvalOutOfDate
         }
         context = authorized
-        if let terms {
+        if let terms = login.sessionKeyTerms {
             Self.logger.info("🔗 DASHCONNECT :: authorized; protocol \(protocolVersion, privacy: .public), one-QR login")
-            return try await approveAppConnectLogin(request, consent: consent, terms: terms, context: context)
+            return try await approveAppConnectLogin(request, terms: terms, context: context)
         }
         Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
 
@@ -601,6 +600,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
         Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse document written")
 
+        let preview = await makeConnectionRequest(from: request)
+        Self.logger.info("🔗 DASHCONNECT :: connection preview resolved")
         let connection: DAppConnection
         do {
             var derivedMaterial = try Self.deriveKeyRegistrationMaterial(
@@ -626,9 +627,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 encryptionPublicKey: derivedMaterial.encryptionPublicKey,
                 currentIdentityPublicKeys: currentPublicKeys
             ) {
-                connection = Self.makeConnection(preview: consent, status: .active, updatedAt: now())
+                connection = Self.makeConnection(preview: preview, status: .active, updatedAt: now())
             } else {
-                connection = Self.makeConnection(preview: consent, status: .approved, updatedAt: now())
+                connection = Self.makeConnection(preview: preview, status: .approved, updatedAt: now())
             }
         } catch {
             Self.logger.error(
@@ -636,7 +637,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
             // Conservative fallback: asking for a QR is safer than claiming the
             // registration is already on the identity when we could not verify it.
-            connection = Self.makeConnection(preview: consent, status: .approved, updatedAt: now())
+            connection = Self.makeConnection(preview: preview, status: .approved, updatedAt: now())
         }
 
         var current = subject.value.filter { $0.id != connection.id }
@@ -669,7 +670,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// does nothing more.
     private func approveAppConnectLogin(
         _ request: DashKeyRequest,
-        consent: ConnectionRequest,
         terms: AppConnect.SessionKeyTerms,
         context: Context
     ) async throws -> DAppConnection {
@@ -792,8 +792,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return new
         }
 
+        let preview = await makeConnectionRequest(from: request)
         let connection = Self.makeConnection(
-            preview: consent, status: .active, updatedAt: now(), loginKind: .oneQR)
+            preview: preview, status: .active, updatedAt: now(), loginKind: .oneQR)
         var current = subject.value.filter { $0.id != connection.id }
         current.append(connection)
         persistAndSend(current)
@@ -1448,23 +1449,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // as turned off.
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
-        // The keys of an earlier two-QR login to the app, for a row made by
-        // the one-QR login. They are not disabled: that login derives the
-        // same keys every time, so the app could never be given them again.
-        // `nil` when they could not be derived.
+        // The keys of an earlier two-QR login to the app. They are not
+        // disabled: that login derives the same keys every time, so the app
+        // could never be given them again. `nil` when they could not be
+        // derived; a key without a grant record could then be one of them,
+        // so only the recorded session keys are disabled.
         var twoQRKeys: (authenticationPublicKeyHash160: Data, encryptionPublicKey: Data)?
-        if checksUnrecordedKeys {
-            do {
-                twoQRKeys = try await twoQRLoginPublicKeys(appContractId: appContract, context: context)
-            } catch {
-                Self.logger.error(
-                    "🔗 DASHCONNECT :: two-QR keys not derived — \(error.localizedDescription, privacy: .public)")
-            }
+        do {
+            twoQRKeys = try await twoQRLoginPublicKeys(appContractId: appContract, context: context)
+        } catch {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: two-QR keys not derived — \(error.localizedDescription, privacy: .public)")
         }
         let keyIds = AppConnect.sessionKeyIdsToDisable(
             for: granted,
             appContractId: appContract,
-            bindings: bindings,
+            bindings: twoQRKeys == nil ? [] : bindings,
             currentIdentityPublicKeys: currentPublicKeys,
             twoQRAuthenticationKeyHash160: twoQRKeys?.authenticationPublicKeyHash160
         )
@@ -1497,17 +1497,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 signer: signer
             )
         }
-        // The session keys are off. The two-QR keys were left out of the
-        // update, so the list fetched before it still tells whether they are
-        // live. If they could not be derived that is unknown, and the row
-        // stays as it is with an error rather than go or change on a guess.
+        // The recorded session keys are off. The two-QR keys were left out
+        // of the update, so the list fetched before it still tells whether
+        // they are live. If they could not be derived, that and the keys
+        // without a record are unknown: the row stays as it is, with an
+        // error, rather than go or change on a guess.
         var twoQRKeysRemain = false
         if checksUnrecordedKeys {
             guard let twoQRKeys else { throw DashConnectPlatformError.twoQRKeysNotChecked }
             twoQRKeysRemain = Self.hasAnyRegisteredLoginKey(
                 authenticationPublicKeyHash160: twoQRKeys.authenticationPublicKeyHash160,
                 encryptionPublicKey: twoQRKeys.encryptionPublicKey,
-                currentIdentityPublicKeys: currentPublicKeys
+                currentIdentityPublicKeys: currentPublicKeys,
+                now: now()
             )
         }
         return AppConnectRevocation(
@@ -1725,19 +1727,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    /// Whether either key of the two-QR login is live on the identity: the
-    /// app can still use whichever one is.
+    /// Whether either key of the two-QR login is live on the identity, not
+    /// disabled and not expired: the app can still use whichever one is.
     static func hasAnyRegisteredLoginKey(
         authenticationPublicKeyHash160: Data,
         encryptionPublicKey: Data,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        now: Date
     ) -> Bool {
-        hasRegisteredAuthenticationKey(
+        let nowMilliseconds = Int64((now.timeIntervalSince1970 * 1000).rounded())
+        let unexpired = currentIdentityPublicKeys.filter { $0.expiresAt.map { $0 > nowMilliseconds } ?? true }
+        return hasRegisteredAuthenticationKey(
             authenticationPublicKeyHash160: authenticationPublicKeyHash160,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
+            currentIdentityPublicKeys: unexpired
         ) || hasRegisteredEncryptionKey(
             encryptionPublicKey: encryptionPublicKey,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
+            currentIdentityPublicKeys: unexpired
         )
     }
 

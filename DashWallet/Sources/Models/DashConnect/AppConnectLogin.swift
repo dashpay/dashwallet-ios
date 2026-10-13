@@ -48,10 +48,26 @@ enum AppConnect {
         protocolVersion >= minimumProtocolVersion
     }
 
-    /// The terms of the login a network at `protocolVersion` gets: the
-    /// session key's for the one-QR login, none for the two-QR login.
-    static func sessionKeyTerms(protocolVersion: UInt32) -> SessionKeyTerms? {
-        isAvailable(protocolVersion: protocolVersion) ? .current : nil
+    /// Which login an approval would run, as far as the wallet could tell
+    /// when it built the approval sheet.
+    enum Login: Equatable {
+        /// The network did not say which login it takes, so what approving
+        /// would give the app is unknown and there is nothing to approve.
+        case unresolved
+        /// Registers no key at approval.
+        case twoQR
+        /// Registers a session key with these terms.
+        case oneQR(SessionKeyTerms)
+
+        var sessionKeyTerms: SessionKeyTerms? {
+            if case .oneQR(let terms) = self { return terms }
+            return nil
+        }
+    }
+
+    /// The login a network at `protocolVersion` gets.
+    static func login(protocolVersion: UInt32) -> Login {
+        isAvailable(protocolVersion: protocolVersion) ? .oneQR(.current) : .twoQR
     }
 
     /// The DIP-13 leaf of the session key: `hash256` of the app's ephemeral

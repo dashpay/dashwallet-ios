@@ -115,7 +115,7 @@ struct ConnectionsScreen: View {
         )
         // The one-QR terms make the sheet longer than the fixed height
         // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.sessionKeyTerms != nil)
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
