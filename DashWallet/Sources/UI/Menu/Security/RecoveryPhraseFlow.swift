@@ -752,6 +752,18 @@ enum RecoveryPhraseNavigation {
 final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
     private weak var navigationController: UINavigationController?
 
+    /// `true` when the modal goes up, `false` on the next `dismiss(animated:)`
+    /// after that (Done, Back, resign, the host's own dismiss) — also when
+    /// the modal already went away by another route. The host uses it to
+    /// hold automatic wallet preparation while the phrase is on screen.
+    var onPresentationChanged: ((Bool) -> Void)?
+    private var reportedPresented = false
+
+    private func reportPresentation(_ presented: Bool) {
+        guard presented != reportedPresented else { return }
+        reportedPresented = presented
+        onPresentationChanged?(presented)
+    }
 
     /// Presents `destination` from `anchor`. A `.phrase` arriving while the
     /// picker modal is up replaces the picker in place (the picker's select).
@@ -785,11 +797,18 @@ final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
         navigation.view.accessibilityViewIsModal = true
         navigationController = navigation
         anchor.present(navigation, animated: true)
+        reportPresentation(true)
     }
 
     func dismiss(animated: Bool) {
+        // Reported even when the modal is already gone (released, or taken
+        // down by another route): a host hold must never outlive it.
+        defer { reportPresentation(false) }
         guard let navigationController,
-              let presenter = navigationController.presentingViewController else { return }
+              let presenter = navigationController.presentingViewController else {
+            self.navigationController = nil
+            return
+        }
         self.navigationController = nil
         // Addressed to the presenter: `dismiss` on the navigation controller
         // itself would only drop whatever it presented (the screenshot alert).
