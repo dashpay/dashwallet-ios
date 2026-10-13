@@ -320,7 +320,7 @@ final class ConnectionsViewModel: ObservableObject {
             guard let self else { return }
             defer { self.isDisconnecting = false }
             do {
-                try await self.dataSource.disconnect(id: connection.id)
+                try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
             } catch {
                 self.message = ConnectionsScreenMessage(
                     kind: .error,
@@ -333,7 +333,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     func removeConnection(_ connection: DAppConnection) {
         Task {
-            await dataSource.remove(id: connection.id)
+            await dataSource.remove(id: connection.id, scope: connection.scope)
         }
     }
 

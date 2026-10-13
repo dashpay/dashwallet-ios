@@ -176,7 +176,7 @@ final class DashConnectStoreTests: XCTestCase {
         _ = try await first.approveLogin(
             MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
-        await first.remove(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        await first.remove(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot, [])
@@ -195,7 +195,7 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot.count, 1)

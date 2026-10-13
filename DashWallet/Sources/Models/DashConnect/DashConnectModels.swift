@@ -189,6 +189,11 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let status: ConnectionStatus
     let updatedAt: Date
     var loginKind: DashConnectLoginKind = .twoQR
+    /// Names the wallet and network a data source published this row for;
+    /// `nil` on a row that was built or read from a store. Not stored. It
+    /// goes back with a disconnect or a remove, so a row picked from a list
+    /// that has since changed wallets is not acted on in the new one.
+    var scope: String? = nil
 }
 
 /// A pending request derived from a scanned login QR code.

@@ -90,7 +90,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
         let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
 
-        XCTAssertEqual(request.existingConnection, existing)
+        var found = request.existingConnection
+        XCTAssertNotNil(found?.scope, "a row from the published list names its scope")
+        found?.scope = nil
+        XCTAssertEqual(found, existing)
         XCTAssertEqual(request.appContractId, existing.id)
     }
 
@@ -112,7 +115,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
         let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
 
-        XCTAssertEqual(request.existingConnection, existing)
+        var found = request.existingConnection
+        XCTAssertNotNil(found?.scope, "a row from the published list names its scope")
+        found?.scope = nil
+        XCTAssertEqual(found, existing)
     }
 
     func testMakeConnectionRequestReturnsNilForUnknownContract() async throws {
@@ -1356,10 +1362,13 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         let spy = PurchaseApprovalSpy()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-        viewModel.disconnect(Self.connection)
+        var shown = Self.connection
+        shown.scope = "wallet-a t"
+        viewModel.disconnect(shown)
         await waitUntil { !viewModel.isDisconnecting }
 
         XCTAssertEqual(spy.disconnectedIds, [Self.connection.id])
+        XCTAssertEqual(spy.disconnectedScopes, ["wallet-a t"], "the row goes back with the scope it was shown for")
         XCTAssertNil(viewModel.message)
     }
 
@@ -1534,6 +1543,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
 
     private var storedDisconnectFailure: Error?
     private var storedDisconnectedIds: [String] = []
+    private var storedDisconnectedScopes: [String?] = []
 
     var disconnectFailure: Error? {
         get { lock.withLock { storedDisconnectFailure } }
@@ -1544,15 +1554,20 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedIds }
     }
 
-    func disconnect(id: String) async throws {
+    var disconnectedScopes: [String?] {
+        lock.withLock { storedDisconnectedScopes }
+    }
+
+    func disconnect(id: String, scope: String?) async throws {
         let failure = lock.withLock { () -> Error? in
             storedDisconnectedIds.append(id)
+            storedDisconnectedScopes.append(scope)
             return storedDisconnectFailure
         }
         if let failure { throw failure }
     }
 
-    func remove(id: String) async {
+    func remove(id: String, scope: String?) async {
         XCTFail("remove is not part of the purchase approval flow")
     }
 }
@@ -1611,11 +1626,11 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String) async throws {
+    func disconnect(id: String, scope: String?) async throws {
         throw PurchaseSpyError.unsupported
     }
 
-    func remove(id: String) async {}
+    func remove(id: String, scope: String?) async {}
 }
 
 private enum PurchaseSpyError: LocalizedError {
@@ -2266,24 +2281,14 @@ final class AppConnectLoginTests: XCTestCase {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
+        let shown = Self.shownRows(dataSource)
         let other = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .approved)
         active.idHex = "wallet-b"
         connections.save([other])
-        var published: [DAppConnection] = []
-        let subscription = dataSource.connections.sink { published = $0 }
-        defer { subscription.cancel() }
 
-        do {
-            try await dataSource.disconnect(id: row.id)
-            XCTFail("a row of a wallet that is no longer active was disconnected")
-        } catch {
-            guard case DashConnectPlatformError.walletChanged = error else {
-                return XCTFail("unexpected error: \(error)")
-            }
-        }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
 
-        XCTAssertEqual(published, [other], "the list shows the wallet that is active")
-
+        XCTAssertEqual(Self.shownRows(dataSource).map(\.id), [other.id], "the list shows the wallet that is active")
         XCTAssertEqual(connections.load(), [other])
         active.idHex = "wallet-a"
         XCTAssertEqual(connections.load(), [row], "the other wallet's row is untouched")
@@ -2293,32 +2298,57 @@ final class AppConnectLoginTests: XCTestCase {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
+        let shown = Self.shownRows(dataSource)
         active.idHex = "wallet-b"
         connections.save([row])
 
-        do {
-            try await dataSource.disconnect(id: row.id)
-            XCTFail("the tap on one wallet's row turned off the other wallet's")
-        } catch {
-            guard case DashConnectPlatformError.walletChanged = error else {
-                return XCTFail("unexpected error: \(error)")
-            }
-        }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
 
         XCTAssertEqual(connections.load().map(\.status), [.active])
     }
 
-    func testRemoveDoesNothingWhenTheListWasAnotherWallets() async {
+    func testDisconnectFromAnOldListIsRefusedAfterTheListAlreadyMovedToTheNewWallet() async throws {
+        let active = ActiveWallet("wallet-a")
+        let row = Self.twoQRRow(status: .active)
+        let center = NotificationCenter()
+        let (dataSource, connections) = makeScopedDataSource(
+            active: active, rows: [row], notificationCenter: center)
+        // What the screen still holds when the tap lands.
+        let shown = Self.shownRows(dataSource)
+        active.idHex = "wallet-b"
+        connections.save([row])
+        let moved = expectation(description: "the active wallet's rows are published")
+        moved.assertForOverFulfill = false
+        let subscription = dataSource.connections.sink { rows in
+            if rows.first?.scope != nil, rows.first?.scope != shown[0].scope { moved.fulfill() }
+        }
+        defer { subscription.cancel() }
+        center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+        await fulfillment(of: [moved], timeout: 2)
+
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
+        await dataSource.remove(id: shown[0].id, scope: shown[0].scope)
+
+        XCTAssertEqual(connections.load(), [row], "the new wallet's row for the same app is untouched")
+        // The row the new list shows is this wallet's own.
+        let current = Self.shownRows(dataSource)
+        try await dataSource.disconnect(id: current[0].id, scope: current[0].scope)
+        XCTAssertEqual(connections.load().map(\.status), [.approved])
+    }
+
+    func testRemoveDoesNothingForARowPublishedForAnotherWallet() async {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
+        let shown = Self.shownRows(dataSource)
         active.idHex = "wallet-b"
         connections.save([row])
 
-        await dataSource.remove(id: row.id)
+        await dataSource.remove(id: shown[0].id, scope: shown[0].scope)
         XCTAssertEqual(connections.load(), [row])
 
-        await dataSource.remove(id: row.id)
+        let current = Self.shownRows(dataSource)
+        await dataSource.remove(id: current[0].id, scope: current[0].scope)
         XCTAssertEqual(connections.load(), [], "the list is this wallet's now")
     }
 
@@ -2326,14 +2356,23 @@ final class AppConnectLoginTests: XCTestCase {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
-        var published: [DAppConnection] = []
-        let subscription = dataSource.connections.sink { published = $0 }
-        defer { subscription.cancel() }
+        let shown = Self.shownRows(dataSource)
 
-        try await dataSource.disconnect(id: row.id)
+        try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope)
 
         XCTAssertEqual(connections.load().map(\.status), [.approved])
-        XCTAssertEqual(published.map(\.status), [.approved])
+        XCTAssertEqual(Self.shownRows(dataSource).map(\.status), [.approved])
+    }
+
+    func testARowWithNoScopeIsNotActedOn() async {
+        let active = ActiveWallet("wallet-a")
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
+
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil) }
+        await dataSource.remove(id: row.id, scope: nil)
+
+        XCTAssertEqual(connections.load(), [row])
     }
 
     func testTheListMovesToTheActiveWalletWhenTheWalletChangeIsAnnounced() async {
@@ -2347,7 +2386,7 @@ final class AppConnectLoginTests: XCTestCase {
         connections.save([other])
         let moved = expectation(description: "the active wallet's rows are published")
         let subscription = dataSource.connections.sink { rows in
-            if rows == [other] { moved.fulfill() }
+            if rows.map(\.id) == [other.id] { moved.fulfill() }
         }
         defer { subscription.cancel() }
 
@@ -2362,11 +2401,34 @@ final class AppConnectLoginTests: XCTestCase {
         let (dataSource, _) = makeScopedDataSource(active: active)
 
         do {
-            try await dataSource.disconnect(id: Self.twoQRRow(status: .active).id)
+            try await dataSource.disconnect(id: Self.twoQRRow(status: .active).id, scope: nil)
             XCTFail("disconnected with no wallet")
         } catch {
             guard case DashConnectPlatformError.noWallet = error else {
                 return XCTFail("unexpected error: \(error)")
+            }
+        }
+    }
+
+    /// The rows the data source publishes right now.
+    private static func shownRows(_ dataSource: PlatformDashConnectDataSource) -> [DAppConnection] {
+        var rows: [DAppConnection] = []
+        let subscription = dataSource.connections.sink { rows = $0 }
+        subscription.cancel()
+        return rows
+    }
+
+    private static func expectWalletChanged(
+        _ action: () async throws -> Void,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        do {
+            try await action()
+            XCTFail("a row of a wallet that is no longer active was acted on", file: file, line: line)
+        } catch {
+            guard case DashConnectPlatformError.walletChanged = error else {
+                return XCTFail("unexpected error: \(error)", file: file, line: line)
             }
         }
     }

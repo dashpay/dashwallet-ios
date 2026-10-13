@@ -48,8 +48,12 @@ protocol DashConnectDataSource {
     /// same key every time and Platform never re-adds a disabled key, so
     /// disabling it would lock the app out for good. Turning off a one-QR
     /// connection that replaced a two-QR one does disable those keys too.
-    func disconnect(id: String) async throws
-    func remove(id: String) async
+    ///
+    /// `scope` is the `DAppConnection.scope` of the row that was picked:
+    /// both calls act only while it still names the wallet they would act
+    /// on.
+    func disconnect(id: String, scope: String?) async throws
+    func remove(id: String, scope: String?) async
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -256,7 +260,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String) async throws {
+    func disconnect(id: String, scope: String?) async throws {
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
@@ -270,7 +274,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         })
     }
 
-    func remove(id: String) async {
+    func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
     }
 

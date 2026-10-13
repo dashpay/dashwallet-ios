@@ -396,6 +396,25 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         /// the connection store was fixed to, which tells two devnets of one
         /// wallet apart.
         var scope: String { "\(walletIdHex) \(connections.scopeKey ?? "")" }
+
+        /// The rows as they are published: each names this scope.
+        func published(_ rows: [DAppConnection]) -> [DAppConnection] {
+            Self.rows(rows, scope: scope)
+        }
+
+        /// The rows as they are stored: without the scope a published row
+        /// carries.
+        static func stored(_ rows: [DAppConnection]) -> [DAppConnection] {
+            Self.rows(rows, scope: nil)
+        }
+
+        private static func rows(_ rows: [DAppConnection], scope: String?) -> [DAppConnection] {
+            rows.map { row in
+                var row = row
+                row.scope = scope
+                return row
+            }
+        }
     }
 
     /// The scope of the rows `subject` holds. Read and written on the main
@@ -470,7 +489,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let active = Self.pinnedStores(
             walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore)
         self.shownRows = ShownRows(scope: active?.scope)
-        self.subject = CurrentValueSubject(active?.connections.load() ?? [])
+        self.subject = CurrentValueSubject(active.map { $0.published($0.connections.load()) } ?? [])
         // The list is loaded once, and the active wallet can change while
         // this data source lives.
         self.walletChangeObserver = notificationCenter
@@ -1391,27 +1410,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    func remove(id: String) async {
-        // A list that had to change just now was another wallet's: the row
-        // to remove was not picked from this one.
-        let (active, changed) = await showActiveWalletRows()
-        guard let stores = active, !changed else { return }
+    func remove(id: String, scope: String?) async {
+        // A row published for another wallet was not picked from this one.
+        guard let stores = await showActiveWalletRows(), scope == stores.scope else { return }
         await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
     }
 
-    func disconnect(id: String) async throws {
-        let (active, changed) = await showActiveWalletRows()
-        guard let stores = active else {
+    func disconnect(id: String, scope: String?) async throws {
+        guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
         }
-        // The row was picked from the published list. A list that had to
-        // change just now was another wallet's, and nothing of that wallet
-        // can be turned off from here, even if this one has a row for the
-        // same app.
-        // TODO(dashconnect-row-scope): a list the wallet-change notification
-        // replaced between the tap and this call is not told apart; the call
-        // would have to name the wallet the row was shown for.
-        guard !changed else {
+        // The row names the wallet it was published for. When that is not
+        // the wallet that is active now, nothing of the row's wallet can be
+        // turned off from here, and a row this wallet has for the same app
+        // is not the one that was picked.
+        guard scope == stores.scope else {
             throw DashConnectPlatformError.walletChanged
         }
         let isOneQR = await rows(in: stores).first { $0.id == id }?.loginKind == .oneQR
@@ -2035,23 +2048,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Publishes the active wallet's rows when the published list holds
-    /// another wallet's. Returns the active wallet's stores, read once, and
-    /// whether the list had to change.
+    /// another wallet's. Returns the active wallet's stores, read once.
     @MainActor
     @discardableResult
-    private func showActiveWalletRows() -> (active: Stores?, changed: Bool) {
+    private func showActiveWalletRows() -> Stores? {
         let active = pinnedActiveStores()
-        guard shownRows.scope != active?.scope else { return (active, false) }
+        guard shownRows.scope != active?.scope else { return active }
         shownRows.scope = active?.scope
-        subject.send(active?.connections.load() ?? [])
-        return (active, true)
+        subject.send(active.map { $0.published($0.connections.load()) } ?? [])
+        return active
     }
 
     /// The rows of the wallet `stores` belongs to: the published list while
     /// it is that wallet's, the stored rows otherwise.
     @MainActor
     private func rows(in stores: Stores) -> [DAppConnection] {
-        shownRows.scope == stores.scope ? subject.value : stores.connections.load()
+        shownRows.scope == stores.scope ? Stores.stored(subject.value) : stores.connections.load()
     }
 
     @MainActor
@@ -2064,9 +2076,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// wallet's.
     @MainActor
     private func updateRows(in stores: Stores, _ change: ([DAppConnection]) -> [DAppConnection]) {
-        let sorted = change(rows(in: stores)).sorted(by: { $0.updatedAt > $1.updatedAt })
+        let sorted = Stores.stored(change(rows(in: stores))).sorted(by: { $0.updatedAt > $1.updatedAt })
         stores.connections.save(sorted)
-        if shownRows.scope == stores.scope { subject.send(sorted) }
+        if shownRows.scope == stores.scope { subject.send(stores.published(sorted)) }
     }
 
     /// The contract every bounded key in the transition points at, or `nil`
