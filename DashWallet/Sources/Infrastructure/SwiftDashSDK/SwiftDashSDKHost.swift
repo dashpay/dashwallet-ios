@@ -947,6 +947,38 @@ final class SwiftDashSDKHost {
             throw HostError.walletCreationFailed(error)
         }
 
+        // An imported wallet may hold history below the anchor of a chain
+        // store an earlier, younger wallet left on this network. Recorded
+        // before the wallet exists, so the rebuild does not depend on reaching
+        // the code after the create; a wallet that is not loaded rebuilds
+        // nothing. An import whose marker cannot be made durable is refused
+        // before it stores the phrase or creates the wallet. The marker this
+        // call armed is withdrawn only when the import fails before the SDK
+        // was asked to create the wallet; once it was, the marker stays — the SDK
+        // can throw after the wallet's rows landed, and a later start then
+        // loads the wallet without passing through here again.
+        var armedRebuildDirectory: URL?
+        var nativeCreateAttempted = false
+        defer {
+            if let armedRebuildDirectory, !nativeCreateAttempted {
+                SPVChainStoreRebuild.finish(
+                    walletIds: [walletId], scope: network.persistenceScope, directory: armedRebuildDirectory)
+            }
+        }
+        if isImported {
+            do {
+                let directory = try chainStoreRebuildDirectory()
+                if try SPVChainStoreRebuild.arm(
+                    walletId: walletId, scope: network.persistenceScope, directory: directory) {
+                    armedRebuildDirectory = directory
+                }
+            } catch {
+                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                throw HostError.walletCreationFailed(error)
+            }
+        }
+
         let storage = WalletStorage()
         let previousMnemonic: String?
         do {
@@ -975,6 +1007,7 @@ final class SwiftDashSDKHost {
                     }
                 },
                 createWallet: {
+                    nativeCreateAttempted = true
                     if offMainCreate {
                         // Async SDK overload: the blocking native create
                         // runs on the SDK's dedicated queue, not the main
@@ -1515,8 +1548,25 @@ final class SwiftDashSDKHost {
             for: handles.network)
         guard !entries.isEmpty else { return nil }
 
+        let scope = handles.network.persistenceScope
         for entry in entries {
             if handles.manager.wallets[entry.walletId] != nil { continue }
+            // Recreated at the import floor like an import, so a chain store
+            // that survived the lost rows may be anchored above the wallet's
+            // history too (see `SPVChainStoreRebuild`). Durable before the
+            // create, so a wallet an interrupted attempt recreated is still
+            // pending when a later start finds it loaded. Never withdrawn on
+            // failure — the SDK can throw after the wallet's rows landed, and
+            // a marker for a wallet that is not loaded deletes nothing. A
+            // marker that cannot be written does not stop the recovery: the
+            // wallet opening matters more than the rescan it asks for.
+            do {
+                try SPVChainStoreRebuild.arm(
+                    walletId: entry.walletId, scope: scope, directory: try chainStoreRebuildDirectory())
+            } catch {
+                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted for a recovered wallet: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST keychain recovery: chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            }
             do {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
@@ -1813,6 +1863,10 @@ final class SwiftDashSDKHost {
     private func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
         WalletLocalStoreRecovery(directory: try WalletLocalStoreRoots.inDocuments().platform
             .appendingPathComponent(network.persistenceScope, isDirectory: true))
+    }
+
+    private func chainStoreRebuildDirectory() throws -> URL {
+        try SPVChainStoreRebuild.defaultDirectory()
     }
 
     private func resetIntent() throws -> WalletLocalStoreResetIntent {

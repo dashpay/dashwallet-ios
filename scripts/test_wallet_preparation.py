@@ -12,7 +12,7 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     tests = package / "Tests" / "WalletPreparationHarnessTests"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
-    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter"):
+    for name in ("WalletLifecycleTransitionState", "WalletPreparationFailure", "WalletLocalStoreResetter", "SPVChainStoreRebuild"):
         source = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK" / f"{name}.swift"
         test = repository / "DashWalletTests" / f"{name}Tests.swift"
         (sources / source.name).symlink_to(source)
@@ -173,6 +173,9 @@ enum KeyWalletError: Error { case invalidInput(String), invalidMnemonic(String),
     func resetIntent() throws -> WalletLocalStoreResetIntent {
         WalletLocalStoreResetIntent(directory: Self.directory.appendingPathComponent("ResetIntents"))
     }
+    func chainStoreRebuildDirectory() throws -> URL {
+        Self.directory.appendingPathComponent("ChainStoreRebuilds")
+    }
 ''' + recovery_methods + "\n}\n")
     (tests / "HostRecoveryTests.swift").write_text(r'''
 import XCTest
@@ -229,6 +232,45 @@ import XCTest
         PlatformWalletManager.createAttempts = []
         _ = try await HostRecoveryHarness().start(network: .mainnet)
         XCTAssertTrue(PlatformWalletManager.createAttempts.isEmpty)
+    }
+    func testRecreatedWalletsArmTheChainStoreRebuildAndAFailedCreateKeepsIt() async throws {
+        // Wallet B's create throws; the SDK may have landed its rows first,
+        // so its marker stays with wallet A's.
+        PlatformWalletManager.failingMnemonic = "wallet-b"
+        let host = HostRecoveryHarness()
+        do { _ = try await host.start(network: .mainnet) } catch {}
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()),
+            [Data("wallet-a".utf8), Data("wallet-b".utf8)])
+    }
+    func testSurvivingWalletIsNotArmedByARecoveryOfAnother() async throws {
+        let a = Data("wallet-a".utf8)
+        PlatformWalletManager.rows[a] = .init(walletId: a)
+        let host = HostRecoveryHarness()
+        try host.resetIntent().record(scopes: ["mainnet"])
+        _ = try await host.start(network: .mainnet)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()),
+            [Data("wallet-b".utf8)])
+    }
+    func testRecoveryStillOpensTheWalletWhenTheMarkerCannotBeWritten() async throws {
+        let host = HostRecoveryHarness()
+        // A file where the marker directory should be.
+        try Data([0]).write(to: try host.chainStoreRebuildDirectory())
+        _ = try await host.start(network: .mainnet)
+        XCTAssertEqual(PlatformWalletManager.createAttempts, ["wallet-a", "wallet-b"])
+        XCTAssertEqual(PlatformWalletManager.rows.count, 2)
+        XCTAssertNotNil(host.wallet)
+        XCTAssertFalse(try host.localStoreRecovery(for: .mainnet).isPending())
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()))
+    }
+    func testHealthyStoreArmsNoChainStoreRebuild() async throws {
+        for name in ["wallet-a", "wallet-b"] {
+            PlatformWalletManager.rows[Data(name.utf8)] = .init(walletId: Data(name.utf8))
+        }
+        let host = HostRecoveryHarness()
+        _ = try await host.start(network: .mainnet)
+        XCTAssertNil(SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: try host.chainStoreRebuildDirectory()))
     }
     func testHealthyStoreKeepsTheCompletedWideScanFlag() async throws {
         let id = Data("wallet-a".utf8)
