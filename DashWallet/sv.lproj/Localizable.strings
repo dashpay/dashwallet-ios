@@ -6214,20 +6214,35 @@
 "“%@” has been registered. Send a contact request to the person who invited you?" = "”%@” har registrerats. Vill du skicka en kontaktförfrågan till personen som bjöd in dig?";
 
 /* DashPay username registration recovery */
+"Act as you in this app without asking each time" = "Act as you in this app without asking each time";
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
+"Could not disconnect: %@" = "Could not disconnect: %@";
 "Finish username registration" = "Finish username registration";
 "Identity is still loading" = "Identity is still loading";
 "Loading identity…" = "Loading identity…";
 "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
 "Retry loading identity" = "Retry loading identity";
+"Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
 "The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The app's key was added to your identity, but this wallet could not record it, so the sign-in was not completed. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it, so the sign-in was not completed. Turn the app off in Connections to remove the key.";
+"The app's sign-in key was turned off, but this wallet could not check for keys from an earlier sign-in. Try again." = "The app's sign-in key was turned off, but this wallet could not check for keys from an earlier sign-in. Try again.";
+"The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
+"This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
+"This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
+"This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
 "This username is no longer available. Please choose another one." = "This username is no longer available. Please choose another one.";
+"This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
+"This wallet cannot record the key it would give the app, so the sign-in was not started." = "This wallet cannot record the key it would give the app, so the sign-in was not started.";
+"This wallet could not check with the network what this sign-in would give the app. Deny it and scan the code again." = "This wallet could not check with the network what this sign-in would give the app. Deny it and scan the code again.";
+"This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
 "Username request completed" = "Username request completed";
 "Wait for the wallet and network to finish loading, then retry. No registration has been sent." = "Wait for the wallet and network to finish loading, then retry. No registration has been sent.";
+"Your Dash balance" = "Your Dash balance";
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
+"Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 "Couldn't move your wallet" = "Couldn't move your wallet";
 "Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";

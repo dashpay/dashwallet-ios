@@ -25,7 +25,10 @@ protocol DashConnectDataSource {
 
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
-    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection
+    /// `consent` is the request as the approval sheet showed it. A login
+    /// that would give the app something else, or act for another identity,
+    /// is refused.
+    func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection
     /// Parses a scanned `dash-st:` payload and either completes key
     /// registration immediately or returns a token purchase that awaits
     /// explicit user approval via `approveTokenPurchase(_:)`.
@@ -40,9 +43,12 @@ protocol DashConnectDataSource {
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
     /// stays as it was. The connection also stays, without an error, while
-    /// the app holds a key on another identity of the wallet. For a two-QR connection it only changes the local
-    /// status: that login derives the same key every time and Platform never
-    /// re-adds a disabled key, so disabling it would lock the app out for good.
+    /// the app holds a key on another identity of the wallet. For a two-QR
+    /// connection it only changes the local status: that login derives the
+    /// same key every time and Platform never re-adds a disabled key, so
+    /// disabling it would lock the app out for good. A one-QR connection that
+    /// replaced a two-QR one gets both: its session keys are disabled, and it
+    /// stays, in that local status, while the two-QR keys are on the identity.
     func disconnect(id: String) async throws
     func remove(id: String) async
 }
@@ -201,7 +207,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         throw DashConnectMockError.notDashConnectQrCode
     }
 
-    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection {
+    func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         try await Task.sleep(nanoseconds: 400_000_000)
 
         if shouldFailNextApprove {
@@ -209,7 +215,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             throw DashConnectMockError.approveFailed
         }
 
-        let connectionRequest = await makeConnectionRequest(from: request)
+        let connectionRequest = consent
         let connection = DAppConnection(
             id: connectionRequest.appContractId,
             name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,

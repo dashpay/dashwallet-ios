@@ -200,7 +200,7 @@ final class ConnectionsViewModel: ObservableObject {
         // `isResolvingRequest` guards the window where a newer request has been
         // accepted but has not published yet: approving during it would
         // authorize the request on screen moments before it is replaced.
-        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+        guard let consent = pendingRequest, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
         approveError = nil
@@ -209,10 +209,17 @@ final class ConnectionsViewModel: ObservableObject {
             defer { isApproving = false }
 
             do {
-                _ = try await dataSource.approveLogin(pendingLoginRequest)
+                _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+            } catch DashConnectPlatformError.approvalOutOfDate {
+                // Another identity became active, or the network now answers
+                // with the other login: what the sheet showed is not what
+                // would run. Nothing was signed. The sheet is rebuilt from
+                // the same request as it stands now, for a new decision.
+                self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 self.approveError = String(

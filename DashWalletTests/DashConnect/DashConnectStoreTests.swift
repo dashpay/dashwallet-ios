@@ -160,7 +160,8 @@ final class DashConnectStoreTests: XCTestCase {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let first = MockDashConnectDataSource(store: store)
 
-        _ = try await first.approveLogin(MockDashConnectDataSource.sampleLoginRequest)
+        _ = try await first.approveLogin(
+            MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
         let second = MockDashConnectDataSource(store: store)
 
@@ -172,7 +173,8 @@ final class DashConnectStoreTests: XCTestCase {
     func testRemovePersistsAcrossFreshMockInstances() async throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let first = MockDashConnectDataSource(store: store)
-        _ = try await first.approveLogin(MockDashConnectDataSource.sampleLoginRequest)
+        _ = try await first.approveLogin(
+            MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
         await first.remove(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
 

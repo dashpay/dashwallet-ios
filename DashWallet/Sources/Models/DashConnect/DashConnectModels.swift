@@ -199,6 +199,12 @@ struct ConnectionRequest: Equatable {
     let walletUsername: String?
     let walletIdentityId: String?
     let existingConnection: DAppConnection?
+    /// What the one-QR login gives the app. `nil` for the two-QR login, which
+    /// registers no key at approval.
+    var sessionKeyTerms: AppConnect.SessionKeyTerms? = nil
+    /// The network did not say which login it takes, so what approving would
+    /// give the app is unknown and there is nothing to approve yet.
+    var isLoginUnresolved = false
 }
 
 extension ConnectionRequest {
@@ -226,7 +232,9 @@ extension ConnectionRequest {
         appUrl: String,
         walletUsername: String?,
         walletIdentityId: String?,
-        existingConnection: DAppConnection?
+        existingConnection: DAppConnection?,
+        sessionKeyTerms: AppConnect.SessionKeyTerms? = nil,
+        isLoginUnresolved: Bool = false
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -234,7 +242,21 @@ extension ConnectionRequest {
             appContractId: loginRequest.contractId.toBase58String(),
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
-            existingConnection: existingConnection
+            existingConnection: existingConnection,
+            sessionKeyTerms: sessionKeyTerms,
+            isLoginUnresolved: isLoginUnresolved
         )
+    }
+}
+
+extension AppConnect.SessionKeyTerms {
+    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
+    var budgetText: String {
+        PlatformCreditsFormatter.dashString(budgetCredits)
+    }
+
+    /// The lifetime in whole days.
+    var lifetimeDays: Int {
+        Int(lifetime / (24 * 60 * 60))
     }
 }
