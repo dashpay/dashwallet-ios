@@ -579,8 +579,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// wallet, whichever data source it came through. The turn is for the
     /// wallet that was active when it was asked for: if another one is
     /// active when it comes, the operation does not start.
-    private func gated<T>(_ operation: () async throws -> T) async throws -> T {
-        let walletIdHex = activeWalletIdHex() ?? ""
+    ///
+    /// An operation that already has a context names that context's wallet,
+    /// so its turn is that wallet's whichever one is active by now.
+    private func gated<T>(
+        walletIdHex: String? = nil,
+        _ operation: () async throws -> T
+    ) async throws -> T {
+        let walletIdHex = walletIdHex ?? activeWalletIdHex() ?? ""
         return try await operationGate.run(
             for: walletIdHex,
             onWait: { Self.logger.info("🔗 DASHCONNECT :: waiting for another DashConnect operation to finish") }
@@ -1146,8 +1152,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         switch parsed {
         case .keyRegistration(let transition):
-            // Only this branch changes the identity and the rows.
-            try await gated { try await completeKeyRegistration(transition, context: context) }
+            // Only this branch changes the identity and the rows. Its turn
+            // is the wallet of the context read above, and the context is
+            // resolved again once the turn comes: the wait can outlast a
+            // wallet, network or identity switch.
+            try await gated(walletIdHex: context.stores.walletIdHex) {
+                let current = try await contextAfterAuthorization(matching: context)
+                try await completeKeyRegistration(transition, context: current)
+            }
             return .keyRegistrationCompleted
         case .tokenPurchase(let purchase):
             return .tokenPurchaseApprovalRequired(
@@ -1230,9 +1242,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await markActive(pendingConnection, in: authorized.stores)
     }
 
-    /// The context to sign with after a PIN prompt, which can outlast a
-    /// wallet or identity switch: what is active now, and only while it is
-    /// still the identity and the wallet of `context`.
+    /// The context to go on with after a wait — a PIN prompt, a turn at
+    /// the operation gate — which can outlast a wallet, network or identity
+    /// switch: what is active now, and only while it is still the identity,
+    /// the wallet and the network scope of `context`.
     private func contextAfterAuthorization(matching context: Context) async throws -> Context {
         let authorized = try await requireContext(pinnedTo: context.stores)
         guard authorized.identityId == context.identityId else {
@@ -1241,11 +1254,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return authorized
     }
 
-    /// What is active now, only while it is the wallet `stores` belongs to,
-    /// and carrying that pair.
+    /// What is active now, only while it is the wallet and the network
+    /// scope `stores` belongs to, and carrying that pair. The same wallet on
+    /// another devnet is refused: its identity and SDK are that devnet's,
+    /// and the records would go to this one's.
     private func requireContext(pinnedTo stores: Stores) async throws -> Context {
         var context = try await requireContext()
-        guard context.stores.walletIdHex == stores.walletIdHex else {
+        guard context.stores.scope == stores.scope else {
             throw DashConnectPlatformError.walletChanged
         }
         context.stores = stores

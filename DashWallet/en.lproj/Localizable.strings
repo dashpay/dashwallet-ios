@@ -6104,6 +6104,7 @@
 
 /* Wallet preparation and support */
 "Act as you in this app without asking each time" = "Act as you in this app without asking each time";
+"App contract" = "App contract";
 "Could not disconnect: %@" = "Could not disconnect: %@";
 "Help" = "Help";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";

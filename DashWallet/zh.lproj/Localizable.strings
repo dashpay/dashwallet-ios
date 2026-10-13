@@ -6213,6 +6213,7 @@
 
 /* DashPay username registration recovery */
 "Act as you in this app without asking each time" = "Act as you in this app without asking each time";
+"App contract" = "App contract";
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
 "Could not disconnect: %@" = "Could not disconnect: %@";
 "Finish username registration" = "Finish username registration";
