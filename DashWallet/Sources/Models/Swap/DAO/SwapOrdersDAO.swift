@@ -41,7 +41,9 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     /// Whether the cache has been filled from the table: the first read can fail, and until
     /// one succeeds the cache holds only the rows written or read one by one since.
     private var isHydrated = false
-    private var hasLoggedHydrationFailure = false
+    /// Whether a read of the table has failed: subscribers may then have gone without
+    /// the orders, and the first read to succeed is published for them.
+    private var aTableReadFailed = false
 
     private init() {}
 
@@ -50,8 +52,11 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     /// else is replaced: single-row reads and writes still go to the database.
     private var readingAll: (@Sendable () throws -> [SwapOrder])?
 
-    init(readingAll: @escaping @Sendable () throws -> [SwapOrder]) {
+    /// `cached` are rows as single-row reads or writes leave them in the cache before
+    /// the table has been read.
+    init(readingAll: @escaping @Sendable () throws -> [SwapOrder], cached: [SwapOrder] = []) {
         self.readingAll = readingAll
+        cache = Dictionary(uniqueKeysWithValues: cached.map { ($0.id, $0) })
     }
     #endif
 
@@ -161,12 +166,31 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         }
     }
 
+    /// The stored orders, or what the cache holds of them when the read fails — only
+    /// some, or none, while no read of the table has succeeded. Not for deciding
+    /// between orders: `allIfComplete()`.
     func all() async -> [SwapOrder] {
+        await allKnown().orders
+    }
+
+    /// Every stored order, or nil while that cannot be vouched for: this read failed and
+    /// none before it succeeded, so the cache may hold only some of the rows. For a
+    /// reader that decides between orders — which of them a wallet transaction pays
+    /// out — and so must not take the few it was given for all there are.
+    func allIfComplete() async -> [SwapOrder]? {
+        let known = await allKnown()
+        return known.complete ? known.orders : nil
+    }
+
+    /// The stored orders as `all()` returns them, and whether they are all of them
+    /// (`allIfComplete()`), from one read.
+    func allKnown() async -> (orders: [SwapOrder], complete: Bool) {
         do {
-            return try reload()
+            return (try reload(), true)
         } catch {
+            aTableReadFailed = true
             DWLogger.log("SwapOrdersDAO: all failed: \(error)")
-            return Array(cache.values)
+            return (Array(cache.values), isHydrated)
         }
     }
 
@@ -193,22 +217,26 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             try reload()
         } catch {
             // Every entry point retries: one line, not one per call.
-            guard !hasLoggedHydrationFailure else { return }
-            hasLoggedHydrationFailure = true
-            DWLogger.log("SwapOrdersDAO: hydration failed: \(error)")
+            if !aTableReadFailed {
+                DWLogger.log("SwapOrdersDAO: hydration failed: \(error)")
+            }
+            aTableReadFailed = true
         }
     }
 
     /// Reads the whole table into the cache and publishes it when it differs from the
-    /// last snapshot. An unchanged read publishes nothing — subscribers read the table
-    /// in answer to a publication.
+    /// last snapshot — and, unchanged or not, when it is the first read to succeed after
+    /// one that failed: subscribers that could not have all the orders wait for it.
+    /// Otherwise an unchanged read publishes nothing, as subscribers read the table in
+    /// answer to a publication.
     @discardableResult
     private func reload() throws -> [SwapOrder] {
         let orders = try readAll()
         cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
+        let isFirst = !isHydrated
         isHydrated = true
         let published = Dictionary(uniqueKeysWithValues: allOrdersSubject.value.map { ($0.id, $0) })
-        if published != cache {
+        if (isFirst && aTableReadFailed) || published != cache {
             emitUpdate()
         }
         return orders

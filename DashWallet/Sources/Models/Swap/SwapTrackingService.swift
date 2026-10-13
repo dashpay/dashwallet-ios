@@ -249,7 +249,23 @@ final class SwapTrackingService {
 
     private func pollLoop() async {
         while !Task.isCancelled {
-            let orders = await dao.all()
+            // All of them or none: a payout is decided between every order that may
+            // claim it, and what is decided is written to the order.
+            let (orders, complete) = await dao.allKnown()
+            guard complete else {
+                // The ones at hand are still asked about at the provider, as in a cycle
+                // whose wallet cannot be read: nothing is taken from the wallet.
+                let known = orders.filter { $0.status.isActive }
+                DWLogger.log(
+                    "SwapTrackingService: the orders could not all be read — polling \(known.count) without the wallet")
+                var (wallet, _) = await walletView()
+                wallet.synced = false
+                let nowSeconds = Int64(Date().timeIntervalSince1970)
+                let due = known.filter { isDueForPoll($0, nowSeconds: nowSeconds, walletSynced: false) }
+                await pollOrders(due, payouts: [:], wallet: wallet)
+                try? await Task.sleep(nanoseconds: Constants.pollIntervalNs)
+                continue
+            }
             let active = orders.filter { $0.status.isActive }
             DWLogger.log("SwapTrackingService: polling \(active.count) active order(s)")
 
@@ -328,7 +344,9 @@ final class SwapTrackingService {
                 await pollOrders(due, payouts: [:], wallet: wallet)
             }
             // Read again: this cycle may have named some of them.
-            await recoverPayoutIdentities(among: await dao.all())
+            if let named = await dao.allIfComplete() {
+                await recoverPayoutIdentities(among: named)
+            }
 
             try? await Task.sleep(nanoseconds: Constants.pollIntervalNs)
         }
@@ -618,13 +636,15 @@ final class SwapTrackingService {
             watermark: SwiftDashSDKWalletSource.persistedSyncedHeightSnapshot(),
             walletId: wallet.walletId) {
             refusal = "the wallet store is behind the sync"
-        } else {
-            let resolution = walletPayouts(for: [order], among: await dao.all(), in: wallet)
+        } else if let orders = await dao.allIfComplete() {
+            let resolution = walletPayouts(for: [order], among: orders, in: wallet)
             if resolution == nil {
                 refusal = "the wallet could not be read"
             } else if !Self.holdsNoPayout(for: order, in: resolution) {
                 refusal = "a transaction that may be its payout is in the wallet now"
             }
+        } else {
+            refusal = "the orders could not be read"
         }
         guard let refusal else { return true }
         markWalletReadFailed([order])
@@ -896,8 +916,6 @@ final class SwapTrackingService {
     /// without one, a failed request, a failed write — is recorded, and the order is
     /// asked again later (`payoutIdentityAsk`).
     private func recoverPayoutIdentities(among orders: [SwapOrder]) async {
-        // No orders may be a failed read of them: the record is not pruned on that.
-        guard !orders.isEmpty else { return }
         let defaults = UserDefaults.standard
         let stored = defaults.dictionary(forKey: Constants.payoutIdentityAsksKey) ?? [:]
         // Entries of orders that are gone, or named since, are dropped with the next write.

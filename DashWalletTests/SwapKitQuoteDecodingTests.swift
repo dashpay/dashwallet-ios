@@ -897,6 +897,54 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertEqual(table.reads, 2)
     }
 
+    func testTheFirstReadAfterAFailedOneIsPublishedEvenWhenItBringsNothingNew() async {
+        // A subscriber that could not have all the orders skipped its work, and waits
+        // for a publication to do it — also when the table holds what was published.
+        let table = FlakyOrdersRead(failures: 1, orders: [])
+        let dao = SwapOrdersDAOImpl(readingAll: { try table.read() })
+        var publications = 0
+        let observation = dao.observeAll().dropFirst().sink { _ in publications += 1 }
+        defer { observation.cancel() }
+
+        // The subscription reads as well: of these reads the first fails, whichever
+        // it is, and the one after it succeeds.
+        _ = await dao.allIfComplete()
+        let complete = await dao.allIfComplete()
+        XCTAssertEqual(complete, [])
+        XCTAssertEqual(publications, 1)
+    }
+
+    func testAPayoutIsNotDecidedOverOrdersOnlyPartlyRead() async {
+        // Two orders for the same amount, and one receive either could have been paid by.
+        let a = buyOrder(id: "0xa", status: .pending, depositSeenSecondsAgo: 1_800)
+        let b = buyOrder(id: "0xb", status: .pending, depositSeenSecondsAgo: 1_800)
+        let receive = [payout("aa", secondsAgo: 600)]
+        XCTAssertEqual(assignments([a, b], receive), [:])
+        // B alone would take it — and the tracker would write that to the order.
+        XCTAssertEqual(assignments([b], receive), ["0xb": "aa"])
+
+        // The table cannot be read, and B is in the cache from a read of its own row.
+        let table = FlakyOrdersRead(failures: 1, orders: [a, b])
+        let dao = SwapOrdersDAOImpl(readingAll: { try table.read() }, cached: [b])
+        let partial = await dao.allIfComplete()
+        XCTAssertNil(partial)
+
+        // Once it can, both are there to decide between…
+        let complete = await dao.allIfComplete()
+        XCTAssertEqual(complete.map { Set($0.map(\.id)) }, ["0xa", "0xb"])
+        XCTAssertEqual(assignments(complete ?? [], receive), [:])
+
+        // …and a read that fails after that still answers with all of them.
+        let later = FlakyOrdersRead(failures: 0, orders: [a, b])
+        let read = SwapOrdersDAOImpl(readingAll: {
+            guard later.reads == 0 else { throw CocoaError(.fileReadUnknown) }
+            return try later.read()
+        })
+        _ = await read.allIfComplete()
+        let cached = await read.allIfComplete()
+        XCTAssertEqual(cached.map { Set($0.map(\.id)) }, ["0xa", "0xb"])
+    }
+
     func testALinkIsWithdrawnWhenItsOrderGivesUpThePayout() {
         // The details screen holds the link of the order a receive was assigned to.
         let order = buyOrder(id: "0xa", status: .pending)

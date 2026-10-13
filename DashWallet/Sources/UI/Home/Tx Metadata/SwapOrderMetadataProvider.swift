@@ -136,11 +136,16 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         Task { [weak self] in
             var again = true
             while again, let self {
-                let orders = await self.dao.all()
-                await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
-                    self.assignmentQueue.async {
-                        self.computeMetadata(from: orders)
-                        done.resume()
+                // Only over all the orders: with some of them unread, a transaction
+                // would be given to an order another one has as good a claim to. Until
+                // they have all been read once nothing is worked out; the read that
+                // brings them is published, which starts this again.
+                if let orders = await self.dao.allIfComplete() {
+                    await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
+                        self.assignmentQueue.async {
+                            self.computeMetadata(from: orders)
+                            done.resume()
+                        }
                     }
                 }
                 again = self.metadataQueue.sync {
