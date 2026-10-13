@@ -58,10 +58,28 @@ enum AppConnect {
         case twoQR
         /// Registers a session key with these terms.
         case oneQR(SessionKeyTerms)
+        /// An App Connect request v2: registers the keys of this plan.
+        case appConnect(GrantPlan)
+        /// An App Connect request v2 the wallet will not answer; there is
+        /// nothing to approve.
+        case refused(Refusal)
 
         var sessionKeyTerms: SessionKeyTerms? {
             if case .oneQR(let terms) = self { return terms }
             return nil
+        }
+
+        var grantPlan: GrantPlan? {
+            if case .appConnect(let plan) = self { return plan }
+            return nil
+        }
+
+        /// Whether the sheet has something to approve.
+        var isApprovable: Bool {
+            switch self {
+            case .twoQR, .oneQR, .appConnect: return true
+            case .unresolved, .refused: return false
+            }
         }
     }
 
@@ -260,12 +278,14 @@ enum AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         twoQRAuthenticationKeyHash160: Data? = nil
     ) -> [UInt32] {
-        let granted = Set(grants.map(\.sessionKeyId))
+        let granted = Set(grants.flatMap(\.keyIds))
         return currentIdentityPublicKeys
             .filter { key in
-                guard isLiveSessionKey(key) else { return false }
                 let keyId = UInt32(bitPattern: key.keyId)
-                if granted.contains(keyId) { return true }
+                // A v2 grant's keys come in other shapes too (a CRITICAL
+                // group key, a document-type key); the record names them.
+                if granted.contains(keyId) { return isLiveGrantedKey(key) }
+                guard isLiveSessionKey(key) else { return false }
                 guard key.totalBudget != nil, key.expiresAt != nil,
                       key.data != twoQRAuthenticationKeyHash160 else { return false }
                 return bindings.contains {
@@ -286,7 +306,7 @@ enum AppConnect {
         bindings: [KeyBinding],
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> [UInt32] {
-        let granted = Set(grants.map(\.sessionKeyId))
+        let granted = Set(grants.flatMap(\.keyIds))
         return currentIdentityPublicKeys
             .filter { key in
                 guard isLiveSessionKey(key) else { return false }
@@ -323,7 +343,7 @@ enum AppConnect {
         for grants: [AppConnectGrant]
     ) -> [UInt32] {
         let known = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
-        return Set(grants.map(\.sessionKeyId)).subtracting(known).sorted()
+        return Set(grants.flatMap(\.keyIds)).subtracting(known).sorted()
     }
 
     /// What a disconnect leaves of the matching records once their keys are
@@ -498,6 +518,18 @@ struct AppConnectGrant: Codable, Equatable {
     /// be deleted, or could not be shown to be absent; the record then only
     /// waits for that.
     var keyDisabled: Bool?
+    /// App Connect v2: the grant's other auth keys, in request order after
+    /// `sessionKeyId` (the primary binding's key). The identity's encryption
+    /// key for the app is shared by every device and is not part of a grant.
+    var additionalKeyIds: [UInt32]? = nil
+    /// App Connect v2: the request's `CONNECTION_ID` (hex). A later login
+    /// with the same one replaces this grant's keys.
+    var connectionId: String? = nil
+
+    /// Every auth key of the grant.
+    var keyIds: [UInt32] {
+        [sessionKeyId] + (additionalKeyIds ?? [])
+    }
 
     /// What makes two records the same grant: one session key given for one
     /// request. Records are matched on this, never on whole-value equality —

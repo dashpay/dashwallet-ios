@@ -6623,3 +6623,30 @@
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
+
+/* DashConnect App Connect v2 */
+"%1$@, spending up to %2$@ until %3$@" = "%1$@, spending up to %2$@ until %3$@";
+"%1$@, until %2$@" = "%1$@, until %2$@";
+"Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
+"Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
+"Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
+"Edit your DashPay profile" = "Edit your DashPay profile";
+"Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
+"Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
+"Registering names or changing your keys" = "Registering names or changing your keys";
+"Requested %1$@ · returns to %2$@" = "Requested %1$@ · returns to %2$@";
+"Requested %@" = "Requested %@";
+"The app asks for a key on a contract group it does not own." = "The app asks for a key on a contract group it does not own.";
+"The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
+"The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
+"The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
+"The app's contract does not take encryption keys bound to it." = "The app's contract does not take encryption keys bound to it.";
+"The app's contract has no readable owner." = "The app's contract has no readable owner.";
+"The sign-in request is dated in the future. Check this device's clock." = "The sign-in request is dated in the future. Check this device's clock.";
+"The sign-in request is more than 10 minutes old." = "The sign-in request is more than 10 minutes old.";
+"This network does not support this kind of sign-in yet." = "This network does not support this kind of sign-in yet.";
+"This sign-in is for another identity. Switch to it in this wallet and ask the app again." = "This sign-in is for another identity. Switch to it in this wallet and ask the app again.";
+"This sign-in request has expired. Ask the app for a new one." = "This sign-in request has expired. Ask the app for a new one.";
+"This wallet will not answer this sign-in request." = "This wallet will not answer this sign-in request.";
+"Write \"%@\" documents as you" = "Write \"%@\" documents as you";
+"The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
