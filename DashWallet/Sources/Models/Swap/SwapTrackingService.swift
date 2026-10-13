@@ -62,9 +62,14 @@ final class SwapTrackingService {
         /// How many completed orders are asked for their payout's hash in one cycle
         /// (`recoverPayoutIdentities`).
         static let payoutIdentityAsksPerCycle = 2
-        /// `UserDefaults` key: the completed Buy orders the provider has given a final
-        /// answer about (`payoutIdentityKey`).
-        static let payoutIdentityAskedKey = "swapTracking.v2.payoutIdentityAsked"
+        /// `UserDefaults` key: the completed Buy orders asked for their payout's hash
+        /// without getting it — `payoutIdentityKey` → [times asked, not to be asked again
+        /// before (unix s)] (`payoutIdentityAsk`).
+        static let payoutIdentityAsksKey = "swapTracking.v3.payoutIdentityAsks"
+        /// The wait after the first such try; doubled with each further one, up to
+        /// `payoutIdentityLongestRetrySeconds`.
+        static let payoutIdentityFirstRetrySeconds: Int64 = unpaidIdlePollIntervalSeconds
+        static let payoutIdentityLongestRetrySeconds: Int64 = 30 * 24 * 3_600
     }
 
     /// What one look at an order's deposit address established.
@@ -148,10 +153,6 @@ final class SwapTrackingService {
     /// nothing is left to settle for them (`settleLatePayouts`). In memory only, and
     /// touched only by the poll loop. Keyed by `payoutIdentityKey`.
     private var ordersNamingTheirPayout: Set<String> = []
-
-    /// The orders asked for their payout's hash since launch (`recoverPayoutIdentities`),
-    /// whatever came of it. In memory only, and touched only by the poll loop.
-    private var payoutIdentityTried: Set<String> = []
 
     private init() {}
 
@@ -828,80 +829,119 @@ final class SwapTrackingService {
 
     // MARK: - Private: Payout identity
 
-    /// What identifies an order in the persisted list of the ones already asked: a Buy
+    /// What identifies an order in the persisted record of the ones already asked: a Buy
     /// order's id is its deposit address, which a later order can have again.
     static func payoutIdentityKey(for order: SwapOrder) -> String { "\(order.id)|\(order.timestamp)" }
 
-    /// The completed Buy orders still to be asked which Dash transaction paid them out:
-    /// those that do not name it for sure (`SwapOrder.namesItsPayout`) — saved before the
+    /// The completed Buy orders to ask now which Dash transaction paid them out: those
+    /// that do not name it for sure (`SwapOrder.namesItsPayout`) — saved before the
     /// provider's Dash leg was read, or completed by an answer without one. Not within
     /// `unpaidIdlePollIntervalSeconds` of completing: the answer that completed the order
-    /// had no such leg, and the provider may add it shortly after.
+    /// had no such leg, and the provider may add it shortly after. And not before the
+    /// time set for an order by its last try (`notBefore`, by `payoutIdentityKey`). The
+    /// ones that have waited longest come first, those never asked ahead of all.
     static func ordersToAskForPayoutIdentity(
         among orders: [SwapOrder],
-        asked: Set<String>,
+        notBefore: [String: Int64],
         nowSeconds: Int64
     ) -> [SwapOrder] {
         orders.filter {
             $0.isBuy && $0.status == .completed && !$0.namesItsPayout
                 && nowSeconds - $0.finalisedAt >= Constants.unpaidIdlePollIntervalSeconds
-                && !asked.contains(payoutIdentityKey(for: $0))
+                && nowSeconds >= notBefore[payoutIdentityKey(for: $0), default: 0]
+        }.sorted {
+            notBefore[payoutIdentityKey(for: $0), default: 0] < notBefore[payoutIdentityKey(for: $1), default: 0]
         }
     }
 
-    /// Whether an answer that names no Dash payout is the provider's last word about a
-    /// completed order, so that it is not asked again: once the order has been completed
-    /// for `SwapOrder.latePayoutSeconds`, whatever the answer says. Until then the leg may
-    /// still be added to it, and "not known" may be a passing answer.
-    static func isFinalWithoutPayoutIdentity(finalisedAt: Int64, nowSeconds: Int64) -> Bool {
-        nowSeconds - finalisedAt >= SwapOrder.latePayoutSeconds
+    /// How long an order is left alone after it was asked for the `timesAsked`-th time
+    /// without its payout's hash coming of it. No such try is the last — the provider can
+    /// name the payout later, however old the order — so the order is asked again, ever
+    /// more rarely: ten minutes, twenty, forty… up to thirty days.
+    static func payoutIdentityRetryDelay(timesAsked: Int) -> Int64 {
+        let doublings = min(max(timesAsked, 1) - 1, 16)
+        return min(Constants.payoutIdentityLongestRetrySeconds, Constants.payoutIdentityFirstRetrySeconds << doublings)
+    }
+
+    /// The record of one more try that brought no hash: [times asked, not to be asked
+    /// again before (unix s)], given the record so far. A request the provider did not
+    /// answer (`answered` false) is no word of its: it is tried again after the first
+    /// wait, and does not make the waits longer.
+    static func payoutIdentityAsk(after previous: [Int]?, answered: Bool, nowSeconds: Int64) -> [Int] {
+        let timesBefore = previous.flatMap { payoutIdentityTimesAsked(in: $0) } ?? 0
+        let timesAsked = answered ? timesBefore + 1 : timesBefore
+        return [timesAsked, Int(nowSeconds + payoutIdentityRetryDelay(timesAsked: timesAsked))]
+    }
+
+    /// How many times `ask` says the order was asked; nil when it is no such record.
+    private static func payoutIdentityTimesAsked(in ask: [Int]) -> Int? {
+        guard ask.count == 2, (0...1_000_000).contains(ask[0]) else { return nil }
+        return ask[0]
+    }
+
+    /// When the order with the record `ask` may be asked again (unix s): at once when
+    /// the record is none, or its time is further off than the longest wait — written
+    /// while the device's clock ran ahead, it must not silence the order for good.
+    static func payoutIdentityNotBefore(of ask: [Int], nowSeconds: Int64) -> Int64 {
+        guard payoutIdentityTimesAsked(in: ask) != nil,
+              Int64(ask[1]) <= nowSeconds + Constants.payoutIdentityLongestRetrySeconds else { return 0 }
+        return Int64(ask[1])
     }
 
     /// A completed order that does not name its payout is matched to a wallet transaction
     /// by address, amount and date — and the date moves when the transaction is mined.
     /// The provider knows the payout: each such order is asked, a few per cycle, and the
     /// Dash hash it answers with is written into the order, which then has that
-    /// transaction by name. An order is not asked again once that hash is stored, or once
-    /// an answer without one is the provider's last word (`isFinalWithoutPayoutIdentity`);
-    /// otherwise it is asked once per launch — also when the hash could not be stored.
+    /// transaction by name. A try that does not end with the hash stored — an answer
+    /// without one, a failed request, a failed write — is recorded, and the order is
+    /// asked again later (`payoutIdentityAsk`).
     private func recoverPayoutIdentities(among orders: [SwapOrder]) async {
+        // No orders may be a failed read of them: the record is not pruned on that.
+        guard !orders.isEmpty else { return }
         let defaults = UserDefaults.standard
-        // The list an earlier build of this branch kept, with another meaning.
-        defaults.removeObject(forKey: "swapTracking.v1.payoutIdentityAsked")
-        let persisted = Set(defaults.stringArray(forKey: Constants.payoutIdentityAskedKey) ?? [])
-        // Entries of orders that are gone are dropped with the next write.
-        var asked = persisted.intersection(orders.map(Self.payoutIdentityKey(for:)))
+        let stored = defaults.dictionary(forKey: Constants.payoutIdentityAsksKey) ?? [:]
+        // Entries of orders that are gone, or named since, are dropped with the next write.
+        let unnamed = Set(orders.filter { !$0.namesItsPayout }.map(Self.payoutIdentityKey(for:)))
+        var asks = stored.compactMapValues { $0 as? [Int] }.filter { unnamed.contains($0.key) }
+        let startSeconds = Int64(Date().timeIntervalSince1970)
         let toAsk = Self.ordersToAskForPayoutIdentity(
-            among: orders, asked: asked.union(payoutIdentityTried), nowSeconds: Int64(Date().timeIntervalSince1970))
+            among: orders,
+            notBefore: asks.mapValues { Self.payoutIdentityNotBefore(of: $0, nowSeconds: startSeconds) },
+            nowSeconds: startSeconds)
             .prefix(Constants.payoutIdentityAsksPerCycle)
         for order in toAsk {
             let key = Self.payoutIdentityKey(for: order)
-            payoutIdentityTried.insert(key)
-            guard let answer = try? await buyAnswer(for: order, payoutTxHash: nil),
-                  answer.answered, let status = answer.status else { continue }
-            // The order as it is now: it may have been named, or replaced, since the cycle
-            // began.
-            guard let current = await dao.get(byId: order.id), current.timestamp == order.timestamp else { continue }
-            guard current.status == .completed, !current.namesItsPayout else { continue }
+            let answer = try? await buyAnswer(for: order, payoutTxHash: nil)
             let nowSeconds = Int64(Date().timeIntervalSince1970)
-            if status == .completed, let hash = SwapOrder.dashTxId(from: answer.firstOutHash) {
-                var updated = current
-                updated.outboundTxHash = hash
-                updated.payoutNamedAt = nowSeconds
-                // Not `update`, which swallows a failed write: the order is done with only
+            // Recorded first: whatever comes of this try short of the hash being stored,
+            // the order waits before the next one.
+            asks[key] = Self.payoutIdentityAsk(
+                after: asks[key], answered: answer?.answered == true, nowSeconds: nowSeconds)
+            guard let answer, answer.answered, answer.status == .completed,
+                  let hash = SwapOrder.dashTxId(from: answer.firstOutHash) else { continue }
+            let timestamp = order.timestamp
+            do {
+                // The row as it is now: it may have been named, or replaced, since the
+                // cycle began. Throws when the write fails: the order is done with only
                 // once the hash is stored.
-                do {
-                    try await dao.save(dto: updated)
-                    DWLogger.log("SwapTrackingService: order \(order.id) completed, payout named by the provider")
-                    asked.insert(key)
-                } catch {
-                    DWLogger.log("SwapTrackingService: order \(order.id) payout hash not saved: \(error)")
+                let named = try await dao.amend(id: order.id) { row in
+                    guard row.timestamp == timestamp, row.status == .completed, !row.namesItsPayout
+                    else { return false }
+                    row.outboundTxHash = hash
+                    row.payoutNamedAt = nowSeconds
+                    return true
                 }
-            } else if Self.isFinalWithoutPayoutIdentity(finalisedAt: current.finalisedAt, nowSeconds: nowSeconds) {
-                asked.insert(key)
+                if named {
+                    DWLogger.log("SwapTrackingService: order \(order.id) completed, payout named by the provider")
+                    asks[key] = nil
+                }
+            } catch {
+                DWLogger.log("SwapTrackingService: order \(order.id) payout hash not saved: \(error)")
             }
         }
-        if asked != persisted { defaults.set(asked.sorted(), forKey: Constants.payoutIdentityAskedKey) }
+        if !NSDictionary(dictionary: asks).isEqual(to: stored) {
+            defaults.set(asks, forKey: Constants.payoutIdentityAsksKey)
+        }
     }
 
     // MARK: - Private: Age-out

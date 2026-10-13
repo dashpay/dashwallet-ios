@@ -555,7 +555,7 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertTrue(resolution.contested.isEmpty)
     }
 
-    func testCompletedOrdersThatNameNoPayoutAreAskedOnce() {
+    func testCompletedOrdersThatNameNoPayoutAreAsked() {
         let named = buyOrder(
             id: "0xa", status: .completed, finalisedSecondsAgo: 3_600, payoutHash: String(repeating: "a", count: 64))
         let unnamed = buyOrder(id: "0xb", status: .completed, finalisedSecondsAgo: 3_600)
@@ -566,20 +566,21 @@ final class BuySwapOrderTests: XCTestCase {
         let live = buyOrder(id: "0xe", status: .pending)
         // Just completed: the provider may still add the Dash leg to its answer.
         let fresh = buyOrder(id: "0xf", status: .completed, finalisedSecondsAgo: 60)
-        func ids(asked: [SwapOrder]) -> [String] {
+        func ids(waiting asked: [SwapOrder]) -> [String] {
             SwapTrackingService.ordersToAskForPayoutIdentity(
                 among: [named, unnamed, sourceHash, legacy, live, fresh],
-                asked: Set(asked.map(SwapTrackingService.payoutIdentityKey(for:))),
+                notBefore: Dictionary(
+                    uniqueKeysWithValues: asked.map { (SwapTrackingService.payoutIdentityKey(for: $0), Int64.max) }),
                 nowSeconds: Int64(now.timeIntervalSince1970)).map(\.id)
         }
         // Not the one that names its payout, nor one still in flight. A record saved before
         // this version is asked whatever its hash looks like: it may be the deposit's.
-        XCTAssertEqual(ids(asked: []), ["0xb", "0xc", "0xd"])
-        XCTAssertEqual(ids(asked: [unnamed, legacy]), ["0xc"])
+        XCTAssertEqual(ids(waiting: []), ["0xb", "0xc", "0xd"])
+        XCTAssertEqual(ids(waiting: [unnamed, legacy]), ["0xc"])
         // A later order on the same deposit address is another order.
         var earlier = unnamed
         earlier.timestamp -= 86_400_000
-        XCTAssertEqual(ids(asked: [earlier, legacy]), ["0xb", "0xc"])
+        XCTAssertEqual(ids(waiting: [earlier, legacy]), ["0xb", "0xc"])
         // The provider's hash is taken only in the shape of a Dash transaction id.
         XCTAssertEqual(SwapOrder.dashTxId(from: " " + String(repeating: "A", count: 64)), String(repeating: "a", count: 64))
         XCTAssertNil(SwapOrder.dashTxId(from: "0x" + String(repeating: "a", count: 64)))
@@ -690,21 +691,78 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertEqual(assignments([repaired, live], other), ["0xb": "bb"])
         XCTAssertEqual(
             SwapTrackingService.ordersToAskForPayoutIdentity(
-                among: [repaired], asked: [], nowSeconds: Int64(now.timeIntervalSince1970)).map(\.id),
+                among: [repaired], notBefore: [:], nowSeconds: Int64(now.timeIntervalSince1970)).map(\.id),
             [])
     }
 
-    func testAnAnswerWithoutADashLegIsNotTheLastWordAtOnce() {
+    func testAnOldOrderIsAskedAgainAfterAnAnswerWithoutADashLeg() {
+        // Saved before this version and completed a month ago, with a hash from the
+        // deposit's chain; the provider's first answer names no Dash payout.
         let nowSeconds = Int64(now.timeIntervalSince1970)
-        func isFinal(completedSecondsAgo: Int64) -> Bool {
-            SwapTrackingService.isFinalWithoutPayoutIdentity(
-                finalisedAt: nowSeconds - completedSecondsAgo, nowSeconds: nowSeconds)
+        var legacy = buyOrder(
+            id: "0xa", status: .completed, finalisedSecondsAgo: 30 * 86_400, createdSecondsAgo: 31 * 86_400,
+            payoutHash: "0xsource")
+        legacy.fromAmount = nil
+        let key = SwapTrackingService.payoutIdentityKey(for: legacy)
+        func isAsked(_ order: SwapOrder, secondsLater: Int64, notBefore: [String: Int64]) -> Bool {
+            !SwapTrackingService.ordersToAskForPayoutIdentity(
+                among: [order], notBefore: notBefore, nowSeconds: nowSeconds + secondsLater).isEmpty
         }
-        // Completed lately: the provider may still add the leg, so the order is asked again.
-        XCTAssertFalse(isFinal(completedSecondsAgo: 3_600))
-        XCTAssertTrue(isFinal(completedSecondsAgo: SwapOrder.latePayoutSeconds))
-        // A record with no completion time is an old one.
-        XCTAssertTrue(SwapTrackingService.isFinalWithoutPayoutIdentity(finalisedAt: -1, nowSeconds: nowSeconds))
+        XCTAssertTrue(isAsked(legacy, secondsLater: 0, notBefore: [:]))
+        // That answer is not the last word, however old the order: it is left alone for a
+        // while and then asked again…
+        let firstWait = SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 1)
+        let afterFirst = [key: nowSeconds + firstWait]
+        XCTAssertFalse(isAsked(legacy, secondsLater: firstWait - 1, notBefore: afterFirst))
+        XCTAssertTrue(isAsked(legacy, secondsLater: firstWait, notBefore: afterFirst))
+        // …and once the provider names the payout, the order has it by name and is done.
+        legacy.outboundTxHash = String(repeating: "a", count: 64)
+        legacy.payoutNamedAt = nowSeconds + firstWait
+        XCTAssertTrue(legacy.namesItsPayout)
+        XCTAssertFalse(isAsked(legacy, secondsLater: firstWait, notBefore: afterFirst))
+
+        // Ever more rarely, and never given up.
+        XCTAssertEqual(firstWait, 600)
+        XCTAssertEqual(SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 2), 1_200)
+        XCTAssertEqual(SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 7), 64 * 600)
+        XCTAssertEqual(SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 14), 30 * 86_400)
+        XCTAssertEqual(SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 1_000), 30 * 86_400)
+        XCTAssertEqual(SwapTrackingService.payoutIdentityRetryDelay(timesAsked: 0), 600)
+
+        // The record kept between launches: each answer counts, and sets the next try's time.
+        let first = SwapTrackingService.payoutIdentityAsk(after: nil, answered: true, nowSeconds: nowSeconds)
+        XCTAssertEqual(first, [1, Int(nowSeconds + 600)])
+        let second = SwapTrackingService.payoutIdentityAsk(after: first, answered: true, nowSeconds: nowSeconds + 600)
+        XCTAssertEqual(second, [2, Int(nowSeconds + 600 + 1_200)])
+        XCTAssertEqual(SwapTrackingService.payoutIdentityNotBefore(of: second, nowSeconds: nowSeconds), nowSeconds + 1_800)
+        // A request the provider did not answer is tried again after the wait so far,
+        // without making it longer.
+        XCTAssertEqual(
+            SwapTrackingService.payoutIdentityAsk(after: second, answered: false, nowSeconds: nowSeconds),
+            [2, Int(nowSeconds + 1_200)])
+        XCTAssertEqual(
+            SwapTrackingService.payoutIdentityAsk(after: nil, answered: false, nowSeconds: nowSeconds),
+            [0, Int(nowSeconds + 600)])
+        // A time set while the clock ran a year ahead does not silence the order: it is due.
+        let aYearAhead = [key: SwapTrackingService.payoutIdentityNotBefore(
+            of: [3, Int(nowSeconds + 365 * 86_400)], nowSeconds: nowSeconds)]
+        var unnamedLegacy = legacy
+        unnamedLegacy.outboundTxHash = "0xsource"
+        unnamedLegacy.payoutNamedAt = nil
+        XCTAssertTrue(isAsked(unnamedLegacy, secondsLater: 0, notBefore: aYearAhead))
+        // A record of another shape is no record: due, and counted from the start.
+        XCTAssertEqual(SwapTrackingService.payoutIdentityNotBefore(of: [7], nowSeconds: nowSeconds), 0)
+        XCTAssertEqual(
+            SwapTrackingService.payoutIdentityAsk(after: [7], answered: true, nowSeconds: nowSeconds),
+            [1, Int(nowSeconds + 600)])
+
+        // Those never asked come before the ones whose next try is due.
+        let neverAsked = buyOrder(id: "0xz", status: .completed, finalisedSecondsAgo: 86_400)
+        XCTAssertEqual(
+            SwapTrackingService.ordersToAskForPayoutIdentity(
+                among: [unnamedLegacy, neverAsked], notBefore: [key: nowSeconds - 60], nowSeconds: nowSeconds)
+                .map(\.id),
+            ["0xz", "0xa"])
     }
 
     func testOrdersSavedBeforeDepositsWereRecordedKeepTheirOldMatching() {
