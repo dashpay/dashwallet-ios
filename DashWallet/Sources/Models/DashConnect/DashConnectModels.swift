@@ -150,7 +150,11 @@ extension DashConnectTokenPurchaseRequest {
 /// the user locally turned the connection off from the wallet UI.
 ///
 /// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`.
+/// wallet has already published the matching `loginKeyResponse`. For a one-QR
+/// connection it means the app holds a session key, registered on an
+/// identity of this wallet, that this wallet has not disabled: the row is
+/// made as soon as the key is registered, whether or not its response was
+/// published.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
     case active

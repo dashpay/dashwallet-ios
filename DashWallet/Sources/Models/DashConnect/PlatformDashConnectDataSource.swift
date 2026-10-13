@@ -76,6 +76,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case grantOnAnotherIdentity
     case grantStoreUnavailable
     case approvalOutOfDate
+    case loginUnresolved
     case grantNotRecorded
     case noFreeKeyId
     case otherIdentitiesNotChecked
@@ -154,6 +155,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .approvalOutOfDate:
             return NSLocalizedString(
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
+                comment: "DashConnect")
+        case .loginUnresolved:
+            return NSLocalizedString(
+                "This wallet could not check what this sign-in would give the app.",
                 comment: "DashConnect")
         case .sessionKeyUnusable:
             return NSLocalizedString(
@@ -391,11 +396,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let walletIdHex: String
         let connections: any DashConnectStore
         let grants: any AppConnectResponseStore
+        /// Where the network is reached, as configured when the pair was
+        /// made; `nil` on a network with one fixed set of nodes.
+        let endpoint: String?
 
-        /// Names what the rows belong to: the wallet, and the network scope
-        /// the connection store was fixed to, which tells two devnets of one
-        /// wallet apart.
-        var scope: String { "\(walletIdHex) \(connections.scopeKey ?? "")" }
+        /// Names what an operation runs for: the wallet, the network scope
+        /// the connection store was fixed to (which tells two devnets of one
+        /// wallet apart by name), and the endpoint, so a devnet pointed at
+        /// other nodes under the same name is another scope. The stores
+        /// themselves are keyed by wallet and name only.
+        var scope: String { "\(walletIdHex) \(connections.scopeKey ?? "") \(endpoint ?? "")" }
 
         /// The rows as they are published: each names this scope.
         func published(_ rows: [DAppConnection]) -> [DAppConnection] {
@@ -450,6 +460,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let shownRows: ShownRows
     private let operationGate: DashConnectOperationGate
     private let activeWalletIdHex: () -> String?
+    private let networkEndpoint: () -> String?
     private var walletChangeObserver: AnyCancellable?
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
@@ -474,6 +485,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         activeWalletIdHex: @escaping () -> String? = { WalletEnvironment.activeWalletIdHex as String? },
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
+        networkEndpoint: (() -> String?)? = nil,
         notificationCenter: NotificationCenter = .default,
         operationGate: DashConnectOperationGate = .shared,
         now: @escaping () -> Date = Date.init
@@ -489,8 +501,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.now = now
         self.activeWalletIdHex = activeWalletIdHex
         self.operationGate = operationGate
+        // Only a devnet's nodes are configurable.
+        let networkEndpoint = networkEndpoint
+            ?? (supportedNetwork == .devnet ? { DevnetConfiguration.quorumURL } : { nil })
+        self.networkEndpoint = networkEndpoint
         let active = Self.pinnedStores(
-            walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore)
+            walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore,
+            endpoint: networkEndpoint())
         self.shownRows = ShownRows(scope: active?.scope)
         self.subject = CurrentValueSubject(active.map { $0.published($0.connections.load()) } ?? [])
         // The list is loaded once, and the active wallet can change while
@@ -642,8 +659,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk)
         } catch {
+            // The wallet cannot tell any more whether the login the sheet
+            // offered is the one this network gets. Nothing was signed.
             Self.logger.error("🔗 DASHCONNECT :: protocol version unknown — \(error.localizedDescription, privacy: .public)")
-            throw error
+            throw DashConnectPlatformError.loginUnresolved
         }
         // The sheet showed the login `makeConnectionRequest` resolved, with
         // its terms for the one-QR login. If the network now gets the other
@@ -2090,19 +2109,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func pinnedStores(
         walletIdHex: String?,
         store: any DashConnectStore,
-        responseStore: any AppConnectResponseStore
+        responseStore: any AppConnectResponseStore,
+        endpoint: String?
     ) -> Stores? {
         guard let walletIdHex, !walletIdHex.isEmpty else { return nil }
         return Stores(
             walletIdHex: walletIdHex,
             connections: store.pinned(toWalletIdHex: walletIdHex),
-            grants: responseStore.pinned(toWalletIdHex: walletIdHex))
+            grants: responseStore.pinned(toWalletIdHex: walletIdHex),
+            endpoint: endpoint)
     }
 
     /// The stores fixed to the wallet that is active at this call, read
     /// once; `nil` with no wallet.
     private func pinnedActiveStores() -> Stores? {
-        Self.pinnedStores(walletIdHex: activeWalletIdHex(), store: store, responseStore: responseStore)
+        Self.pinnedStores(
+            walletIdHex: activeWalletIdHex(), store: store, responseStore: responseStore,
+            endpoint: networkEndpoint())
     }
 
     /// Publishes the active wallet's rows when the published list holds
@@ -2348,7 +2371,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             stores: Stores(
                 walletIdHex: walletIdHex,
                 connections: store.pinned(toWalletIdHex: walletIdHex),
-                grants: responseStore.pinned(toWalletIdHex: walletIdHex))
+                grants: responseStore.pinned(toWalletIdHex: walletIdHex),
+                // TODO(dashconnect-endpoint-source): this is the endpoint
+                // configured now, not the one `sdk` above was built with.
+                // They agree while the only writer of the setting restarts
+                // the runtime before it writes.
+                endpoint: networkEndpoint())
         )
     }
 

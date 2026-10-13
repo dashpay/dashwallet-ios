@@ -1432,6 +1432,36 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.approveError)
     }
 
+    /// The wallet could not check which login the network gets at approve
+    /// time: the sheet is rebuilt. When it still cannot tell, the sheet says
+    /// so itself and no error is added; when it can again, a note says why
+    /// nothing was approved.
+    func testAnApprovalThatCouldNotCheckTheLoginRebuildsTheSheet() async {
+        let shown = Self.consent(identityId: "identity-a", terms: .current)
+        var unresolved = shown
+        unresolved.login = .unresolved
+        unresolved.unresolvedLoginReason = "no nodes"
+        let spy = LoginApprovalSpy(shown: [shown, unresolved, shown])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved, DashConnectPlatformError.loginUnresolved]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest, unresolved)
+        XCTAssertNil(viewModel.approveError, "the sheet states the unresolved login itself")
+
+        viewModel.retryPendingRequest()
+        await waitUntil { viewModel.pendingRequest == shown }
+        viewModel.approvePendingRequest()
+        await waitUntil { !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertEqual(viewModel.approveError, DashConnectPlatformError.loginUnresolved.localizedDescription)
+    }
+
     private static func consent(identityId: String, terms: AppConnect.SessionKeyTerms?) -> ConnectionRequest {
         ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -2377,6 +2407,26 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(Self.shownRows(dataSource).map(\.status), [.approved])
     }
 
+    func testARowShownForADevnetAtOtherNodesIsNotActedOnUnderTheSameName() async throws {
+        let active = ActiveWallet("wallet-a")
+        let endpoint = Endpoint("https://quorums.one.example")
+        let center = NotificationCenter()
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(
+            active: active, rows: [row], notificationCenter: center, endpoint: endpoint)
+        let shown = Self.shownRows(dataSource)
+
+        // The same wallet and devnet name, pointed at other nodes.
+        endpoint.url = "https://quorums.two.example"
+
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
+        XCTAssertEqual(connections.load().map(\.status), [.active])
+        let current = Self.shownRows(dataSource)
+        XCTAssertNotEqual(current[0].scope, shown[0].scope)
+        try await dataSource.disconnect(id: current[0].id, scope: current[0].scope)
+        XCTAssertEqual(connections.load().map(\.status), [.approved])
+    }
+
     func testARowWithNoScopeIsNotActedOn() async {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
@@ -2588,13 +2638,19 @@ final class AppConnectLoginTests: XCTestCase {
         init(_ idHex: String?) { self.idHex = idHex }
     }
 
+    private final class Endpoint {
+        var url: String?
+        init(_ url: String?) { self.url = url }
+    }
+
     /// `rows` are the active wallet's, stored before the data source loads
     /// its list.
     private func makeScopedDataSource(
         active: ActiveWallet,
         rows: [DAppConnection] = [],
         notificationCenter: NotificationCenter = NotificationCenter(),
-        operationGate: DashConnectOperationGate = DashConnectOperationGate()
+        operationGate: DashConnectOperationGate = DashConnectOperationGate(),
+        endpoint: Endpoint = Endpoint(nil)
     ) -> (PlatformDashConnectDataSource, UserDefaultsDashConnectStore) {
         let connections = UserDefaultsDashConnectStore(
             defaults: defaults,
@@ -2608,6 +2664,7 @@ final class AppConnectLoginTests: XCTestCase {
             store: connections,
             responseStore: UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections)),
             activeWalletIdHex: { active.idHex },
+            networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
             operationGate: operationGate
         )
