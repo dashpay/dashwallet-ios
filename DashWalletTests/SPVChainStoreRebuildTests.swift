@@ -360,8 +360,8 @@ final class SPVChainStoreRebuildTests: XCTestCase {
         return scratch
     }
 
-    private func makeStore(in scratch: URL) throws -> URL {
-        let store = scratch.appendingPathComponent("SPV/testnet", isDirectory: true)
+    private func makeStore(in scratch: URL, scope: String = "testnet") throws -> URL {
+        let store = scratch.appendingPathComponent("SPV/\(scope)", isDirectory: true)
         try FileManager.default.createDirectory(
             at: store.appendingPathComponent("headers", isDirectory: true),
             withIntermediateDirectories: true)
@@ -486,7 +486,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
     }
 
     @MainActor
-    func testAClearThatThrowsIsNotReportedAsCleared() async {
+    func testTheGatePassesOnAClearsError() async {
         let gate = SPVChainStoreRebuild.StoreClearGate()
 
         do {
@@ -499,9 +499,7 @@ final class SPVChainStoreRebuildTests: XCTestCase {
     func testAFailedStopKeepsItsScopesStoreAndMarkerWhileAnotherScopeRebuilds() async throws {
         let scratch = try makeScratchDirectory()
         let testnetStore = try makeStore(in: scratch)
-        let mainnetStore = scratch.appendingPathComponent("SPV/mainnet", isDirectory: true)
-        try FileManager.default.createDirectory(at: mainnetStore, withIntermediateDirectories: true)
-        try Data([4, 5, 6]).write(to: mainnetStore.appendingPathComponent("segment_0000.dat"))
+        let mainnetStore = try makeStore(in: scratch, scope: "mainnet")
         let trash = scratch.appendingPathComponent("trash", isDirectory: true)
         try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
         try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "mainnet", directory: directory)
