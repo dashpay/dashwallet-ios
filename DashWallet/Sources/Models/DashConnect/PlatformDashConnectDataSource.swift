@@ -906,6 +906,31 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             rows.filter { $0.id != connection.id } + [connection]
         }
 
+        try await publishAppConnectResponse(
+            grant: grant,
+            appEphemeralPubKeyHash: sealed.appEphemeralPubKeyHash,
+            responseContractId: responseContractId,
+            context: context,
+            signer: signer
+        )
+        return connection
+    }
+
+    /// Publishes the response a grant records, once its keys are on the
+    /// identity and the grant and its connection row are recorded. Shared by
+    /// the one-QR login and App Connect request v2.
+    private func publishAppConnectResponse(
+        grant: AppConnectGrant,
+        appEphemeralPubKeyHash: Data,
+        responseContractId: Data,
+        context: Context,
+        signer: KeychainSigner
+    ) async throws {
+        let stores = context.stores
+        let identityId = grant.identityId
+        let appContractId = grant.appContractId
+        let requestHash = grant.values.appEphemeralPubKeyHash
+
         // The store was writable when the login started. If the record did
         // not land all the same, a response published now could not be found
         // again. The key is live, so the row above stays: a disconnect finds
@@ -919,7 +944,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // when its own request comes back.
         guard !grant.hasDeletableResponse else {
             Self.logger.info("🔗 DASHCONNECT :: response already published for this request")
-            return connection
+            return
         }
 
         // Besides this app's earlier responses, this takes whatever an earlier
@@ -963,7 +988,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // or that cannot be told, the failure stands.
             guard let published = try? await findAppConnectResponse(
                 ownerIdentityId: context.identityId,
-                appEphemeralPubKeyHash: sealed.appEphemeralPubKeyHash,
+                appEphemeralPubKeyHash: appEphemeralPubKeyHash,
                 responseContractId: responseContractId,
                 sdk: context.sdk
             ) else {
@@ -979,7 +1004,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             grants[index].documentId = documentId.toBase58String()
             grants[index].values = publishedValues
         }
-        return connection
     }
 
     /// This identity's response to one request, with the values it has on
