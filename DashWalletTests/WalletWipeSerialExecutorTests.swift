@@ -83,6 +83,7 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
 
         XCTAssertThrowsError(try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
             walletId,
+            networkScope: "testnet",
             deleteWallet: { _ in
                 throw WalletLifecycleTestError.walletDeletion
             },

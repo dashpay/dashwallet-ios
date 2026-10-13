@@ -81,6 +81,13 @@ struct CoreShieldedDrainFileStore: CoreShieldedDrainStoring {
         try FileManager.default.removeItem(at: file(operation.context))
     }
 
+    /// Successful deletion of one scope must not erase another scope's UUID.
+    func clear(context: CoreShieldedDrainContext) throws {
+        let url = file(context)
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+        try FileManager.default.removeItem(at: url)
+    }
+
     func clear(walletId: Data? = nil) throws {
         guard FileManager.default.fileExists(atPath: directory.path) else { return }
         if let walletId {

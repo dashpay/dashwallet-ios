@@ -99,7 +99,17 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
     }
 
     @MainActor
-    func testPartialDevnetDeletionPreservesRecoveryUntilAuthoritativeDeletionSucceeds() throws {
+    func testFailedConfiguredDevnetDeletionKeepsItsMarkerAfterExtraScopeSucceeds() throws {
+        try checkPartialDevnetDeletion(extraScopeFails: false)
+    }
+
+    @MainActor
+    func testFailedExtraDevnetDeletionKeepsItsMarkerAfterConfiguredScopeSucceeds() throws {
+        try checkPartialDevnetDeletion(extraScopeFails: true)
+    }
+
+    @MainActor
+    private func checkPartialDevnetDeletion(extraScopeFails: Bool) throws {
         enum DeletionFailure: Error { case unavailable }
         let walletId = context.walletId
         let a = CoreShieldedDrainContext(walletId: walletId, networkScope: "devnet-a")
@@ -107,21 +117,41 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         let other = CoreShieldedDrainContext(walletId: Data([99]), networkScope: "devnet-b")
         let operations = [a, b, other].map { CoreShieldedDrainOperation(id: UUID(), context: $0) }
         for operation in operations { try store.save(operation) }
+        var remainingScopes = Set([a.networkScope, b.networkScope])
 
-        // Scope A's rows are removed, but the same mnemonic/wallet still
-        // exists in B. B's authoritative deletion then fails.
-        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-            walletId, deleteWallet: { _ in }, keepsWalletOnAnotherScope: true, drainStore: store)
-        XCTAssertEqual(try store.load(b), operations[1])
-        XCTAssertThrowsError(try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-            walletId, deleteWallet: { _ in throw DeletionFailure.unavailable }, drainStore: store))
+        // Match the full wipe's order: extra scope first, configured scope
+        // second, continuing even after a failure in the first scope.
+        for (scope, fails, extra) in [(a, extraScopeFails, true), (b, !extraScopeFails, false)] {
+            let delete = {
+                try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+                    walletId, networkScope: scope.networkScope,
+                    deleteWallet: { _ in
+                        if fails { throw DeletionFailure.unavailable }
+                        remainingScopes.remove(scope.networkScope)
+                    }, keepsWalletOnAnotherScope: extra, drainStore: self.store)
+            }
+            if fails { XCTAssertThrowsError(try delete()) }
+            else { XCTAssertNoThrow(try delete()) }
+        }
+
         let reopened = CoreShieldedDrainFileStore(directory: directory)
-        XCTAssertEqual(try reopened.load(a), operations[0])
-        XCTAssertEqual(try reopened.load(b), operations[1])
+        let failedIndex = extraScopeFails ? 0 : 1
+        let failed = operations[failedIndex]
+        let succeeded = operations[1 - failedIndex]
+        XCTAssertEqual(remainingScopes, [failed.context.networkScope])
+        XCTAssertEqual(try reopened.load(failed.context), failed)
+        XCTAssertNil(try reopened.load(succeeded.context))
+        XCTAssertEqual(try reopened.load(other), operations[2])
 
-        // A successful retry of the authoritative deletion can now remove
-        // this wallet's markers, while retaining another wallet's operation.
-        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId, deleteWallet: { _ in }, drainStore: reopened)
+        // A retry only clears the scope that has now been deleted. Repeating
+        // cleanup is harmless, and another wallet's marker remains intact.
+        for _ in 0..<2 {
+            try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+                walletId, networkScope: failed.context.networkScope,
+                deleteWallet: { _ in remainingScopes.remove(failed.context.networkScope) },
+                keepsWalletOnAnotherScope: extraScopeFails, drainStore: reopened)
+        }
+        XCTAssertTrue(remainingScopes.isEmpty)
         XCTAssertNil(try reopened.load(a))
         XCTAssertNil(try reopened.load(b))
         XCTAssertEqual(try reopened.load(other), operations[2])

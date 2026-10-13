@@ -487,14 +487,15 @@ final class InternalTransferViewModel: ObservableObject {
             ? NSLocalizedString("Try again", comment: "Retry drain preview") : nil
     }
 
-    func performCoreDrainAction() {
-        guard !isCoreDrainLoading else { return }
+    @discardableResult
+    func performCoreDrainAction() -> Task<Void, Never>? {
+        guard !isCoreDrainLoading else { return nil }
         if coreDrainPending, coreDrainHasOutpoint, let context = coreDrainContext {
             isCoreDrainLoading = true
             // The shared runner owns execution even if this form goes away.
             let selection = coreDrainSelection
             let operation = coreDrainOperation
-            Task { [weak self] in
+            return Task { [weak self] in
                 let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
                     context: context, operation: operation)
                 guard let self, self.isCoreShieldedDrain,
@@ -515,6 +516,7 @@ final class InternalTransferViewModel: ObservableObject {
                 coreDrainOperation = nil
             }
             refreshCoreDrainPreview()
+            return nil
         }
     }
 

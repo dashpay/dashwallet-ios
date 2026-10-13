@@ -16,7 +16,7 @@ def write_recovery_harness(repository, sources, tests):
     methods = "\n".join(declaration(start) for start in (
         "    var coreDrainCompletionNotice:",
         "    var coreDrainActionTitle:",
-        "    func performCoreDrainAction()",
+        "    @discardableResult\n    func performCoreDrainAction()",
         "    private func showCoreDrainCompletion()",
         "    private func refreshCoreDrainPreview()",
         "    private func clearMaxSelection()",
@@ -90,7 +90,6 @@ struct Quote {
     static let shared = InternalTransferRunner()
     var resumeGate: CheckedContinuation<Void, Never>?
     var didStartResume: (() -> Void)?
-    var didFinishResume: (() -> Void)?
     func resumeCoreDrain(context: CoreShieldedDrainContext, operation: CoreShieldedDrainOperation?) async -> WalletDrainOutcome? {
         if didStartResume != nil {
             await withCheckedContinuation { continuation in
@@ -99,7 +98,6 @@ struct Quote {
             }
         }
         CoreShieldedDrainService.recorded = nil
-        defer { didFinishResume?() }
         return WalletDrainOutcome(state: .completed, outpoint: 1)
     }
 }
@@ -134,7 +132,6 @@ final class RecoveryFormTests: XCTestCase {
         CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "testnet")
         InternalTransferRunner.shared.resumeGate = nil
         InternalTransferRunner.shared.didStartResume = nil
-        InternalTransferRunner.shared.didFinishResume = nil
         let operation = CoreShieldedDrainOperation(id: UUID(), context: CoreShieldedDrainService.context)
         CoreShieldedDrainService.recorded = operation
         CoreShieldedDrainService.quotes = 0
@@ -207,7 +204,7 @@ final class RecoveryFormTests: XCTestCase {
         XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
-    @MainActor private func suspendedResume() async -> RecoveryForm {
+    @MainActor private func suspendedResume() async -> (RecoveryForm, Task<Void, Never>?) {
         _ = reset()
         CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: 1)
         let form = RecoveryForm()
@@ -215,37 +212,37 @@ final class RecoveryFormTests: XCTestCase {
         await form.coreDrainTask?.value
         let started = expectation(description: "Resume awaits authorization/execution")
         InternalTransferRunner.shared.didStartResume = { started.fulfill() }
-        form.performCoreDrainAction()
+        let action = form.performCoreDrainAction()
+        XCTAssertNotNil(action)
         await fulfillment(of: [started], timeout: 2)
-        return form
+        return (form, action)
     }
-    @MainActor private func completeResume() async {
-        let finished = expectation(description: "Resume completed")
-        InternalTransferRunner.shared.didFinishResume = { finished.fulfill() }
+    @MainActor private func completeResume(_ action: Task<Void, Never>?) async {
         InternalTransferRunner.shared.resumeGate?.resume()
         InternalTransferRunner.shared.resumeGate = nil
-        await fulfillment(of: [finished], timeout: 2)
+        // Join the real form action, including its rejection/completion logic.
+        await action?.value
     }
     @MainActor func testResumeCompletionSurvivesOverlappingPendingBalanceRefresh() async {
-        let form = await suspendedResume()
+        let (form, action) = await suspendedResume()
         form.refreshCoreDrainPreview()
         await form.coreDrainTask?.value
         XCTAssertTrue(form.coreDrainPending)
-        await completeResume()
+        await completeResume(action)
         XCTAssertTrue(form.coreDrainCompleted)
         XCTAssertFalse(form.coreDrainPending)
         XCTAssertNil(form.maxNotice)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
     @MainActor func testResumeCompletionInvalidatesStillSuspendedPendingPreview() async {
-        let form = await suspendedResume()
+        let (form, action) = await suspendedResume()
         CoreShieldedDrainService.suspendNextStatus = true
         let lookupStarted = expectation(description: "Pending lookup suspended")
         CoreShieldedDrainService.didRemoveMarker = { lookupStarted.fulfill() }
         form.refreshCoreDrainPreview()
         let preview = form.coreDrainTask
         await fulfillment(of: [lookupStarted], timeout: 2)
-        await completeResume()
+        await completeResume(action)
         CoreShieldedDrainService.statusGate?.resume()
         CoreShieldedDrainService.statusGate = nil
         await preview?.value
@@ -254,26 +251,26 @@ final class RecoveryFormTests: XCTestCase {
         XCTAssertNil(form.maxNotice)
     }
     @MainActor func testResumeCompletionIsRejectedAfterReselectingSameOperation() async {
-        let form = await suspendedResume()
+        let (form, action) = await suspendedResume()
         form.clearMaxSelection()
         form.isCoreShieldedDrain = true
         form.refreshCoreDrainPreview()
         await form.coreDrainTask?.value
-        await completeResume()
+        await completeResume(action)
         XCTAssertFalse(form.coreDrainCompleted)
         XCTAssertTrue(form.coreDrainPending)
     }
     @MainActor func testResumeCompletionIsRejectedAfterLeavingMax() async {
-        let form = await suspendedResume()
+        let (form, action) = await suspendedResume()
         form.clearMaxSelection()
-        await completeResume()
+        await completeResume(action)
         XCTAssertFalse(form.coreDrainCompleted)
         XCTAssertFalse(form.isCoreShieldedDrain)
     }
     @MainActor func testResumeCompletionIsRejectedWhenNetworkChangesBeforeNotification() async {
-        let form = await suspendedResume()
+        let (form, action) = await suspendedResume()
         CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "devnet-b")
-        await completeResume()
+        await completeResume(action)
         XCTAssertFalse(form.coreDrainCompleted)
     }
     @MainActor func testSuccessfulResumeShowsSuccessAfterRunnerClearsMarker() async throws {
@@ -282,8 +279,8 @@ final class RecoveryFormTests: XCTestCase {
         let form = RecoveryForm()
         form.refreshCoreDrainPreview()
         await form.coreDrainTask?.value
-        form.performCoreDrainAction()
-        for _ in 0..<100 where form.isCoreDrainLoading { await Task.yield() }
+        let action = form.performCoreDrainAction()
+        await action?.value
         XCTAssertTrue(form.coreDrainCompleted)
         XCTAssertNotNil(form.coreDrainCompletionNotice)
         XCTAssertNil(form.maxNotice)
