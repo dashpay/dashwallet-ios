@@ -467,10 +467,17 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
 
     func save(_ grants: [AppConnectGrant]) {
         guard let storageKey else { return }
+        let stored = readRows()
+        // A value that is not a list of rows is not this build's to replace:
+        // nothing is written until it is gone.
+        guard !stored.isNotRowList else {
+            Self.logger.error("AppConnectResponseStore: stored value is not a JSON array; grants not saved")
+            return
+        }
         // Rows this build cannot read are written back untouched: each one is
         // the only record of a response on Platform, and dropping it would
         // leave that response impossible to find.
-        let unreadable = readRows().unreadable
+        let unreadable = stored.unreadable
         guard !grants.isEmpty || !unreadable.isEmpty else {
             defaults.removeObject(forKey: storageKey)
             return
@@ -488,11 +495,11 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
 
     /// Decodes row by row, like `UserDefaultsDashConnectStore`, so one
     /// unreadable row costs one record instead of all of them.
-    private func readRows() -> (grants: [AppConnectGrant], unreadable: [Any]) {
-        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], []) }
+    private func readRows() -> (grants: [AppConnectGrant], unreadable: [Any], isNotRowList: Bool) {
+        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], [], false) }
         guard let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
             Self.logger.error("AppConnectResponseStore: stored value is not a JSON array; left in place")
-            return ([], [])
+            return ([], [], true)
         }
         var grants: [AppConnectGrant] = []
         var unreadable: [Any] = []
@@ -509,6 +516,6 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
             Self.logger.warning(
                 "AppConnectResponseStore: \(unreadable.count, privacy: .public) stored grant(s) could not be read; kept as stored")
         }
-        return (grants, unreadable)
+        return (grants, unreadable, false)
     }
 }
