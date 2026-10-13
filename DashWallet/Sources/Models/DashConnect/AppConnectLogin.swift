@@ -528,6 +528,58 @@ struct AppConnectGrant: Codable, Equatable {
     }
 }
 
+/// Lets one DashConnect operation at a time run for a wallet, across every
+/// data source in the process. A screen that is opened again gets a new data
+/// source over the same stores while an approval started on the old one is
+/// still running; without this a disconnect could pick the keys to disable
+/// before that approval registers one more.
+///
+/// Callers wait their turn in the order they arrived.
+actor DashConnectOperationGate {
+    static let shared = DashConnectOperationGate()
+
+    private var held: Set<String> = []
+    private var waiting: [String: [CheckedContinuation<Void, Never>]] = [:]
+
+    /// `onWait` is called when the operation has to wait for its turn.
+    func run<T>(
+        for key: String,
+        onWait: () -> Void = {},
+        _ operation: () async throws -> T
+    ) async rethrows -> T {
+        if held.contains(key) { onWait() }
+        await enter(key)
+        do {
+            let result = try await operation()
+            leave(key)
+            return result
+        } catch {
+            leave(key)
+            throw error
+        }
+    }
+
+    private func enter(_ key: String) async {
+        guard held.contains(key) else {
+            held.insert(key)
+            return
+        }
+        // The turn is handed over by `leave`, which keeps `key` held.
+        await withCheckedContinuation { waiting[key, default: []].append($0) }
+    }
+
+    private func leave(_ key: String) {
+        guard var queue = waiting[key], !queue.isEmpty else {
+            waiting[key] = nil
+            held.remove(key)
+            return
+        }
+        let next = queue.removeFirst()
+        waiting[key] = queue
+        next.resume()
+    }
+}
+
 protocol AppConnectResponseStore {
     /// Whether `save` keeps anything. A login must not register a key the
     /// store cannot record: its response could not be found again.
