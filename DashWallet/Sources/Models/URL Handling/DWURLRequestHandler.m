@@ -27,14 +27,23 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWURLRequestHandler
 
 + (void)handleURLRequest:(DWURLRequestAction *)action {
+    [self handleURLRequest:action
+                completion:^{
+                }];
+}
+
++ (void)handleURLRequest:(DWURLRequestAction *)action completion:(void (^)(void))completion {
     if (action.type == DWURLRequestActionType_Address) {
-        [self handleAddressRequest:action];
+        [self handleAddressRequest:action completion:completion];
+    }
+    else {
+        completion();
     }
 }
 
 #pragma mark - Private
 
-+ (void)handleAddressRequest:(DWURLRequestAction *)action {
++ (void)handleAddressRequest:(DWURLRequestAction *)action completion:(void (^)(void))completion {
     NSString *prompt = [NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?", nil), action.sender];
 
     [[DWAuthenticationService shared]
@@ -42,27 +51,31 @@ NS_ASSUME_NONNULL_BEGIN
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-                              if (authenticatedOrSuccess) {
-                                  NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
-
-                                  NSString *urlString =
-                                      [NSString stringWithFormat:
-                                                    @"%@://callback=%@&address=%@&source=dashwallet",
-                                                    action.sender,
-                                                    action.request,
-                                                    receiveAddress];
-
-                                  NSURL *url = [NSURL URLWithString:urlString];
-                                  NSParameterAssert(url);
-                                  if (!url) {
-                                      return;
-                                  }
-
-                                  [[UIApplication sharedApplication] openURL:url
-                                                                     options:@{}
-                                                           completionHandler:^(BOOL success){
-                                                           }];
+                              if (!authenticatedOrSuccess) {
+                                  completion();
+                                  return;
                               }
+                              NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
+
+                              NSString *urlString =
+                                  [NSString stringWithFormat:
+                                                @"%@://callback=%@&address=%@&source=dashwallet",
+                                                action.sender,
+                                                action.request,
+                                                receiveAddress];
+
+                              NSURL *url = [NSURL URLWithString:urlString];
+                              NSParameterAssert(url);
+                              if (!url) {
+                                  completion();
+                                  return;
+                              }
+
+                              [[UIApplication sharedApplication] openURL:url
+                                  options:@{}
+                                  completionHandler:^(BOOL success) {
+                                      completion();
+                                  }];
                           }];
 }
 

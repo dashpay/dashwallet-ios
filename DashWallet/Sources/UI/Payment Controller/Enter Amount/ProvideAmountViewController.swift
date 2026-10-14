@@ -22,7 +22,10 @@ import Combine
 // MARK: - ProvideAmountViewControllerDelegate
 
 protocol ProvideAmountViewControllerDelegate: AnyObject {
-    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String)
+    /// `controller` names the screen the amount comes from, so a delegate
+    /// serving several payments in turn can refuse a screen that is not the
+    /// current payment's.
+    func provideAmountViewController(_ controller: ProvideAmountViewController, didInput amount: UInt64, selectedCurrency: String)
 }
 
 // MARK: - ProvideAmountViewController
@@ -68,8 +71,8 @@ final class ProvideAmountViewController: SendAmountViewController {
             let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
             DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
-                                                                selectedCurrency: wSelf.model.supplementaryCurrencyCode)
+            wSelf.delegate?.provideAmountViewController(wSelf, didInput: wSelf.model.amount.plainAmount,
+                                                        selectedCurrency: wSelf.model.supplementaryCurrencyCode)
         }
     }
 

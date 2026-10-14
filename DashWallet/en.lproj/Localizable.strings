@@ -314,6 +314,9 @@
 /* DashPay Contacts */
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
+/* Payment: a payment link arrived while a send is in flight */
+"A payment is still being sent. Open the link again once it finishes." = "A payment is still being sent. Open the link again once it finishes.";
+
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
