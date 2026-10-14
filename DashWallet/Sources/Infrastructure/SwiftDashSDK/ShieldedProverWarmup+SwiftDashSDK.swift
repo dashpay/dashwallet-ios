@@ -14,9 +14,6 @@ import UIKit
 /// worker and returns immediately, so readiness is polled until the key is
 /// cached. Concurrent proofs share the same `OnceLock`, so a proof that
 /// starts mid-build waits for this build rather than starting a second one.
-///
-/// TODO(sdk-prepare-prover): when SwiftDashSDK exposes an awaitable prepare
-/// call, `prepare()` becomes that single await and the polling goes away.
 struct SwiftDashSDKShieldedProverBackend: ShieldedProverBackend {
     private static let pollInterval: Duration = .milliseconds(250)
     /// Generous next to the SDK's documented ~30 s worst case; a give-up only
