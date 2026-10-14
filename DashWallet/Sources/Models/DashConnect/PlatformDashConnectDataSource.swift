@@ -783,9 +783,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return connection
     }
 
-    /// `SDK.refreshProtocolVersion()` is a synchronous FFI call that makes a
-    /// proven network query. It runs on a plain dispatch queue so it does not
-    /// hold a cooperative-pool thread for a DAPI round trip.
     /// The protocol version a login is chosen by. An SDK pinned to a
     /// version (`SwiftDashSDKHost.platformVersion(for:)`) builds only that
     /// version's transitions, so its pin decides, with no network read. An
@@ -2857,8 +2854,9 @@ enum DashConnectPlatformQueries {
             throw SDKError.fromDashSDKError(error.pointee)
         }
         guard let data = result.data else { throw SDKError.notFound("No data returned") }
-        let text = String(cString: data.assumingMemoryBound(to: CChar.self))
-        dash_sdk_string_free(data)
+        let string = data.assumingMemoryBound(to: CChar.self)
+        let text = String(cString: string)
+        dash_sdk_string_free(string)
         guard let object = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any] else {
             throw SDKError.serializationError("The result is not a JSON object")
         }
