@@ -17,9 +17,6 @@ import UIKit
 ///
 /// TODO(sdk-prepare-prover): when SwiftDashSDK exposes an awaitable prepare
 /// call, `prepare()` becomes that single await and the polling goes away.
-/// The SDK starts today's build from a `.background`-priority task, so a
-/// proof confirmed mid-build may wait on a low-priority thread; the
-/// awaitable call is where the build priority belongs.
 struct SwiftDashSDKShieldedProverBackend: ShieldedProverBackend {
     private static let pollInterval: Duration = .milliseconds(250)
     /// Generous next to the SDK's documented ~30 s worst case; a give-up only
