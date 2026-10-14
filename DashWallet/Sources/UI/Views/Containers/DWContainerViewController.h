@@ -30,8 +30,6 @@ typedef NS_ENUM(NSUInteger, DWContainerTransitionType) {
 @property (readonly, nullable, strong, nonatomic) UIViewController *currentController;
 
 @property (readonly, nonatomic, assign) NSTimeInterval transitionAnimationDuration;
-/// YES from the start of an animated child swap until its completion.
-@property (readonly, nonatomic, assign, getter=isTransitioning) BOOL transitioning;
 @property (readonly, nonatomic, strong) UIView *containerView;
 
 /// Default cross-dissolve transition

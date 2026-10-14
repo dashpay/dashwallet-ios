@@ -151,7 +151,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }
         __weak typeof(self) weakSelf = self;
         if ([self.linkHandOverGate deferHandOverFromRoots:roots
-                                        rootTransitioning:self.isTransitioning
                                                     retry:^{
                                                         [weakSelf dispatchNextLinkIfReady];
                                                     }]) {
@@ -219,8 +218,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         if (strongSelf == nil || !strongSelf.linkQueue.isDispatching || strongSelf.linkQueue.dispatchToken != token) {
             return;
         }
+        NSMutableArray<UIViewController *> *roots = [NSMutableArray arrayWithObject:strongSelf];
+        if (strongSelf->_mainController != nil) {
+            [roots addObject:strongSelf->_mainController];
+        }
         const BOOL busy = strongSelf.view.window.rootViewController.presentedViewController != nil ||
-                          strongSelf.transitionCoordinator != nil;
+                          [DWLinkHandOverGate isInTransitionFromRoots:roots];
         if (busy) {
             [strongSelf armLinkWatchdogForToken:token];
             return;

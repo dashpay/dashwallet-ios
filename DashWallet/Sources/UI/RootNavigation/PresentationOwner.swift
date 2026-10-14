@@ -125,43 +125,54 @@ extension UIViewController: PresentationNode {
 /// and a handler presenting right then would present from a controller in
 /// transition, which UIKit refuses or takes down with it. The gate asks
 /// again every 0.1 s until nothing under the roots is presented, dismissed,
-/// pushed or popped and the root container is not swapping children. A
-/// sheet the user holds mid-drag holds the link until it is let go. A link
-/// held for `maxHold` is handed over regardless; a handler whose screen
-/// UIKit then refuses is left to the queue's watchdog.
+/// pushed or popped. A sheet the user holds mid-drag holds the link until it
+/// is let go. A link held for `maxHold` is handed over regardless; a handler
+/// whose screen UIKit then refuses is left to the queue's watchdog. The
+/// root containers' own child swaps are plain view animations and are not
+/// seen here: setup handing over to the wallet waits for its swap where it
+/// starts (`setupViewControllerDidFinish`); a network switch's swap does
+/// not.
 @objc(DWLinkHandOverGate)
 final class LinkHandOverGate: NSObject {
     static let poll: TimeInterval = 0.1
 
     let maxHold: TimeInterval
-    private let now: () -> Date
-    private(set) var holdingSince: Date?
+    /// Seconds on a monotonic clock: a change of the wall clock does not
+    /// stretch or cut a hold.
+    private let now: () -> TimeInterval
+    private(set) var holdingSince: TimeInterval?
     private var retryScheduled = false
 
     override convenience init() {
         self.init(maxHold: 10)
     }
 
-    init(maxHold: TimeInterval, now: @escaping () -> Date = Date.init) {
+    init(maxHold: TimeInterval, now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.maxHold = maxHold
         self.now = now
     }
 
-    /// True — and `retry` runs `poll` later — while something under
-    /// `roots` is in transition or `rootTransitioning`; false when the link
-    /// can be handed over now.
-    @objc(deferHandOverFromRoots:rootTransitioning:retry:)
-    func deferHandOver(from roots: [UIViewController], rootTransitioning: Bool, retry: @escaping () -> Void) -> Bool {
-        deferHandOver(from: roots as [PresentationNode], rootTransitioning: rootTransitioning, retry: retry)
+    /// Whether anything under `roots` is presented, dismissed, pushed or
+    /// popped right now — the one definition the gate and the queue's
+    /// watchdog share.
+    @objc(isInTransitionFromRoots:)
+    static func isInTransition(from roots: [UIViewController]) -> Bool {
+        PresentationOwner.nodeInTransition(from: roots) != nil
     }
 
-    func deferHandOver(from roots: [PresentationNode], rootTransitioning: Bool = false,
-                       retry: @escaping () -> Void) -> Bool {
-        guard rootTransitioning || PresentationOwner.nodeInTransition(from: roots) != nil else {
+    /// True — and `retry` runs `poll` later — while something under
+    /// `roots` is in transition; false when the link can be handed over now.
+    @objc(deferHandOverFromRoots:retry:)
+    func deferHandOver(from roots: [UIViewController], retry: @escaping () -> Void) -> Bool {
+        deferHandOver(from: roots as [PresentationNode], retry: retry)
+    }
+
+    func deferHandOver(from roots: [PresentationNode], retry: @escaping () -> Void) -> Bool {
+        guard PresentationOwner.nodeInTransition(from: roots) != nil else {
             reset()
             return false
         }
-        let since: Date
+        let since: TimeInterval
         if let holdingSince {
             since = holdingSince
         } else {
@@ -169,7 +180,7 @@ final class LinkHandOverGate: NSObject {
             holdingSince = since
             DWLogger.log("LINKS holding the next link: a screen is in transition")
         }
-        guard now().timeIntervalSince(since) < maxHold else {
+        guard now() - since < maxHold else {
             DWLogger.log("LINKS a screen is still in transition after \(Int(maxHold)) s; handing the next link over")
             reset()
             return false
