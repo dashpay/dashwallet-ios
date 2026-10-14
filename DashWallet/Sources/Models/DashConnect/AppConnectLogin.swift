@@ -314,6 +314,38 @@ enum AppConnect {
             .sorted()
     }
 
+    /// Whether the identity holds the key a record names, live: its id, with
+    /// the key data the record expects while the registration is unconfirmed.
+    static func holdsRecordedKey(
+        _ grant: AppConnectGrant,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        currentIdentityPublicKeys.contains { key in
+            guard UInt32(bitPattern: key.keyId) == grant.sessionKeyId, key.disabledAt == nil else { return false }
+            guard let hash = grant.unconfirmedKeyHash160 else { return true }
+            return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
+        }
+    }
+
+    /// Confirms the unconfirmed records of `identityId` whose key the
+    /// identity now holds, and returns them. A record whose key is not there
+    /// stays as it is: the update may still land, and nothing is taken from
+    /// a view that may be behind.
+    static func confirmRegistrations(
+        in grants: inout [AppConnectGrant],
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [AppConnectGrant] {
+        var confirmed: [AppConnectGrant] = []
+        for index in grants.indices
+        where grants[index].identityId == identityId && grants[index].isUnconfirmed
+            && holdsRecordedKey(grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys) {
+            grants[index].unconfirmedKeyHash160 = nil
+            confirmed.append(grants[index])
+        }
+        return confirmed
+    }
+
     /// Granted session keys the given view of the identity does not contain.
     /// Platform never removes a key, it only disables it, so a missing id
     /// means the view is out of date — not that the key is gone. A disconnect
@@ -498,6 +530,14 @@ struct AppConnectGrant: Codable, Equatable {
     /// be deleted, or could not be shown to be absent; the record then only
     /// waits for that.
     var keyDisabled: Bool?
+    /// The hex hash160 of the session key, set from just before its
+    /// registration is submitted until the key is seen on the identity.
+    /// While set, the key may be there or not: an update can land without
+    /// confirming. Such a record has no row and no response; it is kept so
+    /// the key, if it lands, is found and confirmed.
+    var unconfirmedKeyHash160: String? = nil
+
+    var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
 
     /// What makes two records the same grant: one session key given for one
     /// request. Records are matched on this, never on whole-value equality —

@@ -2596,6 +2596,38 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertFalse(unscoped.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
     }
 
+    func testAnUnconfirmedRegistrationIsConfirmedOnlyByItsOwnKey() {
+        var pending = Self.grant(sessionKeyId: 9)
+        let hash = Data(repeating: 0x5A, count: 20)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        let landed = [Self.key(keyId: 9, data: hash)]
+        let other = [Self.key(keyId: 9, data: Data(repeating: 0x01, count: 20))]
+
+        XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: landed))
+        XCTAssertFalse(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: other),
+                       "another key under the same id is not the one submitted")
+        XCTAssertFalse(
+            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: [Self.key(keyId: 9, data: hash, disabledAt: 1)]),
+            "a disabled key is not a live registration")
+
+        var grants = [pending]
+        XCTAssertEqual(
+            AppConnect.confirmRegistrations(
+                in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: other), [])
+        XCTAssertEqual(
+            AppConnect.confirmRegistrations(in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: []),
+            [], "a key not in the view is not taken as never registered")
+        XCTAssertTrue(grants[0].isUnconfirmed)
+        XCTAssertEqual(
+            AppConnect.confirmRegistrations(
+                in: &grants, identityId: "another identity", currentIdentityPublicKeys: landed), [])
+
+        let confirmed = AppConnect.confirmRegistrations(
+            in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: landed)
+        XCTAssertEqual(confirmed.map(\.key), [pending.key])
+        XCTAssertFalse(grants[0].isUnconfirmed)
+    }
+
     func testDisconnectWithNoActiveWalletIsRefused() async {
         let active = ActiveWallet(nil)
         let (dataSource, _) = makeScopedDataSource(active: active)

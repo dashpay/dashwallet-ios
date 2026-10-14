@@ -798,9 +798,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// identity with its bounds and limits, and only then publish the
     /// encrypted key, so the app finds a live key on its first check.
     ///
-    /// The grant and the connection row are recorded as soon as the key is
-    /// known to be on the identity, before the publish: whatever happens to
-    /// the publish, the key stays visible in Connections and can be disabled.
+    /// A new key's grant is recorded, unconfirmed, before its registration
+    /// is submitted, so a key that lands without the update confirming is
+    /// still found later. Once the key is known to be on the identity the
+    /// grant is confirmed and the connection row recorded, before the
+    /// publish: whatever happens to the publish, the key stays visible in
+    /// Connections and can be disabled.
     ///
     /// Approving the same QR again finds the key registered and does not
     /// register it twice; if the response is already recorded as published it
@@ -846,6 +849,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let requestHash = sealed.appEphemeralPubKeyHash.toHexString()
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
+        await confirmRegistrations(
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, in: stores)
         func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
                 && grant.values.appEphemeralPubKeyHash == requestHash
@@ -894,15 +899,59 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 totalBudget: budget,
                 expiresAt: expiry
             )
+            // Recorded before the update is submitted: an update can land
+            // and still report a failure, and a key with no record could not
+            // be found again. The record stays unconfirmed, with no row,
+            // until the key is seen on the identity.
+            var pending = AppConnectGrant(
+                identityId: identityId,
+                appContractId: appContractId,
+                documentId: nil,
+                values: AppConnect.ResponseValues(sealed),
+                sessionKeyId: keyId,
+                totalBudget: budget,
+                expiresAt: expiry,
+                publishedAt: now()
+            )
+            pending.unconfirmedKeyHash160 = sessionKeyHash160.toHexString()
+            // A confirmed record for this request means its key is on the
+            // identity, and a view without it is behind: registering again
+            // would be refused, and the record must keep its values.
+            guard !stores.grants.load().contains(where: {
+                isGrantForRequest($0) && !$0.isUnconfirmed && $0.keyDisabled != true
+            }) else {
+                throw DashConnectPlatformError.identityKeysOutOfDate
+            }
+            updateGrants(in: stores) { grants in
+                grants.removeAll { $0.key == pending.key }
+                grants.append(pending)
+            }
+            guard stores.grants.load().contains(where: { $0.key == pending.key }) else {
+                Self.logger.error("🔗 DASHCONNECT :: the session key could not be recorded; not registering it")
+                throw DashConnectPlatformError.grantStoreUnavailable
+            }
             Self.logger.info("🔗 DASHCONNECT :: registering session key")
-            try await signer.withAdditionalSigningKeys([
-                (publicKey: sessionKeyHash160, privateKey: sessionPrivateKey),
-            ]) {
-                try await context.wallet.updateIdentity(
-                    identityId: context.identityId,
-                    addPublicKeys: [key],
-                    signer: signer
-                )
+            do {
+                try await signer.withAdditionalSigningKeys([
+                    (publicKey: sessionKeyHash160, privateKey: sessionPrivateKey),
+                ]) {
+                    try await context.wallet.updateIdentity(
+                        identityId: context.identityId,
+                        addPublicKeys: [key],
+                        signer: signer
+                    )
+                }
+            } catch {
+                // The update may have landed all the same. If the key is on
+                // the identity, the login goes on; otherwise the failure
+                // stands and the record stays unconfirmed, to be confirmed if
+                // the key turns up later.
+                guard let keys = try? await refreshedIdentityPublicKeys(context: context),
+                      AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys) else {
+                    Self.logger.error("🔗 DASHCONNECT :: session key registration failed or is unconfirmed — \(error.localizedDescription, privacy: .public)")
+                    throw error
+                }
+                Self.logger.info("🔗 DASHCONNECT :: session key is on the identity although the update reported a failure")
             }
             Self.logger.info("🔗 DASHCONNECT :: session key registered")
             sessionKeyId = keyId
@@ -910,13 +959,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             expiresAt = expiry
         }
 
-        // From here the app-side key exists on the identity. Record it, and
-        // show the connection, before anything else can fail. A grant already
-        // recorded for this request keeps its values: if an earlier publish
-        // landed without confirming, those are the ones on Platform.
+        // From here the app-side key exists on the identity. Confirm its
+        // record, and show the connection, before anything else can fail. A
+        // grant already recorded for this request keeps its values: if an
+        // earlier publish landed without confirming, those are the ones on
+        // Platform.
         let grant = updateGrants(in: stores) { grants -> AppConnectGrant in
-            if let existing = grants.first(where: { isGrantForRequest($0) && $0.sessionKeyId == sessionKeyId }) {
-                return existing
+            if let index = grants.firstIndex(where: { isGrantForRequest($0) && $0.sessionKeyId == sessionKeyId }) {
+                // The key is on the identity now.
+                grants[index].unconfirmedKeyHash160 = nil
+                return grants[index]
             }
             let new = AppConnectGrant(
                 identityId: identityId,
@@ -1294,6 +1346,35 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return context
     }
 
+    /// Confirms this identity's unconfirmed registrations whose key it now
+    /// holds, and gives each such app a one-QR row if it has none: the key
+    /// is live and has to be reachable from Connections.
+    private func confirmRegistrations(
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        in stores: Stores
+    ) async {
+        let confirmed = updateGrants(in: stores) { grants in
+            AppConnect.confirmRegistrations(
+                in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys)
+        }
+        guard !confirmed.isEmpty else { return }
+        Self.logger.info("🔗 DASHCONNECT :: \(confirmed.count, privacy: .public) unconfirmed session key(s) found on the identity")
+        let appIds = Set(confirmed.map(\.appContractId))
+        let confirmedAt = now()
+        await updateRows(in: stores) { rows in
+            let missing = appIds.subtracting(rows.map(\.id))
+            return rows + missing.sorted().map { appId in
+                let branding = DashConnectFallbackAppMetadata.resolve(contractId: appId, unauthenticatedLabel: "")
+                return DAppConnection(
+                    id: appId,
+                    name: branding.name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : branding.name,
+                    url: branding.url,
+                    status: .active, updatedAt: confirmedAt, loginKind: .oneQR)
+            }
+        }
+    }
+
     private func markActive(_ pendingConnection: DAppConnection, in stores: Stores) async {
         let activatedAt = now()
         await updateRows(in: stores) { rows in
@@ -1502,7 +1583,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.walletChanged
         }
         let isOneQR = rows(in: stores).first { $0.id == id }?.loginKind == .oneQR
-        let hasGrants = stores.grants.load().contains { $0.appContractId == id }
+        // A record whose registration is unconfirmed has nothing for a
+        // disconnect to turn off until its key is seen.
+        let hasGrants = stores.grants.load().contains { $0.appContractId == id && !$0.isUnconfirmed }
         if isOneQR || hasGrants {
             let liveElsewhere = try await revokeAppConnectGrants(
                 appContractId: id, checksUnrecordedKeys: isOneQR, stores: stores)
@@ -1586,12 +1669,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         func hasLiveGrantElsewhere() -> Bool {
             stores.grants.load().contains {
                 $0.appContractId == appContractId && $0.identityId != identityId && $0.keyDisabled != true
+                    && !$0.isUnconfirmed
             }
         }
         guard let appContract = Self.decodeIdentifier(appContractId) else {
             throw DashConnectPlatformError.loginContractUnavailable
         }
-        if !stores.grants.load().contains(where: isGranted) {
+        if !stores.grants.load().contains(where: { isGranted($0) && !$0.isUnconfirmed }) {
             // Before the PIN prompt, from the store alone: whether this
             // identity holds a key of the app's that has no record.
             let holdsUnrecordedKey = try checksUnrecordedKeys && Self
@@ -1610,7 +1694,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
-        let granted = stores.grants.load().filter(isGranted)
+        // A registration whose key has turned up is confirmed. One that has
+        // not stays unconfirmed and takes no part in what follows: its key
+        // id may belong to another key, and its absence says nothing.
+        // TODO(dashconnect-unconfirmed-row): if the view stays behind
+        // through this disconnect too, the app's row goes while that key may
+        // have landed; the next one-QR approval with this identity confirms
+        // the key and shows the app again.
+        await confirmRegistrations(
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, in: stores)
+        let granted = stores.grants.load().filter { isGranted($0) && !$0.isUnconfirmed }
         guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: granted).isEmpty else {
             // Platform never removes a key, so the node that answered is
             // behind. A key it does not know cannot be shown to be disabled,
@@ -2360,6 +2453,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         let identityIndex = try wallet.managedIdentity(identityId: identityId).getIdentityIndex() ?? 0
 
+        // The devnet name and endpoint the stores name are read from the
+        // settings, after the runtime above. A change to them first stops
+        // that runtime and builds another, so if it is still the one
+        // running once they are read, they are the settings it runs on.
+        let stores = Stores(
+            walletIdHex: walletIdHex,
+            connections: store.pinned(toWalletIdHex: walletIdHex),
+            grants: responseStore.pinned(toWalletIdHex: walletIdHex),
+            endpoint: networkEndpoint())
+        guard await MainActor.run(body: { SwiftDashSDKHost.shared.sdk === sdk }) else {
+            Self.logger.error("🔗 DASHCONNECT :: the SDK runtime changed while its context was read")
+            throw DashConnectPlatformError.walletChanged
+        }
+
         return Context(
             wallet: wallet,
             sdk: sdk,
@@ -2368,15 +2475,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             identityId: identityId,
             identityIndex: identityIndex,
             storedUsername: runtime.storedUsername,
-            stores: Stores(
-                walletIdHex: walletIdHex,
-                connections: store.pinned(toWalletIdHex: walletIdHex),
-                grants: responseStore.pinned(toWalletIdHex: walletIdHex),
-                // TODO(dashconnect-endpoint-source): this is the endpoint
-                // configured now, not the one `sdk` above was built with.
-                // They agree while the only writer of the setting restarts
-                // the runtime before it writes.
-                endpoint: networkEndpoint())
+            stores: stores
         )
     }
 
