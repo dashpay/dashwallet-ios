@@ -41,6 +41,14 @@ enum InternalTransferRoute: Equatable {
         case .shieldedToCore, .shieldedToPlatform: return .shielded
         }
     }
+
+    /// Whether executing this route builds an Orchard (Halo 2) proof.
+    var buildsOrchardProof: Bool {
+        switch self {
+        case .coreToShielded, .platformToShielded, .shieldedToCore, .shieldedToPlatform: return true
+        case .coreToPlatform, .platformToCore: return false
+        }
+    }
 }
 
 /// Where an internal transfer delivers. The FROM side is a `ChainNetwork`
@@ -427,6 +435,7 @@ final class InternalTransferViewModel: ObservableObject {
     private var isApplyingMax = false
     @Published var amountText: String = "0" {
         didSet {
+            warmShieldedProverIfNeeded()
             guard !isApplyingMax else { return }
             clearMaxSelection()
         }
@@ -937,6 +946,7 @@ final class InternalTransferViewModel: ObservableObject {
         clearMaxSelection()
         refreshShieldedSpendCeiling()
         refreshIdentityPlatformCeiling()
+        warmShieldedProverIfNeeded()
 
         // With the identity as the source, no balance route is active at all:
         // `route` is a stale pair, so every route preflight stays down.
@@ -1312,6 +1322,24 @@ final class InternalTransferViewModel: ObservableObject {
             return source == .shielded ? .unshield : nil
         }
         return shieldedFeeKind(for: route)
+    }
+
+    /// Whether executing the CURRENT selection builds an Orchard proof. An
+    /// Identity source withdraws without a proof, and the Identity destination
+    /// proves only when it starts with an unshield.
+    private var currentSelectionBuildsOrchardProof: Bool {
+        if isIdentitySource { return false }
+        if isIdentityDestination { return source == .shielded }
+        return route.buildsOrchardProof
+    }
+
+    /// Start building the proving key once a non-zero amount sits on a route
+    /// that proves, so the proof after Confirm does not pay for it. The route
+    /// alone is no signal: the Payments landing builds this view model for
+    /// every Send/Receive sheet, and its default selection always proves.
+    private func warmShieldedProverIfNeeded() {
+        guard currentSelectionBuildsOrchardProof, rawTypedDecimal > 0 else { return }
+        ShieldedProverWarmup.shared.request(.shieldedRoute)
     }
 
     /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
