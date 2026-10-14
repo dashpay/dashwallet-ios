@@ -531,6 +531,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         await shared.performStop(deletingPersistedWallet: true)
     }
 
+    /// Release the `ModelContainer` kept across `stopAsync` (see
+    /// `performStop`: it is retained so persister contexts do not dangle while
+    /// tokio winds down). Only the local-store reset calls this, after the
+    /// host's native teardown has returned; with a manager still bound the
+    /// call is refused and logged, because that manager may still write
+    /// through the container.
+    @MainActor
+    func dropRetainedModelContainer() {
+        guard walletManager == nil, shieldedPreparedManager == nil else {
+            DWLogger.log("🧹 STORE-RESET container release rejected: BLAST manager still bound")
+            return
+        }
+        modelContainer = nil
+    }
+
     /// Cancel the background identity recovery (see `performStart`) and wait
     /// until it has returned; on return no recovery task is left. The slot is
     /// cleared only after the task returns, so a concurrent caller finds the
