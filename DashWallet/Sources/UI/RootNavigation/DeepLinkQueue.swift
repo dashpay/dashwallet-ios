@@ -132,10 +132,8 @@ final class DeepLinkQueue: NSObject {
     /// `dispatchToken`, until `dispatchDidFinish(token:)`.
     @objc(takeNextWithWalletPresented:attached:unlocked:launchHoldPending:invitationsReady:)
     func takeNext(walletPresented: Bool, attached: Bool, unlocked: Bool, launchHoldPending: Bool, invitationsReady: Bool) -> DeepLink? {
-        guard !isDispatching, walletPresented, attached, unlocked, !launchHoldPending else {
-            return nil
-        }
-        guard let index = pending.firstIndex(where: { !$0.isInvitation || invitationsReady }) else {
+        guard let index = nextIndex(walletPresented: walletPresented, attached: attached, unlocked: unlocked,
+                                    launchHoldPending: launchHoldPending, invitationsReady: invitationsReady) else {
             return nil
         }
         isDispatching = true
@@ -143,6 +141,22 @@ final class DeepLinkQueue: NSObject {
         let link = pending.remove(at: index)
         activeUnsupported = link.isUnsupported ? link : nil
         return link
+    }
+
+    /// Whether `takeNext` with the same arguments would hand a link over,
+    /// without taking it.
+    @objc(hasNextWithWalletPresented:attached:unlocked:launchHoldPending:invitationsReady:)
+    func hasNext(walletPresented: Bool, attached: Bool, unlocked: Bool, launchHoldPending: Bool, invitationsReady: Bool) -> Bool {
+        nextIndex(walletPresented: walletPresented, attached: attached, unlocked: unlocked,
+                  launchHoldPending: launchHoldPending, invitationsReady: invitationsReady) != nil
+    }
+
+    private func nextIndex(walletPresented: Bool, attached: Bool, unlocked: Bool, launchHoldPending: Bool,
+                           invitationsReady: Bool) -> Int? {
+        guard !isDispatching, walletPresented, attached, unlocked, !launchHoldPending else {
+            return nil
+        }
+        return pending.firstIndex(where: { !$0.isInvitation || invitationsReady })
     }
 
     /// Ends the dispatch `token` belongs to; false — and nothing changes —
@@ -160,5 +174,77 @@ final class DeepLinkQueue: NSObject {
     @objc func dispatchDidFinish() {
         isDispatching = false
         activeUnsupported = nil
+    }
+}
+
+/// Holds the next link's hand-over while a presentation is in transition.
+///
+/// A link settles at the tap that ends its screen — an alert's OK, a
+/// dismissed DashConnect error — while that screen is still animating away,
+/// and a handler presenting right then would present from a controller in
+/// transition, which UIKit refuses or takes down with it. The gate waits for
+/// that transition — its coordinator's completion, else a 0.1 s poll — and
+/// asks the queue again. A sheet the user holds mid-drag holds the link
+/// until it is let go. After `maxWaits` waits the link is handed over
+/// regardless; a handler whose screen UIKit then refuses is left to the
+/// queue's watchdog.
+@objc(DWLinkHandOverGate)
+final class LinkHandOverGate: NSObject {
+    static let poll: TimeInterval = 0.1
+
+    let maxWaits: Int
+    private(set) var waits = 0
+    private var retryScheduled = false
+
+    /// About 10 s of polls.
+    override convenience init() {
+        self.init(maxWaits: 100)
+    }
+
+    init(maxWaits: Int) {
+        self.maxWaits = maxWaits
+    }
+
+    /// True — and `retry` runs once the transition has ended — while
+    /// something under `roots` is being presented, dismissed, pushed or
+    /// popped; false when the link can be handed over now.
+    @objc(deferHandOverFromRoots:retry:)
+    func deferHandOver(from roots: [UIViewController], retry: @escaping () -> Void) -> Bool {
+        deferHandOver(from: roots as [PresentationNode], retry: retry)
+    }
+
+    func deferHandOver(from roots: [PresentationNode], retry: @escaping () -> Void) -> Bool {
+        guard let node = PresentationOwner.nodeInTransition(from: roots) else {
+            reset()
+            return false
+        }
+        guard waits < maxWaits else {
+            DWLogger.log("LINKS a presentation is still in transition after \(waits) waits; handing the next link over")
+            reset()
+            return false
+        }
+        guard !retryScheduled else { return true }
+        retryScheduled = true
+        waits += 1
+        var fired = false
+        let fire = { [weak self] in
+            guard !fired else { return }
+            fired = true
+            self?.retryScheduled = false
+            retry()
+        }
+        let queued = (node as? UIViewController)?.transitionCoordinator?.animate(alongsideTransition: nil) { _ in
+            DispatchQueue.main.async(execute: fire)
+        } ?? false
+        if !queued {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.poll, execute: fire)
+        }
+        return true
+    }
+
+    /// Starts the count afresh: called whenever there is nothing to hand
+    /// over, so a later transition gets the whole wait.
+    @objc func reset() {
+        waits = 0
     }
 }

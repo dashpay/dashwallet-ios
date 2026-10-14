@@ -183,6 +183,50 @@ final class PresentationOwnerTests: XCTestCase {
                       "found through a presentation a descendant owns")
     }
 
+    // MARK: Hand-over gate
+
+    func testTheGateHandsOverAtOnceWhenNothingIsInTransition() {
+        let (root, tab, _, _) = hierarchy()
+        let gate = LinkHandOverGate(maxWaits: 3)
+        XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry is due") })
+        XCTAssertEqual(gate.waits, 0)
+    }
+
+    /// While the alert is being dismissed the link waits, one retry at a
+    /// time; once it has gone the link is handed over and the count resets.
+    func testTheGateHoldsTheLinkUntilTheTransitionEnds() {
+        let (root, tab, _, _) = hierarchy()
+        let alert = Node("alert")
+        root.present(alert)
+        alert.isInTransition = true
+        let gate = LinkHandOverGate(maxWaits: 3)
+        let retried = expectation(description: "retry")
+        XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { retried.fulfill() })
+        XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { XCTFail("one retry at a time") })
+        XCTAssertEqual(gate.waits, 1)
+        wait(for: [retried], timeout: 1)
+
+        root.dismiss()
+        XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry is due") })
+        XCTAssertEqual(gate.waits, 0)
+    }
+
+    /// A transition that never ends does not hold the link forever.
+    func testTheGateHandsOverAfterItsLastWait() {
+        let (root, tab, _, _) = hierarchy()
+        let alert = Node("alert")
+        root.present(alert)
+        alert.isInTransition = true
+        let gate = LinkHandOverGate(maxWaits: 2)
+        for attempt in 1...2 {
+            let retried = expectation(description: "retry \(attempt)")
+            XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { retried.fulfill() })
+            wait(for: [retried], timeout: 1)
+        }
+        XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry after the last wait") })
+        XCTAssertEqual(gate.waits, 0)
+    }
+
     func testTheTransitionWalkDoesNotLoop() {
         let (root, tab, navigation, _) = hierarchy()
         navigation.child = tab

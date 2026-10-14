@@ -113,6 +113,23 @@ final class DeepLinkQueueTests: XCTestCase {
         XCTAssertTrue(queue.isEmpty)
     }
 
+    /// `hasNext` answers what `takeNext` would do, without taking anything:
+    /// only invitations pending before sync is "nothing to hand over".
+    func testHasNextAgreesWithTakeNextWithoutTakingTheLink() {
+        let queue = DeepLinkQueue()
+        queue.enqueue(invitation)
+        XCTAssertFalse(queue.hasNext(walletPresented: true, attached: true, unlocked: true,
+                                     launchHoldPending: false, invitationsReady: false))
+        XCTAssertTrue(queue.hasNext(walletPresented: true, attached: true, unlocked: true,
+                                    launchHoldPending: false, invitationsReady: true))
+        XCTAssertFalse(queue.hasNext(walletPresented: true, attached: true, unlocked: false,
+                                     launchHoldPending: false, invitationsReady: true))
+        XCTAssertEqual(queue.pending.count, 1, "nothing was taken")
+        XCTAssertTrue(ready(queue) === invitation)
+        XCTAssertFalse(queue.hasNext(walletPresented: true, attached: true, unlocked: true,
+                                     launchHoldPending: false, invitationsReady: true), "one in flight")
+    }
+
     func testNothingIsHandedOverWhileTheAppCannotActOnLinks() {
         let queue = DeepLinkQueue()
         queue.enqueue(payment)

@@ -30,6 +30,13 @@ protocol PresentationNode: AnyObject {
     var activeChildNode: PresentationNode? { get }
     /// Whether this node is still being presented or dismissed.
     var isInTransition: Bool { get }
+    /// Whether this node is in any animated transition: presented or
+    /// dismissed, or a container pushing, popping or switching children.
+    var isAnimatingTransition: Bool { get }
+}
+
+extension PresentationNode {
+    var isAnimatingTransition: Bool { isInTransition }
 }
 
 /// Finds who owns the presentation over the active hierarchy, so a deep
@@ -82,30 +89,19 @@ enum PresentationOwner {
 
 extension PresentationOwner {
     /// The first node reachable from `roots` — down the active chains and
-    /// through every presentation over them — that is being presented or
-    /// dismissed, or nil when nothing is in transition.
+    /// through every presentation over them — that is in an animated
+    /// transition, or nil when nothing is.
     static func nodeInTransition(from roots: [PresentationNode]) -> PresentationNode? {
         var visited: [PresentationNode] = []
         var pending = roots
         while let node = pending.popLast() {
             guard !visited.contains(where: { $0 === node }) else { continue }
             visited.append(node)
-            if node.isInTransition { return node }
+            if node.isAnimatingTransition { return node }
             if let presented = node.presentedNode { pending.append(presented) }
             if let child = node.activeChildNode { pending.append(child) }
         }
         return nil
-    }
-}
-
-/// The Objective-C face of `PresentationOwner.nodeInTransition`, for the
-/// link queue's hand-over gate.
-@objc(DWPresentationTransition)
-final class PresentationTransition: NSObject {
-    /// The controller under `roots` that is being presented or dismissed.
-    @objc
-    static func controllerInTransition(from roots: [UIViewController]) -> UIViewController? {
-        PresentationOwner.nodeInTransition(from: roots) as? UIViewController
     }
 }
 
@@ -118,4 +114,5 @@ extension UIViewController: PresentationNode {
         return nil
     }
     var isInTransition: Bool { isBeingPresented || isBeingDismissed }
+    var isAnimatingTransition: Bool { isInTransition || transitionCoordinator != nil }
 }
