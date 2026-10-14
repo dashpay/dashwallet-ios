@@ -187,44 +187,58 @@ final class PresentationOwnerTests: XCTestCase {
 
     func testTheGateHandsOverAtOnceWhenNothingIsInTransition() {
         let (root, tab, _, _) = hierarchy()
-        let gate = LinkHandOverGate(maxWaits: 3)
+        let gate = LinkHandOverGate(maxHold: 10)
         XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry is due") })
-        XCTAssertEqual(gate.waits, 0)
+        XCTAssertNil(gate.holdingSince)
     }
 
     /// While the alert is being dismissed the link waits, one retry at a
-    /// time; once it has gone the link is handed over and the count resets.
+    /// time; once it has gone the link is handed over and the hold ends.
     func testTheGateHoldsTheLinkUntilTheTransitionEnds() {
         let (root, tab, _, _) = hierarchy()
         let alert = Node("alert")
         root.present(alert)
         alert.isInTransition = true
-        let gate = LinkHandOverGate(maxWaits: 3)
+        let gate = LinkHandOverGate(maxHold: 10)
         let retried = expectation(description: "retry")
         XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { retried.fulfill() })
         XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { XCTFail("one retry at a time") })
-        XCTAssertEqual(gate.waits, 1)
+        XCTAssertNotNil(gate.holdingSince)
         wait(for: [retried], timeout: 1)
 
         root.dismiss()
         XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry is due") })
-        XCTAssertEqual(gate.waits, 0)
+        XCTAssertNil(gate.holdingSince)
     }
 
-    /// A transition that never ends does not hold the link forever.
-    func testTheGateHandsOverAfterItsLastWait() {
+    /// The root container swapping children holds the link as well.
+    func testTheRootContainersSwapHoldsTheLink() {
+        let (root, tab, _, _) = hierarchy()
+        let gate = LinkHandOverGate(maxHold: 10)
+        let retried = expectation(description: "retry")
+        XCTAssertTrue(gate.deferHandOver(from: [root, tab], rootTransitioning: true) { retried.fulfill() })
+        wait(for: [retried], timeout: 1)
+    }
+
+    /// A transition that never ends holds the link for `maxHold`, measured
+    /// from the start of the hold, not per retry.
+    func testTheGateHandsOverOnceTheHoldHasLastedMaxHold() {
         let (root, tab, _, _) = hierarchy()
         let alert = Node("alert")
         root.present(alert)
         alert.isInTransition = true
-        let gate = LinkHandOverGate(maxWaits: 2)
-        for attempt in 1...2 {
-            let retried = expectation(description: "retry \(attempt)")
-            XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { retried.fulfill() })
-            wait(for: [retried], timeout: 1)
-        }
-        XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry after the last wait") })
-        XCTAssertEqual(gate.waits, 0)
+        var clock = Date(timeIntervalSince1970: 0)
+        let gate = LinkHandOverGate(maxHold: 10, now: { clock })
+        let retried = expectation(description: "retry")
+        XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { retried.fulfill() })
+        wait(for: [retried], timeout: 1)
+        clock = clock.addingTimeInterval(9)
+        let again = expectation(description: "retry again")
+        XCTAssertTrue(gate.deferHandOver(from: [root, tab]) { again.fulfill() })
+        wait(for: [again], timeout: 1)
+        clock = clock.addingTimeInterval(1)
+        XCTAssertFalse(gate.deferHandOver(from: [root, tab]) { XCTFail("no retry after the hold") })
+        XCTAssertNil(gate.holdingSince)
     }
 
     func testTheTransitionWalkDoesNotLoop() {

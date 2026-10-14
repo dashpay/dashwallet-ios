@@ -22,7 +22,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface DWContainerViewController ()
+
+/// Animated child swaps started and not yet completed.
+@property (nonatomic, assign) NSInteger transitionsInFlight;
+
+@end
+
 @implementation DWContainerViewController
+
+- (BOOL)isTransitioning {
+    return self.transitionsInFlight > 0;
+}
 
 - (NSTimeInterval)transitionAnimationDuration {
     return 0.35;
@@ -70,10 +81,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self prepareForTransitionWithType:transitionType fromView:fromView toView:toView];
 
+    self.transitionsInFlight += 1;
     [self animateTransitionWithType:transitionType
                            fromView:fromView
                              toView:toView
                          completion:^(BOOL finished) {
+                             self.transitionsInFlight -= 1;
                              [fromView removeFromSuperview];
                              [fromViewController removeFromParentViewController];
                              [toViewController didMoveToParentViewController:self];

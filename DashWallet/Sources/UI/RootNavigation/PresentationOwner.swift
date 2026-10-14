@@ -116,3 +116,76 @@ extension UIViewController: PresentationNode {
     var isInTransition: Bool { isBeingPresented || isBeingDismissed }
     var isAnimatingTransition: Bool { isInTransition || transitionCoordinator != nil }
 }
+
+/// Holds the next link's hand-over while anything on screen is in
+/// transition.
+///
+/// A link settles at the tap that ends its screen — an alert's OK, a
+/// dismissed DashConnect error — while that screen is still animating away,
+/// and a handler presenting right then would present from a controller in
+/// transition, which UIKit refuses or takes down with it. The gate asks
+/// again every 0.1 s until nothing under the roots is presented, dismissed,
+/// pushed or popped and the root container is not swapping children. A
+/// sheet the user holds mid-drag holds the link until it is let go. A link
+/// held for `maxHold` is handed over regardless; a handler whose screen
+/// UIKit then refuses is left to the queue's watchdog.
+@objc(DWLinkHandOverGate)
+final class LinkHandOverGate: NSObject {
+    static let poll: TimeInterval = 0.1
+
+    let maxHold: TimeInterval
+    private let now: () -> Date
+    private(set) var holdingSince: Date?
+    private var retryScheduled = false
+
+    override convenience init() {
+        self.init(maxHold: 10)
+    }
+
+    init(maxHold: TimeInterval, now: @escaping () -> Date = Date.init) {
+        self.maxHold = maxHold
+        self.now = now
+    }
+
+    /// True — and `retry` runs `poll` later — while something under
+    /// `roots` is in transition or `rootTransitioning`; false when the link
+    /// can be handed over now.
+    @objc(deferHandOverFromRoots:rootTransitioning:retry:)
+    func deferHandOver(from roots: [UIViewController], rootTransitioning: Bool, retry: @escaping () -> Void) -> Bool {
+        deferHandOver(from: roots as [PresentationNode], rootTransitioning: rootTransitioning, retry: retry)
+    }
+
+    func deferHandOver(from roots: [PresentationNode], rootTransitioning: Bool = false,
+                       retry: @escaping () -> Void) -> Bool {
+        guard rootTransitioning || PresentationOwner.nodeInTransition(from: roots) != nil else {
+            reset()
+            return false
+        }
+        let since: Date
+        if let holdingSince {
+            since = holdingSince
+        } else {
+            since = now()
+            holdingSince = since
+            DWLogger.log("LINKS holding the next link: a screen is in transition")
+        }
+        guard now().timeIntervalSince(since) < maxHold else {
+            DWLogger.log("LINKS a screen is still in transition after \(Int(maxHold)) s; handing the next link over")
+            reset()
+            return false
+        }
+        guard !retryScheduled else { return true }
+        retryScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.poll) { [weak self] in
+            self?.retryScheduled = false
+            retry()
+        }
+        return true
+    }
+
+    /// Ends the current hold: called whenever there is nothing to hand
+    /// over, so a later transition is held for the whole `maxHold`.
+    @objc func reset() {
+        holdingSince = nil
+    }
+}

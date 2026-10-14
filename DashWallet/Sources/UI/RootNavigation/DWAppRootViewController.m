@@ -151,6 +151,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         }
         __weak typeof(self) weakSelf = self;
         if ([self.linkHandOverGate deferHandOverFromRoots:roots
+                                        rootTransitioning:self.isTransitioning
                                                     retry:^{
                                                         [weakSelf dispatchNextLinkIfReady];
                                                     }]) {
