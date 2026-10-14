@@ -113,6 +113,27 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(self.contentView, @"Configure content view first");
 
     DWSeedPhraseModel *seedPhrase = [self.model getOrCreateNewWallet];
+    if (seedPhrase == nil) {
+        // Nothing to show (the phrase could not be read): never a blank,
+        // confirmable screen. Leave, and say why on the screen underneath.
+        DWLog(@"SEED :: no phrase to preview; leaving the screen");
+        self.actionButton.enabled = NO;
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            UINavigationController *navigation = strongSelf.navigationController;
+            [navigation popViewControllerAnimated:NO];
+            UIAlertController *alert = [UIAlertController
+                alertControllerWithTitle:nil
+                                 message:NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil)
+                          preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+                                                      style:UIAlertActionStyleCancel
+                                                    handler:nil]];
+            [(navigation.topViewController ?: strongSelf) presentViewController:alert animated:YES completion:nil];
+        });
+        return;
+    }
     self.contentView.model = seedPhrase;
 }
 

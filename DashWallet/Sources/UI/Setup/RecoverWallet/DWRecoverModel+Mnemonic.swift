@@ -38,7 +38,109 @@ private let dwRecoverLogger = Logger(
     subsystem: "org.dashfoundation.dash",
     category: "recover-wipe")
 
+/// Which recover import is the current one. The import runs off the main
+/// queue and reports back later; until it does, a second submission must not
+/// start another import, and a completion that belongs to an earlier attempt
+/// must not clear the command or advance setup. Separated from the setup
+/// controller so the rule is testable.
+@objc(DWRecoverImportAttempts)
+final class RecoverImportAttempts: NSObject {
+    @objc private(set) var isInFlight = false
+    private var current: UInt = 0
+
+    /// Start an attempt; the token identifies it to `finish`.
+    @objc func begin() -> UInt {
+        current += 1
+        isInFlight = true
+        return current
+    }
+
+    /// True when `token` is the attempt in flight, which is then over;
+    /// false for a stale completion, which the caller ignores.
+    @objc func finish(_ token: UInt) -> Bool {
+        guard isInFlight, token == current else { return false }
+        isInFlight = false
+        return true
+    }
+
+    /// The user left the recover flow while an attempt was running: its
+    /// completion, whenever it arrives, is stale.
+    @objc func invalidate() {
+        current += 1
+        isInFlight = false
+    }
+}
+
+/// Where a submitted recovery phrase goes. Two decisions, both pure, so the
+/// controller's branches are testable without UIKit: one when the recover
+/// screen hands the phrase over, one when the import is about to run (the
+/// PIN step may lie between them, so the keychain is read again there).
+@objc(DWRecoverImportRoute)
+enum RecoverImportRoute: Int {
+    /// An import is still running; this submission is dropped.
+    case ignoreWhileInFlight
+    /// No PIN yet: keep the command, the PIN step's callback executes it.
+    case deferUntilPinSet
+    /// A PIN exists, so the PIN step is skipped: execute now.
+    case executeNow
+    /// The keychain could not be read: keep the command behind Try Again.
+    case retryUnreadable
+    /// Definitely no wallet: import.
+    case importWallet
+    /// A wallet is present (a late migration): nothing to import, complete
+    /// setup into it.
+    case completeWithExistingWallet
+}
+
+@objc(DWRecoverImportRouting)
+final class RecoverImportRouting: NSObject {
+    private override init() {}
+
+    @objc(routeAtSubmissionInFlight:shouldSetPin:)
+    static func atSubmission(inFlight: Bool, shouldSetPin: Bool) -> RecoverImportRoute {
+        if inFlight { return .ignoreWhileInFlight }
+        return shouldSetPin ? .deferUntilPinSet : .executeNow
+    }
+
+    /// `walletForPhrase`: whether the wallet the typed phrase derives for
+    /// the current network has its mnemonic stored. `persisted` (an earlier
+    /// attempt of this import persisted it and failed afterwards, or the
+    /// same wallet exists) — "present" is then that wallet, and the import
+    /// is run again: it resumes what is missing, or is a no-op.
+    /// `notPersisted` — "present" is a wallet that landed meanwhile, and
+    /// setup completes into it. `unknown` — the keychain could not answer,
+    /// so neither: the command is kept behind Try Again, as for an
+    /// unreadable presence. Read from the keychain at execution, never
+    /// remembered, so no earlier failure can clear it.
+    @objc(routeAtExecutionWithPresence:walletForPhrase:)
+    static func atExecution(
+        presence: WalletEnvironment.WalletPresence,
+        walletForPhrase: SwiftDashSDKWalletCreator.PersistedWalletLookupVerdict = .notPersisted
+    ) -> RecoverImportRoute {
+        switch presence {
+        case .unknown: return .retryUnreadable
+        case .absent: return .importWallet
+        case .present:
+            switch walletForPhrase {
+            case .persisted: return .importWallet
+            case .notPersisted: return .completeWithExistingWallet
+            case .unknown: return .retryUnreadable
+            }
+        }
+    }
+}
+
 extension DWRecoverModel {
+    /// Whether a wallet this build can select is stored — one keychain read,
+    /// taken once per submitted phrase and used for every route of it:
+    /// `.unknown` (the keychain could not be read, device locked) lets
+    /// neither the recover nor the wipe branch act. Declared here rather
+    /// than in `DWRecoverModel.h`, which is part of the bridging header and
+    /// cannot name a Swift-defined type.
+    @objc var walletPresence: WalletEnvironment.WalletPresence {
+        WalletEnvironment.walletPresence
+    }
+
     /// The plain-"wipe" gate: empty means "zero SDK balance AND the chain is
     /// fully synced" — an unsynced wallet can't prove it's empty, so it reads
     /// as non-empty (fail-closed; an exact recovery phrase remains available).

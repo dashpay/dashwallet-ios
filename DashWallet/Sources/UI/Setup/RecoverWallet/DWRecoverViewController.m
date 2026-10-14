@@ -273,6 +273,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:title message:message];
 }
 
+- (void)recoverContentViewWalletPresenceUnknown:(DWRecoverContentView *)view {
+    NSString *message = NSLocalizedString(@"Your wallet couldn't be read right now. Please try again.", nil);
+    [self showAlertWithTitle:nil message:message];
+}
+
 - (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase {
     BOOL isPhraseValid = [phrase wordsCount] >= 10 || [self.model isWipeAcceptancePhrase:phrase];
     [self.actionButton setEnabled:isPhraseValid];

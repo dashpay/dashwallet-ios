@@ -139,7 +139,7 @@ final class BackupInfoViewController: BaseViewController {
     @IBAction
     func skipButtonAction() {
         // Skipping the backup must still leave the user with a wallet.
-        createNewWalletIfNeeded()
+        guard createNewWalletIfNeeded() else { return }
         delegate?.secureWalletRoutineDidCancel(self)
     }
 
@@ -148,7 +148,7 @@ final class BackupInfoViewController: BaseViewController {
         let authManager = AuthenticationService.shared
         
         if type == .setup && authManager.didAuthenticate {
-            createNewWalletIfNeeded()
+            guard createNewWalletIfNeeded() else { return }
             showSeedPhraseViewController()
         } else {
             authManager.authenticate(withPrompt: nil,
@@ -163,11 +163,21 @@ final class BackupInfoViewController: BaseViewController {
                 }
 
                 if type != .setup {
-                    self.seedPhraseModel = DWPreviewSeedPhraseModel()
-                    self.seedPhraseModel.getOrCreateNewWallet()
+                    // The backup reminder previews the wallet that exists;
+                    // it never creates one. Read the stored phrase and bind
+                    // the model to it, so neither this screen nor the preview
+                    // it pushes can reach the generating path — a "no wallet"
+                    // read here means the phrase could not be shown, not that
+                    // a wallet should be made.
+                    guard let stored = DWPreviewSeedPhraseModel().readStoredMnemonic(), !stored.isEmpty else {
+                        DWLogger.log("BACKUP stored phrase unreadable; not showing the reminder preview")
+                        self.presentWalletUnreadableAlert()
+                        return
+                    }
+                    self.seedPhraseModel = DWPreviewSeedPhraseModel(existingSeedPhrase: stored)
                 }
 
-                self.createNewWalletIfNeeded()
+                guard self.createNewWalletIfNeeded() else { return }
                 self.showSeedPhraseViewController()
             }
         }
@@ -181,7 +191,12 @@ final class BackupInfoViewController: BaseViewController {
             // on "Show Recovery Phrase" or "Skip" — so the user can still pick
             // the phrase length on this screen first.
             seedPhraseModel = DWPreviewSeedPhraseModel()
-            createsNewWallet = !WalletEnvironment.hasWallet
+            // Only for the phrase-length picker below; whether a wallet gets
+            // created is decided at the action, from a fresh read. The picker
+            // is offered unless a wallet is definitely there: a read that
+            // fails here and succeeds at the tap still creates the wallet,
+            // and the choice must have been on screen by then.
+            createsNewWallet = WalletEnvironment.walletPresence != .present
         }
 
 
@@ -244,13 +259,38 @@ extension BackupInfoViewController {
     /// Generates the recovery phrase at the chosen length and kicks off wallet
     /// creation — once. `DWPreviewSeedPhraseModel` caches the phrase it
     /// generated, so the preview screen shows exactly the words being
-    /// persisted even if this runs again.
-    private func createNewWalletIfNeeded() {
-        guard createsNewWallet else { return }
+    /// persisted even if this runs again. Returns `false` — and shows why —
+    /// when the wallet cannot be created right now, so the caller neither
+    /// reports the step complete nor shows a phrase there is none of.
+    ///
+    /// Decided from the keychain at the action, not from `viewDidLoad`: the
+    /// read can fail when this screen loads and succeed by the tap, or the
+    /// other way round, and a cached answer would either skip the creation
+    /// (completing setup with no wallet) or generate a second wallet next to
+    /// the one the read could not see. One read, and it is the model's:
+    /// `getOrCreateNewWallet` generates on a definite "absent", hands back
+    /// the stored phrase on "present" and returns nil on "unknown" — so a
+    /// verdict taken here can never disagree with the one that generated.
+    private func createNewWalletIfNeeded() -> Bool {
+        guard type == .setup else { return true }
         seedPhraseModel.newWalletWordCount = UInt(phraseLengthModel.selection.rawValue)
-        seedPhraseModel.getOrCreateNewWallet()
+        guard seedPhraseModel.getOrCreateNewWallet() != nil else {
+            DWLogger.log("BACKUP wallet presence unreadable; refusing to create a wallet")
+            presentWalletUnreadableAlert()
+            return false
+        }
         phraseLengthModel.isLocked = true
         phraseLengthPickerHost?.view.isHidden = true
+        return true
+    }
+
+    private func presentWalletUnreadableAlert() {
+        let alert = UIAlertController(
+            title: nil,
+            message: NSLocalizedString("Your wallet couldn't be read right now. Please try again.", comment: ""),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
     }
 
     private func showSeedPhraseViewController() {

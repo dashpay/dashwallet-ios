@@ -31,7 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSUInteger newWalletWordCount;
 
 - (instancetype)initWithExistingSeedPhrase:(NSString *)seedPhrase;
-- (DWSeedPhraseModel *)getOrCreateNewWallet;
+
+/// The phrase to show: the one given at init, the one this model already
+/// generated, a newly generated one when the keychain definitely holds no
+/// wallet (creation is kicked off), or the stored one when it does. `nil`
+/// when there is nothing to show — the keychain could not be read (device
+/// locked), the stored phrase could not be read, or generating failed. A
+/// `nil` never created anything, and no caller may report a step complete
+/// on it. Setup only: a read-only preview of an existing wallet must not
+/// call this — it generates on "no wallet" — and uses
+/// `initWithExistingSeedPhrase:` with `readStoredMnemonic` instead.
+- (nullable DWSeedPhraseModel *)getOrCreateNewWallet;
 - (void)clearAllWallets;
 
 @end

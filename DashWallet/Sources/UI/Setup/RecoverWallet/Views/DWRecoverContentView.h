@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverContentViewWipeNotAllowedPhraseMismatch:(DWRecoverContentView *)view;
 - (void)recoverContentViewWipeBlockedByMultipleWallets:(DWRecoverContentView *)view;
 - (void)recoverContentViewWipeShortcutUnavailableOnTestnet:(DWRecoverContentView *)view;
+- (void)recoverContentViewWalletPresenceUnknown:(DWRecoverContentView *)view;
 
 @end
 

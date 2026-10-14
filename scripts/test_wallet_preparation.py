@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory(prefix="wallet-preparation-tests-") as director
     # Only unrelated app dependencies are substituted; state and diagnostics
     # are the production files, including their real Combine publishers.
     (sources / "AppDependencies.swift").write_text('''
+import Foundation
 enum WalletEnvironment {
     enum NetworkKind { case mainnet, testnet, devnet }
     enum WalletPresence: Int { case absent = 0, present = 1, unknown = 2 }
@@ -38,6 +39,20 @@ enum DWLogger { static func log(_ message: String) {} }
     }
     func suspendModelContainerOpens() async { suspended = true }
     func resumeModelContainerOpens() { suspended = false }
+    struct ImportedWallet { let walletId: Data }
+    /// Runs inside the import, between its begin and end events.
+    var duringImport: (@MainActor () async -> Void)?
+    func createOrImportWallet(
+        mnemonic: String, network: Network, isImported: Bool, provisionAcrossSupportedNetworks: Bool
+    ) async throws -> ImportedWallet {
+        SwiftDashSDKWalletRuntime.shared.events.append("import:begin")
+        await duringImport?()
+        SwiftDashSDKWalletRuntime.shared.events.append("import:end")
+        if let importError { throw importError }
+        return ImportedWallet(walletId: Data([1]))
+    }
+    var importError: Error?
+
 }
 @MainActor final class SwiftDashSDKSPVCoordinator {
     static let shared = SwiftDashSDKSPVCoordinator()
@@ -48,6 +63,7 @@ enum DWLogger { static func log(_ message: String) {} }
     static let shared = PlatformAddressSyncCoordinator()
     var preparations = 0
     func prepareForNetworkSwitch() { preparations += 1 }
+    func stopShieldedRecoveryMonitoring() { SwiftDashSDKWalletRuntime.shared.events.append("stopShieldedRecovery") }
 }
 ''')
     # Exercise the real automatic entry points and serial queue, substituting
@@ -474,6 +490,7 @@ import XCTest
         "    private func enqueueRefresh(trigger:",
         "    private func handleObservedNetworkChange()",
         "    private func enqueueAwaitable(_ op:",
+        "    func performSetupImport(",
         # The launch-decision hold, as the funnel consults it.
         "    @objc static func holdAutomaticStartsUntilLaunchDecision() {",
         "    @objc static func releaseAutomaticStartsForLaunchDecision() {",
@@ -534,7 +551,9 @@ import XCTest
     func isCoreRuntimeReady(for network: WalletEnvironment.NetworkKind) -> Bool {
         WalletLifecycleTransitionState.shared.phase == .idle
     }
-    func fullReset(lastError: String?, forWipe: Bool) async { events.append("fullReset") }
+    func fullReset(lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false) async {
+        events.append(preservingShieldedRecovery ? "fullReset(preserving)" : "fullReset")
+    }
     func dropLocalStoreDerivedState() { events.append("drop") }
     func clearLocalStoreMaintenanceFlags() { events.append("flags") }
     func selectSolePersistedNetworkIfNeeded(currentNetwork: WalletEnvironment.NetworkKind) -> Bool {
@@ -915,6 +934,49 @@ actor SuspendingResetter: WalletLocalStoreResetting {
         runtime.refreshFailure = other
         await runtime.retryWalletPreparation()
         XCTAssertEqual(state.phase, .failedWalletOpen(other))
+    }
+    /// The setup flow's recover import is one op of the lifecycle chain: a
+    /// start already running finishes first, whatever runtime it left up is
+    /// torn down before the import builds its own, and a kick arriving while
+    /// the import runs (connectivity returning) waits for it.
+    func testSetupImportIsSerializedWithStartsOnTheLifecycleChain() async throws {
+        runtime.events = []
+        runtime.enqueue {
+            self.runtime.events.append("start:begin")
+            try? await Task.sleep(nanoseconds: 20_000_000)
+            self.runtime.events.append("start:end")
+        }
+        SwiftDashSDKHost.shared.duringImport = {
+            self.runtime.enqueueRefresh(trigger: .startIfReady)
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        defer { SwiftDashSDKHost.shared.duringImport = nil }
+        let walletId = try await runtime.performSetupImport(mnemonic: "phrase", network: .testnet)
+        await runtime.drain()
+        XCTAssertEqual(walletId, Data([1]))
+        XCTAssertEqual(runtime.events, [
+            "start:begin", "start:end", "fullReset(preserving)", "import:begin", "import:end", "refresh",
+        ])
+    }
+    /// A failed import stops the shielded recovery its teardown suspended,
+    /// hands its error back and releases the chain: a kick queued while it
+    /// ran still runs.
+    func testFailedSetupImportReportsAndReleasesTheChain() async {
+        runtime.events = []
+        SwiftDashSDKHost.shared.importError = NSError(domain: "Provisioning", code: 1)
+        SwiftDashSDKHost.shared.duringImport = { self.runtime.enqueueRefresh(trigger: .startIfReady) }
+        defer {
+            SwiftDashSDKHost.shared.importError = nil
+            SwiftDashSDKHost.shared.duringImport = nil
+        }
+        do {
+            _ = try await runtime.performSetupImport(mnemonic: "phrase", network: .testnet)
+            XCTFail("the import's failure must reach the caller")
+        } catch {}
+        await runtime.drain()
+        XCTAssertEqual(
+            runtime.events,
+            ["fullReset(preserving)", "import:begin", "import:end", "stopShieldedRecovery", "refresh"])
     }
     func testKeysCardIsClearedByTheNextAutomaticKick() async {
         state.fail(.failedWalletOpen(WalletPreparationFailure(keys: .unreadable, status: -25308)))
