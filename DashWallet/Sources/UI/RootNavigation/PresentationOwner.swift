@@ -92,11 +92,10 @@ extension PresentationOwner {
     /// through every presentation over them — that is in an animated
     /// transition, or nil when nothing is.
     static func nodeInTransition(from roots: [PresentationNode]) -> PresentationNode? {
-        var visited: [PresentationNode] = []
+        var visited = Set<ObjectIdentifier>()
         var pending = roots
         while let node = pending.popLast() {
-            guard !visited.contains(where: { $0 === node }) else { continue }
-            visited.append(node)
+            guard visited.insert(ObjectIdentifier(node)).inserted else { continue }
             if node.isAnimatingTransition { return node }
             if let presented = node.presentedNode { pending.append(presented) }
             if let child = node.activeChildNode { pending.append(child) }
@@ -129,9 +128,8 @@ extension UIViewController: PresentationNode {
 /// is let go. A link held for `maxHold` is handed over regardless; a handler
 /// whose screen UIKit then refuses is left to the queue's watchdog. The
 /// root containers' own child swaps are plain view animations and are not
-/// seen here: setup handing over to the wallet waits for its swap where it
-/// starts (`setupViewControllerDidFinish`); a network switch's swap does
-/// not.
+/// seen here, so a link handed over during one (setup handing over to the
+/// wallet, a network switch) is not held for it.
 @objc(DWLinkHandOverGate)
 final class LinkHandOverGate: NSObject {
     static let poll: TimeInterval = 0.1
@@ -152,12 +150,13 @@ final class LinkHandOverGate: NSObject {
         self.now = now
     }
 
-    /// Whether anything under `roots` is presented, dismissed, pushed or
-    /// popped right now — the one definition the gate and the queue's
-    /// watchdog share.
-    @objc(isInTransitionFromRoots:)
-    static func isInTransition(from roots: [UIViewController]) -> Bool {
-        PresentationOwner.nodeInTransition(from: roots) != nil
+    /// Whether anything is presented over `roots` — by them, an ancestor,
+    /// or a screen down their active chains — or anything under them is in
+    /// transition: the queue's watchdog keeps a link while this holds.
+    @objc(isBusyFromRoots:)
+    static func isBusy(from roots: [UIViewController]) -> Bool {
+        roots.contains { PresentationOwner.find(from: $0) != nil }
+            || PresentationOwner.nodeInTransition(from: roots) != nil
     }
 
     /// True — and `retry` runs `poll` later — while something under

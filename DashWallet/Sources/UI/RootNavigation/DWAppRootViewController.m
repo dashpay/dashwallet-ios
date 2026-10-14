@@ -134,8 +134,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     const BOOL attached = self.viewIfLoaded.window != nil && _mainController.viewIfLoaded.window != nil;
     const BOOL unlocked = ![self.model shouldShowLockScreen] && self.lockController == nil;
     const BOOL invitationsReady = walletPresented && _mainController.isReadyForInvitations;
-    // The screen of the link that just settled may still be animating away:
-    // a link is handed over only once no presentation is in transition.
     const BOOL hasNext = [self.linkQueue hasNextWithWalletPresented:walletPresented
                                                            attached:attached
                                                            unlocked:unlocked
@@ -143,19 +141,21 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                                    invitationsReady:invitationsReady];
     if (!hasNext) {
         [self.linkHandOverGate reset];
+        if (!self.linkQueue.isEmpty && !self.linkQueue.isDispatching) {
+            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, attached %d, unlocked %d, launch hold pending %d, invitations ready %d",
+                  (unsigned long)self.linkQueue.pending.count, walletPresented, attached, unlocked, self.launchHoldPending, invitationsReady);
+        }
+        return;
     }
-    else {
-        NSMutableArray<UIViewController *> *roots = [NSMutableArray arrayWithObject:self];
-        if (_mainController != nil) {
-            [roots addObject:_mainController];
-        }
-        __weak typeof(self) weakSelf = self;
-        if ([self.linkHandOverGate deferHandOverFromRoots:roots
-                                                    retry:^{
-                                                        [weakSelf dispatchNextLinkIfReady];
-                                                    }]) {
-            return;
-        }
+    // The screen of the link that just settled may still be animating away:
+    // the gate holds the hand-over while a presentation is in transition, up
+    // to its `maxHold`.
+    __weak typeof(self) weakSelf = self;
+    if ([self.linkHandOverGate deferHandOverFromRoots:[self linkHandOverRoots]
+                                                retry:^{
+                                                    [weakSelf dispatchNextLinkIfReady];
+                                                }]) {
+        return;
     }
     DWDeepLink *link = [self.linkQueue takeNextWithWalletPresented:walletPresented
                                                           attached:attached
@@ -163,17 +163,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                                                  launchHoldPending:self.launchHoldPending
                                                   invitationsReady:invitationsReady];
     if (link == nil) {
-        if (!self.linkQueue.isEmpty && !self.linkQueue.isDispatching) {
-            DWLog(@"LINKS %lu link(s) kept: wallet presented %d, attached %d, unlocked %d, launch hold pending %d, invitations ready %d",
-                  (unsigned long)self.linkQueue.pending.count, walletPresented, attached, unlocked, self.launchHoldPending, invitationsReady);
-        }
         return;
     }
 
     const NSInteger token = self.linkQueue.dispatchToken;
     DWLog(@"LINKS handling %@ (%lu more pending)", link.isInvitation ? @"an invitation" : @"a url",
           (unsigned long)self.linkQueue.pending.count);
-    __weak typeof(self) weakSelf = self;
     void (^done)(void) = ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (![strongSelf.linkQueue dispatchDidFinishWithToken:token]) {
@@ -202,6 +197,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self performURL:link.url completion:done isAbandoned:isAbandoned];
 }
 
+/// Where the hand-over gate and the watchdog look: this controller, which
+/// sees what it and its ancestors present, and the main controller, whose
+/// active chain reaches what a tab or a stack presents on its own.
+- (NSArray<UIViewController *> *)linkHandOverRoots {
+    return _mainController != nil ? @[ self, _mainController ] : @[ self ];
+}
+
 /// A handler whose completion never comes — a screen presented from a
 /// hierarchy that was detached after all, a flow torn down mid-way — must
 /// not hold the queue forever. Forty-five seconds after a hand-over (above
@@ -218,12 +220,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         if (strongSelf == nil || !strongSelf.linkQueue.isDispatching || strongSelf.linkQueue.dispatchToken != token) {
             return;
         }
-        NSMutableArray<UIViewController *> *roots = [NSMutableArray arrayWithObject:strongSelf];
-        if (strongSelf->_mainController != nil) {
-            [roots addObject:strongSelf->_mainController];
-        }
-        const BOOL busy = strongSelf.view.window.rootViewController.presentedViewController != nil ||
-                          [DWLinkHandOverGate isInTransitionFromRoots:roots];
+        const BOOL busy = [DWLinkHandOverGate isBusyFromRoots:[strongSelf linkHandOverRoots]];
         if (busy) {
             [strongSelf armLinkWatchdogForToken:token];
             return;
