@@ -1609,7 +1609,8 @@ final class InternalTransferViewModel: ObservableObject {
             return Self.identityWithdrawalMinimumMessage
         }
         let spendable = IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
         guard creditsPreview > spendable else { return nil }
         return TransferSpendAmountPolicy.insufficientBalanceMessage(
             balanceName: Self.identityBalanceName,
@@ -1728,7 +1729,8 @@ final class InternalTransferViewModel: ObservableObject {
             return false
         }
         return creditsPreview <= IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
     }
 
     private var canContinueToIdentity: Bool {
@@ -1755,7 +1757,8 @@ final class InternalTransferViewModel: ObservableObject {
         if isIdentitySource {
             // Charged to the identity on top of the amount, and unpriced by
             // the SDK — the conservative reserve is what bounds the spend.
-            return IdentityWithdrawViewModel.feeHeadroomCredits
+            return IdentityWithdrawViewModel.feeReserveCredits(
+                target: resolvedWithdrawalTarget)
         }
         if isIdentityDestination {
             switch source {
@@ -2114,7 +2117,8 @@ final class InternalTransferViewModel: ObservableObject {
         }
         clearMaxSelection()
         let spendable = IdentityWithdrawViewModel.spendableCredits(
-            balanceCredits: identityBalanceCredits)
+            balanceCredits: identityBalanceCredits,
+            target: resolvedWithdrawalTarget)
         // Credits below one duff cannot be sent either, so a remainder under
         // 1000 credits fills "0" just like an empty one and needs the same
         // explanation.

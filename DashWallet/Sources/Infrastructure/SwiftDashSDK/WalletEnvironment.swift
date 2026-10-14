@@ -36,7 +36,7 @@ import UIKit
 public final class WalletEnvironment: NSObject {
     /// Raw values mirror DashSync's `ChainType_Tag` C enum — the historical
     /// (and still persisted) encoding of `CURRENT_CHAIN_TYPE_KEY`.
-    public enum NetworkKind: Int {
+    public enum NetworkKind: Int, CaseIterable {
         case mainnet = 0
         case testnet = 1
         case devnet = 2

@@ -203,21 +203,7 @@ struct WalletsScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .alert(
-            recoveryPhraseFlow.alertState?.title ?? "",
-            isPresented: Binding(
-                get: { recoveryPhraseFlow.alertState != nil },
-                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                recoveryPhraseFlow.dismissAlert()
-            }
-            Button(NSLocalizedString("Retry", comment: "")) {
-                recoveryPhraseFlow.retry()
-            }
-        } message: {
-            Text(recoveryPhraseFlow.alertState?.message ?? "")
-        }
+        .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
 
     // MARK: - Subviews

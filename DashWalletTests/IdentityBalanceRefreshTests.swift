@@ -141,8 +141,33 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         XCTAssertEqual(model.identityBalanceCredits, actual)
         model.fillMaxFromWallet()
         XCTAssertEqual(model.dashDuffsUnsigned,
-                       IdentityWithdrawViewModel.spendableCredits(balanceCredits: actual) / 1000)
+                       IdentityWithdrawViewModel.spendableCredits(
+                           balanceCredits: actual, target: model.resolvedWithdrawalTarget) / 1000)
         XCTAssertTrue(model.canContinue)
+    }
+
+    /// Consensus refuses a transition unless `balance >= amount + minimum fee`
+    /// (`STATE_TRANSITION_MIN_FEES_VERSION1`). Max must land inside that for
+    /// either target — the 0.002 DASH reserve Max used to hold back was below
+    /// the 0.004 DASH withdrawal minimum, so Identity → Transparent Max was
+    /// always refused.
+    func testIdentityMaxLeavesTheConsensusMinimumFeeForEachTarget() {
+        let balance: UInt64 = 4_619_310_760
+        let minimumFee: [(IdentityWithdrawalTarget, UInt64)] = [
+            (.transparent, 400_000_000),
+            (.platform, 500_000 + 6_000_000),
+        ]
+        for (target, fee) in minimumFee {
+            let max = IdentityWithdrawViewModel.spendableCredits(
+                balanceCredits: balance, target: target)
+            XCTAssertGreaterThan(max, 0, "\(target)")
+            XCTAssertGreaterThanOrEqual(balance, max + fee, "\(target)")
+        }
+        XCTAssertEqual(
+            IdentityWithdrawViewModel.spendableCredits(
+                balanceCredits: 400_000_000, target: .transparent),
+            0,
+            "A balance below the reserve has nothing to send")
     }
 
     func testInternalTransferBestEffortFailureKeepsTheCachedBalance() async {

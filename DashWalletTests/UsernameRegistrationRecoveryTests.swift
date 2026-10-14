@@ -193,6 +193,30 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
         } catch Failure.insufficientCredits {} catch { XCTFail("Unexpected \(error)") }
         XCTAssertEqual(broadcasts, 1)
     }
+
+    /// Wallet deletion drops that wallet's drafts under every network scope —
+    /// a devnet scope name may itself contain dots — and no other wallet's.
+    func testClearingAWalletsDraftsLeavesOtherWalletsAlone() throws {
+        let suite = "UsernameRegistrationDraftCleanup"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = UsernameRegistrationDraftStore(defaults: defaults)
+        let draft = UsernameRegistrationDraftStore.Draft(username: "alice", temporaryUsername: nil)
+        let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
+        let removedScopes = ["testnet", "devnet-a.b"].map {
+            UsernameRegistrationDraftStore.Scope(network: $0, walletId: removed, identityId: Data([1]))
+        }
+        // The removed wallet's id as another wallet's identity id is not a match.
+        let keptScope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: kept, identityId: removed)
+        try (removedScopes + [keptScope]).forEach { try store.save(draft, for: $0) }
+
+        store.clearAll(walletIdHex: "aa11")
+
+        XCTAssertTrue(removedScopes.allSatisfy { store.draft(for: $0) == nil })
+        XCTAssertEqual(store.draft(for: keptScope), draft)
+    }
 }
 
 #if canImport(dashpay)
@@ -243,6 +267,106 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertTrue(snapshot.hasKnownZeroBalance)
         snapshot.balanceCredits = 9_639_634_780
         XCTAssertFalse(snapshot.hasKnownZeroBalance)
+    }
+
+    /// A recovered paid lock funds the identity and nothing more: when the
+    /// name asked for costs more than the lock left, the run stops before any
+    /// funding call; a lock that covers the name completes without one; and
+    /// the retry — no longer a recovery — honours the amount it confirmed.
+    func testRecoveredLockNeverAuthorizesANewTopUp() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let confirmed: UInt64 = 25_000_000
+        let plainLockCredits: UInt64 = 2_800_000_000
+
+        // A 0.03 lock recovered, then a contested name: short, and not authorized.
+        let contestedNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: true, nameCount: 1),
+            heldCredits: plainLockCredits)
+        XCTAssertGreaterThan(contestedNeed, 0)
+        let recovered = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: true)
+        XCTAssertNil(recovered)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: recovered), .notConfirmed)
+
+        // The same lock for the plain name it was paid for: nothing to top up.
+        let plainNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(isContested: false, nameCount: 1),
+            heldCredits: plainLockCredits)
+        XCTAssertEqual(plainNeed, 0)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: plainNeed, authorizedDuffs: recovered), .notNeeded)
+
+        // The retry, with the shortfall confirmed: within the ceiling it runs,
+        // above it it stops, and an unconfirmed (0) amount authorizes nothing.
+        let retry = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: false)
+        XCTAssertEqual(retry, confirmed)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: retry), .proceed)
+        XCTAssertEqual(
+            Coordinator.topUpDecision(neededDuffs: confirmed + 1, authorizedDuffs: retry),
+            .exceedsConfirmed(confirmedDuffs: confirmed))
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: 0), .notConfirmed)
+    }
+
+    /// A resolved contest retires the handoff record of that request and no
+    /// other: left behind after a restart, a matching record made the row say
+    /// "interrupted" for a request whose outcome was already known.
+    func testResolvedContestRetiresOnlyItsOwnHandoffRecord() {
+        let prefs = UsernamePrefs.shared
+        let saved = prefs.inFlightRegistrationUsername
+        defer { prefs.inFlightRegistrationUsername = saved }
+
+        // Confirmed bookmark resolved, handoff marker for the same name unconsumed.
+        prefs.inFlightRegistrationUsername = "Alice"
+        prefs.retireInFlightRegistration(matching: "alice.dash")
+        XCTAssertNil(prefs.inFlightRegistrationUsername)
+
+        // Another request is in flight when the contest resolves.
+        prefs.inFlightRegistrationUsername = "bob"
+        prefs.retireInFlightRegistration(matching: "alice")
+        XCTAssertEqual(prefs.inFlightRegistrationUsername, "bob")
+    }
+
+    /// Removing a wallet drops its registration reports on every network and
+    /// leaves another wallet's alone; the full wipe drops them all. A wallet
+    /// id is derived from the phrase, so a survivor would be read back by the
+    /// same wallet re-imported.
+    func testWalletDeletionClearsOnlyThatWalletsRegistrationRecords() throws {
+        let suite = "UsernameRegistrationRecordCleanup"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let bases = UsernamePrefs.registrationRecordKeys
+        XCTAssertEqual(bases.count, 5)
+        let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
+        func keys(_ wallet: Data) -> [String] {
+            WalletEnvironment.NetworkKind.allCases.flatMap { network in
+                bases.map {
+                    JoinDashPayDismissalScope.scopedKey(
+                        $0, networkRawValue: network.rawValue, walletIdHex: wallet.hexEncodedString())
+                }
+            }
+        }
+        (keys(removed) + keys(kept)).forEach { defaults.set("x", forKey: $0) }
+        let drafts = UsernameRegistrationDraftStore(defaults: defaults)
+        let draft = UsernameRegistrationDraftStore.Draft(username: "alice", temporaryUsername: nil)
+        func scope(_ wallet: Data) -> UsernameRegistrationDraftStore.Scope {
+            .init(network: "testnet", walletId: wallet, identityId: Data([1]))
+        }
+        try drafts.save(draft, for: scope(removed))
+        try drafts.save(draft, for: scope(kept))
+        // Not a registration report: neither cleanup touches it.
+        let dismissal = JoinDashPayDismissalScope.storageKey(networkRawValue: 1, walletIdHex: removed.hexEncodedString())
+        defaults.set(true, forKey: dismissal)
+
+        UsernamePrefs.clearRegistrationRecords(walletIdHex: removed.hexEncodedString(), defaults: defaults)
+        XCTAssertTrue(keys(removed).allSatisfy { defaults.object(forKey: $0) == nil })
+        XCTAssertNil(drafts.draft(for: scope(removed)))
+        XCTAssertTrue(keys(kept).allSatisfy { defaults.object(forKey: $0) != nil })
+        XCTAssertEqual(drafts.draft(for: scope(kept)), draft)
+
+        UsernamePrefs.clearAllRegistrationRecords(defaults: defaults)
+        XCTAssertTrue(keys(kept).allSatisfy { defaults.object(forKey: $0) == nil })
+        XCTAssertNil(drafts.draft(for: scope(kept)))
+        XCTAssertNotNil(defaults.object(forKey: dismissal))
     }
 
     func testConfirmedNameDoesNotOfferRegistrationRecovery() {
