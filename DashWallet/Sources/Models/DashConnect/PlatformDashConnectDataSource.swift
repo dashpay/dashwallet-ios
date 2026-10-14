@@ -567,7 +567,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // show what the app is given. With the version unknown the request
         // says so, and the sheet offers nothing to approve. The lookup runs
         // alongside the two below.
-        async let resolvedProtocolVersion = Self.networkProtocolVersion(sdk: context.sdk)
+        async let resolvedProtocolVersion = Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
         let metadata = await resolveAppMetadata(for: loginRequest, sdk: context.sdk)
         let walletUsername = await resolveWalletUsername(context: context)
         let protocolVersion: UInt32?
@@ -657,7 +657,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // two-QR flow until that pin moves.
         let protocolVersion: UInt32
         do {
-            protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk)
+            protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
         } catch {
             // The wallet cannot tell any more whether the login the sheet
             // offered is the one this network gets. Nothing was signed.
@@ -786,12 +786,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// `SDK.refreshProtocolVersion()` is a synchronous FFI call that makes a
     /// proven network query. It runs on a plain dispatch queue so it does not
     /// hold a cooperative-pool thread for a DAPI round trip.
-    private static func networkProtocolVersion(sdk: SDK) async throws -> UInt32 {
-        try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                continuation.resume(with: Result { try sdk.refreshProtocolVersion() })
-            }
-        }
+    /// The protocol version a login is chosen by. An SDK pinned to a
+    /// version (`SwiftDashSDKHost.platformVersion(for:)`) builds only that
+    /// version's transitions, so its pin decides, with no network read. An
+    /// unpinned one gets the network's version from a proved read of the
+    /// current epoch, which throws when the read fails: the SDK's own
+    /// refreshed number is not used, since a failed refresh leaves its
+    /// starting value in place without an error.
+    private static func networkProtocolVersion(sdk: SDK, network: Network) async throws -> UInt32 {
+        let pin = await MainActor.run { SwiftDashSDKHost.platformVersion(for: network) }
+        guard pin == 0 else { return pin }
+        return try await DashConnectPlatformQueries.currentEpochProtocolVersion(sdk: sdk)
     }
 
     /// The one-QR login: derive the request's session key, register it on the
@@ -850,7 +855,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, in: stores)
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            modelContainer: context.modelContainer, in: stores)
         func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
                 && grant.values.appEphemeralPubKeyHash == requestHash
@@ -863,7 +869,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if currentPublicKeys.contains(where: { $0.keyType == .ecdsaHash160 && $0.data == sessionKeyHash160 }) {
             bindings = (try? Self.storedKeyBindings(
                 identityId: identityId, modelContainer: context.modelContainer)) ?? []
-            grantedKeyIds = Set(stores.grants.load().filter(isGrantForRequest).map(\.sessionKeyId))
+            // An unconfirmed record is not evidence of the key's bound: it
+            // only says what was submitted.
+            grantedKeyIds = Set(stores.grants.load()
+                .filter { isGrantForRequest($0) && !$0.isUnconfirmed }.map(\.sessionKeyId))
         }
 
         let sessionKeyId: UInt32
@@ -947,7 +956,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // stands and the record stays unconfirmed, to be confirmed if
                 // the key turns up later.
                 guard let keys = try? await refreshedIdentityPublicKeys(context: context),
-                      AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys) else {
+                      let bindings = try? Self.storedKeyBindings(
+                          identityId: identityId, modelContainer: context.modelContainer),
+                      AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys, bindings: bindings) else {
                     Self.logger.error("🔗 DASHCONNECT :: session key registration failed or is unconfirmed — \(error.localizedDescription, privacy: .public)")
                     throw error
                 }
@@ -1076,7 +1087,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         responseContractId: Data,
         sdk: SDK
     ) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
-        let response = try await sdk.documentList(
+        let response = try await DashConnectPlatformQueries.documentList(
+            sdk: sdk,
             dataContractId: responseContractId.toBase58String(),
             documentType: AppConnect.documentType,
             whereClause: AppConnect.responseLookupWhereClause(
@@ -1352,11 +1364,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func confirmRegistrations(
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        modelContainer: ModelContainer,
         in stores: Stores
     ) async {
+        guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }),
+              let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)
+        else { return }
         let confirmed = updateGrants(in: stores) { grants in
             AppConnect.confirmRegistrations(
-                in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys)
+                in: &grants, identityId: identityId,
+                currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
         }
         guard !confirmed.isEmpty else { return }
         Self.logger.info("🔗 DASHCONNECT :: \(confirmed.count, privacy: .public) unconfirmed session key(s) found on the identity")
@@ -1702,7 +1719,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // have landed; the next one-QR approval with this identity confirms
         // the key and shows the app again.
         await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, in: stores)
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            modelContainer: context.modelContainer, in: stores)
         let granted = stores.grants.load().filter { isGranted($0) && !$0.isUnconfirmed }
         guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: granted).isEmpty else {
             // Platform never removes a key, so the node that answered is
@@ -2749,5 +2767,101 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             baseAddress.initializeMemory(as: UInt8.self, repeating: 0, count: buffer.count)
         }
+    }
+}
+
+/// Platform reads the Swift SDK offers only on the main actor, where their
+/// blocking FFI calls would hold the UI for a network round trip. They run
+/// here on one serial queue instead, with the SDK kept alive for the call;
+/// each copies the native result and releases it before returning.
+/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
+/// it has them for these two, as it has `dataContractGetOffMain`.
+enum DashConnectPlatformQueries {
+    /// One queue per kind of read, so a slow document search does not hold
+    /// back the protocol-version read a sheet waits for.
+    private static let epochQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.epoch-query")
+    private static let documentQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.document-query")
+
+    /// The protocol version the network runs, from a proved read of the
+    /// current epoch. It throws when that read fails: there is no fallback
+    /// value.
+    static func currentEpochProtocolVersion(sdk: SDK) async throws -> UInt32 {
+        let epoch = try await run(sdk, on: epochQueue) { handle in
+            try json(from: dash_sdk_system_get_current_epoch(handle))
+        }
+        guard let version = (epoch["protocol_version"] as? NSNumber)?.uint32Value else {
+            throw SDKError.serializationError("The current epoch carries no protocol version")
+        }
+        return version
+    }
+
+    /// `SDK.documentList(dataContractId:documentType:whereClause:limit:)`
+    /// off the main actor: the contract is fetched, searched and released
+    /// on the query queue.
+    static func documentList(
+        sdk: SDK,
+        dataContractId: String,
+        documentType: String,
+        whereClause: String,
+        limit: UInt32
+    ) async throws -> [String: Any] {
+        try await run(sdk, on: documentQueue) { handle in
+            let contract = dash_sdk_data_contract_fetch(handle, dataContractId)
+            if let error = contract.error {
+                defer { dash_sdk_error_free(error) }
+                throw SDKError.fromDashSDKError(error.pointee)
+            }
+            guard let contractHandle = contract.data else {
+                throw SDKError.notFound("Data contract not found")
+            }
+            defer { dash_sdk_data_contract_destroy(OpaquePointer(contractHandle)) }
+            return try documentType.withCString { typePointer in
+                try whereClause.withCString { wherePointer in
+                    var parameters = DashSDKDocumentSearchParams()
+                    parameters.data_contract_handle = OpaquePointer(contractHandle)
+                    parameters.document_type = typePointer
+                    parameters.where_json = wherePointer
+                    parameters.order_by_json = nil
+                    parameters.limit = limit
+                    parameters.start_at = 0
+                    return try json(from: dash_sdk_document_search(handle, &parameters))
+                }
+            }
+        }
+    }
+
+    private static func run(
+        _ sdk: SDK,
+        on queue: DispatchQueue,
+        _ body: @escaping (OpaquePointer) throws -> [String: Any]
+    ) async throws -> [String: Any] {
+        try await withCheckedThrowingContinuation { continuation in
+            queue.async {
+                // The SDK owns the handle and releases it when it goes, so
+                // it is held until the call is done.
+                withExtendedLifetime(sdk) {
+                    guard let handle = sdk.handle else {
+                        continuation.resume(throwing: SDKError.invalidState("SDK not initialized"))
+                        return
+                    }
+                    continuation.resume(with: Result { try body(handle) })
+                }
+            }
+        }
+    }
+
+    /// The JSON object a result carries, with the result released.
+    private static func json(from result: DashSDKResult) throws -> [String: Any] {
+        if let error = result.error {
+            defer { dash_sdk_error_free(error) }
+            throw SDKError.fromDashSDKError(error.pointee)
+        }
+        guard let data = result.data else { throw SDKError.notFound("No data returned") }
+        let text = String(cString: data.assumingMemoryBound(to: CChar.self))
+        dash_sdk_string_free(data)
+        guard let object = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any] else {
+            throw SDKError.serializationError("The result is not a JSON object")
+        }
+        return object
     }
 }

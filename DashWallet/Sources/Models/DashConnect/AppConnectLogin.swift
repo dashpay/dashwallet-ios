@@ -314,16 +314,28 @@ enum AppConnect {
             .sorted()
     }
 
-    /// Whether the identity holds the key a record names, live: its id, with
-    /// the key data the record expects while the registration is unconfirmed.
+    /// Whether the identity holds, live, the key a record names. For an
+    /// unconfirmed record that is the key it was going to register, with
+    /// everything that key was given: the data, the kind, the limits, and the
+    /// bound to the record's app as the wallet's store reads it. A bound the
+    /// store does not show is not taken on trust.
     static func holdsRecordedKey(
         _ grant: AppConnectGrant,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
     ) -> Bool {
         currentIdentityPublicKeys.contains { key in
             guard UInt32(bitPattern: key.keyId) == grant.sessionKeyId, key.disabledAt == nil else { return false }
             guard let hash = grant.unconfirmedKeyHash160 else { return true }
+            guard let appContractId = Data.identifier(fromBase58: grant.appContractId) else { return false }
             return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
+                && key.purpose == .authentication && key.securityLevel == .high
+                && key.totalBudget == grant.totalBudget
+                && key.expiresAt.map({ UInt64(max(0, $0)) }) == grant.expiresAt
+                && bindings.contains {
+                    $0.keyId == grant.sessionKeyId && $0.data == key.data && !$0.hasUnreadableBound
+                        && $0.singleContractId == appContractId
+                }
         }
     }
 
@@ -334,12 +346,14 @@ enum AppConnect {
     static func confirmRegistrations(
         in grants: inout [AppConnectGrant],
         identityId: String,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
     ) -> [AppConnectGrant] {
         var confirmed: [AppConnectGrant] = []
         for index in grants.indices
         where grants[index].identityId == identityId && grants[index].isUnconfirmed
-            && holdsRecordedKey(grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys) {
+            && holdsRecordedKey(
+                grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings) {
             grants[index].unconfirmedKeyHash160 = nil
             confirmed.append(grants[index])
         }

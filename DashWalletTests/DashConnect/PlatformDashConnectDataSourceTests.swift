@@ -2596,34 +2596,56 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertFalse(unscoped.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
     }
 
-    func testAnUnconfirmedRegistrationIsConfirmedOnlyByItsOwnKey() {
-        var pending = Self.grant(sessionKeyId: 9)
+    func testAnUnconfirmedRegistrationIsConfirmedOnlyByItsOwnKeyWithWhatItWasGiven() throws {
+        let appContractId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appContract = try XCTUnwrap(Data.identifier(fromBase58: appContractId))
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: template.identityId, appContractId: appContractId, documentId: nil,
+            values: template.values, sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000,
+            publishedAt: template.publishedAt)
         let hash = Data(repeating: 0x5A, count: 20)
         pending.unconfirmedKeyHash160 = hash.toHexString()
-        let landed = [Self.key(keyId: 9, data: hash)]
-        let other = [Self.key(keyId: 9, data: Data(repeating: 0x01, count: 20))]
+        let bound = [AppConnect.KeyBinding(keyId: 9, data: hash, singleContractId: appContract)]
+        func key(
+            data: Data = hash, level: SecurityLevel = .high, budget: UInt64? = 5_000,
+            expiry: Int64? = 6_000, disabledAt: Int64? = nil
+        ) -> [ManagedIdentity.IdentityPublicKeyInfo] {
+            [Self.key(keyId: 9, securityLevel: level, data: data, disabledAt: disabledAt,
+                      totalBudget: budget, expiresAt: expiry)]
+        }
 
-        XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: landed))
-        XCTAssertFalse(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: other),
-                       "another key under the same id is not the one submitted")
+        XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: bound))
+        for (keys, why) in [
+            (key(data: Data(repeating: 0x01, count: 20)), "another key under the same id"),
+            (key(disabledAt: 1), "a disabled key"),
+            (key(level: .critical), "another security level"),
+            (key(budget: nil), "no budget"),
+            (key(budget: 9_000), "another budget"),
+            (key(expiry: nil), "no expiry"),
+            ([], "no key at all"),
+        ] {
+            XCTAssertFalse(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys, bindings: bound), why)
+        }
         XCTAssertFalse(
-            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: [Self.key(keyId: 9, data: hash, disabledAt: 1)]),
-            "a disabled key is not a live registration")
+            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: []),
+            "a bound the store does not show is not taken on trust")
+        let otherApp = [AppConnect.KeyBinding(keyId: 9, data: hash, singleContractId: Data(repeating: 0x77, count: 32))]
+        XCTAssertFalse(
+            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: otherApp),
+            "bound to another app")
 
         var grants = [pending]
         XCTAssertEqual(
             AppConnect.confirmRegistrations(
-                in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: other), [])
-        XCTAssertEqual(
-            AppConnect.confirmRegistrations(in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: []),
+                in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: [], bindings: bound),
             [], "a key not in the view is not taken as never registered")
         XCTAssertTrue(grants[0].isUnconfirmed)
         XCTAssertEqual(
             AppConnect.confirmRegistrations(
-                in: &grants, identityId: "another identity", currentIdentityPublicKeys: landed), [])
-
+                in: &grants, identityId: "another identity", currentIdentityPublicKeys: key(), bindings: bound), [])
         let confirmed = AppConnect.confirmRegistrations(
-            in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: landed)
+            in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: key(), bindings: bound)
         XCTAssertEqual(confirmed.map(\.key), [pending.key])
         XCTAssertFalse(grants[0].isUnconfirmed)
     }
