@@ -55,6 +55,10 @@ NS_ASSUME_NONNULL_BEGIN
     return DWWalletEnvironment.hasWallet;
 }
 
+- (DWWalletPresence)walletPresence {
+    return DWWalletEnvironment.walletPresence;
+}
+
 - (BOOL)walletOperationAllowed {
     return [DWAuthenticationService shared].passcodeEnabled;
 }
