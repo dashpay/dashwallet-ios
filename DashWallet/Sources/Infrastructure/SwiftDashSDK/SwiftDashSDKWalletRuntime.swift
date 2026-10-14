@@ -855,6 +855,45 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
     }
 
+    /// The setup flow's recover import (`SwiftDashSDKHost.createOrImportWallet`
+    /// across every supported network) as ONE link of the serial lifecycle
+    /// chain. A retried import can find the wallet an earlier attempt
+    /// persisted already present, so a start (launch, connectivity return)
+    /// may be running on it, or be queued behind it: the import waits for an
+    /// op already on the chain, tears down whatever runtime it left up (an
+    /// SPV client must not keep a manager the import replaces), and every
+    /// kick queued meanwhile runs after it. A successful import's
+    /// `handleWalletMaterialChanged` (the creator's) queues the start that
+    /// follows; a failed one leaves the runtime stopped, as the host's own
+    /// `buildRuntime` teardown always did. The teardown keeps a shielded
+    /// recovery suspended, as `refresh`'s own does: the wallet a retry finds
+    /// running is the one it resumes, and the start after a successful
+    /// import picks it up. A failed import stops it, as a failed `refresh`
+    /// does, so nothing suspended outlives the runtime. Same re-entrancy rule as
+    /// `performAddWallet`: never from within a chain op.
+    @MainActor
+    func performSetupImport(mnemonic: String, network: Network) async throws -> Data {
+        DWLogger.log("SETUP import queued on the wallet lifecycle")
+        return try await lifecycleQueue.enqueueAwaitable {
+            DWLogger.log("SETUP import running: stopping the runtime, then importing")
+            await self.fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: true)
+            do {
+                let walletId = try await SwiftDashSDKHost.shared.createOrImportWallet(
+                    mnemonic: mnemonic,
+                    network: network,
+                    isImported: true,
+                    provisionAcrossSupportedNetworks: true
+                ).walletId
+                DWLogger.log("SETUP import done")
+                return walletId
+            } catch {
+                DWLogger.log("SETUP import failed: \(error.localizedDescription)")
+                PlatformAddressSyncCoordinator.shared.stopShieldedRecoveryMonitoring()
+                throw error
+            }
+        }
+    }
+
     /// Validate that `walletId` is a switchable target on the current network:
     /// the network must be SDK-supported and a mnemonic for `walletId` must be
     /// persisted in `WalletStorage` — the same keychain surface the host loads

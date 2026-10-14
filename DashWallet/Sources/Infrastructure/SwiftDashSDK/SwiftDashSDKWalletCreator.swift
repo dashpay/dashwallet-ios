@@ -77,8 +77,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
     static let creations = InFlightCounter()
 
     /// Whether a creation or import is still running. Setup completion asks
-    /// for a runtime start only when none is: a running one is not
-    /// serialized with the runtime's lifecycle queue, publishes its own
+    /// for a runtime start only when none is: a fresh-wallet creation is not
+    /// serialized with the runtime's lifecycle queue (an import is, but
+    /// may still be waiting for its turn on it), publishes its own
     /// manager, and asks for the start itself once it lands
     /// (`handleWalletMaterialChanged`); a start beside it would build a
     /// second manager for the same wallet.
@@ -115,8 +116,10 @@ final class SwiftDashSDKWalletCreator: NSObject {
     /// Import a SwiftDashSDK wallet from an existing mnemonic (e.g., from
     /// the recover-wallet flow).
     ///
-    /// Same threading and error semantics as `createWallet`: dispatched to a
-    /// background queue, idempotent, never throws, never crashes.
+    /// Same error semantics as `createWallet`: dispatched to a background
+    /// queue, idempotent, never throws, never crashes. Unlike a creation,
+    /// the host call runs as an op of the runtime's lifecycle chain
+    /// (`SwiftDashSDKWalletRuntime.performSetupImport`).
     ///
     /// - Parameters:
     ///   - mnemonic: BIP39 phrase from the user-provided recovery phrase.
@@ -142,7 +145,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
     /// before the wallet exists — the recover flow completes setup on it.
     /// A failure after the current network's wallet was persisted leaves
     /// that wallet in place; the same import, run again, resumes from it
-    /// (`SwiftDashSDKHost.createOrImportWallet`).
+    /// (`SwiftDashSDKHost.createOrImportWallet`). Like every import, it runs
+    /// on the runtime's serial lifecycle chain
+    /// (`SwiftDashSDKWalletRuntime.performSetupImport`), not beside a start.
     @objc(importWalletWithMnemonic:pin:network:completion:)
     static func importWallet(
         mnemonic: String,
@@ -204,8 +209,9 @@ final class SwiftDashSDKWalletCreator: NSObject {
     /// wallet and persist the mnemonic under the returned wallet id.
     ///
     /// Shared between `createWallet` (fresh-install) and `importWallet`
-    /// (recover-from-recovery-phrase). The two callers differ only in the
-    /// `isImported` and `label` values they pass for logging. Returns
+    /// (recover-from-recovery-phrase). The two callers differ in the
+    /// `isImported` and `label` values they pass; `isImported` also routes
+    /// the host call through the runtime's lifecycle chain. Returns
     /// whether the wallet was created and its mnemonic persisted; every
     /// refusal and failure is logged here.
     @discardableResult
@@ -271,12 +277,22 @@ final class SwiftDashSDKWalletCreator: NSObject {
         Task { @MainActor in
             defer { semaphore.signal() }
             do {
-                result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
-                    mnemonic: mnemonic,
-                    network: network,
-                    isImported: isImported,
-                    provisionAcrossSupportedNetworks: true
-                ).walletId)
+                // An import can run over a wallet an earlier attempt
+                // persisted, which a start may have opened: it runs on the
+                // runtime's lifecycle chain. A fresh mnemonic has nothing
+                // a start could have opened.
+                if isImported {
+                    result = .success(try await SwiftDashSDKWalletRuntime.shared.performSetupImport(
+                        mnemonic: mnemonic,
+                        network: network))
+                } else {
+                    result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
+                        mnemonic: mnemonic,
+                        network: network,
+                        isImported: false,
+                        provisionAcrossSupportedNetworks: true
+                    ).walletId)
+                }
             } catch {
                 result = .failure(error)
             }

@@ -772,8 +772,9 @@ final class SwiftDashSDKHost {
                     birthHeight: isImported
                         ? Self.importedWalletBirthHeight(for: handles.network)
                         : nil,
-                    // Onboarding is not lifecycle-queue-serialized: keep the
-                    // persist→create critical section MainActor-atomic.
+                    // A fresh-wallet creation and the migrator are not
+                    // lifecycle-queue-serialized: keep the persist→create
+                    // critical section MainActor-atomic.
                     offMainCreate: false)
             }
 
@@ -1092,9 +1093,11 @@ final class SwiftDashSDKHost {
     /// overload — no suspension between persist and create, so a
     /// concurrently scheduled `startIfReady`/refresh can never observe the
     /// half-state (mnemonic present, no wallet rows) and build a competing
-    /// runtime; `createOrImportWallet` is NOT queue-serialized (the
-    /// migrator is awaited by refresh itself — enqueueing would deadlock),
-    /// so it must keep the MainActor-atomic critical section.
+    /// runtime; `createOrImportWallet` from onboarding's fresh-wallet
+    /// creation and from the migrator is NOT queue-serialized (the migrator
+    /// is awaited by refresh itself — enqueueing would deadlock), so those
+    /// keep the MainActor-atomic critical section (the setup import, which
+    /// runs it on the lifecycle queue, keeps it as well).
     /// `isImported` drives `GeneratedWalletIdentityMarker`: a generated
     /// mnemonic marks its walletId, an imported one clears it (walletIds are
     /// deterministic per mnemonic+network, so a removed-then-re-imported
