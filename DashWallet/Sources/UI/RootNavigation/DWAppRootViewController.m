@@ -48,6 +48,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// Every deep link the app accepted and has not handled yet, in arrival
 /// order; handed over one at a time by `dispatchNextLinkIfReady`.
 @property (nonatomic, strong) DWDeepLinkQueue *linkQueue;
+/// Polls spent waiting for a presentation transition before the next link
+/// (see `deferLinkWhilePresentationTransitions`), and whether one is due.
+@property (nonatomic, assign) NSInteger linkTransitionWaits;
+@property (nonatomic, assign) BOOL linkTransitionPollScheduled;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 /// The launch hold (legacy migration, or an unreadable inventory) has not
 /// reported yet: "no wallet" is not a verdict, so nothing is handed over.
@@ -132,6 +136,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     const BOOL attached = self.viewIfLoaded.window != nil && _mainController.viewIfLoaded.window != nil;
     const BOOL unlocked = ![self.model shouldShowLockScreen] && self.lockController == nil;
     const BOOL invitationsReady = walletPresented && _mainController.isReadyForInvitations;
+    if (walletPresented && attached && unlocked && !self.launchHoldPending &&
+        !self.linkQueue.isEmpty && !self.linkQueue.isDispatching &&
+        [self deferLinkWhilePresentationTransitions]) {
+        return;
+    }
     DWDeepLink *link = [self.linkQueue takeNextWithWalletPresented:walletPresented
                                                           attached:attached
                                                           unlocked:unlocked
@@ -175,6 +184,41 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
     [self performURL:link.url completion:done isAbandoned:isAbandoned];
+}
+
+/// A link settles at the tap that ends its screen — an alert's OK, a
+/// DashConnect error dismissed — while that screen is still animating away.
+/// A handler presenting right then would present from a controller in
+/// transition, which UIKit refuses or takes down with it. So no link is
+/// handed over while anything in this hierarchy is being presented or
+/// dismissed: the queue asks again every 0.1 s, and after about 2 s hands
+/// the link over regardless (its handler's own dismissal step still waits).
+/// Returns YES while the hand-over is deferred.
+- (BOOL)deferLinkWhilePresentationTransitions {
+    static const NSInteger maxWaits = 20;
+    NSMutableArray<UIViewController *> *roots = [NSMutableArray arrayWithObject:self];
+    if (_mainController != nil) {
+        [roots addObject:_mainController];
+    }
+    UIViewController *inTransition = [DWPresentationTransition controllerInTransitionFrom:roots];
+    if (inTransition == nil || self.linkTransitionWaits >= maxWaits) {
+        if (inTransition != nil) {
+            DWLog(@"LINKS a presentation is still in transition after %ld waits; handing the next link over", (long)maxWaits);
+        }
+        self.linkTransitionWaits = 0;
+        return NO;
+    }
+    if (!self.linkTransitionPollScheduled) {
+        self.linkTransitionPollScheduled = YES;
+        self.linkTransitionWaits += 1;
+        __weak typeof(self) weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            strongSelf.linkTransitionPollScheduled = NO;
+            [strongSelf dispatchNextLinkIfReady];
+        });
+    }
+    return YES;
 }
 
 /// A handler whose completion never comes — a screen presented from a

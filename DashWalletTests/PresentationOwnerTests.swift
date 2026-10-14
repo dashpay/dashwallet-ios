@@ -155,6 +155,40 @@ final class PresentationOwnerTests: XCTestCase {
         XCTAssertTrue(waiting === home)
     }
 
+    // MARK: Transition gate
+
+    func testNothingInTransitionIsNoNode() {
+        let (root, tab, _, home) = hierarchy()
+        home.present(Node("modal"))
+        XCTAssertNil(PresentationOwner.nodeInTransition(from: [root, tab]))
+    }
+
+    /// A DashConnect error alert settles its link at OK, while it is still
+    /// being dismissed: the queue's gate sees it, whether the root-most
+    /// presenter owns it or a screen down the active chain does.
+    func testADismissingAlertHoldsTheNextLink() {
+        let (root, tab, _, home) = hierarchy()
+        let alert = Node("dashConnectError")
+        root.present(alert)
+        alert.isInTransition = true
+        XCTAssertTrue(PresentationOwner.nodeInTransition(from: [root, tab]) === alert)
+        root.dismiss()
+
+        let modal = Node("modal")
+        home.present(modal)
+        let nested = Node("nested")
+        modal.present(nested)
+        nested.isInTransition = true
+        XCTAssertTrue(PresentationOwner.nodeInTransition(from: [root, tab]) === nested,
+                      "found through a presentation a descendant owns")
+    }
+
+    func testTheTransitionWalkDoesNotLoop() {
+        let (root, tab, navigation, _) = hierarchy()
+        navigation.child = tab
+        XCTAssertNil(PresentationOwner.nodeInTransition(from: [root, tab]))
+    }
+
     func testACycleInTheActiveChainDoesNotLoop() {
         let (_, tab, navigation, _) = hierarchy()
         navigation.child = tab

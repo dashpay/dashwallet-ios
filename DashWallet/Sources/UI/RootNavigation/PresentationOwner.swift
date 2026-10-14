@@ -80,6 +80,35 @@ enum PresentationOwner {
     }
 }
 
+extension PresentationOwner {
+    /// The first node reachable from `roots` — down the active chains and
+    /// through every presentation over them — that is being presented or
+    /// dismissed, or nil when nothing is in transition.
+    static func nodeInTransition(from roots: [PresentationNode]) -> PresentationNode? {
+        var visited: [PresentationNode] = []
+        var pending = roots
+        while let node = pending.popLast() {
+            guard !visited.contains(where: { $0 === node }) else { continue }
+            visited.append(node)
+            if node.isInTransition { return node }
+            if let presented = node.presentedNode { pending.append(presented) }
+            if let child = node.activeChildNode { pending.append(child) }
+        }
+        return nil
+    }
+}
+
+/// The Objective-C face of `PresentationOwner.nodeInTransition`, for the
+/// link queue's hand-over gate.
+@objc(DWPresentationTransition)
+final class PresentationTransition: NSObject {
+    /// The controller under `roots` that is being presented or dismissed.
+    @objc
+    static func controllerInTransition(from roots: [UIViewController]) -> UIViewController? {
+        PresentationOwner.nodeInTransition(from: roots) as? UIViewController
+    }
+}
+
 extension UIViewController: PresentationNode {
     var presentedNode: PresentationNode? { presentedViewController }
     var presentingNode: PresentationNode? { presentingViewController }
