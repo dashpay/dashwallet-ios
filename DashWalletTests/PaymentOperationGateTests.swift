@@ -367,22 +367,22 @@ final class LinkOperationSequenceTests: XCTestCase {
 /// while that send's confirmation is still animating away.
 final class RefusalPresentationTests: XCTestCase {
     func testARefusalWaitsWhileTheTopIsInTransition() {
-        XCTAssertEqual(RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: 0), .wait)
+        XCTAssertEqual(RefusalPresentation.decide(refusalOnScreen: false, topInTransition: true, topInWindow: true, attempt: 0), .wait)
         XCTAssertEqual(
-            RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits - 1),
+            RefusalPresentation.decide(refusalOnScreen: false, topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits - 1),
             .wait)
     }
 
     func testARefusalIsPresentedFromAStableTopInAWindow() {
-        XCTAssertEqual(RefusalPresentation.decide(topInTransition: false, topInWindow: true, attempt: 0), .present)
-        XCTAssertEqual(RefusalPresentation.decide(topInTransition: false, topInWindow: true, attempt: 3), .present)
+        XCTAssertEqual(RefusalPresentation.decide(refusalOnScreen: false, topInTransition: false, topInWindow: true, attempt: 0), .present)
+        XCTAssertEqual(RefusalPresentation.decide(refusalOnScreen: false, topInTransition: false, topInWindow: true, attempt: 3), .present)
     }
 
     /// The wait is bounded: a transition that never reports its end does not
     /// hold the refused link forever.
     func testARefusalStopsWaitingAfterItsLastAttempt() {
         XCTAssertEqual(
-            RefusalPresentation.decide(topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits),
+            RefusalPresentation.decide(refusalOnScreen: false, topInTransition: true, topInWindow: true, attempt: RefusalPresentation.waits),
             .present)
     }
 
@@ -390,9 +390,29 @@ final class RefusalPresentationTests: XCTestCase {
     /// at once instead of waiting for the queue's watchdog.
     func testARefusalWithNothingOnScreenSettlesWithoutAnAlert() {
         XCTAssertEqual(
-            RefusalPresentation.decide(topInTransition: false, topInWindow: false, attempt: 0), .settleWithoutAlert)
+            RefusalPresentation.decide(refusalOnScreen: false, topInTransition: false, topInWindow: false, attempt: 0), .settleWithoutAlert)
         XCTAssertEqual(
-            RefusalPresentation.decide(topInTransition: true, topInWindow: false, attempt: RefusalPresentation.waits),
+            RefusalPresentation.decide(refusalOnScreen: false, topInTransition: true, topInWindow: false, attempt: RefusalPresentation.waits),
             .settleWithoutAlert)
+    }
+
+    /// Refused links do not stack alerts: while one refusal is the top,
+    /// a further one settles against it, even mid-transition.
+    func testARefusalAlreadyOnScreenIsNotShownAgain() {
+        for inTransition in [false, true] {
+            XCTAssertEqual(
+                RefusalPresentation.decide(
+                    refusalOnScreen: true, topInTransition: inTransition, topInWindow: true, attempt: 0),
+                .alreadyShown)
+        }
+    }
+
+    /// Only a refusal the user can see counts: covered by another screen,
+    /// out of the window, or being dismissed, it does not.
+    func testAnEarlierRefusalCountsOnlyWhileVisible() {
+        XCTAssertTrue(RefusalPresentation.isShown(isTop: true, inWindow: true, beingDismissed: false))
+        XCTAssertFalse(RefusalPresentation.isShown(isTop: false, inWindow: true, beingDismissed: false))
+        XCTAssertFalse(RefusalPresentation.isShown(isTop: true, inWindow: false, beingDismissed: false))
+        XCTAssertFalse(RefusalPresentation.isShown(isTop: true, inWindow: true, beingDismissed: true))
     }
 }

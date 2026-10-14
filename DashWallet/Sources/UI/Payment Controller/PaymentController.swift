@@ -75,6 +75,9 @@ final class PaymentController: NSObject {
     private weak var paymentOutput: DWPaymentOutput?
     private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
+    /// The refusal alert on screen, if any: a further refused payment
+    /// settles against it instead of stacking a second one.
+    private weak var refusalAlert: UIAlertController?
 
     static func shouldReenableSending(after error: NSError) -> Bool {
         !WalletSendService.isBroadcastUnknownError(error)
@@ -222,11 +225,13 @@ extension PaymentController {
         provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
-    private func showAlert(with title: String?, message: String?, for token: LinkOperationSequence.Token) {
+    @discardableResult
+    private func showAlert(with title: String?, message: String?, for token: LinkOperationSequence.Token) -> UIAlertController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
         alert.addAction(okAction)
         show(modalController: alert, for: token)
+        return alert
     }
 
     /// The refusal of a payment that arrived while a confirmed send is in
@@ -235,10 +240,18 @@ extension PaymentController {
     /// in transition can refuse the alert or take it down with it: the top
     /// is resolved again once its transition has ended. With nothing on
     /// screen to present from, the link settles without an alert rather
-    /// than waiting for the queue's watchdog.
+    /// than waiting for the queue's watchdog. While an earlier refusal is
+    /// the top of the screen (and not being dismissed), a further one
+    /// settles without an alert: that one already says it.
     private func showRefusal(for token: LinkOperationSequence.Token, attempt: Int = 0) {
         let top = presentationAnchor?.topController()
+        let earlierRefusalShown = refusalAlert.map {
+            RefusalPresentation.isShown(isTop: $0 === top,
+                                        inWindow: $0.viewIfLoaded?.window != nil,
+                                        beingDismissed: $0.isBeingDismissed)
+        } ?? false
         let decision = RefusalPresentation.decide(
+            refusalOnScreen: earlierRefusalShown,
             topInTransition: top.map { $0.isInTransition || $0.transitionCoordinator != nil } ?? false,
             topInWindow: top?.viewIfLoaded?.window != nil,
             attempt: attempt)
@@ -251,10 +264,14 @@ extension PaymentController {
                 DispatchQueue.main.asyncAfter(deadline: .now() + RefusalPresentation.poll, execute: retry)
             }
         case .present:
-            showAlert(with: nil,
-                      message: NSLocalizedString("A payment is still being sent. Open the link again once it finishes.",
-                                                 comment: "Payment: a payment link arrived while a send is in flight"),
-                      for: token)
+            refusalAlert = showAlert(
+                with: nil,
+                message: NSLocalizedString("A payment is still being sent. Open the link again once it finishes.",
+                                           comment: "Payment: a payment link arrived while a send is in flight"),
+                for: token)
+        case .alreadyShown:
+            DWLogger.log("PAY a refusal is already on screen; settling the refused link without another")
+            settlePresentation(of: token)
         case .settleWithoutAlert:
             DWLogger.log("PAY nothing on screen to present the refusal from; settling the refused link")
             settlePresentation(of: token)
@@ -441,6 +458,8 @@ enum RefusalPresentation {
         /// it again.
         case wait
         case present
+        /// An earlier refusal is still on screen and says the same.
+        case alreadyShown
         /// Nothing in a window to present from.
         case settleWithoutAlert
     }
@@ -450,7 +469,17 @@ enum RefusalPresentation {
     static let waits = 20
     static let poll: TimeInterval = 0.1
 
-    static func decide(topInTransition: Bool, topInWindow: Bool, attempt: Int) -> Decision {
+    /// Whether an earlier refusal alert still tells the user: it is the top
+    /// (nothing covers it), in a window, and not on its way out (the user
+    /// tapped OK).
+    static func isShown(isTop: Bool, inWindow: Bool, beingDismissed: Bool) -> Bool {
+        isTop && inWindow && !beingDismissed
+    }
+
+    static func decide(refusalOnScreen: Bool, topInTransition: Bool, topInWindow: Bool, attempt: Int) -> Decision {
+        if refusalOnScreen {
+            return .alreadyShown
+        }
         if topInTransition && attempt < waits {
             return .wait
         }
