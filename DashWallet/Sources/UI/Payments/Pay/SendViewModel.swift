@@ -62,12 +62,40 @@ final class SendViewModel: ObservableObject {
     /// to type, so `trimmedAddress` stays empty for this send's whole life and
     /// the recipient is rendered from the contact instead.
     @Published private(set) var contactRecipient: ContactItem?
-    /// True while `sendToContact()` is in flight — the amount step's Send
-    /// button shows progress, and `canContinue` refuses a second tap.
+    /// True from the review's Send (`confirmContactReview`) until
+    /// `sendToContact` has finished — including the moment the review is
+    /// still closing and the spend has not started. The amount step's Send
+    /// shows progress, `canContinue` refuses a second tap, and the hosts hold
+    /// their back and dismiss gestures.
     @Published private(set) var isSendingToContact = false
+    /// The duffs on the contact review, fixed when it opened and spent as
+    /// they are. A fiat entry converts at the live rate, so reading the entry
+    /// again at the Send tap would pay a figure the user never saw.
+    @Published private(set) var contactReviewDuffs: UInt64?
+
     /// Failure from the last contact send, surfaced by
     /// `amountValidationMessage`. A cancelled PIN prompt never lands here.
     @Published private(set) var contactSendError: String?
+    /// Keeps `contactRecipient` current; see `setContactRecipient`.
+    private var contactRefresh: AnyCancellable?
+    /// The contact is not among the active wallet's established contacts any
+    /// more — removed, or the active wallet has no such contact. Cleared when
+    /// an established snapshot of it comes back: a sync can briefly publish an
+    /// empty list.
+    @Published private(set) var isContactRecipientGone = false
+    /// The reviewed duffs `contactSendError` reported as more than the wallet
+    /// could send; cleared, with the error, once it can — unlike an SDK
+    /// failure, which stays until the amount changes.
+    private var contactBalanceMissDuffs: UInt64?
+
+    /// A broadcast contact payment: what was actually sent, for a host that
+    /// states the outcome rather than echoing the entry.
+    struct SentContactPayment {
+        /// Wire-order txid.
+        let txid: Data
+        let amountDuffs: UInt64
+        let feeDuffs: UInt64
+    }
     #endif
     /// The balance the user is sending FROM. Constrained to
     /// `validSources`; re-picked automatically when the destination changes.
@@ -92,6 +120,7 @@ final class SendViewModel: ObservableObject {
             // amount that is no longer on screen, and it is read ahead of
             // every affordability check in `amountValidationMessage`.
             contactSendError = nil
+            contactBalanceMissDuffs = nil
             #endif
             guard !isApplyingMax else { return }
             clearShieldedMaxSelection()
@@ -236,7 +265,15 @@ final class SendViewModel: ObservableObject {
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
             .sink { [weak self] balance in
-                self?.coreBalanceDuffs = balance?.total ?? 0
+                guard let self else { return }
+                self.coreBalanceDuffs = balance?.total ?? 0
+                #if DASHPAY
+                // Judged by the same sendable figure that raised the miss.
+                if let miss = self.contactBalanceMissDuffs, miss <= self.coreToCoreSpendableDuffs {
+                    self.contactSendError = nil
+                    self.contactBalanceMissDuffs = nil
+                }
+                #endif
             }
             .store(in: &cancellables)
 
@@ -447,6 +484,27 @@ final class SendViewModel: ObservableObject {
     /// `contactValidSources` admits.
     func setContactRecipient(_ contact: ContactItem) {
         contactRecipient = contact
+        // Every host of the amount step gets the newer snapshots, not just one:
+        // `paymentChannelBroken` can change while the step is open. Only
+        // `contactRecipient` is replaced — the destination and source stay as
+        // set below, so the entered amount (and an exact Max) survive it.
+        contactRefresh = NotificationCenter.default
+            .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, let id = self.contactRecipient?.contactIdentityId else { return }
+                // `contactItem(for:)` also answers with a pending request,
+                // which is not a payable contact.
+                guard let latest = SwiftDashSDKContactsService.shared.contactItem(for: id),
+                      latest.relationship == .established
+                else {
+                    if !self.isContactRecipientGone { self.isContactRecipientGone = true }
+                    return
+                }
+                if self.isContactRecipientGone { self.isContactRecipientGone = false }
+                // Republished on every save and sync; only a change redraws.
+                if self.contactRecipient != latest { self.contactRecipient = latest }
+            }
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
@@ -480,7 +538,7 @@ final class SendViewModel: ObservableObject {
     /// The picker refuses to open such a contact; this is what covers a flag
     /// that arrives from a background sync while the amount step is already up.
     var isContactPaymentUnavailable: Bool {
-        contactRecipient?.paymentChannelBroken == true
+        contactRecipient?.paymentChannelBroken == true || isContactRecipientGone
     }
 
     /// Shown both on the picker row and in place of the amount validation, so
@@ -488,6 +546,42 @@ final class SendViewModel: ObservableObject {
     static let contactPaymentsUnavailableMessage = NSLocalizedString(
         "Payments unavailable — ask them to send you a new contact request.",
         comment: "DashPay: contact whose payment channel could not be built")
+
+    static let contactGoneMessage = NSLocalizedString(
+        "This contact is not in your contacts any more.",
+        comment: "Send to contact: the contact was removed, or another wallet was opened, while the amount step was open")
+
+    // MARK: Contact review
+
+    /// Open the review on the amount as it reads now; see `contactReviewDuffs`.
+    /// - Returns: false when the entry cannot be sent, and no review opens.
+    func beginContactReview() -> Bool {
+        guard contactRecipient != nil, canContinue, let duffs = dashDuffsIfRepresentable else {
+            return false
+        }
+        contactReviewDuffs = duffs
+        return true
+    }
+
+    /// The reviewed amount in fiat, at today's rate — a reading for the
+    /// review, not an amount that is sent.
+    var contactReviewFiatText: String? {
+        contactReviewDuffs.map { CurrencyExchanger.shared.fiatAmountString(for: $0.dashAmount) }
+    }
+
+    /// The review's Send. From here the step counts as sending: the review is
+    /// still closing, and the spend that asks for the PIN only starts once it
+    /// has (`sendToContact`, called by the host).
+    func confirmContactReview() {
+        guard contactReviewDuffs != nil, !isSendingToContact else { return }
+        isSendingToContact = true
+    }
+
+    /// The review closed without Send.
+    func cancelContactReview() {
+        guard !isSendingToContact else { return }
+        contactReviewDuffs = nil
+    }
 
     /// Set when a payment to this contact came back with an unknown outcome,
     /// here or on an earlier amount step this session
@@ -503,28 +597,50 @@ final class SendViewModel: ObservableObject {
     ///
     /// There is no prepare/confirm split on this path —
     /// `WalletSendService.sendToContact` runs the spend-auth gate and the
-    /// SDK's single-shot build+sign+broadcast — so the Send tap on the amount
-    /// step is the confirmation, and this is the only route the amount step
-    /// executes itself rather than handing on to the L1 payment processor or
-    /// `SendConfirmSheet`.
+    /// SDK's single-shot build+sign+broadcast — so the amount step's own
+    /// review (`ConfirmContactSendSheet`) is the confirmation, and this is
+    /// the only route the amount step executes itself rather than handing on
+    /// to the L1 payment processor or `SendConfirmSheet`.
     ///
-    /// - Returns: the broadcast transaction's wire-order txid on success;
-    ///   `nil` when it failed or the user cancelled the PIN prompt. A
-    ///   cancellation leaves `contactSendError` clear — backing out of the
-    ///   prompt is not an error.
-    func sendToContact() async -> Data? {
-        guard let contact = contactRecipient,
-              canContinue,
-              // Re-asked here rather than trusting the gate: this is the value
-              // that gets spent.
-              let duffs = dashDuffsIfRepresentable
-        else { return nil }
-        isSendingToContact = true
-        contactSendError = nil
+    /// Spends `contactReviewDuffs`, the amount the user reviewed, once
+    /// `confirmContactReview` committed it — never the entry read again. For
+    /// the same reason the gates checked here are the ones that do not depend
+    /// on the entry; the reviewed amount itself is held to the spendable
+    /// ceiling, and a miss is reported, not swallowed.
+    ///
+    /// - Returns: the payment on success; `nil` when it failed or the user
+    ///   cancelled the PIN prompt. A cancellation leaves `contactSendError`
+    ///   clear — backing out of the prompt is not an error.
+    func sendToContact() async -> SentContactPayment? {
+        // Taking the review spends it: a second call finds nothing to send.
+        guard isSendingToContact, let duffs = contactReviewDuffs else { return nil }
+        contactReviewDuffs = nil
         defer { isSendingToContact = false }
+        // The unknown-outcome and unavailable-contact messages and the sync
+        // note explain these on the amount step; the route and a zero amount
+        // cannot fail after a review the screen allowed.
+        guard let contact = contactRecipient,
+              !contactSendOutcomeIsUnknown,
+              !isContactPaymentUnavailable,
+              route == .coreToCore,
+              !isBlockedBySync,
+              duffs > 0
+        else { return nil }
+        // The balance can shrink between the review and the Send tap.
+        let spendable = coreToCoreSpendableDuffs
+        guard duffs <= spendable else {
+            contactSendError = TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: source.balanceName,
+                requestedDuffs: duffs,
+                spendableDuffs: spendable)
+            contactBalanceMissDuffs = duffs
+            return nil
+        }
+        contactSendError = nil
+        contactBalanceMissDuffs = nil
 
         do {
-            let (txid, _) = try await WalletSendService.shared.sendToContact(
+            let (txid, feeDuffs) = try await WalletSendService.shared.sendToContact(
                 contactIdentityId: contact.contactIdentityId,
                 amount: duffs)
             // Project the freshly recorded Sent entry to SwiftData right away
@@ -532,7 +648,7 @@ final class SendViewModel: ObservableObject {
             // and an app kill before one would lose it permanently (the SDK
             // cannot re-derive sent history).
             SwiftDashSDKContactsService.shared.refreshPaymentsProjection()
-            return txid
+            return SentContactPayment(txid: txid, amountDuffs: duffs, feeDuffs: feeDuffs)
         } catch {
             let nsError = error as NSError
             if !WalletSendService.isAuthenticationCancelledError(nsError) {
@@ -976,9 +1092,9 @@ final class SendViewModel: ObservableObject {
     /// quiet until the user types.
     var amountValidationMessage: String? {
         #if DASHPAY
-        // Both are independent of the amount: the first says nothing can ever
-        // be sent on this channel, the second reports the attempt that just
-        // failed (cleared the moment the amount changes, so it can't go stale).
+        // Independent of the amount: a contact that is gone, or a channel that
+        // can never carry a payment.
+        if isContactRecipientGone { return Self.contactGoneMessage }
         if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
         // Ahead of `contactSendError`, and NOT cleared when the amount
         // changes: an unknown outcome disables this screen for good, so the

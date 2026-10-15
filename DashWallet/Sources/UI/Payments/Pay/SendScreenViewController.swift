@@ -3,6 +3,7 @@
 //  DashWallet
 //
 
+import Combine
 import SwiftDashSDK
 import SwiftUI
 import UIKit
@@ -228,22 +229,24 @@ extension DWBasePayViewController {
                 self?.continueContactPayment(viewModel: viewModel)
             },
             onSendCompleted: onSendCompleted)
-        let host = UIHostingController(rootView: screen)
+        let host = ExternalSendAmountHostingController(rootView: screen, viewModel: viewModel)
         navigationController?.pushViewController(host, animated: true)
     }
 
     #if DASHPAY
-    /// DashPay pay-to-contact. `WalletSendService.sendToContact` runs the
-    /// spend-auth gate and the SDK's single-shot build+sign+broadcast, so the
-    /// Send tap was the confirmation and what is left is the success screen —
-    /// the same one an address send lands on.
+    /// DashPay pay-to-contact, after the amount step's review.
+    /// `WalletSendService.sendToContact` runs the spend-auth gate and the
+    /// SDK's single-shot build+sign+broadcast, so what is left is the success
+    /// screen — the same one an address send lands on.
     ///
     /// A failure (or a cancelled PIN prompt) returns nil and leaves the user on
     /// the amount step; the view model carries the message it shows inline.
     fileprivate func continueContactPayment(viewModel: SendViewModel) {
         Task { [weak self] in
-            guard let self, let txidWire = await viewModel.sendToContact() else { return }
-            self.presentSendSuccess(withTxidWire: txidWire)
+            guard let self,
+                  let payment = await viewModel.sendToContact()
+            else { return }
+            self.presentSendSuccess(withTxidWire: payment.txid)
         }
     }
     #else
@@ -266,4 +269,45 @@ extension DWBasePayViewController {
 extension SendScreenViewController: NavigationBarDisplayable {
     var isBackButtonHidden: Bool { true }
     var isNavigationBarHidden: Bool { true }
+}
+
+// MARK: - ExternalSendAmountHostingController
+
+/// The amount step's host. Holds the swipe-back, and the swipe-down of a
+/// sheet it sits in, while a contact payment is being sent: leaving the step
+/// mid-broadcast would hide its outcome — the failure, or the "don't send it
+/// again" notice — and leave the contact one tap from paying again. The
+/// screen's own back control is held the same way.
+private final class ExternalSendAmountHostingController: UIHostingController<ExternalSendAmountScreen> {
+    private let viewModel: SendViewModel
+    private var sending: AnyCancellable?
+
+    init(rootView: ExternalSendAmountScreen, viewModel: SendViewModel) {
+        self.viewModel = viewModel
+        super.init(rootView: rootView)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        sending = viewModel.$isSendingToContact
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isSending in
+                self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = !isSending
+                self?.navigationController?.isModalInPresentation = isSending
+            }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        sending = nil
+        // The next screen gets the swipe-back, and the sheet its swipe-down,
+        // as usual.
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        navigationController?.isModalInPresentation = false
+    }
 }
