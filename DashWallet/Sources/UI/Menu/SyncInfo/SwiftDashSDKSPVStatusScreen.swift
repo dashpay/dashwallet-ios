@@ -846,7 +846,7 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
-            if outcome.cancelled, outcome.attempted == 0 {
+            if outcome.cancelled, outcome.attempted == 0, outcome.inProgress == 0 {
                 recoveryResultIsError = false
                 recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")
                 return

@@ -224,7 +224,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     @Published private(set) var phase: Phase = .idle {
         didSet {
             if !phase.isInFlight {
-                releaseInFlightOutPoint()
+                if !holdsClaimThroughLookupRefresh { releaseInFlightOutPoint() }
                 releaseNewLockFundingSlot()
             }
         }
@@ -300,6 +300,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// The new-lock slot this attempt holds in `ShieldedAssetLocksInFlight`.
     private var newLockSlot: ShieldedAssetLocksInFlight.NewLockSlot?
+
+    /// Set while a finished transfer refreshes `ShieldedTxLookup`: the
+    /// terminal phase is shown at once, and the lock's claim is kept until the
+    /// lookup no longer reports the lock as retryable.
+    private var holdsClaimThroughLookupRefresh = false
 
     // MARK: - Errors
 
@@ -661,11 +666,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
-        // Refresh the lookup before the terminal phase releases the lock's
-        // claim: until then it still reports the lock as retryable, and the
-        // Home row and the details would offer to finish a finished transfer.
-        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
-        phase = .success
+        // Until the lookup is refreshed it still reports the lock as
+        // retryable, and without the claim the Home row and the details would
+        // offer to finish a finished transfer.
+        await setTerminalPhaseRefreshingLookup(.success, reason: "shield-transfer-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -740,10 +744,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // .broadcasting so the step checklist completes naturally (mirrors
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
-        // As in `performAssetLock`: the lookup is refreshed while the claim is
-        // still held.
-        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
-        phase = terminalPhase
+        await setTerminalPhaseRefreshingLookup(terminalPhase, reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -1488,6 +1489,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         lastFailure = nil
         lastResumeReport = nil
+        // A claim the previous attempt kept through its lookup refresh gives
+        // way to this attempt's own.
+        if holdsClaimThroughLookupRefresh {
+            holdsClaimThroughLookupRefresh = false
+            releaseInFlightOutPoint()
+        }
         phase = .signing
         return true
     }
@@ -1539,6 +1546,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         newLockSlot = slot
         return true
+    }
+
+    /// Shows the terminal `phase` and refreshes `ShieldedTxLookup`, releasing
+    /// the lock's claim only once the refresh has run.
+    private func setTerminalPhaseRefreshingLookup(_ terminal: Phase, reason: String) async {
+        holdsClaimThroughLookupRefresh = true
+        phase = terminal
+        await ShieldedTxLookup.shared.refresh(reason: reason)
+        // A new attempt started meanwhile has already dropped the claim.
+        guard holdsClaimThroughLookupRefresh else { return }
+        holdsClaimThroughLookupRefresh = false
+        releaseInFlightOutPoint()
     }
 
     private func releaseNewLockFundingSlot() {
@@ -1757,7 +1776,7 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
-    /// New asset locks being built and funded right now. Main-actor only.
+    /// New asset locks being built and funded right now.
     private var newLockSlots: Set<NewLockSlot> = []
 
     private init() {}
@@ -1770,6 +1789,11 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// on the whole transaction, such as removing it.
     func containsTransaction(txidWire: Data) -> Bool {
         lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
+    }
+
+    /// Whether any transfer is building a new asset lock or consuming one.
+    var hasActivity: Bool {
+        lock.withLock { !claims.isEmpty || !newLockSlots.isEmpty }
     }
 
     @MainActor
@@ -1793,11 +1817,11 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// slot was free and is now taken.
     @MainActor
     fileprivate func takeNewLockSlot(_ slot: NewLockSlot) -> Bool {
-        newLockSlots.insert(slot).inserted
+        lock.withLock { newLockSlots.insert(slot).inserted }
     }
 
     @MainActor
     fileprivate func releaseNewLockSlot(_ slot: NewLockSlot) {
-        newLockSlots.remove(slot)
+        _ = lock.withLock { newLockSlots.remove(slot) }
     }
 }

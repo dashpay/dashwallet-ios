@@ -422,8 +422,8 @@ struct AssetLockRecoveryService {
             progress(index + 1, pending.count)
         }
 
-        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) failed=\(outcome.failed)")
-        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) failed=\(outcome.failed, privacy: .public)")
+        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) inProgress=\(outcome.inProgress) failed=\(outcome.failed)")
+        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) inProgress=\(outcome.inProgress, privacy: .public) failed=\(outcome.failed, privacy: .public)")
         return outcome
     }
 

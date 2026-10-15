@@ -6713,6 +6713,9 @@
 /* A new transfer was refused because another one of the same kind is still running */
 "Another transfer is still in progress. Try again when it has finished." = "Another transfer is still in progress. Try again when it has finished.";
 
+/* Remove never-accepted transaction: refused because a running transfer uses it */
+"A transfer is still in progress. Try again when it has finished." = "A transfer is still in progress. Try again when it has finished.";
+
 "Your wallet isn’t ready yet. Please try again in a moment." = "Your wallet isn’t ready yet. Please try again in a moment.";
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";

@@ -629,9 +629,9 @@ extension TxDetailModel {
         transaction.state == .processing && !isConsumedByRunningTransfer
     }
 
-    /// True while a running transfer consumes an output of this transaction.
-    /// Read from the registry by txid, so it holds before the lock appears in
-    /// `ShieldedTxLookup`.
+    /// True while a running transfer has claimed an output of this
+    /// transaction — from the first lock poll that sees the lock's row, which
+    /// can be before the lock appears in `ShieldedTxLookup`.
     var isConsumedByRunningTransfer: Bool {
         ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
     }
@@ -651,23 +651,16 @@ extension TxDetailModel {
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
     var stuckAssetLockRetry: StuckAssetLockRetry? {
-        guard let candidate = assetLockRetryCandidate,
-              // A transfer still consuming its lock (e.g. waiting for the
-              // ChainLock) is not stuck, and a retry would only be refused.
-              !isConsumedInFlight(candidate)
-        else { return nil }
-        return candidate
+        // A transfer still consuming its lock (e.g. waiting for the
+        // ChainLock) is not stuck, and a retry would only be refused.
+        guard !isConsumedByRunningTransfer else { return nil }
+        return assetLockRetryCandidate
     }
 
     /// True when this transaction's lock would be offered a retry but a
     /// running transfer is still consuming it.
     var isAssetLockRetryInFlight: Bool {
-        assetLockRetryCandidate.map(isConsumedInFlight) ?? false
-    }
-
-    private func isConsumedInFlight(_ retry: StuckAssetLockRetry) -> Bool {
-        ShieldedAssetLocksInFlight.shared.contains(
-            .init(txidWire: transaction.txHashData, vout: retry.vout))
+        isConsumedByRunningTransfer && assetLockRetryCandidate != nil
     }
 
     private var assetLockRetryCandidate: StuckAssetLockRetry? {

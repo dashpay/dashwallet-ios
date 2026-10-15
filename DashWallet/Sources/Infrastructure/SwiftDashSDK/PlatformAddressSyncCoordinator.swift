@@ -2278,11 +2278,19 @@ final class ShieldedTxLookup {
         }
     }
 
+    @MainActor
     private func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
         infoByTxid = map
         lock.unlock()
+        NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
     }
+}
+
+extension Notification.Name {
+    /// Posted on the main actor each time `ShieldedTxLookup` publishes a new
+    /// snapshot. A superseded refresh publishes nothing and posts nothing.
+    static let shieldedTxLookupDidChange = Notification.Name("ShieldedTxLookupDidChange")
 }
 
 // MARK: - DerivedPlatformAddress selection
