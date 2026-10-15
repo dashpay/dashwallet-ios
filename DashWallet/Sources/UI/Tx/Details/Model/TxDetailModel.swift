@@ -623,9 +623,10 @@ extension TxDetailModel {
     /// never mined), which is exactly the state a network-dropped send
     /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
     /// `UnconfirmedTransactionRemover` re-verifies the local state and
-    /// checks a block explorer before touching anything.
+    /// checks a block explorer before touching anything. Not offered while a
+    /// running transfer is still consuming this transaction's asset lock.
     var supportsUnconfirmedRemoval: Bool {
-        transaction.state == .processing
+        transaction.state == .processing && !isAssetLockRetryInFlight
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer
