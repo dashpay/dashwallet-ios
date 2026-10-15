@@ -1634,10 +1634,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             let rows = try context.fetch(descriptor)
             guard let row = rows.first else { return }
+            // Display→wire reversal happens in parse.
+            let outPoint = Self.parseOutPoint(row.outPointHex)
+            // Claim the lock as soon as its row exists, `Built` (0) included:
+            // the transaction details offer a retry and a removal from that
+            // status on, and either would race this running operation.
+            if let outPoint {
+                claimInFlightOutPoint(outPoint)
+            }
             // Capture the outpoint once the lock is at least Broadcast (1+) so
             // a failed shield can be resumed on this exact lock rather than
-            // building a second one. Display→wire reversal happens in parse.
-            if row.statusRaw >= 1, let outPoint = Self.parseOutPoint(row.outPointHex) {
+            // building a second one.
+            if row.statusRaw >= 1, let outPoint {
                 lastAssetLockOutPoint = outPoint
             }
             advancePhaseForAssetLockStatus(row.statusRaw)
