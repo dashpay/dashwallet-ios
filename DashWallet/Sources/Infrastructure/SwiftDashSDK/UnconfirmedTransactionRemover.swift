@@ -79,8 +79,9 @@ struct UnconfirmedTransactionRemover {
         case confirmedLocally
         case transactionOnChain
         case verificationUnavailable
-        /// A running transfer is consuming the transaction's asset lock, or
-        /// (for the bulk drop) any transfer is still building or consuming one.
+        /// A transfer is building or consuming an asset lock. A removal
+        /// reloads the wallet runtime, which would stop that transfer's SDK
+        /// call, so no removal runs meanwhile.
         case transferInProgress
 
         var errorDescription: String? {
@@ -96,7 +97,7 @@ struct UnconfirmedTransactionRemover {
             case .verificationUnavailable:
                 return NSLocalizedString("Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.", comment: "Remove never-accepted transaction: explorer unreachable")
             case .transferInProgress:
-                return NSLocalizedString("A transfer is still in progress. Try again when it has finished.", comment: "Remove never-accepted transaction: refused because a running transfer uses it")
+                return NSLocalizedString("A transfer is still in progress. Try again when it has finished, or restart the app if it never does.", comment: "Remove never-accepted transaction: refused while a transfer is running")
             }
         }
     }
@@ -137,7 +138,7 @@ struct UnconfirmedTransactionRemover {
         guard row.context == 0, row.blockHeight == 0 else {
             throw RemovalError.confirmedLocally
         }
-        guard !ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: txidWire) else {
+        guard !ShieldedAssetLocksInFlight.shared.hasActivity else {
             throw RemovalError.transferInProgress
         }
 
@@ -165,9 +166,8 @@ struct UnconfirmedTransactionRemover {
         guard SwiftDashSDKWalletSource.isWalletMember(freshRow, walletId: walletId) else {
             throw RemovalError.transactionNotFound
         }
-        // A transfer may have started consuming this transaction's lock while
-        // the explorer was asked.
-        guard !ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: txidWire) else {
+        // A transfer may have started while the explorer was asked.
+        guard !ShieldedAssetLocksInFlight.shared.hasActivity else {
             throw RemovalError.transferInProgress
         }
         let firstSeen: UInt64 = freshRow.firstSeen
@@ -201,9 +201,8 @@ struct UnconfirmedTransactionRemover {
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
             throw RemovalError.notReady
         }
-        // A transfer building or consuming an asset lock has that lock's
-        // transaction in mempool context, and dropping it would pull the
-        // lock out from under the running SDK call.
+        // The reload below would stop a running transfer's SDK call, and its
+        // lock's transaction is among the mempool-context rows dropped here.
         guard !ShieldedAssetLocksInFlight.shared.hasActivity else {
             throw RemovalError.transferInProgress
         }

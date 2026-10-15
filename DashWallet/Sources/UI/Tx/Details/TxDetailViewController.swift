@@ -389,15 +389,6 @@ extension TXDetailViewController {
 
     private func performRemoveUnconfirmed() {
         guard !isRetryingAssetLock else { return }
-        // The confirmation may have been up while a transfer started
-        // consuming this transaction's lock.
-        if model.isConsumedByRunningTransfer {
-            presentDashUIKitToast(
-                style: .info,
-                message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
-            reloadDataSource()
-            return
-        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Removing transaction…", comment: "Remove never-accepted transaction: progress"))

@@ -2068,7 +2068,7 @@ final class ShieldedTxLookup {
     /// reconstructed during restore or reconciled from an unauthenticated
     /// already-consumed report; neither pending nor done); `vout` + the txid
     /// form the outpoint a recovery resume needs.
-    struct ShieldedLockInfo: Sendable {
+    struct ShieldedLockInfo: Sendable, Equatable {
         let amountDuffs: UInt64
         let statusRaw: Int
         let vout: UInt32
@@ -2096,6 +2096,10 @@ final class ShieldedTxLookup {
     private let lock = NSLock()
     /// txid (display-order hex, lowercased) → locked amount + status + vout.
     private var infoByTxid: [String: ShieldedLockInfo] = [:]
+    /// Locks a transfer reported consumed that the published snapshot does
+    /// not show as consumed (4) yet. Reads report them as consumed until a
+    /// snapshot does.
+    private var consumedOverlay: Set<String> = []
 
     /// Main-actor generation prevents a slow read from an old container (or
     /// an earlier refresh of the same container) from replacing newer state.
@@ -2136,7 +2140,7 @@ final class ShieldedTxLookup {
         defer { lock.unlock() }
         guard let entry = infoByTxid[key],
               Self.identityFundingTypes.contains(entry.fundingTypeRaw) else { return nil }
-        return entry
+        return overlaid(entry, key: key)
     }
 
     /// The whole snapshot as (display-order hex txid, info) pairs. The caller
@@ -2145,7 +2149,7 @@ final class ShieldedTxLookup {
     func allEntries() -> [(txidHex: String, info: ShieldedLockInfo)] {
         lock.lock()
         defer { lock.unlock() }
-        return infoByTxid.map { (txidHex: $0.key, info: $0.value) }
+        return infoByTxid.map { (txidHex: $0.key, info: overlaid($0.value, key: $0.key)) }
     }
 
     private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
@@ -2153,7 +2157,37 @@ final class ShieldedTxLookup {
         lock.lock()
         defer { lock.unlock() }
         guard let entry = infoByTxid[key], entry.fundingTypeRaw == fundingType else { return nil }
-        return entry
+        return overlaid(entry, key: key)
+    }
+
+    /// Caller holds `lock`.
+    private func overlaid(_ entry: ShieldedLockInfo, key: String) -> ShieldedLockInfo {
+        guard consumedOverlay.contains(key) else { return entry }
+        return ShieldedLockInfo(
+            amountDuffs: entry.amountDuffs,
+            statusRaw: Self.consumedStatus,
+            vout: entry.vout,
+            fundingTypeRaw: entry.fundingTypeRaw,
+            walletId: entry.walletId)
+    }
+
+    /// `PersistentAssetLock.statusRaw` of a consumed lock.
+    private static let consumedStatus = 4
+
+    /// Records that a transfer consumed the asset lock funded by `txidWire`,
+    /// before the store and the next snapshot show it: the SDK can flush the
+    /// lock's final status after its call returns, and a refresh can be
+    /// superseded or fail. Reads report the lock as consumed until a
+    /// published snapshot does.
+    @MainActor
+    func markConsumed(txidWire: Data) {
+        let key = Transaction.displayHex(txidWire).lowercased()
+        lock.lock()
+        let inserted = consumedOverlay.insert(key).inserted
+        lock.unlock()
+        if inserted {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
+        }
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
@@ -2281,15 +2315,24 @@ final class ShieldedTxLookup {
     @MainActor
     private func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
+        let changed = infoByTxid != map
         infoByTxid = map
+        // The snapshot now speaks for these locks itself: consumed, or gone.
+        consumedOverlay = consumedOverlay.filter {
+            guard let entry = map[$0] else { return false }
+            return entry.statusRaw < Self.consumedStatus
+        }
         lock.unlock()
-        NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
+        if changed {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
+        }
     }
 }
 
 extension Notification.Name {
-    /// Posted on the main actor each time `ShieldedTxLookup` publishes a new
-    /// snapshot. A superseded refresh publishes nothing and posts nothing.
+    /// Posted on the main actor when what `ShieldedTxLookup` reports changes:
+    /// a published snapshot that differs from the previous one, or a lock a
+    /// transfer marked consumed. A superseded refresh posts nothing.
     static let shieldedTxLookupDidChange = Notification.Name("ShieldedTxLookupDidChange")
 }
 

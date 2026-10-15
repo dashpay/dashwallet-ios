@@ -224,7 +224,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     @Published private(set) var phase: Phase = .idle {
         didSet {
             if !phase.isInFlight {
-                if !holdsClaimThroughLookupRefresh { releaseInFlightOutPoint() }
+                releaseInFlightOutPoint()
                 releaseNewLockFundingSlot()
             }
         }
@@ -300,11 +300,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// The new-lock slot this attempt holds in `ShieldedAssetLocksInFlight`.
     private var newLockSlot: ShieldedAssetLocksInFlight.NewLockSlot?
-
-    /// Set while a finished transfer refreshes `ShieldedTxLookup`: the
-    /// terminal phase is shown at once, and the lock's claim is kept until the
-    /// lookup no longer reports the lock as retryable.
-    private var holdsClaimThroughLookupRefresh = false
 
     // MARK: - Errors
 
@@ -666,10 +661,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
-        // Until the lookup is refreshed it still reports the lock as
-        // retryable, and without the claim the Home row and the details would
-        // offer to finish a finished transfer.
-        await setTerminalPhaseRefreshingLookup(.success, reason: "shield-transfer-completed")
+        // The success phase releases the lock's claim; the lookup reports the
+        // lock as consumed from here on, so nothing offers to finish it again.
+        markInFlightLockConsumed()
+        phase = .success
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -744,7 +740,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // .broadcasting so the step checklist completes naturally (mirrors
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
-        await setTerminalPhaseRefreshingLookup(terminalPhase, reason: "shield-transfer-resume-completed")
+        // As in `performAssetLock`. An already-consumed report proves nothing
+        // about this transfer, so only a verified success is marked.
+        if terminalPhase == .success { markInFlightLockConsumed() }
+        phase = terminalPhase
+        await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -1489,12 +1489,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         lastFailure = nil
         lastResumeReport = nil
-        // A claim the previous attempt kept through its lookup refresh gives
-        // way to this attempt's own.
-        if holdsClaimThroughLookupRefresh {
-            holdsClaimThroughLookupRefresh = false
-            releaseInFlightOutPoint()
-        }
         phase = .signing
         return true
     }
@@ -1548,16 +1542,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return true
     }
 
-    /// Shows the terminal `phase` and refreshes `ShieldedTxLookup`, releasing
-    /// the lock's claim only once the refresh has run.
-    private func setTerminalPhaseRefreshingLookup(_ terminal: Phase, reason: String) async {
-        holdsClaimThroughLookupRefresh = true
-        phase = terminal
-        await ShieldedTxLookup.shared.refresh(reason: reason)
-        // A new attempt started meanwhile has already dropped the claim.
-        guard holdsClaimThroughLookupRefresh else { return }
-        holdsClaimThroughLookupRefresh = false
-        releaseInFlightOutPoint()
+    private func markInFlightLockConsumed() {
+        guard let inFlightOutPoint else { return }
+        ShieldedTxLookup.shared.markConsumed(txidWire: inFlightOutPoint.txidWire)
     }
 
     private func releaseNewLockFundingSlot() {
