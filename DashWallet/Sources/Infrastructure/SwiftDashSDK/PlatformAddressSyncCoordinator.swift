@@ -2275,7 +2275,9 @@ final class ShieldedTxLookup {
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId)
-                func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
+                func rank(_ statusRaw: Int) -> Int {
+                    statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
+                }
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
             }
@@ -2314,10 +2316,11 @@ final class ShieldedTxLookup {
         lock.lock()
         let changed = infoByTxid != map
         infoByTxid = map
-        // The snapshot now speaks for these locks itself: consumed, or gone.
+        // A snapshot that shows a lock consumed speaks for it itself. A lock
+        // missing from the snapshot keeps its mark: an empty snapshot is also
+        // what a refresh without a model container stores.
         consumedOverlay = consumedOverlay.filter {
-            guard let entry = map[$0] else { return false }
-            return entry.statusRaw != AssetLockRecoveryService.consumedStatus
+            map[$0]?.statusRaw != AssetLockRecoveryService.consumedStatus
         }
         lock.unlock()
         if changed {

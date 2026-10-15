@@ -228,12 +228,17 @@ class TXDetailViewController: BaseTxDetailsViewController {
         // lookup snapshot trigger a rebuild. The registry publishes before it
         // changes, so the rows are rebuilt on the next main-queue turn, once
         // the claim or release has landed.
+        // The projection change also covers state outside both, such as a
+        // recorded already-spent probe.
         let lookupChanged = NotificationCenter.default
             .publisher(for: .shieldedTxLookupDidChange)
             .map { _ in () }
+        let projectionChanged = NotificationCenter.default
+            .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .map { _ in () }
         inFlightLocksObservation = ShieldedAssetLocksInFlight.shared.objectWillChange
             .map { _ in () }
-            .merge(with: lookupChanged)
+            .merge(with: lookupChanged, projectionChanged)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.reloadDataSource()

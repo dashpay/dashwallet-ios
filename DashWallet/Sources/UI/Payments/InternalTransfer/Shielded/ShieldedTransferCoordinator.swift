@@ -789,10 +789,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     /// Best-effort capture of the in-flight asset lock's outpoint when polling
-    /// didn't get it — i.e. the FFI failed before a 0.5s poll tick observed the
-    /// persisted row. Fetches the newest matching shielded asset lock at
-    /// Broadcast+ (statusRaw ≥ 1) for this attempt and records its outpoint so a
-    /// retry resumes that lock rather than building a second one. No-op if the
+    /// didn't get it — the FFI returned before a 0.5s poll tick observed the
+    /// persisted row. Fetches the newest matching asset lock at Broadcast+
+    /// (statusRaw ≥ 1) for this attempt and records its outpoint: after a
+    /// failure so a retry resumes that lock rather than building a second one,
+    /// after a success so the lock can be marked consumed. No-op if the
     /// outpoint is already captured or none is found yet.
     private func captureLatestAssetLockOutPoint(
         walletId: Data,
@@ -1557,7 +1558,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private func markInFlightLockConsumed() {
-        guard let inFlightOutPoint else { return }
+        guard let inFlightOutPoint else {
+            Self.logger.warning("🛡️ SHIELD-TX :: finished without a known asset lock to mark consumed")
+            return
+        }
         ShieldedTxLookup.shared.markConsumed(txidWire: inFlightOutPoint.txidWire)
     }
 
@@ -1818,11 +1822,17 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// slot was free and is now taken.
     @MainActor
     fileprivate func takeNewLockSlot(_ slot: NewLockSlot) -> Bool {
-        lock.withLock { newLockSlots.insert(slot).inserted }
+        guard !lock.withLock({ newLockSlots.contains(slot) }) else { return false }
+        // `hasActivity` changes.
+        objectWillChange.send()
+        lock.withLock { _ = newLockSlots.insert(slot) }
+        return true
     }
 
     @MainActor
     fileprivate func releaseNewLockSlot(_ slot: NewLockSlot) {
-        _ = lock.withLock { newLockSlots.remove(slot) }
+        guard lock.withLock({ newLockSlots.contains(slot) }) else { return }
+        objectWillChange.send()
+        lock.withLock { _ = newLockSlots.remove(slot) }
     }
 }
