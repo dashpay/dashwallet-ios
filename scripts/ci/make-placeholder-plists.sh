@@ -6,9 +6,12 @@
 #
 # Never overwrites a file that already exists, so running it on a developer
 # checkout with real plists is a no-op. Values are syntactically valid but
-# inert: the Firebase app id has the shape FIRApp validates, the Coinbase and
-# ZenLedger entries are plain strings because the app force-casts them, and
-# the rest are empty dictionaries because their readers tolerate missing keys.
+# inert: the Firebase app id has the shape FIRApp validates and the storage
+# bucket is the (public, source-hardcoded) one ExploreDatabaseSyncManager
+# references — FIRStorage throws at launch when the plist names a different
+# bucket; the Coinbase and ZenLedger entries are plain strings because the app
+# force-casts them, and the rest are empty dictionaries because their readers
+# tolerate missing keys.
 #
 # Usage: scripts/ci/make-placeholder-plists.sh   (any working directory)
 
@@ -53,9 +56,9 @@ write_plist GoogleService-Info.plist '<dict>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>PROJECT_ID</key>
-	<string>placeholder-project</string>
+	<string>dash-wallet-firebase</string>
 	<key>STORAGE_BUCKET</key>
-	<string>placeholder-project.appspot.com</string>
+	<string>dash-wallet-firebase.appspot.com</string>
 </dict>'
 
 write_plist Coinbase-Info.plist '<dict>
