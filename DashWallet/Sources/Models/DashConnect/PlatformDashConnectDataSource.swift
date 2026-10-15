@@ -688,7 +688,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         if let terms = login.sessionKeyTerms {
             Self.logger.info("🔗 DASHCONNECT :: authorized; protocol \(protocolVersion, privacy: .public), one-QR login")
-            return try await approveAppConnectLogin(request, terms: terms, context: context)
+            return try await approveAppConnectLogin(request, consent: consent, terms: terms, context: context)
         }
         Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
 
@@ -803,15 +803,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// A new key's grant is recorded, unconfirmed, before its registration
     /// is submitted, so a key that lands without the update confirming is
     /// still found later. Once the key is known to be on the identity the
-    /// grant is confirmed and the connection row recorded, before the
-    /// publish: whatever happens to the publish, the key stays visible in
-    /// Connections and can be disabled.
+    /// grant is confirmed and the connection row recorded, from what the
+    /// approved sheet showed and with no network read between the two, before
+    /// the publish: whatever happens to the publish, the key stays visible in
+    /// Connections and can be disabled. A row lost between the two writes is
+    /// put back by the next one-QR approval with this identity, or by a
+    /// disconnect of one of its apps once the PIN is entered.
+    /// TODO(dashconnect-lost-row): nothing puts it back at launch or when
+    /// Connections opens, so until then the key is live with no row.
     ///
     /// Approving the same QR again finds the key registered and does not
     /// register it twice; if the response is already recorded as published it
     /// does nothing more.
     private func approveAppConnectLogin(
         _ request: DashKeyRequest,
+        consent: ConnectionRequest,
         terms: AppConnect.SessionKeyTerms,
         context: Context
     ) async throws -> DAppConnection {
@@ -992,9 +998,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return new
         }
 
-        let preview = await makeConnectionRequest(from: request)
         let connection = Self.makeConnection(
-            preview: preview, status: .active, updatedAt: now(), loginKind: .oneQR)
+            preview: consent, status: .active, updatedAt: now(), loginKind: .oneQR)
         await updateRows(in: stores) { rows in
             rows.filter { $0.id != connection.id } + [connection]
         }
@@ -1356,28 +1361,60 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Confirms this identity's unconfirmed registrations whose key it now
-    /// holds, and makes each such app's row active and one-QR, adding one if
-    /// it has none: the key is live and has to be reachable from Connections.
+    /// holds, and makes the row of each app this identity holds a recorded
+    /// live key of active and one-QR, adding one if it has none: the key is
+    /// live and has to be reachable from Connections. That also covers a
+    /// grant confirmed earlier whose row was never saved, or was saved by a
+    /// two-QR login.
     private func confirmRegistrations(
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         modelContainer: ModelContainer,
         in stores: Stores
     ) async {
-        guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }),
-              let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)
+        guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
         else { return }
-        let confirmed = updateGrants(in: stores) { grants in
-            AppConnect.confirmRegistrations(
-                in: &grants, identityId: identityId,
-                currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
+        // Without the store's bindings no unconfirmed record is confirmed,
+        // and a confirmed one does not need them.
+        let bindings = (try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)) ?? []
+        if stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }) {
+            let confirmed = updateGrants(in: stores) { grants in
+                AppConnect.confirmRegistrations(
+                    in: &grants, identityId: identityId,
+                    currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
+            }
+            if !confirmed.isEmpty {
+                Self.logger.info("🔗 DASHCONNECT :: \(confirmed.count, privacy: .public) unconfirmed session key(s) found on the identity")
+            }
         }
-        guard !confirmed.isEmpty else { return }
-        Self.logger.info("🔗 DASHCONNECT :: \(confirmed.count, privacy: .public) unconfirmed session key(s) found on the identity")
-        let appIds = Set(confirmed.map(\.appContractId))
+        let appIds = Self.appIdsWithoutTheirOneQRRow(
+            grants: stores.grants.load(), identityId: identityId,
+            currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings,
+            rows: rows(in: stores))
+        guard !appIds.isEmpty else { return }
+        Self.logger.info("🔗 DASHCONNECT :: \(appIds.count, privacy: .public) app(s) with a live session key get their row back")
         let confirmedAt = now()
         await updateRows(in: stores) { rows in
             Self.rowsAfterConfirming(appIds: appIds, in: rows, at: confirmedAt)
+        }
+    }
+
+    /// The apps `identityId` holds a live key of by a confirmed grant record
+    /// whose row is missing from `rows` or is not an active one-QR row.
+    static func appIdsWithoutTheirOneQRRow(
+        grants: [AppConnectGrant],
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [AppConnect.KeyBinding],
+        rows: [DAppConnection]
+    ) -> Set<String> {
+        let live = grants.filter {
+            $0.identityId == identityId && !$0.isUnconfirmed && $0.keyDisabled != true
+                && AppConnect.holdsRecordedKey(
+                    $0, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
+        }
+        return Set(live.map(\.appContractId)).filter { appId in
+            !rows.contains { $0.id == appId && $0.status == .active && $0.loginKind == .oneQR }
         }
     }
 

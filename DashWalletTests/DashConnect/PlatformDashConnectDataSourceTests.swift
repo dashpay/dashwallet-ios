@@ -2697,6 +2697,67 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(rows.first?.updatedAt, confirmedAt)
     }
 
+    /// A grant confirmed with no row saved after it, as an app terminated
+    /// between the two writes leaves it, gets its app's row back: when the
+    /// app has none, and when the row it has is a two-QR one.
+    func testAConfirmedGrantWithoutItsOneQRRowGetsItsRowBack() throws {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appB = "BbWcUA8Msi7HSgC2hCJsCtDADs2FzQVabRuHvk1tnj4d"
+        func grant(app: String, keyId: UInt32, identity: String = "identity") -> AppConnectGrant {
+            let template = Self.grant(sessionKeyId: keyId)
+            return AppConnectGrant(
+                identityId: identity, appContractId: app, documentId: nil, values: template.values,
+                sessionKeyId: keyId, totalBudget: nil, expiresAt: nil, publishedAt: template.publishedAt)
+        }
+        let keys = [
+            Self.key(keyId: 7, data: Data(repeating: 0x07, count: 20)),
+            Self.key(keyId: 8, data: Data(repeating: 0x08, count: 20)),
+        ]
+        // Key 7 bound to app A as the store shows it, so an unconfirmed
+        // record of it would hold its key.
+        let bindings = [AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 0x07, count: 20),
+            singleContractId: try XCTUnwrap(Data.identifier(fromBase58: appA)))]
+        func appIds(_ grants: [AppConnectGrant], rows: [DAppConnection], keys: [ManagedIdentity.IdentityPublicKeyInfo] = keys)
+            -> Set<String> {
+            PlatformDashConnectDataSource.appIdsWithoutTheirOneQRRow(
+                grants: grants, identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings, rows: rows)
+        }
+        let earlier = Date(timeIntervalSince1970: 1_000)
+        let twoQRRow = DAppConnection(
+            id: appA, name: "App A", url: "", status: .approved, updatedAt: earlier, loginKind: .twoQR)
+        let oneQRRow = DAppConnection(
+            id: appA, name: "App A", url: "", status: .active, updatedAt: earlier, loginKind: .oneQR)
+
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: []), [appA], "no row")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: [twoQRRow]), [appA], "a two-QR row")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: [oneQRRow]), [], "the row is there")
+        XCTAssertEqual(
+            appIds([grant(app: appA, keyId: 7), grant(app: appB, keyId: 8)], rows: [oneQRRow]), [appB],
+            "a later approval for another app finds the row this one lost")
+
+        var disabled = grant(app: appA, keyId: 7)
+        disabled.keyDisabled = true
+        XCTAssertEqual(appIds([disabled], rows: []), [], "a disconnected grant")
+        XCTAssertEqual(
+            appIds([grant(app: appA, keyId: 7)], rows: [],
+                   keys: [Self.key(keyId: 7, data: Data(repeating: 0x07, count: 20), disabledAt: 1)]),
+            [], "a key disabled on the identity")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 9)], rows: []), [], "a key the identity does not hold")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7, identity: "other")], rows: []), [], "another identity")
+        var unconfirmed = grant(app: appA, keyId: 7)
+        unconfirmed.unconfirmedKeyHash160 = Data(repeating: 0x07, count: 20).toHexString()
+        XCTAssertTrue(AppConnect.holdsRecordedKey(unconfirmed, currentIdentityPublicKeys: keys, bindings: bindings))
+        XCTAssertEqual(appIds([unconfirmed], rows: []), [], "an unconfirmed grant is left to its confirmation")
+
+        // What the row becomes.
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(
+            appIds: appIds([grant(app: appA, keyId: 7)], rows: [twoQRRow]), in: [twoQRRow],
+            at: Date(timeIntervalSince1970: 2_000))
+        XCTAssertEqual(rows.map(\.status), [.active])
+        XCTAssertEqual(rows.map(\.loginKind), [.oneQR])
+    }
+
     func testDisconnectWithNoActiveWalletIsRefused() async {
         let active = ActiveWallet(nil)
         let (dataSource, _) = makeScopedDataSource(active: active)
