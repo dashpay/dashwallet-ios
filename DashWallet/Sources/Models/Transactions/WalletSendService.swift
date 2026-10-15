@@ -499,34 +499,43 @@ final class WalletSendService: NSObject {
     }
 
 #if DASHPAY
-    /// DashPay pay-to-contact (migration Row #18 phase 6). The caller
-    /// shows its confirmation UI FIRST — the user's explicit "Pay" tap
-    /// is what invokes this — then this method runs the spend-auth
-    /// gate (same `sendAuthorizer` as every other spend) and the
-    /// single-shot SDK payment: `sendDashPayPayment` derives the
-    /// contact's DIP-15 receive address Rust-side from the registered
-    /// external contact account, builds, signs, and broadcasts
-    /// atomically. There is no separate prepare/broadcast split on
-    /// this path, so it must never be called before the user
-    /// confirms. The network fee is computed SDK-side on top of
-    /// `amount`; callers cap input at `WalletBalance.maxSendable`.
-    ///
-    /// - Returns: the 32-byte transaction id plus the exact network
-    ///   fee (duffs) of the broadcast transaction, from the builder.
-    @discardableResult
-    func sendToContact(
+    /// A DashPay contact payment that is signed and not broadcast: its inputs
+    /// are reserved and the contact's next DIP-15 address is claimed, Rust-side,
+    /// until `broadcastContactPayment` or `abandonContactPayment` takes it.
+    /// Releasing it without either abandons it too.
+    final class PreparedContactPayment {
+        let contactIdentityId: Data
+        let amount: UInt64
+        /// The exact network fee of the signed transaction.
+        let fee: UInt64
+        /// Amount plus fee: what leaves the wallet.
+        let total: UInt64
+        fileprivate let wallet: ManagedPlatformWallet
+        fileprivate let payment: PreparedDashPayPayment
+
+        fileprivate init(contactIdentityId: Data, wallet: ManagedPlatformWallet, payment: PreparedDashPayPayment) {
+            self.contactIdentityId = contactIdentityId
+            self.amount = payment.amountDuffs
+            self.fee = payment.feeDuffs
+            self.total = payment.totalDuffs
+            self.wallet = wallet
+            self.payment = payment
+        }
+    }
+
+    /// DashPay pay-to-contact, first half: the spend-auth gate (same
+    /// `sendAuthorizer` as every other spend), then the SDK signs the payment
+    /// without broadcasting it — the contact's DIP-15 address is derived
+    /// Rust-side and never crosses the FFI. The returned payment carries the
+    /// exact fee for the confirmation; nothing has left the wallet yet.
+    func prepareContactPayment(
         contactIdentityId: Data,
         amount: UInt64,
         memo: String? = nil
-    ) async throws -> (txid: Data, feeDuffs: UInt64) {
-        Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+    ) async throws -> PreparedContactPayment {
+        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .public) duffs")
         // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
-        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
-            throw Self.makeError(
-                code: .broadcastUnknown,
-                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
-            )
-        }
+        try refuseContactWithUnknownOutcome(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
@@ -547,13 +556,40 @@ final class WalletSendService: NSObject {
             )
         }
 
-        let (txid, feeDuffs): (Data, UInt64)
+        let payment: PreparedDashPayPayment
         do {
-            (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
+            payment = try await context.wallet.prepareDashPayPayment(
                 fromIdentityId: context.ourId,
                 toContactIdentityId: contactIdentityId,
                 amountDuffs: amount,
                 memo: memo)
+        } catch {
+            throw Self.contactPaymentError(from: error)
+        }
+        Self.logger.info("💸 TXSEND :: pay-to-contact prepared, fee \(payment.feeDuffs, privacy: .public) duffs")
+        return PreparedContactPayment(contactIdentityId: contactIdentityId, wallet: context.wallet, payment: payment)
+    }
+
+    /// DashPay pay-to-contact, second half: broadcasts the payment the user
+    /// confirmed. No PIN here — `prepareContactPayment` asked for it.
+    ///
+    /// - Returns: the 32-byte transaction id plus the exact network fee
+    ///   (duffs) — the one the confirmation showed.
+    @discardableResult
+    func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> (txid: Data, feeDuffs: UInt64) {
+        let contactIdentityId = prepared.contactIdentityId
+        // Another payment to this contact may have ended unknown while this
+        // one waited on the confirmation.
+        do {
+            try refuseContactWithUnknownOutcome(contactIdentityId)
+        } catch {
+            await abandonContactPayment(prepared)
+            throw error
+        }
+
+        let (txid, feeDuffs): (Data, UInt64)
+        do {
+            (txid, feeDuffs) = try await prepared.wallet.sendPreparedDashPayPayment(prepared.payment)
         } catch {
             let mapped = Self.contactPaymentError(from: error)
             if Self.isBroadcastUnknownError(mapped as NSError) {
@@ -568,8 +604,28 @@ final class WalletSendService: NSObject {
         // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
         // registry's key convention. No address: the DIP-15 receive address is
         // derived inside Rust and never crosses the FFI boundary.
-        recentSends.record(txidWire: txid, address: nil, amount: amount, fee: feeDuffs)
+        recentSends.record(txidWire: txid, address: nil, amount: prepared.amount, fee: feeDuffs)
         return (txid: txid, feeDuffs: feeDuffs)
+    }
+
+    /// Drop a prepared contact payment the user did not send: Rust releases
+    /// its inputs and returns the address to the pool. A failure is only
+    /// logged — the reservation then lapses on its own.
+    func abandonContactPayment(_ prepared: PreparedContactPayment) async {
+        do {
+            try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
+        } catch {
+            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private func refuseContactWithUnknownOutcome(_ contactIdentityId: Data) throws {
+        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
+            throw Self.makeError(
+                code: .broadcastUnknown,
+                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+            )
+        }
     }
 #endif
 
@@ -779,9 +835,11 @@ private extension WalletSendService {
     /// Translate the SDK's contact-payment errors into ones the app acts on.
     ///
     /// A broadcast outcome the SDK could not confirm becomes this service's
-    /// `broadcastUnknown`, which `sendToContact` turns into a per-contact lock
+    /// `broadcastUnknown`, which `broadcastContactPayment` turns into a per-contact lock
     /// and the amount step into a terminal state — the SDK's own error type
-    /// matched neither. A definitive rejection becomes `broadcastRejected`.
+    /// matched neither. A definitive rejection becomes `broadcastRejected`, and
+    /// so does a payment held on the confirmation until its reservation aged
+    /// out — refused before the network, so nothing was sent either.
     ///
     /// A contact's DIP-15 external account is built in the background from the
     /// counterparty's contact request; until it exists the SDK fails the send
@@ -791,8 +849,8 @@ private extension WalletSendService {
     /// as an instruction for something they cannot do.
     ///
     /// Mapped here rather than at the presentation layer so the diagnostic stops
-    /// at the boundary that owns the SDK call, and every present and future
-    /// caller of `sendToContact` gets the same treatment. Deliberately narrow —
+    /// at the boundary that owns the SDK call, and both halves of a contact
+    /// payment — prepare and broadcast — get the same treatment. Deliberately narrow —
     /// anything else is returned untouched rather than hidden behind a generic
     /// message.
     static func contactPaymentError(from error: Error) -> Error {
@@ -809,6 +867,15 @@ private extension WalletSendService {
             return makeError(
                 code: .broadcastRejected,
                 description: "The transaction wasn't sent. You can try again. \(reason)"
+            )
+        case .staleReservationToken:
+            // The wallet processed enough blocks since signing that the
+            // reserved inputs aged out — a long wait on the confirmation, or a
+            // catch-up after the app was in the background. Refused before
+            // the network, everything released.
+            return makeError(
+                code: .broadcastRejected,
+                description: "The wallet caught up with new blocks while you were confirming, so the payment wasn't sent. Nothing left your wallet. Please try again."
             )
         default:
             break

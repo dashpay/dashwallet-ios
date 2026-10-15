@@ -226,7 +226,9 @@ extension DWBasePayViewController {
                 self?.continueCore(address: address, amountDuffs: amountDuffs)
             },
             onContinueContact: { [weak self] in
-                self?.continueContactPayment(viewModel: viewModel)
+                // Not through `self?`: the review's Send committed the
+                // payment, and it must go out even if this controller is gone.
+                Self.continueContactPayment(viewModel: viewModel, presenter: self)
             },
             onSendCompleted: onSendCompleted)
         let host = ExternalSendAmountHostingController(rootView: screen, viewModel: viewModel)
@@ -234,26 +236,31 @@ extension DWBasePayViewController {
     }
 
     #if DASHPAY
-    /// DashPay pay-to-contact, after the amount step's review.
-    /// `WalletSendService.sendToContact` runs the spend-auth gate and the
-    /// SDK's single-shot build+sign+broadcast, so what is left is the success
-    /// screen — the same one an address send lands on.
+    /// DashPay pay-to-contact, after the amount step's review. The payment
+    /// was signed before the review opened; `sendToContact` broadcasts it, so
+    /// what is left is the success screen — the same one an address send
+    /// lands on.
     ///
-    /// A failure (or a cancelled PIN prompt) returns nil and leaves the user on
+    /// A failure returns nil and leaves the user on
     /// the amount step; the view model carries the message it shows inline.
-    fileprivate func continueContactPayment(viewModel: SendViewModel) {
-        Task { [weak self] in
-            guard let self,
-                  let payment = await viewModel.sendToContact()
-            else { return }
-            self.presentSendSuccess(withTxidWire: payment.txid)
+    ///
+    /// Static, with the presenter held weakly: the review's Send already
+    /// committed the payment, so it is broadcast even if the controller went
+    /// away meanwhile — otherwise it would stay signed and reserved with
+    /// nothing left to send or release it.
+    fileprivate static func continueContactPayment(viewModel: SendViewModel,
+                                                   presenter: DWBasePayViewController?) {
+        Task { [weak presenter] in
+            guard let payment = await viewModel.sendToContact() else { return }
+            presenter?.presentSendSuccess(withTxidWire: payment.txid)
         }
     }
     #else
     /// Unreachable here: `contactRecipient` is DashPay-only, so
     /// `ExternalSendAmountScreen`'s contact branch is compiled out of this
     /// target. Asserts rather than pretending a payment happened.
-    fileprivate func continueContactPayment(viewModel: SendViewModel) {
+    fileprivate static func continueContactPayment(viewModel: SendViewModel,
+                                                   presenter: DWBasePayViewController?) {
         assertionFailure("Contact payment reached in a build without DashPay")
     }
     #endif
@@ -274,10 +281,11 @@ extension SendScreenViewController: NavigationBarDisplayable {
 // MARK: - ExternalSendAmountHostingController
 
 /// The amount step's host. Holds the swipe-back, and the swipe-down of a
-/// sheet it sits in, while a contact payment is being sent: leaving the step
-/// mid-broadcast would hide its outcome — the failure, or the "don't send it
-/// again" notice — and leave the contact one tap from paying again. The
-/// screen's own back control is held the same way.
+/// sheet it sits in, while a contact payment is being signed or sent:
+/// leaving the step then would strand the signed payment, or hide its
+/// outcome — the failure, or the "don't send it again" notice — and leave the
+/// contact one tap from paying again. The screen's own back control is held
+/// the same way.
 private final class ExternalSendAmountHostingController: UIHostingController<ExternalSendAmountScreen> {
     private let viewModel: SendViewModel
     private var sending: AnyCancellable?
@@ -295,7 +303,7 @@ private final class ExternalSendAmountHostingController: UIHostingController<Ext
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         #if DASHPAY
-        sending = viewModel.isSendingToContactPublisher
+        sending = viewModel.isContactPaymentInFlightPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] isSending in
                 self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = !isSending

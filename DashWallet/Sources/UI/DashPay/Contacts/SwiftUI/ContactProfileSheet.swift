@@ -778,7 +778,7 @@ struct PayContactSheet: View {
         .presentationDetents([.large])
         // Swiping the sheet away mid-broadcast would hide the outcome — the
         // success, or the "don't send it again" notice of an unknown one.
-        .interactiveDismissDisabled(viewModel.isSendingToContact)
+        .interactiveDismissDisabled(viewModel.isContactPaymentInFlight)
     }
 
     private func success(_ payment: SendViewModel.SentContactPayment) -> some View {
@@ -824,10 +824,10 @@ struct PayContactSheet: View {
 
     // MARK: Pay
 
-    /// `sendToContact` runs the spend-auth gate and the SDK's single-shot
-    /// build + sign + broadcast, projects the new Sent entry to SwiftData,
-    /// and keeps any failure on the view model, where the amount step shows
-    /// it inline. A cancelled PIN prompt returns nil and leaves no error.
+    /// `sendToContact` broadcasts the payment the review showed (signed, with
+    /// the PIN, before the review opened), projects the new Sent entry to
+    /// SwiftData, and keeps any failure on the view model, where the amount
+    /// step shows it inline.
     private func send() {
         Task {
             sent = await viewModel.sendToContact()

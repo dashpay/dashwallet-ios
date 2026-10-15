@@ -29,7 +29,7 @@ final class ContactPaymentReviewTests: XCTestCase {
 
     func testTheSpendGetsTheReviewedDuffs() {
         var review = Review()
-        XCTAssertTrue(review.begin(duffs: 2_275_171))
+        XCTAssertTrue(review.begin(duffs: 2_275_171, feeDuffs: 226, totalDuffs: 2_275_397))
         review.confirm()
 
         XCTAssertTrue(review.isSending)
@@ -38,7 +38,7 @@ final class ContactPaymentReviewTests: XCTestCase {
 
     func testAReviewCannotBeSpentTwice() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
         review.confirm()
 
         XCTAssertEqual(review.take(), 1_000)
@@ -47,7 +47,7 @@ final class ContactPaymentReviewTests: XCTestCase {
 
     func testACancelledReviewSpendsNothing() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
         review.cancel()
         review.confirm()
 
@@ -58,7 +58,7 @@ final class ContactPaymentReviewTests: XCTestCase {
 
     func testNothingIsSpentBeforeTheReviewsSend() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
 
         XCTAssertNil(review.take())
         XCTAssertEqual(review.duffs, 1_000, "a refused take leaves the review open")
@@ -74,8 +74,8 @@ final class ContactPaymentReviewTests: XCTestCase {
     /// An edited entry reviewed again must pay the new figure.
     func testReviewingAgainBeforeSendReplacesTheAmount() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
-        XCTAssertTrue(review.begin(duffs: 2_000))
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
+        XCTAssertTrue(review.begin(duffs: 2_000, feeDuffs: 226, totalDuffs: 2_226))
         review.confirm()
 
         XCTAssertEqual(review.take(), 2_000)
@@ -83,17 +83,32 @@ final class ContactPaymentReviewTests: XCTestCase {
 
     func testAReopenedReviewCannotReplaceTheCommittedAmount() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
         review.confirm()
-        XCTAssertFalse(review.begin(duffs: 9_999))
+        XCTAssertFalse(review.begin(duffs: 9_999, feeDuffs: 226, totalDuffs: 10_225))
         review.cancel()
 
         XCTAssertEqual(review.take(), 1_000)
     }
 
+    /// The review shows the fee of the payment that was signed, and a
+    /// re-review shows the new payment's fee, not the old one's.
+    func testTheReviewCarriesTheSignedPaymentsFee() {
+        var review = Review()
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
+        XCTAssertEqual(review.feeDuffs, 226)
+        _ = review.begin(duffs: 2_000, feeDuffs: 374, totalDuffs: 2_374)
+        XCTAssertEqual(review.feeDuffs, 374)
+        XCTAssertEqual(review.totalDuffs, 2_374)
+
+        review.cancel()
+        XCTAssertNil(review.feeDuffs, "a closed review shows no fee")
+        XCTAssertNil(review.totalDuffs)
+    }
+
     func testAFinishedSendLeavesNothingToSpend() {
         var review = Review()
-        _ = review.begin(duffs: 1_000)
+        _ = review.begin(duffs: 1_000, feeDuffs: 226, totalDuffs: 1_226)
         review.confirm()
         _ = review.take()
         review.finish()
