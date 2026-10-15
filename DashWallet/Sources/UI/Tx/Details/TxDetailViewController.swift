@@ -276,7 +276,18 @@ extension TXDetailViewController {
     /// spans the whole recovery, so the HUD honestly covers a
     /// several-minute worst case rather than claiming early success.
     private func retryStuckAssetLock() {
-        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        guard !isRetryingAssetLock else { return }
+        guard let retry = model.stuckAssetLockRetry else {
+            // The row was built before a transfer started consuming this
+            // lock: say so and drop the row rather than ignore the tap.
+            if model.isAssetLockRetryInFlight {
+                presentDashUIKitToast(
+                    style: .info,
+                    message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+                reloadDataSource()
+            }
+            return
+        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))

@@ -221,7 +221,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case platform
     }
 
-    @Published private(set) var phase: Phase = .idle
+    @Published private(set) var phase: Phase = .idle {
+        didSet {
+            if !phase.isInFlight { releaseInFlightOutPoint() }
+        }
+    }
 
     /// The typed error behind the current `.failed(_)` phase. `Phase`
     /// carries only display text (that's what the confirm sheets render), so
@@ -276,7 +280,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// failed attempt's "Try again" can RESUME the existing lock instead of
     /// building a second one. `nil` until an asset lock reaches Broadcast (1+);
     /// cleared on `reset()` and at the start of a fresh `performAssetLock`.
-    private(set) var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
+    private(set) var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)? {
+        didSet {
+            // The first capture while an attempt runs is this attempt's lock.
+            // Later captures come from a poll that returns the newest row of
+            // the funding type, which may be another attempt's lock, so they
+            // do not move the claim. A capture after a failure only arms
+            // "Try again".
+            guard phase.isInFlight, let lastAssetLockOutPoint else { return }
+            claimInFlightOutPoint(lastAssetLockOutPoint)
+        }
+    }
+
+    /// The lock this coordinator has registered in `ShieldedAssetLocksInFlight`.
+    private var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
 
     // MARK: - Errors
 
@@ -298,6 +315,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case shieldedSweepChanged
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
+        /// Another attempt is still consuming this asset lock — typically a
+        /// transfer waiting for its ChainLock. A second resume would race it.
+        case assetLockInFlight
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -365,6 +385,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
                     comment: "CoinJoin drain blocked while the chain is syncing")
+            case .assetLockInFlight:
+                return NSLocalizedString(
+                    "This transfer is still in progress. Check its status again in a few minutes.",
+                    comment: "A resume was refused because the same transfer is still running")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -644,7 +668,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
     func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
@@ -1152,7 +1176,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         outPointVout: UInt32,
         recipientAmountDuffs: UInt64
     ) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1445,6 +1469,39 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return true
     }
 
+    /// `beginTransfer()` for a resume of the lock at (`txidWire`, `vout`): it
+    /// also fails the resume when another coordinator is still consuming that
+    /// lock, and claims the lock for this attempt. Each entry point (the Home
+    /// recovery sheet, the tx detail sheet's retry, a confirm sheet's "Try
+    /// again") holds its own coordinator, so the phase gate alone cannot see an
+    /// attempt that is already running, such as a transfer waiting minutes for
+    /// its ChainLock.
+    private func beginTransfer(consuming txidWire: Data, vout: UInt32) -> Bool {
+        if phase == .idle,
+           ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: txidWire, vout: vout)) {
+            Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock is still being consumed by another attempt")
+            handleFailure(CoordinatorError.assetLockInFlight)
+            return false
+        }
+        guard beginTransfer() else { return false }
+        claimInFlightOutPoint((txidWire, vout))
+        return true
+    }
+
+    /// Registers this attempt's lock, once per attempt.
+    private func claimInFlightOutPoint(_ outPoint: (txidWire: Data, vout: UInt32)) {
+        guard inFlightOutPoint == nil else { return }
+        let key = ShieldedAssetLocksInFlight.OutPoint(txidWire: outPoint.txidWire, vout: outPoint.vout)
+        ShieldedAssetLocksInFlight.shared.claim(key)
+        inFlightOutPoint = key
+    }
+
+    private func releaseInFlightOutPoint() {
+        guard let inFlightOutPoint else { return }
+        ShieldedAssetLocksInFlight.shared.release(inFlightOutPoint)
+        self.inFlightOutPoint = nil
+    }
+
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
     /// by `beginTransfer()`); this just awaits user authorization and maps
     /// the cancel/fail outcomes onto coordinator errors.
@@ -1608,6 +1665,55 @@ final class ShieldedTransferCoordinator: ObservableObject {
             }
         default:
             break
+        }
+    }
+}
+
+/// Asset locks a `ShieldedTransferCoordinator` is consuming right now, across
+/// every coordinator instance.
+///
+/// A Core-funded transfer can stay in flight for minutes (a lock funded by
+/// many inputs waits for its ChainLock before the SDK can submit it), and its
+/// lock row looks exactly like a stuck one meanwhile. The Home row reads this
+/// to show the transfer as an ordinary internal transfer instead of offering
+/// "tap to finish"; the tx detail sheet and the bulk recovery pass read it to
+/// skip the lock; every resume entry point reads it to refuse a second attempt.
+///
+/// Claims are counted per lock, so one coordinator's release cannot clear a
+/// claim another coordinator still holds. Reads are thread-safe, like
+/// `ShieldedTxLookup`; claims and releases happen on the main actor, where the
+/// coordinators run, and publish from there.
+final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
+    struct OutPoint: Hashable, Sendable {
+        let txidWire: Data
+        let vout: UInt32
+    }
+
+    static let shared = ShieldedAssetLocksInFlight()
+
+    private let lock = NSLock()
+    private var claims: [OutPoint: Int] = [:]
+
+    private init() {}
+
+    func contains(_ outPoint: OutPoint) -> Bool {
+        lock.withLock { claims[outPoint, default: 0] > 0 }
+    }
+
+    @MainActor
+    fileprivate func claim(_ outPoint: OutPoint) {
+        // Only the first claim and the last release change what `contains`
+        // answers, so only those publish.
+        if !contains(outPoint) { objectWillChange.send() }
+        lock.withLock { claims[outPoint, default: 0] += 1 }
+    }
+
+    @MainActor
+    fileprivate func release(_ outPoint: OutPoint) {
+        if lock.withLock({ claims[outPoint] }) == 1 { objectWillChange.send() }
+        lock.withLock {
+            guard let count = claims[outPoint] else { return }
+            claims[outPoint] = count > 1 ? count - 1 : nil
         }
     }
 }

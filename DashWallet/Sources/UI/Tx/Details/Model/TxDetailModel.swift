@@ -643,6 +643,26 @@ extension TxDetailModel {
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
     var stuckAssetLockRetry: StuckAssetLockRetry? {
+        guard let candidate = assetLockRetryCandidate,
+              // A transfer still consuming its lock (e.g. waiting for the
+              // ChainLock) is not stuck, and a retry would only be refused.
+              !isConsumedInFlight(candidate)
+        else { return nil }
+        return candidate
+    }
+
+    /// True when this transaction's lock would be offered a retry but a
+    /// running transfer is still consuming it.
+    var isAssetLockRetryInFlight: Bool {
+        assetLockRetryCandidate.map(isConsumedInFlight) ?? false
+    }
+
+    private func isConsumedInFlight(_ retry: StuckAssetLockRetry) -> Bool {
+        ShieldedAssetLocksInFlight.shared.contains(
+            .init(txidWire: transaction.txHashData, vout: retry.vout))
+    }
+
+    private var assetLockRetryCandidate: StuckAssetLockRetry? {
         let info = transaction.identityFundingLockInfo
             ?? transaction.platformFundingLockInfo
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)

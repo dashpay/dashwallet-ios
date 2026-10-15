@@ -6705,6 +6705,10 @@
 "Your username request did not go through. Try again." = "Your username request did not go through. Try again.";
 "Your wallet could not be opened. Do not delete this app. Try again or contact support for help." = "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.";
 "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes." = "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.";
+
+/* A resume was refused because the same transfer is still running */
+"This transfer is still in progress. Check its status again in a few minutes." = "This transfer is still in progress. Check its status again in a few minutes.";
+
 "Your wallet isn’t ready yet. Please try again in a moment." = "Your wallet isn’t ready yet. Please try again in a moment.";
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";

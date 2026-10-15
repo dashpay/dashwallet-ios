@@ -307,7 +307,11 @@ struct AssetLockRecoveryService {
                   entry.info.fundingTypeRaw == bulkFundingTypeRaw,
                   bulkStatusAllowsRecovery(entry.info.statusRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
-                  !AssetLockProbeStore.shared.contains(txidWire)
+                  !AssetLockProbeStore.shared.contains(txidWire),
+                  // Still being consumed by a running transfer: not pending
+                  // recovery, and resuming it would only be refused.
+                  !ShieldedAssetLocksInFlight.shared.contains(
+                      .init(txidWire: txidWire, vout: entry.info.vout))
             else { return nil }
             return PendingRecovery(
                 txidWire: txidWire,
@@ -368,6 +372,14 @@ struct AssetLockRecoveryService {
         for (index, item) in pending.enumerated() {
             let txidDisplay = String(Data(item.txidWire.reversed())
                 .map { String(format: "%02x", $0) }.joined().prefix(16))
+            // The list was taken when the screen appeared; a transfer started
+            // since then may be consuming this lock. Its resume would only be
+            // refused, and counting that as a failure could stop the pass.
+            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
+                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
+                progress(index + 1, pending.count)
+                continue
+            }
             do {
                 let result = try await retry(
                     fundingTypeRaw: item.fundingTypeRaw,
