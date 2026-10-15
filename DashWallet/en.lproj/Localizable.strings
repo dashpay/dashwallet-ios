@@ -6021,6 +6021,7 @@
 "%d finished" = "%d finished";
 "%d already spent" = "%d already spent";
 "%d could not be reached" = "%d could not be reached";
+"%d still in progress" = "%d still in progress";
 "stopped early" = "stopped early";
 "stopped after repeated failures" = "stopped after repeated failures";
 "Cancelled." = "Cancelled.";

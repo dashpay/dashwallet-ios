@@ -224,11 +224,11 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
         // The retry and removal rows depend on whether a running transfer is
         // consuming this transaction's asset lock, and on the lock status
-        // `ShieldedTxLookup` reports. A finishing transfer releases its claim
-        // before that lookup is refreshed, and posts the projection change
-        // once it is, so both trigger a rebuild. The registry publishes before
-        // it changes, so the rows are rebuilt on the next main-queue turn,
-        // once the claim or release has landed.
+        // `ShieldedTxLookup` reports; a claim or release and a projection
+        // change (posted by the shielded routes after their lookup refresh)
+        // each trigger a rebuild. The registry publishes before it changes, so
+        // the rows are rebuilt on the next main-queue turn, once the claim or
+        // release has landed.
         let projectionChanged = NotificationCenter.default
             .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
             .map { _ in () }
@@ -390,6 +390,15 @@ extension TXDetailViewController {
 
     private func performRemoveUnconfirmed() {
         guard !isRetryingAssetLock else { return }
+        // The confirmation may have been up while a transfer started
+        // consuming this transaction's lock.
+        if model.isConsumedByRunningTransfer {
+            presentDashUIKitToast(
+                style: .info,
+                message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+            reloadDataSource()
+            return
+        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Removing transaction…", comment: "Remove never-accepted transaction: progress"))

@@ -626,7 +626,14 @@ extension TxDetailModel {
     /// checks a block explorer before touching anything. Not offered while a
     /// running transfer is still consuming this transaction's asset lock.
     var supportsUnconfirmedRemoval: Bool {
-        transaction.state == .processing && !isAssetLockRetryInFlight
+        transaction.state == .processing && !isConsumedByRunningTransfer
+    }
+
+    /// True while a running transfer consumes an output of this transaction.
+    /// Read from the registry by txid, so it holds before the lock appears in
+    /// `ShieldedTxLookup`.
+    var isConsumedByRunningTransfer: Bool {
+        ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer

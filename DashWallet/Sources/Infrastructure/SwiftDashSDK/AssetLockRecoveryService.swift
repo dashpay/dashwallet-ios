@@ -215,6 +215,8 @@ struct AssetLockRecoveryService {
         /// Submitted, result not yet readable. Neither a win nor a failure —
         /// counted apart so the summary never folds it into "finished".
         var awaitingSync = 0
+        /// Skipped because a running transfer is still consuming the lock.
+        var inProgress = 0
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
@@ -377,6 +379,7 @@ struct AssetLockRecoveryService {
             // refused, and counting that as a failure could stop the pass.
             if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
+                outcome.inProgress += 1
                 progress(index + 1, pending.count)
                 continue
             }

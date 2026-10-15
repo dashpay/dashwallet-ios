@@ -6256,6 +6256,7 @@
 "%d already spent" = "%d already spent";
 "%d change" = "%d change";
 "%d could not be reached" = "%d could not be reached";
+"%d still in progress" = "%d still in progress";
 "%d evonodes" = "%d evonodes";
 "%d finished" = "%d finished";
 "%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";

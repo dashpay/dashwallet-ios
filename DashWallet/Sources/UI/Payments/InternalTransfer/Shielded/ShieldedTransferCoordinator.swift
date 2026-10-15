@@ -298,9 +298,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// The lock this coordinator has registered in `ShieldedAssetLocksInFlight`.
     private var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
 
-    /// The asset-lock funding type whose new-lock slot this attempt holds in
-    /// `ShieldedAssetLocksInFlight`.
-    private var newLockFundingType: Int?
+    /// The new-lock slot this attempt holds in `ShieldedAssetLocksInFlight`.
+    private var newLockSlot: ShieldedAssetLocksInFlight.NewLockSlot?
 
     // MARK: - Errors
 
@@ -567,7 +566,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        guard takeNewLockFundingSlot(Self.shieldedAssetLockFundingType) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
 
         // The single fee-on-top point: the BIP44 form carries the amount the
@@ -601,6 +599,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard takeNewLockFundingSlot(walletId: env.walletId, fundingType: Self.shieldedAssetLockFundingType)
+        else { return }
 
         do {
             try await authorize()
@@ -661,8 +661,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
-        phase = .success
+        // Refresh the lookup before the terminal phase releases the lock's
+        // claim: until then it still reports the lock as retryable, and the
+        // Home row and the details would offer to finish a finished transfer.
         await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
+        phase = .success
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -737,8 +740,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // .broadcasting so the step checklist completes naturally (mirrors
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
-        phase = terminalPhase
+        // As in `performAssetLock`: the lookup is refreshed while the claim is
+        // still held.
         await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
+        phase = terminalPhase
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
@@ -1125,7 +1130,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func performFundPlatform(recipientAmountDuffs: UInt64, lockValueDuffs: UInt64?) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        guard takeNewLockFundingSlot(Self.addressAssetLockFundingType) else { return }
 
         // Fail closed — a zero amount, a missing/overflowed frozen lock, or
         // a lock that doesn't carry the amount plus a nonzero reserve must
@@ -1147,6 +1151,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard takeNewLockFundingSlot(walletId: env.walletId, fundingType: Self.addressAssetLockFundingType)
+        else { return }
 
         do {
             try await authorize()
@@ -1519,24 +1525,26 @@ final class ShieldedTransferCoordinator: ObservableObject {
         self.inFlightOutPoint = nil
     }
 
-    /// Takes the app-wide slot for building a new asset lock of `fundingType`,
-    /// or fails the attempt when another coordinator holds it. The lock poll
-    /// finds this attempt's lock by wallet, funding type and start time, which
-    /// only identifies it while no other new lock of that type is being built.
-    private func takeNewLockFundingSlot(_ fundingType: Int) -> Bool {
-        guard ShieldedAssetLocksInFlight.shared.takeNewLockSlot(fundingType: fundingType) else {
+    /// Takes the slot for building a new asset lock of `fundingType` in this
+    /// wallet, or fails the attempt when another coordinator holds it. The lock
+    /// poll finds this attempt's lock by wallet, funding type and start time,
+    /// which only identifies it while no other new lock of that type is being
+    /// built in the wallet.
+    private func takeNewLockFundingSlot(walletId: Data, fundingType: Int) -> Bool {
+        let slot = ShieldedAssetLocksInFlight.NewLockSlot(walletId: walletId, fundingType: fundingType)
+        guard ShieldedAssetLocksInFlight.shared.takeNewLockSlot(slot) else {
             Self.logger.info("🛡️ SHIELD-TX :: new asset lock refused fundingType=\(fundingType): another one is still in progress")
             handleFailure(CoordinatorError.newAssetLockInFlight)
             return false
         }
-        newLockFundingType = fundingType
+        newLockSlot = slot
         return true
     }
 
     private func releaseNewLockFundingSlot() {
-        guard let newLockFundingType else { return }
-        ShieldedAssetLocksInFlight.shared.releaseNewLockSlot(fundingType: newLockFundingType)
-        self.newLockFundingType = nil
+        guard let newLockSlot else { return }
+        ShieldedAssetLocksInFlight.shared.releaseNewLockSlot(newLockSlot)
+        self.newLockSlot = nil
     }
 
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
@@ -1724,10 +1732,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
 /// "tap to finish"; the tx detail sheet and the bulk recovery pass read it to
 /// skip the lock; every resume entry point reads it to refuse a second attempt.
 ///
-/// It also holds one slot per funding type for building a new asset lock: the
-/// lock poll of a new transfer finds its lock by wallet, funding type and start
-/// time, which identifies it only while no other new lock of that type is
-/// being built, so a second new transfer of that type is refused meanwhile.
+/// It also holds one slot per wallet and funding type for building a new asset
+/// lock: the lock poll of a new transfer finds its lock by wallet, funding type
+/// and start time, which identifies it only while no other new lock of that
+/// type is being built in the wallet, so a second such transfer is refused
+/// meanwhile.
 ///
 /// Claims are counted per lock, so one coordinator's release cannot clear a
 /// claim another coordinator still holds. Reads are thread-safe, like
@@ -1739,18 +1748,28 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         let vout: UInt32
     }
 
+    struct NewLockSlot: Hashable, Sendable {
+        let walletId: Data
+        let fundingType: Int
+    }
+
     static let shared = ShieldedAssetLocksInFlight()
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
-    /// Funding types with a new asset lock being built and funded right now.
-    /// Main-actor only.
-    private var newLockFundingTypes: Set<Int> = []
+    /// New asset locks being built and funded right now. Main-actor only.
+    private var newLockSlots: Set<NewLockSlot> = []
 
     private init() {}
 
     func contains(_ outPoint: OutPoint) -> Bool {
         lock.withLock { claims[outPoint, default: 0] > 0 }
+    }
+
+    /// Whether any output of the transaction is claimed — for callers that act
+    /// on the whole transaction, such as removing it.
+    func containsTransaction(txidWire: Data) -> Bool {
+        lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
     }
 
     @MainActor
@@ -1770,15 +1789,15 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         }
     }
 
-    /// One new asset lock per funding type at a time: true when the slot was
-    /// free and is now taken.
+    /// One new asset lock per wallet and funding type at a time: true when the
+    /// slot was free and is now taken.
     @MainActor
-    fileprivate func takeNewLockSlot(fundingType: Int) -> Bool {
-        newLockFundingTypes.insert(fundingType).inserted
+    fileprivate func takeNewLockSlot(_ slot: NewLockSlot) -> Bool {
+        newLockSlots.insert(slot).inserted
     }
 
     @MainActor
-    fileprivate func releaseNewLockSlot(fundingType: Int) {
-        newLockFundingTypes.remove(fundingType)
+    fileprivate func releaseNewLockSlot(_ slot: NewLockSlot) {
+        newLockSlots.remove(slot)
     }
 }
