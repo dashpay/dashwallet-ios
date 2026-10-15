@@ -54,6 +54,7 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Payment flow
 #import "DWQRScanModel.h"
+#import "DWURLParser.h"
 #import "DWPayOptionModel.h"
 #import "DWPayModelProtocol.h"
 #import "DWReceiveModelProtocol.h"
