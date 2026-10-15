@@ -294,12 +294,14 @@ private final class ExternalSendAmountHostingController: UIHostingController<Ext
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        sending = viewModel.$isSendingToContact
+        #if DASHPAY
+        sending = viewModel.isSendingToContactPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] isSending in
                 self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = !isSending
                 self?.navigationController?.isModalInPresentation = isSending
             }
+        #endif
     }
 
     override func viewWillDisappear(_ animated: Bool) {
