@@ -221,7 +221,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case platform
     }
 
-    @Published private(set) var phase: Phase = .idle
+    // 32500 diagnostic build: `logger` is os.Logger, which never reaches the
+    // exported logs, so phase changes and failures also go to DWLogger.
+    @Published private(set) var phase: Phase = .idle {
+        didSet {
+            DWLogger.log("🛡️ SHIELD-TX-DIAG phase \(String(describing: oldValue)) -> \(String(describing: phase))")
+        }
+    }
 
     /// The typed error behind the current `.failed(_)` phase. `Phase`
     /// carries only display text (that's what the confirm sheets render), so
@@ -529,6 +535,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
+        DWLogger.log("🛡️ SHIELD-TX-DIAG asset-lock route funding=\(String(describing: funding)) external=\(recipientOverride != nil)")
 
         // The single fee-on-top point: the BIP44 form carries the amount the
         // recipient must receive, and the lock is inflated by the pool fee
@@ -646,6 +653,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
+        DWLogger.log("🛡️ SHIELD-TX-DIAG resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
         do {
@@ -1460,6 +1468,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     private func handleFailure(_ error: Error) {
         Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        DWLogger.log("🛡️ SHIELD-TX-DIAG failure \(String(describing: error)) | localized: \(error.localizedDescription)")
         lastFailure = error
         let message: String
         if let local = error as? LocalizedError, let description = local.errorDescription {
@@ -1479,6 +1488,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private func handleSpendError(_ error: Error, manager: PlatformWalletManager) {
         if case PlatformWalletError.shieldedSpendUnconfirmed = error {
             Self.logger.info("🛡️ SHIELD-TX :: broadcast unconfirmed — awaiting sync, retry suppressed")
+            DWLogger.log("🛡️ SHIELD-TX-DIAG broadcast unconfirmed: \(String(describing: error))")
             phase = .submittedUnconfirmed
             scheduleShieldedResync(manager: manager)
         } else {
