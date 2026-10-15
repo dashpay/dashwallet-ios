@@ -2165,14 +2165,11 @@ final class ShieldedTxLookup {
         guard consumedOverlay.contains(key) else { return entry }
         return ShieldedLockInfo(
             amountDuffs: entry.amountDuffs,
-            statusRaw: Self.consumedStatus,
+            statusRaw: AssetLockRecoveryService.consumedStatus,
             vout: entry.vout,
             fundingTypeRaw: entry.fundingTypeRaw,
             walletId: entry.walletId)
     }
-
-    /// `PersistentAssetLock.statusRaw` of a consumed lock.
-    private static let consumedStatus = 4
 
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
     /// before the store and the next snapshot show it: the SDK can flush the
@@ -2320,7 +2317,7 @@ final class ShieldedTxLookup {
         // The snapshot now speaks for these locks itself: consumed, or gone.
         consumedOverlay = consumedOverlay.filter {
             guard let entry = map[$0] else { return false }
-            return entry.statusRaw < Self.consumedStatus
+            return entry.statusRaw != AssetLockRecoveryService.consumedStatus
         }
         lock.unlock()
         if changed {

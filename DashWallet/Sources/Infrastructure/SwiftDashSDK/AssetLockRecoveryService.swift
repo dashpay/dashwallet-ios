@@ -70,6 +70,10 @@ struct AssetLockRecoveryService {
     /// consumption is unknown.
     nonisolated static let recoveredFromChainStatus = 5
 
+    /// `AssetLockStatus::Consumed`: Platform accepted the transition that
+    /// spent the lock.
+    nonisolated static let consumedStatus = 4
+
     /// Asset-lock statuses whose transfer has not been shown to be finished,
     /// and which therefore still deserve a retry action. Pure predicate so the
     /// rule is testable without a `TxDetailModel` and its lookups; the view

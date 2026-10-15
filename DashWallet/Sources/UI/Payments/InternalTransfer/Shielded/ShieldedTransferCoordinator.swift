@@ -661,8 +661,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
-        // The success phase releases the lock's claim; the lookup reports the
-        // lock as consumed from here on, so nothing offers to finish it again.
+        // The success phase releases the lock's claim. The lookup reports the
+        // lock as consumed until a snapshot shows it consumed, so the Home row
+        // and the details do not offer to finish it in between. A lock no
+        // poll saw yet is looked up first.
+        captureLatestAssetLockOutPoint(
+            walletId: env.walletId,
+            modelContainer: env.modelContainer,
+            since: startTime)
         markInFlightLockConsumed()
         phase = .success
         await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
@@ -1187,6 +1193,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route completed")
+        // As in `performAssetLock`.
+        captureLatestAssetLockOutPoint(
+            walletId: env.walletId,
+            modelContainer: env.modelContainer,
+            since: startTime,
+            fundingType: Self.addressAssetLockFundingType)
+        markInFlightLockConsumed()
         phase = .broadcasting
         phase = .success
         schedulePlatformResync()
@@ -1236,6 +1249,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund completed")
+        markInFlightLockConsumed()
         phase = .success
         schedulePlatformResync()
     }
