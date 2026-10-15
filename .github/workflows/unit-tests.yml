@@ -16,21 +16,11 @@ name: "Unit tests (dashpay)"
 # this job writes inert placeholders (scripts/ci/make-placeholder-plists.sh)
 # instead of the release secrets, so it also works for fork pull requests.
 
+# No `paths` filter on pull_request: a path-filtered workflow is simply absent
+# on a PR it does not match, which leaves a required check pending forever and
+# makes "runs on every PR" false for docs-only changes.
 on:
   pull_request:
-    paths:
-      - "DashWallet/**"
-      - "DashWalletTests/**"
-      - "DashPay/**"
-      - "Shared/**"
-      - "DashWallet.xcodeproj/**"
-      - "DashWallet.xcworkspace/**"
-      - "Podfile"
-      - "Podfile.lock"
-      - ".platform-ref"
-      - "scripts/ci/**"
-      - ".github/scripts/capture_schema_release.py"
-      - ".github/workflows/unit-tests.yml"
   push:
     branches:
       - develop

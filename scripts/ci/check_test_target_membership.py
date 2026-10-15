@@ -42,6 +42,19 @@ def main():
 
     on_disk = sorted(p for p in TESTS_DIR.rglob("*") if p.suffix in SOURCE_SUFFIXES)
     problems = []
+
+    # The Sources phase only names basenames, so membership is matched by basename.
+    # That is sound only while basenames are unique: a second `X.swift` in another
+    # folder would hide behind the registered one (and Xcode could not compile two
+    # X.o into one target anyway), so duplicates are an error in their own right.
+    by_name = {}
+    for path in on_disk:
+        by_name.setdefault(path.name, []).append(path)
+    for name, paths in sorted(by_name.items()):
+        if len(paths) > 1:
+            listing = ", ".join(str(p.relative_to(ROOT)) for p in paths)
+            problems.append(f"duplicate test source basename {name}: {listing} (rename one)")
+
     for path in on_disk:
         if any(path.is_relative_to(synced) for synced in synced_paths):
             continue
