@@ -2650,6 +2650,53 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertFalse(grants[0].isUnconfirmed)
     }
 
+    /// A recovered one-QR registration turns the app's existing row into an
+    /// active one-QR row: a two-QR row still waiting for its second scan
+    /// would otherwise keep that banner over a live session key.
+    func testConfirmingARegistrationActivatesTheAppsExistingRow() {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appB = "BbWcUA8Msi7HSgC2hCJsCtDADs2FzQVabRuHvk1tnj4d"
+        let earlier = Date(timeIntervalSince1970: 1_000)
+        let confirmedAt = Date(timeIntervalSince1970: 2_000)
+        var waiting = DAppConnection(
+            id: appA, name: "App A", url: "https://a.example",
+            status: .approved, updatedAt: earlier, loginKind: .twoQR)
+        waiting.scope = "wallet-a devnet-one"
+        let other = DAppConnection(
+            id: appB, name: "App B", url: "https://b.example",
+            status: .approved, updatedAt: earlier, loginKind: .twoQR)
+
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(
+            appIds: [appA], in: [waiting, other], at: confirmedAt)
+
+        XCTAssertEqual(rows.count, 2)
+        let a = rows[0]
+        XCTAssertEqual(a.id, appA)
+        XCTAssertEqual(a.status, .active)
+        XCTAssertEqual(a.loginKind, .oneQR)
+        XCTAssertEqual(a.updatedAt, confirmedAt)
+        XCTAssertEqual(a.name, "App A")
+        XCTAssertEqual(a.url, "https://a.example")
+        XCTAssertEqual(a.scope, "wallet-a devnet-one")
+        let b = rows[1]
+        XCTAssertEqual(b.status, .approved, "an app whose key was not confirmed keeps its row")
+        XCTAssertEqual(b.loginKind, .twoQR)
+        XCTAssertEqual(b.updatedAt, earlier)
+    }
+
+    /// An app with a confirmed key but no row gets an active one-QR row.
+    func testConfirmingARegistrationAddsARowForAnAppWithout() {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let confirmedAt = Date(timeIntervalSince1970: 2_000)
+
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(appIds: [appA], in: [], at: confirmedAt)
+
+        XCTAssertEqual(rows.map(\.id), [appA])
+        XCTAssertEqual(rows.first?.status, .active)
+        XCTAssertEqual(rows.first?.loginKind, .oneQR)
+        XCTAssertEqual(rows.first?.updatedAt, confirmedAt)
+    }
+
     func testDisconnectWithNoActiveWalletIsRefused() async {
         let active = ActiveWallet(nil)
         let (dataSource, _) = makeScopedDataSource(active: active)

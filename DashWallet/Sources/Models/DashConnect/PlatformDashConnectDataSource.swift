@@ -1356,8 +1356,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Confirms this identity's unconfirmed registrations whose key it now
-    /// holds, and gives each such app a one-QR row if it has none: the key
-    /// is live and has to be reachable from Connections.
+    /// holds, and makes each such app's row active and one-QR, adding one if
+    /// it has none: the key is live and has to be reachable from Connections.
     private func confirmRegistrations(
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
@@ -1377,15 +1377,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let appIds = Set(confirmed.map(\.appContractId))
         let confirmedAt = now()
         await updateRows(in: stores) { rows in
-            let missing = appIds.subtracting(rows.map(\.id))
-            return rows + missing.sorted().map { appId in
-                let branding = DashConnectFallbackAppMetadata.resolve(contractId: appId, unauthenticatedLabel: "")
-                return DAppConnection(
-                    id: appId,
-                    name: branding.name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : branding.name,
-                    url: branding.url,
-                    status: .active, updatedAt: confirmedAt, loginKind: .oneQR)
-            }
+            Self.rowsAfterConfirming(appIds: appIds, in: rows, at: confirmedAt)
+        }
+    }
+
+    /// `rows` once the apps in `appIds` hold a live one-QR key: each app's
+    /// row becomes active and one-QR, keeping its branding and scope (a
+    /// two-QR row waiting for its second scan would otherwise keep showing
+    /// that banner instead of the disconnect switch), and an app with no row
+    /// gets one.
+    static func rowsAfterConfirming(appIds: Set<String>, in rows: [DAppConnection], at confirmedAt: Date) -> [DAppConnection] {
+        let reconciled = rows.map { connection in
+            guard appIds.contains(connection.id) else { return connection }
+            var updated = DAppConnection(
+                id: connection.id,
+                name: connection.name,
+                url: connection.url,
+                status: .active, updatedAt: confirmedAt, loginKind: .oneQR)
+            updated.scope = connection.scope
+            return updated
+        }
+        let missing = appIds.subtracting(rows.map(\.id))
+        return reconciled + missing.sorted().map { appId in
+            let branding = DashConnectFallbackAppMetadata.resolve(contractId: appId, unauthenticatedLabel: "")
+            return DAppConnection(
+                id: appId,
+                name: branding.name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : branding.name,
+                url: branding.url,
+                status: .active, updatedAt: confirmedAt, loginKind: .oneQR)
         }
     }
 
