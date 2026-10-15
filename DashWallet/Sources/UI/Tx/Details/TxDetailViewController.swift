@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 import SwiftUI
 import DashUIKit
@@ -111,6 +112,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    private var inFlightLocksObservation: AnyCancellable?
 
     enum Section: CaseIterable {
         case header
@@ -219,6 +221,16 @@ class TXDetailViewController: BaseTxDetailsViewController {
         model.resolveExplorerFee { [weak self] in
             self?.reloadDataSource()
         }
+
+        // The retry and removal rows depend on whether a running transfer is
+        // consuming this transaction's asset lock. The registry publishes
+        // before it changes, so the rows are rebuilt on the next main-queue
+        // turn, once the claim or release has landed.
+        inFlightLocksObservation = ShieldedAssetLocksInFlight.shared.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reloadDataSource()
+            }
     }
 }
 
