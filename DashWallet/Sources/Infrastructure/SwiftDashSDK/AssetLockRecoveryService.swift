@@ -385,12 +385,17 @@ struct AssetLockRecoveryService {
             let txidDisplay = String(Data(item.txidWire.reversed())
                 .map { String(format: "%02x", $0) }.joined().prefix(16))
             // The list was taken when the screen appeared; a transfer started
-            // since then may be consuming this lock. Its resume would only be
-            // refused, and counting that as a failure could stop the pass.
-            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout))
-                || isReportedConsumed(item) {
+            // since then may be consuming this lock, or may have finished it.
+            // A resume would only be refused or reported already consumed, and
+            // counting that as a failure could stop the pass.
+            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
                 outcome.inProgress += 1
+                progress(index + 1, pending.count)
+                continue
+            }
+            if isReportedConsumed(item) {
+                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: a transfer finished it after the list was taken")
                 progress(index + 1, pending.count)
                 continue
             }

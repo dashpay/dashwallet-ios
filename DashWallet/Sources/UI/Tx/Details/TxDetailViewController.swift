@@ -228,8 +228,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
         // lookup snapshot trigger a rebuild. The registry publishes before it
         // changes, so the rows are rebuilt on the next main-queue turn, once
         // the claim or release has landed.
-        // The projection change also covers state outside both, such as a
-        // recorded already-spent probe.
+        // The projection change, which the transfer routes post when they
+        // finish, rebuilds them as well.
         let lookupChanged = NotificationCenter.default
             .publisher(for: .shieldedTxLookupDidChange)
             .map { _ in () }
@@ -641,7 +641,8 @@ extension TXDetailViewController {
         if let retry = model.stuckAssetLockRetry {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
             currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
-            if retry.supportsRemoval {
+            // The remover refuses while any transfer is active.
+            if retry.supportsRemoval, !ShieldedAssetLocksInFlight.shared.hasActivity {
                 currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
             }
         } else if model.supportsUnconfirmedRemoval {
