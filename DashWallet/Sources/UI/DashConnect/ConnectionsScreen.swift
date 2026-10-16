@@ -113,7 +113,7 @@ struct ConnectionsScreen: View {
             onApprove: { viewModel.approvePendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApproving)
+        .approveSheetPresentation()
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -124,7 +124,7 @@ struct ConnectionsScreen: View {
             onApprove: { viewModel.approvePendingTokenPurchase() },
             onDeny: { viewModel.denyPendingTokenPurchase() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApprovingPurchase)
+        .approveSheetPresentation()
     }
 
     // MARK: - Presentation bindings

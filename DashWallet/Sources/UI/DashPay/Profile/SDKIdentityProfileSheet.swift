@@ -63,7 +63,10 @@ struct SDKIdentityProfileSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"),
+            showBackButton: .constant(false)
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
@@ -103,15 +106,6 @@ struct SDKIdentityProfileSheet: View {
                 .padding(.top, 24)
             }
             .background(Color.dash.primaryBackground)
-            .navigationTitle(NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "")) {
-                        dismiss()
-                    }
-                }
-            }
             .overlay(alignment: .bottom) {
                 if let toast = copyToast {
                     Text(toast)
@@ -164,25 +158,18 @@ struct SDKIdentityProfileSheet: View {
         // and a name registered or bought in the marketplace changes both
         // `dpnsNames` and `hasIdentity`.
         .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
-            NavigationStack {
-                CreateUsernameView(
-                    invitationURI: nil,
-                    definedUsername: nil,
-                    // Both exits close the cover: the shielded question moved
-                    // to the Join DashPay sheet's privacy page, and a handoff
-                    // to the status row leaves this screen just the same.
-                    finish: { showingUsernameRecovery = false },
-                    handOffToStatusRow: { showingUsernameRecovery = false },
-                    // The form draws its own back arrow; without this it is a
-                    // visible control that does nothing inside a cover.
-                    onBack: { showingUsernameRecovery = false })
-                .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(NSLocalizedString("Close", comment: "")) { showingUsernameRecovery = false }
-                    }
-                }
-            }
+            CreateUsernameView(
+                invitationURI: nil,
+                definedUsername: nil,
+                // Both exits close the cover: the shielded question moved
+                // to the Join DashPay sheet's privacy page, and a handoff
+                // to the status row leaves this screen just the same.
+                finish: { showingUsernameRecovery = false },
+                handOffToStatusRow: { showingUsernameRecovery = false },
+                // The form is the cover's root, so its bar shows close and
+                // closing it dismisses the cover.
+                onBack: { showingUsernameRecovery = false },
+                leadingElement: .close)
         }
         .fullScreenCover(isPresented: $showingUsernameMarketplace,
                          onDismiss: reloadIdentitySnapshot) {
