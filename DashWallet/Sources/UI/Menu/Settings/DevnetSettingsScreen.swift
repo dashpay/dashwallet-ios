@@ -132,9 +132,11 @@ struct DevnetSettingsScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                onBack()
-            }
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button {
+                    onBack()
+                }
+            })
 
             TopIntro(title: NSLocalizedString("Devnet Settings", comment: "Devnet"))
                 .padding(.leading, 20)
