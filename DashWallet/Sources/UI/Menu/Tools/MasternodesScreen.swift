@@ -216,31 +216,14 @@ extension PlatformMasternode {
 // MARK: - MasternodesScreen
 
 struct MasternodesScreen: View {
+    let vc: UINavigationController
     @StateObject private var viewModel = MasternodesViewModel()
 
-    /// The UIKit wrapper every entry point (Governance menu, home card) uses:
-    /// the SwiftUI list needs its own `NavigationStack` for row drill-downs,
-    /// so the back button is wired explicitly to pop the UIKit stack.
+    /// The UIKit wrapper every entry point (Governance menu, home card) uses.
+    /// The list and every screen it opens are pushed on `navigation` as
+    /// `UIHostingController`s, each drawing its own `DashUIKit.NavigationBar`.
     static func hostingController(popFrom navigation: UINavigationController) -> UIViewController {
-        let popRoot: () -> Void = { [weak navigation] in
-            _ = navigation?.popViewController(animated: true)
-        }
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    MasternodesScreen()
-                        .navigationTitle(NSLocalizedString("Masternodes", comment: "Masternodes"))
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(action: popRoot) {
-                                    Image(systemName: "chevron.left")
-                                }
-                            }
-                        }
-                }
-            )
-        )
+        let hosting = UIHostingController(rootView: MasternodesScreen(vc: navigation))
         hosting.hidesBottomBarWhenPushed = true
         return hosting
     }
@@ -249,6 +232,39 @@ struct MasternodesScreen: View {
     @State private var isRetiredExpanded = false
 
     var body: some View {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(NSLocalizedString("Masternodes", comment: "Masternodes"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                },
+                trailing: {
+                    DashUIKit.NavigationBarElement.plus.button {
+                        vc.pushViewController(
+                            UIHostingController(rootView: AddMasternodeScreen(vc: vc, onTracked: { viewModel.load() })),
+                            animated: true)
+                    }
+                    .accessibilityLabel(NSLocalizedString("Add masternode", comment: "Add masternode"))
+                })
+
+            list
+        }
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .navigationBarHidden(true)
+        .onAppear {
+            viewModel.load()
+        }
+    }
+
+    private var list: some View {
         List {
             if viewModel.loaded && viewModel.masternodes.isEmpty && viewModel.trackedMasternodes.isEmpty {
                 Section {
@@ -313,44 +329,43 @@ struct MasternodesScreen: View {
                 }
             }
         }
-        .onAppear {
-            viewModel.load()
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink {
-                    AddMasternodeScreen(onTracked: { viewModel.load() })
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel(NSLocalizedString("Add masternode", comment: "Add masternode"))
-            }
-        }
     }
 
     private func trackedRow(for masternode: PlatformMasternode) -> some View {
-        NavigationLink {
-            TrackedMasternodeDetailScreen(
-                record: masternode,
-                onChanged: { viewModel.load() })
+        Button {
+            vc.pushViewController(
+                UIHostingController(rootView: TrackedMasternodeDetailScreen(
+                    vc: vc,
+                    record: masternode,
+                    onChanged: { viewModel.load() })),
+                animated: true)
         } label: {
-            MasternodeListRow(
-                masternode: masternode,
-                epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
+            ListDisclosureRow {
+                MasternodeListRow(
+                    masternode: masternode,
+                    epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
+            }
+            .foregroundColor(.primary)
         }
     }
 
     private func row(for masternode: PlatformMasternode) -> some View {
-        NavigationLink {
-            MasternodeDetailScreen(
-                masternode: masternode,
-                ownerOwnership: viewModel.ownerOwnership(for: masternode),
-                votingOwnership: viewModel.votingOwnership(for: masternode),
-                ownerKeyIndexHint: viewModel.ownerKeyIndex(for: masternode))
+        Button {
+            vc.pushViewController(
+                UIHostingController(rootView: MasternodeDetailScreen(
+                    vc: vc,
+                    masternode: masternode,
+                    ownerOwnership: viewModel.ownerOwnership(for: masternode),
+                    votingOwnership: viewModel.votingOwnership(for: masternode),
+                    ownerKeyIndexHint: viewModel.ownerKeyIndex(for: masternode))),
+                animated: true)
         } label: {
-            MasternodeListRow(
-                masternode: masternode,
-                epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
+            ListDisclosureRow {
+                MasternodeListRow(
+                    masternode: masternode,
+                    epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
+            }
+            .foregroundColor(.primary)
         }
     }
 }
@@ -522,6 +537,7 @@ final class MasternodeDetailViewModel: ObservableObject {
 /// can claim it (owner key → payout address only; payout/transfer key →
 /// any destination). The claim itself lives in `EvonodeWithdrawalScreen`.
 struct MasternodeDetailScreen: View {
+    let vc: UINavigationController
     let masternode: PlatformMasternode
     let ownerOwnership: String
     let votingOwnership: String
@@ -533,11 +549,13 @@ struct MasternodeDetailScreen: View {
     @State private var unbanSubmitted = false
 
     init(
+        vc: UINavigationController,
         masternode: PlatformMasternode,
         ownerOwnership: String,
         votingOwnership: String,
         ownerKeyIndexHint: UInt32? = nil
     ) {
+        self.vc = vc
         self.masternode = masternode
         self.ownerOwnership = ownerOwnership
         self.votingOwnership = votingOwnership
@@ -547,6 +565,38 @@ struct MasternodeDetailScreen: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(masternode.displayTitle)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                })
+
+            list
+        }
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .navigationBarHidden(true)
+        .task {
+            await viewModel.load()
+        }
+        .sheet(isPresented: $showUnbanSheet) {
+            UnbanMasternodeSheet(
+                record: masternode,
+                keySource: .wallet(operatorKeyIndex: masternode.operatorKeyIndex),
+                onSubmitted: { unbanSubmitted = true })
+                .presentationDragIndicator(.hidden)
+        }
+    }
+
+    private var list: some View {
         List {
             Section {
                 HStack {
@@ -678,17 +728,6 @@ struct MasternodeDetailScreen: View {
                 }
             }
         }
-        .navigationTitle(masternode.displayTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await viewModel.load()
-        }
-        .sheet(isPresented: $showUnbanSheet) {
-            UnbanMasternodeSheet(
-                record: masternode,
-                keySource: .wallet(operatorKeyIndex: masternode.operatorKeyIndex),
-                onSubmitted: { unbanSubmitted = true })
-        }
     }
 
     /// Unban entry point: shown while the node is PoSe-banned (or an unban
@@ -732,11 +771,15 @@ struct MasternodeDetailScreen: View {
     @ViewBuilder
     private var requestStatusRow: some View {
         if masternode.platformDAPIAddress != nil {
-            NavigationLink {
-                EvonodeStatusScreen(masternode: masternode)
+            Button {
+                vc.pushViewController(
+                    UIHostingController(rootView: EvonodeStatusScreen(vc: vc, masternode: masternode)),
+                    animated: true)
             } label: {
-                Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
-                    .foregroundColor(Color.dash.blue)
+                ListDisclosureRow {
+                    Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                        .foregroundColor(Color.dash.blue)
+                }
             }
         } else {
             Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
@@ -753,21 +796,26 @@ struct MasternodeDetailScreen: View {
     private var withdrawRows: some View {
         if let credits = viewModel.claimableCredits, credits > 0 {
             if let keys = viewModel.withdrawalKeys, keys.canWithdraw {
-                NavigationLink {
-                    EvonodeWithdrawalScreen(
-                        masternode: masternode,
-                        keys: keys,
-                        claimableCredits: credits,
-                        ownerKeyIndexHint: viewModel.ownerKeyIndexHint,
-                        onWithdrawn: { remaining in
-                            viewModel.applyWithdrawn(remainingCredits: remaining)
-                        },
-                        onOutcomeUnconfirmed: {
-                            viewModel.reconcileAfterUnconfirmedOutcome()
-                        })
+                Button {
+                    vc.pushViewController(
+                        UIHostingController(rootView: EvonodeWithdrawalScreen(
+                            vc: vc,
+                            masternode: masternode,
+                            keys: keys,
+                            claimableCredits: credits,
+                            ownerKeyIndexHint: viewModel.ownerKeyIndexHint,
+                            onWithdrawn: { remaining in
+                                viewModel.applyWithdrawn(remainingCredits: remaining)
+                            },
+                            onOutcomeUnconfirmed: {
+                                viewModel.reconcileAfterUnconfirmedOutcome()
+                            })),
+                        animated: true)
                 } label: {
-                    Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
-                        .foregroundColor(Color.dash.blue)
+                    ListDisclosureRow {
+                        Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
+                            .foregroundColor(Color.dash.blue)
+                    }
                 }
 
                 Text(keys.canChooseDestination

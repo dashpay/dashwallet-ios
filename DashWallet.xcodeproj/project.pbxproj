@@ -1053,6 +1053,7 @@
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
 		926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
 		983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */; };
+		5E0C5A1E0000000000ABC002 /* StorageExplorerNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C5A1E0000000000ABC001 /* StorageExplorerNavigation.swift */; };
 		98BEE600E600F1F88EC3802E /* ScriptAddressCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */; };
 		99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
 		9A1606353B5B4E5481AC5C6A /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B728BBE755AB93DD58FDA4EC /* NotificationsScreen.swift */; };
@@ -1959,6 +1960,7 @@
 		D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */; };
 		D2616FE9FE5ED53F26506A73 /* DWIdentityRegistrationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D54F8E662513F09BA840FB94 /* DWIdentityRegistrationBridge.swift */; };
 		D3DA37D1924A7F5B089FE110 /* StorageExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */; };
+		5E0C5A1E0000000000ABC003 /* StorageExplorerNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C5A1E0000000000ABC001 /* StorageExplorerNavigation.swift */; };
 		D418FB2322596505DA54DB79 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */; };
 		D5A0C001D5A0C001D5A0C001 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
 		D5A0C002D5A0C002D5A0C002 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
@@ -3874,6 +3876,7 @@
 		UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnconfirmedTransactionRemover.swift; sourceTree = "<group>"; };
 		INSGT0001000000000000001 /* InsightExplorerAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InsightExplorerAPI.swift; sourceTree = "<group>"; };
 		E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageExplorerView.swift; sourceTree = "<group>"; };
+		5E0C5A1E0000000000ABC001 /* StorageExplorerNavigation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageExplorerNavigation.swift; sourceTree = "<group>"; };
 		E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentsLandingScreen.swift; sourceTree = "<group>"; };
 		E83D8CEAFF69B6D666C02116 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
 		E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKSPVStatusScreen.swift; sourceTree = "<group>"; };
@@ -7742,6 +7745,7 @@
 			isa = PBXGroup;
 			children = (
 				E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */,
+				5E0C5A1E0000000000ABC001 /* StorageExplorerNavigation.swift */,
 				60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */,
 				2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */,
 				0F8E2ECDE79849D01F613ADC /* StorageExplorerUnavailableView.swift */,
@@ -10818,6 +10822,7 @@
 				9B40E576972DB41F7EF4D21E /* ShieldedWithdrawalStore.swift in Sources */,
 				06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */,
 				D3DA37D1924A7F5B089FE110 /* StorageExplorerView.swift in Sources */,
+				5E0C5A1E0000000000ABC003 /* StorageExplorerNavigation.swift in Sources */,
 				3B1ECCE5521BAB084D74B5ED /* StorageModelListViews.swift in Sources */,
 				7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */,
 				AC938F974CADCEA4AC61B922 /* StorageExplorerUnavailableView.swift in Sources */,
@@ -11927,6 +11932,7 @@
 				89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */,
 				4AC8F492DD74101C71A5EA5E /* PlatformSendExecutor.swift in Sources */,
 				983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */,
+				5E0C5A1E0000000000ABC002 /* StorageExplorerNavigation.swift in Sources */,
 				02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */,
 				57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */,
 				E827E2C12B63FF5C48BA4D15 /* StorageExplorerUnavailableView.swift in Sources */,

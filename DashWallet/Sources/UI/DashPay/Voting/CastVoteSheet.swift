@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -70,27 +71,23 @@ struct CastVoteSheet: View {
     }
 
     var body: some View {
-        NavigationView {
-            Group {
-                if let report = viewModel.lastCastReport {
-                    VoteResultView(report: report) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                    }
-                } else {
-                    confirmForm
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Cast vote", comment: "Voting"),
+            showBackButton: .constant(false),
+            isCloseButtonEnabled: !viewModel.isCasting,
+            onClose: {
+                viewModel.dismissCastResult()
+                dismiss()
+            },
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
+            if let report = viewModel.lastCastReport {
+                VoteResultView(report: report) {
+                    viewModel.dismissCastResult()
+                    dismiss()
                 }
-            }
-            .navigationTitle(NSLocalizedString("Cast vote", comment: "Voting"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                    }
-                    .disabled(viewModel.isCasting)
-                }
+            } else {
+                confirmForm
             }
         }
         .onAppear {

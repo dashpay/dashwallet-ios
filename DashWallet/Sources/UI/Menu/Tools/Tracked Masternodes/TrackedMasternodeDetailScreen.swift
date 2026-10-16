@@ -11,8 +11,10 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
+import UIKit
 
 // MARK: - TrackedMasternodeDetailViewModel
 
@@ -256,8 +258,8 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
 /// learned about it, the keys attached on this device (with add / remove),
 /// and the actions those keys enable.
 struct TrackedMasternodeDetailScreen: View {
+    let vc: UINavigationController
     @StateObject private var viewModel: TrackedMasternodeDetailViewModel
-    @Environment(\.dismiss) private var dismiss
     @State private var labelDraft: String
     @State private var showStopConfirm = false
     @State private var showWithdrawSheet = false
@@ -269,28 +271,41 @@ struct TrackedMasternodeDetailScreen: View {
     @State private var unbanSubmitted = false
     let onChanged: () -> Void
 
-    init(record: PlatformMasternode, onChanged: @escaping () -> Void) {
+    init(vc: UINavigationController, record: PlatformMasternode, onChanged: @escaping () -> Void) {
+        self.vc = vc
         _viewModel = StateObject(wrappedValue: TrackedMasternodeDetailViewModel(record: record))
         _labelDraft = State(initialValue: record.label ?? "")
         self.onChanged = onChanged
     }
 
     var body: some View {
-        List {
-            overviewSection
-            registrationSection
-            keysSection
-            balanceSection
-            manageSection
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(viewModel.record.label ?? viewModel.record.displayTitle)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                })
+
+            list
         }
-        .navigationTitle(viewModel.record.label ?? viewModel.record.displayTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .navigationBarHidden(true)
         .task { await viewModel.load() }
         .sheet(isPresented: $showWithdrawSheet) {
             TrackedWithdrawalSheet(viewModel: viewModel)
+                .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $showKeysSheet, onDismiss: { viewModel.reloadAttachedRoles() }) {
             TrackedKeyManagementSheet(record: viewModel.record, vault: viewModel.vault)
+                .presentationDragIndicator(.hidden)
         }
         .sheet(isPresented: $showUnbanSheet) {
             UnbanMasternodeSheet(
@@ -303,6 +318,7 @@ struct TrackedMasternodeDetailScreen: View {
                         onChanged()
                     }
                 })
+                .presentationDragIndicator(.hidden)
         }
         .confirmationDialog(
             NSLocalizedString("Stop tracking this masternode?", comment: "Tracked masternodes"),
@@ -312,13 +328,23 @@ struct TrackedMasternodeDetailScreen: View {
             Button(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), role: .destructive) {
                 if viewModel.stopTracking() {
                     onChanged()
-                    dismiss()
+                    vc.popViewController(animated: true)
                 }
             }
         } message: {
             Text(NSLocalizedString(
                 "Any keys you added for it are deleted from this device's keychain too.",
                 comment: "Tracked masternodes"))
+        }
+    }
+
+    private var list: some View {
+        List {
+            overviewSection
+            registrationSection
+            keysSection
+            balanceSection
+            manageSection
         }
     }
 
@@ -546,11 +572,15 @@ struct TrackedMasternodeDetailScreen: View {
     @ViewBuilder
     private var requestStatusRow: some View {
         if viewModel.record.platformDAPIAddress != nil {
-            NavigationLink {
-                EvonodeStatusScreen(masternode: viewModel.record)
+            Button {
+                vc.pushViewController(
+                    UIHostingController(rootView: EvonodeStatusScreen(vc: vc, masternode: viewModel.record)),
+                    animated: true)
             } label: {
-                Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
-                    .foregroundColor(Color.dash.blue)
+                ListDisclosureRow {
+                    Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                        .foregroundColor(Color.dash.blue)
+                }
             }
         }
     }
@@ -567,7 +597,11 @@ private struct TrackedWithdrawalSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Withdraw", comment: "Evonode withdrawal"),
+            showBackButton: .constant(false),
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
             List {
                 Section {
                     MasternodeDetailRow(
@@ -622,13 +656,6 @@ private struct TrackedWithdrawalSheet: View {
                     }
                 }
             }
-            .navigationTitle(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { dismiss() }
-                }
-            }
         }
     }
 }
@@ -648,7 +675,11 @@ private struct TrackedKeyManagementSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Add keys", comment: "Tracked masternodes"),
+            showBackButton: .constant(false),
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
             List {
                 TrackedKeyFieldsSection(viewModel: viewModel)
                 Section {
@@ -669,13 +700,6 @@ private struct TrackedKeyManagementSheet: View {
                             comment: "Add masternode"))
                             .foregroundColor(.red)
                     }
-                }
-            }
-            .navigationTitle(NSLocalizedString("Add keys", comment: "Tracked masternodes"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { dismiss() }
                 }
             }
         }

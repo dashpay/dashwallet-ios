@@ -180,6 +180,7 @@ struct WalletsScreen: View {
                     showAddWallet = false
                     viewModel.switchWallet(to: walletId)
                 })
+                .presentationDragIndicator(.hidden)
         }
         // Remove (recovery-phrase confirmation sheet)
         .sheet(item: $removeTarget) { target in
@@ -191,6 +192,7 @@ struct WalletsScreen: View {
                     Task { await viewModel.removeWallet(walletId: target.walletId) }
                 },
                 onCancel: { removeTarget = nil })
+                .presentationDragIndicator(.hidden)
         }
         // Errors
         .alert(
@@ -393,7 +395,11 @@ private struct RemoveWalletSheet: View {
     @State private var showMismatch = false
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Remove Wallet", comment: "Wallets"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
@@ -446,13 +452,6 @@ private struct RemoveWalletSheet: View {
                     .padding(20)
                 }
             }
-            .navigationTitle(NSLocalizedString("Remove Wallet", comment: "Wallets"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onCancel() }
-                }
-            }
         }
     }
 
@@ -492,25 +491,33 @@ private struct AddWalletSheet: View {
 
     @State private var step: Step = .chooser
 
+    /// A wallet is being added or switched to: closing, swiping away and
+    /// stepping back are all held off until it settles.
+    private var isBusy: Bool {
+        viewModel.addInProgress || viewModel.switchInProgress
+    }
+
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: title,
+            showBackButton: Binding(
+                get: { step != .chooser && !isBusy },
+                set: { _ in }),
+            onBackButtonPressed: { step = .chooser },
+            isDismissalEnabled: Binding(
+                get: { !isBusy },
+                set: { _ in }),
+            isCloseButtonEnabled: !isBusy,
+            onClose: onFinished
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onFinished() }
-                        .disabled(viewModel.addInProgress || viewModel.switchInProgress)
-                }
-            }
         }
-        .interactiveDismissDisabled(viewModel.addInProgress || viewModel.switchInProgress)
     }
 
-    private var navigationTitle: String {
+    private var title: String {
         switch step {
         case .chooser: return NSLocalizedString("Add Wallet", comment: "Wallets")
         case .create: return NSLocalizedString("New Wallet", comment: "Wallets")

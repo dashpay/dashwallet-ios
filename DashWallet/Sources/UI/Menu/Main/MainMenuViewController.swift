@@ -548,24 +548,11 @@ struct MainMenuScreen: View {
 
     #if DASHPAY
     private func showVoting() {
-        // The voting list needs its own `NavigationStack`. A bare hosting
-        // controller inherits the menu's hidden navigation bar
-        // (`BaseNavigationController.willShow` only restores it for a
-        // `NavigationBarDisplayable`), which left the voting screens with no
-        // back button and no way out — and silently dropped the `.toolbar`
-        // and `.navigationTitle` as well, since neither renders outside a
-        // navigation container.
         let navController = vc
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    UsernameVotingScreen(onClose: popRoot)
-                }
-            )
-        )
+        let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
     }
