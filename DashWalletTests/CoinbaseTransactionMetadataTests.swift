@@ -174,7 +174,7 @@ final class CoinbaseTransactionMetadataTests: XCTestCase {
         XCTAssertEqual(Set(resolved.keys), Set([includedHash]))
         XCTAssertEqual(
             resolved[includedHash]?.iconName,
-            .custom("transaction-coinbase.received", bundle: .dashUIKit))
+            .custom("transaction-coinbase-received", bundle: .dashUIKit))
     }
 
     func testMetadataUsesSentAndReceivedSecondaryIcons() {

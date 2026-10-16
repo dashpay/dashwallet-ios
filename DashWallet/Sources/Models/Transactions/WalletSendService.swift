@@ -728,6 +728,16 @@ final class WalletSendService: NSObject {
     }
 }
 
+/// The prompt `AuthenticationGate` drives and cancels: the session flag and
+/// the presenting entry point. Production is `AuthenticationService.shared`.
+@MainActor
+protocol SendAuthenticationPrompting: AnyObject {
+    var didAuthenticate: Bool { get }
+    func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthenticationService.AuthOutcome
+}
+
+extension AuthenticationService: SendAuthenticationPrompting {}
+
 /// A timeout cancels this request's PIN/biometric prompt and waits for its
 /// dismissal before returning, so callers can safely restore their overlay.
 enum AuthenticationGate {
@@ -742,8 +752,9 @@ enum AuthenticationGate {
     static func authenticate(biometric: Bool,
                              sessionAuthSufficient: Bool = false,
                              spendAmount: UInt64? = nil,
-                             timeout: TimeInterval = 120) async -> Outcome {
-        if sessionAuthSufficient, AuthenticationService.shared.didAuthenticate {
+                             timeout: TimeInterval = 120,
+                             prompt: any SendAuthenticationPrompting = AuthenticationService.shared) async -> Outcome {
+        if sessionAuthSufficient, prompt.didAuthenticate {
             WalletSendService.logger.info("💸 TXSEND :: session-authenticated — skipping auth prompt")
             return .ok
         }
@@ -757,7 +768,7 @@ enum AuthenticationGate {
 
             var didTimeOut = false
             let authentication = Task { @MainActor in
-                let outcome = await AuthenticationService.shared.authenticate(
+                let outcome = await prompt.authenticate(
                     usingBiometrics: biometric, spendAmount: spendAmount)
                 if didTimeOut {
                     safeResume(.timedOut)
