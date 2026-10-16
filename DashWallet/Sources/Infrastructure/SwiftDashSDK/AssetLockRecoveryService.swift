@@ -41,6 +41,9 @@ struct AssetLockRecoveryService {
         case notReady
         case noIdentity
         case unsupportedRoute
+        /// The coordinator refused the resume because a running transfer is
+        /// consuming, or may be consuming, the lock.
+        case inProgress(String)
         case failed(String)
 
         var errorDescription: String? {
@@ -51,7 +54,7 @@ struct AssetLockRecoveryService {
                 return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
                 return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
-            case .failed(let message):
+            case .inProgress(let message), .failed(let message):
                 return message
             }
         }
@@ -388,7 +391,11 @@ struct AssetLockRecoveryService {
             // since then may be consuming this lock, or may have finished it.
             // A resume would only be refused or reported already consumed, and
             // counting that as a failure could stop the pass.
-            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
+            // A running transfer's new lock that its poll has not claimed yet
+            // can be this one, and its resume would be refused too.
+            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout))
+                || ShieldedTransferCoordinator.mayBeUnclaimedNewLock(
+                    txidWire: item.txidWire, vout: item.vout, fundingType: item.fundingTypeRaw) {
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
                 outcome.inProgress += 1
                 progress(index + 1, pending.count)
@@ -420,6 +427,11 @@ struct AssetLockRecoveryService {
                 Self.apply(.cancelled, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 DWLogger.log("LOCK-RETRY bulk cancelled at \(index + 1)/\(pending.count)")
                 return outcome
+            } catch RecoveryError.inProgress {
+                // Refused because a transfer started on it since the check
+                // above: in progress, not a failure.
+                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: a running transfer is using it")
+                outcome.inProgress += 1
             } catch {
                 let message = (error as? LocalizedError)?.errorDescription
                     ?? error.localizedDescription
@@ -523,9 +535,15 @@ struct AssetLockRecoveryService {
     /// so callers keep one cancel contract.
     private static func checkTerminalPhase(_ coordinator: ShieldedTransferCoordinator) throws {
         guard case .failed(let message) = coordinator.phase else { return }
-        if let failure = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError,
-           case .authCancelled = failure {
-            throw DWIdentityAuthorizer.AuthError.cancelled
+        if let failure = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError {
+            switch failure {
+            case .authCancelled:
+                throw DWIdentityAuthorizer.AuthError.cancelled
+            case .assetLockInFlight, .newAssetLockInFlight:
+                throw RecoveryError.inProgress(message)
+            default:
+                break
+            }
         }
         throw RecoveryError.failed(message)
     }

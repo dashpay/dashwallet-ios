@@ -693,7 +693,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
     func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout, fundingType: Self.shieldedAssetLockFundingType) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
@@ -1214,7 +1214,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         outPointVout: UInt32,
         recipientAmountDuffs: UInt64
     ) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout, fundingType: Self.addressAssetLockFundingType) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1515,11 +1515,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// again") holds its own coordinator, so the phase gate alone cannot see an
     /// attempt that is already running, such as a transfer waiting minutes for
     /// its ChainLock.
-    private func beginTransfer(consuming txidWire: Data, vout: UInt32) -> Bool {
+    ///
+    /// It also fails for a lock that may be another transfer's new lock its
+    /// poll has not claimed yet: such a lock can already show as a stuck one,
+    /// and a resume of it would run alongside the transfer.
+    private func beginTransfer(consuming txidWire: Data, vout: UInt32, fundingType: Int) -> Bool {
         if phase == .idle,
            ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: txidWire, vout: vout)) {
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock is still being consumed by another attempt")
             handleFailure(CoordinatorError.assetLockInFlight)
+            return false
+        }
+        if phase == .idle,
+           Self.mayBeUnclaimedNewLock(txidWire: txidWire, vout: vout, fundingType: fundingType) {
+            Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock may be a running transfer's new lock")
+            handleFailure(CoordinatorError.newAssetLockInFlight)
             return false
         }
         guard beginTransfer() else { return false }
@@ -1533,6 +1543,28 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let key = ShieldedAssetLocksInFlight.OutPoint(txidWire: outPoint.txidWire, vout: outPoint.vout)
         ShieldedAssetLocksInFlight.shared.claim(key)
         inFlightOutPoint = key
+        if let newLockSlot {
+            ShieldedAssetLocksInFlight.shared.markNewLockClaimed(newLockSlot)
+        }
+    }
+
+    /// Whether the lock at (`txidWire`, `vout`) may be the new lock of a
+    /// running transfer whose poll has not claimed it yet: a lock of the same
+    /// wallet and funding type created since that transfer began polling.
+    static func mayBeUnclaimedNewLock(txidWire: Data, vout: UInt32, fundingType: Int) -> Bool {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else { return false }
+        var outPoint = Data(txidWire)
+        var voutLittleEndian = vout.littleEndian
+        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
+        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate { row in
+                row.outPointHex == outPointHex && row.fundingTypeRaw == fundingType
+            })
+        descriptor.fetchLimit = 1
+        guard let row = try? container.mainContext.fetch(descriptor).first else { return false }
+        return ShieldedAssetLocksInFlight.shared.mayBeUnclaimedNewLock(
+            walletId: row.walletId, fundingType: fundingType, createdAt: row.createdAt)
     }
 
     private func releaseInFlightOutPoint() {
@@ -1657,6 +1689,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         startTime: Date,
         fundingType: Int = ShieldedTransferCoordinator.shieldedAssetLockFundingType
     ) {
+        if let newLockSlot {
+            ShieldedAssetLocksInFlight.shared.markNewLockPolling(newLockSlot, since: startTime)
+        }
         assetLockPollingTask?.cancel()
         assetLockPollingTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -1781,8 +1816,10 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
-    /// New asset locks being built and funded right now.
-    private var newLockSlots: Set<NewLockSlot> = []
+    /// New asset locks being built and funded right now: since when the
+    /// transfer polls for its lock (`nil` before it starts), and whether the
+    /// poll has claimed it.
+    private var newLockSlots: [NewLockSlot: (pollingSince: Date?, claimed: Bool)] = [:]
 
     private init() {}
 
@@ -1794,6 +1831,18 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// on the whole transaction, such as removing it.
     func containsTransaction(txidWire: Data) -> Bool {
         lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
+    }
+
+    /// Whether a lock of `walletId` and `fundingType` created at `createdAt`
+    /// may be the new lock of a running transfer that has not claimed it yet.
+    func mayBeUnclaimedNewLock(walletId: Data, fundingType: Int, createdAt: Date) -> Bool {
+        let slot = NewLockSlot(walletId: walletId, fundingType: fundingType)
+        return lock.withLock {
+            guard let state = newLockSlots[slot], !state.claimed,
+                  let pollingSince = state.pollingSince
+            else { return false }
+            return createdAt >= pollingSince
+        }
     }
 
     /// Whether any transfer is building a new asset lock or consuming one.
@@ -1822,17 +1871,27 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// slot was free and is now taken.
     @MainActor
     fileprivate func takeNewLockSlot(_ slot: NewLockSlot) -> Bool {
-        guard !lock.withLock({ newLockSlots.contains(slot) }) else { return false }
+        guard lock.withLock({ newLockSlots[slot] == nil }) else { return false }
         // `hasActivity` changes.
         objectWillChange.send()
-        lock.withLock { _ = newLockSlots.insert(slot) }
+        lock.withLock { newLockSlots[slot] = (pollingSince: nil, claimed: false) }
         return true
     }
 
     @MainActor
+    fileprivate func markNewLockPolling(_ slot: NewLockSlot, since startTime: Date) {
+        lock.withLock { newLockSlots[slot]?.pollingSince = startTime }
+    }
+
+    @MainActor
+    fileprivate func markNewLockClaimed(_ slot: NewLockSlot) {
+        lock.withLock { newLockSlots[slot]?.claimed = true }
+    }
+
+    @MainActor
     fileprivate func releaseNewLockSlot(_ slot: NewLockSlot) {
-        guard lock.withLock({ newLockSlots.contains(slot) }) else { return }
+        guard lock.withLock({ newLockSlots[slot] != nil }) else { return }
         objectWillChange.send()
-        lock.withLock { _ = newLockSlots.remove(slot) }
+        lock.withLock { newLockSlots[slot] = nil }
     }
 }
