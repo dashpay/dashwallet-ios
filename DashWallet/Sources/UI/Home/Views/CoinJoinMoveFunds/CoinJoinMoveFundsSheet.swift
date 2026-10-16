@@ -164,16 +164,30 @@ struct CoinJoinMoveFundsSheet: View {
 
     private var shieldInFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Same steps as the internal transfer's Core → Shielded route —
-            // the drain is one asset lock, driven by the same coordinator.
-            ShieldedTransferStepList(
-                currentPhase: viewModel.coordinator.phase,
-                steps: [
-                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                    .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
-                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
-                ])
+            if viewModel.preparation != nil {
+                // More mixed coins than one asset lock can spend: they are
+                // consolidated first, which adds a step ahead of the lock.
+                ShieldedTransferStepList(
+                    labels: [
+                        NSLocalizedString("Authorizing", comment: ""),
+                        NSLocalizedString("Preparing your coins", comment: "CoinJoin"),
+                        NSLocalizedString("Locking funds", comment: ""),
+                        NSLocalizedString("Generating proof", comment: ""),
+                        NSLocalizedString("Broadcasting", comment: ""),
+                    ],
+                    currentIndex: viewModel.preparedChecklistIndex)
+            } else {
+                // Same steps as the internal transfer's Core → Shielded route —
+                // the drain is one asset lock, driven by the same coordinator.
+                ShieldedTransferStepList(
+                    currentPhase: viewModel.coordinator.phase,
+                    steps: [
+                        .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
+                        .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
+                        .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
+                        .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                    ])
+            }
 
             Text(NSLocalizedString(
                 "Building the privacy proof can take up to a minute. Keep the app open.",
