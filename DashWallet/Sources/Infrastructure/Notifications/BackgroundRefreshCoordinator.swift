@@ -548,13 +548,20 @@ final class BackgroundRefreshCoordinator {
     /// and BLAST in a process about to be suspended.
     @MainActor
     static func defaultRuntimeStart(while gate: BackgroundRefreshStartGate) async -> Bool {
-        let runtime = SwiftDashSDKWalletRuntime.shared
+        await defaultRuntimeStart(while: gate, runtime: .shared)
+    }
+
+    /// `defaultRuntimeStart(while:)` over an explicit runtime: the lifecycle
+    /// tests drive it against a runtime whose rebuild is a recorder.
+    static func defaultRuntimeStart(
+        while gate: BackgroundRefreshStartGate, runtime: SwiftDashSDKWalletRuntime
+    ) async -> Bool {
         await runtime.rearmPlatformSync {
             gate() && WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation
         }
         guard gate() else { return false }
-        guard case .success(let network) = runtime.resolveCurrentNetwork() else { return false }
-        return runtime.isCoreRuntimeReady(for: network)
+        guard case .success(let network) = runtime.steps.resolveCurrentNetwork() else { return false }
+        return runtime.steps.isCoreRuntimeReady(for: network)
     }
 
     /// Poll `SyncingActivityMonitor` until `.syncDone` (the module's sync

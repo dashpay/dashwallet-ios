@@ -1,4 +1,5 @@
 import XCTest
+import SwiftDashSDK
 @testable import dashpay
 
 @MainActor
@@ -214,4 +215,61 @@ final class IdentityBalanceRefreshTests: XCTestCase {
         XCTAssertFalse(model.isIdentityBalanceRefreshing)
     }
 
+
+    func testCoordinatorReturnsSuccessAndClearsDraftWhileBalanceReadIsSuspended() async throws {
+        let contestedNames = RecordingContestedNames()
+        let draftStore = RecordingDraftStore()
+        var validateContext: @MainActor () -> Bool = { true }
+        let coordinator = DWIdentityRegistrationCoordinator(collaborators: .init(
+            contestedNames: contestedNames, draftStore: draftStore, isActiveContext: { _, _ in validateContext() }))
+        let identityId = Data([2])
+        let walletId = Data([1])
+        let newController = DWIdentityRegistrationController()
+        let draftScope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: walletId, identityId: identityId)
+        let readStarted = expectation(description: "Balance read started")
+        let readFinished = expectation(description: "Balance read finished")
+        var resumeRead: CheckedContinuation<Void, Never>?
+        var returnedSuccess = false
+        let completed = expectation(description: "Registration returned")
+        let registration = Task { @MainActor in
+            let identity = coordinator.completeNameRegistration(
+                identityId: identityId, username: "alice", nameState: .owned, draftScope: draftScope,
+                walletId: walletId, network: .testnet, newController: newController
+            ) {
+                XCTAssertTrue(returnedSuccess, "Success must return before optional balance read")
+                XCTAssertEqual(newController.phase, .completed(identityId: identityId))
+                XCTAssertTrue(draftStore.didClear)
+                XCTAssertTrue(contestedNames.didClearPending)
+                await withCheckedContinuation { continuation in
+                    resumeRead = continuation
+                    readStarted.fulfill()
+                }
+                readFinished.fulfill()
+            }
+            XCTAssertEqual(identity, identityId)
+            returnedSuccess = true
+            completed.fulfill()
+        }
+        await fulfillment(of: [completed, readStarted], timeout: 2)
+        // A context switch while the optional read is suspended cannot undo
+        // completed registration or trigger a later coordinator validation.
+        validateContext = { XCTFail("Registration already completed"); return false }
+        resumeRead?.resume()
+        await fulfillment(of: [readFinished], timeout: 2)
+        await registration.value
+    }
+}
+
+@MainActor
+private final class RecordingContestedNames: ContestedNamePendingClearing {
+    var didClearPending = false
+
+    func clearPending(label: String, for network: Network, walletId: Data?) { didClearPending = true }
+}
+
+@MainActor
+private final class RecordingDraftStore: UsernameRegistrationDraftClearing {
+    var didClear = false
+
+    func clear(for scope: UsernameRegistrationDraftStore.Scope) { didClear = true }
 }

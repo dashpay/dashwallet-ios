@@ -160,9 +160,77 @@ struct RuntimeReadinessPolicy {
     }
 }
 
+// MARK: - Lifecycle collaborators
+
+/// The rebuild and teardown steps the queued lifecycle operations compose:
+/// one trigger's whole runtime bring-up, the full stop, and the reads that
+/// route around them. Production is the runtime itself; the lifecycle tests
+/// substitute a recorder so the serial queue, the automatic-preparation
+/// admission and the local-store reset ordering run without an SDK, SPV
+/// client or BLAST.
+@MainActor
+protocol WalletRuntimeLifecycleSteps: AnyObject {
+    @discardableResult
+    func refresh(
+        trigger: SwiftDashSDKWalletRuntime.RefreshTrigger,
+        runtimeAlreadyStopped: Bool
+    ) async -> WalletPreparationFailure?
+    func fullReset(lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool) async
+    func dropLocalStoreDerivedState()
+    func clearLocalStoreMaintenanceFlags()
+    func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool
+    func publishActiveWalletDidChange(reason: String)
+    func resolveCurrentNetwork() -> Result<Network, SwiftDashSDKWalletRuntime.RuntimeError>
+    func isCoreRuntimeReady(for network: Network) -> Bool
+}
+
+/// The host's model-container admission a local-store reset takes before
+/// the teardown and releases on every exit. Production is `SwiftDashSDKHost`.
+@MainActor
+protocol WalletLocalStoreResetAdmitting: AnyObject {
+    func validateLocalStoreReset() async throws
+    func suspendModelContainerOpens() async
+    func waitForLocalStoreRelease() async throws
+    func resumeModelContainerOpens()
+}
+
+extension SwiftDashSDKHost: WalletLocalStoreResetAdmitting {}
+
+/// A balance mirror silenced the moment a network change is observed, ahead
+/// of the refresh queued for it. Production is the Core SPV and Platform
+/// coordinators.
+@MainActor
+protocol NetworkSwitchPreparing: AnyObject {
+    func prepareForNetworkSwitch()
+}
+
+extension SwiftDashSDKSPVCoordinator: NetworkSwitchPreparing {}
+extension PlatformAddressSyncCoordinator: NetworkSwitchPreparing {}
+
+extension SwiftDashSDKWalletRuntime {
+    /// What the queued lifecycle operations drive. `steps` nil means the
+    /// runtime's own rebuild (`refresh`, `fullReset`, …); the lifecycle
+    /// tests substitute a recorder together with stand-in store users.
+    struct Collaborators {
+        var steps: (any WalletRuntimeLifecycleSteps)?
+        var host: any WalletLocalStoreResetAdmitting
+        var coreMirror: any NetworkSwitchPreparing
+        var platformMirror: any NetworkSwitchPreparing
+
+        @MainActor
+        static var production: Collaborators {
+            Collaborators(
+                steps: nil,
+                host: SwiftDashSDKHost.shared,
+                coreMirror: SwiftDashSDKSPVCoordinator.shared,
+                platformMirror: PlatformAddressSyncCoordinator.shared)
+        }
+    }
+}
+
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
-final class SwiftDashSDKWalletRuntime: NSObject {
+final class SwiftDashSDKWalletRuntime: NSObject, WalletRuntimeLifecycleSteps {
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-runtime")
@@ -190,6 +258,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private var observerToken: NSObjectProtocol?
     private let lifecycleQueue = SerialAsyncLifecycleQueue()
+    private let collaborators: Collaborators
+
+    /// The rebuild the queued operations compose: this runtime's own unless
+    /// a test substituted a recorder.
+    var steps: any WalletRuntimeLifecycleSteps { collaborators.steps ?? self }
 
     /// The network Core is bound to, set once Core SPV has started and BEFORE
     /// Platform/BLAST is asked to start. It means "Core is bound", not
@@ -223,7 +296,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private var platformPhase: PlatformPhase = .notStarted
 
-    private override init() {
+    private override convenience init() {
+        self.init(collaborators: .production)
+    }
+
+    /// A runtime over substitute collaborators. The lifecycle tests use it;
+    /// `shared` is built over `Collaborators.production`.
+    init(collaborators: Collaborators) {
+        self.collaborators = collaborators
         super.init()
     }
 
@@ -244,7 +324,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         await enqueueAwaitable {
             let state = WalletLifecycleTransitionState.shared
             guard case let .failedWalletOpen(shown) = state.phase else { return }
-            if let failure = await self.refresh(trigger: .startIfReady) {
+            if let failure = await self.steps.refresh(trigger: .startIfReady, runtimeAlreadyStopped: false) {
                 // `prepareWallet` moves the phase the moment the open runs
                 // (to the record it classified, or to idle). From a keys card
                 // the retry follows the automatic kick's rule: a phase still
@@ -291,7 +371,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             }
             let started = CFAbsoluteTimeGetCurrent()
             DWLogger.log("🧹 STORE-RESET begin codes=\(failure.codes.joined(separator: ","))")
-            let host = SwiftDashSDKHost.shared
+            let host = self.collaborators.host
+            let steps = self.steps
             // Every exit releases admission; until then no off-queue caller
             // may open a container over a directory being removed.
             defer { host.resumeModelContainerOpens() }
@@ -299,8 +380,8 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             do {
                 try await host.validateLocalStoreReset()
                 await host.suspendModelContainerOpens()
-                await self.fullReset(lastError: nil, forWipe: false)
-                self.dropLocalStoreDerivedState()
+                await steps.fullReset(lastError: nil, forWipe: false, preservingShieldedRecovery: false)
+                steps.dropLocalStoreDerivedState()
                 try await host.waitForLocalStoreRelease()
                 let activeResetter: any WalletLocalStoreResetting =
                     try resetter ?? WalletLocalStoreResetter(roots: .inDocuments())
@@ -311,22 +392,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 // deletion is covered by the resetter's durable per-scope
                 // rescan intent, honored by `CoinJoinRecovery` until that
                 // scope's wide scan completes.
-                self.clearLocalStoreMaintenanceFlags()
+                steps.clearLocalStoreMaintenanceFlags()
             } catch {
                 state.restoreAfterLocalStoreReset(phase: originalPhase, failure: failure)
                 throw error
             }
             host.resumeModelContainerOpens()
-            if case .success(let network) = self.resolveCurrentNetwork() {
-                _ = self.selectSolePersistedNetworkIfNeeded(currentNetwork: network)
+            if case .success(let network) = steps.resolveCurrentNetwork() {
+                _ = steps.selectSolePersistedNetworkIfNeeded(currentNetwork: network)
             }
-            let restartFailure = await self.refresh(trigger: .startIfReady, runtimeAlreadyStopped: true)
+            let restartFailure = await steps.refresh(trigger: .startIfReady, runtimeAlreadyStopped: true)
             if let restartFailure {
                 state.fail(.failedWalletOpen(restartFailure))
             } else {
                 state.finish()
             }
-            self.publishActiveWalletDidChange(reason: "local-stores-reset")
+            steps.publishActiveWalletDidChange(reason: "local-stores-reset")
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             DWLogger.log("🧹 STORE-RESET done scopes=\(report.scopes.joined(separator: ",")) verdict=\(state.phase.logLabel) in \(ms)ms")
             return restartFailure.map(LocalStoreResetOutcome.failed) ?? .reset
@@ -337,7 +418,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// the reset is about to delete. Runs after `fullReset`, so no manager
     /// holds a store: a cached `ModelContainer` kept past this point would
     /// hand the next start the unlinked inode instead of the fresh file.
-    private func dropLocalStoreDerivedState() {
+    func dropLocalStoreDerivedState() {
         PlatformAddressSyncCoordinator.shared.dropRetainedModelContainer()
         // The identity rows live in the deleted store; the same call the
         // devnet chain change makes between teardown and rebuild.
@@ -360,7 +441,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// The one-time CoinJoin wide-gap scan flags and every pending birth-height
     /// resync marker describe the stores that are now gone. Runs only after a
     /// complete deletion.
-    private func clearLocalStoreMaintenanceFlags() {
+    func clearLocalStoreMaintenanceFlags() {
         CoinJoinRecovery.shared.resetRecoveryFlags()
         SPVChainResyncMarker.clearAll()
     }
@@ -513,7 +594,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         let task = enqueueAwaitable { [weak self] in
             // A queued recovery must not undo a later Stop or wallet wipe.
             guard shouldStart() else { return }
-            await self?.refresh(trigger: .platformSyncRearm)
+            await self?.steps.refresh(trigger: .platformSyncRearm, runtimeAlreadyStopped: false)
         }
         await task.value
     }
@@ -802,7 +883,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// awaits the previous task before running, so two callers in quick
     /// succession (for example two peer-rotation requests) are processed
     /// strictly in order.
-    private func enqueue(_ op: @escaping @MainActor () async -> Void) {
+    func enqueue(_ op: @escaping @MainActor () async -> Void) {
         lifecycleQueue.enqueue(op)
     }
 
@@ -812,11 +893,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// ordering `enqueue` provides: the returned task awaits the previous
     /// lifecycle task before running.
     @discardableResult
-    private func enqueueAwaitable(_ op: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+    func enqueueAwaitable(_ op: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
         lifecycleQueue.enqueue(op)
     }
 
-    private func enqueueRefresh(trigger: RefreshTrigger) {
+    func enqueueRefresh(trigger: RefreshTrigger) {
         enqueue { [weak self] in
             // Automatic kicks (including material-change notifications) must
             // leave Help and its unsent draft intact. Re-read on the serial
@@ -827,7 +908,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 state.recordDeferredAutomaticPreparation()
                 return
             }
-            await self?.refresh(trigger: trigger)
+            await self?.steps.refresh(trigger: trigger, runtimeAlreadyStopped: false)
         }
     }
 
@@ -866,7 +947,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     // MARK: - Core lifecycle
 
     @discardableResult
-    private func refresh(trigger: RefreshTrigger, runtimeAlreadyStopped: Bool = false) async -> WalletPreparationFailure? {
+    func refresh(trigger: RefreshTrigger, runtimeAlreadyStopped: Bool = false) async -> WalletPreparationFailure? {
         Self.logger.info("🧭 RUNTIME :: refreshing runtime for \(trigger.rawValue, privacy: .public)")
 
         guard await waitForSeedMigratorIfNeeded() else {
@@ -1040,7 +1121,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// coordinators have settled. The BLAST stop only starts the shielded
     /// sync stop, which drains a pass in flight off the main thread while SPV
     /// stops; it is awaited before the host stop.
-    private func fullReset(
+    func fullReset(
         lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
     ) async {
         if forWipe {
@@ -1070,7 +1151,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     // MARK: - Helpers
 
-    private func publishActiveWalletDidChange(reason: String) {
+    func publishActiveWalletDidChange(reason: String) {
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString() ?? "none"
         NotificationCenter.default.post(
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
@@ -1079,7 +1160,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
     }
 
-    private func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {
+    func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {
         guard let storedNetworks = try? SwiftDashSDKHost.persistedSDKWalletNetworks(),
               !storedNetworks.contains(currentNetwork),
               storedNetworks.count == 1,
@@ -1190,14 +1271,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         return true
     }
 
-    private func handleObservedNetworkChange() {
+    func handleObservedNetworkChange() {
         // The automatic refresh may be refused after a database-open failure.
         // Refuse its immediate side effects too, without detaching the runtime.
         guard WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation else { return }
         // Silence all balance mirrors immediately so the previous network's
         // funds never render as the new one's while the refresh is queued.
-        SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
-        PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
+        collaborators.coreMirror.prepareForNetworkSwitch()
+        collaborators.platformMirror.prepareForNetworkSwitch()
         // The queue checks admission again: an earlier open can still fail
         // before this notification reaches the head of the queue.
         enqueueRefresh(trigger: .networkDidChange)
