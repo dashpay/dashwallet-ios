@@ -1628,11 +1628,9 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             balanceCredits: 10_000_000_000,
             feeReserveCredits: 2_000_000_000)
 
-        XCTAssertNotNil(message)
-        XCTAssertTrue(message?.contains("Shielded") == true)
-        XCTAssertTrue(
-            message?.contains("0.08 DASH") == true
-                || message?.contains("0,08 DASH") == true)
+        // Short on purpose: the From card already shows which balance fell short and by
+        // how much, so the amount row carries only the verdict.
+        XCTAssertEqual(message, "Insufficient balance")
         XCTAssertNil(
             TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: "Shielded",
@@ -1647,11 +1645,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             requestedDuffs: 50_000_000,
             spendableDuffs: 40_000_000)
 
-        XCTAssertNotNil(message)
-        XCTAssertTrue(message?.contains("Transparent") == true)
-        XCTAssertTrue(
-            message?.contains("0.4 DASH") == true
-                || message?.contains("0,4 DASH") == true)
+        XCTAssertEqual(message, "Insufficient balance")
         XCTAssertNil(
             TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: "Transparent",

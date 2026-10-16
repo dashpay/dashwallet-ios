@@ -6,19 +6,12 @@
 //  the safety-critical part of the lifecycle-overlay work: which operation
 //  may begin from which phase, that an authorized wipe is admitted after
 //  every failure phase, and that `advance(to:)` rejects
-//  an ownerless transition from idle. Written compile-ready per the repo's
-//  current test-target posture (the unit-test target is temporarily broken);
-//  the tests are pure MainActor state-machine checks with no SDK/FFI use.
+//  an ownerless transition from idle. The tests are pure MainActor
+//  state-machine checks with no SDK/FFI use.
 //
 
 import XCTest
-#if canImport(dashpay)
 @testable import dashpay
-#elseif canImport(dashwallet)
-@testable import dashwallet
-#else
-@testable import WalletPreparationHarness
-#endif
 
 @MainActor
 final class WalletLifecycleTransitionStateTests: XCTestCase {

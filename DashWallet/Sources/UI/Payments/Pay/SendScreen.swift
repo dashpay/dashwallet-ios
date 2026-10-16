@@ -311,8 +311,6 @@ struct SendSourceScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -419,23 +417,22 @@ struct ExternalSendAmountScreen: View {
         VStack(spacing: 0) {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
-                SendContactIntro(
-                    contact: contact,
-                    balanceDuffs: viewModel.coreToCoreSpendableDuffs,
+                DashUIKit.NavigationBar(leading: {
                     // Leaving mid-broadcast would hide the outcome — the
                     // success, or the "don't send it again" notice.
-                    onBack: { if !isContactSendInFlight { onBack() } })
+                    DashUIKit.NavigationBarElement.back.button(action: {
+                        if !isContactSendInFlight { onBack() }
+                    })
+                })
+                SendContactIntro(
+                    contact: contact,
+                    balanceDuffs: viewModel.coreToCoreSpendableDuffs)
                     .padding(.horizontal, 20)
-                    .padding(.top, 10)
             } else {
                 SendStepHeader(onBack: onBack)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
             }
             #else
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
             #endif
 
             ScrollView {
@@ -724,33 +721,25 @@ struct ExternalSendAmountScreen: View {
 
 // MARK: - Shared step chrome
 
-/// Back-chevron + "Send" title, shared by the source and amount steps.
+/// Back + "Send" title, shared by the source and amount steps.
 private struct SendStepHeader: View {
     var onBack: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
+        DashUIKit.NavigationBar(
+            leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
+            central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
+                    .foregroundColor(Color.dash.primaryText)
+            })
     }
 }
 
 #if DASHPAY
 
-/// The contact route's header: the design system's TopIntro — back control, a
-/// large left-aligned title, and the recipient named underneath.
+/// The contact route's intro under its navigation bar: the design system's
+/// TopIntro — a large left-aligned title, and the recipient named underneath.
 ///
 /// `TopIntroView` draws the title. The recipient line is composed here rather
 /// than passed as its `mainDescription` because the component's descriptions
@@ -766,7 +755,6 @@ private struct SendContactIntro: View {
     /// button is gated on, not the raw balance — typing the number shown here
     /// must not come back as "insufficient balance".
     let balanceDuffs: UInt64
-    var onBack: () -> Void
 
     /// Hidden first, like the merchant pay screen: the number is here to be
     /// consulted, not broadcast to whoever is looking at the phone.
@@ -779,16 +767,6 @@ private struct SendContactIntro: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("Back", comment: "")))
-
             VStack(alignment: .leading, spacing: 4) {
                 DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))
 

@@ -608,7 +608,9 @@ struct RecoveryPhrasePickerScreen: View {
             Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                NavBarBack { viewModel.cancel() }
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button { viewModel.cancel() }
+                })
 
                 Text(NSLocalizedString("Choose Wallet", comment: "Recovery phrase"))
                     .font(.title)
