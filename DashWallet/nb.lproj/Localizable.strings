@@ -6298,6 +6298,7 @@
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
+"A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again." = "A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again.";
 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
 "Account" = "Account";
 "Account Information" = "Account Information";

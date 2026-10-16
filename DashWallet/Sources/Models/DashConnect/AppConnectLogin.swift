@@ -555,8 +555,16 @@ struct AppConnectGrant: Codable, Equatable {
     /// registration is submitted until the key is seen on the identity.
     /// While set, the key may be there or not: an update can land without
     /// confirming. Such a record has no row and no response; it is kept so
-    /// the key, if it lands, is found and confirmed.
+    /// the key, if it lands, is found and confirmed, until a disconnect
+    /// finds that the update can no longer land.
     var unconfirmedKeyHash160: String? = nil
+    /// The identity revision the registration's update was submitted with,
+    /// set with `unconfirmedKeyHash160`. Platform takes an identity update
+    /// only at one above the identity's revision, so once the identity is at
+    /// this revision or past it without the key live, the update can never
+    /// land.
+    /// `nil` on a record from a build that did not note it.
+    var submittedRevision: UInt64? = nil
 
     var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
 
