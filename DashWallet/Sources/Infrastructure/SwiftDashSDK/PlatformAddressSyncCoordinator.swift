@@ -2086,7 +2086,7 @@ final class ShieldedTxLookup {
     /// Value-only result crossing from the detached SwiftData reader back to
     /// the main actor. Persistent models and `ModelContext` never cross that
     /// boundary.
-    private struct SnapshotBuildResult: Sendable {
+    struct SnapshotBuildResult: Sendable {
         let map: [String: ShieldedLockInfo]?
         let assetLockCount: Int
         let typesSeen: [Int]
@@ -2107,8 +2107,29 @@ final class ShieldedTxLookup {
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
 
+    /// Where `refresh` reads from: the active model container, and the
+    /// snapshot built from it off the main actor.
+    struct RefreshSource: Sendable {
+        let activeContainer: @MainActor @Sendable () -> ModelContainer?
+        let buildSnapshot: @Sendable (ModelContainer) async -> SnapshotBuildResult
+
+        /// The running wallet's container, read through SwiftData in a
+        /// detached task.
+        static let live = RefreshSource(
+            activeContainer: { SwiftDashSDKHost.shared.modelContainer },
+            buildSnapshot: { container in
+                await Task.detached(priority: .utility) {
+                    ShieldedTxLookup.buildSnapshot(in: container)
+                }.value
+            })
+    }
+
+    private let source: RefreshSource
+
     /// Production code uses `shared`; tests build their own lookups.
-    init() {}
+    init(source: RefreshSource = .live) {
+        self.source = source
+    }
 
     /// Locked shielded amount (duffs) for an L1 funding txid, or `nil` if the
     /// txid is not a tracked shielded asset lock. `txidHex` must be
@@ -2186,7 +2207,7 @@ final class ShieldedTxLookup {
         let inserted = consumedOverlay.insert(key).inserted
         lock.unlock()
         if inserted {
-            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
         }
     }
 
@@ -2201,7 +2222,7 @@ final class ShieldedTxLookup {
         let generation = refreshGeneration
         let refreshID = String(UUID().uuidString.prefix(8))
 
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+        guard let container = source.activeContainer() else {
             store([:])
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] skipped reason=\(reason) — no model container")
@@ -2212,13 +2233,11 @@ final class ShieldedTxLookup {
         DWLogger.log(
             "🛡️ SHIELD-TX-REFRESH [\(refreshID)] start reason=\(reason) generation=\(generation)")
 
-        let result = await Task.detached(priority: .utility) {
-            Self.buildSnapshot(in: container)
-        }.value
+        let result = await source.buildSnapshot(container)
         let elapsedMS = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
 
         guard generation == refreshGeneration,
-              SwiftDashSDKHost.shared.modelContainer === container else {
+              source.activeContainer() === container else {
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] stale after \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain)")
             return
@@ -2329,7 +2348,7 @@ final class ShieldedTxLookup {
         }
         lock.unlock()
         if changed {
-            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: nil)
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
         }
     }
 }
@@ -2337,7 +2356,8 @@ final class ShieldedTxLookup {
 extension Notification.Name {
     /// Posted on the main actor when what `ShieldedTxLookup` reports changes:
     /// a published snapshot that differs from the previous one, or a lock a
-    /// transfer marked consumed. A superseded refresh posts nothing.
+    /// transfer marked consumed. A superseded refresh posts nothing. The
+    /// notification's object is the posting lookup.
     static let shieldedTxLookupDidChange = Notification.Name("ShieldedTxLookupDidChange")
 }
 
