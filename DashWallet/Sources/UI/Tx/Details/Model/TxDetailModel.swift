@@ -623,9 +623,18 @@ extension TxDetailModel {
     /// never mined), which is exactly the state a network-dropped send
     /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
     /// `UnconfirmedTransactionRemover` re-verifies the local state and
-    /// checks a block explorer before touching anything.
+    /// checks a block explorer before touching anything. Not offered while
+    /// any transfer builds or consumes an asset lock, which the remover
+    /// refuses: its runtime reload would stop that transfer.
     var supportsUnconfirmedRemoval: Bool {
-        transaction.state == .processing
+        transaction.state == .processing && !ShieldedAssetLocksInFlight.shared.hasActivity
+    }
+
+    /// True while a running transfer has claimed an output of this
+    /// transaction — for a new lock from the moment the SDK builds it, before
+    /// the lock's row exists or appears in `ShieldedTxLookup`.
+    var isConsumedByRunningTransfer: Bool {
+        ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer
@@ -643,6 +652,19 @@ extension TxDetailModel {
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
     var stuckAssetLockRetry: StuckAssetLockRetry? {
+        // A transfer still consuming its lock (e.g. waiting for the
+        // ChainLock) is not stuck, and a retry would only be refused.
+        guard !isConsumedByRunningTransfer else { return nil }
+        return assetLockRetryCandidate
+    }
+
+    /// True when this transaction's lock would be offered a retry but a
+    /// running transfer is still consuming it.
+    var isAssetLockRetryInFlight: Bool {
+        isConsumedByRunningTransfer && assetLockRetryCandidate != nil
+    }
+
+    private var assetLockRetryCandidate: StuckAssetLockRetry? {
         let info = transaction.identityFundingLockInfo
             ?? transaction.platformFundingLockInfo
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)

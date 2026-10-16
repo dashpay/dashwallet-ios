@@ -834,7 +834,7 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
-            if outcome.cancelled, outcome.attempted == 0 {
+            if outcome.cancelled, outcome.attempted == 0, outcome.inProgress == 0 {
                 recoveryResultIsError = false
                 recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")
                 return
@@ -858,6 +858,11 @@ extension SwiftDashSDKSPVStatusScreen {
                 parts.append(String(
                     format: NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
                     outcome.awaitingSync))
+            }
+            if outcome.inProgress > 0 {
+                parts.append(String(
+                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
+                    outcome.inProgress))
             }
             if outcome.failed > 0 {
                 parts.append(String(

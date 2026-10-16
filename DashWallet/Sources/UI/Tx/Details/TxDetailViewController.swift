@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 import SwiftUI
 import DashUIKit
@@ -111,6 +112,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    private var inFlightLocksObservation: AnyCancellable?
 
     enum Section: CaseIterable {
         case header
@@ -219,6 +221,28 @@ class TXDetailViewController: BaseTxDetailsViewController {
         model.resolveExplorerFee { [weak self] in
             self?.reloadDataSource()
         }
+
+        // The retry and removal rows depend on whether a running transfer is
+        // consuming this transaction's asset lock, and on the lock status
+        // `ShieldedTxLookup` reports; a claim or release and each published
+        // lookup snapshot trigger a rebuild. The registry publishes once a
+        // claim or release has landed, and the rows are rebuilt on the next
+        // main-queue turn.
+        // The projection change, which the transfer routes post when they
+        // finish, rebuilds them as well.
+        let lookupChanged = NotificationCenter.default
+            .publisher(for: .shieldedTxLookupDidChange)
+            .map { _ in () }
+        let projectionChanged = NotificationCenter.default
+            .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .map { _ in () }
+        inFlightLocksObservation = ShieldedAssetLocksInFlight.shared.objectWillChange
+            .map { _ in () }
+            .merge(with: lookupChanged, projectionChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.reloadDataSource()
+            }
     }
 }
 
@@ -276,7 +300,18 @@ extension TXDetailViewController {
     /// spans the whole recovery, so the HUD honestly covers a
     /// several-minute worst case rather than claiming early success.
     private func retryStuckAssetLock() {
-        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        guard !isRetryingAssetLock else { return }
+        guard let retry = model.stuckAssetLockRetry else {
+            // The row was built before a transfer started consuming this
+            // lock: say so and drop the row rather than ignore the tap.
+            if model.isAssetLockRetryInFlight {
+                presentDashUIKitToast(
+                    style: .info,
+                    message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+                reloadDataSource()
+            }
+            return
+        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
@@ -606,7 +641,8 @@ extension TXDetailViewController {
         if let retry = model.stuckAssetLockRetry {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
             currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
-            if retry.supportsRemoval {
+            // The remover refuses while any transfer is active.
+            if retry.supportsRemoval, !ShieldedAssetLocksInFlight.shared.hasActivity {
                 currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
             }
         } else if model.supportsUnconfirmedRemoval {
