@@ -2107,7 +2107,8 @@ final class ShieldedTxLookup {
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
 
-    private init() {}
+    /// Production code uses `shared`; tests build their own lookups.
+    init() {}
 
     /// Locked shielded amount (duffs) for an L1 funding txid, or `nil` if the
     /// txid is not a tracked shielded asset lock. `txidHex` must be
@@ -2313,8 +2314,10 @@ final class ShieldedTxLookup {
         }
     }
 
+    /// Publishes `map` as the snapshot. `refresh` is its only production
+    /// caller; tests publish snapshots through it directly.
     @MainActor
-    private func store(_ map: [String: ShieldedLockInfo]) {
+    func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
         let changed = infoByTxid != map
         infoByTxid = map

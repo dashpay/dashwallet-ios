@@ -757,7 +757,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// definitely rejected, which removes the lock again. A lock the SDK kept
     /// stays tracked even when its row could not be saved, so the outpoint is
     /// recorded without reading the row.
-    private func finishNewAssetLock(_ capture: NewAssetLockCapture, armingRetryAfter failure: Error? = nil) {
+    func finishNewAssetLock(_ capture: NewAssetLockCapture, armingRetryAfter failure: Error? = nil) {
         stopAssetLockPolling()
         guard let key = capture.withLock({ $0 }) else { return }
         // A fresh build starts from `beginTransfer()`, which claims nothing,
@@ -770,10 +770,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
         inFlightOutPoint = key
-        if let failure {
-            if case PlatformWalletError.transactionBroadcastRejected = failure { return }
+        if let failure, Self.keepsLockForRetry(after: failure) {
             lastAssetLockOutPoint = key
         }
+    }
+
+    /// Whether a fresh build's lock is still there after `failure`: every
+    /// failure except a definite broadcast rejection, which removes it again.
+    static func keepsLockForRetry(after failure: Error) -> Bool {
+        if case PlatformWalletError.transactionBroadcastRejected = failure { return false }
+        return true
     }
 
     /// Route 2: DIP-17 transparent Platform Payment credits → Type 15 shield.
@@ -1635,7 +1641,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
 /// The outpoint a fresh-build funding call reports for its new asset lock.
 /// Written once on the FFI worker thread, read on the main actor.
-private typealias NewAssetLockCapture = OSAllocatedUnfairLock<ShieldedAssetLocksInFlight.OutPoint?>
+typealias NewAssetLockCapture = OSAllocatedUnfairLock<ShieldedAssetLocksInFlight.OutPoint?>
 
 /// Asset locks a `ShieldedTransferCoordinator` is consuming right now, across
 /// every coordinator instance.
@@ -1671,7 +1677,8 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// Fresh transfers that will build or are building a new asset lock.
     private var fundingCalls = 0
 
-    private init() {}
+    /// Production code uses `shared`; tests build their own registries.
+    init() {}
 
     func contains(_ outPoint: OutPoint) -> Bool {
         lock.withLock { claims[outPoint, default: 0] > 0 }
@@ -1692,16 +1699,20 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     // answers, and only the first and the last funding call change
     // `hasActivity`, so only those publish. Each operation decides that in the
     // same critical section as its change.
+    //
+    // The mutating calls below are for `ShieldedTransferCoordinator` (and the
+    // tests) only: claims are counted, not owned, so a release from anywhere
+    // else would drop a running transfer's claim.
 
     @MainActor
-    fileprivate func claim(_ outPoint: OutPoint) {
+    func claim(_ outPoint: OutPoint) {
         if addClaim(outPoint) { objectWillChange.send() }
     }
 
     /// `claim` for the SDK's built-lock callback, which runs on the FFI worker
     /// thread: the claim is recorded before the callback returns, and the
     /// change is published on the main queue afterwards.
-    fileprivate func claimBuiltLock(_ outPoint: OutPoint) {
+    func claimBuiltLock(_ outPoint: OutPoint) {
         guard addClaim(outPoint) else { return }
         DispatchQueue.main.async { self.objectWillChange.send() }
     }
@@ -1715,7 +1726,7 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     }
 
     @MainActor
-    fileprivate func release(_ outPoint: OutPoint) {
+    func release(_ outPoint: OutPoint) {
         let wasLast = lock.withLock { () -> Bool in
             guard let count = claims[outPoint] else { return false }
             claims[outPoint] = count > 1 ? count - 1 : nil
@@ -1725,7 +1736,7 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     }
 
     @MainActor
-    fileprivate func beginFundingCall() {
+    func beginFundingCall() {
         let isFirst = lock.withLock { () -> Bool in
             fundingCalls += 1
             return fundingCalls == 1
@@ -1734,7 +1745,7 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     }
 
     @MainActor
-    fileprivate func endFundingCall() {
+    func endFundingCall() {
         let wasLast = lock.withLock { () -> Bool in
             guard fundingCalls > 0 else { return false }
             fundingCalls -= 1
