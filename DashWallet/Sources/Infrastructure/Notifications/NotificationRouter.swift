@@ -33,9 +33,18 @@ final class NotificationRouter: NotificationRouting {
     /// The controller notification screens present from — the window's root,
     /// resolved at tap time.
     private let presentingController: () -> UIViewController?
+    /// The lock screen is up; a tap that would present a screen waits for the
+    /// unlock, as an incoming link does.
+    private let isLocked: @MainActor () -> Bool
+    /// A tap waiting for the app to become active or to be unlocked (the first
+    /// one wins, as for links). Dropped when the wallet changes or is wiped.
+    private var waitingRoute: DeepLinkRoute?
+    private var waitObservers: [NSObjectProtocol] = []
 
-    init(presentingController: @escaping () -> UIViewController?) {
+    init(presentingController: @escaping () -> UIViewController?,
+         isLocked: @escaping @MainActor () -> Bool = { WalletLifecycleOverlayPresenter.shared.lockScreenVisible }) {
         self.presentingController = presentingController
+        self.isLocked = isLocked
     }
 
     func open(_ route: DeepLinkRoute) {
@@ -46,11 +55,25 @@ final class NotificationRouter: NotificationRouting {
             break
 
         case .staking:
+            // Delivered before the app is active, the lock screen — if it is
+            // due — is not up yet: decide once the app is active.
+            if UIApplication.shared.applicationState != .active {
+                wait(for: UIApplication.didBecomeActiveNotification, toOpen: route)
+                return
+            }
+            if isLocked() {
+                wait(for: Self.appDidUnlock, toOpen: route)
+                return
+            }
             // CrowdNode needs a synced wallet; before that, the tap just
             // opens the app.
             guard SyncingActivityMonitor.shared.state == .syncDone else { return }
+            // Covering the screen is replacing it: same rule as an incoming
+            // link — not over a payment or anything presented.
+            guard let root = presentingController(),
+                  !PaymentInFlight.refuses(.navigation, over: root) else { return }
             let controller = CrowdNodeModelObjcWrapper.getRootVC()
-            presentingController()?.present(controller, animated: true)
+            root.present(controller, animated: true)
 
         case .url(let url):
             UIApplication.shared.open(url)
@@ -62,4 +85,38 @@ final class NotificationRouter: NotificationRouting {
             break
         }
     }
+
+    private func wait(for event: Notification.Name, toOpen route: DeepLinkRoute) {
+        guard waitingRoute == nil else { return }
+        waitingRoute = route
+        let center = NotificationCenter.default
+        waitObservers = [
+            center.addObserver(forName: event, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self, let route = self.endWait() else { return }
+                    // After the root has handled the same event (the lock
+                    // screen shows on activation).
+                    DispatchQueue.main.async { self.open(route) }
+                }
+            },
+            center.addObserver(
+                forName: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil, queue: .main
+            ) { [weak self] _ in
+                // Wiped or switched: the tap was for the wallet that is gone.
+                MainActor.assumeIsolated { _ = self?.endWait() }
+            },
+        ]
+    }
+
+    private func endWait() -> DeepLinkRoute? {
+        let route = waitingRoute
+        waitingRoute = nil
+        waitObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        waitObservers = []
+        return route
+    }
+
+    /// `DWAppDidUnlockNotification`, posted by the root once the lock screen
+    /// has gone.
+    static let appDidUnlock = Notification.Name("DWAppDidUnlockNotification")
 }

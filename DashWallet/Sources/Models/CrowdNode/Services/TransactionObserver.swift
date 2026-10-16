@@ -243,16 +243,7 @@ public final class TransactionObserver {
     /// cheap enough for callers to use as a "has anything new been persisted"
     /// check before deciding whether a full rescan is worth its cost.
     static func persistedTransactionCount() -> Int? {
-        let container = { @MainActor () -> ModelContainer? in
-            SwiftDashSDKHost.shared.modelContainer
-        }
-        let resolved: ModelContainer?
-        if Thread.isMainThread {
-            resolved = MainActor.assumeIsolated { container() }
-        } else {
-            resolved = DispatchQueue.main.sync { MainActor.assumeIsolated { container() } }
-        }
-        guard let resolved else { return nil }
+        guard let resolved = MainThread.sync({ SwiftDashSDKHost.shared.modelContainer }) else { return nil }
         return try? ModelContext(resolved).fetchCount(FetchDescriptor<PersistentTransaction>())
     }
 
@@ -385,10 +376,7 @@ public final class TransactionObserver {
             return HostHandles(container: container, walletId: walletId, network: network)
         }
 
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated { resolve() }
-        }
-        return DispatchQueue.main.sync { MainActor.assumeIsolated { resolve() } }
+        return MainThread.sync(resolve)
     }
 
     /// Waits for the first persisted tx that matches any filter. Capture

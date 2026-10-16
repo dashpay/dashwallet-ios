@@ -26,6 +26,14 @@ final class SuccessfulOperationStatusViewController: ActionButtonViewController,
 
     var closeHandler: (() -> ())?
 
+    /// The screen is a wallet send's result (a Coinbase transfer from the
+    /// wallet): while it is visible it holds its exits — and with them the
+    /// app's routing and tab bar (`ExitHold`) — so an incoming link or a tab
+    /// change cannot hide it before Close. Off for transfers made through the
+    /// Coinbase API, whose wait this does not concern.
+    var holdsExitsWhileShown = false
+    private var exitHold: ExitHold?
+
     var headerText: String! {
         didSet {
             titleLabel?.text = headerText
@@ -56,5 +64,18 @@ final class SuccessfulOperationStatusViewController: ActionButtonViewController,
         setupContentView(contentView)
 
         stackView.backgroundColor = .dw_background()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if holdsExitsWhileShown, exitHold == nil {
+            exitHold = ExitHold(on: self)
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        exitHold?.release()
+        exitHold = nil
     }
 }

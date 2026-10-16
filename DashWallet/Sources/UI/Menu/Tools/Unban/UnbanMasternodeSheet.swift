@@ -50,8 +50,10 @@ struct UnbanMasternodeSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(NSLocalizedString("Close", comment: "")) { dismiss() }
+                        .disabled(viewModel.isBroadcasting)
                 }
             }
+            .interactiveDismissDisabled(viewModel.isBroadcasting)
             .onAppear { viewModel.resumePendingIfAny() }
         }
     }

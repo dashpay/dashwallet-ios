@@ -46,14 +46,7 @@ final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
     /// maintained during SPV processing — no disk I/O.
     @objc
     static func coinJoinSpendableDuffs() -> UInt64 {
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated { readOnMain() }
-        }
-        var result: UInt64 = 0
-        DispatchQueue.main.sync {
-            result = MainActor.assumeIsolated { readOnMain() }
-        }
-        return result
+        MainThread.sync(readOnMain)
     }
 
     @MainActor

@@ -29,7 +29,12 @@ final class SwiftDashSDKWalletSending: WalletSending {
             throw SwiftDashSDKTransactionSender.SendError.invalidInput(
                 "PreparedSend carries no SDK transaction handle")
         }
-        let outcome = try SwiftDashSDKTransactionSender.broadcast(tx)
+        // Unheld here: an interactive BIP70 payment is held by the payment
+        // processor around the whole send, and a headless one by the DashSpend
+        // purchase (`DashSpendPayViewModel.purchaseGiftCardAndPay`). A
+        // broadcast left running detached after the merchant's acknowledgement
+        // has nothing on screen waiting for it.
+        let outcome = try await SwiftDashSDKTransactionSender.broadcastWithoutRoutingHold(tx)
         do {
             _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
         } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {

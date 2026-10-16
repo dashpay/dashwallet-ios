@@ -59,9 +59,8 @@ enum CoinJoinMoveDestinationPolicy {
     /// `shieldedDestinationAvailable(hasShieldedAddress:poolFeeCredits:balanceDuffs:)`
     /// with the two wallet-side inputs read from the SDK.
     static func shieldedDestinationAvailable(forBalanceDuffs balanceDuffs: UInt64) -> Bool {
-        // Host + manager are `@MainActor`-isolated — reuse the wallet source's
-        // main-thread trampoline.
-        SwiftDashSDKWalletSource.onMain {
+        // Host + manager are `@MainActor`-isolated.
+        MainThread.sync {
             guard let manager = SwiftDashSDKHost.shared.manager,
                   let wallet = SwiftDashSDKHost.shared.wallet
             else { return false }

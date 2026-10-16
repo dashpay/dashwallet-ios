@@ -65,6 +65,10 @@ final class SendViewModel: ObservableObject {
     /// True while `sendToContact()` is in flight — the amount step's Send
     /// button shows progress, and `canContinue` refuses a second tap.
     @Published private(set) var isSendingToContact = false
+    /// True while a confirmed Core → Core send waits for the network (up to
+    /// about a minute) — the amount step's Continue button shows progress,
+    /// Back is disabled, and `canContinue` refuses another tap.
+    @Published private(set) var isSendingCore = false
     /// Failure from the last contact send, surfaced by
     /// `amountValidationMessage`. A cancelled PIN prompt never lands here.
     @Published private(set) var contactSendError: String?
@@ -498,6 +502,11 @@ final class SendViewModel: ObservableObject {
     static let contactSendUnknownOutcomeMessage = NSLocalizedString(
         "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
         comment: "Send to contact: the broadcast outcome is unknown")
+
+    /// Driven by the payment controller around a Core → Core broadcast.
+    func setSendingCore(_ inProgress: Bool) {
+        isSendingCore = inProgress
+    }
 
     /// Execute the pay-to-contact spend.
     ///
@@ -1191,6 +1200,7 @@ final class SendViewModel: ObservableObject {
         #if DASHPAY
         if isSendingToContact || isContactPaymentUnavailable { return false }
         #endif
+        if isSendingCore { return false }
         if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {

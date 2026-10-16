@@ -20,11 +20,21 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWURLAction
+
+- (BOOL)replacesScreen {
+    return YES;
+}
+
 @end
 
 //
 
 @implementation DWURLIntegrationAction
+
+- (BOOL)replacesScreen {
+    return NO;
+}
+
 @end
 
 //
@@ -35,6 +45,10 @@ NS_ASSUME_NONNULL_BEGIN
 //
 
 @implementation DWURLRequestAction
+
+- (BOOL)replacesScreen {
+    return NO;
+}
 
 - (DWURLRequestActionType)type {
     NSAssert(self.request != nil, @"Type is not available. Action is not configured");

@@ -61,6 +61,11 @@ NS_ASSUME_NONNULL_BEGIN
         _paymentController.delegate = self;
         _paymentController.locksBalance = self.locksBalance;
         _paymentController.presentationContextProvider = self;
+        __weak typeof(self) weakSelf = self;
+        _paymentController.sendInProgressHandler = ^BOOL(BOOL inProgress) {
+            BOOL (^handler)(BOOL) = weakSelf.sendInProgressHandler;
+            return handler ? handler(inProgress) : NO;
+        };
     }
     return _paymentController;
 }

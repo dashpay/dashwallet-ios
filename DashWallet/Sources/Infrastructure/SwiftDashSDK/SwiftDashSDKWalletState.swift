@@ -683,10 +683,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                 object: nil)
         }
 
-        if Thread.isMainThread {
-            clearBlock()
-        } else {
-            DispatchQueue.main.sync(execute: clearBlock)
-        }
+        MainThread.sync(clearBlock)
     }
 }

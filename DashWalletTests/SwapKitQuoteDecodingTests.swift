@@ -290,3 +290,32 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertNil(SwapKitSwapProvider.routability(from: upstream))
     }
 }
+
+/// `SwapPendingGate`'s admission: one deposit at a time, from the claim to
+/// its InstantSend lock.
+final class SwapPendingGateTests: XCTestCase {
+    func testASecondCallerIsRejectedWhileASubmissionIsPending() {
+        let gate = SwapPendingGate()
+        XCTAssertTrue(gate.beginSubmission())
+        XCTAssertFalse(gate.beginSubmission(), "a deposit is being broadcast")
+        gate.endSubmission()
+    }
+
+    /// `SendCoinsService.sendSwapKitSwap` ends its claim on every exit, a
+    /// cancelled PIN prompt and a failed send included, without registering.
+    func testAnEndedSubmissionThatRegisteredNothingFreesTheSlot() {
+        let gate = SwapPendingGate()
+        XCTAssertTrue(gate.beginSubmission())
+        gate.endSubmission()
+        XCTAssertTrue(gate.beginSubmission(), "nothing went out: the next swap may start")
+        gate.endSubmission()
+    }
+
+    func testARegisteredDepositKeepsBlockingAfterItsSubmissionEnds() {
+        let gate = SwapPendingGate()
+        XCTAssertTrue(gate.beginSubmission())
+        gate.register(txidWire: Data(repeating: 0x5a, count: 32))
+        gate.endSubmission()
+        XCTAssertFalse(gate.beginSubmission(), "the deposit awaits its InstantSend lock")
+    }
+}

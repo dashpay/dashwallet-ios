@@ -1391,7 +1391,7 @@ extension HomeViewModel {
     /// the Settings row remains for retry on other failures.
     func performCoinJoinSweep() async -> String? {
         do {
-            _ = try await WalletSendService.shared.sweepCoinJoin()
+            _ = try await WalletSendService.shared.sweepCoinJoin(onNetworkWait: WindowProgressHUD.showMovingFunds)
             return nil
         } catch {
             DWLogger.log("HomeViewModel: sweep (home popup) failed: \(error)")
@@ -2153,7 +2153,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         // which could have switched between the two main hops). Nil until
         // the shielded sub-wallet is bound — then the Received-row evidence
         // still covers live intra-wallet transfers.
-        let ownShieldedRaw43: Data? = onMain {
+        let ownShieldedRaw43: Data? = MainThread.sync {
             guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
             return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
         }
@@ -2508,7 +2508,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// (app-recorded ledger; see PlatformAddressActivityStore.swift).
     /// Safe from any thread — the DAO's SQLite connection serializes.
     static func fetchPlatformActivity() -> [PlatformAddressActivityItem] {
-        let handles: (walletId: Data, networkRaw: Int64)? = onMain {
+        let handles: (walletId: Data, networkRaw: Int64)? = MainThread.sync {
             guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
                   let network = SwiftDashSDKHost.shared.runningNetwork else {
                 return nil
@@ -2584,24 +2584,12 @@ class SwiftDashSDKWalletSource: TransactionSource {
     static var activeWalletId: Data? { hostHandles()?.walletId }
 
     private static func hostHandles() -> (container: ModelContainer, walletId: Data)? {
-        onMain {
+        MainThread.sync {
             guard let container = SwiftDashSDKHost.shared.modelContainer,
                   let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
                 return nil
             }
             return (container, walletId)
-        }
-    }
-
-    /// Main-thread trampoline for the `@MainActor`-isolated host reads.
-    /// Internal: `HomeViewModel.coinJoinShieldDestinationAvailable` reuses it
-    /// for its host/manager reads.
-    static func onMain<T>(_ body: @MainActor () -> T) -> T {
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated(body)
-        }
-        return DispatchQueue.main.sync {
-            MainActor.assumeIsolated(body)
         }
     }
 

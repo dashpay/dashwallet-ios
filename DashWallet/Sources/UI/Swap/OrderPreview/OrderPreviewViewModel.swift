@@ -128,6 +128,13 @@ final class OrderPreviewViewModel: ObservableObject {
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
+    /// The failure on screen came from the deposit send itself
+    /// (`submitDashTransaction` was called), whether or not a txid came back:
+    /// such a failure may still have moved funds. Set only by a submission (and
+    /// cleared when one starts); a failed Retry's quote refresh leaves it, and
+    /// the failure's reason, as they are, since that deposit's outcome is still
+    /// unresolved.
+    @Published private(set) var failedAfterDepositAttempt = false
     @Published var swapStatus: SwapStatus = .idle
     @Published var pendingSwapAlertMessage: String?
     /// The true backend outcome from Maya's API, tracked independently of `swapStatus`.
@@ -231,7 +238,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private let targetReceiveAmount: Decimal?
     private var quote: SwapQuoteResult
     private var countdownCancellable: AnyCancellable?
-    private let sendCoinsService = SendCoinsService()
+    private let depositSender: SwapDepositSending
     private let swapProvider: SwapProvider
     private var daoCancellable: AnyCancellable?
     private var isLockCancellable: AnyCancellable?
@@ -254,8 +261,10 @@ final class OrderPreviewViewModel: ObservableObject {
         targetReceiveAmount: Decimal? = nil,
         initialQuote: SwapQuoteResult,
         swapProvider: SwapProvider = MayaSwapProvider(),
-        networkStatus: NetworkStatusProviding = NetworkStatusService.shared
+        networkStatus: NetworkStatusProviding = NetworkStatusService.shared,
+        depositSender: SwapDepositSending = SendCoinsService()
     ) {
+        self.depositSender = depositSender
         self.coin = coin
         self.address = address
         self.dashSatoshis = dashSatoshis
@@ -280,7 +289,9 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     func handlePrimaryAction() async {
-        guard isOnline else { return }
+        // The button shows progress during a submission but stays tappable;
+        // a refresh then would replace the quote under the pending deposit.
+        guard isOnline, !isSubmitting else { return }
         if remainingSubmitSeconds > 0 {
             await submitSwap()
         } else {
@@ -302,6 +313,7 @@ final class OrderPreviewViewModel: ObservableObject {
         submittedTxidWire = nil
         swapStatus = .idle
         submittedTxId = nil
+        failedAfterDepositAttempt = false
         lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         backendOutcome = .pending
@@ -320,7 +332,7 @@ final class OrderPreviewViewModel: ObservableObject {
         do {
             let freshQuote = try await fetchFreshQuote()
             if let apiError = freshQuote.error {
-                setFailure(apiError)
+                setRetryFailure(apiError)
                 return nil
             }
             return OrderPreviewViewModel(
@@ -333,12 +345,25 @@ final class OrderPreviewViewModel: ObservableObject {
                 fiatCurrencyCode: fiatCurrencyCode,
                 targetReceiveAmount: targetReceiveAmount,
                 initialQuote: freshQuote,
-                swapProvider: swapProvider
+                swapProvider: swapProvider,
+                networkStatus: networkStatus,
+                depositSender: depositSender
             )
         } catch {
-            setFailure(error.localizedDescription)
+            setRetryFailure(error.localizedDescription)
             return nil
         }
+    }
+
+    /// A failed Retry over a failure from the deposit send keeps that
+    /// failure's reason on screen: it is the one that says funds may have
+    /// moved. Any other failure shows the Retry's own.
+    private func setRetryFailure(_ message: String) {
+        guard failedAfterDepositAttempt, case .failed = swapStatus else {
+            setFailure(message)
+            return
+        }
+        DWLogger.log("Swap: retry quote failed for \(coin.code) — raw: \(message); keeping the deposit failure")
     }
 
     // MARK: - Private: Network Status
@@ -419,10 +444,17 @@ final class OrderPreviewViewModel: ObservableObject {
     private func submitSwap() async {
         guard !isSubmitting else { return }
         submittedTxId = nil
+        failedAfterDepositAttempt = false
+        var depositAttempted = false
         lastDepositAddress = nil
         pendingSwapAlertMessage = nil
         isSubmitting = true
         defer { isSubmitting = false }
+        // The quote refresh and the deposit wait on the network with nothing
+        // presented over this screen: incoming links are refused until the
+        // submission returns (`PaymentInFlight`).
+        let routingHold = PaymentInFlightHold()
+        defer { routingHold.end() }
 
         do {
             // Refresh quote immediately before commit so vault address and memo are fresh.
@@ -436,6 +468,7 @@ final class OrderPreviewViewModel: ObservableObject {
             applyQuote(freshQuote)
 
             let execution = try resolveExecutionData(from: freshQuote)
+            depositAttempted = true
             let txidWire = try await submitDashTransaction(using: execution)
             setSubmittedSwap(txidWire: txidWire, depositAddress: execution.vaultAddress)
         } catch {
@@ -452,6 +485,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapStatus = .idle
                 return
             }
+            failedAfterDepositAttempt = depositAttempted
             setFailure(error.localizedDescription)
         }
     }
@@ -506,7 +540,7 @@ final class OrderPreviewViewModel: ObservableObject {
     /// direct-Maya path adds the outbound fee to the vault output because MayaNode's
     /// `/quote/swap?amount=` means the swap amount, not the deposit — a different contract.)
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> Data {
-        try await sendCoinsService.sendSwapKitSwap(
+        try await depositSender.sendSwapKitSwap(
             depositAddress: execution.vaultAddress,
             dashAmount: UInt64(dashSatoshis),
             memo: execution.memo

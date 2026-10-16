@@ -289,6 +289,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:]) async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
+        // The purchase — the order request, then the payment — waits on the
+        // network with nothing presented over this screen: incoming links are
+        // refused until it returns (`PaymentInFlight`), and its result screen
+        // follows within the grace period.
+        let routingHold = PaymentInFlightHold()
+        defer { routingHold.end() }
 
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.

@@ -65,6 +65,12 @@ final class MasternodeUnbanViewModel: ObservableObject {
     let record: PlatformMasternode
     let keySource: UnbanOperatorKeySource
 
+    /// True while the ProUpServTx is out on the network waiting for its
+    /// outcome (up to about a minute) — after authentication, so a PIN prompt
+    /// that never presents does not trap the sheet. Closing the sheet then
+    /// would lose the outcome and let a reopened sheet submit a second update.
+    @Published private(set) var isBroadcasting = false
+
     /// Evonode platform P2P port (D4: the masternode list doesn't carry it —
     /// user-editable, defaulting to Tenderdash's standard port).
     @Published var p2pPortText = "26656"
@@ -288,6 +294,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
             return
         }
 
+        isBroadcasting = true
+        defer { isBroadcasting = false }
         do {
             let txid: Data
             switch keySource {
@@ -439,8 +447,10 @@ final class MasternodeUnbanViewModel: ObservableObject {
         errorText = nil
         phase = .submitting
         prepared = nil
+        isBroadcasting = true
+        defer { isBroadcasting = false }
         do {
-            let outcome = try SwiftDashSDKTransactionSender.broadcast(transaction)
+            let outcome = try await SwiftDashSDKTransactionSender.broadcast(transaction)
             let txid = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
             PendingMasternodeUnbanStore.shared.clear(forProTxHash: record.proTxHash)
             preview = nil

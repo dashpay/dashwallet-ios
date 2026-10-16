@@ -35,6 +35,18 @@ public final class SendCoinsService: NSObject {
         )
     }
 
+    /// `sendCoins` without the routing hold (`WalletSendService.sendWithoutRoutingHold`),
+    /// so incoming links are not refused while it runs. For CrowdNode, hidden in
+    /// this release, whose sends mostly run with no screen waiting for them.
+    func sendCoinsWithoutRoutingHold(address: String, amount: UInt64,
+                                     inputSelector: SingleInputAddressSelector? = nil,
+                                     adjustAmountDownwards: Bool = false,
+                                     sessionAuthSufficient: Bool = false) async throws -> Data {
+        try await walletSendService.sendWithoutRoutingHold(
+            address: address, amount: amount, inputSelector: inputSelector,
+            adjustAmountDownwards: adjustAmountDownwards, sessionAuthSufficient: sessionAuthSufficient)
+    }
+
     /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
     /// route's deposit address; memo-bearing routes build a MAYACHAIN-style deposit with the
     /// memo encoded in a zero-value OP_RETURN output.
@@ -42,10 +54,12 @@ public final class SendCoinsService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data {
-        // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
-        if SwapPendingGate.shared.isAwaitingISLock {
+        // Serialise swaps: don't start a new one while another deposit is being
+        // broadcast or until the previous swap tx is InstantSend-locked.
+        guard SwapPendingGate.shared.beginSubmission() else {
             throw DashSpendError.swapAwaitingInstantLock
         }
+        defer { SwapPendingGate.shared.endSubmission() }
 
         let txidWire: Data
         do {
@@ -120,3 +134,12 @@ public final class SendCoinsService: NSObject {
         return txidWire
     }
 }
+
+// MARK: - SwapDepositSending
+
+/// Broadcasts a swap's DASH deposit and returns its wire-order txid.
+protocol SwapDepositSending {
+    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data
+}
+
+extension SendCoinsService: SwapDepositSending {}

@@ -36,17 +36,6 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.receive-address-reader")
 
-    /// Main-thread trampoline: `SwiftDashSDKHost.shared` and `mainContext`
-    /// are main-bound; Obj-C callers reach here from background queues.
-    private static func onMain<T>(_ body: @MainActor () -> T) -> T {
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated(body)
-        }
-        return DispatchQueue.main.sync {
-            MainActor.assumeIsolated(body)
-        }
-    }
-
     /// Returns the next unused BIP44 external receive address on the primary
     /// account (index 0). Returns nil when the host hasn't bound a wallet
     /// yet or the FFI call fails. Never throws.
@@ -63,7 +52,7 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// wallet. Swift callers that retain work across wallet switches use this
     /// to keep the destination tied to its originating wallet.
     static func receiveDestination() -> (address: String, walletId: Data)? {
-        onMain { readDestinationOnMain() }
+        MainThread.sync { readDestinationOnMain() }
     }
 
     // MARK: Request-amount receive detection (DWReceiveModel)
@@ -73,7 +62,7 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// DashSync's `addressIsUsed:`. Safe from any thread.
     @objc
     static func isAddressUsed(_ address: String) -> Bool {
-        onMain {
+        MainThread.sync {
             guard let container = SwiftDashSDKHost.shared.modelContainer,
                   let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return false }
             var descriptor = FetchDescriptor<PersistentTxo>(
@@ -92,7 +81,7 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// the old `relayCount` propagation gate). Safe from any thread.
     @objc(receivedTotalExcludingAddress:)
     static func receivedTotal(excludingAddress address: String) -> UInt64 {
-        onMain {
+        MainThread.sync {
             guard let container = SwiftDashSDKHost.shared.modelContainer,
                   let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return 0 }
             // Scope to the active wallet via the TXO join: `PersistentTransaction`
