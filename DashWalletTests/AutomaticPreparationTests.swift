@@ -5,9 +5,10 @@
 //  `SwiftDashSDKWalletRuntime`'s automatic-preparation admission, the
 //  background-refresh start gate and the local-store reset over a runtime
 //  whose rebuild is a recorder: the serial lifecycle queue, the queued
-//  operations and `WalletLifecycleTransitionState.shared` are production;
-//  the rebuild steps, the host's reset admission and the balance mirrors are
-//  stand-ins.
+//  operations and a `WalletLifecycleTransitionState` of the test's own are
+//  production; the rebuild steps, the host's reset admission and the balance
+//  mirrors are stand-ins. Nothing here touches the process singletons, which
+//  the host app's real runtime keeps driving while the tests run.
 //
 
 import XCTest
@@ -19,6 +20,7 @@ import SwiftDashSDK
 /// the real `prepareWallet` the way `refresh` does.
 @MainActor
 final class RecordingLifecycleSteps: WalletRuntimeLifecycleSteps {
+    private let state: WalletLifecycleTransitionState
     var refreshCalls = 0
     /// Order of the reset operation's steps, for the ordering assertions.
     var events: [String] = []
@@ -33,6 +35,10 @@ final class RecordingLifecycleSteps: WalletRuntimeLifecycleSteps {
     /// The open succeeded and a later start step (SPV) failed.
     var postOpenFailure: WalletPreparationFailure?
 
+    init(state: WalletLifecycleTransitionState) {
+        self.state = state
+    }
+
     @discardableResult
     func refresh(
         trigger: SwiftDashSDKWalletRuntime.RefreshTrigger, runtimeAlreadyStopped: Bool
@@ -40,22 +46,22 @@ final class RecordingLifecycleSteps: WalletRuntimeLifecycleSteps {
         refreshCalls += 1
         events.append("refresh")
         if runtimeAlreadyStopped {
-            XCTAssertEqual(WalletLifecycleTransitionState.shared.phase, .resettingLocalStores)
+            XCTAssertEqual(state.phase, .resettingLocalStores)
         }
         if let refreshFailure { return refreshFailure }
         if let openFailure {
-            try? await WalletLifecycleTransitionState.shared.prepareWallet {
+            try? await state.prepareWallet {
                 throw NSError(domain: "Open", code: 1)
             } failure: { _ in openFailure }
-            return WalletLifecycleTransitionState.shared.preparationFailure ?? openFailure
+            return state.preparationFailure ?? openFailure
         }
         if let unclassifiedOpenFailure {
-            try? await WalletLifecycleTransitionState.shared.prepareWallet {
+            try? await state.prepareWallet {
                 throw NSError(domain: "Open", code: 2)
             } failure: { _ in nil }
             return unclassifiedOpenFailure
         }
-        try? await WalletLifecycleTransitionState.shared.prepareWallet {} failure: { _ in nil }
+        try? await state.prepareWallet {} failure: { _ in nil }
         return postOpenFailure
     }
 
@@ -77,7 +83,7 @@ final class RecordingLifecycleSteps: WalletRuntimeLifecycleSteps {
     func resolveCurrentNetwork() -> Result<Network, SwiftDashSDKWalletRuntime.RuntimeError> { .success(.testnet) }
 
     func isCoreRuntimeReady(for network: Network) -> Bool {
-        WalletLifecycleTransitionState.shared.phase == .idle
+        state.phase == .idle
     }
 }
 
@@ -128,11 +134,12 @@ final class FakeResetter: WalletLocalStoreResetting, @unchecked Sendable {
 }
 
 actor SuspendingResetter: WalletLocalStoreResetting {
-    var started = false
+    /// Fulfilled when the deletion is suspended inside the reset.
+    nonisolated let started = XCTestExpectation(description: "Deletion started")
     var continuation: CheckedContinuation<Void, Never>?
 
     func resetAllScopes() async throws -> WalletLocalStoreResetReport {
-        started = true
+        started.fulfill()
         await withCheckedContinuation { continuation = $0 }
         return WalletLocalStoreResetReport(removed: [])
     }
@@ -142,7 +149,7 @@ actor SuspendingResetter: WalletLocalStoreResetting {
 
 @MainActor
 final class AutomaticPreparationTests: XCTestCase {
-    let state = WalletLifecycleTransitionState.shared
+    private var state: WalletLifecycleTransitionState!
     private var steps: RecordingLifecycleSteps!
     private var host: RecordingResetAdmission!
     private var coreMirror: RecordingNetworkSwitchMirror!
@@ -150,18 +157,17 @@ final class AutomaticPreparationTests: XCTestCase {
     private var runtime: SwiftDashSDKWalletRuntime!
 
     override func setUp() async throws {
-        steps = RecordingLifecycleSteps()
+        state = WalletLifecycleTransitionState()
+        steps = RecordingLifecycleSteps(state: state)
         host = RecordingResetAdmission()
         coreMirror = RecordingNetworkSwitchMirror()
         platformMirror = RecordingNetworkSwitchMirror()
         runtime = SwiftDashSDKWalletRuntime(collaborators: .init(
-            steps: steps, host: host, coreMirror: coreMirror, platformMirror: platformMirror))
-        state.finish()
+            steps: steps, lifecycleState: state, host: host, coreMirror: coreMirror, platformMirror: platformMirror))
     }
 
     override func tearDown() async throws {
         await drain()
-        state.finish()
     }
 
     /// Returns once every operation queued so far has run.
@@ -364,7 +370,7 @@ final class AutomaticPreparationTests: XCTestCase {
         let resetter = SuspendingResetter()
         let runtime = runtime!
         let reset = Task { try await runtime.resetLocalStoresAndRetry(resetter: resetter) }
-        while await !resetter.started { await Task.yield() }
+        await fulfillment(of: [resetter.started], timeout: 5)
         XCTAssertEqual(state.phase, .resettingLocalStores)
         XCTAssertTrue(host.suspended)
         XCTAssertFalse(state.tryBegin(.wiping(title: nil)))

@@ -557,11 +557,11 @@ final class BackgroundRefreshCoordinator {
         while gate: BackgroundRefreshStartGate, runtime: SwiftDashSDKWalletRuntime
     ) async -> Bool {
         await runtime.rearmPlatformSync {
-            gate() && WalletLifecycleTransitionState.shared.allowsAutomaticWalletPreparation
+            gate() && runtime.lifecycleState.allowsAutomaticWalletPreparation
         }
         guard gate() else { return false }
-        guard case .success(let network) = runtime.steps.resolveCurrentNetwork() else { return false }
-        return runtime.steps.isCoreRuntimeReady(for: network)
+        guard case .success(let network) = runtime.resolveCurrentNetwork() else { return false }
+        return runtime.isCoreRuntimeReady(for: network)
     }
 
     /// Poll `SyncingActivityMonitor` until `.syncDone` (the module's sync
