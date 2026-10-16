@@ -251,8 +251,8 @@ extension DWBasePayViewController {
     fileprivate static func continueContactPayment(viewModel: SendViewModel,
                                                    presenter: DWBasePayViewController?) {
         Task { [weak presenter] in
-            guard let payment = await viewModel.sendToContact() else { return }
-            presenter?.presentSendSuccess(withTxidWire: payment.txid)
+            guard let txid = await viewModel.sendToContact() else { return }
+            presenter?.presentSendSuccess(withTxidWire: txid)
         }
     }
     #else

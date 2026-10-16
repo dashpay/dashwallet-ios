@@ -181,6 +181,16 @@ class TXDetailViewController: BaseTxDetailsViewController {
         }
     }
 
+    /// The contact whose profile a host already sits on, and how to go back
+    /// to it: that contact's row goes back instead of stacking a second
+    /// profile on top.
+    struct ContactReturn {
+        let identityId: Data
+        let goBack: () -> Void
+    }
+
+    var contactReturn: ContactReturn?
+
     @objc
     init(model: TxDetailModel) {
         self.model = model
@@ -639,7 +649,11 @@ extension TXDetailViewController {
         switch section {
         case .info:
             if case .contact(_, let party)? = dataSource.itemIdentifier(for: indexPath) {
-                openContactProfile(party)
+                if let contactReturn, contactReturn.identityId == party.identityId {
+                    contactReturn.goBack()
+                } else {
+                    openContactProfile(party)
+                }
             }
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
@@ -726,26 +740,51 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
 struct TXDetailVCWrapper: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     
-    let tx: Transaction
+    private let makeModel: () -> TxDetailModel
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
     
-    init(tx: Transaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
-        self.tx = tx
+    /// See `TXDetailViewController.contactReturn`.
+    var contactReturn: TXDetailViewController.ContactReturn? = nil
+
+    init(tx: Transaction,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil) {
+        self.init(makeModel: { .init(transaction: tx) }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn)
+    }
+
+    init(model: TxDetailModel,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil) {
+        self.init(makeModel: { model }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn)
+    }
+
+    private init(makeModel: @escaping () -> TxDetailModel,
+                 navigateBack: Binding<Bool>,
+                 onDismissed: (() -> Void)?,
+                 contactReturn: TXDetailViewController.ContactReturn?) {
+        self.makeModel = makeModel
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
+        self.contactReturn = contactReturn
     }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = TXDetailViewController(model: .init(transaction: tx))
+    func makeUIViewController(context: Context) -> TXDetailViewController {
+        let vc = TXDetailViewController(model: makeModel())
+        vc.contactReturn = contactReturn
         return vc
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.contactReturn = contactReturn
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false

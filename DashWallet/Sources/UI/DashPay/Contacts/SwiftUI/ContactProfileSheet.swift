@@ -21,6 +21,8 @@ struct ContactProfileSheet: View {
     @State private var isProcessing = false
     @State private var errorMessage: String? = nil
     @State private var showingPaySheet = false
+    /// The open Pay sheet sent a payment, so the history reloads when it closes.
+    @State private var paidFromPaySheet = false
     /// Set once the profile has asked to close: a contacts change during the
     /// Pay sheet's exit and that sheet's onDismiss can both ask.
     @State private var isClosing = false
@@ -92,7 +94,13 @@ struct ContactProfileSheet: View {
                 // visible), so we don't drive TXDetailVCWrapper's own
                 // programmatic pop.
                 if let tx = resolvedByTxid[paymentId] {
-                    TXDetailVCWrapper(tx: tx, navigateBack: .constant(false))
+                    // This contact's row leads back to this profile, not to
+                    // another one stacked on top.
+                    TXDetailVCWrapper(
+                        tx: tx,
+                        navigateBack: .constant(false),
+                        contactReturn: .init(identityId: contact.contactIdentityId,
+                                             goBack: { selectedPaymentId = nil }))
                         .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
                         .navigationBarTitleDisplayMode(.inline)
                 }
@@ -118,9 +126,15 @@ struct ContactProfileSheet: View {
                 // the profile now that nothing is in flight on top of it.
                 if service.contactItem(for: contact.contactIdentityId) == nil {
                     closeProfile()
+                    return
+                }
+                // A payment sent from the sheet belongs in the history now.
+                if paidFromPaySheet {
+                    paidFromPaySheet = false
+                    loadPayments()
                 }
             }) {
-                PayContactSheet(contact: contact)
+                PayContactSheet(contact: contact, onSent: { paidFromPaySheet = true })
             }
             .onAppear {
                 aliasText = contact.alias ?? ""
@@ -734,20 +748,23 @@ struct ContactProfileSheet: View {
 ///
 /// From the shared screen this gets the DASH/fiat switch, the pre-send
 /// review, the fee-aware cap, the sync gate and the per-contact lock after a
-/// broadcast with an unknown outcome. The outcome is still this sheet's own:
-/// the Send tab ends on the UIKit send-success screen, which this sheet,
-/// presented from SwiftUI and UIKit hosts alike, does not reach.
+/// broadcast with an unknown outcome. A sent payment ends on its transaction
+/// details, the screen a history row opens.
 struct PayContactSheet: View {
     /// The snapshot the sheet opened on. The view model keeps the current one
     /// (`contactRecipient`), and that is the one the sheet shows.
     let contact: ContactItem
+    /// Called once a payment from this sheet is broadcast.
+    let onSent: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: SendViewModel
-    @State private var sent: SendViewModel.SentContactPayment?
+    /// The sent payment's details, once it is broadcast.
+    @State private var sentDetails: TxDetailModel?
 
-    init(contact: ContactItem) {
+    init(contact: ContactItem, onSent: @escaping () -> Void) {
         self.contact = contact
+        self.onSent = onSent
         // Built inside the autoclosure, so a re-render of the profile does not
         // construct (and subscribe) a view model only to drop it.
         _viewModel = StateObject(wrappedValue: {
@@ -759,8 +776,16 @@ struct PayContactSheet: View {
 
     var body: some View {
         Group {
-            if let sent {
-                success(sent)
+            if let sentDetails {
+                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                    // The contact's profile is right under this sheet, so
+                    // its row goes back there rather than stacking another.
+                    TXDetailVCWrapper(
+                        model: sentDetails,
+                        navigateBack: .constant(false),
+                        contactReturn: .init(identityId: contact.contactIdentityId,
+                                             goBack: { dismiss() }))
+                }
             } else {
                 ExternalSendAmountScreen(
                     viewModel: viewModel,
@@ -777,49 +802,9 @@ struct PayContactSheet: View {
         // The amount step carries its own keypad, so it needs the full height.
         .presentationDetents([.large])
         // Swiping the sheet away mid-broadcast would hide the outcome — the
-        // success, or the "don't send it again" notice of an unknown one.
+        // payment's details, or the "don't send it again" notice of an unknown
+        // one.
         .interactiveDismissDisabled(viewModel.isContactPaymentInFlight)
-    }
-
-    private func success(_ payment: SendViewModel.SentContactPayment) -> some View {
-        NavigationStack {
-            VStack(spacing: 12) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48))
-                    .foregroundColor(.dashGreen)
-                Text(NSLocalizedString("Payment Sent", comment: "DashPay Contacts"))
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundColor(.dash.primaryText)
-                Text(String(
-                    format: NSLocalizedString("%@ DASH sent to %@", comment: "DashPay Contacts"),
-                    payment.amountDuffs.formattedDashAmountWithoutCurrencySymbol,
-                    recipientTitle))
-                    .font(.system(size: 14))
-                    .foregroundColor(.dash.secondaryText)
-                Text(String(
-                    format: NSLocalizedString("Network fee: %@ DASH", comment: "DashPay Contacts"),
-                    payment.feeDuffs.formattedDashAmountWithoutCurrencySymbol))
-                    .font(.system(size: 12))
-                    .foregroundColor(.dash.tertiaryText)
-                Spacer(minLength: 0)
-            }
-            .padding(24)
-            .padding(.top, 24)
-            .navigationTitle(String(
-                format: NSLocalizedString("Pay %@", comment: "DashPay Contacts"),
-                recipientTitle))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("Done", comment: "")) { dismiss() }
-                        .foregroundColor(.dash.blue)
-                }
-            }
-        }
-    }
-
-    private var recipientTitle: String {
-        (viewModel.contactRecipient ?? contact).displayTitle
     }
 
     // MARK: Pay
@@ -830,7 +815,9 @@ struct PayContactSheet: View {
     /// step shows it inline.
     private func send() {
         Task {
-            sent = await viewModel.sendToContact()
+            guard let txid = await viewModel.sendToContact() else { return }
+            onSent()
+            sentDetails = viewModel.sentContactPaymentDetails(txidWire: txid)
         }
     }
 }

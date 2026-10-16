@@ -573,10 +573,9 @@ final class WalletSendService: NSObject {
     /// DashPay pay-to-contact, second half: broadcasts the payment the user
     /// confirmed. No PIN here — `prepareContactPayment` asked for it.
     ///
-    /// - Returns: the 32-byte transaction id plus the exact network fee
-    ///   (duffs) — the one the confirmation showed.
+    /// - Returns: the 32-byte transaction id, wire order.
     @discardableResult
-    func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> (txid: Data, feeDuffs: UInt64) {
+    func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> Data {
         let contactIdentityId = prepared.contactIdentityId
         // Another payment to this contact may have ended unknown while this
         // one waited on the confirmation.
@@ -605,7 +604,7 @@ final class WalletSendService: NSObject {
         // registry's key convention. No address: the DIP-15 receive address is
         // derived inside Rust and never crosses the FFI boundary.
         recentSends.record(txidWire: txid, address: nil, amount: prepared.amount, fee: feeDuffs)
-        return (txid: txid, feeDuffs: feeDuffs)
+        return txid
     }
 
     /// Drop a prepared contact payment the user did not send: Rust releases

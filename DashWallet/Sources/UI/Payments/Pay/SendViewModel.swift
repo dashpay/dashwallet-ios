@@ -184,15 +184,6 @@ final class SendViewModel: ObservableObject {
             isSending = false
         }
     }
-
-    /// A broadcast contact payment: what was actually sent, for a host that
-    /// states the outcome rather than echoing the entry.
-    struct SentContactPayment {
-        /// Wire-order txid.
-        let txid: Data
-        let amountDuffs: UInt64
-        let feeDuffs: UInt64
-    }
     #endif
     /// The balance the user is sending FROM. Constrained to
     /// `validSources`; re-picked automatically when the destination changes.
@@ -798,6 +789,12 @@ final class SendViewModel: ObservableObject {
         "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
         comment: "Send to contact: the broadcast outcome is unknown")
 
+    /// The details screen of a payment `sendToContact` just broadcast (see
+    /// `TxDetailModel(txidWire:)`), resolved here rather than in a view.
+    func sentContactPaymentDetails(txidWire: Data) -> TxDetailModel {
+        TxDetailModel(txidWire: txidWire)
+    }
+
     /// Broadcast the reviewed contact payment.
     ///
     /// The payment was signed, with the PIN, before the review opened
@@ -810,9 +807,9 @@ final class SendViewModel: ObservableObject {
     /// entry read again. No balance check here: the payment's inputs were
     /// selected and reserved when it was signed.
     ///
-    /// - Returns: the payment on success; `nil` when it failed, with the
-    ///   reason on `amountValidationMessage`.
-    func sendToContact() async -> SentContactPayment? {
+    /// - Returns: the payment's wire-order txid on success; `nil` when it
+    ///   failed, with the reason on `amountValidationMessage`.
+    func sendToContact() async -> Data? {
         // Taking the review spends it: a second call finds nothing to send.
         guard let duffs = updateContactReview({ $0.take() }) else { return nil }
         defer { updateContactReview { $0.finish() } }
@@ -833,13 +830,17 @@ final class SendViewModel: ObservableObject {
         contactBalanceMissDuffs = nil
 
         do {
-            let (txid, feeDuffs) = try await WalletSendService.shared.broadcastContactPayment(prepared)
+            let txid = try await WalletSendService.shared.broadcastContactPayment(prepared)
             // Project the freshly recorded Sent entry to SwiftData right away
             // — the entry lives only in Rust memory until a projection runs,
             // and an app kill before one would lose it permanently (the SDK
             // cannot re-derive sent history).
             SwiftDashSDKContactsService.shared.refreshPaymentsProjection()
-            return SentContactPayment(txid: txid, amountDuffs: duffs, feeDuffs: feeDuffs)
+            // The rate at send time, so the details shown next carry the
+            // payment's fiat value; Home would stamp it only once it lists
+            // the row.
+            Tx.shared.updateRateIfNeeded(txHashData: txid, date: Date())
+            return txid
         } catch {
             reportContactSendFailure(error)
             return nil
