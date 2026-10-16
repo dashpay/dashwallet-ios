@@ -356,8 +356,8 @@ struct PaymentsLandingScreen: View {
     /// Currently unreachable: every caller passes `showsHeader: false` since
     /// the landing became a tab.
     private var header: some View {
-        NavigationBar(
-            leading: { NavigationBarElement.back.button(action: onClose) })
+        DashUIKit.NavigationBar(
+            leading: { DashUIKit.NavigationBarElement.back.button(action: onClose) })
             .padding(.bottom, Layout.headerBottomPadding)
     }
 
@@ -371,8 +371,8 @@ struct PaymentsLandingScreen: View {
     /// nothing behind it to go back to — the X leaves the flow. Trailing, where
     /// a modal's close sits.
     private var closeBar: some View {
-        NavigationBar(
-            trailing: { NavigationBarElement.close.button(action: onCloseLanding) })
+        DashUIKit.NavigationBar(
+            trailing: { DashUIKit.NavigationBarElement.close.button(action: onCloseLanding) })
     }
 
 }

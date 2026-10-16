@@ -182,8 +182,8 @@ struct ClaimInvitationScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            NavigationBar(leading: {
-                NavigationBarElement.back.button {
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button {
                     viewModel.cancelClaimCheck()
                     onBack()
                 }
