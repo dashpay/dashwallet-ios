@@ -731,36 +731,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return nil
     }
 
-    /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
-    /// into the outpoint (wire-order txid, vout) that
-    /// `shieldedResumeFundFromAssetLock` expects, via
-    /// `DWIdentityRegistrationCoordinator.parseOutPointHex`. `nil` on any
-    /// malformed input.
-    nonisolated static func parseOutPoint(_ outPointHex: String) -> ShieldedAssetLocksInFlight.OutPoint? {
-        DWIdentityRegistrationCoordinator.parseOutPointHex(outPointHex).map {
-            ShieldedAssetLocksInFlight.OutPoint(txidWire: $0.txidWire, vout: $0.vout)
-        }
-    }
-
     /// Starts tracking the new asset lock of a fresh-build attempt: starts the
     /// status poll and returns the capture it reads with the handler the
     /// funding call reports the built lock to. The handler claims the lock in
     /// `ShieldedAssetLocksInFlight` the moment the SDK reports it, before the
     /// lock's row is persisted, so no surface shows this attempt's lock as an
-    /// unclaimed stuck one. An outpoint the handler cannot read is logged and
-    /// leaves the lock unclaimed for the whole call: surfaces may offer to
-    /// finish or remove it, the poll does not advance the phase, and the
-    /// success path cannot mark it consumed.
+    /// unclaimed stuck one.
     private func beginNewAssetLock(
         modelContainer: ModelContainer
     ) -> (NewAssetLockCapture, AssetLockBuiltHandler) {
         let capture = NewAssetLockCapture(initialState: nil)
         startAssetLockPolling(modelContainer: modelContainer, capture: capture)
-        let handler: AssetLockBuiltHandler = { outPointHex in
-            guard let key = Self.parseOutPoint(outPointHex) else {
-                DWLogger.log("SHIELD-TX built asset lock outpoint unreadable: \(outPointHex.prefix(16))…")
-                return
-            }
+        let handler: AssetLockBuiltHandler = { built in
+            let key = ShieldedAssetLocksInFlight.OutPoint(txidWire: built.txid, vout: built.vout)
             ShieldedAssetLocksInFlight.shared.claimBuiltLock(key)
             capture.withLock { $0 = key }
         }

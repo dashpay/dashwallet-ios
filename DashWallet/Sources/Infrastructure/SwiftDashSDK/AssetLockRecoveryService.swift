@@ -454,8 +454,8 @@ struct AssetLockRecoveryService {
     }
 
     /// Display-order hex ("as shown in the UI") to the 32-byte wire-order txid
-    /// the resume entry points expect. Mirrors
-    /// `ShieldedTransferCoordinator.parseOutPoint`'s reversal.
+    /// the resume entry points expect — the reverse of
+    /// `PersistentAssetLock.encodeOutPoint`'s txid encoding.
     ///
     /// Not private: a byte-order slip here makes every bulk resume fail with
     /// "not tracked by this wallet" and the pass reports a network problem it
