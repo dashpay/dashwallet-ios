@@ -1652,9 +1652,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard scope == stores.scope else {
             throw DashConnectPlatformError.walletChanged
         }
+        // A one-QR registration whose outcome was never seen may have landed
+        // over this app's two-QR row. Which disconnect runs is decided by the
+        // row, so such a record of the active identity is settled against a
+        // fresh view of it first: a key confirmed there makes the row
+        // one-QR. If that cannot be done, nothing is turned off and the row
+        // stays.
+        try await settleUnconfirmedRegistrations(appContractId: id, stores: stores)
         let isOneQR = rows(in: stores).first { $0.id == id }?.loginKind == .oneQR
-        // A record whose registration is unconfirmed has nothing for a
-        // disconnect to turn off until its key is seen.
+        // A record still unconfirmed takes no part: the fresh view did not
+        // show its key live, or the record is another identity's.
+        // TODO(dashconnect-unconfirmed-row): an update still on its way when
+        // that view was read lands after this disconnect, and its key is
+        // shown again only by the next one-QR approval with this identity.
         let hasGrants = stores.grants.load().contains { $0.appContractId == id && !$0.isUnconfirmed }
         if isOneQR || hasGrants {
             let liveElsewhere = try await revokeAppConnectGrants(
@@ -1689,6 +1699,59 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     status: .approved,
                     updatedAt: disconnectedAt
                 )
+            }
+        }
+    }
+
+    /// When the active identity has an unconfirmed registration of the app,
+    /// reads the identity again and runs `confirmRegistrations` with it,
+    /// which confirms every registration of the identity whose key is there
+    /// and makes those apps' rows one-QR. Returns without anything else when
+    /// there is no such record. Throws when the wallet's context cannot be
+    /// resolved or the identity read, and when the read shows the key of a
+    /// registration of the app that still could not be confirmed.
+    private func settleUnconfirmedRegistrations(appContractId: String, stores: Stores) async throws {
+        let activeIdentityId = await MainActor.run { DWCurrentUserIdentityInfo.shared.identityId }
+        guard let identityId = activeIdentityId?.toBase58String(), stores.grants.load().contains(where: {
+            $0.appContractId == appContractId && $0.identityId == identityId && $0.isUnconfirmed
+        }) else { return }
+        let context = try await requireContext(pinnedTo: stores)
+        guard context.identityId.toBase58String() == identityId else {
+            throw DashConnectPlatformError.walletChanged
+        }
+        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
+        await confirmRegistrations(
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            modelContainer: context.modelContainer, in: stores)
+        // The key landed live under the record's id but the record could not
+        // be confirmed: the key store has no readable bound for it, or the
+        // key differs from what the record says was submitted. The local
+        // disconnect would leave that key on with no row to turn it off from.
+        guard !Self.holdsUnconfirmedKey(
+            in: stores.grants.load(), appContractId: appContractId, identityId: identityId,
+            currentIdentityPublicKeys: currentPublicKeys)
+        else {
+            Self.logger.error("🔗 DASHCONNECT :: an unconfirmed session key of the app is live, but its record could not be confirmed")
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
+    }
+
+    /// Whether the identity holds, live, the key an unconfirmed registration
+    /// of the app was going to register, under the id it was submitted with.
+    /// The same key under another id came from another submission of the
+    /// request, which has its own record.
+    static func holdsUnconfirmedKey(
+        in grants: [AppConnectGrant],
+        appContractId: String,
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        grants.contains { grant in
+            guard grant.appContractId == appContractId, grant.identityId == identityId,
+                  let hash = grant.unconfirmedKeyHash160 else { return false }
+            return currentIdentityPublicKeys.contains {
+                UInt32(bitPattern: $0.keyId) == grant.sessionKeyId && $0.disabledAt == nil
+                    && $0.keyType == .ecdsaHash160 && $0.data.toHexString() == hash
             }
         }
     }

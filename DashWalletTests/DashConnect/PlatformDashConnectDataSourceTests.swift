@@ -1844,12 +1844,20 @@ final class AppConnectLoginTests: XCTestCase {
             8)
     }
 
-    func testThereIsNoNextKeyIdAfterTheLastOne() {
+    /// An app can register a key under the last id there is. The next key
+    /// then takes the lowest free id, and disabling that key changes nothing:
+    /// its id stays taken.
+    func testAKeyOnTheLastIdLeavesTheLowestFreeIdForTheNextKey() {
         // A key id is a UInt32 the SDK carries as an Int32 bit pattern.
         let last = Self.key(keyId: -1, data: Data([1]))
-        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [last]))
+        XCTAssertEqual(AppConnect.nextKeyId(currentIdentityPublicKeys: [last]), 0)
         let disabledLast = Self.key(keyId: -1, data: Data([1]), disabledAt: 1)
-        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: 3, data: Data([3])), disabledLast]))
+        XCTAssertEqual(
+            AppConnect.nextKeyId(currentIdentityPublicKeys: [
+                Self.key(keyId: 0, data: Data([0])), Self.key(keyId: 1, data: Data([2])),
+                Self.key(keyId: 2, data: Data([3]), disabledAt: 1), disabledLast,
+            ]),
+            3, "a disabled key keeps its id")
         XCTAssertEqual(
             AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: -2, data: Data([2]))]),
             .max)
@@ -2756,6 +2764,40 @@ final class AppConnectLoginTests: XCTestCase {
             at: Date(timeIntervalSince1970: 2_000))
         XCTAssertEqual(rows.map(\.status), [.active])
         XCTAssertEqual(rows.map(\.loginKind), [.oneQR])
+    }
+
+    /// A disconnect stops on an unconfirmed registration of the app whose
+    /// key is live: the local two-QR disconnect would leave it on.
+    func testALiveKeyOfAnUnconfirmedRegistrationIsFound() {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let hash = Data(repeating: 0x5A, count: 20)
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: "identity", appContractId: appA, documentId: nil, values: template.values,
+            sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        func holds(
+            _ grants: [AppConnectGrant], keys: [ManagedIdentity.IdentityPublicKeyInfo],
+            app: String = appA, identity: String = "identity"
+        ) -> Bool {
+            PlatformDashConnectDataSource.holdsUnconfirmedKey(
+                in: grants, appContractId: app, identityId: identity, currentIdentityPublicKeys: keys)
+        }
+
+        XCTAssertTrue(holds([pending], keys: [Self.key(keyId: 9, data: hash)]))
+        // A refused submission under id 9 and a later one of the same request
+        // that landed under id 12: the record of the first is not that key.
+        XCTAssertFalse(
+            holds([pending], keys: [Self.key(keyId: 9, data: Data([9])), Self.key(keyId: 12, data: hash)]),
+            "the same key under another id")
+        XCTAssertFalse(holds([pending], keys: []), "the key is not there")
+        XCTAssertFalse(holds([pending], keys: [Self.key(keyId: 9, data: hash, disabledAt: 1)]), "a disabled key")
+        XCTAssertFalse(holds([pending], keys: [Self.key(keyId: 9, data: Data(repeating: 0x01, count: 20))]))
+        XCTAssertFalse(holds([pending], keys: [Self.key(keyId: 9, data: hash)], app: "another app"))
+        XCTAssertFalse(holds([pending], keys: [Self.key(keyId: 9, data: hash)], identity: "another identity"))
+        var confirmed = pending
+        confirmed.unconfirmedKeyHash160 = nil
+        XCTAssertFalse(holds([confirmed], keys: [Self.key(keyId: 9, data: hash)]), "a confirmed record")
     }
 
     func testDisconnectWithNoActiveWalletIsRefused() async {

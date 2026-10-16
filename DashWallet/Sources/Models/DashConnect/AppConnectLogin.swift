@@ -140,12 +140,19 @@ enum AppConnect {
     }
 
     /// The id for a new key: one above the highest on the identity, disabled
-    /// keys included. `nil` when that id is the last one a key can have.
+    /// keys included. Platform only refuses an id the identity already has,
+    /// so when the highest is the last id a key can have (a key an app
+    /// registered can be given it) the lowest id no key has is taken
+    /// instead. `nil` only when every id is taken.
     static func nextKeyId(
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> UInt32? {
-        let highest = currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0
-        return highest == .max ? nil : highest + 1
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let highest = taken.max() ?? 0
+        guard highest == .max else { return highest + 1 }
+        // The identity holds far fewer keys than there are ids, so this
+        // stops within a few steps of the lowest gap.
+        return (0 ... UInt32.max).first { !taken.contains($0) }
     }
 
     /// The key an app is given: it can only sign for the contract the request
