@@ -631,8 +631,8 @@ extension TxDetailModel {
     }
 
     /// True while a running transfer has claimed an output of this
-    /// transaction — from the first lock poll that sees the lock's row, which
-    /// can be before the lock appears in `ShieldedTxLookup`.
+    /// transaction — for a new lock from the moment the SDK builds it, before
+    /// the lock's row exists or appears in `ShieldedTxLookup`.
     var isConsumedByRunningTransfer: Bool {
         ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
     }

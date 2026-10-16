@@ -225,7 +225,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         didSet {
             if !phase.isInFlight {
                 releaseInFlightOutPoint()
-                releaseNewLockFundingSlot()
             }
         }
     }
@@ -261,15 +260,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
 
-    /// Matches `PersistentAssetLock.fundingTypeRaw` for
-    /// `AssetLockShieldedAddressTopUp` (see
-    /// `rs-platform-wallet-ffi/src/asset_lock_persistence.rs`).
-    private static let shieldedAssetLockFundingType: Int = 5
-
-    /// `PersistentAssetLock.fundingTypeRaw` for `AssetLockAddressTopUp` —
-    /// the Core → Platform address-funding lock (same Rust source).
-    private static let addressAssetLockFundingType: Int = 4
-
     /// Same 0.5 s cadence as `DWIdentityRegistrationCoordinator` — enough
     /// for the four observable transitions (Built → Broadcast → IS/CL →
     /// Consumed) without burning CPU.
@@ -278,28 +268,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
-    /// Outpoint (wire-order txid + vout) of the asset lock observed during the
-    /// most recent in-flight `performAssetLock`, captured from polling so a
-    /// failed attempt's "Try again" can RESUME the existing lock instead of
-    /// building a second one. `nil` until an asset lock reaches Broadcast (1+);
-    /// cleared on `reset()` and at the start of a fresh `performAssetLock`.
-    private(set) var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)? {
-        didSet {
-            // The first capture while an attempt runs is this attempt's lock.
-            // Later captures come from a poll that returns the newest row of
-            // the funding type, which may be another attempt's lock, so they
-            // do not move the claim. A capture after a failure only arms
-            // "Try again".
-            guard phase.isInFlight, let lastAssetLockOutPoint else { return }
-            claimInFlightOutPoint(lastAssetLockOutPoint)
-        }
-    }
+    /// Outpoint (wire-order txid + vout) of the asset lock the most recent
+    /// `performAssetLock` built, as the SDK reported it, so a failed attempt's
+    /// "Try again" can RESUME the existing lock instead of building a second
+    /// one. Set when that attempt fails, unless its broadcast was definitely
+    /// rejected; cleared on `reset()` and at the start of a fresh attempt.
+    /// The Core → Platform route never sets it.
+    private(set) var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
 
     /// The lock this coordinator has registered in `ShieldedAssetLocksInFlight`.
     private var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
-
-    /// The new-lock slot this attempt holds in `ShieldedAssetLocksInFlight`.
-    private var newLockSlot: ShieldedAssetLocksInFlight.NewLockSlot?
 
     // MARK: - Errors
 
@@ -324,10 +302,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// Another attempt is still consuming this asset lock — typically a
         /// transfer waiting for its ChainLock. A second resume would race it.
         case assetLockInFlight
-        /// Another transfer is still building and funding a new asset lock of
-        /// the same kind. Only one may run at a time, so each attempt can tell
-        /// its own lock apart while it polls for it.
-        case newAssetLockInFlight
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -399,10 +373,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "This transfer is still in progress. Check its status again in a few minutes.",
                     comment: "A resume was refused because the same transfer is still running")
-            case .newAssetLockInFlight:
-                return NSLocalizedString(
-                    "Another transfer is still in progress. Try again when it has finished.",
-                    comment: "A new transfer was refused because another one of the same kind is still running")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -599,8 +569,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
-        guard takeNewLockFundingSlot(walletId: env.walletId, fundingType: Self.shieldedAssetLockFundingType)
-        else { return }
+        // Counts as activity from here on, so a removal cannot reload the
+        // runtime while this attempt authorizes and builds its lock.
+        ShieldedAssetLocksInFlight.shared.beginFundingCall()
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         do {
             try await authorize()
@@ -623,8 +595,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         phase = .locking
-        let startTime = Date()
-        startAssetLockPolling(walletId: env.walletId, modelContainer: env.modelContainer, startTime: startTime)
+        let (newLock, onAssetLockBuilt) = beginNewAssetLock(modelContainer: env.modelContainer)
 
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
@@ -640,35 +611,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     walletId: env.walletId,
                     fundingAccountIndex: 0,
                     amountDuffs: lockValueDuffs,
-                    recipients: [recipient])
+                    recipients: [recipient],
+                    onAssetLockBuilt: onAssetLockBuilt)
             case .coinJoinDrain:
                 try await env.manager.shieldedFundFromCoinJoinDrain(
                     walletId: env.walletId,
-                    recipients: [recipient])
+                    recipients: [recipient],
+                    onAssetLockBuilt: onAssetLockBuilt)
             }
         } catch {
-            stopAssetLockPolling()
-            // Last-ditch outpoint capture: if the FFI threw before polling
-            // observed the persisted lock row, fetch it now so "Try again"
-            // RESUMES the committed lock instead of building a second one.
-            captureLatestAssetLockOutPoint(
-                walletId: env.walletId,
-                modelContainer: env.modelContainer,
-                since: startTime)
+            // Records the built lock's outpoint, so "Try again" RESUMES the
+            // lock instead of building a second one.
+            finishNewAssetLock(newLock, armingRetryAfter: error)
             handleSpendError(error, manager: env.manager)
             return
         }
 
-        stopAssetLockPolling()
+        finishNewAssetLock(newLock)
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         // The success phase releases the lock's claim. The lookup reports the
         // lock as consumed until a snapshot shows it consumed, so the Home row
-        // and the details do not offer to finish it in between. A lock no
-        // poll saw yet is looked up first.
-        captureLatestAssetLockOutPoint(
-            walletId: env.walletId,
-            modelContainer: env.modelContainer,
-            since: startTime)
+        // and the details do not offer to finish it in between.
         markInFlightLockConsumed()
         phase = .success
         await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-completed")
@@ -679,8 +642,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     /// Resume a stuck "to Shielded" transfer whose asset lock is already
-    /// broadcast/locked (statusRaw 1…3) but whose shield state transition never
-    /// landed. Picks up the existing outpoint and drives the remaining stages
+    /// tracked (built, broadcast or locked) but whose shield state transition
+    /// never landed. Picks up the existing outpoint and drives the remaining stages
     /// via `shieldedResumeFundFromAssetLock` — instead of building a SECOND
     /// asset lock (which is what a fresh `performAssetLock` would do, stranding
     /// the first). The recipient must match the original attempt —
@@ -693,7 +656,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
     func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout, fundingType: Self.shieldedAssetLockFundingType) else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
@@ -711,9 +674,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // The lock is already broadcast/locked — only the Orchard proof + the
-        // shield ST remain, so jump straight to .proving (no .locking stage and
-        // no asset-lock polling: there's no new lock to track).
+        // The lock already exists — the SDK re-broadcasts or waits for it if
+        // needed, then the Orchard proof + the shield ST remain, so jump
+        // straight to .proving (no .locking stage and no asset-lock polling:
+        // there's no new lock to track).
         phase = .proving
 
         let terminalPhase: Phase
@@ -768,53 +732,64 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
-    /// into the (wire-order txid, vout) that `shieldedResumeFundFromAssetLock`
-    /// expects. The stored txid is display order (reversed wire); the FFI wants
-    /// 32-byte little-endian wire order, so hex-decode then reverse. `nil` on
-    /// any malformed input.
-    static func parseOutPoint(_ outPointHex: String) -> (txidWire: Data, vout: UInt32)? {
-        guard let colon = outPointHex.firstIndex(of: ":") else { return nil }
-        let txidDisplayHex = outPointHex[..<colon]
-        guard let vout = UInt32(outPointHex[outPointHex.index(after: colon)...]) else { return nil }
-        guard txidDisplayHex.count == 64 else { return nil }
-        var display = Data(capacity: 32)
-        var idx = txidDisplayHex.startIndex
-        while idx < txidDisplayHex.endIndex {
-            let next = txidDisplayHex.index(idx, offsetBy: 2)
-            guard let byte = UInt8(txidDisplayHex[idx..<next], radix: 16) else { return nil }
-            display.append(byte)
-            idx = next
+    /// into the outpoint (wire-order txid, vout) that
+    /// `shieldedResumeFundFromAssetLock` expects, via
+    /// `DWIdentityRegistrationCoordinator.parseOutPointHex`. `nil` on any
+    /// malformed input.
+    nonisolated static func parseOutPoint(_ outPointHex: String) -> ShieldedAssetLocksInFlight.OutPoint? {
+        DWIdentityRegistrationCoordinator.parseOutPointHex(outPointHex).map {
+            ShieldedAssetLocksInFlight.OutPoint(txidWire: $0.txidWire, vout: $0.vout)
         }
-        return (Data(display.reversed()), vout)
     }
 
-    /// Best-effort capture of the in-flight asset lock's outpoint when polling
-    /// didn't get it — the FFI returned before a 0.5s poll tick observed the
-    /// persisted row. Fetches the newest matching asset lock at Broadcast+
-    /// (statusRaw ≥ 1) for this attempt and records its outpoint: after a
-    /// failure so a retry resumes that lock rather than building a second one,
-    /// after a success so the lock can be marked consumed. No-op if the
-    /// outpoint is already captured or none is found yet.
-    private func captureLatestAssetLockOutPoint(
-        walletId: Data,
-        modelContainer: ModelContainer,
-        since startTime: Date,
-        fundingType: Int = ShieldedTransferCoordinator.shieldedAssetLockFundingType
-    ) {
-        guard lastAssetLockOutPoint == nil else { return }
-        let shieldedFundingType = fundingType
-        var descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { row in
-                row.walletId == walletId
-                    && row.fundingTypeRaw == shieldedFundingType
-                    && row.createdAt >= startTime
-                    && row.statusRaw >= 1
-            },
-            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
-        descriptor.fetchLimit = 1
-        if let row = try? modelContainer.mainContext.fetch(descriptor).first,
-           let outPoint = Self.parseOutPoint(row.outPointHex) {
-            lastAssetLockOutPoint = outPoint
+    /// Starts tracking the new asset lock of a fresh-build attempt: starts the
+    /// status poll and returns the capture it reads with the handler the
+    /// funding call reports the built lock to. The handler claims the lock in
+    /// `ShieldedAssetLocksInFlight` the moment the SDK reports it, before the
+    /// lock's row is persisted, so no surface shows this attempt's lock as an
+    /// unclaimed stuck one. An outpoint the handler cannot read is logged and
+    /// leaves the lock unclaimed for the whole call: surfaces may offer to
+    /// finish or remove it, the poll does not advance the phase, and the
+    /// success path cannot mark it consumed.
+    private func beginNewAssetLock(
+        modelContainer: ModelContainer
+    ) -> (NewAssetLockCapture, AssetLockBuiltHandler) {
+        let capture = NewAssetLockCapture(initialState: nil)
+        startAssetLockPolling(modelContainer: modelContainer, capture: capture)
+        let handler: AssetLockBuiltHandler = { outPointHex in
+            guard let key = Self.parseOutPoint(outPointHex) else {
+                DWLogger.log("SHIELD-TX built asset lock outpoint unreadable: \(outPointHex.prefix(16))…")
+                return
+            }
+            ShieldedAssetLocksInFlight.shared.claimBuiltLock(key)
+            capture.withLock { $0 = key }
+        }
+        return (capture, handler)
+    }
+
+    /// Ends the status poll of a fresh-build attempt whose funding call
+    /// returned and takes over the claim its handler made, so the terminal
+    /// phase releases it. After a failure (`armingRetryAfter` set) it also
+    /// records the lock's outpoint for "Try again", unless the broadcast was
+    /// definitely rejected, which removes the lock again. A lock the SDK kept
+    /// stays tracked even when its row could not be saved, so the outpoint is
+    /// recorded without reading the row.
+    private func finishNewAssetLock(_ capture: NewAssetLockCapture, armingRetryAfter failure: Error? = nil) {
+        stopAssetLockPolling()
+        guard let key = capture.withLock({ $0 }) else { return }
+        // A fresh build starts from `beginTransfer()`, which claims nothing,
+        // and the terminal phase clears `inFlightOutPoint`, so another claim
+        // here means the coordinator was reused while a funding call ran.
+        guard inFlightOutPoint == nil else {
+            assertionFailure("built asset lock arrived while another lock is claimed")
+            DWLogger.log("SHIELD-TX built asset lock vout=\(key.vout) arrived while another lock is claimed")
+            ShieldedAssetLocksInFlight.shared.release(key)
+            return
+        }
+        inFlightOutPoint = key
+        if let failure {
+            if case PlatformWalletError.transactionBroadcastRejected = failure { return }
+            lastAssetLockOutPoint = key
         }
     }
 
@@ -1125,9 +1100,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// address credits (funding type 4, `AssetLockAddressTopUp`). Stages:
     /// `.signing → .locking → .broadcasting → .success` — no Orchard proof,
     /// so `.proving` may only appear transiently via the lock-status polling
-    /// (IS/CL-locked) before the funding ST lands. On failure after the lock
-    /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
-    /// that lock via `resumeFundPlatform` instead of stranding it.
+    /// (IS/CL-locked) before the funding ST lands. A lock left behind by a
+    /// failure is resumed via `resumeFundPlatform` from the asset-lock recovery
+    /// surfaces (`AssetLockRecoveryService`); this route offers no in-place
+    /// "Try again".
     ///
     /// Fee-on-top: the recipient gets an explicit amount and the funding ST's
     /// fee is deducted from the sender-owned remainder output, so
@@ -1159,8 +1135,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
-        guard takeNewLockFundingSlot(walletId: env.walletId, fundingType: Self.addressAssetLockFundingType)
-        else { return }
+        // Counts as activity from here on, so a removal cannot reload the
+        // runtime while this attempt authorizes and builds its lock.
+        ShieldedAssetLocksInFlight.shared.beginFundingCall()
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         do {
             try await authorize()
@@ -1170,36 +1148,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         phase = .locking
-        let startTime = Date()
-        startAssetLockPolling(
-            walletId: env.walletId,
-            modelContainer: env.modelContainer,
-            startTime: startTime,
-            fundingType: Self.addressAssetLockFundingType)
+        let (newLock, onAssetLockBuilt) = beginNewAssetLock(modelContainer: env.modelContainer)
 
         do {
             try await PlatformAddressSyncCoordinator.shared.fundFromCore(
                 recipientAmountDuffs: recipientAmountDuffs,
-                lockValueDuffs: lockValueDuffs)
+                lockValueDuffs: lockValueDuffs,
+                onAssetLockBuilt: onAssetLockBuilt)
         } catch {
-            stopAssetLockPolling()
-            captureLatestAssetLockOutPoint(
-                walletId: env.walletId,
-                modelContainer: env.modelContainer,
-                since: startTime,
-                fundingType: Self.addressAssetLockFundingType)
+            finishNewAssetLock(newLock)
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
 
-        stopAssetLockPolling()
+        finishNewAssetLock(newLock)
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route completed")
         // As in `performAssetLock`.
-        captureLatestAssetLockOutPoint(
-            walletId: env.walletId,
-            modelContainer: env.modelContainer,
-            since: startTime,
-            fundingType: Self.addressAssetLockFundingType)
         markInFlightLockConsumed()
         phase = .broadcasting
         phase = .success
@@ -1214,7 +1178,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         outPointVout: UInt32,
         recipientAmountDuffs: UInt64
     ) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout, fundingType: Self.addressAssetLockFundingType) else { return }
+        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1514,54 +1478,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// recovery sheet, the tx detail sheet's retry, a confirm sheet's "Try
     /// again") holds its own coordinator, so the phase gate alone cannot see an
     /// attempt that is already running, such as a transfer waiting minutes for
-    /// its ChainLock.
-    ///
-    /// It also fails for a lock that may be another transfer's new lock its
-    /// poll has not claimed yet: such a lock can already show as a stuck one,
-    /// and a resume of it would run alongside the transfer.
-    private func beginTransfer(consuming txidWire: Data, vout: UInt32, fundingType: Int) -> Bool {
+    /// its ChainLock. A fresh transfer's new lock is claimed from the moment
+    /// the SDK builds it, before its row exists, so this also covers it.
+    private func beginTransfer(consuming txidWire: Data, vout: UInt32) -> Bool {
         if phase == .idle,
            ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: txidWire, vout: vout)) {
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock is still being consumed by another attempt")
             handleFailure(CoordinatorError.assetLockInFlight)
             return false
         }
-        if phase == .idle,
-           Self.mayBeUnclaimedNewLock(txidWire: txidWire, vout: vout, fundingType: fundingType) {
-            Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock may be a running transfer's new lock")
-            handleFailure(CoordinatorError.assetLockInFlight)
-            return false
-        }
         guard beginTransfer() else { return false }
-        claimInFlightOutPoint((txidWire, vout))
+        claimInFlightOutPoint(.init(txidWire: txidWire, vout: vout))
         return true
     }
 
     /// Registers this attempt's lock, once per attempt.
-    private func claimInFlightOutPoint(_ outPoint: (txidWire: Data, vout: UInt32)) {
+    private func claimInFlightOutPoint(_ outPoint: ShieldedAssetLocksInFlight.OutPoint) {
         guard inFlightOutPoint == nil else { return }
-        let key = ShieldedAssetLocksInFlight.OutPoint(txidWire: outPoint.txidWire, vout: outPoint.vout)
-        ShieldedAssetLocksInFlight.shared.claim(key)
-        inFlightOutPoint = key
-        if let newLockSlot {
-            ShieldedAssetLocksInFlight.shared.markNewLockClaimed(newLockSlot)
-        }
-    }
-
-    /// Whether the lock at (`txidWire`, `vout`) may be the new lock of a
-    /// running transfer whose poll has not claimed it yet: a lock of the same
-    /// wallet and funding type created since that transfer began polling.
-    static func mayBeUnclaimedNewLock(txidWire: Data, vout: UInt32, fundingType: Int) -> Bool {
-        // Almost always no transfer is waiting for its first claim, and the
-        // store is not read at all.
-        guard ShieldedAssetLocksInFlight.shared.hasUnclaimedNewLock(fundingType: fundingType),
-              let container = SwiftDashSDKHost.shared.modelContainer,
-              let row = try? AssetLockRecoveryService.persistedLock(
-                  txidWire: txidWire, vout: vout, in: container.mainContext),
-              row.fundingTypeRaw == fundingType
-        else { return false }
-        return ShieldedAssetLocksInFlight.shared.mayBeUnclaimedNewLock(
-            walletId: row.walletId, fundingType: fundingType, createdAt: row.createdAt)
+        ShieldedAssetLocksInFlight.shared.claim(outPoint)
+        inFlightOutPoint = outPoint
     }
 
     private func releaseInFlightOutPoint() {
@@ -1570,34 +1505,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         self.inFlightOutPoint = nil
     }
 
-    /// Takes the slot for building a new asset lock of `fundingType` in this
-    /// wallet, or fails the attempt when another coordinator holds it. The lock
-    /// poll finds this attempt's lock by wallet, funding type and start time,
-    /// which only identifies it while no other new lock of that type is being
-    /// built in the wallet.
-    private func takeNewLockFundingSlot(walletId: Data, fundingType: Int) -> Bool {
-        let slot = ShieldedAssetLocksInFlight.NewLockSlot(walletId: walletId, fundingType: fundingType)
-        guard ShieldedAssetLocksInFlight.shared.takeNewLockSlot(slot) else {
-            Self.logger.info("🛡️ SHIELD-TX :: new asset lock refused fundingType=\(fundingType): another one is still in progress")
-            handleFailure(CoordinatorError.newAssetLockInFlight)
-            return false
-        }
-        newLockSlot = slot
-        return true
-    }
-
     private func markInFlightLockConsumed() {
         guard let inFlightOutPoint else {
             Self.logger.warning("🛡️ SHIELD-TX :: finished without a known asset lock to mark consumed")
             return
         }
         ShieldedTxLookup.shared.markConsumed(txidWire: inFlightOutPoint.txidWire)
-    }
-
-    private func releaseNewLockFundingSlot() {
-        guard let newLockSlot else { return }
-        ShieldedAssetLocksInFlight.shared.releaseNewLockSlot(newLockSlot)
-        self.newLockSlot = nil
     }
 
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
@@ -1676,29 +1589,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
     // MARK: - Asset-lock polling
 
     /// Mirror `DWIdentityRegistrationCoordinator.startAssetLockPolling` —
-    /// 0.5 s cadence, lifetime-bounded by the in-flight transfer.
-    /// Defensive about the row not existing yet (or ever): the FFI emits
-    /// the row asynchronously and earlier statuses may already be skipped
-    /// past by the time we look.
-    private func startAssetLockPolling(
-        walletId: Data,
-        modelContainer: ModelContainer,
-        startTime: Date,
-        fundingType: Int = ShieldedTransferCoordinator.shieldedAssetLockFundingType
-    ) {
-        if let newLockSlot {
-            ShieldedAssetLocksInFlight.shared.markNewLockPolling(newLockSlot, since: startTime)
-        }
+    /// 0.5 s cadence, lifetime-bounded by the in-flight transfer. Reads the
+    /// row of the lock `capture` holds; until the SDK reports the built lock,
+    /// and while its row is not persisted yet, a tick does nothing.
+    private func startAssetLockPolling(modelContainer: ModelContainer, capture: NewAssetLockCapture) {
         assetLockPollingTask?.cancel()
         assetLockPollingTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: UInt64(Self.assetLockPollInterval * 1_000_000_000))
                 guard !Task.isCancelled else { return }
-                await self?.pollAssetLockStatus(
-                    walletId: walletId,
-                    modelContainer: modelContainer,
-                    startTime: startTime,
-                    fundingType: fundingType)
+                self?.pollAssetLockStatus(modelContainer: modelContainer, capture: capture)
             }
         }
     }
@@ -1708,12 +1608,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         assetLockPollingTask = nil
     }
 
-    private func pollAssetLockStatus(
-        walletId: Data,
-        modelContainer: ModelContainer,
-        startTime: Date,
-        fundingType: Int = ShieldedTransferCoordinator.shieldedAssetLockFundingType
-    ) async {
+    private func pollAssetLockStatus(modelContainer: ModelContainer, capture: NewAssetLockCapture) {
         // Only meaningful while the asset-lock route is in-flight.
         switch phase {
         case .locking, .proving, .broadcasting:
@@ -1721,34 +1616,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         default:
             return
         }
-
-        let context = modelContainer.mainContext
-        let shieldedFundingType = fundingType
-        var descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { row in
-                row.walletId == walletId
-                    && row.fundingTypeRaw == shieldedFundingType
-                    && row.createdAt >= startTime
-            },
-            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
-        descriptor.fetchLimit = 1
+        guard let key = capture.withLock({ $0 }) else { return }
         do {
-            let rows = try context.fetch(descriptor)
-            guard let row = rows.first else { return }
-            // Display→wire reversal happens in parse.
-            let outPoint = Self.parseOutPoint(row.outPointHex)
-            // Claim the lock as soon as its row exists, `Built` (0) included:
-            // the transaction details offer a retry and a removal from that
-            // status on, and either would race this running operation.
-            if let outPoint {
-                claimInFlightOutPoint(outPoint)
-            }
-            // Capture the outpoint once the lock is at least Broadcast (1+) so
-            // a failed shield can be resumed on this exact lock rather than
-            // building a second one.
-            if row.statusRaw >= 1, let outPoint {
-                lastAssetLockOutPoint = outPoint
-            }
+            guard let row = try AssetLockRecoveryService.persistedLock(
+                txidWire: key.txidWire, vout: key.vout, in: modelContainer.mainContext)
+            else { return }
             advancePhaseForAssetLockStatus(row.statusRaw)
         } catch {
             Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(String(describing: error), privacy: .public)")
@@ -1778,6 +1650,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 }
 
+/// The outpoint a fresh-build funding call reports for its new asset lock.
+/// Written once on the FFI worker thread, read on the main actor.
+private typealias NewAssetLockCapture = OSAllocatedUnfairLock<ShieldedAssetLocksInFlight.OutPoint?>
+
 /// Asset locks a `ShieldedTransferCoordinator` is consuming right now, across
 /// every coordinator instance.
 ///
@@ -1788,35 +1664,29 @@ final class ShieldedTransferCoordinator: ObservableObject {
 /// "tap to finish"; the tx detail sheet and the bulk recovery pass read it to
 /// skip the lock; every resume entry point reads it to refuse a second attempt.
 ///
-/// It also holds one slot per wallet and funding type for building a new asset
-/// lock: the lock poll of a new transfer finds its lock by wallet, funding type
-/// and start time, which identifies it only while no other new lock of that
-/// type is being built in the wallet, so a second such transfer is refused
-/// meanwhile.
+/// A fresh transfer's new lock is claimed by the SDK's built-lock callback,
+/// before the lock's row is persisted. The registry also counts the fresh
+/// transfers that will build a new lock, from before their authorization
+/// until the transfer's attempt ends, so `hasActivity` covers one that has not
+/// built its lock yet.
 ///
 /// Claims are counted per lock, so one coordinator's release cannot clear a
 /// claim another coordinator still holds. Reads are thread-safe, like
 /// `ShieldedTxLookup`; claims and releases happen on the main actor, where the
-/// coordinators run, and publish from there.
+/// coordinators run, and publish from there, except `claimBuiltLock`, which
+/// the SDK calls on its worker thread.
 final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     struct OutPoint: Hashable, Sendable {
         let txidWire: Data
         let vout: UInt32
     }
 
-    struct NewLockSlot: Hashable, Sendable {
-        let walletId: Data
-        let fundingType: Int
-    }
-
     static let shared = ShieldedAssetLocksInFlight()
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
-    /// New asset locks being built and funded right now: since when the
-    /// transfer polls for its lock (`nil` before it starts), and whether the
-    /// poll has claimed it.
-    private var newLockSlots: [NewLockSlot: (pollingSince: Date?, claimed: Bool)] = [:]
+    /// Fresh transfers that will build or are building a new asset lock.
+    private var fundingCalls = 0
 
     private init() {}
 
@@ -1830,75 +1700,63 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
     }
 
-    /// Whether a transfer building a new lock of `fundingType` polls for it and
-    /// has not claimed it yet.
-    func hasUnclaimedNewLock(fundingType: Int) -> Bool {
-        lock.withLock {
-            newLockSlots.contains { slot, state in
-                slot.fundingType == fundingType && state.pollingSince != nil && !state.claimed
-            }
-        }
-    }
-
-    /// Whether a lock of `walletId` and `fundingType` created at `createdAt`
-    /// may be the new lock of a running transfer that has not claimed it yet.
-    func mayBeUnclaimedNewLock(walletId: Data, fundingType: Int, createdAt: Date) -> Bool {
-        let slot = NewLockSlot(walletId: walletId, fundingType: fundingType)
-        return lock.withLock {
-            guard let state = newLockSlots[slot], !state.claimed,
-                  let pollingSince = state.pollingSince
-            else { return false }
-            return createdAt >= pollingSince
-        }
-    }
-
     /// Whether any transfer is building a new asset lock or consuming one.
     var hasActivity: Bool {
-        lock.withLock { !claims.isEmpty || !newLockSlots.isEmpty }
+        lock.withLock { !claims.isEmpty || fundingCalls > 0 }
     }
+
+    // Only the first claim and the last release change what `contains`
+    // answers, and only the first and the last funding call change
+    // `hasActivity`, so only those publish. Each operation decides that in the
+    // same critical section as its change.
 
     @MainActor
     fileprivate func claim(_ outPoint: OutPoint) {
-        // Only the first claim and the last release change what `contains`
-        // answers, so only those publish.
-        if !contains(outPoint) { objectWillChange.send() }
-        lock.withLock { claims[outPoint, default: 0] += 1 }
+        if addClaim(outPoint) { objectWillChange.send() }
+    }
+
+    /// `claim` for the SDK's built-lock callback, which runs on the FFI worker
+    /// thread: the claim is recorded before the callback returns, and the
+    /// change is published on the main queue afterwards.
+    fileprivate func claimBuiltLock(_ outPoint: OutPoint) {
+        guard addClaim(outPoint) else { return }
+        DispatchQueue.main.async { self.objectWillChange.send() }
+    }
+
+    /// Adds a claim; true when it is the first one for `outPoint`.
+    private func addClaim(_ outPoint: OutPoint) -> Bool {
+        lock.withLock {
+            claims[outPoint, default: 0] += 1
+            return claims[outPoint] == 1
+        }
     }
 
     @MainActor
     fileprivate func release(_ outPoint: OutPoint) {
-        if lock.withLock({ claims[outPoint] }) == 1 { objectWillChange.send() }
-        lock.withLock {
-            guard let count = claims[outPoint] else { return }
+        let wasLast = lock.withLock { () -> Bool in
+            guard let count = claims[outPoint] else { return false }
             claims[outPoint] = count > 1 ? count - 1 : nil
+            return count == 1
         }
-    }
-
-    /// One new asset lock per wallet and funding type at a time: true when the
-    /// slot was free and is now taken.
-    @MainActor
-    fileprivate func takeNewLockSlot(_ slot: NewLockSlot) -> Bool {
-        guard lock.withLock({ newLockSlots[slot] == nil }) else { return false }
-        // `hasActivity` changes.
-        objectWillChange.send()
-        lock.withLock { newLockSlots[slot] = (pollingSince: nil, claimed: false) }
-        return true
+        if wasLast { objectWillChange.send() }
     }
 
     @MainActor
-    fileprivate func markNewLockPolling(_ slot: NewLockSlot, since startTime: Date) {
-        lock.withLock { newLockSlots[slot]?.pollingSince = startTime }
+    fileprivate func beginFundingCall() {
+        let isFirst = lock.withLock { () -> Bool in
+            fundingCalls += 1
+            return fundingCalls == 1
+        }
+        if isFirst { objectWillChange.send() }
     }
 
     @MainActor
-    fileprivate func markNewLockClaimed(_ slot: NewLockSlot) {
-        lock.withLock { newLockSlots[slot]?.claimed = true }
-    }
-
-    @MainActor
-    fileprivate func releaseNewLockSlot(_ slot: NewLockSlot) {
-        guard lock.withLock({ newLockSlots[slot] != nil }) else { return }
-        objectWillChange.send()
-        lock.withLock { newLockSlots[slot] = nil }
+    fileprivate func endFundingCall() {
+        let wasLast = lock.withLock { () -> Bool in
+            guard fundingCalls > 0 else { return false }
+            fundingCalls -= 1
+            return fundingCalls == 0
+        }
+        if wasLast { objectWillChange.send() }
     }
 }

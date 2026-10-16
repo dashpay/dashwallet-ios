@@ -225,9 +225,9 @@ class TXDetailViewController: BaseTxDetailsViewController {
         // The retry and removal rows depend on whether a running transfer is
         // consuming this transaction's asset lock, and on the lock status
         // `ShieldedTxLookup` reports; a claim or release and each published
-        // lookup snapshot trigger a rebuild. The registry publishes before it
-        // changes, so the rows are rebuilt on the next main-queue turn, once
-        // the claim or release has landed.
+        // lookup snapshot trigger a rebuild. The registry publishes once a
+        // claim or release has landed, and the rows are rebuilt on the next
+        // main-queue turn.
         // The projection change, which the transfer routes post when they
         // finish, rebuilds them as well.
         let lookupChanged = NotificationCenter.default

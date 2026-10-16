@@ -390,9 +390,9 @@ struct AssetLockRecoveryService {
             // The list was taken when the screen appeared; a transfer started
             // since then may be consuming this lock, or may have finished it.
             // A resume would only be refused or reported already consumed, and
-            // counting that as a failure could stop the pass.
-            // A running transfer's new lock its poll has not claimed yet is
-            // refused by the coordinator and counted below as in progress.
+            // counting that as a failure could stop the pass. A running
+            // transfer's new lock is claimed from the moment the SDK builds
+            // it, so it is skipped here too.
             if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
                 outcome.inProgress += 1
@@ -544,7 +544,7 @@ struct AssetLockRecoveryService {
             switch failure {
             case .authCancelled:
                 throw DWIdentityAuthorizer.AuthError.cancelled
-            case .assetLockInFlight, .newAssetLockInFlight:
+            case .assetLockInFlight:
                 throw RecoveryError.inProgress(message)
             default:
                 break

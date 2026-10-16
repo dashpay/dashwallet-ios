@@ -888,7 +888,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// is returned to a second own Platform address.
     public func fundFromCore(
         recipientAmountDuffs: UInt64,
-        lockValueDuffs: UInt64
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
     ) async throws {
         let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
         let signer = KeychainSigner(modelContainer: env.container, network: env.network)
@@ -901,7 +902,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             fundingAccountIndex: 0,
             platformAccountIndex: env.accountIndex,
             recipients: env.recipients,
-            signer: signer)
+            signer: signer,
+            onAssetLockBuilt: onAssetLockBuilt)
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")

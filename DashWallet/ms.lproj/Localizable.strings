@@ -6710,9 +6710,6 @@
 /* A resume was refused because the same transfer is still running */
 "This transfer is still in progress. Check its status again in a few minutes." = "This transfer is still in progress. Check its status again in a few minutes.";
 
-/* A new transfer was refused because another one of the same kind is still running */
-"Another transfer is still in progress. Try again when it has finished." = "Another transfer is still in progress. Try again when it has finished.";
-
 /* Remove never-accepted transaction: refused while a transfer is running */
 "A transfer is still in progress. Try again when it has finished, or restart the app if it never does." = "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.";
 
