@@ -109,3 +109,119 @@ final class CoinJoinMoveDestinationPolicyTests: XCTestCase {
         XCTAssertNil(CoinJoinMoveDestinationPolicy.menuRoute(isChainSynced: false, shieldedAvailable: true))
     }
 }
+
+/// Pins the CoinJoin → Shielded input planning (ticket 32500): an asset lock
+/// may spend at most 100 inputs, so a heavier CoinJoin account is consolidated
+/// onto one of its own addresses first, and the drain waits for final inputs.
+final class CoinJoinShieldPlannerTests: XCTestCase {
+
+    // MARK: nextStep
+
+    func testEmptyAccountHasNothingToMove() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 0, finalCount: 0), .nothingToMove)
+    }
+
+    func testAtTheCapDrainsDirectly() {
+        XCTAssertEqual(CoinJoinShieldPlanner.maxAssetLockInputs, 100)
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 100, finalCount: 100), .drain)
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 1, finalCount: 1), .drain)
+    }
+
+    /// The ticket's wallet: 104 mixed coins, one over-cap drain refused by
+    /// Core as `assetlocktx-too-many-inputs`.
+    func testOverTheCapConsolidates() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 101, finalCount: 101), .consolidate)
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 104, finalCount: 104), .consolidate)
+        // Finality does not matter above the cap — the sweep is a regular tx.
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 2_000, finalCount: 0), .consolidate)
+    }
+
+    /// After a consolidation the output is not final until InstantSend locks
+    /// it; draining then would lock nothing (or only the final remainder).
+    func testUnderTheCapWithPendingCoinsWaits() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 1, finalCount: 0), .awaitFinality(pending: 1))
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 3, finalCount: 1), .awaitFinality(pending: 2))
+    }
+
+    func testFinalCountAboveCountIsClamped() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 2, finalCount: 5), .drain)
+    }
+
+    // MARK: isFinal
+
+    func testMinedUtxoIsFinal() {
+        XCTAssertTrue(CoinJoinShieldPlanner.isFinal(height: 2_556_386, txid: Data([1]), instantLockedTxids: []))
+    }
+
+    func testInstantLockedUtxoIsFinal() {
+        XCTAssertTrue(CoinJoinShieldPlanner.isFinal(height: 0, txid: Data([1]), instantLockedTxids: [Data([1])]))
+    }
+
+    func testMempoolUtxoIsNotFinal() {
+        XCTAssertFalse(CoinJoinShieldPlanner.isFinal(height: 0, txid: Data([1]), instantLockedTxids: [Data([2])]))
+    }
+
+    // MARK: consolidationSettled
+
+    func testConsolidationSettledNeedsAFinalOutputPerTransaction() {
+        let a = Data([0xaa]), b = Data([0xbb]), other = Data([0xcc])
+        XCTAssertFalse(CoinJoinShieldPlanner.consolidationSettled(
+            consolidationTxids: [a, b],
+            utxos: [(a, true), (other, true)]))
+        XCTAssertFalse(CoinJoinShieldPlanner.consolidationSettled(
+            consolidationTxids: [a, b],
+            utxos: [(a, true), (b, false)]))
+        XCTAssertTrue(CoinJoinShieldPlanner.consolidationSettled(
+            consolidationTxids: [a, b],
+            utxos: [(a, true), (b, true), (other, false)]))
+    }
+
+    func testNoConsolidationIsTriviallySettled() {
+        XCTAssertTrue(CoinJoinShieldPlanner.consolidationSettled(consolidationTxids: [], utxos: []))
+    }
+
+    // MARK: Chunk planning (the consolidation reuses the sweep's chunking)
+
+    private func chunkSizes(_ n: Int) -> [Int] {
+        SwiftDashSDKTransactionSender.balancedChunks(
+            Array(0..<n), maxPerChunk: SwiftDashSDKTransactionSender.maxInputsPerSweep
+        ).map(\.count)
+    }
+
+    func testChunkPlanning() {
+        XCTAssertEqual(SwiftDashSDKTransactionSender.maxInputsPerSweep, 500)
+        XCTAssertEqual(chunkSizes(0), [])
+        XCTAssertEqual(chunkSizes(104), [104])
+        XCTAssertEqual(chunkSizes(500), [500])
+        XCTAssertEqual(chunkSizes(501), [251, 250])
+        XCTAssertEqual(chunkSizes(1_000), [500, 500])
+        XCTAssertEqual(chunkSizes(1_001), [334, 334, 333])
+    }
+
+    func testChunksPreserveOrderAndCoverEveryInput() {
+        let chunks = SwiftDashSDKTransactionSender.balancedChunks(Array(0..<1_234), maxPerChunk: 500)
+        XCTAssertEqual(chunks.flatMap { $0 }, Array(0..<1_234))
+        XCTAssertTrue(chunks.allSatisfy { $0.count <= 500 })
+    }
+
+    /// A consolidation produces one output per chunk; even the largest
+    /// accounts land far under the asset-lock cap after one pass.
+    func testOneConsolidationPassFitsUnderTheAssetLockCap() {
+        XCTAssertLessThanOrEqual(chunkSizes(50_000).count, CoinJoinShieldPlanner.maxAssetLockInputs)
+    }
+
+    // MARK: Checklist
+
+    func testPreparedChecklistIndex() {
+        typealias VM = CoinJoinMoveFundsViewModel
+        XCTAssertNil(VM.preparedChecklistIndex(preparation: nil, phase: .idle))
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .authorizing, phase: .idle), 0)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .preparingCoins, phase: .idle), 1)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .signing), 2)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .locking), 2)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .proving), 3)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .broadcasting), 4)
+        XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .success), 5)
+        XCTAssertNil(VM.preparedChecklistIndex(preparation: .done, phase: .failed("x")))
+    }
+}
