@@ -91,18 +91,9 @@ struct WalletAccountDetailScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            })
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.detail?.typeName ?? NSLocalizedString("Account", comment: "Wallet accounts"))
