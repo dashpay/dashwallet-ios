@@ -970,6 +970,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 signer: signer,
                 nowUnix: UInt32(Date().timeIntervalSince1970))
             identityId = try managed.getId()
+            // The voucher is spent now, whatever happens to the username
+            // next: from here on this is an ordinary "identity exists,
+            // username required" recovery, not an invitation. Cleared by the
+            // link itself, not "the current wallet": the user may have
+            // switched wallet while the claim ran.
+            // A failed removal is retried on every reload until it succeeds.
+            PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
         }
         return identityId
     }

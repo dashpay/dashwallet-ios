@@ -113,9 +113,9 @@ public struct JoinDashPayScreen: View {
                         action: action
                     )
 
-                    // The redeem screen takes both a pasted link and a scan,
-                    // and it funds the registration itself — so it stays
-                    // tappable while the button above is greyed out.
+                    // A scanned invitation funds the registration itself, so
+                    // this stays tappable while the button above is greyed
+                    // out.
                     if let onClaimInvitation {
                         DashUIKit.DashButton(
                             text: NSLocalizedString("Scan invitation QR", comment: ""),
