@@ -111,8 +111,10 @@ final class CoinJoinMoveDestinationPolicyTests: XCTestCase {
 }
 
 /// Pins the CoinJoin → Shielded input planning (ticket 32500): an asset lock
-/// may spend at most 100 inputs, so a heavier CoinJoin account is consolidated
-/// onto one of its own addresses first, and the drain waits for final inputs.
+/// may spend at most 100 inputs, and its shield transition with an InstantSend
+/// proof outgrows Platform's 20 480-byte limit from about 65, so an account
+/// above 50 is consolidated onto one of its own addresses first, and the drain
+/// waits for final inputs.
 final class CoinJoinShieldPlannerTests: XCTestCase {
 
     // MARK: nextStep
@@ -121,10 +123,27 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
         XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 0, finalCount: 0), .nothingToMove)
     }
 
-    func testAtTheCapDrainsDirectly() {
+    func testThresholdIsBelowBothLimits() {
         XCTAssertEqual(CoinJoinShieldPlanner.maxAssetLockInputs, 100)
-        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 100, finalCount: 100), .drain)
+        XCTAssertEqual(CoinJoinShieldPlanner.consolidationThreshold, 50)
+        // Below ~65 inputs, where an IS-proof transition passes 20 480 bytes.
+        XCTAssertLessThan(CoinJoinShieldPlanner.consolidationThreshold, 65)
+    }
+
+    func testAtTheThresholdDrainsDirectly() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 50, finalCount: 50), .drain)
         XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 1, finalCount: 1), .drain)
+    }
+
+    func testJustOverTheThresholdConsolidates() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 51, finalCount: 51), .consolidate)
+    }
+
+    /// 65–100 coins: Core would accept the asset lock, but its shield
+    /// transition with an InstantSend proof is too large for Platform.
+    func testCoreAcceptableButTransitionTooLargeConsolidates() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 65, finalCount: 65), .consolidate)
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 100, finalCount: 100), .consolidate)
     }
 
     /// The ticket's wallet: 104 mixed coins, one over-cap drain refused by
@@ -204,10 +223,10 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
         XCTAssertTrue(chunks.allSatisfy { $0.count <= 500 })
     }
 
-    /// A consolidation produces one output per chunk; even the largest
-    /// accounts land far under the asset-lock cap after one pass.
-    func testOneConsolidationPassFitsUnderTheAssetLockCap() {
-        XCTAssertLessThanOrEqual(chunkSizes(50_000).count, CoinJoinShieldPlanner.maxAssetLockInputs)
+    /// A consolidation produces one output per chunk; even very large
+    /// accounts land at or under the direct-drain threshold after one pass.
+    func testOneConsolidationPassFitsUnderTheThreshold() {
+        XCTAssertLessThanOrEqual(chunkSizes(25_000).count, CoinJoinShieldPlanner.consolidationThreshold)
     }
 
     // MARK: Checklist

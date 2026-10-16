@@ -165,7 +165,7 @@ struct CoinJoinMoveFundsSheet: View {
     private var shieldInFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             if viewModel.preparation != nil {
-                // More mixed coins than one asset lock can spend: they are
+                // More mixed coins than one drain can safely spend: they are
                 // consolidated first, which adds a step ahead of the lock.
                 ShieldedTransferStepList(
                     labels: [

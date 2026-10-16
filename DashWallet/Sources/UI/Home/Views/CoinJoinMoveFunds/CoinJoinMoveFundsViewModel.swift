@@ -11,10 +11,12 @@
 //     (`ShieldedTransferCoordinator.performAssetLock(funding: .coinJoinDrain)`):
 //     every mixed-coin UTXO funds the Type 18 lock directly and the shielded
 //     pool receives `lock_value - pool_fee` — no transparent intermediate hop.
-//     An asset lock may spend at most 100 inputs, so an account holding more
-//     is first consolidated onto one fresh address of its own CoinJoin
-//     account (`CoinJoinShieldPlanner`), and the drain runs once those
-//     outputs are final.
+//     An asset lock may spend at most 100 inputs (Core / Platform), and its
+//     shield transition with an InstantSend proof outgrows Platform's size
+//     limit from about 65, so an account holding more than 50 is first
+//     consolidated onto one fresh address of its own CoinJoin account
+//     (`CoinJoinShieldPlanner.consolidationThreshold`), and the drain runs
+//     once those outputs are final.
 //
 //  Failure posture of the shielded flow: a committed asset lock is resumed on
 //  its exact outpoint via `resumeAssetLock` (mirroring the internal transfer
@@ -61,7 +63,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
 
     /// Progress of the steps that run before the coordinator's asset lock
     /// when the CoinJoin account cannot be drained as it stands (more than
-    /// `CoinJoinShieldPlanner.maxAssetLockInputs` UTXOs, or some not final
+    /// `CoinJoinShieldPlanner.consolidationThreshold` UTXOs, or some not final
     /// yet). Nil on the direct path, whose checklist is unchanged.
     enum Preparation: Equatable {
         case authorizing
@@ -147,7 +149,8 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// funds the Type 18 lock directly (no transparent hop) and the shielded
     /// pool receives the drained value minus the pool fee.
     ///
-    /// When the account holds more UTXOs than one asset lock may spend, they
+    /// When the account holds more UTXOs than one drain may safely spend
+    /// (`CoinJoinShieldPlanner.consolidationThreshold`), they
     /// are first consolidated onto one fresh CoinJoin address (see
     /// `prepareCoinJoinInputs`). Either way the user is asked once: on the
     /// direct path the coordinator runs its own PIN/biometric gate; on the
@@ -180,7 +183,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
     }
 
-    // MARK: Preparation (more than 100 mixed coins, or coins not yet final)
+    // MARK: Preparation (more than 50 mixed coins, or coins not yet final)
 
     /// How long to wait for a consolidation's outputs (or any not-yet-final
     /// CoinJoin UTXO) to become final. InstantSend normally locks within
@@ -224,11 +227,11 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         finishFromCoordinatorPhase()
     }
 
-    /// Consolidate (when over the cap) and wait for finality. Returns nil when
+    /// Consolidate (when over the threshold) and wait for finality. Returns nil when
     /// the account is ready to drain, or the message to show otherwise.
     ///
     /// One consolidation per attempt: if it is partial and the account is
-    /// still over the cap afterwards, the attempt stops with a retryable
+    /// still over the threshold afterwards, the attempt stops with a retryable
     /// message, and the next attempt consolidates what is left together with
     /// the outputs already made.
     private func prepareCoinJoinInputs() async -> String? {
