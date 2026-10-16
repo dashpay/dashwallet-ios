@@ -386,10 +386,13 @@ struct SendSourceScreen: View {
 /// old single-screen form did — Core → Core into the L1 payment processor,
 /// everything else into `SendConfirmSheet`.
 ///
-/// Also the amount step for a DashPay contact, which the picker opens
-/// directly: same screen, same view model, with the recipient rendered as a
-/// contact and the button executing the send itself (there is no confirmation
-/// after it — `sendToContact` broadcasts in one shot).
+/// Also the amount step for a DashPay contact, which the picker and the
+/// contact profile open directly: same screen, same view model, with the
+/// recipient rendered as a contact. Send asks for the PIN and has the view
+/// model sign the payment (`prepareContactReview`), then opens
+/// `ConfirmContactSendSheet` on it with the exact fee and total; once the
+/// review is sent and closed, `onContinueContact` has the host run
+/// `sendToContact`, which broadcasts that signed payment.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the step that chose the recipient — the source step for an
@@ -398,8 +401,8 @@ struct ExternalSendAmountScreen: View {
     /// Core → Core: hand (address, amount in duffs) to the hosting
     /// controller, which routes through the L1 payment processor.
     var onContinueCore: (String, UInt64) -> Void
-    /// Contact route: run the pay-to-contact spend on the hosting controller,
-    /// which presents the send-success screen.
+    /// Contact route: the review was sent and has closed. The host runs
+    /// `viewModel.sendToContact()` and shows the outcome.
     var onContinueContact: () -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
@@ -410,13 +413,22 @@ struct ExternalSendAmountScreen: View {
     @State private var didCompleteSend = false
     /// Pre-send review for the DashPay contact route.
     @State private var showContactConfirm = false
+    /// The review the sheet is showing (`SendViewModel.contactReviewID`),
+    /// set when it appears. Its `onDismiss` closes that review only, so a
+    /// late dismissal never closes the next one; and the amount step's Send
+    /// is ignored while the current review is on screen.
+    @State private var shownContactReviewID: Int?
 
     var body: some View {
         VStack(spacing: 0) {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
                 DashUIKit.NavigationBar(leading: {
-                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                    // Leaving mid-broadcast would hide the outcome — the
+                    // success, or the "don't send it again" notice.
+                    DashUIKit.NavigationBarElement.back.button(action: {
+                        if !isContactSendInFlight { onBack() }
+                    })
                 })
                 SendContactIntro(
                     contact: contact,
@@ -474,18 +486,43 @@ struct ExternalSendAmountScreen: View {
         // presented tears down the presenter mid-dismissal. A cancel dismisses
         // the same way and must not unwind, so the outcome is carried across.
         #if DASHPAY
-        .sheet(isPresented: $showContactConfirm) {
-            if let contact = viewModel.contactRecipient {
+        // A sheet or the PIN prompt over this step does not count as leaving
+        // it; a pop, a dismissal or a tab switch does.
+        .onAppear { viewModel.contactAmountStepDidAppear() }
+        .onDisappear { viewModel.contactAmountStepDidDisappear() }
+        // The broadcast starts from `onDismiss`, once the review is gone, so
+        // the host's outcome screen never presents over a sheet that is still
+        // on its way out. Any other close abandons the signed payment.
+        .sheet(isPresented: $showContactConfirm, onDismiss: {
+            let closedReviewID = shownContactReviewID
+            shownContactReviewID = nil
+            if viewModel.isSendingToContact {
+                onContinueContact()
+            } else {
+                // A sheet that never appeared was replaced by the next
+                // review before it showed; that review is not this one's to
+                // close, and the next prepare already released its payment.
+                if let closedReviewID { viewModel.cancelContactReview(id: closedReviewID) }
+            }
+        }) {
+            if let contact = viewModel.contactRecipient,
+               let duffs = viewModel.contactReviewDuffs,
+               let feeDuffs = viewModel.contactReviewFeeDuffs,
+               let totalDuffs = viewModel.contactReviewTotalDuffs {
                 ConfirmContactSendSheet(
                     contact: contact,
-                    amountText: viewModel.dashDuffsUnsigned.formattedDashAmount,
-                    fiatText: viewModel.fiatAmountString,
+                    amountDuffs: duffs,
+                    feeDuffs: feeDuffs,
+                    totalDuffs: totalDuffs,
+                    fiatText: viewModel.contactReviewFiatText ?? "",
                     onCancel: { showContactConfirm = false },
                     onSend: {
+                        viewModel.confirmContactReview()
                         showContactConfirm = false
-                        onContinueContact()
                     })
-                    .presentationDetents([.medium])
+                    .onAppear { shownContactReviewID = viewModel.contactReviewID }
+                // No detent here: the sheet is `BottomSheet.selfSizing`, which
+                // sets its own from the measured content.
             }
         }
         #endif
@@ -545,9 +582,9 @@ struct ExternalSendAmountScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            // A contact payment is broadcast by this very tap; every other
-            // route continues to a confirmation first, so only one of them
-            // can honestly say "Send".
+            // A contact payment's review, opened by this tap, is the last
+            // step before the broadcast; every other route continues to a
+            // flow of its own (the L1 payment processor or `SendConfirmSheet`).
             actionButtonText: isContactSend
                 ? NSLocalizedString("Send", comment: "")
                 : NSLocalizedString("Continue", comment: ""),
@@ -559,11 +596,20 @@ struct ExternalSendAmountScreen: View {
 
     private func continueAction() {
         if isContactSend {
-            // Never straight to the broadcast: `sendToContact` authorizes,
-            // builds, signs and sends in one irreversible call, so this is the
-            // last point at which the user can still read back what they are
-            // about to pay.
-            showContactConfirm = true
+            // Never straight to the broadcast: this signs the payment (after
+            // the PIN) and opens the review on its exact fee and total; only
+            // the review's Send broadcasts it.
+            #if DASHPAY
+            if let shown = shownContactReviewID, shown == viewModel.contactReviewID { return }
+            // A review that was asked for and never appeared, or is still on
+            // its way in, left this set; clear it so the next one presents.
+            showContactConfirm = false
+            Task { @MainActor in
+                if await viewModel.prepareContactReview() {
+                    showContactConfirm = true
+                }
+            }
+            #endif
             return
         }
         guard let route = viewModel.route else { return }
@@ -585,9 +631,12 @@ struct ExternalSendAmountScreen: View {
         #endif
     }
 
+    /// From the amount step's Send to the review, and from the review's Send
+    /// on — `isSendingToContact` covers the review's exit as well as the
+    /// broadcast.
     private var isContactSendInFlight: Bool {
         #if DASHPAY
-        return viewModel.isSendingToContact
+        return viewModel.isContactPaymentInFlight
         #else
         return false
         #endif
@@ -986,70 +1035,84 @@ private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> S
 }
 
 #if DASHPAY
-/// Pre-send review for a DashPay contact payment.
-///
-/// The other redesigned routes confirm on `SendConfirmSheet`, which can state
-/// an exact fee because their execution is split into prepare and send. The
-/// contact route has no such split: `sendDashPayPayment` authorizes, builds,
-/// signs and broadcasts in one call and reports the fee only afterwards. So
-/// this states the fee for what it is — deducted from the balance, known once
-/// the payment is sent — rather than showing a number nobody computed.
+/// Pre-send review for a DashPay contact payment. The payment is already
+/// signed (`SendViewModel.prepareContactReview`), so the fee and total are
+/// the exact figures of the transaction Send broadcasts.
 private struct ConfirmContactSendSheet: View {
     let contact: ContactItem
-    let amountText: String
+    let amountDuffs: UInt64
+    /// The exact fee of the signed payment.
+    let feeDuffs: UInt64
+    let totalDuffs: UInt64
     let fiatText: String
     var onCancel: () -> Void
     var onSend: () -> Void
 
+    private static let dashFractionDigits = 8
+
     var body: some View {
-        VStack(spacing: 0) {
-            Text(NSLocalizedString("Confirm", comment: "Payment confirmation"))
-                .font(.headline)
+        // The same parts as the L1 confirmation (`ConfirmPaymentViewController`)
+        // and the internal transfer's: the design system's sheet with its title,
+        // grabber and close button, the amount pair, a card of rows, and the
+        // button pair. `selfSizing` measures the content, so nothing below may
+        // grow greedily — no `Spacer`, no `maxHeight: .infinity`.
+        DashUIKit.BottomSheet.selfSizing(
+            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
+            VStack(spacing: 0) {
+                // Digits only: the component draws the Dash symbol itself, as an
+                // image VoiceOver cannot name — so the pair is read as one,
+                // with the unit spelled out.
+                DashUIKit.SwapAmountView(
+                    amount: amountDuffs.formattedDashAmountWithoutCurrencySymbol,
+                    secondaryText: fiatText,
+                    showDashLogo: true)
+                    .padding(.top, 14)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(amountDuffs.formattedDashAmount)
+                    .accessibilityValue(fiatText)
+
+                VStack(spacing: 0) {
+                    DashUIKit.MenuItem(
+                        title: NSLocalizedString("To", comment: "Payment confirmation"),
+                        accessory: .text(contact.displayTitle))
+                    // Every place a duff can occupy, as on the L1 confirmation:
+                    // the component's default rounds a Core fee to "0".
+                    DashUIKit.MenuItem(
+                        title: NSLocalizedString("Network fee", comment: "Payment confirmation"),
+                        accessory: .balance(
+                            dash: Int64(clamping: feeDuffs), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits))
+                    DashUIKit.MenuItem(
+                        title: NSLocalizedString("Total", comment: ""),
+                        accessory: .balance(
+                            dash: Int64(clamping: totalDuffs), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits))
+                }
+                .modifier(MenuViewModifier())
                 .padding(.top, 20)
 
-            VStack(spacing: 6) {
-                Text(amountText)
-                    .font(.largeTitle.weight(.medium))
-                Text(fiatText)
-                    .font(.subheadline)
-                    .foregroundColor(.secondaryText)
-            }
-            .padding(.top, 24)
-
-            VStack(spacing: 0) {
-                DashUIKit.MenuItem(
-                    title: NSLocalizedString("To", comment: "Payment confirmation"),
-                    accessory: .text(contact.displayTitle))
-                DashUIKit.MenuItem(
-                    title: NSLocalizedString("Network fee", comment: "Payment confirmation"),
-                    accessory: .text(NSLocalizedString(
-                        "Taken from your balance",
-                        comment: "Send to contact: the exact fee is reported once the payment is sent")))
-            }
-            .modifier(MenuViewModifier())
-            .padding(.top, 24)
-            .padding(.horizontal, 20)
-
-            Spacer(minLength: 20)
-
-            HStack(spacing: 20) {
-                DashUIKit.DashButton(
-                    text: NSLocalizedString("Cancel", comment: ""),
-                    fillsWidth: true,
-                    size: .large,
-                    style: .tintedGray,
-                    action: onCancel)
-                DashUIKit.DashButton(
-                    text: NSLocalizedString("Send", comment: ""),
-                    fillsWidth: true,
-                    size: .large,
-                    style: .filledBlue,
-                    action: onSend)
+                HStack(spacing: 20) {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Cancel", comment: ""),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .tintedGray,
+                        action: onCancel)
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Send", comment: ""),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .filledBlue,
+                        action: onSend)
+                }
+                .padding(.top, 24)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.dash.primaryBackground)
     }
 }
 #endif

@@ -425,7 +425,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// Pushed like the sibling "Send to Dash address" row, so the two read the
     /// same way: pick who, then say how much, then send. Picking a contact
     /// pushes the amount step, which spends through
-    /// `WalletSendService.sendToContact`.
+    /// `WalletSendService.prepareContactPayment` and `broadcastContactPayment`.
     ///
     /// It used to switch to the contacts TAB and stop there, leaving the user
     /// to find the person themselves and pay from their profile sheet — a row
