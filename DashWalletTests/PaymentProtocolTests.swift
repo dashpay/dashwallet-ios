@@ -6,10 +6,6 @@
 //  Self-contained: the signed PaymentRequest fixture is embedded (captured from the
 //  bip70-dash test server, see BIP70_TESTING.md), so no network/server is required.
 //
-//  NOTE: the DashWalletTests target is currently compile-gated; if it won't build, the
-//  identical assertions run via the standalone manual harness (swiftc). See the manual
-//  runner referenced in the BIP70 work.
-//
 
 import XCTest
 import Security
@@ -653,7 +649,8 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let svc = service(t, w)
         let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         let result = try await svc.confirmAndSend(confirmation)
-        XCTAssertEqual(w.calls, ["build", "broadcast", "post"]) // broadcast strictly before POST
+        // BIP70 order: the merchant acknowledges the signed bytes before they are broadcast.
+        XCTAssertEqual(w.calls, ["build", "post", "broadcast"])
         XCTAssertEqual(t.postedPayment?.transactions, [w.prepared.txData])
         XCTAssertEqual(result.ackMemo, "thanks")
     }
@@ -740,13 +737,20 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
-    func testSoftPostFailureAfterBroadcast() async throws {
+    /// A failed merchant round-trip happens BEFORE broadcast, so the money is unspent: the
+    /// failure is a hard throw carrying the tx hash, nothing is broadcast, and the send
+    /// guard is released so the user can retry.
+    func testPostFailureBeforeBroadcastThrowsWithoutBroadcasting() async throws {
         let w = FakeWallet(); let t = FakeTransport(unsigned()); t.postShouldThrow = .unexpectedResponse(host: "h")
         let svc = service(t, w)
         let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
-        let result = try await svc.confirmAndSend(c) // must NOT throw — coins already moved
-        XCTAssertNil(result.ackMemo)
-        XCTAssertTrue(w.calls.contains("broadcast"))
+        await assertThrowsBIP70(
+            try await svc.confirmAndSend(c),
+            .paymentNotAcknowledged(txHashDisplay: w.prepared.txHashDisplay, reason: "Unexpected response from h."))
+        XCTAssertFalse(w.calls.contains("broadcast"))
+        t.postShouldThrow = nil
+        _ = try await svc.confirmAndSend(c) // guard was released: the retry goes through
+        XCTAssertEqual(w.calls, ["build", "build", "broadcast"])
     }
 
     func testRefundToFromOwnAddress() async throws {

@@ -125,7 +125,6 @@
 		16AA1B384A9758C1DA97676A /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */; };
 		17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */; };
 		197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */; };
-		19BF3F10240A082811AAC1EB /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		19CF9D60B276558AA48380C2 /* SwiftDashSDKSPVCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */; };
 		1A9AA76AC3F7489DCE8850ED /* WalletAccountsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F334C7FE582BF48AB47BDAA2 /* WalletAccountsViewModel.swift */; };
 		1AF81D8C73A81CB927C3AE0E /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */; };
@@ -1221,7 +1220,6 @@
 		B1700000B1700000B1700021 /* DEXOfflineToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
-		B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		5E1C0A0100000000000000F2 /* MerchantLogoPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */; };
 		B56469D438692B0A0B771EA6 /* PinPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC52AE587802170368F6177 /* PinPromptView.swift */; };
 		B66294BFAF57B052A74EE77D /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
@@ -2015,7 +2013,6 @@
 		EE0000022DUMMYID001234567 /* POIDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */; };
 		EE0000042DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
-		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		5E1C0A0100000000000000F3 /* MerchantLogoPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */; };
 		EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */; };
 		EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */; };
@@ -2095,6 +2092,16 @@
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
+		BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000005 /* DashPayUserLinkTests.swift */; };
+		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
+		BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000009 /* PaymentProtocolTests.swift */; };
+		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
+		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
+		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
+		BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000011 /* WalletPreparationFailureTests.swift */; };
+		BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000013 /* HostRecoveryTests.swift */; };
+		BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000015 /* AutomaticPreparationTests.swift */; };
+		BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000017 /* AuthenticationGateTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
 		21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */; };
@@ -3364,7 +3371,6 @@
 		AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlatformDashConnectDataSourceTests.swift; path = DashConnect/PlatformDashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
-		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
 		5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantLogoPlaceholder.swift; sourceTree = "<group>"; };
 		AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTransport.swift; sourceTree = "<group>"; };
 		B1100000B1100000B1100002 /* BuyEnterAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountView.swift; sourceTree = "<group>"; };
@@ -3955,6 +3961,16 @@
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000005 /* DashPayUserLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayUserLinkTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000009 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
+		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
+		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
+		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000011 /* WalletPreparationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPreparationFailureTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000013 /* HostRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostRecoveryTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000015 /* AutomaticPreparationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticPreparationTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000017 /* AuthenticationGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationGateTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
 		4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRowsUITests.swift; sourceTree = "<group>"; };
@@ -4014,7 +4030,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				19BF3F10240A082811AAC1EB /* (null) in Frameworks */,
 				B059B6E200A57A699E6EED84 /* libPods-DashWalletTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7290,7 +7305,6 @@
 				516FBC2E8DE4BEE90D103F68 /* HardwareNumericKeyboardView.swift */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
-				AD6615F1246B5935365B05BD /* NavigationBar.swift */,
 				5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */,
 				759ADD562BF3447400767ACD /* Button.swift */,
 				75CDD7852C08D61300F433D2 /* DashAmount.swift */,
@@ -7545,6 +7559,16 @@
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
 				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
+				BABA10000000000000000005 /* DashPayUserLinkTests.swift */,
+				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
+				BABA10000000000000000009 /* PaymentProtocolTests.swift */,
+				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
+				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
+				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
+				BABA10000000000000000011 /* WalletPreparationFailureTests.swift */,
+				BABA10000000000000000013 /* HostRecoveryTests.swift */,
+				BABA10000000000000000015 /* AutomaticPreparationTests.swift */,
+				BABA10000000000000000017 /* AuthenticationGateTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
 				7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */,
@@ -10530,7 +10554,6 @@
 				472CEE012924AA6D00656B48 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				2A6300452328D07500827825 /* DWLockPinInputView.m in Sources */,
 				2A0C69AC23125074001B8C90 /* UIView+DWHUD.m in Sources */,
-				B453B34B871E4125607DACDC /* NavigationBar.swift in Sources */,
 				5E1C0A0100000000000000F2 /* MerchantLogoPlaceholder.swift in Sources */,
 				75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */,
 				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
@@ -10870,6 +10893,16 @@
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
 				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
+				BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */,
+				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
+				BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */,
+				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
+				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
+				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
+				BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */,
+				BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */,
+				BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */,
+				BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
 				8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */,
@@ -11133,7 +11166,6 @@
 				75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				C9D2C7062A320AA000D15901 /* DWOnboardingModel.m in Sources */,
 				C9D2C7072A320AA000D15901 /* AmountInputTypeSwitcher.swift in Sources */,
-				EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */,
 				5E1C0A0100000000000000F3 /* MerchantLogoPlaceholder.swift in Sources */,
 				C9D2C7082A320AA000D15901 /* DWPlaceholderFormCellModel.m in Sources */,
 				C9D2C7092A320AA000D15901 /* DWOverlapControl.m in Sources */,
@@ -12664,7 +12696,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDASHPAY";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletTests/DashWalletTests-Bridging-Header.h";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -12697,7 +12729,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDASHPAY";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletTests/DashWalletTests-Bridging-Header.h";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -13600,7 +13632,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDASHPAY";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletTests/DashWalletTests-Bridging-Header.h";
 				TEST_HOST = "$(BUNDLE_LOADER)";
@@ -13896,7 +13928,7 @@
 					"@loader_path/Frameworks",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDASHPAY";
-				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.TodayExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash.DashWalletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWalletTests/DashWalletTests-Bridging-Header.h";
 				TEST_HOST = "$(BUNDLE_LOADER)";

@@ -2,17 +2,23 @@ import Foundation
 import SwiftData
 import SwiftDashSDK
 import XCTest
-#if canImport(dashwallet)
-@testable import dashwallet
-#elseif canImport(dashpay)
 @testable import dashpay
-#else
-@testable import ShieldedBalanceHarness
-#endif
 
 @MainActor
 final class PlatformBalanceReaderTests: XCTestCase {
     private let walletId = Data(repeating: 1, count: 32)
+
+    /// `DashModelContainer.createInMemory()` leaves `cloudKitDatabase` at `.automatic`,
+    /// which the dashpay host app's iCloud entitlement turns into a CloudKit-backed
+    /// store that refuses the schema's non-optional relationships. The reader only
+    /// needs the models, so build the in-memory container without CloudKit here.
+    private func makeContainer() throws -> ModelContainer {
+        let configuration = ModelConfiguration(
+            schema: DashModelContainer.schema,
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none)
+        return try ModelContainer(for: DashModelContainer.schema, configurations: [configuration])
+    }
 
     private func addWallet(to container: ModelContainer, id: Data, network: Network = .testnet, hasAccount: Bool = true) -> PersistentWallet {
         let wallet = PersistentWallet(walletId: id, network: network)
@@ -36,7 +42,7 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testReadsOnlySelectedWalletAndIncludesZeroRows() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let selected = addWallet(to: container, id: walletId)
         let other = addWallet(to: container, id: Data(repeating: 2, count: 32))
         addAddress(to: container, wallet: selected, index: 2, credits: 70)
@@ -51,7 +57,7 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testMissingNetworkMetadataDoesNotHidePersistedBalanceOrKnownZero() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let wallet = addWallet(to: container, id: walletId)
         wallet.networkRaw = nil
         addAddress(to: container, wallet: wallet, index: 0, credits: 42)
@@ -64,7 +70,7 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testEmptyAccountIsKnownZero() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         _ = addWallet(to: container, id: walletId)
         let snapshot = try XCTUnwrap(PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
         XCTAssertEqual(snapshot.credits, 0)
@@ -72,14 +78,14 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testMissingWalletOrAccountIsUnavailable() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         XCTAssertNil(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
         _ = addWallet(to: container, id: walletId, hasAccount: false)
         XCTAssertNil(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
     }
 
     func testSameWalletIdWithWrongNetworkIsUnavailable() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let wallet = addWallet(to: container, id: walletId)
         addAddress(to: container, wallet: wallet, index: 0, credits: 99)
         XCTAssertNil(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .mainnet))
@@ -87,8 +93,8 @@ final class PlatformBalanceReaderTests: XCTestCase {
 
     func testSameWalletIdAcrossNetworkContainersKeepsAmountsAndAddressesSeparate() throws {
         // SwiftDashSDKHost uses a separate DashModel.sqlite per network.
-        let mainnet = try DashModelContainer.createInMemory()
-        let testnet = try DashModelContainer.createInMemory()
+        let mainnet = try makeContainer()
+        let testnet = try makeContainer()
         let mainWallet = addWallet(to: mainnet, id: walletId, network: .mainnet)
         let testWallet = addWallet(to: testnet, id: walletId, network: .testnet)
         addAddress(to: mainnet, wallet: mainWallet, index: 1, credits: 100)
@@ -106,7 +112,7 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testUpdatedPersistedZeroReplacesPreviousAmount() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let wallet = addWallet(to: container, id: walletId)
         addAddress(to: container, wallet: wallet, index: 0, credits: 99)
         let first = try XCTUnwrap(PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
@@ -117,14 +123,14 @@ final class PlatformBalanceReaderTests: XCTestCase {
     }
 
     func testOverflowFailsInsteadOfPublishingWrappedAmount() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let wallet = addWallet(to: container, id: walletId)
         addAddress(to: container, wallet: wallet, index: 0, credits: UInt64.max)
         addAddress(to: container, wallet: wallet, index: 1, credits: 1)
         XCTAssertThrowsError(try PlatformBalanceReader.read(container: container, walletId: walletId, network: .testnet))
     }
     func testIncompleteLocalAccountDoesNotClaimZeroBeforeDiscovery() throws {
-        let container = try DashModelContainer.createInMemory()
+        let container = try makeContainer()
         let wallet = addWallet(to: container, id: walletId, hasAccount: false)
         // A wallet row can precede account discovery/persistence. Its absence
         // is not evidence that the imported seed has no Platform funds.

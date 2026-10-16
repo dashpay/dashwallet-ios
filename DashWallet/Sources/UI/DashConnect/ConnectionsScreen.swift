@@ -39,7 +39,7 @@ struct ConnectionsScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
                     }
                 )
 

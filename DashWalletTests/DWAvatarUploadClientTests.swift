@@ -32,7 +32,15 @@ final class DWAvatarUploadClientTests: XCTestCase {
 
     private typealias Sample = EndpointSampleResponse
 
+    override func setUp() {
+        super.setUp()
+        // The dashpay host app bundles no Imgur credentials; the client under test must
+        // behave as a configured build.
+        DWAvatarUploadConfiguration.testingClientID = "imgurId"
+    }
+
     override func tearDown() {
+        DWAvatarUploadConfiguration.testingClientID = nil
         DWAvatarUploadClient.testingHTTPClient = nil
         DWAvatarUploadClient.testingImageQueue = nil
         UserDefaults.standard.removeObject(forKey: "ImgurImageDeleteHash")

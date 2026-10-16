@@ -158,12 +158,134 @@ enum MnemonicFirstWalletCreation {
     }
 }
 
+// MARK: - Restore-flow collaborators
+
+/// A wallet row the host restores: `ManagedPlatformWallet` in production.
+protocol SwiftDashSDKWalletRow {
+    var walletId: Data { get }
+}
+
+extension ManagedPlatformWallet: SwiftDashSDKWalletRow {}
+
+/// The manager surface the wallet restore flow drives: the rows `start`
+/// loads, recreates from the keychain and resolves the active wallet in.
+/// `PlatformWalletManager` is the production store; the lifecycle tests
+/// substitute an in-memory one, which is why the row type is associated
+/// rather than the SDK class (its initializer is internal to the SDK).
+@MainActor
+protocol SwiftDashSDKWalletRowStore: AnyObject {
+    associatedtype Wallet: SwiftDashSDKWalletRow
+    var wallets: [Data: Wallet] { get }
+    var firstWallet: Wallet? { get }
+    func loadFromPersistor() async throws -> [Wallet]
+    func createWallet(
+        mnemonic: String,
+        network: Network,
+        name: String?,
+        createDefaultAccounts: Bool,
+        birthHeight: UInt32?
+    ) throws -> Wallet
+    func deleteWallet(walletId: Data) throws
+    @discardableResult
+    func shutdown() async -> PlatformWalletShutdownMetrics
+}
+
+extension PlatformWalletManager: SwiftDashSDKWalletRowStore {}
+
+/// The keychain-backed wallet material the host recreates rows from and
+/// classifies before authorizing a local-store reset. Production is the
+/// `WalletStorage` and network-resolver statics on the host; tests
+/// substitute recorded inventories. `Sendable`: the reset preflight reads it
+/// off the main actor.
+protocol SwiftDashSDKWalletMaterialReading: Sendable {
+    /// Every persisted mnemonic, or an error when enumeration or any single
+    /// read fails (`SwiftDashSDKHost.strictlyPersistedMnemonics`).
+    func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)]
+    /// The networks `entries` belong to, or the resolver's refusal of
+    /// malformed material (`SwiftDashSDKHost.persistedSDKWalletNetworks(in:)`).
+    func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network>
+    /// The entries whose deterministic id belongs to `network`
+    /// (`SwiftDashSDKHost.recoverablePersistedMnemonics(_:for:)`).
+    func recoverablePersistedMnemonics(
+        _ entries: [(walletId: Data, mnemonic: String)], for network: Network
+    ) -> [(walletId: Data, mnemonic: String)]
+}
+
+/// Production wallet material: the host's keychain statics.
+struct SwiftDashSDKKeychainWalletMaterial: SwiftDashSDKWalletMaterialReading {
+    func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
+        try SwiftDashSDKHost.strictlyPersistedMnemonics()
+    }
+
+    func persistedSDKWalletNetworks(in entries: [(walletId: Data, mnemonic: String)]) throws -> Set<Network> {
+        try SwiftDashSDKHost.persistedSDKWalletNetworks(in: entries)
+    }
+
+    func recoverablePersistedMnemonics(
+        _ entries: [(walletId: Data, mnemonic: String)], for network: Network
+    ) -> [(walletId: Data, mnemonic: String)] {
+        SwiftDashSDKHost.recoverablePersistedMnemonics(entries, for: network)
+    }
+}
+
+/// The per-network active-wallet registry the host reads and pins.
+/// Production is `WalletEnvironment`'s UserDefaults keys.
+@MainActor
+protocol SwiftDashSDKActiveWalletRegistry {
+    func activeWalletId(for network: WalletEnvironment.NetworkKind) -> Data?
+    func setActiveWalletId(_ id: Data?, for network: WalletEnvironment.NetworkKind)
+}
+
+struct WalletEnvironmentActiveWalletRegistry: SwiftDashSDKActiveWalletRegistry {
+    func activeWalletId(for network: WalletEnvironment.NetworkKind) -> Data? {
+        WalletEnvironment.activeWalletId(for: network)
+    }
+
+    func setActiveWalletId(_ id: Data?, for network: WalletEnvironment.NetworkKind) {
+        WalletEnvironment.setActiveWalletId(id, for: network)
+    }
+}
+
+/// The one-time wide CoinJoin scan the host re-arms when it recreates a
+/// network's wallet rows. Production is `CoinJoinRecovery.shared`.
+@MainActor
+protocol CoinJoinRecoveryFlagResetting: AnyObject {
+    func resetRecoveryFlag(scope: String)
+}
+
+extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
+
+extension SwiftDashSDKHost {
+    /// What the restore flow and the reset preflight read beside the SDK
+    /// runtime. Production reads the keychain, `WalletEnvironment`'s
+    /// registry, `CoinJoinRecovery` and the Documents store roots; the
+    /// lifecycle tests substitute in-memory stand-ins so `restoreWallet` and
+    /// `validateLocalStoreReset` run without an SDK.
+    struct Collaborators {
+        var material: any SwiftDashSDKWalletMaterialReading
+        var registry: any SwiftDashSDKActiveWalletRegistry
+        var coinJoinRecovery: any CoinJoinRecoveryFlagResetting
+        var localStoreRoots: () throws -> WalletLocalStoreRoots
+
+        @MainActor
+        static var production: Collaborators {
+            Collaborators(
+                material: SwiftDashSDKKeychainWalletMaterial(),
+                registry: WalletEnvironmentActiveWalletRegistry(),
+                coinJoinRecovery: CoinJoinRecovery.shared,
+                localStoreRoots: { try WalletLocalStoreRoots.inDocuments() })
+        }
+    }
+}
+
 @MainActor
 final class SwiftDashSDKHost {
 
     // MARK: - Singleton
 
     static let shared = SwiftDashSDKHost()
+
+    private let collaborators: Collaborators
 
     // MARK: - Logging
 
@@ -223,7 +345,15 @@ final class SwiftDashSDKHost {
         }
     }
 
-    private init() {}
+    private convenience init() {
+        self.init(collaborators: .production)
+    }
+
+    /// A host over substitute collaborators. The lifecycle tests use it;
+    /// `shared` is built over `Collaborators.production`.
+    init(collaborators: Collaborators) {
+        self.collaborators = collaborators
+    }
 
     // MARK: - Import scan floor
 
@@ -602,10 +732,36 @@ final class SwiftDashSDKHost {
         DWLogger.log("HOST starting for \(network.rawValue)")
 
         let handles = try await buildRuntime(for: network)
-        let resolvedWallet: ManagedPlatformWallet
+        let resolvedWallet = try await restoreWallet(in: handles.manager, network: network) {
+            await self.provisionDevnetWallets(handles: handles)
+        }
+
+        publish(handles: handles, wallet: resolvedWallet)
+        // Keep keychain unlock and its FFI work off the load critical path,
+        // including when a partially recovered store supplied this wallet.
+        Task { [weak self] in
+            self?.unlockDashPayContactCrypto(manager: handles.manager, wallet: resolvedWallet)
+        }
+        Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
+        Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
+        DWLogger.log("HOST started for \(network.rawValue)")
+        return (handles.manager, resolvedWallet)
+    }
+
+    /// Stage 4/4 of `start`: load the persisted wallet rows from `rows` and
+    /// resolve the active wallet, recreating missing rows from the keychain
+    /// when the store is empty, partially recovered or under a pending reset
+    /// intent. `provisionDevnet` is the first-entry devnet provisioning the
+    /// keychain cannot supply (`provisionDevnetWallets`). Every failure shuts
+    /// `rows` down before it propagates; nothing is published here.
+    func restoreWallet<Rows: SwiftDashSDKWalletRowStore>(
+        in rows: Rows,
+        network: Network,
+        provisionDevnet: () async -> Rows.Wallet?
+    ) async throws -> Rows.Wallet {
         Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
-            resolvedWallet = try await loadPersistedWallet(manager: handles.manager, network: network)
+            return try await loadPersistedWallet(in: rows, network: network)
         } catch HostError.walletNotFound {
             // Reinstall recovery (C6-C): the SwiftData store dies with the app
             // but WalletStorage mnemonics live in the keychain — rebuild the
@@ -626,41 +782,30 @@ final class SwiftDashSDKHost {
             // reset interrupted after the unlink, a kill before UserDefaults
             // reached disk, or any other way to an empty store all pass
             // through this branch.
-            CoinJoinRecovery.shared.resetRecoveryFlag(scope: network.persistenceScope)
+            collaborators.coinJoinRecovery.resetRecoveryFlag(scope: network.persistenceScope)
             do {
-                var recovered = try recoverPersistedWallet(handles: handles)
+                var recovered = try recoverPersistedWallet(in: rows, network: network)
                 if recovered == nil, network == .devnet {
-                    recovered = await provisionDevnetWallets(handles: handles)
+                    recovered = await provisionDevnet()
                 }
                 guard let recovered else { throw HostError.walletNotFound(network) }
                 // Existing keychain wallets must all recover before clearing
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
                 try localStoreRecovery(for: network).finish()
-                resolvedWallet = recovered
+                return recovered
             } catch {
-                await handles.manager.shutdown()
+                await rows.shutdown()
                 throw HostError.walletBootstrapFailed(error)
             }
         } catch let error as HostError {
-            await handles.manager.shutdown()
+            await rows.shutdown()
             throw error
         } catch {
             Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
-            await handles.manager.shutdown()
+            await rows.shutdown()
             throw HostError.walletBootstrapFailed(error)
         }
-
-        publish(handles: handles, wallet: resolvedWallet)
-        // Keep keychain unlock and its FFI work off the load critical path,
-        // including when a partially recovered store supplied this wallet.
-        Task { [weak self] in
-            self?.unlockDashPayContactCrypto(manager: handles.manager, wallet: resolvedWallet)
-        }
-        Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
-        Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
-        DWLogger.log("HOST started for \(network.rawValue)")
-        return (handles.manager, resolvedWallet)
     }
 
     /// Create or import a wallet as the SOLE active managed platform wallet.
@@ -753,7 +898,7 @@ final class SwiftDashSDKHost {
         }
 
         if let kind = registryNetworkKind(for: network) {
-            WalletEnvironment.setActiveWalletId(createdWallet.walletId, for: kind)
+            collaborators.registry.setActiveWalletId(createdWallet.walletId, for: kind)
         }
         publish(handles: handles, wallet: createdWallet)
 
@@ -1325,12 +1470,12 @@ final class SwiftDashSDKHost {
     /// ~400ms-per-wallet restore no longer stalls the MainActor. The
     /// caller (`start`) is a lifecycle-queue op, so the added suspension
     /// cannot interleave with other lifecycle operations.
-    private func loadPersistedWallet(
-        manager: PlatformWalletManager,
+    private func loadPersistedWallet<Rows: SwiftDashSDKWalletRowStore>(
+        in rows: Rows,
         network: Network
-    ) async throws -> ManagedPlatformWallet {
+    ) async throws -> Rows.Wallet {
         let loadStarted = CFAbsoluteTimeGetCurrent()
-        let restored = try await manager.loadFromPersistor()
+        let restored = try await rows.loadFromPersistor()
         let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
         DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         // A pending reset intent means a removal may have taken only the WAL,
@@ -1343,7 +1488,7 @@ final class SwiftDashSDKHost {
             || resetIntent().isPending(scope: network.persistenceScope) {
             throw HostError.walletNotFound(network)
         }
-        if let resolved = resolveActiveWallet(in: manager, network: network) {
+        if let resolved = resolveActiveWallet(in: rows, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
             return resolved
         }
@@ -1480,19 +1625,19 @@ final class SwiftDashSDKHost {
     /// fallback, which pins the arbitrary-but-deterministic `firstWallet` as
     /// the active choice going forward. Returns `nil` only when the manager
     /// holds no wallets at all.
-    private func resolveActiveWallet(
-        in manager: PlatformWalletManager,
+    private func resolveActiveWallet<Rows: SwiftDashSDKWalletRowStore>(
+        in rows: Rows,
         network: Network
-    ) -> ManagedPlatformWallet? {
+    ) -> Rows.Wallet? {
         let kind = registryNetworkKind(for: network)
         if let kind,
-           let activeId = WalletEnvironment.activeWalletId(for: kind),
-           let active = manager.wallets[activeId] {
+           let activeId = collaborators.registry.activeWalletId(for: kind),
+           let active = rows.wallets[activeId] {
             return active
         }
-        guard let fallback = manager.firstWallet else { return nil }
+        guard let fallback = rows.firstWallet else { return nil }
         if let kind {
-            WalletEnvironment.setActiveWalletId(fallback.walletId, for: kind)
+            collaborators.registry.setActiveWalletId(fallback.walletId, for: kind)
         }
         return fallback
     }
@@ -1504,23 +1649,27 @@ final class SwiftDashSDKHost {
     /// Wipe race note: the wiper deletes mnemonics before `handleWalletWiped`,
     /// so a refresh racing a wipe finds an empty list here and fails the start
     /// — and the next refresh's `hasSDKWallet` gate stays closed.
-    private func recoverPersistedWallet(handles: RuntimeHandles) throws -> ManagedPlatformWallet? {
-        try localStoreRecovery(for: handles.network).begin()
-        let inventory = try Self.strictlyPersistedMnemonics()
+    private func recoverPersistedWallet<Rows: SwiftDashSDKWalletRowStore>(
+        in rows: Rows,
+        network: Network
+    ) throws -> Rows.Wallet? {
+        try localStoreRecovery(for: network).begin()
+        let material = collaborators.material
+        let inventory = try material.strictlyPersistedMnemonics()
         // Reject malformed/unclassifiable material instead of treating it as
         // a wallet that belongs to another network and silently skipping it.
-        _ = try Self.persistedSDKWalletNetworks(in: inventory)
-        let entries = Self.recoverablePersistedMnemonics(
+        _ = try material.persistedSDKWalletNetworks(in: inventory)
+        let entries = material.recoverablePersistedMnemonics(
             inventory,
-            for: handles.network)
+            for: network)
         guard !entries.isEmpty else { return nil }
 
         for entry in entries {
-            if handles.manager.wallets[entry.walletId] != nil { continue }
+            if rows.wallets[entry.walletId] != nil { continue }
             do {
-                let created = try handles.manager.createWallet(
+                let created = try rows.createWallet(
                     mnemonic: entry.mnemonic,
-                    network: handles.network,
+                    network: network,
                     name: "dashwallet",
                     createDefaultAccounts: true,
                     // This path registers a keychain mnemonic whose
@@ -1532,9 +1681,9 @@ final class SwiftDashSDKHost {
                     // conservative-correct choice; a needless full
                     // scan is recoverable, a tip-anchored miss of old
                     // funds is not.
-                    birthHeight: Self.importedWalletBirthHeight(for: handles.network))
+                    birthHeight: Self.importedWalletBirthHeight(for: network))
                 if created.walletId != entry.walletId {
-                    try? handles.manager.deleteWallet(walletId: created.walletId)
+                    try? rows.deleteWallet(walletId: created.walletId)
                     Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
                     DWLogger.log("HOST keychain recovery: created wallet id did not match its keychain id; discarded")
                     throw HostError.mnemonicRoundTripMismatch
@@ -1546,13 +1695,13 @@ final class SwiftDashSDKHost {
             }
         }
 
-        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else {
-            DWLogger.log("HOST keychain recovery resolved no active wallet for \(handles.network.networkName) eligible=\(entries.count)")
+        guard let resolved = resolveActiveWallet(in: rows, network: network) else {
+            DWLogger.log("HOST keychain recovery resolved no active wallet for \(network.networkName) eligible=\(entries.count)")
             return nil
         }
-        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
+        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
         DWLogger.log(
-            "HOST recovered \(entries.count) wallet(s) from keychain for \(handles.network.networkName) skipped=\(inventory.count - entries.count) birthHeight=\(Self.importedWalletBirthHeight(for: handles.network))")
+            "HOST recovered \(entries.count) wallet(s) from keychain for \(network.networkName) skipped=\(inventory.count - entries.count) birthHeight=\(Self.importedWalletBirthHeight(for: network))")
         return resolved
     }
 
@@ -1645,7 +1794,7 @@ final class SwiftDashSDKHost {
         if let sourcePhrase,
            let devnetWalletId = try? SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: sourcePhrase)[.devnet],
            handles.manager.wallets[devnetWalletId] != nil {
-            WalletEnvironment.setActiveWalletId(devnetWalletId, for: .devnet)
+            collaborators.registry.setActiveWalletId(devnetWalletId, for: .devnet)
             let idTag = devnetWalletId.prefix(4).map { String(format: "%02x", $0) }.joined()
             Self.logger.info(
                 "🪺 HOST :: devnet active wallet bound to the FROM-network active wallet's devnet twin; wallet=\(idTag, privacy: .public)")
@@ -1688,7 +1837,7 @@ final class SwiftDashSDKHost {
         let sourceWalletId: Data?
         if case let .switchingNetwork(from, to) = WalletLifecycleTransitionState.shared.phase,
            to == .devnet, from != .devnet,
-           let activeWalletId = WalletEnvironment.activeWalletId(for: from) {
+           let activeWalletId = collaborators.registry.activeWalletId(for: from) {
             sourceWalletId = activeWalletId
         } else if let persisted = WalletEnvironment.devnetProvisioningSourceWalletId {
             Self.logger.info(
@@ -1786,8 +1935,9 @@ final class SwiftDashSDKHost {
         // Reading and classifying the inventory constructs a native wallet
         // per entry and network (seed derivation, default accounts): off the
         // main actor, like every other FFI-heavy step of the lifecycle.
+        let material = collaborators.material
         try await Task.detached(priority: .userInitiated) {
-            let inventory = try Self.strictlyPersistedMnemonics()
+            let inventory = try material.strictlyPersistedMnemonics()
             // An embedded NUL is accepted by the C-string boundary of
             // validation and id derivation (only the prefix is read) but
             // rejected by the signer, so such material must not authorize a
@@ -1796,7 +1946,7 @@ final class SwiftDashSDKHost {
                   inventory.allSatisfy({ !$0.mnemonic.utf8.contains(0) }) else {
                 throw HostError.invalidMnemonic
             }
-            _ = try Self.persistedSDKWalletNetworks(in: inventory)
+            _ = try material.persistedSDKWalletNetworks(in: inventory)
         }.value
         // The suspension above is a window for a start to configure a native
         // runtime; the latch is monotonic, so recheck it before admitting.
@@ -1811,12 +1961,12 @@ final class SwiftDashSDKHost {
     }
 
     private func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
-        WalletLocalStoreRecovery(directory: try WalletLocalStoreRoots.inDocuments().platform
+        WalletLocalStoreRecovery(directory: try collaborators.localStoreRoots().platform
             .appendingPathComponent(network.persistenceScope, isDirectory: true))
     }
 
     private func resetIntent() throws -> WalletLocalStoreResetIntent {
-        WalletLocalStoreResetIntent(directory: try WalletLocalStoreRoots.inDocuments().resetIntents)
+        WalletLocalStoreResetIntent(directory: try collaborators.localStoreRoots().resetIntents)
     }
 
     /// Hold model-container admission through the reset's teardown and file
@@ -1830,7 +1980,7 @@ final class SwiftDashSDKHost {
     }
 
     private func buildModelContainer(for network: Network, scope: String? = nil) async throws -> ModelContainer {
-        let dir = try WalletLocalStoreRoots.inDocuments().platform
+        let dir = try collaborators.localStoreRoots().platform
             .appendingPathComponent(scope ?? network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
@@ -1850,7 +2000,7 @@ final class SwiftDashSDKHost {
     /// per-network path keeps `configureShielded` idempotent — it throws only
     /// when re-pointed to a different path on the same manager.
     func shieldedTreeDBPath(for network: Network) throws -> String {
-        let dir = try WalletLocalStoreRoots.inDocuments().shielded
+        let dir = try collaborators.localStoreRoots().shielded
             .appendingPathComponent(network.persistenceScope, isDirectory: true)
         try FileManager.default.createDirectory(
             at: dir,
