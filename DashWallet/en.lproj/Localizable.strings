@@ -6346,6 +6346,15 @@
 "Sign in to %@ again?" = "Sign in to %@ again?";
 "Sole Requester" = "Sole Requester";
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
+
+/* CoinJoin */
+"Preparing your coins" = "Preparing your coins";
+
+/* CoinJoin */
+"Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
+
+/* CoinJoin */
+"Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
 "Some votes already cast" = "Some votes already cast";
 "Special Purpose Account" = "Special Purpose Account";
 "Still calculating the withdrawable amount. Tap Max again in a moment." = "Still calculating the withdrawable amount. Tap Max again in a moment.";

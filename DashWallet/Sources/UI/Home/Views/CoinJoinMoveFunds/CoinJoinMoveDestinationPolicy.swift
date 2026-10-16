@@ -101,3 +101,87 @@ enum CoinJoinMoveDestinationPolicy {
         return shieldedAvailable ? .destinationChoice : .transparentConfirmation
     }
 }
+
+// MARK: - CoinJoin → Shielded input planning
+
+/// Decides how a "move mixed coins to Shielded" attempt gets from the CoinJoin
+/// account's current UTXO set to a single CoinJoin-drain asset lock.
+///
+/// The drain spends every final CoinJoin UTXO as an input of ONE asset lock,
+/// and an asset lock may carry at most `maxAssetLockInputs` inputs: Dash Core
+/// v24 refuses more as non-standard (`assetlocktx-too-many-inputs`,
+/// `MAX_STANDARD_ASSET_LOCK_INPUTS`) and peers drop it silently, and Platform
+/// consensus applies the same cap (`max_asset_lock_transaction_inputs`).
+/// That is the hard limit, but not the binding one: the drain is shielded by
+/// a ShieldFromAssetLock transition whose InstantSend proof embeds the whole
+/// asset-lock transaction, and Platform caps a transition at 20 480 bytes.
+/// That cap is exceeded from about 65 inputs (dashpay/platform#4460: 83 inputs
+/// gave a 23 KB transition), so a 65–100-input drain is accepted by Core and
+/// then stuck as an asset lock Platform cannot consume until the ChainLock
+/// fallback (dashpay/platform#5460) ships in the SDK. An account above
+/// `consolidationThreshold` is therefore first consolidated — swept to one fresh
+/// address of its own CoinJoin account in ≤500-input regular transactions —
+/// and drained once those outputs are final. The coins never leave the
+/// CoinJoin account until the drain, so an interrupted attempt leaves them on
+/// one CoinJoin address, and the next attempt drains them directly.
+///
+/// Pure: the inputs come from `SwiftDashSDKTransactionSender.coinJoinUtxoState()`
+/// so `CoinJoinShieldPlannerTests` can pin every branch without a wallet.
+enum CoinJoinShieldPlanner {
+
+    /// Most inputs a single asset lock may carry (Dash Core v24 policy and
+    /// Platform consensus agree on 100). The hard limit — never drain above it.
+    static let maxAssetLockInputs = 100
+
+    /// Most UTXOs drained directly; above this the account is consolidated
+    /// first. Tighter than `maxAssetLockInputs` because the ShieldFromAssetLock
+    /// transition carrying an InstantSend proof outgrows Platform's 20 480-byte
+    /// transition limit at about 65 inputs (see the type doc); 50 leaves
+    /// headroom for input size variance. Revisit once the ChainLock-proof
+    /// fallback (dashpay/platform#5460) is in the SDK the app builds against.
+    static let consolidationThreshold = 50
+
+    /// What the next step towards the drain is.
+    enum Step: Equatable {
+        /// The account holds no spendable UTXO — there is nothing to shield.
+        case nothingToMove
+        /// More UTXOs than one drain may safely spend
+        /// (`consolidationThreshold`): consolidate first.
+        case consolidate
+        /// Few enough UTXOs, but `pending` of them are not final yet. The
+        /// drain builder spends only final inputs (confirmed or
+        /// InstantSend-locked), so draining now would leave them behind.
+        case awaitFinality(pending: Int)
+        /// Every UTXO is final and one asset lock can spend them all.
+        case drain
+    }
+
+    /// The next step for an account with `utxoCount` spendable UTXOs of which
+    /// `finalCount` are final.
+    static func nextStep(utxoCount: Int, finalCount: Int) -> Step {
+        guard utxoCount > 0 else { return .nothingToMove }
+        if utxoCount > consolidationThreshold { return .consolidate }
+        let pending = utxoCount - min(finalCount, utxoCount)
+        return pending > 0 ? .awaitFinality(pending: pending) : .drain
+    }
+
+    /// The finality the drain builder applies (`is_confirmed ||
+    /// is_instantlocked`), recovered from what the SDK exposes per UTXO: a
+    /// mined UTXO carries its block height, and an InstantSend-locked one has
+    /// its txid in the wallet's IS-lock set. Both txid forms are wire order.
+    static func isFinal(height: UInt32, txid: Data, instantLockedTxids: Set<Data>) -> Bool {
+        height > 0 || instantLockedTxids.contains(txid)
+    }
+
+    /// Whether every consolidation transaction in `consolidationTxids` (wire
+    /// order) has produced a final output back in the CoinJoin account.
+    /// `utxos` is the account's current (txid, isFinal) snapshot. An empty
+    /// txid list is trivially settled.
+    static func consolidationSettled(
+        consolidationTxids: [Data],
+        utxos: [(txid: Data, isFinal: Bool)]
+    ) -> Bool {
+        let finalTxids = Set(utxos.lazy.filter { $0.isFinal }.map { $0.txid })
+        return consolidationTxids.allSatisfy { finalTxids.contains($0) }
+    }
+}
