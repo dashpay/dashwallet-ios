@@ -1529,7 +1529,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         if phase == .idle,
            Self.mayBeUnclaimedNewLock(txidWire: txidWire, vout: vout, fundingType: fundingType) {
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock may be a running transfer's new lock")
-            handleFailure(CoordinatorError.newAssetLockInFlight)
+            handleFailure(CoordinatorError.assetLockInFlight)
             return false
         }
         guard beginTransfer() else { return false }
@@ -1552,17 +1552,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// running transfer whose poll has not claimed it yet: a lock of the same
     /// wallet and funding type created since that transfer began polling.
     static func mayBeUnclaimedNewLock(txidWire: Data, vout: UInt32, fundingType: Int) -> Bool {
-        guard let container = SwiftDashSDKHost.shared.modelContainer else { return false }
-        var outPoint = Data(txidWire)
-        var voutLittleEndian = vout.littleEndian
-        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
-        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
-        var descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { row in
-                row.outPointHex == outPointHex && row.fundingTypeRaw == fundingType
-            })
-        descriptor.fetchLimit = 1
-        guard let row = try? container.mainContext.fetch(descriptor).first else { return false }
+        // Almost always no transfer is waiting for its first claim, and the
+        // store is not read at all.
+        guard ShieldedAssetLocksInFlight.shared.hasUnclaimedNewLock(fundingType: fundingType),
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              let row = try? AssetLockRecoveryService.persistedLock(
+                  txidWire: txidWire, vout: vout, in: container.mainContext),
+              row.fundingTypeRaw == fundingType
+        else { return false }
         return ShieldedAssetLocksInFlight.shared.mayBeUnclaimedNewLock(
             walletId: row.walletId, fundingType: fundingType, createdAt: row.createdAt)
     }
@@ -1831,6 +1828,16 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// on the whole transaction, such as removing it.
     func containsTransaction(txidWire: Data) -> Bool {
         lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
+    }
+
+    /// Whether a transfer building a new lock of `fundingType` polls for it and
+    /// has not claimed it yet.
+    func hasUnclaimedNewLock(fundingType: Int) -> Bool {
+        lock.withLock {
+            newLockSlots.contains { slot, state in
+                slot.fundingType == fundingType && state.pollingSince != nil && !state.claimed
+            }
+        }
     }
 
     /// Whether a lock of `walletId` and `fundingType` created at `createdAt`

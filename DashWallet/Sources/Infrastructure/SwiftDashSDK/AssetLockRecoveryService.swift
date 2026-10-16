@@ -391,11 +391,9 @@ struct AssetLockRecoveryService {
             // since then may be consuming this lock, or may have finished it.
             // A resume would only be refused or reported already consumed, and
             // counting that as a failure could stop the pass.
-            // A running transfer's new lock that its poll has not claimed yet
-            // can be this one, and its resume would be refused too.
-            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout))
-                || ShieldedTransferCoordinator.mayBeUnclaimedNewLock(
-                    txidWire: item.txidWire, vout: item.vout, fundingType: item.fundingTypeRaw) {
+            // A running transfer's new lock its poll has not claimed yet is
+            // refused by the coordinator and counted below as in progress.
+            if ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: item.txidWire, vout: item.vout)) {
                 DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… skipped: still being consumed by a running transfer")
                 outcome.inProgress += 1
                 progress(index + 1, pending.count)
@@ -475,6 +473,22 @@ struct AssetLockRecoveryService {
         return Data(display.reversed())
     }
 
+    /// The persisted asset-lock row for the outpoint (`txidWire` wire order,
+    /// 32 bytes), or `nil` when there is none or `txidWire` is malformed.
+    static func persistedLock(txidWire: Data, vout: UInt32, in context: ModelContext) throws -> PersistentAssetLock? {
+        guard txidWire.count == 32 else { return nil }
+        var outPoint = Data(txidWire)
+        var voutLittleEndian = vout.littleEndian
+        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
+        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate<PersistentAssetLock> { row in
+                row.outPointHex == outPointHex
+            })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
     private static func coreToPlatformRecipientAmountDuffs(
         txidWire: Data,
         vout: UInt32
@@ -484,16 +498,7 @@ struct AssetLockRecoveryService {
               let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits
         else { throw RecoveryError.notReady }
 
-        var outPoint = Data(txidWire)
-        var voutLittleEndian = vout.littleEndian
-        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
-        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
-        let descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate<PersistentAssetLock> { row in
-                row.outPointHex == outPointHex
-            })
-
-        guard let lock = try container.mainContext.fetch(descriptor).first,
+        guard let lock = try persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext),
               lock.amountDuffs > 0
         else { throw RecoveryError.unsupportedRoute }
 
