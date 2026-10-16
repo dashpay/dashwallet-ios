@@ -286,6 +286,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         // final, and — on the direct-but-not-final path — until every CoinJoin
         // UTXO is final: the drain builder spends final inputs only.
         let txids = consolidationTxids
+        let waitStart = Date()
         let waited = await SwiftDashSDKTransactionSender.waitForCoinJoinUtxoState(
             timeout: Self.finalityTimeout
         ) { state in
@@ -297,7 +298,10 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
         guard let waited else { return Self.genericFailureMessage }
         let after = waited.state
-        Self.log("move to Shielded — finality wait \(waited.satisfied ? "settled" : "timed out") after \(Int(Self.finalityTimeout))s cap: n=\(after.count) final=\(after.finalCount)")
+        let waitedSeconds = Int(Date().timeIntervalSince(waitStart).rounded())
+        Self.log(
+            "move to Shielded — finality wait \(waited.satisfied ? "settled" : "timed out") after \(waitedSeconds)s "
+                + "(cap \(Int(Self.finalityTimeout))s): n=\(after.count) final=\(after.finalCount)")
 
         if !waited.satisfied {
             if !txids.isEmpty || after.finalCount == 0 {
