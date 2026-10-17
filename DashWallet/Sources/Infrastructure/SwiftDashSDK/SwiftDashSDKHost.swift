@@ -1228,6 +1228,7 @@ final class SwiftDashSDKHost {
         sdk = nil
         modelContainer = nil
         runningNetwork = nil
+        ContestedUsernameFee.shared.runtimeDidStop()
 
         Self.logger.info("🪺 HOST :: stopped")
         DWLogger.log("HOST stopped")
@@ -1923,6 +1924,7 @@ final class SwiftDashSDKHost {
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        ContestedUsernameFee.shared.runtimeDidStart()
     }
 
     // MARK: - ModelContainer

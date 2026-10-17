@@ -369,6 +369,7 @@ struct CreateUsernameView: View {
             // identity — so without this the recovery form opened empty and a
             // DPNS verdict from an earlier visit was reused unchecked.
             viewModel.refreshRegistrationRecoveryState()
+            viewModel.refreshContestedFee()
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }
@@ -500,7 +501,7 @@ struct CreateUsernameView: View {
                     showsContestFeeNote: !isNamingInstantUsername,
                     identityPaidContestFeeDuffs:
                         !isNamingInstantUsername && existingIdentityTopUpDuffs(nameCount: 1) != nil
-                            ? UsernameMarketplaceService.contestedFundCredits / 1000
+                            ? viewModel.contestedFee.fundDuffs
                             : nil,
                     onConfirm: { confirmRequestAccepted() })
             }
@@ -1254,11 +1255,9 @@ struct CreateUsernameView: View {
         if DWCurrentUserIdentityInfo.shared.hasIdentity {
             // An identity with no top-up route here (an invitation claim)
             // registers on what it holds: only the contest fund is at stake.
-            // The fund is the marketplace's figure, credits to duffs
-            // (1 duff = 1000 credits).
-            return UsernameMarketplaceService.contestedFundCredits / 1000
+            return viewModel.contestedFee.fundDuffs
         }
-        return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+        return viewModel.newIdentityFundingDuffs(isContested: true)
     }
 
     /// The top-up the confirmation states for an existing identity, or nil
@@ -1453,6 +1452,12 @@ struct CreateUsernameView: View {
                     "The chosen balance can't pay for this request. Check your balances and try again.",
                     comment: "Usernames: confirm the funding source"))
             }
+            return
+        }
+        if let excess = viewModel.fundingExceedingConfirmation(source: payingSource, nameCount: nameCount) {
+            refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
+                .topUpExceedsConfirmed(neededDuffs: excess.neededDuffs, confirmedDuffs: excess.confirmedDuffs)
+                .localizedDescription)
             return
         }
         // The two-name top-up can need Core where the one-name one did not:
