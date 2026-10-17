@@ -210,6 +210,12 @@
 /* SDK identity profile sheet — info button */
 "About the identity account balance" = "О балансе аккаунта идентификатора";
 
+/* SDK identity profile sheet — explains the usernames list */
+"A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo." = "A username is how people find and pay you on Dash. Every username here belongs to this identity, so they all lead to the same profile, with the same display name and photo.";
+
+/* SDK identity profile sheet — info button */
+"About usernames" = "About usernames";
+
 "Abstain" = "Воздержаться";
 
 "Abstain on “%@”" = "Воздержаться по «%@»";
@@ -1282,10 +1288,6 @@
 
 /* Send confirm sheet */
 "Double-check the address" = "Проверьте адрес ещё раз";
-
-/* Edit profile — usernames list section header
-   SDK identity profile sheet — usernames list */
-"DPNS Names" = "DPNS Names";
 
 /* SPV diagnostics */
 "Drop & rescan" = "Отбросить и пересканировать";
@@ -5452,7 +5454,8 @@
 /* Usernames */
 "Username was successfully requested" = "Запрос на Имя пользователя успешно отправлен";
 
-/* Identities */
+/* Identities
+   SDK identity profile sheet — usernames list */
 "Usernames" = "Имена пользователей";
 
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Имена пользователей хранятся в нормализованном виде, чтобы не допустить похожих имён, поэтому это может отличаться от того, что ввёл каждый человек.";
