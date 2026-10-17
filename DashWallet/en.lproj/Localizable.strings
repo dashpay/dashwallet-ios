@@ -194,6 +194,9 @@
 /* DashConnect token purchase */
 "Contract %@" = "Contract %@";
 
+/* Dash DEX / tx history row title */
+"Converting · %@" = "Converting · %@";
+
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
 
@@ -221,6 +224,12 @@
 /* DashPay Notifications */
 "No notifications match your search" = "No notifications match your search";
 
+/* Dash DEX */
+"Not confirmed" = "Not confirmed";
+
+/* Dash DEX / tx history row title */
+"Not converted · %@" = "Not converted · %@";
+
 /* Notifications */
 "Open Settings" = "Open Settings";
 
@@ -229,6 +238,9 @@
 
 /* Devnet */
 "Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Dash DEX */
+"Refunded" = "Refunded";
 
 /* Inactivity reminder */
 "Remind me later" = "Remind me later";
@@ -247,6 +259,9 @@
 
 /* DashPay Notifications */
 "Search notifications" = "Search notifications";
+
+/* Dash DEX */
+"Stuck" = "Stuck";
 
 /* DashConnect */
 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
@@ -280,6 +295,9 @@
 
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
+
+/* Dash DEX */
+"Waiting for the provider" = "Waiting for the provider";
 
 /* DashConnect token purchase */
 "You pay up to this amount. The final price may be lower." = "You pay up to this amount. The final price may be lower.";

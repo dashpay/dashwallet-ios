@@ -593,6 +593,18 @@
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
+/* Dash DEX / tx history row title */
+"Converting · %@" = "Converting · %@";
+
+/* Dash DEX */
+"Not confirmed" = "Not confirmed";
+
+/* Dash DEX / tx history row title */
+"Not converted · %@" = "Not converted · %@";
+
+/* Dash DEX */
+"Refunded" = "Refunded";
+
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
@@ -2280,6 +2292,9 @@
 
 "Lock the name" = "Lås navnet";
 
+/* Dash DEX */
+"Stuck" = "Stuck";
+
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "Afstemningen slutter";
 
@@ -3845,6 +3860,9 @@
 
 /* No comment provided by engineer. */
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "Dette sletter alle %ld tegnebøger, der er gemt på denne enhed. De kan kun gendannes med deres gendannelsessætninger. Sletningen fra denne enhed kan ikke fortrydes.";
+
+/* Dash DEX */
+"Waiting for the provider" = "Waiting for the provider";
 
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Der er stadig tegnebogsdata fra en tidligere installation gemt på denne enhed. Vil du fortsætte med at bruge disse tegnebøger eller slette alle tegnebogsdata og starte forfra? Sørg for, at hver gendannelsessætning er sikkerhedskopieret, før du sletter.";
