@@ -242,14 +242,17 @@ final class ConnectionsViewModel: ObservableObject {
                 // with the other login: what the sheet showed is not what
                 // would run. Nothing was signed. The sheet is rebuilt from
                 // the same request as it stands now, for a new decision.
+                // An earlier failure was on the sheet this one replaces.
+                self.pendingFailureStatus = nil
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
-                // A cancelled PIN prompt is the user declining, not a failure.
-                if error as? DashConnectPlatformError != .authorizationCancelled {
-                    self.pendingFailureStatus = (error as? AppConnect.Refusal)?.status ?? .failed
-                }
+                // A cancelled PIN prompt is the user declining, not a failure,
+                // whatever an earlier attempt ended in.
+                self.pendingFailureStatus = error as? DashConnectPlatformError == .authorizationCancelled
+                    ? nil
+                    : (error as? AppConnect.Refusal)?.status ?? .failed
                 self.approveError = String(
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription
@@ -268,6 +271,7 @@ final class ConnectionsViewModel: ObservableObject {
 
         Task {
             defer { isApproving = false }
+            self.pendingFailureStatus = nil
             self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
     }

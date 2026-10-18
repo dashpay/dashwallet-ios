@@ -1443,6 +1443,30 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(opened.first?.absoluteString.contains("ac=ok"), true)
     }
 
+    /// An attempt failed, the next one was cancelled at the PIN prompt, and
+    /// the user then closed the sheet: the app hears the user's last answer,
+    /// a decline, not the earlier failure.
+    func testClosingTheSheetAfterACancelledRetryReportsADecline() async throws {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest(
+            "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a", terms: .current)], loginRequest: request)
+        spy.approveFailures = [DashConnectPlatformError.noIdentity, DashConnectPlatformError.authorizationCancelled]
+        let opened = OpenedURLs()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
+
+        viewModel.onURIReceived("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
+        viewModel.denyPendingRequest()
+
+        XCTAssertEqual(opened.urls.count, 1)
+        XCTAssertEqual(opened.urls.first?.absoluteString.contains("ac=declined"), true)
+    }
+
     /// Another identity became active, or the network answers with the other
     /// login, while the sheet was up: nothing is approved on the old sheet,
     /// and the user decides again on what is true now.
