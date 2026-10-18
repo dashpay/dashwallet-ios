@@ -73,6 +73,11 @@ final class ConnectionsViewModel: ObservableObject {
     /// The status the pending App Connect request's callback reports if the
     /// user closes the sheet now: set when an approval failed.
     private var pendingFailureStatus: AppConnect.CallbackStatus?
+    /// Whether the pending request came as a link opened on this phone. Only
+    /// then is its callback opened: a QR code scanned off another screen is
+    /// answered on that screen, and opening the callback here would start an
+    /// unrelated session of the app in this phone's browser.
+    private var pendingRequestArrivedByLink = false
     private var cancellables = Set<AnyCancellable>()
 
     /// Serializes inbound requests.
@@ -112,6 +117,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String) {
+        receive(content, byLink: false)
+    }
+
+    private func receive(_ content: String, byLink: Bool) {
         guard !featureUnavailable else { return }
 
         // A request the user is already looking at owns the screen until they
@@ -169,6 +178,7 @@ final class ConnectionsViewModel: ObservableObject {
                     let connectionRequest = await dataSource.makeConnectionRequest(from: request)
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
+                    pendingRequestArrivedByLink = byLink
                     pendingFailureStatus = nil
                     pendingRequest = connectionRequest
                 case let .stateTransition(request):
@@ -200,9 +210,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// A `dash-key:` / `dash-st:` link opened by an app running on this phone.
-    /// It carries exactly what the QR code encodes, so it takes the same path.
+    /// It carries exactly what the QR code encodes, so it takes the same path,
+    /// except that only a link's callback is opened.
     func onURIReceived(_ uri: String) {
-        onQRScanned(uri)
+        receive(uri, byLink: true)
     }
 
     func approvePendingRequest() {
@@ -282,7 +293,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// The app treats it as a nudge to look for the response, never as
     /// proof of anything.
     private func openCallback(of request: DashKeyRequest, status: AppConnect.CallbackStatus) {
-        guard let callback = request.appConnect?.callback,
+        guard pendingRequestArrivedByLink,
+              let callback = request.appConnect?.callback,
               let url = AppConnect.callbackURL(callback, status: status) else { return }
         openURL(url)
     }
