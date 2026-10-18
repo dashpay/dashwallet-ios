@@ -115,50 +115,44 @@ struct IdentitiesScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-                // Explicit Find-identities command: DIP-9 scan of the active
-                // wallet against Platform — discovers identities the store
-                // has never seen (reinstall / imported phrase / other device).
-                Button(action: { Task { await viewModel.discoverIdentities() } }) {
-                    if viewModel.isDiscovering {
-                        SwiftUI.ProgressView()
-                            .frame(width: 36, height: 36)
-                    } else {
-                        Image(systemName: "person.crop.circle.badge.questionmark")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.dash.primaryText)
-                            .frame(width: 36, height: 36)
-                            .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            }, trailing: {
+                HStack {
+                    // Explicit Find-identities command: DIP-9 scan of the active
+                    // wallet against Platform — discovers identities the store
+                    // has never seen (reinstall / imported phrase / other device).
+                    Button(action: { Task { await viewModel.discoverIdentities() } }) {
+                        if viewModel.isDiscovering {
+                            SwiftUI.ProgressView()
+                                .frame(width: 36, height: 36)
+                        } else {
+                            Image(systemName: "person.crop.circle.badge.questionmark")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.dash.primaryText)
+                                .frame(width: 36, height: 36)
+                                .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                        }
                     }
-                }
-                .disabled(viewModel.isDiscovering || viewModel.isRefreshing)
-                .accessibilityLabel(NSLocalizedString("Find identities", comment: "Identities"))
-
-                Button(action: { Task { await viewModel.refreshFromNetwork() } }) {
-                    if viewModel.isRefreshing {
-                        SwiftUI.ProgressView()
-                            .frame(width: 36, height: 36)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.dash.primaryText)
-                            .frame(width: 36, height: 36)
-                            .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                    .disabled(viewModel.isDiscovering || viewModel.isRefreshing)
+                    .accessibilityLabel(NSLocalizedString("Find identities", comment: "Identities"))
+    
+                    Button(action: { Task { await viewModel.refreshFromNetwork() } }) {
+                        if viewModel.isRefreshing {
+                            SwiftUI.ProgressView()
+                                .frame(width: 36, height: 36)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.dash.primaryText)
+                                .frame(width: 36, height: 36)
+                                .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                        }
                     }
+                    .disabled(viewModel.isRefreshing || viewModel.isDiscovering)
+                    .accessibilityLabel(NSLocalizedString("Refresh", comment: ""))
                 }
-                .disabled(viewModel.isRefreshing || viewModel.isDiscovering)
-                .accessibilityLabel(NSLocalizedString("Refresh", comment: ""))
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            })
 
             HStack {
                 Text(NSLocalizedString("Identities", comment: "Identities"))
@@ -420,18 +414,9 @@ struct IdentityDetailScreen: View {
 
     private var pageHeader: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            })
 
             HStack(spacing: 6) {
                 Text(currentRow.title)
@@ -807,17 +792,9 @@ struct IdentityPublicKeysScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button {
-                    vc.popViewController(animated: true)
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            }, trailing: {
                 if canRefresh {
                     Button {
                         Task { await refreshKeys() }
@@ -837,9 +814,7 @@ struct IdentityPublicKeysScreen: View {
                     .disabled(isReloadingKeys)
                     .accessibilityLabel(Text(NSLocalizedString("Refresh keys from Platform", comment: "Identities: re-fetch this identity's public keys")))
                 }
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            })
 
             Text(NSLocalizedString("Public keys", comment: "Identities"))
                 .font(.title)

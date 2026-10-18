@@ -10,7 +10,9 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
-    /// The most budget the wallet grants any key, whatever the app proposes.
+    /// The most budget the wallet grants a key the app proposes a budget
+    /// for. A binding that asks for none gets none, and the sheet says the
+    /// key can spend without a limit.
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
@@ -215,7 +217,8 @@ extension AppConnect {
     /// request whose `cb` is on a host that is not the app's is refused.
     /// The sheet would be branded as the app and return somewhere else, and
     /// the host is the user's main phishing signal. A request without `cb`
-    /// is not refused, the sheet warns instead (`isHost(_:of:)`).
+    /// is not refused, the sheet warns instead
+    /// (`ApproveConnectionSheet.originWarning`).
     ///
     /// The request itself proves nothing about where it came from: anyone
     /// can put the app's id and the app's host in a QR code. What the wallet
@@ -407,6 +410,66 @@ extension AppConnect {
             }
             .map { UInt32(bitPattern: $0.keyId) }
             .sorted()
+    }
+
+    /// The contract groups that live v2-shaped keys no record names are
+    /// bound to (`unrecordedV2KeyIds`): a disconnect looks each one up to
+    /// tell whether the app's owner owns it.
+    static func unrecordedV2KeyGroupIds(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Set<Data> {
+        Set(unrecordedV2KeyBounds(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys
+        ).compactMap { _, bound in
+            if case .contractGroup(let id) = bound { return id }
+            return nil
+        })
+    }
+
+    /// The live keys of the app's v2 grants that no grant record of the
+    /// identity names, as a reinstall or a lost record leaves them: HASH160
+    /// authentication keys at HIGH or CRITICAL with an expiry (every v2 auth
+    /// key has one), whose stored bound is the app's contract, a document
+    /// type on it, a contract group the app's owner owns (`appGroupIds`), or
+    /// a foreign document type v2 allows (DashPay `profile`). The last can
+    /// be another app's when its record is lost too; it is disabled all the
+    /// same, since a key left on rather than off is what a disconnect must
+    /// not do, and that app's next sign-in adds a new one.
+    static func unrecordedV2KeyIds(
+        appContractId: Data,
+        appGroupIds: Set<Data>,
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [UInt32] {
+        unrecordedV2KeyBounds(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys
+        ).filter { _, bound in
+            switch bound {
+            case .singleContract(let id): return id == appContractId
+            case .documentType(let id, let name):
+                return id == appContractId || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+            case .contractGroup(let id): return appGroupIds.contains(id)
+            }
+        }
+        .map(\.keyId)
+        .sorted()
+    }
+
+    private static func unrecordedV2KeyBounds(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [(keyId: UInt32, bound: StoredBound)] {
+        currentIdentityPublicKeys.compactMap { key in
+            let keyId = UInt32(bitPattern: key.keyId)
+            guard isLiveAppConnectAuthKey(key), key.expiresAt != nil, !recordedKeyIds.contains(keyId),
+                  let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
+                  !stored.hasUnreadableBound, let bound = stored.bound else { return nil }
+            return (keyId, bound)
+        }
     }
 
     /// A live auth key a login could have granted: HASH160 and never MASTER,

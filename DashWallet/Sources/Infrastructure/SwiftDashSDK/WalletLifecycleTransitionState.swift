@@ -28,6 +28,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
     enum Phase: Equatable {
         case idle
         case openingWallet
+        /// Exclusive admission throughout store deletion and restart.
+        case resettingLocalStores
         case failedWalletOpen(WalletPreparationFailure)
         /// Launch hold while the DashSync → SwiftDashSDK key migrator imports
         /// an upgrading user's wallet. Owned by
@@ -78,6 +80,7 @@ final class WalletLifecycleTransitionState: ObservableObject {
             switch self {
             case .idle: return "idle"
             case .openingWallet: return "openingWallet"
+            case .resettingLocalStores: return "resettingLocalStores"
             case .failedWalletOpen: return "failedWalletOpen"
             case .migratingLegacyWallet: return "migratingLegacyWallet"
             case .failedLegacyMigration: return "failedLegacyMigration"
@@ -125,9 +128,45 @@ final class WalletLifecycleTransitionState: ObservableObject {
 
     /// Automatic kicks must leave the failure card and any unsent support
     /// draft intact. Explicit Retry / Sync Now use their existing entry points.
+    /// A keys card leaves automatic preparation on: a keychain status that
+    /// failed the replay is often transient (the lock, securityd), and the
+    /// next foreground or connectivity kick is what heals it — unless one of
+    /// the card's own flows holds the window (`holdRecoveryPresentation`),
+    /// since a start would take the phase from under the phrase modal or the
+    /// Help composer. A store card keeps the kicks off until the user acts.
     var allowsAutomaticWalletPreparation: Bool {
-        if case .failedWalletOpen = phase { return false }
-        return true
+        switch phase {
+        case let .failedWalletOpen(failure): return failure.kind == .keychain && !recoveryPresentationHeld
+        case .resettingLocalStores: return false
+        default: return true
+        }
+    }
+
+    /// Set by the failure card while its PIN prompt, phrase modal, Help sheet
+    /// or share sheet owns the window; cleared when that flow ends.
+    private(set) var recoveryPresentationHeld = false
+    /// An automatic kick the hold refused, to be replayed on release.
+    private(set) var automaticPreparationDeferred = false
+
+    func holdRecoveryPresentation() {
+        recoveryPresentationHeld = true
+    }
+
+    /// Ends the hold. Returns whether a kick was refused meanwhile, so the
+    /// caller can replay it; the deferral is consumed either way.
+    @discardableResult
+    func releaseRecoveryPresentation() -> Bool {
+        recoveryPresentationHeld = false
+        defer { automaticPreparationDeferred = false }
+        return automaticPreparationDeferred
+    }
+
+    /// Called by an automatic entry point that was refused: remembers the
+    /// kick when only the hold stood in its way (a keys card under a flow).
+    func recordDeferredAutomaticPreparation() {
+        guard recoveryPresentationHeld,
+              case let .failedWalletOpen(failure) = phase, failure.kind == .keychain else { return }
+        automaticPreparationDeferred = true
     }
 
     /// Atomically admit `next` as the active operation. Admission rules: any
@@ -138,8 +177,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
     /// failure card, and the runtime's wallet open may take the window over
     /// from either legacy-migration phase once the imported wallet exists;
     /// an independently authorized wipe may begin from any failure phase.
-    /// Admission does not imply a reset button on a failure card: a
-    /// database-open failure offers Retry and Help, preserving data.
+    /// A local-store reset reserves its own phase through deletion and
+    /// restart, including when the failure occurred during a network switch.
     /// Every other combination is rejected and the caller surfaces or logs it.
     func tryBegin(_ next: Phase) -> Bool {
         if next == .migratingLegacyWallet { deferredLegacyFailure = nil }
@@ -147,6 +186,8 @@ final class WalletLifecycleTransitionState: ObservableObject {
         case (.idle, .openingWallet),
              (.failedWalletOpen, .openingWallet),
              (.failedWalletOpen, .wiping),
+             (.failedWalletOpen, .resettingLocalStores),
+             (.failedNetworkSwitch, .resettingLocalStores),
              (.idle, .migratingLegacyWallet),
              (.failedLegacyMigration, .migratingLegacyWallet),
              (.migratingLegacyWallet, .openingWallet),
@@ -206,10 +247,31 @@ final class WalletLifecycleTransitionState: ObservableObject {
         }
         phase = .idle
         preparationFailure = nil
+        // The overlay window, and with it any card flow that held it, is
+        // released at idle; a hold its owner never released must not block
+        // the automatic kicks of the next keys card.
+        recoveryPresentationHeld = false
+        automaticPreparationDeferred = false
     }
 
     func fail(_ failure: Phase) {
         phase = failure
+        if case let .failedWalletOpen(detail) = failure { preparationFailure = detail }
+    }
+
+    /// Database-open details available to recovery actions on either card.
+    var localStoreRecoveryFailure: WalletPreparationFailure? {
+        switch phase {
+        case let .failedWalletOpen(failure): return failure
+        case .failedNetworkSwitch: return preparationFailure
+        default: return nil
+        }
+    }
+
+    /// Restore the exact card and diagnostic when deletion could not finish.
+    func restoreAfterLocalStoreReset(phase: Phase, failure: WalletPreparationFailure) {
+        self.phase = phase
+        preparationFailure = failure
     }
 
     /// The legacy-migration hold ended without a wallet. Keeps the window up

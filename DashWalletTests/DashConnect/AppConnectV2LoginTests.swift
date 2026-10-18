@@ -357,6 +357,107 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(resend(key(), binding: otherKey), "a record of another key id")
     }
 
+    /// A disconnect finds the app's v2 keys that no record names: bound to
+    /// its contract, a document type on it, a group its owner owns, or the
+    /// allowlisted DashPay profile; with an expiry; HIGH or CRITICAL.
+    func testADisconnectFindsTheAppsV2KeysThatNoRecordNames() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let group = Data(repeating: 0xB2, count: 32)
+        let otherGroup = Data(repeating: 0xC3, count: 32)
+        let other = Data(repeating: 0xD4, count: 32)
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        func key(_ id: Int32, level: SecurityLevel = .high, expires: Bool = true, disabled: Bool = false,
+                 type: KeyType = .ecdsaHash160) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: id, purpose: .authentication, securityLevel: level, keyType: type, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
+                totalBudget: nil, expiresAt: expires ? 9_000 : nil)
+        }
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, unreadable: Bool = false) -> AppConnect.KeyBinding {
+            AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
+                                  hasUnreadableBound: unreadable, bound: bound)
+        }
+        let keys = [
+            key(1), key(2), key(3, level: .critical), key(4, level: .critical), key(5), key(6),
+            key(7, expires: false), key(8, disabled: true), key(9, level: .master), key(10, type: .ecdsaSecp256k1),
+            key(11), key(12),
+        ]
+        let bindings = [
+            binding(1, .singleContract(app)),
+            binding(2, .documentType(contractId: app, name: "post")),
+            binding(3, .contractGroup(group)),
+            binding(4, .contractGroup(otherGroup)),
+            binding(5, .documentType(contractId: dashPay, name: "profile")),
+            binding(6, .documentType(contractId: dashPay, name: "contactRequest")),
+            binding(7, .singleContract(app)), binding(8, .singleContract(app)),
+            binding(9, .singleContract(app)), binding(10, .singleContract(app)),
+            binding(11, .singleContract(other)),
+            binding(12, .singleContract(app)),
+        ]
+        let recorded: Set<UInt32> = [12]
+
+        XCTAssertEqual(
+            AppConnect.unrecordedV2KeyGroupIds(recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys),
+            [group, otherGroup])
+        XCTAssertEqual(
+            AppConnect.unrecordedV2KeyIds(
+                appContractId: app, appGroupIds: [group], recordedKeyIds: recorded,
+                bindings: bindings, currentIdentityPublicKeys: keys),
+            [1, 2, 3, 5])
+        // A key the store cannot place is the disconnect's stop, not a guess.
+        XCTAssertEqual(
+            AppConnect.unrecordedV2KeyIds(
+                appContractId: app, appGroupIds: [], recordedKeyIds: [],
+                bindings: [binding(1, .singleContract(app), unreadable: true)], currentIdentityPublicKeys: [key(1)]),
+            [])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: [], currentIdentityPublicKeys: [key(3, level: .critical)]),
+            [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
+    }
+
+    /// A v2 grant's CRITICAL group key is disabled under its recorded id,
+    /// but only while the store shows that key bound to a group: a CRITICAL
+    /// key under a recorded id with no such record is not taken for it.
+    func testADisconnectDisablesAV2GroupKeyOnlyAsTheGroupKey() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let keys = [5, 6].map { id in
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: Int32(id), purpose: .authentication, securityLevel: .critical, keyType: .ecdsaHash160,
+                readOnly: false, disabledAt: nil, data: Data([UInt8(id)]), totalBudget: 1, expiresAt: 9_000)
+        }
+        let grant = Self.grant(sessionKeyId: 5, additionalKeyIds: [6])
+        let groupBound = AppConnect.KeyBinding(
+            keyId: 5, data: Data([5]), singleContractId: nil, bound: .contractGroup(Data(repeating: 0xB2, count: 32)))
+
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [grant], appContractId: app, bindings: [groupBound], currentIdentityPublicKeys: keys),
+            [5])
+        var v1 = grant
+        v1.additionalKeyIds = nil
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [v1], appContractId: app, bindings: [groupBound], currentIdentityPublicKeys: keys),
+            [], "a v1 grant never registered a CRITICAL key")
+    }
+
+    /// One update's new keys get ids no key of the identity has: above the
+    /// highest while they fit, then the lowest gaps, never an id twice.
+    func testTheKeysOfOneUpdateGetFreeIds() {
+        func keys(_ ids: [UInt32]) -> [ManagedIdentity.IdentityPublicKeyInfo] {
+            ids.map { Self.key($0) }
+        }
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 3, currentIdentityPublicKeys: keys([0, 1, 2])), [3, 4, 5])
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 2, currentIdentityPublicKeys: []), [0, 1])
+        XCTAssertEqual(
+            AppConnect.freeKeyIds(count: 2, currentIdentityPublicKeys: keys([0, 1, 2, 3, 5, .max])), [4, 6],
+            "past the last id: the gaps, skipping the taken 5")
+        XCTAssertEqual(
+            AppConnect.freeKeyIds(count: 3, currentIdentityPublicKeys: keys([0, .max - 1])), [.max, 1, 2],
+            "the last id, then the gaps, without overflowing")
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 0, currentIdentityPublicKeys: keys([1])), [])
+    }
+
     /// A stored bound is read from the store's discriminant, ids and name.
     func testAStoredBoundIsReadFromTheStore() {
         let id = Data(repeating: 1, count: 32)
@@ -482,7 +583,11 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.sessionKeyIdsToDisable(
                 for: [grant], appContractId: Self.appId,
-                bindings: [.init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId)],
+                bindings: [
+                    .init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId),
+                    .init(keyId: 7, data: Self.key(7, level: .critical).data, singleContractId: nil,
+                          bound: .contractGroup(Data(repeating: 0xB2, count: 32))),
+                ],
                 currentIdentityPublicKeys: keys),
             [7, 8], "the group key and the profile key go; the shared encryption key stays")
         XCTAssertEqual(

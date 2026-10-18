@@ -67,6 +67,24 @@ struct ApproveConnectionSheet: View {
                         Text(resolvedSubtitle)
                             .font(.subhead)
                             .foregroundColor(.secondaryText)
+
+                        // The name above can be one the code or the
+                        // contract's owner chose. This id is what the
+                        // approval is for: a one-QR key is bound to it. Shown
+                        // in full and selectable, so it can be compared with
+                        // the one the app publishes.
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(NSLocalizedString("App contract", comment: "DashConnect"))
+                                .font(.footnote)
+                                .foregroundColor(.secondaryText)
+                            Text(request.appContractId)
+                                .font(.footnote.monospaced())
+                                .foregroundColor(.primaryText)
+                                .textSelection(.enabled)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 6)
+                        .accessibilityElement(children: .combine)
                     }
 
                     if let existingConnection = request.existingConnection {
@@ -360,7 +378,7 @@ struct ApproveConnectionSheet: View {
     private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
         guard let brandHost = plan.brandHost else {
             return NSLocalizedString(
-                "This wallet does not know this app. Its name and website come from the request itself.",
+                "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
                 comment: "DashConnect App Connect v2")
         }
         guard plan.callbackHost == nil else { return nil }

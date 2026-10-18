@@ -238,14 +238,24 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingLoginRequest = nil
                 self.approveError = nil
             } catch DashConnectPlatformError.approvalOutOfDate {
-                // Another identity became active, or the network now answers
-                // with the other login: what the sheet showed is not what
-                // would run. Nothing was signed. The sheet is rebuilt from
+                // Another identity, wallet or network became active, or the
+                // network now answers with the other login: what the sheet
+                // showed is not what would run. Nothing was signed. The sheet is rebuilt from
                 // the same request as it stands now, for a new decision.
                 // An earlier failure was on the sheet this one replaces.
                 self.pendingFailureStatus = nil
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
+            } catch DashConnectPlatformError.loginUnresolved {
+                // The wallet could not check which login this network gets.
+                // Nothing was signed. The sheet is rebuilt: when it still
+                // cannot tell, it says so itself and offers "Try again"
+                // instead of Approve; when it can again, the note says why
+                // the approval did not go through.
+                let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.pendingRequest = rebuilt
+                self.approveError = rebuilt.login == .unresolved
+                    ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 // A cancelled PIN prompt is the user declining, not a failure,
@@ -291,9 +301,11 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// Returns to the app that sent an App Connect request, with how it
     /// ended (`ac=<status>`). Only the callback the sheet showed ("returns
-    /// to <host>") is opened, and only once the user has answered it: the
-    /// wallet keeps no list of the hosts each app may use, so the user's
-    /// answer to a sheet naming the host stands in for the profile's "ask".
+    /// to <host>") is opened, and only once the user has answered it. A
+    /// known app's request that returns elsewhere is refused before the
+    /// sheet (`AppConnect.callbackRefusal`); for an app the wallet does not
+    /// know, the user's answer to a sheet naming the host, with its
+    /// warning, stands in for the profile's "ask".
     /// The app treats it as a nudge to look for the response, never as
     /// proof of anything.
     private func openCallback(of request: DashKeyRequest, status: AppConnect.CallbackStatus) {

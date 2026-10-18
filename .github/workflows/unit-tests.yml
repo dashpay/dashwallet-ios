@@ -1,0 +1,282 @@
+name: "Unit tests (dashpay)"
+
+# Runs DashWalletTests against the dashpay host app on a simulator.
+#
+# The toolchain recipe (Xcode, platform checkout, XCFramework build and cache,
+# CocoaPods) mirrors release-dashpay-testflight.yml step for step, and the
+# XCFramework cache key is identical on purpose: a release run and a test run
+# on the same platform commit share one cached artifact. The platform commit
+# comes from `.platform-ref` (a full SHA), so the slow XCFramework build only
+# happens when someone bumps that pin.
+#
+# Caches a pull request creates are visible only to that pull request, so the
+# `push: develop` trigger exists to seed caches every other PR can restore.
+#
+# The host app needs the gitignored *-Info.plist files to build and launch;
+# this job writes inert placeholders (scripts/ci/make-placeholder-plists.sh)
+# instead of the release secrets, so it also works for fork pull requests.
+
+# No `paths` filter on pull_request: a path-filtered workflow is simply absent
+# on a PR it does not match, which leaves a required check pending forever and
+# makes "runs on every PR" false for docs-only changes.
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unit-tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  membership:
+    name: Every test file is in the target
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - run: python3 scripts/ci/check_test_target_membership.py
+
+  test:
+    name: DashWalletTests on simulator
+    needs: membership
+    runs-on: macos-26
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}/dashwallet-ios
+
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+
+    steps:
+      # The wallet uses ../platform/packages/swift-sdk as a local Swift
+      # package, so both repositories must be siblings in the Actions
+      # workspace.
+      - name: Checkout dashwallet-ios
+        uses: actions/checkout@v6
+        with:
+          path: dashwallet-ios
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Read the platform pin
+        run: |
+          set -euo pipefail
+          platform_sha=$(tr -d '[:space:]' < .platform-ref)
+          if ! [[ "$platform_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$platform_sha'"
+            exit 1
+          fi
+          echo "PLATFORM_SHA=$platform_sha" >> "$GITHUB_ENV"
+          echo "platform: $platform_sha"
+
+      - name: Checkout platform
+        uses: actions/checkout@v6
+        with:
+          repository: dashpay/platform
+          ref: ${{ env.PLATFORM_SHA }}
+          path: platform
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Select Xcode 26.6
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.6"
+
+      - name: Show toolchain versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swift --version
+
+      # Same key as release-dashpay-testflight.yml so the two workflows share
+      # one cached artifact per platform commit.
+      - name: Restore release XCFramework cache
+        id: xcframework-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
+          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-26.6-rust-1.92-ios-sim-release-${{ env.PLATFORM_SHA }}
+
+      - name: Set up Rust 1.92
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        uses: dtolnay/rust-toolchain@1.92.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - name: Ensure iOS Rust targets for platform toolchain
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}/platform
+        run: |
+          set -euo pipefail
+          rustup target add aarch64-apple-ios aarch64-apple-ios-sim
+
+      - name: Restore Cargo dependencies cache
+        id: cargo-cache
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: swift-sdk-cargo-${{ runner.os }}-${{ hashFiles('platform/Cargo.lock') }}
+          restore-keys: |
+            swift-sdk-cargo-${{ runner.os }}-
+
+      - name: Install protoc
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "32.x"
+          repo-token: ${{ github.token }}
+
+      - name: Build release XCFramework from platform
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}/platform/packages/swift-sdk
+        env:
+          PRUNE_CARGO_TARGETS: "1"
+          SKIP_EXAMPLE_APP_BUILD: "1"
+        run: |
+          set -euo pipefail
+          ./build_ios.sh --target ios --target sim --profile release
+          test -d DashSDKFFI.xcframework
+
+      - name: Save Cargo dependencies cache
+        if: steps.xcframework-cache.outputs.cache-hit != 'true' && steps.cargo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cargo-cache.outputs.cache-primary-key }}
+
+      - name: Save release XCFramework cache
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
+          key: ${{ steps.xcframework-cache.outputs.cache-primary-key }}
+
+      - name: Verify release XCFramework
+        run: test -d ../platform/packages/swift-sdk/DashSDKFFI.xcframework
+
+      - name: Set up CocoaPods 1.15.2
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: "1.15.2"
+
+      - name: Restore CocoaPods dependencies cache
+        id: cocoapods-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ${{ github.workspace }}/dashwallet-ios/Pods
+          key: cocoapods-${{ runner.os }}-${{ runner.arch }}-1.15.2-${{ hashFiles('dashwallet-ios/Podfile.lock') }}
+
+      - name: Install CocoaPods dependencies
+        run: |
+          set -euo pipefail
+          pod _1.15.2_ install --deployment
+
+      - name: Save CocoaPods dependencies cache
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ${{ github.workspace }}/dashwallet-ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-primary-key }}
+
+      - name: Write placeholder app configuration
+        run: |
+          set -euo pipefail
+          scripts/ci/make-placeholder-plists.sh
+
+      - name: Select and boot a simulator
+        run: |
+          set -euo pipefail
+          udid=$(python3 - <<'EOF'
+          import json, subprocess, sys
+          sys.path.insert(0, ".github/scripts")
+          from capture_schema_release import select_simulator
+          devices = json.loads(subprocess.check_output(
+              ["xcrun", "simctl", "list", "devices", "available", "--json"]))["devices"]
+          runtime, device = select_simulator(devices)
+          print(f"{device['name']} ({runtime})", file=sys.stderr)
+          print(device["udid"])
+          EOF
+          )
+          echo "simulator: $udid"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+
+      # Debug is the only configuration with ENABLE_TESTABILITY, which every
+      # `@testable import dashpay` needs. The FFI simulator slice is arm64-only.
+      - name: Build for testing
+        run: |
+          set -euo pipefail
+          xcodebuild build-for-testing \
+            -workspace DashWallet.xcworkspace \
+            -scheme dashwallet-dashpay \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -disableAutomaticPackageResolution \
+            -onlyUsePackageVersionsFromResolvedFile \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+
+      - name: Run DashWalletTests
+        run: |
+          set -euo pipefail
+          xcodebuild test-without-building \
+            -workspace DashWallet.xcworkspace \
+            -scheme dashwallet-dashpay \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/DashWalletTests.xcresult" \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 120 \
+            -maximum-test-execution-time-allowance 600
+
+      - name: Test summary
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ -d "$RUNNER_TEMP/DashWalletTests.xcresult" ]; then
+            {
+              echo '## DashWalletTests'
+              echo '```'
+              xcrun xcresulttool get test-results summary --path "$RUNNER_TEMP/DashWalletTests.xcresult"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # The dashpay target runs clang-format and bartycrouch as build phases
+      # when they are on PATH; a build must never change the checkout.
+      - name: Build must not modify the checkout
+        if: always()
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DashWalletTests.xcresult
+          path: ${{ runner.temp }}/DashWalletTests.xcresult
+          retention-days: 7

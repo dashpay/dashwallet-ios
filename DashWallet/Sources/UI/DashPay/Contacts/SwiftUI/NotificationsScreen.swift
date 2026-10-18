@@ -48,9 +48,9 @@ struct NotificationsScreen: View {
             Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                NavigationBar(
+                DashUIKit.NavigationBar(
                     leading: {
-                        NavigationBarElement.back.button {
+                        DashUIKit.NavigationBarElement.back.button {
                             markViewed()
                             onBack()
                         }

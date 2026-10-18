@@ -1492,6 +1492,36 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.approveError)
     }
 
+    /// The wallet could not check which login the network gets at approve
+    /// time: the sheet is rebuilt. When it still cannot tell, the sheet says
+    /// so itself and no error is added; when it can again, a note says why
+    /// nothing was approved.
+    func testAnApprovalThatCouldNotCheckTheLoginRebuildsTheSheet() async {
+        let shown = Self.consent(identityId: "identity-a", terms: .current)
+        var unresolved = shown
+        unresolved.login = .unresolved
+        unresolved.unresolvedLoginReason = "no nodes"
+        let spy = LoginApprovalSpy(shown: [shown, unresolved, shown])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved, DashConnectPlatformError.loginUnresolved]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest, unresolved)
+        XCTAssertNil(viewModel.approveError, "the sheet states the unresolved login itself")
+
+        viewModel.retryPendingRequest()
+        await waitUntil { viewModel.pendingRequest == shown }
+        viewModel.approvePendingRequest()
+        await waitUntil { !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertEqual(viewModel.approveError, DashConnectPlatformError.loginUnresolved.localizedDescription)
+    }
+
     private static func consent(identityId: String, terms: AppConnect.SessionKeyTerms?) -> ConnectionRequest {
         ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -1883,12 +1913,20 @@ final class AppConnectLoginTests: XCTestCase {
             8)
     }
 
-    func testThereIsNoNextKeyIdAfterTheLastOne() {
+    /// An app can register a key under the last id there is. The next key
+    /// then takes the lowest free id, and disabling that key changes nothing:
+    /// its id stays taken.
+    func testAKeyOnTheLastIdLeavesTheLowestFreeIdForTheNextKey() {
         // A key id is a UInt32 the SDK carries as an Int32 bit pattern.
         let last = Self.key(keyId: -1, data: Data([1]))
-        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [last]))
+        XCTAssertEqual(AppConnect.nextKeyId(currentIdentityPublicKeys: [last]), 0)
         let disabledLast = Self.key(keyId: -1, data: Data([1]), disabledAt: 1)
-        XCTAssertNil(AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: 3, data: Data([3])), disabledLast]))
+        XCTAssertEqual(
+            AppConnect.nextKeyId(currentIdentityPublicKeys: [
+                Self.key(keyId: 0, data: Data([0])), Self.key(keyId: 1, data: Data([2])),
+                Self.key(keyId: 2, data: Data([3]), disabledAt: 1), disabledLast,
+            ]),
+            3, "a disabled key keeps its id")
         XCTAssertEqual(
             AppConnect.nextKeyId(currentIdentityPublicKeys: [Self.key(keyId: -2, data: Data([2]))]),
             .max)
@@ -2281,6 +2319,19 @@ final class AppConnectLoginTests: XCTestCase {
             store.save([])
             XCTAssertEqual(defaults.data(forKey: key), stored)
         }
+        // A value that is not data at all is left alone the same way.
+        let others: [NSObject] = ["rows" as NSString, ["rows": NSArray()] as NSDictionary, 7 as NSNumber]
+        for stored in others {
+            defaults.set(stored, forKey: key)
+            XCTAssertFalse(store.canPersist)
+            XCTAssertEqual(store.load().count, 0)
+            store.save([Self.grant(sessionKeyId: 7)])
+            XCTAssertEqual(defaults.object(forKey: key) as? NSObject, stored)
+            store.save([])
+            XCTAssertEqual(defaults.object(forKey: key) as? NSObject, stored)
+        }
+        defaults.removeObject(forKey: key)
+        XCTAssertTrue(store.canPersist)
     }
 
     func testAGrantedKeyMissingFromTheIdentityViewIsReportedNotAssumedGone() {
@@ -2433,6 +2484,26 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(Self.shownRows(dataSource).map(\.status), [.approved])
     }
 
+    func testARowShownForADevnetAtOtherNodesIsNotActedOnUnderTheSameName() async throws {
+        let active = ActiveWallet("wallet-a")
+        let endpoint = Endpoint("https://quorums.one.example")
+        let center = NotificationCenter()
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(
+            active: active, rows: [row], notificationCenter: center, endpoint: endpoint)
+        let shown = Self.shownRows(dataSource)
+
+        // The same wallet and devnet name, pointed at other nodes.
+        endpoint.url = "https://quorums.two.example"
+
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
+        XCTAssertEqual(connections.load().map(\.status), [.active])
+        let current = Self.shownRows(dataSource)
+        XCTAssertNotEqual(current[0].scope, shown[0].scope)
+        try await dataSource.disconnect(id: current[0].id, scope: current[0].scope)
+        XCTAssertEqual(connections.load().map(\.status), [.approved])
+    }
+
     func testARowWithNoScopeIsNotActedOn() async {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
@@ -2580,6 +2651,349 @@ final class AppConnectLoginTests: XCTestCase {
         func add(_ entry: String) { entries.append(entry) }
     }
 
+    func testAnApprovalIsForTheIdentityWalletAndNetworkItsRequestWasResolvedFor() {
+        let request = ConnectionRequest(
+            loginRequest: MockDashConnectDataSource.sampleLoginRequest,
+            appLabel: "App",
+            appUrl: "",
+            walletUsername: nil,
+            walletIdentityId: "identity-a",
+            existingConnection: nil,
+            login: .twoQR,
+            scope: "wallet-a devnet-one")
+
+        XCTAssertTrue(request.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
+        XCTAssertFalse(request.wasResolved(forIdentityId: "identity-b", scope: "wallet-a devnet-one"))
+        XCTAssertFalse(
+            request.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-two"),
+            "the same wallet and identity on another devnet")
+        // A request that was not resolved against a wallet approves nothing.
+        var unscoped = request
+        unscoped.scope = nil
+        XCTAssertFalse(unscoped.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
+    }
+
+    func testAnUnconfirmedRegistrationIsConfirmedOnlyByItsOwnKeyWithWhatItWasGiven() throws {
+        let appContractId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appContract = try XCTUnwrap(Data.identifier(fromBase58: appContractId))
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: template.identityId, appContractId: appContractId, documentId: nil,
+            values: template.values, sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000,
+            publishedAt: template.publishedAt)
+        let hash = Data(repeating: 0x5A, count: 20)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        let bound = [AppConnect.KeyBinding(keyId: 9, data: hash, singleContractId: appContract)]
+        func key(
+            data: Data = hash, level: SecurityLevel = .high, budget: UInt64? = 5_000,
+            expiry: Int64? = 6_000, disabledAt: Int64? = nil
+        ) -> [ManagedIdentity.IdentityPublicKeyInfo] {
+            [Self.key(keyId: 9, securityLevel: level, data: data, disabledAt: disabledAt,
+                      totalBudget: budget, expiresAt: expiry)]
+        }
+
+        XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: bound))
+        for (keys, why) in [
+            (key(data: Data(repeating: 0x01, count: 20)), "another key under the same id"),
+            (key(disabledAt: 1), "a disabled key"),
+            (key(level: .critical), "another security level"),
+            (key(budget: nil), "no budget"),
+            (key(budget: 9_000), "another budget"),
+            (key(expiry: nil), "no expiry"),
+            ([], "no key at all"),
+        ] {
+            XCTAssertFalse(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys, bindings: bound), why)
+        }
+        XCTAssertFalse(
+            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: []),
+            "a bound the store does not show is not taken on trust")
+        let otherApp = [AppConnect.KeyBinding(keyId: 9, data: hash, singleContractId: Data(repeating: 0x77, count: 32))]
+        XCTAssertFalse(
+            AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: otherApp),
+            "bound to another app")
+
+        var grants = [pending]
+        XCTAssertEqual(
+            AppConnect.confirmRegistrations(
+                in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: [], bindings: bound),
+            [], "a key not in the view is not taken as never registered")
+        XCTAssertTrue(grants[0].isUnconfirmed)
+        XCTAssertEqual(
+            AppConnect.confirmRegistrations(
+                in: &grants, identityId: "another identity", currentIdentityPublicKeys: key(), bindings: bound), [])
+        let confirmed = AppConnect.confirmRegistrations(
+            in: &grants, identityId: pending.identityId, currentIdentityPublicKeys: key(), bindings: bound)
+        XCTAssertEqual(confirmed.map(\.key), [pending.key])
+        XCTAssertFalse(grants[0].isUnconfirmed)
+    }
+
+    /// A recovered one-QR registration turns the app's existing row into an
+    /// active one-QR row: a two-QR row still waiting for its second scan
+    /// would otherwise keep that banner over a live session key.
+    func testConfirmingARegistrationActivatesTheAppsExistingRow() {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appB = "BbWcUA8Msi7HSgC2hCJsCtDADs2FzQVabRuHvk1tnj4d"
+        let earlier = Date(timeIntervalSince1970: 1_000)
+        let confirmedAt = Date(timeIntervalSince1970: 2_000)
+        var waiting = DAppConnection(
+            id: appA, name: "App A", url: "https://a.example",
+            status: .approved, updatedAt: earlier, loginKind: .twoQR)
+        waiting.scope = "wallet-a devnet-one"
+        let other = DAppConnection(
+            id: appB, name: "App B", url: "https://b.example",
+            status: .approved, updatedAt: earlier, loginKind: .twoQR)
+
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(
+            appIds: [appA], in: [waiting, other], at: confirmedAt)
+
+        XCTAssertEqual(rows.count, 2)
+        let a = rows[0]
+        XCTAssertEqual(a.id, appA)
+        XCTAssertEqual(a.status, .active)
+        XCTAssertEqual(a.loginKind, .oneQR)
+        XCTAssertEqual(a.updatedAt, confirmedAt)
+        XCTAssertEqual(a.name, "App A")
+        XCTAssertEqual(a.url, "https://a.example")
+        XCTAssertEqual(a.scope, "wallet-a devnet-one")
+        let b = rows[1]
+        XCTAssertEqual(b.status, .approved, "an app whose key was not confirmed keeps its row")
+        XCTAssertEqual(b.loginKind, .twoQR)
+        XCTAssertEqual(b.updatedAt, earlier)
+    }
+
+    /// An app with a confirmed key but no row gets an active one-QR row.
+    func testConfirmingARegistrationAddsARowForAnAppWithout() {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let confirmedAt = Date(timeIntervalSince1970: 2_000)
+
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(appIds: [appA], in: [], at: confirmedAt)
+
+        XCTAssertEqual(rows.map(\.id), [appA])
+        XCTAssertEqual(rows.first?.status, .active)
+        XCTAssertEqual(rows.first?.loginKind, .oneQR)
+        XCTAssertEqual(rows.first?.updatedAt, confirmedAt)
+    }
+
+    /// A grant confirmed with no row saved after it, as an app terminated
+    /// between the two writes leaves it, gets its app's row back: when the
+    /// app has none, and when the row it has is a two-QR one.
+    func testAConfirmedGrantWithoutItsOneQRRowGetsItsRowBack() throws {
+        let appA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        let appB = "BbWcUA8Msi7HSgC2hCJsCtDADs2FzQVabRuHvk1tnj4d"
+        func grant(app: String, keyId: UInt32, identity: String = "identity") -> AppConnectGrant {
+            let template = Self.grant(sessionKeyId: keyId)
+            return AppConnectGrant(
+                identityId: identity, appContractId: app, documentId: nil, values: template.values,
+                sessionKeyId: keyId, totalBudget: nil, expiresAt: nil, publishedAt: template.publishedAt)
+        }
+        let keys = [
+            Self.key(keyId: 7, data: Data(repeating: 0x07, count: 20)),
+            Self.key(keyId: 8, data: Data(repeating: 0x08, count: 20)),
+        ]
+        // Key 7 bound to app A as the store shows it, so an unconfirmed
+        // record of it would hold its key.
+        let bindings = [AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 0x07, count: 20),
+            singleContractId: try XCTUnwrap(Data.identifier(fromBase58: appA)))]
+        func appIds(_ grants: [AppConnectGrant], rows: [DAppConnection], keys: [ManagedIdentity.IdentityPublicKeyInfo] = keys)
+            -> Set<String> {
+            PlatformDashConnectDataSource.appIdsWithoutTheirOneQRRow(
+                grants: grants, identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings, rows: rows)
+        }
+        let earlier = Date(timeIntervalSince1970: 1_000)
+        let twoQRRow = DAppConnection(
+            id: appA, name: "App A", url: "", status: .approved, updatedAt: earlier, loginKind: .twoQR)
+        let oneQRRow = DAppConnection(
+            id: appA, name: "App A", url: "", status: .active, updatedAt: earlier, loginKind: .oneQR)
+
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: []), [appA], "no row")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: [twoQRRow]), [appA], "a two-QR row")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7)], rows: [oneQRRow]), [], "the row is there")
+        XCTAssertEqual(
+            appIds([grant(app: appA, keyId: 7), grant(app: appB, keyId: 8)], rows: [oneQRRow]), [appB],
+            "a later approval for another app finds the row this one lost")
+
+        var disabled = grant(app: appA, keyId: 7)
+        disabled.keyDisabled = true
+        XCTAssertEqual(appIds([disabled], rows: []), [], "a disconnected grant")
+        XCTAssertEqual(
+            appIds([grant(app: appA, keyId: 7)], rows: [],
+                   keys: [Self.key(keyId: 7, data: Data(repeating: 0x07, count: 20), disabledAt: 1)]),
+            [], "a key disabled on the identity")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 9)], rows: []), [], "a key the identity does not hold")
+        XCTAssertEqual(appIds([grant(app: appA, keyId: 7, identity: "other")], rows: []), [], "another identity")
+        var unconfirmed = grant(app: appA, keyId: 7)
+        unconfirmed.unconfirmedKeyHash160 = Data(repeating: 0x07, count: 20).toHexString()
+        XCTAssertTrue(AppConnect.holdsRecordedKey(unconfirmed, currentIdentityPublicKeys: keys, bindings: bindings))
+        XCTAssertEqual(appIds([unconfirmed], rows: []), [], "an unconfirmed grant is left to its confirmation")
+
+        // What the row becomes.
+        let rows = PlatformDashConnectDataSource.rowsAfterConfirming(
+            appIds: appIds([grant(app: appA, keyId: 7)], rows: [twoQRRow]), in: [twoQRRow],
+            at: Date(timeIntervalSince1970: 2_000))
+        XCTAssertEqual(rows.map(\.status), [.active])
+        XCTAssertEqual(rows.map(\.loginKind), [.oneQR])
+    }
+
+    /// What a fresh view says of an unconfirmed registration: its key live
+    /// under its id, an update that can never land once the identity is at
+    /// its revision without the key, or one that may still land.
+    func testAnUnconfirmedRegistrationIsSettledByItsKeyAndTheIdentityRevision() {
+        let hash = Data(repeating: 0x5A, count: 20)
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil, values: template.values,
+            sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        pending.submittedRevision = 4
+        func outcome(
+            _ grant: AppConnectGrant, keys: [ManagedIdentity.IdentityPublicKeyInfo], revision: UInt64
+        ) -> PlatformDashConnectDataSource.RegistrationOutcome {
+            PlatformDashConnectDataSource.registrationOutcome(
+                of: grant, currentIdentityPublicKeys: keys, identityRevision: revision)
+        }
+
+        XCTAssertEqual(outcome(pending, keys: [Self.key(keyId: 9, data: hash)], revision: 4), .keyLive)
+        // Still at the revision the update was built on: it may land.
+        XCTAssertEqual(outcome(pending, keys: [], revision: 3), .mayStillLand)
+        // Another update took the revision, or this one landed and its key
+        // was turned off since.
+        XCTAssertEqual(outcome(pending, keys: [], revision: 4), .cannotLand)
+        XCTAssertEqual(outcome(pending, keys: [], revision: 7), .cannotLand)
+        XCTAssertEqual(outcome(pending, keys: [Self.key(keyId: 9, data: hash, disabledAt: 1)], revision: 4), .cannotLand)
+        // A refused submission under id 9 and a later one of the same request
+        // that landed under id 12: the record of the first is not that key.
+        XCTAssertEqual(
+            outcome(pending, keys: [Self.key(keyId: 9, data: Data([9])), Self.key(keyId: 12, data: hash)], revision: 5),
+            .cannotLand)
+        var unnoted = pending
+        unnoted.submittedRevision = nil
+        XCTAssertEqual(outcome(unnoted, keys: [], revision: 9), .unknownRevision)
+        XCTAssertEqual(outcome(unnoted, keys: [Self.key(keyId: 9, data: hash)], revision: 9), .keyLive)
+    }
+
+    /// After a disable update of the disconnect has landed, a registration
+    /// that could still land when its keys were picked has either put its
+    /// key on the identity, which is then picked for disabling too, or
+    /// never will.
+    func testARegistrationThatLandedWhileTheDisconnectRanIsPickedForDisabling() throws {
+        let hash = Data(repeating: 0x5A, count: 20)
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil, values: template.values,
+            sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        pending.submittedRevision = 4
+        func landed(keys: [ManagedIdentity.IdentityPublicKeyInfo], revision: UInt64) throws -> [UInt32] {
+            try PlatformDashConnectDataSource.keyIdsOfRegistrationsThatLanded(
+                [pending], currentIdentityPublicKeys: keys, identityRevision: revision)
+        }
+
+        // Landed at 4 before the disable update, which then took 5.
+        XCTAssertEqual(try landed(keys: [Self.key(keyId: 9, data: hash)], revision: 5), [9])
+        // The disable update took 4: the registration can never land.
+        XCTAssertEqual(try landed(keys: [], revision: 4), [])
+        // It landed and its key is off already.
+        XCTAssertEqual(try landed(keys: [Self.key(keyId: 9, data: hash, disabledAt: 1)], revision: 6), [])
+        // A node still below the disable update cannot settle it.
+        XCTAssertThrowsError(try landed(keys: [], revision: 3)) { error in
+            guard case DashConnectPlatformError.identityKeysOutOfDate = error else {
+                return XCTFail("unexpected error: \(error)")
+            }
+        }
+    }
+
+    /// A row stays for another identity of the wallet that holds a key of
+    /// the app, or may still be given one by a registration with a noted
+    /// revision. Only that identity's own read settles the registration.
+    func testAnotherIdentityKeepsTheRowForItsLiveKeyOrPendingRegistration() {
+        let template = Self.grant(sessionKeyId: 9)
+        func record(identity: String, app: String = "app", unconfirmed: Bool, revision: UInt64? = 4) -> AppConnectGrant {
+            var grant = AppConnectGrant(
+                identityId: identity, appContractId: app, documentId: nil, values: template.values,
+                sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+            if unconfirmed {
+                grant.unconfirmedKeyHash160 = Data(repeating: 0x5A, count: 20).toHexString()
+                grant.submittedRevision = revision
+            }
+            return grant
+        }
+        func reason(_ grants: [AppConnectGrant], heldOnAnotherIdentity: Bool = false) -> String? {
+            PlatformDashConnectDataSource.reasonHeldElsewhere(
+                grants: grants, appContractId: "app", identityId: "b",
+                heldOnAnotherIdentity: heldOnAnotherIdentity
+            ).map { "\($0)" }
+        }
+        var disabled = record(identity: "a", unconfirmed: false)
+        disabled.keyDisabled = true
+
+        XCTAssertNil(reason([]))
+        XCTAssertNil(reason([record(identity: "b", unconfirmed: true)]), "this identity's own registration")
+        XCTAssertNil(reason([record(identity: "a", app: "other", unconfirmed: true)]))
+        XCTAssertNil(reason([disabled]))
+        XCTAssertNil(
+            reason([record(identity: "a", unconfirmed: true, revision: nil)]),
+            "a record with no revision can never be settled, so it takes no part")
+        XCTAssertEqual(reason([record(identity: "a", unconfirmed: true)]), "registrationPendingOnAnotherIdentity")
+        XCTAssertEqual(reason([record(identity: "a", unconfirmed: false)]), "grantOnAnotherIdentity")
+        XCTAssertEqual(reason([], heldOnAnotherIdentity: true), "grantOnAnotherIdentity")
+        XCTAssertEqual(
+            reason([record(identity: "a", unconfirmed: true), record(identity: "c", unconfirmed: false)]),
+            "grantOnAnotherIdentity", "a live key comes first")
+    }
+
+    /// A live key of a confirmed grant, a confirmed grant not recorded as
+    /// off while no two-QR login key is live, or a registration that may
+    /// still land makes the disconnect one-QR even over a two-QR row.
+    func testWhatMakesADisconnectOneQR() {
+        func oneQR(
+            row: Bool = false, live: Bool = false, unrevoked: Bool = false, twoQRKeyLive: Bool = false,
+            pending: Bool = false
+        ) -> Bool {
+            PlatformDashConnectDataSource.disconnectsAsOneQR(
+                rowIsOneQR: row, holdsLiveGrantedKey: live, holdsUnrevokedGrant: unrevoked,
+                holdsLiveTwoQRLoginKey: twoQRKeyLive, hasRegistrationThatMayStillLand: pending)
+        }
+
+        XCTAssertFalse(oneQR(), "a two-QR row and nothing live")
+        XCTAssertTrue(oneQR(row: true))
+        XCTAssertTrue(
+            oneQR(live: true, unrevoked: true, twoQRKeyLive: true),
+            "a confirmed grant over a two-QR row, its row write lost")
+        XCTAssertTrue(oneQR(unrevoked: true), "a one-QR disconnect that stopped after disabling every key")
+        XCTAssertFalse(
+            oneQR(unrevoked: true, twoQRKeyLive: true),
+            "a two-QR login came after the grant's key went off: the row is its")
+        XCTAssertTrue(oneQR(pending: true), "the one-QR disable update settles the registration")
+    }
+
+    /// A two-QR row with a registration of the app whose outcome is not
+    /// known is not turned off locally: the disconnect goes to Platform, and
+    /// when that cannot be done the row stays as it was.
+    func testATwoQRRowWithARegistrationThatMayStillLandIsNotTurnedOffLocally() async throws {
+        let active = ActiveWallet("wallet-a")
+        let row = Self.twoQRRow(status: .active)
+        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
+        let grants = UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections))
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: "identity", appContractId: row.id, documentId: nil, values: template.values,
+            sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+        pending.unconfirmedKeyHash160 = Data(repeating: 0x5A, count: 20).toHexString()
+        pending.submittedRevision = 4
+        grants.pinned(toWalletIdHex: "wallet-a").save([pending])
+        let shown = Self.shownRows(dataSource)
+
+        do {
+            try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope)
+            XCTFail("turned off locally while the registration may still land")
+        } catch {}
+
+        XCTAssertEqual(connections.load().map(\.status), [.active])
+        XCTAssertEqual(connections.load().map(\.loginKind), [.twoQR])
+        XCTAssertEqual(grants.pinned(toWalletIdHex: "wallet-a").load().map(\.key), [pending.key])
+    }
+
     func testDisconnectWithNoActiveWalletIsRefused() async {
         let active = ActiveWallet(nil)
         let (dataSource, _) = makeScopedDataSource(active: active)
@@ -2622,13 +3036,19 @@ final class AppConnectLoginTests: XCTestCase {
         init(_ idHex: String?) { self.idHex = idHex }
     }
 
+    private final class Endpoint {
+        var url: String?
+        init(_ url: String?) { self.url = url }
+    }
+
     /// `rows` are the active wallet's, stored before the data source loads
     /// its list.
     private func makeScopedDataSource(
         active: ActiveWallet,
         rows: [DAppConnection] = [],
         notificationCenter: NotificationCenter = NotificationCenter(),
-        operationGate: DashConnectOperationGate = DashConnectOperationGate()
+        operationGate: DashConnectOperationGate = DashConnectOperationGate(),
+        endpoint: Endpoint = Endpoint(nil)
     ) -> (PlatformDashConnectDataSource, UserDefaultsDashConnectStore) {
         let connections = UserDefaultsDashConnectStore(
             defaults: defaults,
@@ -2642,6 +3062,7 @@ final class AppConnectLoginTests: XCTestCase {
             store: connections,
             responseStore: UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections)),
             activeWalletIdHex: { active.idHex },
+            networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
             operationGate: operationGate
         )
