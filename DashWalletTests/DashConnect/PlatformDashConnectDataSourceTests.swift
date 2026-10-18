@@ -2803,17 +2803,98 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(outcome(unnoted, keys: [Self.key(keyId: 9, data: hash)], revision: 9), .keyLive)
     }
 
-    /// A live key of a confirmed grant, or a registration that may still
-    /// land, makes the disconnect one-QR even over a two-QR row.
+    /// After a disable update of the disconnect has landed, a registration
+    /// that could still land when its keys were picked has either put its
+    /// key on the identity, which is then picked for disabling too, or
+    /// never will.
+    func testARegistrationThatLandedWhileTheDisconnectRanIsPickedForDisabling() throws {
+        let hash = Data(repeating: 0x5A, count: 20)
+        let template = Self.grant(sessionKeyId: 9)
+        var pending = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil, values: template.values,
+            sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+        pending.unconfirmedKeyHash160 = hash.toHexString()
+        pending.submittedRevision = 4
+        func landed(keys: [ManagedIdentity.IdentityPublicKeyInfo], revision: UInt64) throws -> [UInt32] {
+            try PlatformDashConnectDataSource.keyIdsOfRegistrationsThatLanded(
+                [pending], currentIdentityPublicKeys: keys, identityRevision: revision)
+        }
+
+        // Landed at 4 before the disable update, which then took 5.
+        XCTAssertEqual(try landed(keys: [Self.key(keyId: 9, data: hash)], revision: 5), [9])
+        // The disable update took 4: the registration can never land.
+        XCTAssertEqual(try landed(keys: [], revision: 4), [])
+        // It landed and its key is off already.
+        XCTAssertEqual(try landed(keys: [Self.key(keyId: 9, data: hash, disabledAt: 1)], revision: 6), [])
+        // A node still below the disable update cannot settle it.
+        XCTAssertThrowsError(try landed(keys: [], revision: 3)) { error in
+            guard case DashConnectPlatformError.identityKeysOutOfDate = error else {
+                return XCTFail("unexpected error: \(error)")
+            }
+        }
+    }
+
+    /// A row stays for another identity of the wallet that holds a key of
+    /// the app, or may still be given one by a registration with a noted
+    /// revision. Only that identity's own read settles the registration.
+    func testAnotherIdentityKeepsTheRowForItsLiveKeyOrPendingRegistration() {
+        let template = Self.grant(sessionKeyId: 9)
+        func record(identity: String, app: String = "app", unconfirmed: Bool, revision: UInt64? = 4) -> AppConnectGrant {
+            var grant = AppConnectGrant(
+                identityId: identity, appContractId: app, documentId: nil, values: template.values,
+                sessionKeyId: 9, totalBudget: 5_000, expiresAt: 6_000, publishedAt: template.publishedAt)
+            if unconfirmed {
+                grant.unconfirmedKeyHash160 = Data(repeating: 0x5A, count: 20).toHexString()
+                grant.submittedRevision = revision
+            }
+            return grant
+        }
+        func reason(_ grants: [AppConnectGrant], heldOnAnotherIdentity: Bool = false) -> String? {
+            PlatformDashConnectDataSource.reasonHeldElsewhere(
+                grants: grants, appContractId: "app", identityId: "b",
+                heldOnAnotherIdentity: heldOnAnotherIdentity
+            ).map { "\($0)" }
+        }
+        var disabled = record(identity: "a", unconfirmed: false)
+        disabled.keyDisabled = true
+
+        XCTAssertNil(reason([]))
+        XCTAssertNil(reason([record(identity: "b", unconfirmed: true)]), "this identity's own registration")
+        XCTAssertNil(reason([record(identity: "a", app: "other", unconfirmed: true)]))
+        XCTAssertNil(reason([disabled]))
+        XCTAssertNil(
+            reason([record(identity: "a", unconfirmed: true, revision: nil)]),
+            "a record with no revision can never be settled, so it takes no part")
+        XCTAssertEqual(reason([record(identity: "a", unconfirmed: true)]), "registrationPendingOnAnotherIdentity")
+        XCTAssertEqual(reason([record(identity: "a", unconfirmed: false)]), "grantOnAnotherIdentity")
+        XCTAssertEqual(reason([], heldOnAnotherIdentity: true), "grantOnAnotherIdentity")
+        XCTAssertEqual(
+            reason([record(identity: "a", unconfirmed: true), record(identity: "c", unconfirmed: false)]),
+            "grantOnAnotherIdentity", "a live key comes first")
+    }
+
+    /// A live key of a confirmed grant, a confirmed grant not recorded as
+    /// off while no two-QR login key is live, or a registration that may
+    /// still land makes the disconnect one-QR even over a two-QR row.
     func testWhatMakesADisconnectOneQR() {
-        func oneQR(row: Bool = false, live: Bool = false, pending: Bool = false) -> Bool {
+        func oneQR(
+            row: Bool = false, live: Bool = false, unrevoked: Bool = false, twoQRKeyLive: Bool = false,
+            pending: Bool = false
+        ) -> Bool {
             PlatformDashConnectDataSource.disconnectsAsOneQR(
-                rowIsOneQR: row, holdsLiveGrantedKey: live, hasRegistrationThatMayStillLand: pending)
+                rowIsOneQR: row, holdsLiveGrantedKey: live, holdsUnrevokedGrant: unrevoked,
+                holdsLiveTwoQRLoginKey: twoQRKeyLive, hasRegistrationThatMayStillLand: pending)
         }
 
         XCTAssertFalse(oneQR(), "a two-QR row and nothing live")
         XCTAssertTrue(oneQR(row: true))
-        XCTAssertTrue(oneQR(live: true), "a confirmed grant over a two-QR row, its row write lost")
+        XCTAssertTrue(
+            oneQR(live: true, unrevoked: true, twoQRKeyLive: true),
+            "a confirmed grant over a two-QR row, its row write lost")
+        XCTAssertTrue(oneQR(unrevoked: true), "a one-QR disconnect that stopped after disabling every key")
+        XCTAssertFalse(
+            oneQR(unrevoked: true, twoQRKeyLive: true),
+            "a two-QR login came after the grant's key went off: the row is its")
         XCTAssertTrue(oneQR(pending: true), "the one-QR disable update settles the registration")
     }
 
