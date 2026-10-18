@@ -207,6 +207,30 @@ enum AppConnect {
         /// login's authentication key, or of its encryption key.
         var isTwoQRAuthenticationKeyShaped = false
         var isTwoQREncryptionKeyShaped = false
+        /// The key's bound as the store holds it; nil for a key with no
+        /// bound, or one this build cannot read (`hasUnreadableBound`).
+        var bound: StoredBound? = nil
+    }
+
+    /// A key's contract bound, as the wallet's store records it.
+    enum StoredBound: Equatable {
+        case singleContract(Data)
+        case documentType(contractId: Data, name: String)
+        case contractGroup(Data)
+    }
+
+    /// The bound of a stored key: the store's discriminant (`boundsKind`,
+    /// see `singleContractId(boundsKind:boundIds:)`), its ids and, for a
+    /// document type, its name. Nil for no bound and for one that cannot be
+    /// read.
+    static func storedBound(boundsKind: Int, boundIds: [Data]?, documentTypeName: String?) -> StoredBound? {
+        guard let id = boundIds?.first, id.count == 32 else { return nil }
+        switch boundsKind {
+        case 1: return .singleContract(id)
+        case 2: return documentTypeName.map { .documentType(contractId: id, name: $0) }
+        case 3: return .contractGroup(id)
+        default: return nil
+        }
     }
 
     /// Whether the store shows either key of the two-QR login, not disabled,

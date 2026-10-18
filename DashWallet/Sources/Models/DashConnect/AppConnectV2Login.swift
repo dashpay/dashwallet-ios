@@ -59,6 +59,15 @@ extension AppConnect {
             binding.securityLevel == .critical ? .critical : .high
         }
 
+        /// The bound the key is registered with, as the store records it.
+        var storedBound: StoredBound {
+            switch binding.kind {
+            case .singleContract: return .singleContract(binding.id)
+            case .documentType: return .documentType(contractId: binding.id, name: binding.documentTypeName ?? "")
+            case .contractGroup: return .contractGroup(binding.id)
+            }
+        }
+
         var contractBounds: ManagedPlatformWallet.ContractBounds {
             switch binding.kind {
             case .singleContract:
@@ -409,16 +418,22 @@ extension AppConnect {
 
     /// Whether a key already on the identity at this binding's derived
     /// payload can be sent again for it: an earlier answer to the same
-    /// request (a retry, or an update that landed without confirming). Only
-    /// this wallet derives that payload, for this request and binding. It
-    /// still has to be live and carry the level the plan grants, and limits
-    /// no wider than the plan's (`clockTolerance` covers a clock moved back
-    /// between two tries).
+    /// request (a retry, or an update that landed without confirming). It
+    /// still has to be live, bound as the binding asks (`binding`, the
+    /// store's record of the key; a key the store does not show, or shows
+    /// with another bound, is not sent), carry the level the plan grants,
+    /// and limits no wider than the plan's (`clockTolerance` covers a clock
+    /// moved back between two tries). The payload alone proves nothing: a
+    /// request that repeats another's ephemeral key derives the same one.
+    /// The caller also requires a grant recorded for this request.
     static func canResendAuthKey(
         _ key: ManagedIdentity.IdentityPublicKeyInfo,
         for grant: AuthGrant,
+        binding: KeyBinding?,
         now: Date
     ) -> Bool {
+        guard let binding, binding.keyId == UInt32(bitPattern: key.keyId), binding.data == key.data,
+              !binding.isDisabled, !binding.hasUnreadableBound, binding.bound == grant.storedBound else { return false }
         guard isLiveGrantedKey(key), key.securityLevel == grant.securityLevel,
               key.totalBudget == grant.totalBudget,
               let expiresAt = key.expiresAt, expiresAt > Int64(milliseconds(now)) else { return false }

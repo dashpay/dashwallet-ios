@@ -327,16 +327,47 @@ final class AppConnectV2LoginTests: XCTestCase {
                 disabledAt: disabled ? 1 : nil, data: Data(repeating: 7, count: 20),
                 totalBudget: budget, expiresAt: expiresAt.map { Int64($0) })
         }
-        XCTAssertTrue(AppConnect.canResendAuthKey(key(), for: group, now: Self.now))
-        XCTAssertFalse(AppConnect.canResendAuthKey(key(disabled: true), for: group, now: Self.now))
-        XCTAssertFalse(AppConnect.canResendAuthKey(key(level: .high), for: group, now: Self.now))
-        XCTAssertFalse(AppConnect.canResendAuthKey(key(budget: 60_000_000_000), for: group, now: Self.now))
-        XCTAssertFalse(AppConnect.canResendAuthKey(key(budget: nil), for: group, now: Self.now))
-        XCTAssertFalse(
-            AppConnect.canResendAuthKey(key(expiresAt: Self.expiresAt + 2 * Self.dayMilliseconds), for: group, now: Self.now))
-        XCTAssertFalse(
-            AppConnect.canResendAuthKey(key(), for: group, now: Self.date(milliseconds: Self.expiresAt + 1)),
-            "an expired key cannot sign")
+        let stored = AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        func resend(_ key: ManagedIdentity.IdentityPublicKeyInfo, binding: AppConnect.KeyBinding? = stored,
+                    now: Date = AppConnectV2LoginTests.now) -> Bool {
+            AppConnect.canResendAuthKey(key, for: group, binding: binding, now: now)
+        }
+        XCTAssertTrue(resend(key()))
+        XCTAssertFalse(resend(key(disabled: true)))
+        XCTAssertFalse(resend(key(level: .high)))
+        XCTAssertFalse(resend(key(budget: 60_000_000_000)))
+        XCTAssertFalse(resend(key(budget: nil)))
+        XCTAssertFalse(resend(key(expiresAt: Self.expiresAt + 2 * Self.dayMilliseconds)))
+        XCTAssertFalse(resend(key(), now: Self.date(milliseconds: Self.expiresAt + 1)), "an expired key cannot sign")
+        // The payload alone does not make the key this binding's: the store
+        // has to show it with the binding's bound.
+        XCTAssertFalse(resend(key(), binding: nil), "a key the store does not show")
+        var otherBound = stored
+        otherBound.bound = .contractGroup(Data(repeating: 0xEE, count: 32))
+        XCTAssertFalse(resend(key(), binding: otherBound), "a key bound to another group")
+        var wholeContract = stored
+        wholeContract.bound = .singleContract(group.binding.id)
+        XCTAssertFalse(resend(key(), binding: wholeContract), "the same id as a contract, not a group")
+        var unreadable = stored
+        unreadable.hasUnreadableBound = true
+        XCTAssertFalse(resend(key(), binding: unreadable))
+        let otherKey = AppConnect.KeyBinding(
+            keyId: 8, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        XCTAssertFalse(resend(key(), binding: otherKey), "a record of another key id")
+    }
+
+    /// A stored bound is read from the store's discriminant, ids and name.
+    func testAStoredBoundIsReadFromTheStore() {
+        let id = Data(repeating: 1, count: 32)
+        XCTAssertEqual(AppConnect.storedBound(boundsKind: 1, boundIds: [id], documentTypeName: nil), .singleContract(id))
+        XCTAssertEqual(
+            AppConnect.storedBound(boundsKind: 2, boundIds: [id], documentTypeName: "profile"),
+            .documentType(contractId: id, name: "profile"))
+        XCTAssertEqual(AppConnect.storedBound(boundsKind: 3, boundIds: [id], documentTypeName: nil), .contractGroup(id))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 0, boundIds: nil, documentTypeName: nil))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 2, boundIds: [id], documentTypeName: nil))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 1, boundIds: [Data([1])], documentTypeName: nil))
     }
 
     // MARK: - Encryption key (wallet rule 7)

@@ -1214,28 +1214,35 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
 
-        // An auth key already on the identity is this request answered
-        // before: only this wallet derives it, for this request and binding.
-        // It is sent again while it can still sign within the plan's terms;
-        // Platform never re-adds a key, so otherwise the app has to ask again.
+        // An auth key already on the identity at a binding's derived payload
+        // is sent again only as this request answered before: bound as the
+        // binding asks, within the plan's terms, and named by the grant
+        // recorded for this request. Anything else fails closed: a request
+        // repeating another's ephemeral key derives the same payload, and a
+        // key whose record is lost cannot be shown to be this request's.
+        // Platform never re-adds a key, so the app then has to ask again.
         var authKeyIds: [UInt32?] = try zip(plan.auth, authKeys).map { grant, key in
             guard let existing = currentPublicKeys.first(where: {
                 $0.keyType == .ecdsaHash160 && $0.data == key.publicKeyHash160
             }) else { return nil }
-            guard AppConnect.canResendAuthKey(existing, for: grant, now: now()) else {
+            let keyId = UInt32(bitPattern: existing.keyId)
+            guard AppConnect.canResendAuthKey(
+                existing, for: grant,
+                binding: bindings.first { $0.keyId == keyId && $0.data == existing.data },
+                now: now()
+            ) else {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
-            return UInt32(bitPattern: existing.keyId)
+            return keyId
         }
-        // A grant already recorded for this request must name exactly these
-        // keys: its response carries them. A key recorded for another app or
-        // request is that one's: a request repeating its ephemeral key derives
-        // the same payload, and must not take it over.
+        // The grant recorded for this request must name exactly these keys:
+        // its response carries them. A key recorded for another app or
+        // request is that one's, and must not be taken over.
         let reused = Set(authKeyIds.compactMap { $0 })
         if !reused.isEmpty {
             let grants = stores.grants.load().filter { $0.identityId == identityId }
-            if let recorded = grants.first(where: isGrantForRequest),
-               Set(recorded.keyIds) != reused || authKeyIds.contains(nil) {
+            guard let recorded = grants.first(where: isGrantForRequest),
+                  Set(recorded.keyIds) == reused, !authKeyIds.contains(nil) else {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
             if grants.contains(where: { !isGrantForRequest($0) && !reused.isDisjoint(with: $0.keyIds) }) {
@@ -2685,7 +2692,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                         && $0.securityLevelEnum == .high,
                     isTwoQREncryptionKeyShaped: $0.keyTypeEnum == .ecdsaSecp256k1
                         && $0.purposeEnum == .encryption
-                        && $0.securityLevelEnum == .medium
+                        && $0.securityLevelEnum == .medium,
+                    bound: AppConnect.storedBound(
+                        boundsKind: $0.effectiveContractBoundsKind,
+                        boundIds: $0.contractBounds,
+                        documentTypeName: $0.contractBoundsDocumentTypeName
+                    )
                 )
             }
         }
