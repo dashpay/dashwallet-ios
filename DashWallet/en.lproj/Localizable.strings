@@ -6106,8 +6106,27 @@
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 
 /* Wallet preparation and support */
+"Act as you in this app without asking each time" = "Act as you in this app without asking each time";
+"App contract" = "App contract";
+"Could not disconnect: %@" = "Could not disconnect: %@";
 "Help" = "Help";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
+"Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
+"The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
+"The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
+"The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
+"The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
+"This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
+"This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This identity cannot take another key." = "This identity cannot take another key.";
+"This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
+"This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
+"This wallet cannot record the key it would give the app, so the sign-in was not started." = "This wallet cannot record the key it would give the app, so the sign-in was not started.";
+"This wallet could not check what this sign-in would give the app." = "This wallet could not check what this sign-in would give the app.";
+"This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
+"Your Dash balance" = "Your Dash balance";
+"Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";
+"Your wallet could not be opened. Do not delete this app. Try again or contact support for help." = "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.";
 "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device." = "There isn't enough free space to prepare your wallet. Free up storage in iPhone Settings, then try again. Your wallet keys are still stored safely on this device.";
 "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help." = "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.";
 "Couldn't read your wallet keys" = "Couldn't read your wallet keys";
@@ -6179,6 +6198,8 @@
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
+"A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again." = "A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again.";
+"A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it." = "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.";
 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
 "Account" = "Account";
 "Account Information" = "Account Information";

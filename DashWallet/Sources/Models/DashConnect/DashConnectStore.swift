@@ -23,6 +23,13 @@ import os
 protocol DashConnectStore {
     func load() -> [DAppConnection]
     func save(_ connections: [DAppConnection])
+    /// Names the wallet and network whose rows this store reads and writes
+    /// right now; `nil` when it has no scope.
+    var scopeKey: String? { get }
+    /// This store fixed to one wallet, and to the network scope it has now.
+    /// An operation that outlasts a wallet switch reads and writes through
+    /// it, so its rows stay with the wallet it ran for.
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore
 }
 
 final class UserDefaultsDashConnectStore: DashConnectStore {
@@ -76,6 +83,22 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         return "dashconnect.connections.v1.\(networkScope).\(walletScope)"
     }
 
+    var scopeKey: String? { storageKey }
+
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore {
+        pinnedStore(toWalletIdHex: walletIdHex)
+    }
+
+    func pinnedStore(toWalletIdHex walletIdHex: String) -> UserDefaultsDashConnectStore {
+        let devnetName = devnetNameProvider()
+        return UserDefaultsDashConnectStore(
+            defaults: defaults,
+            network: network,
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName }
+        )
+    }
+
     private var networkScope: String? {
         guard network == .devnet else { return network.rawValue }
         guard let name = devnetNameProvider()?
@@ -115,7 +138,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                     name: row.label,
                     url: row.url,
                     status: row.status,
-                    updatedAt: row.updatedAt
+                    updatedAt: row.updatedAt,
+                    loginKind: row.loginKind ?? .twoQR
                 )
             )
         }
@@ -140,7 +164,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 label: $0.name,
                 url: $0.url,
                 status: $0.status,
-                updatedAt: $0.updatedAt
+                updatedAt: $0.updatedAt,
+                loginKind: $0.loginKind == .twoQR ? nil : $0.loginKind
             )
         }
 
@@ -166,6 +191,9 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
+        /// Absent for a two-QR connection, which is every row written before
+        /// the one-QR login existed.
+        let loginKind: DashConnectLoginKind?
     }
 
     private static func base58Decode(_ string: String) -> Data? {
