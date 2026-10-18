@@ -1153,7 +1153,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
             pending.unconfirmedKeyHash160 = sessionKeyHash160.toHexString()
             // The update is built at one above the revision the wallet holds
-            // for the identity, read again from Platform above.
+            // for the identity, read again from Platform above, and the SDK
+            // is held to it (`revision:`): if its copy of the identity moved
+            // in between, the update fails before it is signed. So the
+            // update can land at this revision only.
             let revisionBefore = try context.wallet.managedIdentity(identityId: context.identityId).getRevision()
             pending.submittedRevision = revisionBefore == .max ? nil : revisionBefore + 1
             // A confirmed record for this request means its key is on the
@@ -1180,23 +1183,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     try await context.wallet.updateIdentity(
                         identityId: context.identityId,
                         addPublicKeys: [key],
+                        revision: pending.submittedRevision,
                         signer: signer
                     )
                 }
             } catch {
-                // Another update of the identity that landed meanwhile moved
-                // the wallet's revision, and this one may have been built on
-                // it: the record names the higher of the two, which only
-                // makes a disconnect wait longer for the outcome.
-                if let revisionAfter = try? context.wallet
-                    .managedIdentity(identityId: context.identityId).getRevision(),
-                    revisionAfter > revisionBefore, revisionAfter < .max {
-                    updateGrants(in: stores) { grants in
-                        guard let index = grants.firstIndex(where: { $0.key == pending.key }) else { return }
-                        grants[index].submittedRevision = revisionAfter + 1
-                    }
-                    pending.submittedRevision = revisionAfter + 1
-                }
                 // The update may have landed all the same. If the key is on
                 // the identity, the login goes on; otherwise the failure
                 // stands and the record stays unconfirmed, to be confirmed if
