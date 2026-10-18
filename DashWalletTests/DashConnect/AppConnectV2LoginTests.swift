@@ -474,6 +474,32 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(AppConnect.freeKeyIds(count: 0, currentIdentityPublicKeys: keys([1])), [])
     }
 
+    /// After an update reported a failure, a key found under the added id is
+    /// taken as the added one only with everything it was registered with:
+    /// the same payload alone may be another request's key, bound otherwise.
+    func testASettledKeyIsTheAddedOneOnlyAsItWasAdded() throws {
+        let plan = try Self.vectorPlan()
+        let group = plan.auth[0]
+        let added = AppConnect.authIdentityPubkey(group, keyId: 7, publicKeyHash160: Data(repeating: 7, count: 20))
+        func key(level: SecurityLevel = .critical, budget: UInt64? = group.totalBudget, disabled: Bool = false)
+            -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: 7, purpose: .authentication, securityLevel: level, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data(repeating: 7, count: 20),
+                totalBudget: budget, expiresAt: Int64(group.expiresAt))
+        }
+        let stored = AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        XCTAssertTrue(AppConnect.isAddedKey(key(), added: added, binding: stored))
+        var narrower = stored
+        narrower.bound = .documentType(contractId: group.binding.id, name: "post")
+        XCTAssertFalse(AppConnect.isAddedKey(key(), added: added, binding: narrower), "another request's bound")
+        XCTAssertFalse(AppConnect.isAddedKey(key(), added: added, binding: nil), "a key the store does not show")
+        XCTAssertFalse(AppConnect.isAddedKey(key(level: .high), added: added, binding: stored))
+        XCTAssertFalse(AppConnect.isAddedKey(key(budget: 1), added: added, binding: stored))
+        XCTAssertFalse(AppConnect.isAddedKey(key(disabled: true), added: added, binding: stored))
+    }
+
     /// A stored bound is read from the store's discriminant, ids and name.
     func testAStoredBoundIsReadFromTheStore() {
         let id = Data(repeating: 1, count: 32)

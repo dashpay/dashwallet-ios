@@ -1464,10 +1464,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // one of them has been disabled or replaced since, it would hand the
         // app a key that is no longer the identity's: the retry stops here,
         // before anything is registered. A record from before the ids were
-        // noted carries none.
+        // noted cannot be checked, and is refused the same way.
         if let recorded = stores.grants.load().first(where: { isGrantForRequest($0) && !$0.isUnconfirmed }),
            encryptionSlots.contains(where: { $0.keyId == nil })
-            || encryptionSlots.compactMap(\.keyId) != (recorded.encryptionKeyIds ?? []) {
+            || recorded.encryptionKeyIds != encryptionSlots.compactMap(\.keyId) {
             Self.logger.error("🔗 DASHCONNECT :: the recorded App Connect response carries encryption keys the identity no longer has")
             throw DashConnectPlatformError.appConnectEncryptionKeyChanged
         }
@@ -1536,9 +1536,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // An update can land without confirming, and the node asked
                 // next may not have it yet. If every new key shows up and
                 // every replaced key is off, it went through.
-                func landed(_ keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
-                    add.allSatisfy { new in keys.contains {
-                        UInt32(bitPattern: $0.keyId) == new.keyId && $0.data == new.pubkeyBytes && $0.disabledAt == nil
+                // Each new key has to be there as it was added, bound as the
+                // store reads it: a key under its id with the same payload
+                // but another bound is another request's, and is not sent.
+                func landed(_ keys: [ManagedIdentity.IdentityPublicKeyInfo], _ bindings: [AppConnect.KeyBinding]) -> Bool {
+                    add.allSatisfy { new in keys.contains { key in
+                        AppConnect.isAddedKey(
+                            key, added: new,
+                            binding: bindings.first { $0.keyId == new.keyId && $0.data == key.data })
                     } } && disable.allSatisfy { id in keys.contains {
                         UInt32(bitPattern: $0.keyId) == id && $0.disabledAt != nil
                     } }
@@ -1546,8 +1551,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 var confirmed = false
                 for attempt in 0 ..< 3 where !confirmed {
                     if attempt > 0 { try? await Task.sleep(nanoseconds: 3_000_000_000) }
-                    if let refreshed = try? await refreshedIdentityPublicKeys(context: context) {
-                        confirmed = landed(refreshed)
+                    if let refreshed = try? await refreshedIdentityPublicKeys(context: context),
+                       let refreshedBindings = try? Self.storedKeyBindings(
+                           identityId: identityId, modelContainer: context.modelContainer) {
+                        confirmed = landed(refreshed, refreshedBindings)
                     }
                 }
                 guard confirmed else { throw error }
@@ -2527,9 +2534,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 .filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
             let unrecorded = AppConnect.unrecordedV2Keys(
                 recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentPublicKeys)
-            let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: appContract, keys: unrecorded)
+            // The store keeps every key it was ever given, the fetched view
+            // only what the node answered with. A stored key of the app's
+            // that the view lacks means the view is behind.
+            let storedUnrecorded = AppConnect.unrecordedV2Keys(recordedKeyIds: recordedKeyIds, bindings: bindings)
+            let candidates = AppConnect.unrecordedV2KeyBoundIds(
+                appContractId: appContract, keys: unrecorded + storedUnrecorded)
             let owned = try await Self.ownedByOwner(
                 of: appContract, contractIds: candidates.contracts, groupIds: candidates.groups, sdk: context.sdk)
+            let fetchedKeyIds = Set(currentPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+            guard AppConnect.appsV2KeyIds(
+                appContractIds: owned.contracts, appGroupIds: owned.groups, keys: storedUnrecorded
+            ).allSatisfy(fetchedKeyIds.contains) else {
+                throw DashConnectPlatformError.identityKeysOutOfDate
+            }
             let unrecordedV2KeyIds = AppConnect.appsV2KeyIds(
                 appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded)
             keyIds = Array(Set(keyIds).union(liveTwoQRLoginKeyIds).union(unrecordedV2KeyIds)).sorted()

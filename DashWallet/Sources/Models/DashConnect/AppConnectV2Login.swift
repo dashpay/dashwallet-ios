@@ -501,6 +501,39 @@ extension AppConnect {
         }
     }
 
+    /// The stored form of a bound the wallet registers a key with.
+    static func storedBound(of bounds: ManagedPlatformWallet.ContractBounds) -> StoredBound {
+        switch bounds {
+        case .singleContract(let id): return .singleContract(id)
+        case .singleContractDocumentType(let id, let name): return .documentType(contractId: id, name: name)
+        case .contractGroup(let id): return .contractGroup(id)
+        }
+    }
+
+    /// Whether `key`, found on the identity after an update reported a
+    /// failure, is the key the update added (`added`): the same id and
+    /// payload, live, and everything it was registered with — type,
+    /// purpose, level, read-only flag, limits, and the bound as the store
+    /// reads it
+    /// (`binding`). A key with the same payload but another bound came from
+    /// another request that repeated the ephemeral key, and is not taken.
+    static func isAddedKey(
+        _ key: ManagedIdentity.IdentityPublicKeyInfo,
+        added: ManagedPlatformWallet.IdentityPubkey,
+        binding: KeyBinding?
+    ) -> Bool {
+        guard UInt32(bitPattern: key.keyId) == added.keyId, key.data == added.pubkeyBytes, key.disabledAt == nil,
+              key.keyType == added.keyType, key.purpose == added.purpose, key.securityLevel == added.securityLevel,
+              key.readOnly == added.readOnly,
+              key.totalBudget == added.totalBudget,
+              key.expiresAt.map({ UInt64(max(0, $0)) }) == added.expiresAt else { return false }
+        guard let bounds = added.contractBounds else { return binding == nil || binding?.bound == nil }
+        guard let binding, binding.keyId == added.keyId, binding.data == key.data, !binding.hasUnreadableBound else {
+            return false
+        }
+        return binding.bound == storedBound(of: bounds)
+    }
+
     /// A live auth key a login could have granted: HASH160 and never MASTER,
     /// so a damaged record cannot get the identity's own keys disabled.
     static func isLiveGrantedKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
@@ -517,7 +550,8 @@ extension AppConnect {
     /// and limits no wider than the plan's (`clockTolerance` covers a clock
     /// moved back between two tries). The payload alone proves nothing: a
     /// request that repeats another's ephemeral key derives the same one.
-    /// The caller also requires a grant recorded for this request.
+    /// A grant recorded for this request, when there is one, must name
+    /// exactly the keys sent again; the caller checks that.
     static func canResendAuthKey(
         _ key: ManagedIdentity.IdentityPublicKeyInfo,
         for grant: AuthGrant,
