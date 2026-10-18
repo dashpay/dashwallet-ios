@@ -67,6 +67,24 @@ struct ApproveConnectionSheet: View {
                         Text(resolvedSubtitle)
                             .font(.subhead)
                             .foregroundColor(.secondaryText)
+
+                        // The name above can be one the code or the
+                        // contract's owner chose. This id is what the
+                        // approval is for: a one-QR key is bound to it. Shown
+                        // in full and selectable, so it can be compared with
+                        // the one the app publishes.
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(NSLocalizedString("App contract", comment: "DashConnect"))
+                                .font(.footnote)
+                                .foregroundColor(.secondaryText)
+                            Text(request.appContractId)
+                                .font(.footnote.monospaced())
+                                .foregroundColor(.primaryText)
+                                .textSelection(.enabled)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 6)
+                        .accessibilityElement(children: .combine)
                     }
 
                     if let existingConnection = request.existingConnection {

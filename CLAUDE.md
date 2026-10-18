@@ -20,7 +20,12 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
   xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay -sdk iphonesimulator \
     -destination 'generic/platform=iOS Simulator' ARCHS=arm64 build
   ```
-- **Tests**: the unit-test target is **currently broken** (pre-existing breakage; new tests such as `PhraseRepairEngineTests` / `PaymentProtocolTests` are written compile-ready but unrunnable). Verification standard while it's broken: clean `dashpay` build + a testnet smoke of the touched flow. `fastlane test` (iPhone 17 simulator) once the target is repaired.
+- **Tests**: `DashWalletTests` runs against the `dashpay` host app through the `dashwallet-dashpay` scheme, in the **Debug** configuration (the only one with `ENABLE_TESTABILITY`, which every `@testable import dashpay` needs). Cmd+U in Xcode, or:
+  ```bash
+  xcodebuild test -workspace DashWallet.xcworkspace -scheme dashwallet-dashpay -configuration Debug \
+    -destination 'platform=iOS Simulator,name=iPhone 17' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+  ```
+  Every test file must be in the target: files under `DashWalletTests/Notifications/` are picked up automatically (synchronized folder), everything else needs the four `project.pbxproj` entries. `scripts/ci/check_test_target_membership.py` fails CI on a forgotten file. The host app needs the gitignored `*-Info.plist` files in `DashWallet/`; without the real ones, `scripts/ci/make-placeholder-plists.sh` writes inert placeholders. CI runs the suite on every PR (`.github/workflows/unit-tests.yml`) against the platform commit pinned in `.platform-ref`.
 
 ### Required tools
 - Xcode 16+

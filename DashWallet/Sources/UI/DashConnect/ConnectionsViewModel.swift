@@ -217,12 +217,22 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingLoginRequest = nil
                 self.approveError = nil
             } catch DashConnectPlatformError.approvalOutOfDate {
-                // Another identity became active, or the network now answers
-                // with the other login: what the sheet showed is not what
-                // would run. Nothing was signed. The sheet is rebuilt from
+                // Another identity, wallet or network became active, or the
+                // network now answers with the other login: what the sheet
+                // showed is not what would run. Nothing was signed. The sheet is rebuilt from
                 // the same request as it stands now, for a new decision.
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
+            } catch DashConnectPlatformError.loginUnresolved {
+                // The wallet could not check which login this network gets.
+                // Nothing was signed. The sheet is rebuilt: when it still
+                // cannot tell, it says so itself and offers "Try again"
+                // instead of Approve; when it can again, the note says why
+                // the approval did not go through.
+                let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.pendingRequest = rebuilt
+                self.approveError = rebuilt.login == .unresolved
+                    ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 self.approveError = String(

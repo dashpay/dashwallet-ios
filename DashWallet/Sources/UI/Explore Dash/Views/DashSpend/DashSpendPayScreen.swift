@@ -80,9 +80,11 @@ struct DashSpendPayScreen: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                NavBarBack {
-                    presentationMode.wrappedValue.dismiss()
-                }
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                })
 
                 if viewModel.isFixedDenomination {
                     DashSpendFixedContent(

@@ -27,7 +27,7 @@ protocol DashConnectDataSource {
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
     /// `consent` is the request as the approval sheet showed it. A login
     /// that would give the app something else, or act for another identity,
-    /// is refused.
+    /// wallet or network than it was resolved for, is refused.
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection
     /// Parses a scanned `dash-st:` payload and either completes key
     /// registration immediately or returns a token purchase that awaits

@@ -35,9 +35,11 @@ struct ToolsMenuScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
-            }
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button {
+                    vc.popViewController(animated: true)
+                }
+            })
 
             TopIntro(title: NSLocalizedString("Tools", comment: ""))
                 .padding(.leading, 20)

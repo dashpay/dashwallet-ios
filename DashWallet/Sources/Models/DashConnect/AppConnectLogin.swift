@@ -140,12 +140,19 @@ enum AppConnect {
     }
 
     /// The id for a new key: one above the highest on the identity, disabled
-    /// keys included. `nil` when that id is the last one a key can have.
+    /// keys included. Platform only refuses an id the identity already has,
+    /// so when the highest is the last id a key can have (a key an app
+    /// registered can be given it) the lowest id no key has is taken
+    /// instead. `nil` only when every id is taken.
     static func nextKeyId(
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> UInt32? {
-        let highest = currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }.max() ?? 0
-        return highest == .max ? nil : highest + 1
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let highest = taken.max() ?? 0
+        guard highest == .max else { return highest + 1 }
+        // The identity holds far fewer keys than there are ids, so this
+        // stops within a few steps of the lowest gap.
+        return (0 ... UInt32.max).first { !taken.contains($0) }
     }
 
     /// The key an app is given: it can only sign for the contract the request
@@ -312,6 +319,52 @@ enum AppConnect {
             .filter { $0.singleContractId == appContractId && !$0.isDisabled && !known.contains($0.keyId) }
             .map(\.keyId)
             .sorted()
+    }
+
+    /// Whether the identity holds, live, the key a record names. For an
+    /// unconfirmed record that is the key it was going to register, with
+    /// everything that key was given: the data, the kind, the limits, and the
+    /// bound to the record's app as the wallet's store reads it. A bound the
+    /// store does not show is not taken on trust.
+    static func holdsRecordedKey(
+        _ grant: AppConnectGrant,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> Bool {
+        currentIdentityPublicKeys.contains { key in
+            guard UInt32(bitPattern: key.keyId) == grant.sessionKeyId, key.disabledAt == nil else { return false }
+            guard let hash = grant.unconfirmedKeyHash160 else { return true }
+            guard let appContractId = Data.identifier(fromBase58: grant.appContractId) else { return false }
+            return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
+                && key.purpose == .authentication && key.securityLevel == .high
+                && key.totalBudget == grant.totalBudget
+                && key.expiresAt.map({ UInt64(max(0, $0)) }) == grant.expiresAt
+                && bindings.contains {
+                    $0.keyId == grant.sessionKeyId && $0.data == key.data && !$0.hasUnreadableBound
+                        && $0.singleContractId == appContractId
+                }
+        }
+    }
+
+    /// Confirms the unconfirmed records of `identityId` whose key the
+    /// identity now holds, and returns them. A record whose key is not there
+    /// stays as it is: the update may still land, and nothing is taken from
+    /// a view that may be behind.
+    static func confirmRegistrations(
+        in grants: inout [AppConnectGrant],
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> [AppConnectGrant] {
+        var confirmed: [AppConnectGrant] = []
+        for index in grants.indices
+        where grants[index].identityId == identityId && grants[index].isUnconfirmed
+            && holdsRecordedKey(
+                grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings) {
+            grants[index].unconfirmedKeyHash160 = nil
+            confirmed.append(grants[index])
+        }
+        return confirmed
     }
 
     /// Granted session keys the given view of the identity does not contain.
@@ -498,6 +551,22 @@ struct AppConnectGrant: Codable, Equatable {
     /// be deleted, or could not be shown to be absent; the record then only
     /// waits for that.
     var keyDisabled: Bool?
+    /// The hex hash160 of the session key, set from just before its
+    /// registration is submitted until the key is seen on the identity.
+    /// While set, the key may be there or not: an update can land without
+    /// confirming. Such a record has no row and no response; it is kept so
+    /// the key, if it lands, is found and confirmed, until a disconnect
+    /// finds that the update can no longer land.
+    var unconfirmedKeyHash160: String? = nil
+    /// The identity revision the registration's update was submitted with,
+    /// set with `unconfirmedKeyHash160`. Platform takes an identity update
+    /// only at one above the identity's revision, so once the identity is at
+    /// this revision or past it without the key live, the update can never
+    /// land.
+    /// `nil` on a record from a build that did not note it.
+    var submittedRevision: UInt64? = nil
+
+    var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
 
     /// What makes two records the same grant: one session key given for one
     /// request. Records are matched on this, never on whole-value equality —
@@ -701,8 +770,11 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     /// Decodes row by row, like `UserDefaultsDashConnectStore`, so one
     /// unreadable row costs one record instead of all of them.
     private func readRows() -> (grants: [AppConnectGrant], unreadable: [Any], isNotRowList: Bool) {
-        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], [], false) }
-        guard let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
+        guard let storageKey, let stored = defaults.object(forKey: storageKey) else { return ([], [], false) }
+        // A value of another kind is as much not this build's to replace as
+        // data that is not a list.
+        guard let data = stored as? Data,
+              let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
             Self.logger.error("AppConnectResponseStore: stored value is not a JSON array; left in place")
             return ([], [], true)
         }
