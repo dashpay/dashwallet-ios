@@ -6626,7 +6626,7 @@
 
 /* DashConnect App Connect v2 */
 "%1$@, spending up to %2$@ until %3$@" = "%1$@, spending up to %2$@ until %3$@";
-"%1$@, until %2$@" = "%1$@, until %2$@";
+"%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
 "Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
 "Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
 "Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
@@ -6650,3 +6650,6 @@
 "This wallet will not answer this sign-in request." = "This wallet will not answer this sign-in request.";
 "Write \"%@\" documents as you" = "Write \"%@\" documents as you";
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
+"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
+"This wallet does not know this app. Its name and website come from the request itself." = "This wallet does not know this app. Its name and website come from the request itself.";
+"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";

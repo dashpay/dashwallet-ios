@@ -35,6 +35,11 @@ enum DashConnectFallbackAppMetadata {
         "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr")
     ]
 
+    /// The app's website, for an app the wallet knows.
+    static func brandHost(contractId: String) -> String? {
+        knownApps[contractId].flatMap { $0.url.isEmpty ? nil : $0.url }
+    }
+
     static func resolve(contractId: String, unauthenticatedLabel: String) -> DashConnectAppMetadata {
         if let known = knownApps[contractId] {
             return known
@@ -628,7 +633,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 comment: "DashConnect App Connect v2"))), nil)
         }
         do {
-            let plan = try AppConnect.grantPlan(for: uri, now: now())
+            var plan = try AppConnect.grantPlan(for: uri, now: now())
+            plan.brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: plan.appId.toBase58String())
+            if let refusal = AppConnect.callbackRefusal(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
+                return (.refused(refusal), nil)
+            }
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",

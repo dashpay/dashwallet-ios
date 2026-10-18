@@ -486,6 +486,26 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=1"))
         XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-st:abc?n=d&v=2"))
         XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=22"))
+        // Read as the v2 parser reads the query: form-decoded.
+        XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=%32"))
+        XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&%76=2"))
+        XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v"))
+    }
+
+    /// A request for an app in the brand map that returns to a host the
+    /// app does not have is refused; one without a callback, or for an app
+    /// the wallet does not know, is left to the sheet's warning.
+    func testAKnownAppsRequestThatReturnsElsewhereIsRefused() {
+        XCTAssertEqual(
+            AppConnect.callbackRefusal(callbackHost: "yap.pr.example.com", brandHost: "yap.pr")?.status, .invalid)
+        XCTAssertEqual(AppConnect.callbackRefusal(callbackHost: "notyap.pr", brandHost: "yap.pr")?.status, .invalid)
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "yap.pr", brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "www.yap.pr", brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: nil, brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "example.com", brandHost: nil))
+        XCTAssertEqual(
+            DashConnectFallbackAppMetadata.brandHost(contractId: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"), "yap.pr")
+        XCTAssertNil(DashConnectFallbackAppMetadata.brandHost(contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
     }
 
     func testTheCallbackKeepsItsQueryAndAddsTheStatus() throws {

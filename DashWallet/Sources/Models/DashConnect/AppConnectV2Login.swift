@@ -100,6 +100,10 @@ extension AppConnect {
         let createdAt: UInt64
         /// Where the wallet returns when it is done; shown on the sheet.
         let callbackHost: String?
+        /// The app's website in the wallet's brand map, or nil for an app the
+        /// wallet does not know: then the name on the sheet is the one the
+        /// request gives.
+        var brandHost: String? = nil
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
@@ -196,6 +200,30 @@ extension AppConnect {
             createdAt: request.createdAt,
             callbackHost: uri.callback?.host
         )
+    }
+
+    /// The profile's callback rule for an app in the wallet's brand map: a
+    /// request whose `cb` is on a host that is not the app's is refused.
+    /// The sheet would be branded as the app and return somewhere else, and
+    /// the host is the user's main phishing signal. A request without `cb`
+    /// is not refused, the sheet warns instead (`isHost(_:of:)`).
+    ///
+    /// The request itself proves nothing about where it came from: anyone
+    /// can put the app's id and the app's host in a QR code. What the wallet
+    /// can check is that what it shows agrees with itself.
+    static func callbackRefusal(callbackHost: String?, brandHost: String?) -> Refusal? {
+        guard let brandHost, let callbackHost, !isHost(callbackHost, of: brandHost) else { return nil }
+        return Refusal(.invalid, String(
+            format: NSLocalizedString(
+                "This request would return to %@, which is not the app's website.",
+                comment: "DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr"),
+            callbackHost))
+    }
+
+    /// Whether `host` is `brandHost` or one of its subdomains. Both are
+    /// lowercase DNS names: the callback parser takes no other host.
+    static func isHost(_ host: String, of brandHost: String) -> Bool {
+        host == brandHost || host.hasSuffix("." + brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:

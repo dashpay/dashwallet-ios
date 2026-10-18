@@ -282,6 +282,12 @@ struct ApproveConnectionSheet: View {
             )
 
             VStack(alignment: .leading, spacing: 4) {
+                if let warning = originWarning(plan) {
+                    Text(warning)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primaryText)
+                }
                 Text(requestOrigin(plan))
                     .font(.footnote)
                     .foregroundColor(.secondaryText)
@@ -290,7 +296,7 @@ struct ApproveConnectionSheet: View {
                         format: NSLocalizedString(
                             "Only approve if you just started signing in on %@.",
                             comment: "DashConnect App Connect v2: the placeholder is the app's website or name"),
-                        plan.callbackHost ?? resolvedAppLabel)
+                        plan.brandHost ?? plan.callbackHost ?? resolvedAppLabel)
                 )
                 .font(.footnote)
                 .foregroundColor(.secondaryText)
@@ -337,11 +343,32 @@ struct ApproveConnectionSheet: View {
                     comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
                 action, PlatformCreditsFormatter.dashString(budget), expiry)
         }
+        // The app asked for no budget, and the wallet adds none: the key can
+        // spend the identity's credits without a cap, so the sheet says so.
         return String(
             format: NSLocalizedString(
-                "%1$@, until %2$@",
+                "%1$@, with no limit on spending your identity's credits, until %2$@",
                 comment: "DashConnect App Connect v2: what a key can do, a date"),
             action, expiry)
+    }
+
+    /// The profile's warnings. Nothing in a request proves where it came
+    /// from: an app the wallet does not know is named by the request alone,
+    /// and a known app's request that does not return to its website may
+    /// come from a page that is not the app's. A known app's request that
+    /// returns elsewhere is refused before it gets here.
+    private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
+        guard let brandHost = plan.brandHost else {
+            return NSLocalizedString(
+                "This wallet does not know this app. Its name and website come from the request itself.",
+                comment: "DashConnect App Connect v2")
+        }
+        guard plan.callbackHost == nil else { return nil }
+        return String(
+            format: NSLocalizedString(
+                "This request does not return to %@. It may not come from the app's website.",
+                comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
+            brandHost)
     }
 
     private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {
