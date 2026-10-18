@@ -115,6 +115,12 @@ extension AppConnect {
         /// wallet does not know: then the name on the sheet is the one the
         /// request gives.
         var brandHost: String? = nil
+        /// The groups among the bindings that have administrators besides
+        /// their owner, as Platform proves them. Each administrator can add
+        /// contracts of its own to the group, and a group key acts in every
+        /// contract of the group when it signs, not only in those it had
+        /// when it was granted.
+        var administeredGroupIds: Set<Data> = []
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
@@ -412,45 +418,51 @@ extension AppConnect {
             .sorted()
     }
 
-    /// The contract groups that live v2-shaped keys no record names are
-    /// bound to (`unrecordedV2KeyIds`): a disconnect looks each one up to
-    /// tell whether the app's owner owns it.
-    static func unrecordedV2KeyGroupIds(
-        recordedKeyIds: Set<UInt32>,
-        bindings: [KeyBinding],
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> Set<Data> {
-        Set(unrecordedV2KeyBounds(
-            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys
-        ).compactMap { _, bound in
-            if case .contractGroup(let id) = bound { return id }
-            return nil
-        })
+    /// The contracts and contract groups that v2-shaped keys no record names
+    /// are bound to (`unrecordedV2Keys`), other than `appContractId`, the
+    /// allowlisted foreign document types and Platform's system contracts
+    /// (never a binding's target): a disconnect looks each one up to tell
+    /// whether the app's owner owns it.
+    static func unrecordedV2KeyBoundIds(
+        appContractId: Data,
+        keys: [(keyId: UInt32, bound: StoredBound)]
+    ) -> (contracts: Set<Data>, groups: Set<Data>) {
+        var contracts: Set<Data> = []
+        var groups: Set<Data> = []
+        for (_, bound) in keys {
+            switch bound {
+            case .singleContract(let id):
+                if id != appContractId, !systemContractIds.contains(id.toBase58String()) { contracts.insert(id) }
+            case .documentType(let id, let name):
+                if id != appContractId, !systemContractIds.contains(id.toBase58String()),
+                   !allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") {
+                    contracts.insert(id)
+                }
+            case .contractGroup(let id):
+                groups.insert(id)
+            }
+        }
+        return (contracts, groups)
     }
 
-    /// The live keys of the app's v2 grants that no grant record of the
-    /// identity names, as a reinstall or a lost record leaves them: HASH160
-    /// authentication keys at HIGH or CRITICAL with an expiry (every v2 auth
-    /// key has one), whose stored bound is the app's contract, a document
-    /// type on it, a contract group the app's owner owns (`appGroupIds`), or
-    /// a foreign document type v2 allows (DashPay `profile`). The last can
-    /// be another app's when its record is lost too; it is disabled all the
-    /// same, since a key left on rather than off is what a disconnect must
-    /// not do, and that app's next sign-in adds a new one.
-    static func unrecordedV2KeyIds(
-        appContractId: Data,
+    /// The ids of the keys in `keys` that belong to the app's v2 grants:
+    /// bound to a contract the app's owner owns (`appContractIds`, the app's
+    /// own among them), a document type on one, a contract group that owner
+    /// owns (`appGroupIds`), or a foreign document type v2 allows (DashPay
+    /// `profile`). Those are the bindings `ownershipRefusal` lets a request
+    /// have. The last can be another app's when its record is lost too; it
+    /// is disabled all the same, since a key left on rather than off is what
+    /// a disconnect must not do, and that app's next sign-in adds a new one.
+    static func appsV2KeyIds(
+        appContractIds: Set<Data>,
         appGroupIds: Set<Data>,
-        recordedKeyIds: Set<UInt32>,
-        bindings: [KeyBinding],
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        keys: [(keyId: UInt32, bound: StoredBound)]
     ) -> [UInt32] {
-        unrecordedV2KeyBounds(
-            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys
-        ).filter { _, bound in
+        keys.filter { _, bound in
             switch bound {
-            case .singleContract(let id): return id == appContractId
+            case .singleContract(let id): return appContractIds.contains(id)
             case .documentType(let id, let name):
-                return id == appContractId || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+                return appContractIds.contains(id) || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
             case .contractGroup(let id): return appGroupIds.contains(id)
             }
         }
@@ -458,7 +470,11 @@ extension AppConnect {
         .sorted()
     }
 
-    private static func unrecordedV2KeyBounds(
+    /// The live v2-shaped keys on the identity that no grant record of it
+    /// names, as a reinstall or a lost record leaves them: HASH160
+    /// authentication keys at HIGH or CRITICAL with an expiry (every v2
+    /// auth key has one) and a bound the store can read.
+    static func unrecordedV2Keys(
         recordedKeyIds: Set<UInt32>,
         bindings: [KeyBinding],
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
@@ -469,6 +485,19 @@ extension AppConnect {
                   let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                   !stored.hasUnreadableBound, let bound = stored.bound else { return nil }
             return (keyId, bound)
+        }
+    }
+
+    /// `unrecordedV2Keys` from the store alone, for an identity that is not
+    /// the active one: its keys as last loaded.
+    static func unrecordedV2Keys(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding]
+    ) -> [(keyId: UInt32, bound: StoredBound)] {
+        bindings.compactMap { binding in
+            guard binding.isV2AuthKeyShaped, !binding.isDisabled, !binding.hasUnreadableBound,
+                  !recordedKeyIds.contains(binding.keyId), let bound = binding.bound else { return nil }
+            return (binding.keyId, bound)
         }
     }
 

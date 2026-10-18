@@ -6730,7 +6730,9 @@
 "Preparing logs…" = "Preparing logs…";
 
 /* DashConnect App Connect v2 */
-"%1$@, spending up to %2$@ until %3$@" = "%1$@, spending up to %2$@ until %3$@";
+"%1$@, spending up to %2$@ of your identity's credits until %3$@" = "%1$@, spending up to %2$@ of your identity's credits until %3$@";
+"The credit limit does not limit how many of your tokens it can move." = "The credit limit does not limit how many of your tokens it can move.";
+"Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
 "Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
 "Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
@@ -6756,6 +6758,7 @@
 "Write \"%@\" documents as you" = "Write \"%@\" documents as you";
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
 "This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
+"The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
 "This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
 "This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
 

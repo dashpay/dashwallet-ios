@@ -86,6 +86,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case noFreeKeyId
     case otherIdentitiesNotChecked
     case registrationPending
+    case appConnectEncryptionKeyChanged
     case registrationPendingOnAnotherIdentity
     case walletChanged
     case ephemeralKeyGenerationFailed
@@ -163,6 +164,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.",
                 comment: "DashConnect")
+        case .appConnectEncryptionKeyChanged:
+            return NSLocalizedString(
+                "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.",
+                comment: "DashConnect App Connect v2")
         case .walletChanged:
             return NSLocalizedString("The active wallet or identity changed. Try again.", comment: "DashConnect")
         case .noFreeKeyId:
@@ -677,9 +682,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
                     comment: "DashConnect App Connect v2"))), nil)
             }
-            if let refusal = try await appConnectOwnershipRefusal(plan, sdk: context.sdk) {
+            let ownership = try await appConnectOwnership(plan, sdk: context.sdk)
+            if let refusal = ownership.refusal {
                 return (.refused(refusal), nil)
             }
+            plan.administeredGroupIds = ownership.administeredGroupIds
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)
@@ -689,42 +696,69 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// The ids in `groupIds` of the contract groups whose owner is the owner
-    /// of `contractId`. A group the network proves absent is not; any other
-    /// failure to read throws, and so does a contract with no readable
-    /// owner: nothing can then be said of its groups.
-    private static func groupsOwnedByOwner(of contractId: Data, among groupIds: Set<Data>, sdk: SDK) async throws -> Set<Data> {
-        guard !groupIds.isEmpty else { return [] }
-        let contract = try await sdk.dataContractGetOffMain(id: contractId.toBase58String())
-        guard let ownerId = (contract["ownerId"] as? String ?? contract["$ownerId"] as? String)
-            .flatMap(decodeIdentifier) else { throw DashConnectPlatformError.loginContractUnavailable }
-        var owned: Set<Data> = []
-        for groupId in groupIds {
+    /// The ids among `contractIds` and `groupIds` of the contracts and the
+    /// contract groups whose owner is the owner of `contractId`, which is
+    /// itself among the contracts returned. One the network proves absent
+    /// is not; any other failure to read throws, and so does a contract
+    /// with no readable owner: nothing can then be said of what it owns.
+    /// TODO(app-connect-v2-owner-lookup): a contract this build can never
+    /// read (a format newer than its SDK) fails the same way on every try,
+    /// so a disconnect that has to look it up keeps the row until the app
+    /// is updated.
+    private static func ownedByOwner(
+        of contractId: Data,
+        contractIds: Set<Data>,
+        groupIds: Set<Data>,
+        sdk: SDK
+    ) async throws -> (contracts: Set<Data>, groups: Set<Data>) {
+        guard !contractIds.isEmpty || !groupIds.isEmpty else { return ([contractId], []) }
+        func ownerId(_ object: [String: Any]) -> Data? {
+            (object["ownerId"] as? String ?? object["$ownerId"] as? String).flatMap(decodeIdentifier)
+        }
+        guard let appOwnerId = ownerId(try await sdk.dataContractGetOffMain(id: contractId.toBase58String())) else {
+            throw DashConnectPlatformError.loginContractUnavailable
+        }
+        var contracts: Set<Data> = [contractId]
+        for id in contractIds {
             do {
-                let info = try await sdk.getContractGroupInfo(contractGroupId: groupId.toBase58String())
-                if (info["ownerId"] as? String).flatMap(decodeIdentifier) == ownerId { owned.insert(groupId) }
+                if ownerId(try await sdk.dataContractGetOffMain(id: id.toBase58String())) == appOwnerId { contracts.insert(id) }
             } catch SDKError.notFound {
                 continue
             }
         }
-        return owned
+        var groups: Set<Data> = []
+        for id in groupIds {
+            do {
+                if ownerId(try await sdk.getContractGroupInfo(contractGroupId: id.toBase58String())) == appOwnerId {
+                    groups.insert(id)
+                }
+            } catch SDKError.notFound {
+                continue
+            }
+        }
+        return (contracts, groups)
     }
 
     /// Reads the owners wallet rule 3 compares from Platform. A group the
     /// network proves absent counts as not the app's; any other failure to
     /// read throws, so the sheet offers to try again. The reads run off the
     /// main actor (`dataContractGetOffMain`; `getContractGroupInfo` is
-    /// nonisolated), so the sheet stays responsive while they wait.
-    private func appConnectOwnershipRefusal(_ plan: AppConnect.GrantPlan, sdk: SDK) async throws -> AppConnect.Refusal? {
+    /// nonisolated), so the sheet stays responsive while they wait. Also
+    /// returns the groups that have administrators, for the sheet.
+    private func appConnectOwnership(
+        _ plan: AppConnect.GrantPlan,
+        sdk: SDK
+    ) async throws -> (refusal: AppConnect.Refusal?, administeredGroupIds: Set<Data>) {
         func ownerId(of contract: [String: Any]) -> Data? {
             (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
         }
         let app = try await sdk.dataContractGetOffMain(id: plan.appId.toBase58String())
         guard let appOwnerId = ownerId(of: app) else {
-            return AppConnect.Refusal(.invalid, NSLocalizedString(
-                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2"))
+            return (AppConnect.Refusal(.invalid, NSLocalizedString(
+                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [])
         }
         var groupOwners: [Data: Data] = [:]
+        var administeredGroupIds: Set<Data> = []
         var contractOwners: [Data: Data] = [plan.appId: appOwnerId]
         for grant in plan.auth {
             let id = grant.binding.id
@@ -734,6 +768,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 do {
                     let info = try await sdk.getContractGroupInfo(contractGroupId: id.toBase58String())
                     groupOwners[id] = (info["ownerId"] as? String).flatMap(Self.decodeIdentifier)
+                    // Read as administered unless the proof shows none.
+                    if (info["adminIds"] as? [Any])?.isEmpty != true { administeredGroupIds.insert(id) }
                 } catch SDKError.notFound {
                     continue
                 }
@@ -752,12 +788,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if config["requiresIdentityDecryptionBoundedKey"].map({ !($0 is NSNull) }) == true {
             boundedKeyPurposes.insert(.decryption)
         }
-        return AppConnect.ownershipRefusal(
+        let refusal = AppConnect.ownershipRefusal(
             for: plan,
             appOwnerId: appOwnerId,
             groupOwners: groupOwners,
             contractOwners: contractOwners,
             appBoundedKeyPurposes: boundedKeyPurposes)
+        return (refusal, administeredGroupIds)
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -1422,6 +1459,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
 
+        // A response recorded for this request carries the encryption keys
+        // the identity had then, and a retry sends that response again. If
+        // one of them has been disabled or replaced since, it would hand the
+        // app a key that is no longer the identity's: the retry stops here,
+        // before anything is registered. A record from before the ids were
+        // noted carries none.
+        if let recorded = stores.grants.load().first(where: { isGrantForRequest($0) && !$0.isUnconfirmed }),
+           encryptionSlots.contains(where: { $0.keyId == nil })
+            || encryptionSlots.compactMap(\.keyId) != (recorded.encryptionKeyIds ?? []) {
+            Self.logger.error("🔗 DASHCONNECT :: the recorded App Connect response carries encryption keys the identity no longer has")
+            throw DashConnectPlatformError.appConnectEncryptionKeyChanged
+        }
+
         // Wallet rule 8: this connection's previous grant goes in the same
         // update. A key of it the fetched list lacks means the list is
         // behind, and it could not be shown to be off.
@@ -1529,6 +1579,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // for this request keeps its values: if an earlier publish landed
         // without confirming, those are the ones on Platform.
         let grantedKeyIds = authKeyIds.compactMap { $0 }
+        let sentEncryptionKeyIds = encryptionSlots.compactMap(\.keyId)
         let primary = plan.auth[0]
         let grant = updateGrants(in: stores) { grants -> AppConnectGrant in
             AppConnect.markKeysDisabled(in: &grants) { retiredGrantKeys.contains($0.key) }
@@ -1545,7 +1596,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 expiresAt: primary.expiresAt,
                 publishedAt: now(),
                 additionalKeyIds: Array(grantedKeyIds.dropFirst()),
-                connectionId: connectionId
+                connectionId: connectionId,
+                encryptionKeyIds: sentEncryptionKeyIds
             )
             grants.append(new)
             return new
@@ -2297,7 +2349,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// that are bound to the app's contract and shaped as this login
     /// registers them, so the keys a reinstalled wallet kept no record of go
     /// too. For a one-QR disconnect that includes the shapes App Connect v2
-    /// registers (`AppConnect.unrecordedV2KeyIds`), among them a DashPay
+    /// registers (`AppConnect.appsV2KeyIds`), among them a DashPay
     /// profile key that may be another app's. A key another wallet gave the
     /// app in any other shape stays.
     /// TODO(app-connect-orphan-responses): the response behind a key with no
@@ -2465,21 +2517,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             twoQRAuthenticationKeyHash160: checksUnrecordedKeys ? nil : twoQRKeys.authenticationPublicKeyHash160
         )
         if checksUnrecordedKeys {
-            // The keys of v2 grants whose record is gone. A group they are
-            // bound to is the app's if the app's owner owns it, which only
-            // the network says; if it cannot be read, nothing is turned off.
+            // The keys of v2 grants whose record is gone. A contract or a
+            // group they are bound to is the app's if the app's owner owns
+            // it, which only the network says; if it cannot be read,
+            // nothing is turned off and the row stays.
             // Confirmed records only: an unconfirmed one's id may belong to
             // another key by now.
             let recordedKeyIds = Set(stores.grants.load()
                 .filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
-            let appGroupIds = try await Self.groupsOwnedByOwner(
-                of: appContract,
-                among: AppConnect.unrecordedV2KeyGroupIds(
-                    recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentPublicKeys),
-                sdk: context.sdk)
-            let unrecordedV2KeyIds = AppConnect.unrecordedV2KeyIds(
-                appContractId: appContract, appGroupIds: appGroupIds, recordedKeyIds: recordedKeyIds,
-                bindings: bindings, currentIdentityPublicKeys: currentPublicKeys)
+            let unrecorded = AppConnect.unrecordedV2Keys(
+                recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentPublicKeys)
+            let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: appContract, keys: unrecorded)
+            let owned = try await Self.ownedByOwner(
+                of: appContract, contractIds: candidates.contracts, groupIds: candidates.groups, sdk: context.sdk)
+            let unrecordedV2KeyIds = AppConnect.appsV2KeyIds(
+                appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded)
             keyIds = Array(Set(keyIds).union(liveTwoQRLoginKeyIds).union(unrecordedV2KeyIds)).sorted()
         }
         if !mayStillLand.isEmpty, keyIds.isEmpty {
@@ -2581,9 +2633,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// TODO(app-connect-other-identity-keys): the store is as fresh as each
     /// identity's last load from Platform, and an identity it does not hold
     /// is not seen, so the row can go while such a key is live.
-    /// TODO(app-connect-v2-other-identity-keys): the v2 shapes
-    /// (`AppConnect.unrecordedV2KeyIds`: a document-type or group key, or one
-    /// without a budget) are not looked for on the other identities.
+    /// The v2 shapes no record names count too (`AppConnect.appsV2KeyIds`),
+    /// with the contracts and groups the app's owner owns read from
+    /// Platform; an identity whose read fails cannot be told.
     private func anotherIdentityHoldsAppKeys(appContractId: Data, context: Context) async -> Bool? {
         let others: [(identityId: Data, identityIndex: UInt32)]
         do {
@@ -2605,11 +2657,27 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 let bindings = try Self.storedKeyBindings(
                     identityId: other.identityId.toBase58String(), modelContainer: context.modelContainer)
                 if AppConnect.holdsLiveSessionKey(appContractId: appContractId, bindings: bindings) { return true }
+                let otherIdentityId = other.identityId.toBase58String()
+                let unrecorded = AppConnect.unrecordedV2Keys(
+                    recordedKeyIds: Set(context.stores.grants.load()
+                        .filter { $0.identityId == otherIdentityId && !$0.isUnconfirmed }.flatMap(\.keyIds)),
+                    bindings: bindings)
+                if !unrecorded.isEmpty {
+                    let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: appContractId, keys: unrecorded)
+                    let owned = try await Self.ownedByOwner(
+                        of: appContractId, contractIds: candidates.contracts, groupIds: candidates.groups,
+                        sdk: context.sdk)
+                    if !AppConnect.appsV2KeyIds(
+                        appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded
+                    ).isEmpty {
+                        return true
+                    }
+                }
                 // An identity always has keys, so none stored means not
                 // loaded; and a session-shaped key with an unreadable bound
                 // may be the app's.
                 if bindings.isEmpty || bindings.contains(where: {
-                    !$0.isDisabled && $0.isSessionKeyShaped && $0.hasUnreadableBound
+                    !$0.isDisabled && ($0.isSessionKeyShaped || $0.isV2AuthKeyShaped) && $0.hasUnreadableBound
                 }) {
                     hasUnknown = true
                 }
@@ -3201,7 +3269,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                         boundsKind: $0.effectiveContractBoundsKind,
                         boundIds: $0.contractBounds,
                         documentTypeName: $0.contractBoundsDocumentTypeName
-                    )
+                    ),
+                    isV2AuthKeyShaped: $0.keyTypeEnum == .ecdsaHash160
+                        && $0.purposeEnum == .authentication
+                        && ($0.securityLevelEnum == .high || $0.securityLevelEnum == .critical)
+                        && $0.expiresAt != nil
                 )
             }
         }

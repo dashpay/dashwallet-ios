@@ -284,7 +284,7 @@ struct ApproveConnectionSheet: View {
         VStack(alignment: .leading, spacing: 20) {
             permissions(
                 granted: [NSLocalizedString("See your username", comment: "DashConnect")]
-                    + plan.auth.map(authGrantText)
+                    + plan.auth.map { authGrantText($0, administered: plan.administeredGroupIds.contains($0.binding.id)) }
                     + plan.encryption.map { _ in
                         String(
                             format: NSLocalizedString(
@@ -322,7 +322,9 @@ struct ApproveConnectionSheet: View {
         }
     }
 
-    private func authGrantText(_ grant: AppConnect.AuthGrant) -> String {
+    /// What one key can do, what it can spend and until when. `administered`:
+    /// the group has administrators who can add their own contracts to it.
+    private func authGrantText(_ grant: AppConnect.AuthGrant, administered: Bool) -> String {
         let binding = grant.binding
         let action: String
         switch binding.kind {
@@ -354,20 +356,37 @@ struct ApproveConnectionSheet: View {
             }
         }
         let expiry = Self.expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(grant.expiresAt) / 1000))
+        var text: String
         if let budget = grant.totalBudget {
-            return String(
+            text = String(
                 format: NSLocalizedString(
-                    "%1$@, spending up to %2$@ until %3$@",
+                    "%1$@, spending up to %2$@ of your identity's credits until %3$@",
                     comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
                 action, PlatformCreditsFormatter.dashString(budget), expiry)
+        } else {
+            // The app asked for no budget, and the wallet adds none: the key
+            // can spend the identity's credits without a cap, so the sheet
+            // says so.
+            text = String(
+                format: NSLocalizedString(
+                    "%1$@, with no limit on spending your identity's credits, until %2$@",
+                    comment: "DashConnect App Connect v2: what a key can do, a date"),
+                action, expiry)
         }
-        // The app asked for no budget, and the wallet adds none: the key can
-        // spend the identity's credits without a cap, so the sheet says so.
-        return String(
-            format: NSLocalizedString(
-                "%1$@, with no limit on spending your identity's credits, until %2$@",
-                comment: "DashConnect App Connect v2: what a key can do, a date"),
-            action, expiry)
+        // A budget is in credits: Platform checks a token transfer against
+        // the token balance, not against the key's credit budget.
+        if binding.kind == .contractGroup, grant.securityLevel == .critical {
+            text += " " + NSLocalizedString(
+                "The credit limit does not limit how many of your tokens it can move.",
+                comment: "DashConnect App Connect v2")
+        }
+        // Group membership is read when the key signs, not when it is granted.
+        if binding.kind == .contractGroup, administered {
+            text += " " + NSLocalizedString(
+                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
+                comment: "DashConnect App Connect v2")
+        }
+        return text
     }
 
     /// The profile's warnings. Nothing in a request proves where it came

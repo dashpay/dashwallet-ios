@@ -395,21 +395,37 @@ final class AppConnectV2LoginTests: XCTestCase {
             binding(12, .singleContract(app)),
         ]
         let recorded: Set<UInt32> = [12]
+        let unrecorded = AppConnect.unrecordedV2Keys(
+            recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys)
 
+        XCTAssertEqual(unrecorded.map(\.keyId), [1, 2, 3, 4, 5, 6, 11])
+        let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: app, keys: unrecorded)
+        XCTAssertEqual(candidates.contracts, [other], "never the app itself, the allowlisted profile or a system contract")
+        XCTAssertEqual(candidates.groups, [group, otherGroup])
         XCTAssertEqual(
-            AppConnect.unrecordedV2KeyGroupIds(recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys),
-            [group, otherGroup])
-        XCTAssertEqual(
-            AppConnect.unrecordedV2KeyIds(
-                appContractId: app, appGroupIds: [group], recordedKeyIds: recorded,
-                bindings: bindings, currentIdentityPublicKeys: keys),
+            AppConnect.appsV2KeyIds(appContractIds: [app], appGroupIds: [group], keys: unrecorded),
             [1, 2, 3, 5])
+        // Another contract of the app's owner: a binding the request could
+        // have had, so its key goes too.
+        XCTAssertEqual(
+            AppConnect.appsV2KeyIds(appContractIds: [app, other], appGroupIds: [group], keys: unrecorded),
+            [1, 2, 3, 5, 11])
         // A key the store cannot place is the disconnect's stop, not a guess.
         XCTAssertEqual(
-            AppConnect.unrecordedV2KeyIds(
-                appContractId: app, appGroupIds: [], recordedKeyIds: [],
-                bindings: [binding(1, .singleContract(app), unreadable: true)], currentIdentityPublicKeys: [key(1)]),
-            [])
+            AppConnect.unrecordedV2Keys(
+                recordedKeyIds: [], bindings: [binding(1, .singleContract(app), unreadable: true)],
+                currentIdentityPublicKeys: [key(1)]).count,
+            0)
+        // Another identity's keys, from the store alone.
+        var stored = binding(1, .singleContract(app))
+        stored.isV2AuthKeyShaped = true
+        var storedOff = binding(2, .singleContract(app))
+        storedOff.isV2AuthKeyShaped = true
+        storedOff.isDisabled = true
+        XCTAssertEqual(
+            AppConnect.unrecordedV2Keys(recordedKeyIds: [], bindings: [stored, storedOff, binding(3, .singleContract(app))])
+                .map(\.keyId),
+            [1])
         XCTAssertEqual(
             AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: [], currentIdentityPublicKeys: [key(3, level: .critical)]),
             [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")

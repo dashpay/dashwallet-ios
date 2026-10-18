@@ -243,6 +243,9 @@ enum AppConnect {
         /// The key's bound as the store holds it; nil for a key with no
         /// bound, or one this build cannot read (`hasUnreadableBound`).
         var bound: StoredBound? = nil
+        /// The stored key has the shape of an App Connect v2 auth key:
+        /// HASH160 authentication at HIGH or CRITICAL, with an expiry.
+        var isV2AuthKeyShaped = false
     }
 
     /// A key's contract bound, as the wallet's store records it.
@@ -654,6 +657,10 @@ struct AppConnectGrant: Codable, Equatable {
     /// App Connect v2: the request's `CONNECTION_ID` (hex). A later login
     /// with the same one replaces this grant's keys.
     var connectionId: String? = nil
+    /// App Connect v2: the ids of the identity's encryption keys the
+    /// response carries, in slot order. A retry sends the recorded response
+    /// only while it would carry the same ones.
+    var encryptionKeyIds: [UInt32]? = nil
 
     /// Every auth key of the grant.
     var keyIds: [UInt32] {
