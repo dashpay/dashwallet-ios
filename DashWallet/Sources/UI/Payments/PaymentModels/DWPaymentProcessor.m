@@ -63,7 +63,7 @@ static NSString *DWReversedHexString(NSData *data) {
     // Core Data contact graph (matchingDashpayUserInContext +
     // DSFriendRequestEntity) that no longer syncs. Pay-to-contact
     // now flows through the SwiftUI contacts screen →
-    // WalletSendService.sendToContact, never through this processor.
+    // WalletSendService.prepareContactPayment, never through this processor.
 #endif
 
     self.paymentInput = paymentInput;

@@ -49,6 +49,48 @@ final class ContactItemSearchFilterTests: XCTestCase {
         XCTAssertTrue(item.matches(searchQuery: "brother"))
     }
 
+    func testDisplayTitleIsNameOnlyForAnAliasOrProfileName() {
+        let alias = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", alias: "My Brother", createdAt: Self.anyDate)
+        let profile = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "Bob", createdAt: Self.anyDate)
+        let username = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", createdAt: Self.anyDate)
+        let nothing = ContactItem.fixture(
+            relationship: .established, username: nil, createdAt: Self.anyDate)
+
+        XCTAssertTrue(alias.displayTitleIsName)
+        XCTAssertTrue(profile.displayTitleIsName)
+        XCTAssertFalse(username.displayTitleIsName)
+        XCTAssertFalse(nothing.displayTitleIsName)
+    }
+
+    func testEmptyNamesFallBackToTheUsernameForDisplayTitleIsName() {
+        let emptyAlias = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", alias: "", createdAt: Self.anyDate)
+        let emptyProfile = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "", createdAt: Self.anyDate)
+
+        XCTAssertFalse(emptyAlias.displayTitleIsName)
+        XCTAssertEqual(emptyAlias.displayTitle, "bob")
+        XCTAssertFalse(emptyProfile.displayTitleIsName)
+        XCTAssertEqual(emptyProfile.displayTitle, "bob")
+    }
+
+    func testAliasWinsOverProfileNameAndAnEmptyAliasFallsToIt() {
+        let both = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "Bob",
+            alias: "My Brother", createdAt: Self.anyDate)
+        let emptyAlias = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "Bob",
+            alias: "", createdAt: Self.anyDate)
+
+        XCTAssertEqual(both.displayTitle, "My Brother")
+        XCTAssertTrue(both.displayTitleIsName)
+        XCTAssertEqual(emptyAlias.displayTitle, "Bob")
+        XCTAssertTrue(emptyAlias.displayTitleIsName)
+    }
+
     func testEmptyAndWhitespaceQueriesMatchEverything() {
         let item = ContactItem.fixture(
             relationship: .incoming,

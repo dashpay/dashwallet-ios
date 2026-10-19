@@ -21,6 +21,11 @@ struct ContactProfileSheet: View {
     @State private var isProcessing = false
     @State private var errorMessage: String? = nil
     @State private var showingPaySheet = false
+    /// The open Pay sheet sent a payment, so the history reloads when it closes.
+    @State private var paidFromPaySheet = false
+    /// Set once the profile has asked to close: a contacts change during the
+    /// Pay sheet's exit and that sheet's onDismiss can both ask.
+    @State private var isClosing = false
 
     // Owner-private contact meta, editable for established contacts.
     // Seeded from the immutable snapshot in onAppear; saved through
@@ -89,14 +94,20 @@ struct ContactProfileSheet: View {
                 // visible), so we don't drive TXDetailVCWrapper's own
                 // programmatic pop.
                 if let tx = resolvedByTxid[paymentId] {
-                    TXDetailVCWrapper(tx: tx, navigateBack: .constant(false))
+                    // This contact's row leads back to this profile, not to
+                    // another one stacked on top.
+                    TXDetailVCWrapper(
+                        tx: tx,
+                        navigateBack: .constant(false),
+                        contactReturn: .init(identityId: contact.contactIdentityId,
+                                             goBack: { selectedPaymentId = nil }))
                         .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
                         .navigationBarTitleDisplayMode(.inline)
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Done", comment: "")) { dismiss() }
+                    Button(NSLocalizedString("Done", comment: "")) { closeProfile() }
                         .foregroundColor(.dash.blue)
                 }
             }
@@ -110,8 +121,20 @@ struct ContactProfileSheet: View {
             } message: {
                 Text(errorMessage ?? "")
             }
-            .sheet(isPresented: $showingPaySheet) {
-                PayContactSheet(contact: contact)
+            .sheet(isPresented: $showingPaySheet, onDismiss: {
+                // A contact that vanished while Pay was open (see below) closes
+                // the profile now that nothing is in flight on top of it.
+                if service.contactItem(for: contact.contactIdentityId) == nil {
+                    closeProfile()
+                    return
+                }
+                // A payment sent from the sheet belongs in the history now.
+                if paidFromPaySheet {
+                    paidFromPaySheet = false
+                    loadPayments()
+                }
+            }) {
+                PayContactSheet(contact: contact, onSent: { paidFromPaySheet = true })
             }
             .onAppear {
                 aliasText = contact.alias ?? ""
@@ -131,8 +154,12 @@ struct ContactProfileSheet: View {
                     for: contact.contactIdentityId)
                 else {
                     // The request was removed (ignored) or the active wallet
-                    // changed. Do not leave an actionable stale profile open.
-                    dismiss()
+                    // changed. Do not leave an actionable stale profile open —
+                    // but not from under Pay: closing the profile would take a
+                    // payment in flight, and its outcome, with it. Pay disables
+                    // its own Send for the vanished contact, and its onDismiss
+                    // closes the profile once it is gone.
+                    if !showingPaySheet { closeProfile() }
                     return
                 }
 
@@ -374,6 +401,13 @@ struct ContactProfileSheet: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
+    }
+
+    /// Close the profile once, however many paths ask; see `isClosing`.
+    private func closeProfile() {
+        guard !isClosing else { return }
+        isClosing = true
+        dismiss()
     }
 
     /// Show a confirmation and clear it after a beat. `@MainActor` because it
@@ -694,7 +728,7 @@ struct ContactProfileSheet: View {
             defer { isProcessing = false }
             do {
                 try await operation()
-                dismiss()
+                closeProfile()
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
                 // User backed out of the PIN prompt.
             } catch {
@@ -706,197 +740,84 @@ struct ContactProfileSheet: View {
 
 // MARK: - PayContactSheet
 
-/// Minimal pay-to-contact amount sheet (Row #18 phase 6). The Pay
-/// button is the explicit user confirmation; tapping it runs the
-/// spend-auth gate and then the single-shot SDK payment (which
-/// derives the contact's DIP-15 receive address Rust-side, then
-/// builds + signs + broadcasts). The network fee is charged by the
-/// SDK on top of the entered amount — the cap below uses
-/// `maxSendable` (spendable minus a conservative fee reserve) so the
-/// fee can't push the send over the balance.
+/// Pay-to-contact from the contact profile. The amount step is the Send
+/// tab's own `ExternalSendAmountScreen` on a `SendViewModel` opened on this
+/// contact — the screen "Send to username" ends on — so the amount entry and
+/// the review are shared. A sheet of its own had drifted: it took DASH only,
+/// while its fiat line looked tappable and did nothing.
+///
+/// From the shared screen this gets the DASH/fiat switch, the pre-send
+/// review, the fee-aware cap, the sync gate and the per-contact lock after a
+/// broadcast with an unknown outcome. A sent payment ends on its transaction
+/// details, the screen a history row opens.
 struct PayContactSheet: View {
+    /// The snapshot the sheet opened on. The view model keeps the current one
+    /// (`contactRecipient`), and that is the one the sheet shows.
     let contact: ContactItem
+    /// Called once a payment from this sheet is broadcast.
+    let onSent: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var walletState = SwiftDashSDKWalletState.shared
-    @State private var amountText = ""
-    @State private var isSending = false
-    @State private var sentTxid: Data? = nil
-    /// Exact network fee (duffs) of the broadcast transaction.
-    @State private var sentFeeDuffs: UInt64? = nil
-    /// Duffs actually broadcast, captured at send time.
-    ///
-    /// The confirmation must state what was paid, not what was typed. Echoing
-    /// `amountText` back made any gap between the two — a locale separator, a
-    /// stray character, precision the parser drops — render as a truthful-looking
-    /// "sent" line for an amount that never left the wallet.
-    @State private var sentAmountDuffs: UInt64?
-    @State private var errorMessage: String? = nil
+    @StateObject private var viewModel: SendViewModel
+    /// The sent payment's details, once it is broadcast.
+    @State private var sentDetails: TxDetailModel?
+
+    init(contact: ContactItem, onSent: @escaping () -> Void) {
+        self.contact = contact
+        self.onSent = onSent
+        // Built inside the autoclosure, so a re-render of the profile does not
+        // construct (and subscribe) a view model only to drop it.
+        _viewModel = StateObject(wrappedValue: {
+            let viewModel = SendViewModel()
+            viewModel.setContactRecipient(contact)
+            return viewModel
+        }())
+    }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                if let txid = sentTxid {
-                    success(txid: txid)
-                } else {
-                    form
+        Group {
+            if let sentDetails {
+                DashUIKit.BottomSheet(showBackButton: .constant(false)) {
+                    // The contact's profile is right under this sheet, so
+                    // its row goes back there rather than stacking another.
+                    TXDetailVCWrapper(
+                        model: sentDetails,
+                        navigateBack: .constant(false),
+                        contactReturn: .init(identityId: contact.contactIdentityId,
+                                             goBack: { dismiss() }))
                 }
-            }
-            .padding(24)
-            .navigationTitle(String(
-                format: NSLocalizedString("Pay %@", comment: "DashPay Contacts"),
-                contact.displayTitle))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString(sentTxid == nil ? "Cancel" : "Done", comment: "")) {
-                        dismiss()
-                    }
-                    .foregroundColor(.dash.blue)
-                }
-            }
-            .alert(
-                NSLocalizedString("Error", comment: ""),
-                isPresented: Binding(
-                    get: { errorMessage != nil },
-                    set: { if !$0 { errorMessage = nil } })
-            ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
-            } message: {
-                Text(errorMessage ?? "")
+            } else {
+                ExternalSendAmountScreen(
+                    viewModel: viewModel,
+                    onBack: { dismiss() },
+                    onContinueCore: { _, _ in
+                        assertionFailure("A contact payment reached the Core → Core route")
+                    },
+                    onContinueContact: { send() },
+                    onSendCompleted: {
+                        assertionFailure("A contact payment reached SendConfirmSheet")
+                    })
             }
         }
-        // The sheet carries its own keypad now, so it needs the room the
-        // system keyboard used to occupy.
+        // The amount step carries its own keypad, so it needs the full height.
         .presentationDetents([.large])
-    }
-
-    @ViewBuilder
-    private var form: some View {
-        // The shared amount surface every other send screen uses, over the
-        // app's own keypad. A raw `TextField` + `.decimalPad` accepted whatever
-        // the system keyboard allowed — a bare separator, a locale comma, more
-        // precision than DASH has — and left validation to the parser, so the
-        // typed text and the amount actually sent could disagree.
-        EnterAmountView(
-            primaryAmount: amountText.isEmpty ? "0" : amountText,
-            secondaryAmount: fiatAmountText,
-            primaryCurrency: .dash,
-            secondaryCurrency: .fiat(App.fiatCurrency),
-            isPrimarySelected: true,
-            isCurrencySelectorHidden: true,
-            onMax: { amountText = Self.dashString(duffs: maxSendable) }
-        )
-        .padding(.top, 12)
-
-        Text(String(
-            format: NSLocalizedString("Available: %@ DASH", comment: "DashPay Contacts"),
-            Self.dashString(duffs: maxSendable)))
-            .font(.system(size: 13))
-            .foregroundColor(.dash.secondaryText)
-
-        Text(NSLocalizedString("A network fee will be added on top of the amount.", comment: "DashPay Contacts"))
-            .font(.system(size: 12))
-            .foregroundColor(.dash.tertiaryText)
-
-        HardwareNumericKeyboardView(
-            value: $amountText,
-            showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Pay", comment: "DashPay Contacts"),
-            actionEnabled: parsedDuffs != nil,
-            inProgress: isSending,
-            actionHandler: { pay() }
-        )
-    }
-
-    /// Fiat equivalent of what is typed, for the secondary line. Empty while
-    /// the amount is unparseable or rates have not arrived.
-    private var fiatAmountText: String {
-        guard let duffs = parsedDuffs else { return "" }
-        let dash = Decimal(duffs) / Decimal(100_000_000)
-        return CurrencyExchanger.shared.fiatAmountString(for: dash)
-    }
-
-    private func success(txid: Data) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.dashGreen)
-            Text(NSLocalizedString("Payment Sent", comment: "DashPay Contacts"))
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.dash.primaryText)
-            Text(String(
-                format: NSLocalizedString("%@ DASH sent to %@", comment: "DashPay Contacts"),
-                sentAmountDuffs.map { Self.dashString(duffs: $0) } ?? amountText,
-                contact.displayTitle))
-                .font(.system(size: 14))
-                .foregroundColor(.dash.secondaryText)
-            if let fee = sentFeeDuffs {
-                Text(String(
-                    format: NSLocalizedString("Network fee: %@ DASH", comment: "DashPay Contacts"),
-                    Self.dashString(duffs: fee)))
-                    .font(.system(size: 12))
-                    .foregroundColor(.dash.tertiaryText)
-            }
-        }
-        .padding(.top, 24)
-    }
-
-    // MARK: Amounts
-
-    private var maxSendable: UInt64 {
-        walletState.feeAwareMaxSendable()
-    }
-
-    /// Entered DASH amount in duffs, or nil when unparseable, zero,
-    /// or above the sendable cap. The cap check runs in `Decimal`
-    /// space BEFORE the `UInt64` conversion — `NSDecimalNumber`'s
-    /// `uint64Value` wraps modulo 2^64, so an overflowing input
-    /// (e.g. 2^64 + 1 duffs) would otherwise alias to a tiny value
-    /// that passes the range check and sends the wrong amount.
-    private var parsedDuffs: UInt64? {
-        let normalized = amountText
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: ",", with: ".")
-        guard let dash = Decimal(string: normalized), dash > 0 else { return nil }
-        let duffsDecimal = dash * Decimal(100_000_000)
-        guard duffsDecimal <= Decimal(maxSendable) else { return nil }
-        let duffs = NSDecimalNumber(decimal: duffsDecimal).uint64Value
-        guard duffs > 0 else { return nil }
-        return duffs
-    }
-
-    private static func dashString(duffs: UInt64) -> String {
-        let dash = Decimal(duffs) / Decimal(100_000_000)
-        return "\(dash)"
+        // Swiping the sheet away mid-broadcast would hide the outcome — the
+        // payment's details, or the "don't send it again" notice of an unknown
+        // one.
+        .interactiveDismissDisabled(viewModel.isContactPaymentInFlight)
     }
 
     // MARK: Pay
 
-    private func pay() {
-        guard let duffs = parsedDuffs, !isSending else { return }
-        isSending = true
+    /// `sendToContact` broadcasts the payment the review showed (signed, with
+    /// the PIN, before the review opened), projects the new Sent entry to
+    /// SwiftData, and keeps any failure on the view model, where the amount
+    /// step shows it inline.
+    private func send() {
         Task {
-            defer { isSending = false }
-            do {
-                let (txid, feeDuffs) = try await WalletSendService.shared.sendToContact(
-                    contactIdentityId: contact.contactIdentityId,
-                    amount: duffs)
-                sentTxid = txid
-                sentFeeDuffs = feeDuffs
-                sentAmountDuffs = duffs
-                // Project the freshly recorded Sent entry to SwiftData
-                // right away — the entry lives only in Rust memory
-                // until a projection runs, and an app kill before one
-                // would lose it permanently (the SDK cannot re-derive
-                // sent history; learned the hard way 2026-07-08).
-                SwiftDashSDKContactsService.shared.refreshPaymentsProjection()
-            } catch {
-                let nsError = error as NSError
-                if !WalletSendService.isAuthenticationCancelledError(nsError) {
-                    errorMessage = error.localizedDescription
-                }
-            }
+            guard let txid = await viewModel.sendToContact() else { return }
+            onSent()
+            sentDetails = viewModel.sentContactPaymentDetails(txidWire: txid)
         }
     }
 }

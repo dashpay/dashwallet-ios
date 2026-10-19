@@ -109,7 +109,7 @@ final class ProvideAmountViewController: SendAmountViewController {
             model: self.model as! SendAmountModel,
             avatarView: {
                 // Pay-to-contact never routes through this screen (it flows through the
-                // SwiftUI contacts screen → WalletSendService.sendToContact), so there is
+                // SwiftUI contacts screen → WalletSendService.prepareContactPayment), so there is
                 // no avatar to render here.
             }
         )
