@@ -268,8 +268,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
-            // materialized deep `/0/` + `/1/` addresses).
+            // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
+            // left out, matching `coinJoinUtxoState()`: coin selection never
+            // spends them.
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
+                .filter { !$0.isLocked }
             guard !utxos.isEmpty else {
                 return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
             }
@@ -286,6 +289,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
             var txids: [Data] = []
             var failedChunkCount = 0
             var firstError: Error?
+            // An unconfirmed broadcast may have reached peers: when nothing was
+            // accepted it is the error reported, ahead of a rejection, so a
+            // caller can tell it apart from "nothing moved".
+            var firstUnknown: Error?
             for (index, chunk) in Self.balancedChunks(utxos, maxPerChunk: Self.maxInputsPerSweep).enumerated() {
                 do {
                     let builder = try CoreTransactionBuilder(network: network)
@@ -316,11 +323,14 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 } catch {
                     failedChunkCount += 1
                     firstError = firstError ?? error
+                    if case SendError.transactionStatusUnknown = error {
+                        firstUnknown = firstUnknown ?? error
+                    }
                     Self.logger.error(
                         "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
                 }
             }
-            if txids.isEmpty, let error = firstError { throw error }
+            if txids.isEmpty, let error = firstUnknown ?? firstError { throw error }
             return CoinJoinSweepOutcome(
                 txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstError)
         }
@@ -385,9 +395,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Nil when the host has no wallet or manager bound; an account that does
     /// not exist reads as empty.
     ///
-    /// Reserved (`isLocked`) rows are left out: neither the drain nor the sweep
-    /// can spend them, so counting them would ask for a consolidation that has
-    /// nothing to consolidate.
+    /// `isLocked` rows are left out: coin selection never spends them, so
+    /// counting them would ask for a consolidation that has nothing to
+    /// consolidate.
     @MainActor
     static func coinJoinUtxoState() -> CoinJoinUtxoState? {
         let host = SwiftDashSDKHost.shared

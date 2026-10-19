@@ -152,10 +152,10 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// When the account holds more UTXOs than one drain may safely spend
     /// (`CoinJoinShieldPlanner.consolidationThreshold`), they
     /// are first consolidated onto one fresh CoinJoin address (see
-    /// `prepareCoinJoinInputs`). Either way the user is asked once: on the
-    /// direct path the coordinator runs its own PIN/biometric gate; on the
-    /// prepared path this model runs the same gate up front and the drain
-    /// runs `preauthorized`.
+    /// `prepareCoinJoinInputs`). Either way the user is asked once, up front;
+    /// the plan is made from the UTXO set read after the prompt, so coins that
+    /// arrive while it is open are planned for, and the drain runs
+    /// `preauthorized`.
     func moveToShielded() async {
         guard !isInFlight else { return }
         stage = .shielding
@@ -166,35 +166,13 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             coordinator.reset()
         }
 
-        let initial = SwiftDashSDKTransactionSender.coinJoinUtxoState()
-        let step = initial.map {
-            CoinJoinShieldPlanner.nextStep(utxoCount: $0.count, finalCount: $0.finalCount)
+        // Read before the prompt only to choose the checklist.
+        let initial = Self.plan()
+        Self.log("move to Shielded — before authorization: \(initial.description)")
+        if initial.needsPreparation {
+            preparation = .authorizing
         }
-        Self.log("move to Shielded — CoinJoin UTXOs n=\(initial?.count ?? -1) final=\(initial?.finalCount ?? -1) total=\(initial?.totalDuffs ?? 0) duffs, plan=\(step.map { String(describing: $0) } ?? "unknown")")
 
-        switch step {
-        case .consolidate?, .awaitFinality?:
-            await prepareThenDrain()
-        case .drain?, .nothingToMove?, nil:
-            // Unchanged direct path. An empty account or an unbound host is
-            // reported by the coordinator / SDK preflight exactly as before.
-            await coordinator.performAssetLock(funding: .coinJoinDrain)
-            finishFromCoordinatorPhase()
-        }
-    }
-
-    // MARK: Preparation (more than 50 mixed coins, or coins not yet final)
-
-    /// How long to wait for a consolidation's outputs (or any not-yet-final
-    /// CoinJoin UTXO) to become final. InstantSend normally locks within
-    /// seconds; past this the attempt stops with a retryable message rather
-    /// than hold the sheet open.
-    static let finalityTimeout: TimeInterval = 180
-
-    /// Authorize once, bring the CoinJoin account into a drainable shape, then
-    /// run the coordinator's drain without a second prompt.
-    private func prepareThenDrain() async {
-        preparation = .authorizing
         do {
             try await DWIdentityAuthorizer().authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
@@ -212,29 +190,70 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             return
         }
 
-        preparation = .preparingCoins
-        if let message = await prepareCoinJoinInputs() {
-            preparation = nil
-            SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
-            stage = .failed(message: message, destination: .shielded)
-            return
+        let current = Self.plan()
+        Self.log("move to Shielded — after authorization: \(current.description)")
+        if current.needsPreparation, let state = current.state {
+            preparation = .preparingCoins
+            if let message = await prepareCoinJoinInputs(state) {
+                preparation = nil
+                SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
+                stage = .failed(message: message, destination: .shielded)
+                return
+            }
+        }
+        if preparation != nil {
+            preparation = .done
         }
 
-        preparation = .done
+        // An empty account or an unbound host is reported by the coordinator /
+        // SDK preflight exactly as before.
         await DWIdentityAuthorizer.preauthorized { [self] in
             await coordinator.performAssetLock(funding: .coinJoinDrain)
         }
         finishFromCoordinatorPhase()
     }
 
+    /// The CoinJoin account's UTXO snapshot and the planner's verdict on it.
+    private struct Plan {
+        let state: SwiftDashSDKTransactionSender.CoinJoinUtxoState?
+        let step: CoinJoinShieldPlanner.Step?
+
+        var needsPreparation: Bool {
+            switch step {
+            case .consolidate?, .awaitFinality?: return true
+            case .drain?, .nothingToMove?, nil: return false
+            }
+        }
+
+        var description: String {
+            "CoinJoin UTXOs n=\(state?.count ?? -1) final=\(state?.finalCount ?? -1) total=\(state?.totalDuffs ?? 0) duffs, plan=\(step.map { String(describing: $0) } ?? "unknown")"
+        }
+    }
+
+    private static func plan() -> Plan {
+        let state = SwiftDashSDKTransactionSender.coinJoinUtxoState()
+        return Plan(
+            state: state,
+            step: state.map { CoinJoinShieldPlanner.nextStep(utxoCount: $0.count, finalCount: $0.finalCount) })
+    }
+
+    // MARK: Preparation (more than 50 mixed coins, or coins not yet final)
+
+    /// How long to wait for a consolidation's outputs (or any not-yet-final
+    /// CoinJoin UTXO) to become final. InstantSend normally locks within
+    /// seconds; past this the attempt stops with a retryable message rather
+    /// than hold the sheet open.
+    static let finalityTimeout: TimeInterval = 180
+
     /// Consolidate (when over the threshold) and wait for finality. Returns nil when
     /// the account is ready to drain, or the message to show otherwise.
     ///
-    /// One consolidation per attempt: if it is partial and the account is
-    /// still over the threshold afterwards, the attempt stops with a retryable
-    /// message, and the next attempt consolidates what is left together with
-    /// the outputs already made.
-    private func prepareCoinJoinInputs() async -> String? {
+    /// One consolidation per attempt: a partial one stops the attempt with a
+    /// retryable message, and the next attempt consolidates what is left
+    /// together with the outputs already made.
+    ///
+    /// - Parameter state: the UTXO set read after authorization.
+    private func prepareCoinJoinInputs(_ state: SwiftDashSDKTransactionSender.CoinJoinUtxoState) async -> String? {
         // Same execution-boundary check the coordinator makes for the drain:
         // the sweep is whole-account too, and a scan that restarted while the
         // prompt was open could still be discovering UTXOs.
@@ -242,12 +261,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             Self.log("move to Shielded — preparation refused, chain not synced")
             return ShieldedTransferCoordinator.CoordinatorError.coinJoinDrainRequiresSync.errorDescription
         }
-        guard let state = SwiftDashSDKTransactionSender.coinJoinUtxoState() else {
-            return Self.genericFailureMessage
-        }
-
         var consolidationTxids: [Data] = []
-        var consolidationPartial = false
         if CoinJoinShieldPlanner.nextStep(utxoCount: state.count, finalCount: state.finalCount) == .consolidate {
             do {
                 try WalletSendService.ensureOnline()
@@ -270,10 +284,25 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
                     try SwiftDashSDKTransactionSender.sweepCoinJoin(to: address)
                 }.value
                 consolidationTxids = outcome.txids
-                consolidationPartial = outcome.isPartial
                 Self.log("move to Shielded — consolidation broadcast \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) failed: \(outcome.txids.map(Self.displayHex).joined(separator: ","))\(outcome.firstFailure.map { " first failure: \(String(describing: $0))" } ?? "")")
+                // A chunk that failed may still have reached peers (an
+                // unconfirmed broadcast), and the wallet may not show its
+                // inputs as spent yet; a drain now could spend them a second
+                // time. Stop here; the next attempt plans from the UTXO set
+                // as the wallet reads it then.
+                if outcome.isPartial {
+                    Self.log("move to Shielded — partial consolidation, stopping before the drain")
+                    return NSLocalizedString(
+                        "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.",
+                        comment: "CoinJoin")
+                }
+            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(let txid, let reason) {
+                // The broadcast may have reached peers; a retry right away could
+                // spend the same coins again before the wallet sees it.
+                Self.log("move to Shielded — consolidation outcome unknown for \(txid): \(reason)")
+                return Self.preparingMessage
             } catch {
-                Self.log("move to Shielded — consolidation failed, nothing broadcast: \(String(describing: error))")
+                Self.log("move to Shielded — consolidation failed, nothing accepted: \(String(describing: error))")
                 return Self.genericFailureMessage
             }
             guard !consolidationTxids.isEmpty else {
@@ -307,9 +336,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             if !txids.isEmpty || after.finalCount == 0 {
                 // The consolidated coins are safe on their CoinJoin address;
                 // a later attempt drains them once they are final.
-                return NSLocalizedString(
-                    "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.",
-                    comment: "CoinJoin")
+                return Self.preparingMessage
             }
             // Direct path, some coins still unconfirmed: drain what is final,
             // exactly as before this preparation existed. The rest stays in
@@ -318,17 +345,19 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
 
         switch CoinJoinShieldPlanner.nextStep(utxoCount: after.count, finalCount: after.finalCount) {
         case .consolidate:
-            Self.log("move to Shielded — still n=\(after.count) UTXOs after consolidation (partial=\(consolidationPartial))")
-            return consolidationPartial
-                ? NSLocalizedString(
-                    "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.",
-                    comment: "CoinJoin")
-                : Self.genericFailureMessage
+            Self.log("move to Shielded — still n=\(after.count) UTXOs after consolidation")
+            return Self.genericFailureMessage
         case .nothingToMove:
             return Self.genericFailureMessage
         case .drain, .awaitFinality:
             return nil
         }
+    }
+
+    private static var preparingMessage: String {
+        NSLocalizedString(
+            "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.",
+            comment: "CoinJoin")
     }
 
     private static var genericFailureMessage: String {
