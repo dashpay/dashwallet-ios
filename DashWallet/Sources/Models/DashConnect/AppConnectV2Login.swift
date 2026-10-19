@@ -248,7 +248,8 @@ extension AppConnect {
     /// - a contract group must be owned by the owner of `appId`;
     /// - a contract, or a document type's contract, must be owned by that
     ///   owner, unless the document type is on the allowlist;
-    /// - `appId` must opt in to bounded keys of each encryption purpose asked.
+    /// - `appId` must keep a current bounded key (`Unique` or
+    ///   `MultipleReferenceToLatest`) of each encryption purpose asked.
     ///
     /// `groupOwners` and `contractOwners` map ids to owner ids; an id missing
     /// from them does not exist. Returns why the request is refused, or nil.
@@ -288,7 +289,7 @@ extension AppConnect {
         }
         for grant in plan.encryption where !appBoundedKeyPurposes.contains(grant.keyPurpose) {
             return Refusal(.invalid, NSLocalizedString(
-                "The app's contract does not take encryption keys bound to it.",
+                "The app's contract keeps no current encryption key bound to it.",
                 comment: "DashConnect App Connect v2"))
         }
         return nil
@@ -360,6 +361,18 @@ extension AppConnect {
         /// rotation, which orphans what peers encrypted to it; that is an
         /// explicit user action, never part of a login.
         case notThisWallets
+        /// The fetched keys and Platform's current key disagree: one of the
+        /// two reads is behind, and nothing can be said until both agree.
+        case outOfDate
+    }
+
+    /// Whether a contract's bounded-key requirement for a purpose keeps a
+    /// current key, which is what a login sends: `Unique` (0) and
+    /// `MultipleReferenceToLatest` (2) do; `Multiple` (1) and no requirement
+    /// do not.
+    static func keepsACurrentKey(_ requirement: Any?) -> Bool {
+        guard let number = requirement as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return false }
+        return number == 0 || number == 2
     }
 
     /// The key Platform names as the identity's current one for a contract
@@ -393,23 +406,38 @@ extension AppConnect {
             throw SDKError.serializationError("The contract keys response leaves out the identity's \(name) key")
         }
         if entry is NSNull { return nil }
+        // JSON numbers are read only when they are exact, so a value out
+        // of range is unreadable rather than wrapped.
+        func exact<Value: FixedWidthInteger>(_ value: Any?) -> Value? {
+            guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return nil }
+            let whole = number.int64Value
+            guard Double(whole) == number.doubleValue else { return nil }
+            return Value(exactly: whole)
+        }
         guard let key = entry as? [String: Any],
-              let keyId = (key["id"] as? NSNumber)?.uint32Value,
-              let type = (key["type"] as? NSNumber)?.uint8Value,
+              let keyId: UInt32 = exact(key["id"]),
+              let type: UInt8 = exact(key["type"]),
               let hex = key["data"] as? String, let bytes = AppConnect.data(fromHex: hex), !bytes.isEmpty else {
+            throw SDKError.serializationError("The contract keys response carries an unreadable \(name) key")
+        }
+        let disabledAt = key["disabled_at"]
+        guard disabledAt == nil || disabledAt is NSNull || (exact(disabledAt) as UInt64?) != nil else {
             throw SDKError.serializationError("The contract keys response carries an unreadable \(name) key")
         }
         return CurrentContractKey(
             keyId: keyId, keyType: KeyType(rawValue: type), data: bytes,
-            isDisabled: !(key["disabled_at"] is NSNull || key["disabled_at"] == nil))
+            isDisabled: !(disabledAt == nil || disabledAt is NSNull))
     }
 
     /// Rotation 0 only: the key at DIP-13 `7'` for (identity, contract,
     /// purpose). `currentKey` is the key Platform names as current for the
-    /// app's `MultipleReferenceToLatest` requirement; this wallet's key is
-    /// sent only while it is that one and live. A live key of the purpose
-    /// whose bound the wallet's store cannot place counts as the app's, so a
-    /// key of unknown origin is never shadowed by a second one.
+    /// app's `Unique` or `MultipleReferenceToLatest` requirement; this
+    /// wallet's key is sent only while it is that one and live. The fetched
+    /// keys must show that key as Platform does, and a key bound to the app
+    /// that Platform does not name means Platform's read is behind. A live
+    /// key of the purpose whose bound the wallet's store cannot place counts
+    /// as the app's, so a key of unknown origin is never shadowed by a
+    /// second one.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -418,18 +446,34 @@ extension AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> EncryptionKeyState {
-        if let currentKey, !currentKey.isDisabled {
-            guard currentKey.keyType == .ecdsaSecp256k1, currentKey.data == derivedPublicKey else {
-                return .notThisWallets
+        if let currentKey {
+            guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),
+                  fetched.purpose == purpose, fetched.data == currentKey.data,
+                  (fetched.disabledAt != nil) == currentKey.isDisabled else {
+                return .outOfDate
             }
-            return .current(keyId: currentKey.keyId)
+            if !currentKey.isDisabled {
+                guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
+                      currentKey.data == derivedPublicKey else {
+                    return .notThisWallets
+                }
+                return .current(keyId: currentKey.keyId)
+            }
         }
+        var placedOnTheApp = false
         let live = currentIdentityPublicKeys.filter { key in
             guard key.purpose == purpose, key.disabledAt == nil else { return false }
             let keyId = UInt32(bitPattern: key.keyId)
             guard let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                   !stored.hasUnreadableBound else { return true }
-            return stored.singleContractId == contractId
+            guard stored.singleContractId == contractId else { return false }
+            placedOnTheApp = true
+            return true
+        }
+        // Registering a key bound to the app makes it current, so a live one
+        // with no current key at all is a read from before it landed.
+        if currentKey == nil && placedOnTheApp {
+            return .outOfDate
         }
         if !live.isEmpty || currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey }) {
             return .notThisWallets

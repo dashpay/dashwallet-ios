@@ -6522,7 +6522,7 @@
 "The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
 "The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
 "The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
-"The app's contract does not take encryption keys bound to it." = "The app's contract does not take encryption keys bound to it.";
+"The app's contract keeps no current encryption key bound to it." = "The app's contract keeps no current encryption key bound to it.";
 "The app's contract has no readable owner." = "The app's contract has no readable owner.";
 "The sign-in request is dated in the future. Check this device's clock." = "The sign-in request is dated in the future. Check this device's clock.";
 "The sign-in request is more than 10 minutes old." = "The sign-in request is more than 10 minutes old.";

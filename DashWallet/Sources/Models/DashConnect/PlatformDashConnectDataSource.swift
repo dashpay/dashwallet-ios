@@ -782,10 +782,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let config = app["config"] as? [String: Any] ?? [:]
         var boundedKeyPurposes: Set<KeyPurpose> = []
-        if config["requiresIdentityEncryptionBoundedKey"].map({ !($0 is NSNull) }) == true {
+        if AppConnect.keepsACurrentKey(config["requiresIdentityEncryptionBoundedKey"]) {
             boundedKeyPurposes.insert(.encryption)
         }
-        if config["requiresIdentityDecryptionBoundedKey"].map({ !($0 is NSNull) }) == true {
+        if AppConnect.keepsACurrentKey(config["requiresIdentityDecryptionBoundedKey"]) {
             boundedKeyPurposes.insert(.decryption)
         }
         let refusal = AppConnect.ownershipRefusal(
@@ -1442,19 +1442,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // wallet made it, register it when there is none, leave it out when
         // another wallet made it. Which key is current is Platform's to say:
         // the app's verifier checks the slot against the same proved read.
-        var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
-        for (index, grant) in plan.encryption.enumerated() {
-            let contractKeys = try await DashConnectPlatformQueries.identityContractKeys(
+        var contractKeys: [Data: [String: Any]] = [:]
+        for contractId in Set(plan.encryption.map(\.binding.contractId)) {
+            let purposes = Set(plan.encryption.filter { $0.binding.contractId == contractId }.map(\.keyPurpose))
+            contractKeys[contractId] = try await DashConnectPlatformQueries.identityContractKeys(
                 sdk: context.sdk,
                 identityId: identityId,
-                contractId: grant.binding.contractId.toBase58String(),
-                purposes: [grant.keyPurpose])
+                contractId: contractId.toBase58String(),
+                purposes: purposes.sorted { $0.rawValue < $1.rawValue })
+        }
+        var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
+        for (index, grant) in plan.encryption.enumerated() {
             switch AppConnect.encryptionKeyState(
                 derivedPublicKey: encryptionKeys[index].publicKey,
                 purpose: grant.keyPurpose,
                 contractId: grant.binding.contractId,
                 currentKey: try AppConnect.currentContractKey(
-                    from: contractKeys, identityId: identityId, purpose: grant.keyPurpose),
+                    from: contractKeys[grant.binding.contractId] ?? [:], identityId: identityId, purpose: grant.keyPurpose),
                 currentIdentityPublicKeys: currentPublicKeys,
                 bindings: bindings
             ) {
@@ -1464,6 +1468,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 encryptionSlots.append((index, nil))
             case .notThisWallets:
                 Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's; slot left out")
+            case .outOfDate:
+                Self.logger.error("🔗 DASHCONNECT :: the identity's keys and Platform's current encryption key disagree")
+                throw DashConnectPlatformError.identityKeysOutOfDate
             }
         }
 
