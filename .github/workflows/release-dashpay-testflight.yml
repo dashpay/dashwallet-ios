@@ -227,15 +227,21 @@ jobs:
           fi
           # checkout fails on an unknown ref (an abbreviated SHA, a typo) only
           # after a full-history fetch, so anything but a full SHA must name a
-          # branch or tag.
+          # branch or tag exactly. ls-remote patterns match name suffixes, so
+          # the returned names are compared exactly.
           if [[ -n "$ref" && ! "$ref" =~ ^[0-9a-fA-F]{40}$ ]]; then
-            status=0
-            git ls-remote --exit-code https://github.com/dashpay/platform "$ref" > /dev/null || status=$?
-            if [[ "$status" -eq 2 ]]; then
-              echo "::error::platform_ref '$ref' is not a dashpay/platform branch or tag; a commit needs its full 40-hex SHA"
+            if [[ "$ref" == refs/* ]]; then
+              candidates=("$ref")
+            else
+              candidates=("refs/heads/$ref" "refs/tags/$ref")
+            fi
+            if ! listed=$(git ls-remote https://github.com/dashpay/platform "${candidates[@]}"); then
+              echo "::error::could not look up platform_ref '$ref' in dashpay/platform"
               exit 1
-            elif [[ "$status" -ne 0 ]]; then
-              echo "::error::could not look up platform_ref '$ref' in dashpay/platform (git ls-remote exit $status)"
+            fi
+            found=$(printf '%s\n' "$listed" | awk -v a="${candidates[0]}" -v b="${candidates[1]:-}" '$2 == a || $2 == b { print $2; exit }')
+            if [[ -z "$found" ]]; then
+              echo "::error::platform_ref '$ref' is not a dashpay/platform branch or tag; a commit needs its full 40-hex SHA"
               exit 1
             fi
           fi
