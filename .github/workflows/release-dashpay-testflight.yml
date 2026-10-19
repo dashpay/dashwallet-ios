@@ -222,22 +222,28 @@ jobs:
           set -euo pipefail
           ref=$(printf '%s' "$REQUESTED_PLATFORM_REF" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           if [[ "$ref" =~ [[:space:]] ]]; then
-            echo "::error::platform_ref must be a single branch, tag or SHA, got '$ref'"
+            echo "::error::platform_ref must be a single branch, tag or SHA without whitespace"
             exit 1
           fi
-          # checkout cannot resolve an abbreviated SHA, and fails only after a
-          # full-history fetch; a hex-named branch or tag is still accepted.
-          if [[ "$ref" =~ ^[0-9a-fA-F]{7,39}$ ]] &&
-             ! git ls-remote --exit-code https://github.com/dashpay/platform "refs/heads/$ref" "refs/tags/$ref" > /dev/null; then
-            echo "::error::platform_ref '$ref' looks like an abbreviated SHA; checkout needs the full 40-hex SHA"
-            exit 1
-          fi
-          pin=""
-          if [[ -e .platform-ref || -L .platform-ref ]]; then
-            if [[ -L .platform-ref || ! -f .platform-ref ]]; then
-              echo "::error file=.platform-ref::.platform-ref must be a regular file, not a symlink or directory"
+          # checkout fails on an unknown ref (an abbreviated SHA, a typo) only
+          # after a full-history fetch, so anything but a full SHA must name a
+          # branch or tag.
+          if [[ -n "$ref" && ! "$ref" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            status=0
+            git ls-remote --exit-code https://github.com/dashpay/platform "$ref" > /dev/null || status=$?
+            if [[ "$status" -eq 2 ]]; then
+              echo "::error::platform_ref '$ref' is not a dashpay/platform branch or tag; a commit needs its full 40-hex SHA"
+              exit 1
+            elif [[ "$status" -ne 0 ]]; then
+              echo "::error::could not look up platform_ref '$ref' in dashpay/platform (git ls-remote exit $status)"
               exit 1
             fi
+          fi
+          pin=""
+          if [[ -L .platform-ref ]] || { [[ -e .platform-ref ]] && [[ ! -f .platform-ref ]]; }; then
+            echo "::error file=.platform-ref::.platform-ref must be a regular file, not a symlink or directory"
+            exit 1
+          elif [[ -f .platform-ref ]]; then
             pin=$(tr -d '[:space:]' < .platform-ref)
             if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
               echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
