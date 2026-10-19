@@ -201,12 +201,12 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
             Self.parsed(.identityUpdate(try wallet.parseIdentityUpdateTransition(bytes)))
         }
-        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
-            return XCTFail("Expected a key-registration transition")
+        // Key 18 of both fixtures is read-only, which a login key never is.
+        XCTAssertEqual(tagged.addPublicKeys.map(\.readOnly), [false, true])
+        XCTAssertEqual(tagless.addPublicKeys.map(\.readOnly), [false, true])
+        XCTAssertThrowsError(try appParser.parse(taglessBytes)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
         }
-        XCTAssertEqual(appTransition.identityId, tagged.identityId)
-        XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
-        XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
     }
 
     func testParserMapsATokenPurchaseTransition() throws {
@@ -245,38 +245,32 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testProductionParserAcceptsRealAndFixtureKeyRegistrations() throws {
+    func testProductionParserAcceptsARealKeyRegistrationAndRefusesAReadOnlyKey() throws {
         let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
         let parser = PlatformWalletDashConnectStateTransitionParser { bytes in
             try wallet.parseStateTransition(bytes)
         }
-        let payloads: [(String, Data)] = [
-            ("real dApp", try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex))),
+        let real = try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex))
+        guard case let .keyRegistration(registration) = try parser.parse(real) else {
+            return XCTFail("Expected a key-registration transition")
+        }
+        XCTAssertEqual(registration.addPublicKeys.map(\.keyId), [6, 7])
+
+        // Both synthetic fixtures add a read-only key 18.
+        let fixtures: [(String, Data)] = [
             ("tagged", try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))),
             ("tagless", try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64))),
         ]
-        for (name, bytes) in payloads {
-            guard case .keyRegistration = try parser.parse(bytes) else {
-                return XCTFail("Expected a key-registration transition: \(name)")
+        for (name, bytes) in fixtures {
+            XCTAssertThrowsError(try parser.parse(bytes), name) {
+                XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation, name)
             }
         }
     }
 
-    func testParserKeepsAReadOnlyKeyReadOnly() throws {
-        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            Self.parsed(.identityUpdate(.init(
-                identityId: Data(repeating: 0x21, count: 32),
-                addPublicKeys: [Self.loginKey(readOnly: true)],
-                disablePublicKeyIds: [])))
-        }
-        guard case let .keyRegistration(registration) = try parser.parse(Data([0])) else {
-            return XCTFail("Expected a key-registration transition")
-        }
-        XCTAssertEqual(registration.addPublicKeys.map(\.readOnly), [true])
-    }
-
-    func testParserRefusesKeysWhoseLimitsTheRegistrationWouldDrop() {
+    func testParserRefusesReadOnlyOrLimitedKeys() {
         let restricted: [(String, ManagedPlatformWallet.IdentityPubkey)] = [
+            ("read-only", Self.loginKey(readOnly: true)),
             ("a budget", Self.loginKey(totalBudget: 1)),
             ("an expiry", Self.loginKey(expiresAt: 1)),
         ]
@@ -592,8 +586,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: transition.addPublicKeys[0].purpose,
                     securityLevel: transition.addPublicKeys[0].securityLevel,
                     publicKeyData: try KeyExchangeCrypto.hash160(attackerPublicKey),
-                    contractBounds: transition.addPublicKeys[0].contractBounds,
-                    readOnly: false
+                    contractBounds: transition.addPublicKeys[0].contractBounds
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -691,8 +684,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: authPublicKey,
-                    contractBounds: nil,
-                    readOnly: false
+                    contractBounds: nil
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -741,8 +733,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: authPublicKey,
-                    contractBounds: nil,
-                    readOnly: false
+                    contractBounds: nil
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -1191,8 +1182,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: try KeyExchangeCrypto.hash160(authPublicKey),
-                    contractBounds: nil,
-                    readOnly: false
+                    contractBounds: nil
                 ),
                 DashConnectKeyRegistrationKey(
                     keyId: 7,
@@ -1200,8 +1190,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .encryption,
                     securityLevel: .medium,
                     publicKeyData: try Secp256k1.compressedPublicKey(privateKey: encryptionPrivateKey),
-                    contractBounds: nil,
-                    readOnly: false
+                    contractBounds: nil
                 ),
             ],
             disablePublicKeyIds: []

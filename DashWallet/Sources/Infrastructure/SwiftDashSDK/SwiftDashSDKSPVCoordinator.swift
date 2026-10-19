@@ -557,18 +557,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .success(())
         }
 
-        // A client this coordinator started that no longer runs (its
-        // background sync failed) is still held by the SDK, and `startSpv`
-        // refuses to start over it. Tear it down first.
-        if runningNetwork != nil {
-            Self.logger.info("🛰️ SPVCOORD :: started client is not running; stopping it before a fresh start")
-            do {
-                try await performStop(lastError: nil, clearBalance: false)
-            } catch {
-                return .failure(error)
-            }
-        }
-
         guard network != .regtest else {
             return .failure(StartError.dataDirectory(HostUnsupportedNetwork(network: network)))
         }
@@ -738,23 +726,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// through the SDK's async `stopSpv()`. Subscriptions are detached before
     /// that wait, and the runtime's lifecycle queue keeps any start behind
     /// this stop.
-    /// Whether a stop must tear down the SDK's SPV client. `isSpvRunning()`
-    /// turns false once background sync has failed, while the SDK still holds
-    /// the client until it is stopped; a client this coordinator started is
-    /// therefore stopped whether or not it still reports running.
-    static func needsClientStop(startedHere: Bool, reportsRunning: Bool) -> Bool {
-        startedHere || reportsRunning
-    }
-
     @MainActor
     private func performStop(lastError: String?, clearBalance: Bool) async throws {
         detachManagerSubscriptions()
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
-                if Self.needsClientStop(
-                    startedHere: runningNetwork != nil,
-                    reportsRunning: try manager.isSpvRunning()) {
+                // `isSpvRunning()` turns false once background sync has failed,
+                // while the SDK holds the client until it is stopped, so a
+                // client this coordinator started is stopped either way.
+                if try (runningNetwork != nil || manager.isSpvRunning()) {
                     try await manager.stopSpv()
                 }
                 Self.logger.info("🛰️ SPVCOORD :: stopped")

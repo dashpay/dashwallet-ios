@@ -167,7 +167,6 @@ struct DashConnectKeyRegistrationKey: Equatable {
     let securityLevel: SecurityLevel
     let publicKeyData: Data
     let contractBounds: ContractBounds?
-    let readOnly: Bool
 }
 
 struct DashConnectKeyRegistrationTransition: Equatable {
@@ -246,11 +245,13 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
                     addPublicKeys: try parsed.addPublicKeys.map { key in
-                        // `DashConnectKeyRegistrationKey` has no budget or expiry,
-                        // and the approval rebuilds the key from it, so a key
-                        // carrying either would be registered without that
-                        // limit. The login keys this flow derives carry neither.
-                        guard key.totalBudget == nil, key.expiresAt == nil else {
+                        // The login keys this flow derives are never read-only and
+                        // carry no budget or expiry. A read-only key could never
+                        // be disabled, so a disconnect could not revoke it, and
+                        // `DashConnectKeyRegistrationKey` has no budget or expiry
+                        // to rebuild the key with; the approval sheet shows none
+                        // of the three. Refuse a key that sets any of them.
+                        guard !key.readOnly, key.totalBudget == nil, key.expiresAt == nil else {
                             throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                         }
                         return DashConnectKeyRegistrationKey(
@@ -281,8 +282,7 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                     // this flow derives, so refuse the transition instead.
                                     throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
-                            },
-                            readOnly: key.readOnly
+                            }
                         )
                     },
                     disablePublicKeyIds: parsed.disablePublicKeyIds
@@ -1474,7 +1474,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             purpose: key.purpose,
             securityLevel: key.securityLevel,
             pubkeyBytes: key.publicKeyData,
-            readOnly: key.readOnly,
             contractBounds: key.contractBounds.map {
                 switch $0 {
                 case .singleContract(let id):
