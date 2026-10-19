@@ -29,6 +29,15 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertTrue(outcome.identitiesPersisted)
     }
 
+    func testStopTearsDownAStartedClientEvenAfterItsSyncFailed() {
+        // The SDK reports a client whose background sync failed as not
+        // running, but still holds it until it is stopped.
+        XCTAssertTrue(SwiftDashSDKSPVCoordinator.needsClientStop(startedHere: true, reportsRunning: false))
+        XCTAssertTrue(SwiftDashSDKSPVCoordinator.needsClientStop(startedHere: true, reportsRunning: true))
+        XCTAssertTrue(SwiftDashSDKSPVCoordinator.needsClientStop(startedHere: false, reportsRunning: true))
+        XCTAssertFalse(SwiftDashSDKSPVCoordinator.needsClientStop(startedHere: false, reportsRunning: false))
+    }
+
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
         var restartingStates: [Bool] = []
