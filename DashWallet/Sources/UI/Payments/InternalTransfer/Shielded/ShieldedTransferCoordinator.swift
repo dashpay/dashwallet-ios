@@ -523,8 +523,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .locking
         let result = await env.manager.shieldedFundFromWalletDrain(
             walletId: env.walletId, operationId: operation.id,
-            recipients: [ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: env.shieldedRecipient, credits: nil)])
+            recipientRaw43: env.shieldedRecipient)
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
