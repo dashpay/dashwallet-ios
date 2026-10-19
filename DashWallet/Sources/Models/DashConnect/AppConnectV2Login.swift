@@ -606,17 +606,17 @@ extension AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> EncryptionKeyState {
-        // The live keys of the purpose besides the current one: placed on
-        // the app by the store, or not placed at all.
-        var placedOnTheApp = false
+        // The keys of the purpose besides the current one: placed on the app
+        // by the store, in any state, or live and not placed at all.
+        var placedInAnyState = false
         var unplaced = false
-        for key in currentIdentityPublicKeys where key.purpose == purpose && key.disabledAt == nil
+        for key in currentIdentityPublicKeys where key.purpose == purpose
             && UInt32(bitPattern: key.keyId) != currentKey?.keyId {
             let keyId = UInt32(bitPattern: key.keyId)
             if let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                !stored.hasUnreadableBound {
-                if stored.singleContractId == contractId { placedOnTheApp = true }
-            } else {
+                if stored.singleContractId == contractId { placedInAnyState = true }
+            } else if key.disabledAt == nil {
                 unplaced = true
             }
         }
@@ -626,12 +626,6 @@ extension AppConnect {
             // the store places on the app with no current key at all, live or
             // disabled, or this wallet's key in any state (it is derived for
             // the app's contract), is a read from before it landed.
-            let placedInAnyState = currentIdentityPublicKeys.contains { key in
-                key.purpose == purpose && bindings.contains {
-                    $0.keyId == UInt32(bitPattern: key.keyId) && $0.data == key.data
-                        && !$0.hasUnreadableBound && $0.singleContractId == contractId
-                }
-            }
             if placedInAnyState || holdsTheDerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
@@ -640,9 +634,10 @@ extension AppConnect {
               (fetched.disabledAt != nil) == currentKey.isDisabled else {
             return .outOfDate
         }
-        // Under `latest`, a live key of the app's beside the current one was
-        // registered before it, or after it and Platform's read is behind.
-        let mayBeBehind = rule == .latest && (placedOnTheApp || unplaced)
+        // Under `latest`, a key of the app's beside the current one, live or
+        // disabled, was registered before it, or after it and Platform's read
+        // is behind.
+        let mayBeBehind = rule == .latest && (placedInAnyState || unplaced)
         if !currentKey.isDisabled {
             guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
                   currentKey.data == derivedPublicKey else {

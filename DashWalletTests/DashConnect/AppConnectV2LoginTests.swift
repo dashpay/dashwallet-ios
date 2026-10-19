@@ -650,6 +650,11 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             encryptionState([mine, other], current: Self.current(9, data: other.data), bindings: bindings),
             .notThisWalletsIfSettled)
+        // So does a disabled one: it may be the key registered last.
+        let disabledOther = Self.encryptionKey(9, data: other.data, disabled: true)
+        XCTAssertEqual(
+            encryptionState([mine, disabledOther], current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .currentIfSettled(keyId: 5))
         // Under `unique` there is no second key of the app's to wait on.
         XCTAssertEqual(
             encryptionState([mine, other], rule: .unique, current: Self.current(5, data: Self.derivedPoint), bindings: bindings),

@@ -89,7 +89,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case appConnectEncryptionKeyChanged
     case appConnectKeysOutOfDate
     case appConnectKeysUnreadable
-    case appConnectKeysUnsupported
     case registrationPendingOnAnotherIdentity
     case walletChanged
     case ephemeralKeyGenerationFailed
@@ -174,10 +173,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .appConnectKeysUnreadable:
             return NSLocalizedString(
                 "The wallet could not read your identity's encryption key for this app from the network. Try again.",
-                comment: "DashConnect App Connect v2")
-        case .appConnectKeysUnsupported:
-            return NSLocalizedString(
-                "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
                 comment: "DashConnect App Connect v2")
         case .appConnectEncryptionKeyChanged:
             return NSLocalizedString(
@@ -1499,9 +1494,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             if let sdkError = error as? SDKError, case .serializationError = sdkError { return true }
             return false
         }
-        func failedRead(_ error: Error) -> DashConnectPlatformError {
+        // An answer this build cannot read is a refusal the app hears as
+        // `unsupported`, like a contract it cannot read.
+        func failedRead(_ error: Error) -> Error {
             Self.logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(error.localizedDescription, privacy: .public)")
-            return isUnreadableAnswer(error) ? .appConnectKeysUnsupported : .appConnectKeysUnreadable
+            guard isUnreadableAnswer(error) else { return DashConnectPlatformError.appConnectKeysUnreadable }
+            return AppConnect.Refusal(.unsupported, NSLocalizedString(
+                "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
+                comment: "DashConnect App Connect v2"))
         }
         // A node one block behind has usually caught up within a second;
         // one that has not gets longer.
@@ -1555,6 +1555,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 isFinal: isUnreadableAnswer)
         } catch let error as DashConnectPlatformError {
             throw error
+        } catch let refusal as AppConnect.Refusal {
+            throw refusal
         } catch {
             throw failedRead(error)
         }
@@ -1637,9 +1639,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if !add.isEmpty || !disable.isEmpty {
             Self.logger.info(
                 "🔗 DASHCONNECT :: registering \(add.count, privacy: .public) key(s), disabling \(disable.count, privacy: .public)")
-            // The reads above can take seconds: an approval cancelled in the
-            // meantime registers nothing.
-            try Task.checkCancellation()
             do {
                 try await signer.withAdditionalSigningKeys(signingKeys) {
                     try await context.wallet.updateIdentity(
