@@ -377,21 +377,35 @@ final class SwiftDashSDKHost {
     /// `ShieldFromAssetLock` (version 1 only at v14) failed with 10603 and
     /// left its asset lock unspent. An explicit pin, rather than auto-detect,
     /// keeps a shielded build from running before the SDK has ratcheted up to
-    /// the network version.
+    /// the network version. A pinned SDK never ratchets
+    /// (`refreshProtocolVersion()` is a no-op while pinned), so the pin has to
+    /// be bumped by hand on the next testnet activation.
     ///
-    /// **Mainnet and devnet use `0` — auto-detect** (regtest falls through to
-    /// `0` too, but `makeRuntime` rejects it). The SDK seeds at its
-    /// per-network `min_protocol_version` floor and ratchets up as the network
-    /// reports newer versions, rather than a hard pin that can sit ahead of the
-    /// network: a v13 pin while mainnet ran v12 misread its compacted
-    /// address-balance proofs ("compacted address balance proof contains
-    /// trailing bytes"). `refreshProtocolVersion()` is a no-op while pinned.
+    /// **Mainnet and devnet use `0` — auto-detect.** The SDK seeds at its
+    /// per-network `min_protocol_version` floor (13 on mainnet) and moves up
+    /// only when a proved response carries a newer version, so it follows a
+    /// mainnet activation to any protocol the linked SDK carries without an
+    /// app release. The floor must not sit
+    /// above the network: a client ahead of the network misreads its proofs (a
+    /// v13 pin while mainnet ran v12 failed with "compacted address balance
+    /// proof contains trailing bytes"). Devnet's floor is 14, built from the
+    /// linked SDK's v14, which a devnet cut from another release may not run.
+    /// TODO(protocol-refresh): the app never calls `refreshProtocolVersion()`,
+    /// so until the first proved read an auto-detect SDK builds transitions at
+    /// its floor.
+    ///
+    /// **Regtest** returns `0` only to keep the switch exhaustive;
+    /// `makeRuntime` rejects it before an SDK is built.
     ///
     /// The pin only names a version; its rules come from the linked SDK.
     /// platform v4.2-dev carries a pre-release v14 whose `ShieldFromAssetLock`
-    /// is still version 0, so testnet needs an SDK from v5.0-dev or later.
+    /// is still version 0. Testnet runs 5.0.0-rc.4; link that release, or a
+    /// later commit with the same `v14.rs`.
     static func platformVersion(for network: Network) -> UInt32 {
-        network == .testnet ? 14 : 0
+        switch network {
+        case .testnet: return 14
+        case .mainnet, .devnet, .regtest: return 0
+        }
     }
 
     // MARK: - Wallet presence
