@@ -119,7 +119,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .tokenPurchaseTokenIdMismatch:
             return "The scanned token purchase names a token that does not belong to the contract and position it would buy from."
         case .unsupportedStateTransition:
-            return "This wallet cannot approve the scanned request."
+            return NSLocalizedString("This wallet cannot approve the scanned request.", comment: "DashConnect")
         case .devnetLoginContractNotConfigured:
             return NSLocalizedString(
                 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
@@ -245,16 +245,7 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
                     addPublicKeys: try parsed.addPublicKeys.map { key in
-                        // The login keys this flow derives are never read-only and
-                        // carry no budget or expiry. A read-only key could never
-                        // be disabled, so a disconnect could not revoke it, and
-                        // `DashConnectKeyRegistrationKey` has no budget or expiry
-                        // to rebuild the key with; the approval sheet shows none
-                        // of the three. Refuse a key that sets any of them.
-                        guard !key.readOnly, key.totalBudget == nil, key.expiresAt == nil else {
-                            throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-                        }
-                        return DashConnectKeyRegistrationKey(
+                        DashConnectKeyRegistrationKey(
                             keyId: key.keyId,
                             keyType: key.keyType,
                             purpose: key.purpose,

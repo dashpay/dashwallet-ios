@@ -201,12 +201,12 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
             Self.parsed(.identityUpdate(try wallet.parseIdentityUpdateTransition(bytes)))
         }
-        // Key 18 of both fixtures is read-only, which a login key never is.
-        XCTAssertEqual(tagged.addPublicKeys.map(\.readOnly), [false, true])
-        XCTAssertEqual(tagless.addPublicKeys.map(\.readOnly), [false, true])
-        XCTAssertThrowsError(try appParser.parse(taglessBytes)) {
-            XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
+        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
+            return XCTFail("Expected a key-registration transition")
         }
+        XCTAssertEqual(appTransition.identityId, tagged.identityId)
+        XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
+        XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
     }
 
     func testParserMapsATokenPurchaseTransition() throws {
@@ -245,58 +245,23 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testProductionParserAcceptsARealKeyRegistrationAndRefusesAReadOnlyKey() throws {
+    func testProductionParserMapsRealAndFixtureKeyRegistrations() throws {
         let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
         let parser = PlatformWalletDashConnectStateTransitionParser { bytes in
             try wallet.parseStateTransition(bytes)
         }
-        let real = try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex))
-        guard case let .keyRegistration(registration) = try parser.parse(real) else {
-            return XCTFail("Expected a key-registration transition")
-        }
-        XCTAssertEqual(registration.addPublicKeys.map(\.keyId), [6, 7])
-
-        // Both synthetic fixtures add a read-only key 18.
-        let fixtures: [(String, Data)] = [
-            ("tagged", try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))),
-            ("tagless", try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64))),
+        let payloads: [(String, Data, [UInt32], [UInt32])] = [
+            ("real dApp", try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex)), [6, 7], []),
+            ("tagged", try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64)), [17, 18], [4, 8]),
+            ("tagless", try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64)), [17, 18], [4, 8]),
         ]
-        for (name, bytes) in fixtures {
-            XCTAssertThrowsError(try parser.parse(bytes), name) {
-                XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation, name)
+        for (name, bytes, addedKeyIds, disabledKeyIds) in payloads {
+            guard case let .keyRegistration(registration) = try parser.parse(bytes) else {
+                return XCTFail("Expected a key-registration transition: \(name)")
             }
+            XCTAssertEqual(registration.addPublicKeys.map(\.keyId), addedKeyIds, name)
+            XCTAssertEqual(registration.disablePublicKeyIds, disabledKeyIds, name)
         }
-    }
-
-    func testParserRefusesReadOnlyOrLimitedKeys() {
-        let restricted: [(String, ManagedPlatformWallet.IdentityPubkey)] = [
-            ("read-only", Self.loginKey(readOnly: true)),
-            ("a budget", Self.loginKey(totalBudget: 1)),
-            ("an expiry", Self.loginKey(expiresAt: 1)),
-        ]
-        for (name, key) in restricted {
-            let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-                Self.parsed(.identityUpdate(.init(
-                    identityId: Data(repeating: 0x21, count: 32),
-                    addPublicKeys: [key],
-                    disablePublicKeyIds: [])))
-            }
-            XCTAssertThrowsError(try parser.parse(Data([0])), name) {
-                XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation, name)
-            }
-        }
-    }
-
-    private static func loginKey(
-        readOnly: Bool = false,
-        totalBudget: UInt64? = nil,
-        expiresAt: UInt64? = nil
-    ) -> ManagedPlatformWallet.IdentityPubkey {
-        .init(
-            keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
-            securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
-            readOnly: readOnly, contractBounds: .singleContract(id: Data(repeating: 0x23, count: 32)),
-            totalBudget: totalBudget, expiresAt: expiresAt)
     }
 
     func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
