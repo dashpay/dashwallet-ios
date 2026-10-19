@@ -245,6 +245,49 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
+    func testParserKeepsAReadOnlyKeyReadOnly() throws {
+        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+            Self.parsed(.identityUpdate(.init(
+                identityId: Data(repeating: 0x21, count: 32),
+                addPublicKeys: [Self.loginKey(readOnly: true)],
+                disablePublicKeyIds: [])))
+        }
+        guard case let .keyRegistration(registration) = try parser.parse(Data([0])) else {
+            return XCTFail("Expected a key-registration transition")
+        }
+        XCTAssertEqual(registration.addPublicKeys.map(\.readOnly), [true])
+    }
+
+    func testParserRefusesKeysWhoseLimitsTheRegistrationWouldDrop() {
+        let restricted: [(String, ManagedPlatformWallet.IdentityPubkey)] = [
+            ("a budget", Self.loginKey(totalBudget: 1)),
+            ("an expiry", Self.loginKey(expiresAt: 1)),
+        ]
+        for (name, key) in restricted {
+            let parser = PlatformWalletDashConnectStateTransitionParser { _ in
+                Self.parsed(.identityUpdate(.init(
+                    identityId: Data(repeating: 0x21, count: 32),
+                    addPublicKeys: [key],
+                    disablePublicKeyIds: [])))
+            }
+            XCTAssertThrowsError(try parser.parse(Data([0])), name) {
+                XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation, name)
+            }
+        }
+    }
+
+    private static func loginKey(
+        readOnly: Bool = false,
+        totalBudget: UInt64? = nil,
+        expiresAt: UInt64? = nil
+    ) -> ManagedPlatformWallet.IdentityPubkey {
+        .init(
+            keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
+            securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
+            readOnly: readOnly, contractBounds: .singleContract(id: Data(repeating: 0x23, count: 32)),
+            totalBudget: totalBudget, expiresAt: expiresAt)
+    }
+
     func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
         let ownerId = Data(repeating: 0x21, count: 32)
         let contractId = Data(repeating: 0x22, count: 32)
@@ -258,7 +301,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             ])))),
             ("an incomplete row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
                 Self.tokenRow(contractId: contractId, tokenId: tokenId, complete: false)
-            ])))),
+            ])), complete: false)),
             ("an incomplete transition", Self.parsed(
                 .batch(.init(ownerId: ownerId, transitions: [purchase])), complete: false)),
             ("a missing price", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [

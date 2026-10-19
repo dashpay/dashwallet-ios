@@ -167,6 +167,7 @@ struct DashConnectKeyRegistrationKey: Equatable {
     let securityLevel: SecurityLevel
     let publicKeyData: Data
     let contractBounds: ContractBounds?
+    var readOnly = false
 }
 
 struct DashConnectKeyRegistrationTransition: Equatable {
@@ -237,7 +238,7 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
         // An incomplete summary carries fields the typed rows leave out, and
         // the approval rebuilds the transition from those rows alone.
         guard transition.complete else {
-            throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
+            throw Self.unsupported(transition)
         }
         switch transition.kind {
         case .identityUpdate(let parsed):
@@ -245,7 +246,14 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                 DashConnectKeyRegistrationTransition(
                     identityId: parsed.identityId,
                     addPublicKeys: try parsed.addPublicKeys.map { key in
-                        DashConnectKeyRegistrationKey(
+                        // `DashConnectKeyRegistrationKey` has no budget or expiry,
+                        // and the approval rebuilds the key from it, so a key
+                        // carrying either would be registered without that
+                        // limit. The login keys this flow derives carry neither.
+                        guard key.totalBudget == nil, key.expiresAt == nil else {
+                            throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
+                        }
+                        return DashConnectKeyRegistrationKey(
                             keyId: key.keyId,
                             keyType: key.keyType,
                             purpose: key.purpose,
@@ -273,28 +281,25 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                                     // this flow derives, so refuse the transition instead.
                                     throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
                                 }
-                            }
+                            },
+                            readOnly: key.readOnly
                         )
                     },
                     disablePublicKeyIds: parsed.disablePublicKeyIds
                 )
             )
         case .batch(let batch):
-            // The SDK now describes every batch, where it used to refuse all
-            // but a lone token direct purchase. The approval sheet and the
-            // rebuild in `approveTokenPurchase` still cover exactly that one
-            // case, so everything else is refused here: more than one row
-            // would be signed without being shown. The SDK marks a batch
-            // complete only when every row is, so `row.complete` repeats the
-            // guard above for this one row; it stays as a check that does not
-            // rely on that rule.
+            // The approval sheet and the rebuild in `approveTokenPurchase`
+            // cover one batch only: a lone token direct purchase. Any other
+            // batch is refused, since its other rows would be signed without
+            // being shown. Row completeness is covered by the guard above:
+            // the SDK marks a batch complete only when every row is.
             guard batch.transitions.count == 1,
                   case .token(let row) = batch.transitions[0],
                   row.action == Self.tokenDirectPurchaseAction,
-                  row.complete,
                   let tokenCount = row.tokenCount,
                   let totalAgreedPrice = row.amount else {
-                throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
+                throw Self.unsupported(transition)
             }
             return .tokenPurchase(
                 DashConnectTokenPurchaseTransition(
@@ -307,8 +312,18 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                 )
             )
         case .creditTransfer, .dataContractCreate, .dataContractUpdate, .other:
-            throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
+            throw Self.unsupported(transition)
         }
+    }
+
+    /// The refusal for a transition this flow cannot approve. The user sees a
+    /// generic message; the log keeps which kind was refused.
+    private static func unsupported(
+        _ transition: ManagedPlatformWallet.ParsedStateTransition
+    ) -> DashConnectPlatformError {
+        DWLogger.log(
+            "DashConnect refused a scanned transition: \(transition.kindName), complete=\(transition.complete)")
+        return .unsupportedStateTransition(transition.kindName)
     }
 
     /// rs-dpp's action name for a token direct purchase, as the SDK reports
@@ -1457,6 +1472,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             purpose: key.purpose,
             securityLevel: key.securityLevel,
             pubkeyBytes: key.publicKeyData,
+            readOnly: key.readOnly,
             contractBounds: key.contractBounds.map {
                 switch $0 {
                 case .singleContract(let id):
