@@ -27,7 +27,8 @@ import DashUIKit
 ///   Convert: `Data(hex: order.id).map { Data($0.reversed()) }`.
 /// - **Buy**: the incoming Dash tx assigned to the order by
 ///   `SwapBuyTransactionMatcher.payoutResolution` — the tx the order names as its payout
-///   (`outboundTxHash`) when that tx fits it; for an order that names none, a match by
+///   (`outboundTxHash`) when that tx is a receive at the order's address, whatever its
+///   amount (`SwapOrder.namesItsPayout`); for an order that names none, a match by
 ///   address + time + approximate amount, one order per transaction; none while it is not
 ///   settled which of several orders a tx belongs to. Return that tx's `txHashData`.
 ///   Re-resolves on `SwiftDashSDKWalletState.balanceDidChangeNotification` so a buy that

@@ -645,6 +645,48 @@ final class BuySwapOrderTests: XCTestCase {
         XCTAssertTrue(shared.unshared.isEmpty)
     }
 
+    func testANamedPayoutFarOffTheQuoteIsStillTheOrders() {
+        // The provider named the payout, and it paid 10 % more than quoted: the deposit was
+        // larger, or the rate moved while the deposit waited. The hash says which it is.
+        let named = String(repeating: "a", count: 64)
+        let order = buyOrder(
+            id: "0xa", status: .completed, depositSeenSecondsAgo: 7_200, finalisedSecondsAgo: 3_600,
+            createdSecondsAgo: 86_400, payoutHash: named)
+        XCTAssertTrue(order.namesItsPayout)
+        let offQuote = payout(named, secondsAgo: 3_600, duffs: 276_100_000)
+        XCTAssertTrue(SwapBuyTransactionMatcher.matchingTransactions(for: order, in: [offQuote]).isEmpty)
+        let resolution = SwapBuyTransactionMatcher.payoutResolution(among: [order], in: [offQuote])
+        XCTAssertEqual(resolution.assigned.mapValues(\.txHashHexString), ["0xa": named])
+        XCTAssertTrue(resolution.unassigned.isEmpty)
+        // The hash still has to name a receive at the order's address.
+        let elsewhere = PayoutFixture(
+            txHashHexString: named, date: offQuote.date, firstStored: nil, direction: .received,
+            outputReceiveAddresses: ["XsomeoneElse"], dashAmount: offQuote.dashAmount)
+        let sent = PayoutFixture(
+            txHashHexString: named, date: offQuote.date, firstStored: nil, direction: .sent,
+            outputReceiveAddresses: ["XdestinationAddress"], dashAmount: offQuote.dashAmount)
+        XCTAssertEqual(assignments([order], [elsewhere]), [:])
+        XCTAssertEqual(assignments([order], [sent]), [:])
+        // Nor one from well before the order: a receive at a reused address is not its payout.
+        let before = payout(named, secondsAgo: 86_400 + 3 * 3_600, duffs: 276_100_000)
+        XCTAssertEqual(assignments([order], [before]), [:])
+        // An expired order with its deposit on record takes it too, so the tracker can
+        // complete it on its payout.
+        var expired = order
+        expired.status = .expired
+        XCTAssertEqual(assignments([expired], [offQuote]), ["0xa": named])
+        // The payout is not left for an unnamed order whose own quote it happens to fit.
+        let lookalike = buyOrder(id: "0xb", expected: "2.76", createdSecondsAgo: 12 * 3_600)
+        XCTAssertEqual(SwapBuyTransactionMatcher.matchingTransactions(for: lookalike, in: [offQuote]).count, 1)
+        XCTAssertEqual(assignments([order, lookalike], [offQuote]), ["0xa": named])
+        // A hash not established as the payout — an older record's, which may be the
+        // deposit's — is still held to the amount.
+        var legacy = order
+        legacy.fromAmount = nil
+        XCTAssertFalse(legacy.namesItsPayout)
+        XCTAssertEqual(assignments([legacy], [offQuote]), [:])
+    }
+
     func testATransactionSeenInTimeStaysTheOrdersAfterItsDateMoves() {
         // Completed four hours ago, with a live order beside it that fits the same
         // transaction: the completed one has it, but not by name.

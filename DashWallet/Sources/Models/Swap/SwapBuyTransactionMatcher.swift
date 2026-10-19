@@ -63,7 +63,8 @@ struct PayoutResolution<T> {
 ///
 /// We need to identify the buy's incoming DASH tx more precisely than "any tx to the same address":
 /// the wallet's shared receive address can also catch unrelated receives, so we require
-/// address + direction + time + approximate amount.
+/// address + direction + time + approximate amount — or, for an order that names its payout,
+/// address + direction + time on the transaction its hash names.
 enum SwapBuyTransactionMatcher {
     private static let baseUnits = Decimal(100_000_000)
     private static let maximumRelativeAmountDifference = Decimal(string: "0.05", locale: Locale(identifier: "en_US_POSIX"))!
@@ -85,7 +86,7 @@ enum SwapBuyTransactionMatcher {
     /// block's for one the wallet met already mined.
     /// The store's time is the device's clock at one moment, as the order's own time is.
     /// One from before the order was made cannot be its payout's and is not used: the
-    /// date decides then, as it does where the order's time is checked (`matches`).
+    /// date decides then, as it does where the order's time is checked (`isReceive`).
     static func arrival<T: SwapPayoutCandidate>(of tx: T, for order: SwapOrder) -> Date {
         guard let stored = tx.firstStored?.timeIntervalSince1970,
               stored >= TimeInterval(order.timestamp) / 1000.0 else { return tx.date }
@@ -185,19 +186,12 @@ enum SwapBuyTransactionMatcher {
     /// Every transaction that could be `order`'s payout: received at its address, not before
     /// it (within `timestampSlack`), for about its expected amount.
     static func matchingTransactions<T: SwapPayoutCandidate>(for order: SwapOrder, in transactions: [T]) -> [T] {
-        guard order.isBuy else { return [] }
-        let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !receiveAddress.isEmpty,
+        guard let window = receiveWindow(for: order),
               let expectedDashAmount = expectedDashAmount(for: order), expectedDashAmount > 0
         else { return [] }
-        let minimumTimestamp = TimeInterval(order.timestamp) / 1000.0
         return transactions.filter { tx in
-            matches(
-                tx,
-                receiveAddress: receiveAddress,
-                minimumTimestamp: minimumTimestamp,
-                expectedDashAmount: expectedDashAmount
-            )
+            guard isReceive(tx, in: window), let received = receivedDashAmount(for: tx) else { return false }
+            return isWithinTolerance(expectedDashAmount: expectedDashAmount, receivedDashAmount: received)
         }
     }
 
@@ -209,7 +203,8 @@ enum SwapBuyTransactionMatcher {
     /// (`latestPayoutDate`). Settled in this priority:
     /// 1. the order that already names it as its payout (`outboundTxHash`) — and such an
     ///    order takes no other transaction (`SwapOrder.namesItsPayout`) — provided the
-    ///    transaction also fits the order;
+    ///    transaction is a receive at its address (`isNamedPayout`), for whatever amount;
+    ///    an order whose hash is not established yet only when the transaction also fits it;
     /// 2. orders the provider reports as completed — it paid them out;
     /// 3. orders that are still owed a payout: the ones in flight (an active status) and the
     ///    expired ones with a deposit on record. Expiry is us no longer asking, not the
@@ -304,7 +299,9 @@ enum SwapBuyTransactionMatcher {
         for claimant in claimants.filter(\.namesItsPayout) + claimants.filter({ !$0.namesItsPayout }) {
             guard let recorded = claimant.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
                   let tx = free[recorded],
-                  !matchingTransactions(for: claimant, in: [tx]).isEmpty else { continue }
+                  claimant.namesItsPayout
+                      ? isNamedPayout(tx, for: claimant)
+                      : !matchingTransactions(for: claimant, in: [tx]).isEmpty else { continue }
             take(recorded, for: claimant)
         }
 
@@ -390,21 +387,35 @@ enum SwapBuyTransactionMatcher {
             }.map(\.id)))
     }
 
-    private static func matches<T: SwapPayoutCandidate>(
-        _ tx: T,
-        receiveAddress: String,
-        minimumTimestamp: TimeInterval,
-        expectedDashAmount: Decimal
-    ) -> Bool {
-        guard tx.direction == .received else { return false }
-        guard tx.date.timeIntervalSince1970 >= minimumTimestamp - timestampSlack else { return false }
-        guard tx.outputReceiveAddresses.contains(receiveAddress) else { return false }
+    /// Whether `tx` can be the payout `order` names by hash (`SwapOrder.namesItsPayout`): a
+    /// receive at its address, not before it (within `timestampSlack`). The amount is not
+    /// checked — the hash says which transaction it is, and the payout can be far off the
+    /// quote: a deposit larger than quoted swapped in full, or a rate that moved while the
+    /// provider sat on the deposit.
+    private static func isNamedPayout<T: SwapPayoutCandidate>(_ tx: T, for order: SwapOrder) -> Bool {
+        receiveWindow(for: order).map { isReceive(tx, in: $0) } ?? false
+    }
 
-        guard let receivedDashAmount = receivedDashAmount(for: tx) else { return false }
-        return isWithinTolerance(
-            expectedDashAmount: expectedDashAmount,
-            receivedDashAmount: receivedDashAmount
-        )
+    /// Where and from when a Buy order's payout can arrive: its receive address, and the
+    /// order's time.
+    private typealias ReceiveWindow = (address: String, minimumTimestamp: TimeInterval)
+
+    /// The order's `ReceiveWindow`; nil for a Sell order or one without a receive address.
+    private static func receiveWindow(for order: SwapOrder) -> ReceiveWindow? {
+        guard order.isBuy else { return nil }
+        let address = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !address.isEmpty else { return nil }
+        return (address, TimeInterval(order.timestamp) / 1000.0)
+    }
+
+    /// A receive at the window's address, dated no earlier than its time (within `timestampSlack`).
+    private static func isReceive<T: SwapPayoutCandidate>(
+        _ tx: T,
+        in window: ReceiveWindow
+    ) -> Bool {
+        tx.direction == .received
+            && tx.date.timeIntervalSince1970 >= window.minimumTimestamp - timestampSlack
+            && tx.outputReceiveAddresses.contains(window.address)
     }
 
     static func expectedDashAmount(for order: SwapOrder) -> Decimal? {
