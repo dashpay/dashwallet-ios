@@ -171,6 +171,36 @@ final class PendingInvitationViewModelTests: XCTestCase {
         XCTAssertEqual(validator.calls, [linkA])
     }
 
+    /// A's verdict waits for a visible Home; invitation B then arrives in the
+    /// same wallet. A's dialog must not be offered while B is the card.
+    func testWaitingVerdictIsDroppedWhenAnotherInvitationReplacesIt() async {
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        validator.results[linkB] = .undetermined
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { !self.outcomes.isEmpty }
+        XCTAssertEqual(viewModel.undeliveredOutcome, .alreadyClaimed(inviter: inviter))
+
+        XCTAssertEqual(store.receive(linkB), .stored)
+        XCTAssertEqual(viewModel.invitation?.rawLink, linkB)
+        XCTAssertNil(viewModel.undeliveredOutcome, "A's dialog is not shown over B's card")
+        await settle { self.validator.calls.contains(self.linkB) }
+        await settle { viewModel.cardState == .undetermined }
+    }
+
+    /// A leftover copy of the same voucher coming back (a failed clean-up,
+    /// or the link opened again) keeps the verdict waiting for it.
+    func testTheSameVoucherComingBackKeepsItsWaitingVerdict() async {
+        validator.results[linkA] = .alreadyRequestedUsername
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { self.outcomes.count == 1 }
+        validator.results[linkA] = .undetermined
+
+        XCTAssertEqual(store.receive(linkA), .stored)
+        XCTAssertEqual(viewModel.undeliveredOutcome, .alreadyRequestedUsername)
+    }
+
     func testTransientVerdictKeepsTheInvitation() async {
         validator.results[linkA] = .undetermined
         let viewModel = makeViewModel()

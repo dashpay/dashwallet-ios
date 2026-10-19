@@ -41,10 +41,12 @@ final class PendingInvitationViewModel: ObservableObject {
     /// Kept under the wallet and network it was reached for: a verdict can
     /// be about that wallet only ("already has a username"), so another
     /// wallet's Home neither shows it nor uses it up.
-    private var undeliveredOutcomes: [InvitationScope: InvitationValidation] = [:]
+    /// The link it was about is kept with it, so a different invitation
+    /// stored in that scope later drops it.
+    private var undeliveredOutcomes: [InvitationScope: (verdict: InvitationValidation, uri: String?)] = [:]
     /// The verdict waiting for the wallet and network that are active now.
     var undeliveredOutcome: InvitationValidation? {
-        undeliveredOutcomes.first { isActive($0.key) }?.value
+        undeliveredOutcomes.first { isActive($0.key) }?.value.verdict
     }
 
     /// Android treats a check older than a minute as stale
@@ -128,6 +130,14 @@ final class PendingInvitationViewModel: ObservableObject {
             .sink { [weak self] pending in
                 guard let self else { return }
                 self.invitation = pending
+                // A verdict still waiting in this scope was about the
+                // invitation it removed. A different one stored there gets its
+                // own check, and the old dialog would describe the wrong one;
+                // a leftover copy of the same voucher keeps it.
+                if let pending, let held = self.undeliveredOutcomes[pending.scope],
+                   held.uri != pending.normalizedURI {
+                    self.undeliveredOutcomes[pending.scope] = nil
+                }
                 if pending != self.lastVerdict?.invitation {
                     self.lastVerdict = nil
                     self.notReadyAttempts = 0
@@ -265,7 +275,7 @@ final class PendingInvitationViewModel: ObservableObject {
 
     /// Home showed the outcome; it is no longer waiting for a screen.
     func acknowledgeOutcome(_ outcome: InvitationValidation) {
-        for (scope, held) in undeliveredOutcomes where held == outcome && isActive(scope) {
+        for (scope, held) in undeliveredOutcomes where held.verdict == outcome && isActive(scope) {
             undeliveredOutcomes[scope] = nil
         }
     }
@@ -371,7 +381,7 @@ final class PendingInvitationViewModel: ObservableObject {
             // also covers leftovers elsewhere. A leftover whose removal failed
             // comes back as its own card and gets the same verdict again.
             if store.pending != invitation {
-                undeliveredOutcomes[invitation.scope] = verdict
+                undeliveredOutcomes[invitation.scope] = (verdict, invitation.normalizedURI)
                 if isActive(invitation.scope) {
                     definitiveOutcomes.send(verdict)
                 }
