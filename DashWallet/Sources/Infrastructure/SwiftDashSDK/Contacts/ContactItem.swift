@@ -122,6 +122,14 @@ struct ContactItem: Identifiable, Equatable {
         return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
     }
 
+    /// True when `displayTitle` is a name a person chose (the alias or the
+    /// profile display name), false when it is the DPNS label or the
+    /// identity-id fallback. Rows cut a name at its end and a label in the
+    /// middle, keeping the end that may tell two contacts apart.
+    var displayTitleIsName: Bool {
+        !(alias ?? "").isEmpty || !(profileDisplayName ?? "").isEmpty
+    }
+
     /// The identity id as users see it elsewhere — Platform explorers, the
     /// wallet's own identity list and the `dashpay://user` QR payload all read
     /// base58, so a contact's id is shown the same way rather than as the hex

@@ -1050,14 +1050,6 @@ private struct ConfirmContactSendSheet: View {
 
     private static let dashFractionDigits = 8
 
-    /// A name (alias or profile display name) reads best cut at its end; a
-    /// username is cut in the middle, keeping the end that may be what tells
-    /// two contacts apart.
-    private var toTruncationMode: Text.TruncationMode {
-        let hasName = !(contact.alias ?? "").isEmpty || !(contact.profileDisplayName ?? "").isEmpty
-        return hasName ? .tail : .middle
-    }
-
     var body: some View {
         // The same parts as the L1 confirmation (`ConfirmPaymentViewController`)
         // and the internal transfer's: the design system's sheet with its title,
@@ -1087,7 +1079,7 @@ private struct ConfirmContactSendSheet: View {
                     DashUIKit.List8View(
                         label: NSLocalizedString("To", comment: "Payment confirmation"),
                         value: contact.displayTitle,
-                        truncationMode: toTruncationMode
+                        truncationMode: contact.displayTitleIsName ? .tail : .middle
                     ) {
                         ContactAvatarView(
                             title: contact.displayTitle,
