@@ -1054,7 +1054,8 @@ private struct ConfirmContactSendSheet: View {
         // The same parts as the L1 confirmation (`ConfirmPaymentViewController`)
         // and the internal transfer's: the design system's sheet with its title,
         // grabber and close button, the amount pair, a card of rows, and the
-        // button pair. `selfSizing` measures the content, so nothing below may
+        // button pair. Unlike those, the To row is the design system's list-8,
+        // with the contact's avatar. `selfSizing` measures the content, so nothing below may
         // grow greedily — no `Spacer`, no `maxHeight: .infinity`.
         DashUIKit.BottomSheet.selfSizing(
             title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
