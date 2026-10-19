@@ -362,30 +362,74 @@ extension AppConnect {
         case notThisWallets
     }
 
+    /// The key Platform names as the identity's current one for a contract
+    /// and purpose, from a proved `identities.contractKeys` read. It is the
+    /// key registered last, which need not have the highest id, and it stays
+    /// named after it is disabled: Platform does not fall back to an older
+    /// one.
+    struct CurrentContractKey: Equatable {
+        let keyId: UInt32
+        let keyType: KeyType?
+        let data: Data
+        let isDisabled: Bool
+    }
+
+    /// The current key `response` names for `identityId` and `purpose`, or
+    /// nil when it proves there is none. The response lists every identity
+    /// and purpose asked for; one that lacks either, or a key it cannot
+    /// read, throws.
+    static func currentContractKey(
+        from response: [String: Any],
+        identityId: String,
+        purpose: KeyPurpose
+    ) throws -> CurrentContractKey? {
+        let name: String
+        switch purpose {
+        case .encryption: name = "encryption"
+        case .decryption: name = "decryption"
+        default: throw SDKError.invalidParameter("Only encryption and decryption keys have a current key here")
+        }
+        guard let purposes = response[identityId] as? [String: Any], let entry = purposes[name] else {
+            throw SDKError.serializationError("The contract keys response leaves out the identity's \(name) key")
+        }
+        if entry is NSNull { return nil }
+        guard let key = entry as? [String: Any],
+              let keyId = (key["id"] as? NSNumber)?.uint32Value,
+              let type = (key["type"] as? NSNumber)?.uint8Value,
+              let hex = key["data"] as? String, let bytes = AppConnect.data(fromHex: hex), !bytes.isEmpty else {
+            throw SDKError.serializationError("The contract keys response carries an unreadable \(name) key")
+        }
+        return CurrentContractKey(
+            keyId: keyId, keyType: KeyType(rawValue: type), data: bytes,
+            isDisabled: !(key["disabled_at"] is NSNull || key["disabled_at"] == nil))
+    }
+
     /// Rotation 0 only: the key at DIP-13 `7'` for (identity, contract,
-    /// purpose). The current key is the newest live one, as
-    /// `identities.contractKeys` resolves it for the app's
-    /// `MultipleReferenceToLatest` requirement; this wallet's key is sent
-    /// only while it is that one. A live key of the purpose whose bound the
-    /// wallet's store cannot place counts as the app's, so a key of unknown
-    /// origin is never shadowed by a second one.
+    /// purpose). `currentKey` is the key Platform names as current for the
+    /// app's `MultipleReferenceToLatest` requirement; this wallet's key is
+    /// sent only while it is that one and live. A live key of the purpose
+    /// whose bound the wallet's store cannot place counts as the app's, so a
+    /// key of unknown origin is never shadowed by a second one.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
         contractId: Data,
+        currentKey: CurrentContractKey?,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> EncryptionKeyState {
+        if let currentKey, !currentKey.isDisabled {
+            guard currentKey.keyType == .ecdsaSecp256k1, currentKey.data == derivedPublicKey else {
+                return .notThisWallets
+            }
+            return .current(keyId: currentKey.keyId)
+        }
         let live = currentIdentityPublicKeys.filter { key in
             guard key.purpose == purpose, key.disabledAt == nil else { return false }
             let keyId = UInt32(bitPattern: key.keyId)
             guard let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                   !stored.hasUnreadableBound else { return true }
             return stored.singleContractId == contractId
-        }
-        if let latest = live.max(by: { UInt32(bitPattern: $0.keyId) < UInt32(bitPattern: $1.keyId) }),
-           latest.keyType == .ecdsaSecp256k1, latest.data == derivedPublicKey {
-            return .current(keyId: UInt32(bitPattern: latest.keyId))
         }
         if !live.isEmpty || currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey }) {
             return .notThisWallets

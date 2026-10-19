@@ -1440,13 +1440,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         // Wallet rule 7: re-send the identity's key for the app when this
         // wallet made it, register it when there is none, leave it out when
-        // another wallet made it.
+        // another wallet made it. Which key is current is Platform's to say:
+        // the app's verifier checks the slot against the same proved read.
         var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
         for (index, grant) in plan.encryption.enumerated() {
+            let contractKeys = try await DashConnectPlatformQueries.identityContractKeys(
+                sdk: context.sdk,
+                identityId: identityId,
+                contractId: grant.binding.contractId.toBase58String(),
+                purposes: [grant.keyPurpose])
             switch AppConnect.encryptionKeyState(
                 derivedPublicKey: encryptionKeys[index].publicKey,
                 purpose: grant.keyPurpose,
                 contractId: grant.binding.contractId,
+                currentKey: try AppConnect.currentContractKey(
+                    from: contractKeys, identityId: identityId, purpose: grant.keyPurpose),
                 currentIdentityPublicKeys: currentPublicKeys,
                 bindings: bindings
             ) {
@@ -3649,12 +3657,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 /// here on one serial queue instead, with the SDK kept alive for the call;
 /// each copies the native result and releases it before returning.
 /// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
-/// it has them for these two, as it has `dataContractGetOffMain`.
+/// it has them for these, as it has `dataContractGetOffMain`.
 enum DashConnectPlatformQueries {
     /// One queue per kind of read, so a slow document search does not hold
     /// back the protocol-version read a sheet waits for.
     private static let epochQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.epoch-query")
     private static let documentQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.document-query")
+    private static let contractKeysQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.contract-keys-query")
 
     /// The protocol version the network runs, from a proved read of the
     /// current epoch. It throws when that read fails: there is no fallback
@@ -3701,6 +3710,22 @@ enum DashConnectPlatformQueries {
                     return try json(from: dash_sdk_document_search(handle, &parameters))
                 }
             }
+        }
+    }
+
+    /// `SDK.identityGetContractKeys(identityIds:contractId:documentType:purposes:)`
+    /// off the main actor: the proved current key of each purpose the
+    /// identity holds for the contract, as `AppConnect.currentContractKey`
+    /// reads it.
+    static func identityContractKeys(
+        sdk: SDK,
+        identityId: String,
+        contractId: String,
+        purposes: [KeyPurpose]
+    ) async throws -> [String: Any] {
+        let purposeList = purposes.map { String($0.rawValue) }.joined(separator: ",")
+        return try await run(sdk, on: contractKeysQueue) { handle in
+            try json(from: dash_sdk_identities_fetch_contract_keys(handle, identityId, contractId, nil, purposeList))
         }
     }
 

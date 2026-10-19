@@ -519,14 +519,20 @@ final class AppConnectV2LoginTests: XCTestCase {
 
     private func encryptionState(
         _ keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        current: AppConnect.CurrentContractKey?,
         bindings: [AppConnect.KeyBinding]
     ) -> AppConnect.EncryptionKeyState {
         AppConnect.encryptionKeyState(
             derivedPublicKey: Self.derivedPoint,
             purpose: .encryption,
             contractId: Self.appId,
+            currentKey: current,
             currentIdentityPublicKeys: keys,
             bindings: bindings)
+    }
+
+    private static func current(_ keyId: UInt32, data: Data, disabled: Bool = false) -> AppConnect.CurrentContractKey {
+        AppConnect.CurrentContractKey(keyId: keyId, keyType: .ecdsaSecp256k1, data: data, isDisabled: disabled)
     }
 
     private static func encryptionKey(_ keyId: UInt32, data: Data, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
@@ -536,32 +542,48 @@ final class AppConnectV2LoginTests: XCTestCase {
     func testTheCurrentKeyIsSentAgainWhenThisWalletMadeIt() {
         let mine = Self.encryptionKey(5, data: Self.derivedPoint)
         XCTAssertEqual(
-            encryptionState([mine], bindings: [.init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)]),
+            encryptionState(
+                [mine], current: Self.current(5, data: Self.derivedPoint),
+                bindings: [.init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)]),
             .current(keyId: 5))
+        // Platform's answer stands when the fetched keys are behind it.
+        XCTAssertEqual(encryptionState([], current: Self.current(5, data: Self.derivedPoint), bindings: []), .current(keyId: 5))
     }
 
     func testTheKeyIsRegisteredWhenTheIdentityHasNoneForTheApp() {
         let elsewhere = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
         let other = Data(repeating: 0x0C, count: 32)
-        XCTAssertEqual(encryptionState([], bindings: []), .absent)
+        XCTAssertEqual(encryptionState([], current: nil, bindings: []), .absent)
         // A key bound to another contract is not the app's.
         XCTAssertEqual(
-            encryptionState([elsewhere], bindings: [.init(keyId: 5, data: elsewhere.data, singleContractId: other)]),
+            encryptionState(
+                [elsewhere], current: nil,
+                bindings: [.init(keyId: 5, data: elsewhere.data, singleContractId: other)]),
+            .absent)
+        // Nor is a disabled current key of another wallet's in the way.
+        XCTAssertEqual(
+            encryptionState([], current: Self.current(9, data: elsewhere.data, disabled: true), bindings: []),
             .absent)
     }
 
     func testAnotherWalletsKeyIsNeitherSentNorReplaced() {
         let theirs = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
         XCTAssertEqual(
-            encryptionState([theirs], bindings: [.init(keyId: 5, data: theirs.data, singleContractId: Self.appId)]),
+            encryptionState(
+                [theirs], current: Self.current(5, data: theirs.data),
+                bindings: [.init(keyId: 5, data: theirs.data, singleContractId: Self.appId)]),
             .notThisWallets)
+        // Nor one the fetched keys do not show yet.
+        XCTAssertEqual(encryptionState([], current: Self.current(5, data: theirs.data), bindings: []), .notThisWallets)
         // Nor one whose bound the store cannot place.
-        XCTAssertEqual(encryptionState([theirs], bindings: []), .notThisWallets)
+        XCTAssertEqual(encryptionState([theirs], current: nil, bindings: []), .notThisWallets)
         // Rotating is never part of a login: a disabled key of this wallet's
         // cannot be added again, and is not replaced either.
         let disabledMine = Self.encryptionKey(6, data: Self.derivedPoint, disabled: true)
         XCTAssertEqual(
-            encryptionState([disabledMine], bindings: [.init(keyId: 6, data: Self.derivedPoint, singleContractId: Self.appId)]),
+            encryptionState(
+                [disabledMine], current: Self.current(6, data: Self.derivedPoint, disabled: true),
+                bindings: [.init(keyId: 6, data: Self.derivedPoint, singleContractId: Self.appId)]),
             .notThisWallets)
     }
 
@@ -569,11 +591,77 @@ final class AppConnectV2LoginTests: XCTestCase {
         let mine = Self.encryptionKey(5, data: Self.derivedPoint)
         let newer = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
         XCTAssertEqual(
-            encryptionState([mine, newer], bindings: [
+            encryptionState([mine, newer], current: Self.current(9, data: newer.data), bindings: [
                 .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
                 .init(keyId: 9, data: newer.data, singleContractId: Self.appId),
             ]),
             .notThisWallets)
+    }
+
+    /// Platform keeps naming the last key registered after it is disabled.
+    /// This wallet's older live key is not current then, and the app's
+    /// verifier would refuse it.
+    func testThisWalletsKeyIsNotSentWhenTheLatestKeyWasDisabled() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let disabled = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33), disabled: true)
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: disabled.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([mine, disabled], current: Self.current(9, data: disabled.data, disabled: true), bindings: bindings),
+            .notThisWallets)
+    }
+
+    /// The current key is the one registered last, not the one with the
+    /// highest id.
+    func testTheCurrentKeyIsTheLastRegisteredNotTheHighestId() {
+        let theirs = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
+        let mineLower = Self.encryptionKey(3, data: Self.derivedPoint)
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 3, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: theirs.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([theirs, mineLower], current: Self.current(3, data: Self.derivedPoint), bindings: bindings),
+            .current(keyId: 3))
+        let mineHigher = Self.encryptionKey(9, data: Self.derivedPoint)
+        let theirsLower = Self.encryptionKey(3, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(
+            encryptionState(
+                [mineHigher, theirsLower], current: Self.current(3, data: theirsLower.data),
+                bindings: [
+                    .init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId),
+                    .init(keyId: 3, data: theirsLower.data, singleContractId: Self.appId),
+                ]),
+            .notThisWallets)
+    }
+
+    func testTheCurrentKeyIsReadFromTheContractKeysResponse() throws {
+        let identityId = "identity"
+        func read(_ response: [String: Any], _ purpose: KeyPurpose = .encryption) throws -> AppConnect.CurrentContractKey? {
+            try AppConnect.currentContractKey(from: response, identityId: identityId, purpose: purpose)
+        }
+        let key: [String: Any] = [
+            "id": 9, "type": 0, "data": Self.derivedPoint.toHexString(), "purpose": 1,
+            "security_level": 2, "read_only": false, "disabled_at": NSNull(),
+        ]
+        XCTAssertEqual(
+            try read([identityId: ["encryption": key]]),
+            AppConnect.CurrentContractKey(keyId: 9, keyType: .ecdsaSecp256k1, data: Self.derivedPoint, isDisabled: false))
+        var disabled = key
+        disabled["disabled_at"] = 1_700_000_000_000
+        XCTAssertEqual(try read([identityId: ["encryption": disabled]])?.isDisabled, true)
+        XCTAssertNil(try read([identityId: ["encryption": NSNull()]]), "proved absent")
+        XCTAssertEqual(try read([identityId: ["decryption": key]], .decryption)?.keyId, 9)
+        // A response that leaves the identity or the purpose out says nothing.
+        XCTAssertThrowsError(try read([:]))
+        XCTAssertThrowsError(try read([identityId: [:] as [String: Any]]))
+        XCTAssertThrowsError(try read([identityId: ["decryption": key]]))
+        var unreadable = key
+        unreadable["data"] = "zz"
+        XCTAssertThrowsError(try read([identityId: ["encryption": unreadable]]))
+        XCTAssertThrowsError(try read([identityId: ["authentication": key]], .authentication))
     }
 
     // MARK: - Supersession (wallet rule 8)
