@@ -225,8 +225,16 @@ jobs:
             echo "::error::platform_ref must be a single branch, tag or SHA, got '$ref'"
             exit 1
           fi
+          if [[ "$ref" =~ ^[0-9a-fA-F]{7,39}$ ]]; then
+            echo "::error::platform_ref '$ref' looks like an abbreviated SHA; checkout needs the full 40-hex SHA"
+            exit 1
+          fi
           pin=""
-          if [[ -f .platform-ref ]]; then
+          if [[ -e .platform-ref || -L .platform-ref ]]; then
+            if [[ ! -f .platform-ref ]]; then
+              echo "::error file=.platform-ref::.platform-ref is not a regular file"
+              exit 1
+            fi
             pin=$(tr -d '[:space:]' < .platform-ref)
             if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
               echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
@@ -235,7 +243,6 @@ jobs:
           fi
           if [[ -n "$ref" ]]; then
             source="$ref"
-            [[ "$ref" == "$pin" ]] && source=".platform-ref"
           elif [[ -n "$pin" ]]; then
             ref="$pin"
             source=".platform-ref"
