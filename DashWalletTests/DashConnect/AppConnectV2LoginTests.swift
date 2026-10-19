@@ -586,10 +586,11 @@ final class AppConnectV2LoginTests: XCTestCase {
             encryptionState(
                 [theirs, disabledCurrent], current: Self.current(9, data: disabledCurrent.data, disabled: true),
                 bindings: []),
-            .notThisWallets)
+            .notThisWalletsIfSettled)
         // With no current key at all, a key bound to the app would be it: a
-        // key the store cannot place is bound elsewhere.
-        XCTAssertEqual(encryptionState([theirs], current: nil, bindings: []), .absent)
+        // key the store cannot place is bound elsewhere, once a later read
+        // agrees.
+        XCTAssertEqual(encryptionState([theirs], current: nil, bindings: []), .absentIfSettled)
         // Rotating is never part of a login: a disabled key of this wallet's
         // cannot be added again, and is not replaced either.
         let disabledMine = Self.encryptionKey(6, data: Self.derivedPoint, disabled: true)
@@ -623,7 +624,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         ]
         XCTAssertEqual(
             encryptionState([mine, disabled], current: Self.current(9, data: disabled.data, disabled: true), bindings: bindings),
-            .notThisWallets)
+            .notThisWalletsIfSettled, "registered before the disabled key, or after it with Platform's read behind")
     }
 
     /// The current key is the one registered last, not the one with the
@@ -678,6 +679,35 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             encryptionState([], current: Self.current(6, data: Self.derivedPoint, disabled: true), bindings: []),
             .outOfDate)
+    }
+
+    /// A state that holds only if Platform's read is not behind comes to
+    /// its plain form once a later read says the same.
+    func testAStateThatWaitsOnALaterReadSettles() {
+        XCTAssertEqual(AppConnect.EncryptionKeyState.absentIfSettled.settled, .absent)
+        XCTAssertEqual(AppConnect.EncryptionKeyState.notThisWalletsIfSettled.settled, .notThisWallets)
+        for state: AppConnect.EncryptionKeyState in [.current(keyId: 3), .absent, .notThisWallets, .outOfDate] {
+            XCTAssertEqual(state.settled, state)
+            XCTAssertFalse(state.needsSettling)
+        }
+        XCTAssertTrue(AppConnect.EncryptionKeyState.absentIfSettled.needsSettling)
+    }
+
+    /// A key this login registered is passed over when Platform names a key
+    /// that is neither it nor the one current before the login.
+    func testARegisteredKeyIsPassedOverOnlyByAThirdKey() {
+        let registered: [(slot: Int, purpose: KeyPurpose, keyId: UInt32)] = [
+            (slot: 0, purpose: .encryption, keyId: 12), (slot: 1, purpose: .decryption, keyId: 13),
+        ]
+        let before = [KeyPurpose.encryption: Self.current(4, data: Data(repeating: 0x44, count: 33), disabled: true)]
+        func passedOver(_ after: [KeyPurpose: AppConnect.CurrentContractKey]) -> Set<Int> {
+            AppConnect.passedOverSlots(registered: registered, before: before, after: after)
+        }
+        let other = Self.current(20, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(passedOver([.encryption: other, .decryption: other]), [0, 1])
+        XCTAssertEqual(passedOver([.encryption: Self.current(12, data: Self.derivedPoint)]), [], "this login's key")
+        XCTAssertEqual(passedOver([.encryption: before[.encryption]!]), [], "a read from before the login")
+        XCTAssertEqual(passedOver([:]), [], "no current key yet: behind")
     }
 
     func testOnlyARequirementThatKeepsACurrentKeyTakesALogin() {

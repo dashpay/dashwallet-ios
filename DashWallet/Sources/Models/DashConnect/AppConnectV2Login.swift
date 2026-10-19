@@ -367,6 +367,25 @@ extension AppConnect {
         /// The fetched keys and Platform's current key disagree: one of the
         /// two reads is behind, and nothing can be said until both agree.
         case outOfDate
+        /// `absent`, unless Platform's read is behind a key the store
+        /// cannot place: it holds only once a later read says the same.
+        case absentIfSettled
+        /// `notThisWallets`, unless Platform's read is behind a live key
+        /// bound to the app that was registered after the disabled current
+        /// one: it holds only once a later read says the same.
+        case notThisWalletsIfSettled
+
+        /// What the state comes to once a later read of Platform's current
+        /// key has said the same.
+        var settled: EncryptionKeyState {
+            switch self {
+            case .absentIfSettled: return .absent
+            case .notThisWalletsIfSettled: return .notThisWallets
+            default: return self
+            }
+        }
+
+        var needsSettling: Bool { settled != self }
     }
 
     /// How a contract keeps the current key of a purpose it requires bound
@@ -455,9 +474,11 @@ extension AppConnect {
     /// Every key bound to the app becomes current when it is registered, so
     /// with no current key at all a live key the store places on the app
     /// means Platform's read is behind, and a live key it cannot place is
-    /// bound elsewhere. Behind a disabled current key, a live key the store
-    /// cannot place counts as the app's, so a key of unknown origin is never
-    /// shadowed by a second one; under `unique` nothing can be added at all.
+    /// bound elsewhere once a later read agrees. Behind a disabled current
+    /// key, a live key the app may hold was registered before it, or after
+    /// it with Platform's read behind; it is left alone once a later read
+    /// agrees, so a key of unknown origin is never shadowed by a second
+    /// one. Under `unique` nothing can be added at all.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -483,24 +504,42 @@ extension AppConnect {
             if rule == .unique { return .notThisWallets }
         }
         var placedOnTheApp = false
-        let live = currentIdentityPublicKeys.filter { key in
-            guard key.purpose == purpose, key.disabledAt == nil else { return false }
+        var unplaced = false
+        for key in currentIdentityPublicKeys where key.purpose == purpose && key.disabledAt == nil {
             let keyId = UInt32(bitPattern: key.keyId)
-            guard let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
-                  !stored.hasUnreadableBound else { return currentKey != nil }
-            guard stored.singleContractId == contractId else { return false }
-            placedOnTheApp = true
-            return true
+            if let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
+               !stored.hasUnreadableBound {
+                if stored.singleContractId == contractId { placedOnTheApp = true }
+            } else {
+                unplaced = true
+            }
         }
-        // Registering a key bound to the app makes it current, so a live one
-        // with no current key at all is a read from before it landed.
-        if currentKey == nil && placedOnTheApp {
-            return .outOfDate
+        let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
+        guard currentKey != nil else {
+            // Registering a key bound to the app makes it current, so a live
+            // one with no current key at all is a read from before it landed.
+            if placedOnTheApp { return .outOfDate }
+            if holdsTheDerivedKey { return .notThisWallets }
+            return unplaced ? .absentIfSettled : .absent
         }
-        if !live.isEmpty || currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey }) {
-            return .notThisWallets
-        }
-        return .absent
+        // The current key is disabled. A live key of the app's beside it was
+        // registered before it, or after it and Platform's read is behind.
+        if placedOnTheApp || unplaced { return .notThisWalletsIfSettled }
+        return holdsTheDerivedKey ? .notThisWallets : .absent
+    }
+
+    /// The encryption slots this login registered whose key another one,
+    /// registered later, has replaced as current: `after` names a key that
+    /// is neither the slot's nor the one current before the login.
+    static func passedOverSlots(
+        registered: [(slot: Int, purpose: KeyPurpose, keyId: UInt32)],
+        before: [KeyPurpose: CurrentContractKey],
+        after: [KeyPurpose: CurrentContractKey]
+    ) -> Set<Int> {
+        Set(registered.filter { entry in
+            guard let current = after[entry.purpose] else { return false }
+            return current.keyId != entry.keyId && current.keyId != before[entry.purpose]?.keyId
+        }.map(\.slot))
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to
