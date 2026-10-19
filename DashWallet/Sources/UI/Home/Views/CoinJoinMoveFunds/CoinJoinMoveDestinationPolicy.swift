@@ -125,7 +125,7 @@ enum CoinJoinMoveDestinationPolicy {
 /// CoinJoin account until the drain, so an interrupted attempt leaves them on
 /// one CoinJoin address, and the next attempt drains them directly.
 ///
-/// Pure: the inputs come from `SwiftDashSDKTransactionSender.coinJoinUtxoState()`
+/// Pure: the inputs come from `SwiftDashSDKTransactionSender.coinJoinUtxoState(expecting:)`
 /// so `CoinJoinShieldPlannerTests` can pin every branch without a wallet.
 enum CoinJoinShieldPlanner {
 
@@ -171,6 +171,23 @@ enum CoinJoinShieldPlanner {
     /// its txid in the wallet's IS-lock set. Both txid forms are wire order.
     static func isFinal(height: UInt32, txid: Data, instantLockedTxids: Set<Data>) -> Bool {
         height > 0 || instantLockedTxids.contains(txid)
+    }
+
+    /// Whether a CoinJoin UTXO read can be planned from. The SDK's account
+    /// readers return `[]` both for "none" and for a failed read, so a failure
+    /// is told apart here: every wallet has at least its BIP44 account, and a
+    /// CoinJoin account whose balance is not zero has UTXOs. A cached balance
+    /// that outlived its coins reads as a failure too, which stops the move
+    /// rather than drain on a guess.
+    ///
+    /// - Parameters:
+    ///   - accountCount: rows `accountBalances` returned.
+    ///   - coinJoinBalanceIsZero: nil when the wallet has no CoinJoin account.
+    ///   - utxoCount: rows `accountUtxos` returned for it, locked ones included.
+    static func utxoReadIsUsable(accountCount: Int, coinJoinBalanceIsZero: Bool?, utxoCount: Int) -> Bool {
+        guard accountCount > 0 else { return false }
+        guard let coinJoinBalanceIsZero else { return true }
+        return utxoCount > 0 || coinJoinBalanceIsZero
     }
 
     /// Whether every consolidation transaction in `consolidationTxids` (wire

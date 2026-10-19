@@ -117,6 +117,28 @@ final class CoinJoinMoveDestinationPolicyTests: XCTestCase {
 /// waits for final inputs.
 final class CoinJoinShieldPlannerTests: XCTestCase {
 
+    // MARK: utxoReadIsUsable
+
+    func testNoAccountsAtAllIsAFailedRead() {
+        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 0, coinJoinBalanceIsZero: nil, utxoCount: 0))
+    }
+
+    func testWalletWithoutACoinJoinAccountReadsAsEmpty() {
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: nil, utxoCount: 0))
+    }
+
+    func testNoUtxosBehindANonZeroBalanceIsAFailedRead() {
+        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: false, utxoCount: 0))
+    }
+
+    func testEmptyAccountWithZeroBalanceIsUsable() {
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: true, utxoCount: 0))
+    }
+
+    func testUtxosBehindABalanceAreUsable() {
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: false, utxoCount: 104))
+    }
+
     // MARK: nextStep
 
     func testEmptyAccountHasNothingToMove() {

@@ -424,9 +424,24 @@ final class WalletSendService: NSObject {
     ///
     /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
     ///   message; the on-chain amount delivered is this minus the network fee.
+    /// - Parameter binding: the wallet and network to sweep; the sweep refuses
+    ///   to run unless it is still the active one. Nil pins the wallet active
+    ///   on entry.
     @discardableResult
-    func sweepCoinJoin() async throws -> UInt64 {
-        let amount = await MainActor.run { SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs }
+    func sweepCoinJoin(
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async throws -> UInt64 {
+        // The pin and the amount are read in one hop. The amount is the
+        // published CoinJoin balance, which can lag a wallet switch; the
+        // sweep itself spends only the pinned wallet's UTXOs.
+        let (pinned, amount) = try await MainActor.run {
+            () throws -> (SwiftDashSDKTransactionSender.CoinJoinWalletBinding, UInt64) in
+            guard let current = SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current(),
+                  binding == nil || binding == current else {
+                throw SwiftDashSDKTransactionSender.SendError.walletNotReady("the active wallet changed")
+            }
+            return (current, SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs)
+        }
         guard amount > 0 else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
@@ -437,15 +452,21 @@ final class WalletSendService: NSObject {
         Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
+        guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "Could not resolve a destination address for the CoinJoin sweep"
             )
         }
+        // The address must be the pinned wallet's own; the sweep itself
+        // re-checks that wallet is still the active one.
+        if resolved.walletId != pinned.walletId {
+            throw SwiftDashSDKTransactionSender.SendError.walletNotReady("the active wallet changed")
+        }
+        let destination = resolved.address
 
         Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
-        let outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
         let txids = outcome.txids
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated

@@ -244,11 +244,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// longer supported, so we move the user's mixed coins into their normal
     /// spendable balance.
     ///
-    /// - Parameter address: Destination Dash address (the user's own BIP44
-    ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
+    /// - Parameters:
+    ///   - address: Destination Dash address (the user's own BIP44 receive
+    ///     address, resolved via `SwiftDashSDKReceiveAddressReader`, or a fresh
+    ///     CoinJoin address for the Shielded consolidation).
+    ///   - binding: When set, the sweep refuses to run unless this is still the
+    ///     active wallet and network.
     /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids
     ///   and any chunk failure. Throws only when nothing broadcast at all.
-    static func sweepCoinJoin(to address: String) throws -> CoinJoinSweepOutcome {
+    static func sweepCoinJoin(
+        to address: String, expecting binding: CoinJoinWalletBinding? = nil
+    ) throws -> CoinJoinSweepOutcome {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
         let sweep = { @MainActor () throws -> CoinJoinSweepOutcome in
@@ -257,20 +263,23 @@ final class SwiftDashSDKTransactionSender: NSObject {
                   let network = host.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
+            if let binding, binding != CoinJoinWalletBinding.current() {
+                throw SendError.walletNotReady("the active wallet changed")
+            }
             let core = try wallet.coreWallet()
             let walletId = wallet.walletId
 
             // CoinJoin account-0 balance descriptor (mirrors
             // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
             // address the account for UTXO enumeration.
-            guard let cjBalance = Self.coinJoinAccountBalance(manager: manager, walletId: walletId) else {
+            guard let cjBalance = Self.coinJoinAccountBalance(in: manager.accountBalances(for: walletId)) else {
                 return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
             // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
-            // left out, matching `coinJoinUtxoState()`: coin selection never
-            // spends them.
+            // left out, matching `coinJoinUtxoState(expecting:)`: coin
+            // selection never spends them.
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
                 .filter { !$0.isLocked }
             guard !utxos.isEmpty else {
@@ -357,16 +366,51 @@ final class SwiftDashSDKTransactionSender: NSObject {
     // MARK: - CoinJoin consolidation (CoinJoin → Shielded over the asset-lock input cap)
 
     /// The CoinJoin account-0 balance descriptor (typeTag 1, index 0 — mirrors
-    /// `SwiftDashSDKCoinJoinBalanceReader`), which addresses the account for
-    /// UTXO and address-pool enumeration. Nil when the wallet has no CoinJoin
-    /// account.
-    @MainActor
+    /// `SwiftDashSDKCoinJoinBalanceReader`) among a wallet's `accountBalances`,
+    /// which addresses the account for UTXO and address-pool enumeration. Nil
+    /// when the wallet has no CoinJoin account.
     private static func coinJoinAccountBalance(
-        manager: PlatformWalletManager, walletId: Data
+        in balances: [PlatformWalletManager.AccountBalance]
     ) -> PlatformWalletManager.AccountBalance? {
-        manager.accountBalances(for: walletId).first(where: {
+        balances.first(where: {
             $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
         })
+    }
+
+    /// The CoinJoin account's descriptor and UTXO rows (locked ones included),
+    /// or nil when the read can't be told apart from a failed one (see
+    /// `CoinJoinShieldPlanner.utxoReadIsUsable`). An account that does not
+    /// exist reads as no descriptor and no rows.
+    @MainActor
+    private static func coinJoinUtxoRows(
+        manager: PlatformWalletManager, walletId: Data
+    ) -> (balance: PlatformWalletManager.AccountBalance?, utxos: [PlatformWalletManager.AccountUtxo])? {
+        let balances = manager.accountBalances(for: walletId)
+        let cjBalance = coinJoinAccountBalance(in: balances)
+        let utxos = cjBalance.map { manager.accountUtxos(for: walletId, balance: $0) } ?? []
+        let balanceIsZero = cjBalance.map {
+            $0.confirmed == 0 && $0.unconfirmed == 0 && $0.immature == 0 && $0.locked == 0
+        }
+        guard CoinJoinShieldPlanner.utxoReadIsUsable(
+            accountCount: balances.count, coinJoinBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
+        else { return nil }
+        return (cjBalance, utxos)
+    }
+
+    /// The wallet and network a CoinJoin → Shielded move was authorized for.
+    /// Each step of the move re-checks it, so a wallet or network switch while
+    /// it runs stops the move instead of carrying it over to another wallet.
+    struct CoinJoinWalletBinding: Equatable {
+        let walletId: Data
+        let network: Network
+
+        /// The host's active wallet and network; nil when none is bound.
+        @MainActor
+        static func current() -> CoinJoinWalletBinding? {
+            let host = SwiftDashSDKHost.shared
+            guard let wallet = host.wallet, let network = host.runningNetwork else { return nil }
+            return CoinJoinWalletBinding(walletId: wallet.walletId, network: network)
+        }
     }
 
     /// The CoinJoin account's spendable UTXO set, as `CoinJoinShieldPlanner`
@@ -383,6 +427,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let isFinal: Bool
         }
 
+        let binding: CoinJoinWalletBinding
         let entries: [Entry]
 
         var count: Int { entries.count }
@@ -392,22 +437,21 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     /// Snapshot of the CoinJoin account's spendable UTXOs with their finality.
-    /// Nil when the host has no wallet or manager bound; an account that does
-    /// not exist reads as empty.
+    /// Nil when it can't be read: the host has no wallet or manager bound, the
+    /// active wallet is not `binding`, or the SDK read looks failed (see
+    /// `coinJoinUtxoRows`). An account that does not exist reads as empty.
     ///
     /// `isLocked` rows are left out: coin selection never spends them, so
     /// counting them would ask for a consolidation that has nothing to
     /// consolidate.
     @MainActor
-    static func coinJoinUtxoState() -> CoinJoinUtxoState? {
+    static func coinJoinUtxoState(expecting binding: CoinJoinWalletBinding) -> CoinJoinUtxoState? {
         let host = SwiftDashSDKHost.shared
-        guard let wallet = host.wallet, let manager = host.manager else { return nil }
-        let walletId = wallet.walletId
-        guard let cjBalance = coinJoinAccountBalance(manager: manager, walletId: walletId) else {
-            return CoinJoinUtxoState(entries: [])
-        }
+        guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
+        let walletId = binding.walletId
+        guard let rows = coinJoinUtxoRows(manager: manager, walletId: walletId) else { return nil }
         let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
-        let entries = manager.accountUtxos(for: walletId, balance: cjBalance)
+        let entries = rows.utxos
             .filter { !$0.isLocked }
             .map { utxo in
                 CoinJoinUtxoState.Entry(
@@ -419,7 +463,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                         txid: utxo.outpointTxid,
                         instantLockedTxids: instantLocked))
             }
-        return CoinJoinUtxoState(entries: entries)
+        return CoinJoinUtxoState(binding: binding, entries: entries)
     }
 
     /// A fresh receive address of this wallet's own CoinJoin account — the
@@ -433,18 +477,20 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// paid here is detected and lands back in the CoinJoin account, and its
     /// use moves the pool's gap forward like any other receive.
     @MainActor
-    static func unusedCoinJoinAddress() -> String? {
+    static func unusedCoinJoinAddress(for binding: CoinJoinWalletBinding) -> String? {
         let host = SwiftDashSDKHost.shared
-        guard let wallet = host.wallet, let manager = host.manager else { return nil }
-        let walletId = wallet.walletId
-        guard let cjBalance = coinJoinAccountBalance(manager: manager, walletId: walletId),
+        guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
+        let walletId = binding.walletId
+        // A failed UTXO read would leave funded addresses looking unused.
+        guard let rows = coinJoinUtxoRows(manager: manager, walletId: walletId),
+              let cjBalance = rows.balance,
               let network = try? PaymentNetworkResolver.current()
         else { return nil }
         // Pool type 0 = External (see `AccountAddressPoolSnapshot.pool_type`).
         guard let external = manager.accountAddressPools(for: walletId, balance: cjBalance)
             .first(where: { $0.poolType == 0 })
         else { return nil }
-        let fundedScripts = Set(manager.accountUtxos(for: walletId, balance: cjBalance).map(\.scriptPubkey))
+        let fundedScripts = Set(rows.utxos.map(\.scriptPubkey))
         let candidates = external.addresses
             .filter { !$0.isUsed && !$0.address.isEmpty }
             .sorted { $0.addressIndex < $1.addressIndex }
@@ -458,21 +504,33 @@ final class SwiftDashSDKTransactionSender: NSObject {
         return nil
     }
 
-    /// Poll the CoinJoin UTXO state until `isDone` holds or `timeout` elapses.
-    /// Returns the last snapshot and whether `isDone` held for it; nil only
-    /// when the host lost its wallet. Sleeps off the main actor between polls
-    /// and stops early when the calling task is cancelled.
+    /// Poll `binding`'s CoinJoin UTXO state until `isDone` holds or `timeout`
+    /// elapses. Returns the last snapshot and whether `isDone` held for it;
+    /// nil when the active wallet is no longer `binding`, or when the last
+    /// poll before the deadline could not read the state (a read that looks
+    /// failed is retried, never taken as the answer, and an older snapshot is
+    /// never returned in its place). Sleeps off the main actor between polls.
+    ///
+    /// - Throws: `CancellationError` when the calling task is cancelled, even
+    ///   if the last snapshot satisfied `isDone`.
     static func waitForCoinJoinUtxoState(
+        binding: CoinJoinWalletBinding,
         timeout: TimeInterval,
         pollInterval: TimeInterval = 1,
         until isDone: @escaping (CoinJoinUtxoState) -> Bool
-    ) async -> (state: CoinJoinUtxoState, satisfied: Bool)? {
+    ) async throws -> (state: CoinJoinUtxoState, satisfied: Bool)? {
         let deadline = Date().addingTimeInterval(timeout)
         while true {
-            guard let state = await MainActor.run(body: { coinJoinUtxoState() }) else { return nil }
-            if isDone(state) { return (state, true) }
-            if Date() >= deadline || Task.isCancelled { return (state, false) }
-            try? await Task.sleep(nanoseconds: UInt64(pollInterval * 1_000_000_000))
+            try Task.checkCancellation()
+            let read = await MainActor.run { () -> (bound: Bool, state: CoinJoinUtxoState?) in
+                if let state = coinJoinUtxoState(expecting: binding) { return (true, state) }
+                return (CoinJoinWalletBinding.current() == binding, nil)
+            }
+            try Task.checkCancellation()
+            guard read.bound else { return nil }
+            if let state = read.state, isDone(state) { return (state, true) }
+            if Date() >= deadline { return read.state.map { ($0, false) } }
+            try await Task.sleep(nanoseconds: UInt64(pollInterval * 1_000_000_000))
         }
     }
 

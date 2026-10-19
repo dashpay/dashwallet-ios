@@ -525,7 +525,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Funding-parameterized form of `performAssetLock(recipientAmountDuffs:)`
     /// — same stages, polling, and resume semantics for both funding sources
     /// (a stuck lock resumes by outpoint regardless of what funded it).
-    func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
+    /// - Parameter binding: When set, the transfer fails unless this is still
+    ///   the active wallet and network (the CoinJoin move pins the wallet it
+    ///   was authorized for).
+    func performAssetLock(
+        funding: AssetLockFundingSource,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
@@ -566,6 +573,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        // After the prompt, so a switch while it was open is caught too; the
+        // sync gate below then reads the pinned wallet's state.
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — the active wallet changed")
+            handleFailure(CoordinatorError.noWallet)
+            return
+        }
+
+        // A cancelled task stops here, before anything is built or broadcast.
+        // Reported as a cancel: the caller went away, nothing failed.
+        if Task.isCancelled {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — task cancelled")
+            handleFailure(CoordinatorError.authCancelled)
             return
         }
 
@@ -643,7 +666,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
+    /// - Parameter binding: as for `performAssetLock(funding:recipientRaw43:expecting:)`.
+    func resumeAssetLock(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
@@ -659,6 +688,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: resume refused — the active wallet changed")
+            handleFailure(CoordinatorError.noWallet)
             return
         }
 
@@ -1425,6 +1460,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
             network: basic.network,
             modelContainer: basic.modelContainer,
             shieldedRecipient: recipient)
+    }
+
+    /// Whether a pinned transfer may still run: `binding` (when set) is both
+    /// the environment resolved for it and the host's active wallet now.
+    private func isStillBound(
+        _ binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?, env: Environment
+    ) -> Bool {
+        guard let binding else { return true }
+        return binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding(walletId: env.walletId, network: env.network)
+            && binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current()
     }
 
     /// Synchronous single-flight gate. Returns `false` when a transfer is
