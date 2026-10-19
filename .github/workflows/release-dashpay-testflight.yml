@@ -212,8 +212,8 @@ jobs:
       # A blank `platform_ref` builds the SDK from the commit in `.platform-ref`,
       # the pin unit-tests.yml checks out. A branch cut before `.platform-ref`
       # existed falls back to Platform's default branch (a blank checkout ref),
-      # so it can still be released. An entered ref wins; the step after the
-      # checkout warns when it lands off the pin.
+      # so it can still be released. An entered ref wins; build provenance
+      # warns when it lands off the pin, and the release summary records it.
       - name: Resolve the platform ref
         id: platform-ref
         env:
@@ -229,12 +229,8 @@ jobs:
           if [[ -f .platform-ref ]]; then
             pin=$(tr -d '[:space:]' < .platform-ref)
             if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
-              if [[ -z "$ref" ]]; then
-                echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
-                exit 1
-              fi
-              echo "::warning file=.platform-ref::not a full 40-hex SHA ('$pin'); using platform_ref '$ref'"
-              pin=""
+              echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
+              exit 1
             fi
           fi
           if [[ -n "$ref" ]]; then
@@ -265,17 +261,6 @@ jobs:
           # Frozen models are regenerated from historical source commits.
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Compare the platform commit with the pin
-        if: steps.platform-ref.outputs.pin != ''
-        env:
-          PIN: ${{ steps.platform-ref.outputs.pin }}
-        run: |
-          set -euo pipefail
-          head=$(git -C ../platform rev-parse HEAD)
-          if [[ "$head" != "$PIN" ]]; then
-            echo "::warning::building against platform $head, not the .platform-ref pin $PIN that unit-tests.yml uses"
-          fi
 
       - name: Resolve archive paths
         run: |
@@ -356,15 +341,27 @@ jobs:
 
       - name: Resolve build provenance
         id: release-info
+        env:
+          PLATFORM_PIN: ${{ steps.platform-ref.outputs.pin }}
         run: |
           set -euo pipefail
 
           wallet_sha=$(git rev-parse HEAD)
           platform_sha=$(git -C ../platform rev-parse HEAD)
 
+          if [[ -z "$PLATFORM_PIN" ]]; then
+            pin_status="no .platform-ref"
+          elif [[ "$platform_sha" == "$PLATFORM_PIN" ]]; then
+            pin_status="on the .platform-ref pin"
+          else
+            pin_status="off the .platform-ref pin ${PLATFORM_PIN}"
+            echo "::warning::building against platform $platform_sha, not the .platform-ref pin $PLATFORM_PIN that unit-tests.yml uses"
+          fi
+
           {
             echo "wallet_sha=$wallet_sha"
             echo "platform_sha=$platform_sha"
+            echo "pin_status=$pin_status"
           } >> "$GITHUB_OUTPUT"
 
       - name: Install App Store Connect API key
@@ -918,6 +915,7 @@ jobs:
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
           PLATFORM_REF_SOURCE: ${{ steps.platform-ref.outputs.source }}
+          PLATFORM_PIN_STATUS: ${{ steps.release-info.outputs.pin_status }}
           REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
           LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
           LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
@@ -936,7 +934,7 @@ jobs:
             echo "- Latest production version: \`${LATEST_PRODUCTION_VERSION}\`"
             echo "- Bundle ID: \`${BUNDLE_ID}\`"
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
-            echo "- platform: \`${PLATFORM_SHA}\` (from: \`${PLATFORM_REF_SOURCE}\`)"
+            echo "- platform: \`${PLATFORM_SHA}\` (from: \`${PLATFORM_REF_SOURCE}\`; ${PLATFORM_PIN_STATUS})"
             echo "- Channel: \`${RELEASE_CHANNEL}\`"
             if [[ "$RELEASE_CHANNEL" == 'external' ]]; then
               echo "- External group: \`${TESTFLIGHT_GROUP}\`"
