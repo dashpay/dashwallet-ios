@@ -212,14 +212,15 @@ jobs:
       # A blank `platform_ref` builds the SDK from the commit in `.platform-ref`,
       # the pin unit-tests.yml checks out. A branch cut before `.platform-ref`
       # existed falls back to Platform's default branch (a blank checkout ref),
-      # so it can still be released.
+      # so it can still be released. An entered ref wins; the step after the
+      # checkout warns when it lands off the pin.
       - name: Resolve the platform ref
         id: platform-ref
         env:
           REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
         run: |
           set -euo pipefail
-          ref="$REQUESTED_PLATFORM_REF"
+          ref=$(printf '%s' "$REQUESTED_PLATFORM_REF" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           if [[ "$ref" =~ [[:space:]] ]]; then
             echo "::error::platform_ref must be a single branch, tag or SHA, got '$ref'"
             exit 1
@@ -228,15 +229,17 @@ jobs:
           if [[ -f .platform-ref ]]; then
             pin=$(tr -d '[:space:]' < .platform-ref)
             if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
-              echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
-              exit 1
+              if [[ -z "$ref" ]]; then
+                echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
+                exit 1
+              fi
+              echo "::warning file=.platform-ref::not a full 40-hex SHA ('$pin'); using platform_ref '$ref'"
+              pin=""
             fi
           fi
           if [[ -n "$ref" ]]; then
             source="$ref"
-            if [[ -n "$pin" && "$ref" != "$pin" ]]; then
-              echo "::warning::platform_ref '$ref' overrides the .platform-ref pin $pin that unit-tests.yml uses"
-            fi
+            [[ "$ref" == "$pin" ]] && source=".platform-ref"
           elif [[ -n "$pin" ]]; then
             ref="$pin"
             source=".platform-ref"
@@ -246,9 +249,10 @@ jobs:
           fi
           {
             echo "ref=$ref"
+            echo "pin=$pin"
             echo "source=$source"
           } >> "$GITHUB_OUTPUT"
-          if [[ "$source" == '.platform-ref' ]]; then echo "platform: $ref (.platform-ref)"; else echo "platform: $source"; fi
+          echo "platform: ${ref:-default branch} (from: $source)"
 
       - name: Checkout platform
         uses: actions/checkout@v6
@@ -261,6 +265,17 @@ jobs:
           # Frozen models are regenerated from historical source commits.
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Compare the platform commit with the pin
+        if: steps.platform-ref.outputs.pin != ''
+        env:
+          PIN: ${{ steps.platform-ref.outputs.pin }}
+        run: |
+          set -euo pipefail
+          head=$(git -C ../platform rev-parse HEAD)
+          if [[ "$head" != "$PIN" ]]; then
+            echo "::warning::building against platform $head, not the .platform-ref pin $PIN that unit-tests.yml uses"
+          fi
 
       - name: Resolve archive paths
         run: |
