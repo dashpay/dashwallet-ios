@@ -312,6 +312,35 @@ final class PendingInvitationStoreTests: XCTestCase {
         XCTAssertEqual(store.pending?.rawLink, linkA, "the leftover comes back to be handled again")
     }
 
+    /// The wallet's copy is gone but its assigned pre-onboarding copy could
+    /// not be removed: the marker stays, so the copy the next move brings
+    /// back is neither shown nor kept.
+    func testFinishedMarkerOutlivesAnAssignedPreOnboardingCopy() throws {
+        halfFinishedMoveUnderWalletA()
+        let unboundAccount = PendingInvitationStore.keychainPrefix + unbound.storageKey
+        let walletAccount = PendingInvitationStore.keychainPrefix + walletA.storageKey
+        storage.undeletable = [unboundAccount]
+        let store = makeStore()
+        let invitation = try XCTUnwrap(store.pending)
+        XCTAssertNotNil(storage.items[unboundAccount], "the move's clean-up keeps failing")
+
+        XCTAssertFalse(store.retireFinished(invitation))
+        XCTAssertNil(storage.items[walletAccount], "the wallet's own copy went first")
+        store.reload()
+        XCTAssertNil(storage.items[walletAccount], "the spent link is not moved back in")
+        XCTAssertNil(store.pending)
+        XCTAssertEqual(store.receive(linkA), .alreadyHasIdentity, "reopening it does not store it again")
+        XCTAssertNil(storage.items[walletAccount])
+        XCTAssertTrue(store.isFinished(invitation), "the pre-onboarding copy still holds the link")
+
+        storage.undeletable = []
+        store.reload()
+        XCTAssertNil(storage.items[unboundAccount])
+        XCTAssertNil(storage.items[walletAccount])
+        XCTAssertFalse(store.isFinished(invitation))
+        XCTAssertNil(store.pending)
+    }
+
     func testBindingKeepsTheWalletsOwnInvitation() {
         XCTAssertEqual(makeStore().receive(linkB), .stored)
         receiveBeforeWallet(linkA)
@@ -423,6 +452,50 @@ final class PendingInvitationStoreTests: XCTestCase {
         storage.unreadable = []
         store.reload()
         XCTAssertNil(storage.items[account], "removed once readable: the marker survived")
+        XCTAssertNil(store.pending)
+    }
+
+    /// A registration finished on an identity the wallet already had, but
+    /// removing its copy failed: the removal is retried on reload, only in
+    /// that wallet, and the invitation counts as finished until then.
+    func testFinishedRegistrationRemovalIsRetriedInItsOwnScope() throws {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let invitation = try XCTUnwrap(store.pending)
+        scope = walletB
+        XCTAssertEqual(makeStore().receive(linkA), .stored)
+        scope = walletA
+        let accountA = PendingInvitationStore.keychainPrefix + walletA.storageKey
+        let accountB = PendingInvitationStore.keychainPrefix + walletB.storageKey
+
+        storage.undeletable = [accountA]
+        XCTAssertFalse(store.retireFinished(invitation), "the removal failed; the marker stays")
+        XCTAssertTrue(store.isFinished(invitation))
+        XCTAssertNil(store.pending, "a finished registration's copy is not shown, so it is not checked")
+
+        storage.undeletable = []
+        storage.unreadable = [accountA]
+        store.reload()
+        XCTAssertTrue(store.isFinished(invitation), "not readable, so the marker stays")
+
+        storage.unreadable = []
+        store.reload()
+        XCTAssertNil(storage.items[accountA], "removed once storage recovered")
+        XCTAssertNil(store.pending)
+        XCTAssertFalse(store.isFinished(invitation))
+        XCTAssertNotNil(storage.items[accountB], "another wallet's copy is not this registration's")
+    }
+
+    /// Opening the same link again does not put a finished copy back up.
+    func testReopeningAFinishedInvitationDoesNotShowItAgain() throws {
+        let store = makeStore()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let invitation = try XCTUnwrap(store.pending)
+        storage.undeletable = [PendingInvitationStore.keychainPrefix + walletA.storageKey]
+        XCTAssertFalse(store.retireFinished(invitation))
+
+        XCTAssertEqual(store.receive(linkA), .alreadyHasIdentity)
+        XCTAssertEqual(store.receive(linkB), .alreadyHasIdentity, "not 'busy': no card is up")
         XCTAssertNil(store.pending)
     }
 

@@ -127,6 +127,31 @@ final class PendingInvitationViewModelTests: XCTestCase {
         }
     }
 
+    // MARK: - Finished registration
+
+    /// The registration finished but the copy could not be removed: the card
+    /// goes and is not checked (the new username would read as "already has
+    /// one"), on this reload and the next.
+    func testNoCardOrCheckWhileAFinishedRegistrationsRemovalIsOwed() async throws {
+        XCTAssertEqual(store.receive(linkA), .stored)
+        validator.results[linkA] = .alreadyHasIdentity
+        validator.heldLink = linkA
+        let viewModel = makeViewModel()
+        await settle(until: { self.validator.isHolding })
+        let invitation = try XCTUnwrap(store.pending)
+        let account = PendingInvitationStore.keychainPrefix + walletA.storageKey
+        storage.undeletable = [account]
+        XCTAssertFalse(store.retireFinished(invitation))
+        validator.release()
+        XCTAssertNil(viewModel.invitation, "the card goes with the finished registration")
+
+        store.reload()
+        XCTAssertNil(store.pending, "a reload does not bring it back")
+        XCTAssertNil(viewModel.invitation, "so the card has nothing to check")
+        XCTAssertEqual(validator.calls, [linkA], "only the check from before the registration ran")
+        XCTAssertTrue(outcomes.isEmpty, "no 'already has one' dialog after a finished registration")
+    }
+
     // MARK: - Verdicts
 
     func testDefinitiveVerdictRemovesTheCopyAndIsDeliveredOnce() async {

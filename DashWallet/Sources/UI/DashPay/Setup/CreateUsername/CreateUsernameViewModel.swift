@@ -825,7 +825,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // username as "already has one". Only this wallet's copy: on
                 // that route the voucher may still be unspent.
                 if let pendingInvitation {
-                    PendingInvitationStore.shared.remove(pendingInvitation, reason: .claimed)
+                    PendingInvitationStore.shared.retireFinished(pendingInvitation)
                 }
                 DWCurrentUserIdentityInfo.shared.refreshFromSDK()
                 NotificationCenter.default.post(
