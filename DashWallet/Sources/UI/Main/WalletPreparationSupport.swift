@@ -41,6 +41,11 @@ final class WalletPreparationSupportViewModel: ObservableObject {
                 "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.",
                 comment: "Wallet preparation help")
         }
+        if kind == .keychain {
+            return NSLocalizedString(
+                "Your wallet keys could not be read from this device. Do not delete the app. Try opening your wallet again, or contact support if the problem continues.",
+                comment: "Wallet preparation help")
+        }
         return NSLocalizedString(
             "Your wallet keys are still stored safely on this device. Try opening your wallet again, or contact support if the problem continues.",
             comment: "Wallet preparation help")
@@ -57,6 +62,11 @@ final class WalletPreparationSupportViewModel: ObservableObject {
             subject = "Dash Wallet — unable to move wallet"
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n",
+                comment: "Editable wallet support message"), recipient)
+        } else if kind == .keychain {
+            subject = "Dash Wallet — unable to read wallet keys"
+            body = String(format: NSLocalizedString(
+                "To: %@\n\nI couldn't open my wallet. The app says my wallet keys could not be read.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
         } else {
             subject = "Dash Wallet — unable to open wallet"

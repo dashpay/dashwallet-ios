@@ -54,16 +54,18 @@ final class ExchangeAddressLookupContextTests: XCTestCase {
             swapAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7",
             chain: "ETH"
         )
-        let btc = SwapCryptoCurrency(
-            id: "btc",
-            code: "BTC",
-            name: "Bitcoin",
-            swapAsset: "BTC.BTC",
-            chain: "BTC"
+        // BTC is itself multi-chain now (native and bridged on NEAR share the code),
+        // so ADA is the single-chain example.
+        let ada = SwapCryptoCurrency(
+            id: "ada",
+            code: "ADA",
+            name: "Cardano",
+            swapAsset: "ADA.ADA",
+            chain: "ADA"
         )
 
         XCTAssertTrue(ExchangeAddressLookupContext(coin: ethUSDT).usesAmbiguousCurrencyCode)
-        XCTAssertFalse(ExchangeAddressLookupContext(coin: btc).usesAmbiguousCurrencyCode)
+        XCTAssertFalse(ExchangeAddressLookupContext(coin: ada).usesAmbiguousCurrencyCode)
     }
 
     func testCoinbaseHintsIncludeTokenIdentifierAndChain() {

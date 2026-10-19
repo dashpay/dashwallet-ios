@@ -1,10 +1,6 @@
 import XCTest
-#if canImport(dashpay)
 @testable import dashpay
 import SwiftUI
-#else
-@testable import UsernameRecoveryHarness
-#endif
 
 @MainActor
 final class UsernameRegistrationRecoveryTests: XCTestCase {
@@ -219,7 +215,6 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
     }
 }
 
-#if canImport(dashpay)
 extension UsernameRegistrationRecoveryTests {
     private func unnamedIdentitySnapshot() -> DWCurrentUserIdentityInfo.Snapshot {
         .init(namesAreLoaded: true, balanceCredits: 9_639_634_780,
@@ -379,4 +374,3 @@ extension UsernameRegistrationRecoveryTests {
     }
 
 }
-#endif

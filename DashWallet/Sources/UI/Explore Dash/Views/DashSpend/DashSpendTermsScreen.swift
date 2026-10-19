@@ -31,20 +31,11 @@ struct DashSpendTermsScreen: View {
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    
-                    Button(action: {
+                DashUIKit.NavigationBar(trailing: {
+                    DashUIKit.NavigationBarElement.close.button {
                         presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.dash.primaryText)
-                            .padding(10)
                     }
-                }
-                .padding(.top, 5)
-                .padding(.horizontal, 10)
+                })
                 
                 TextIntro(
                     icon: .custom("dashspend.logo", maxHeight: 32),
