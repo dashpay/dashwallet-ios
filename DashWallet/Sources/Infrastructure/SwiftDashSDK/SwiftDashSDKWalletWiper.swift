@@ -949,7 +949,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 #if DASHPAY
         // First, while a failure still leaves the wallet intact for a retry:
         // a pending invitation held for this wallet carries a voucher key.
-        let removedWalletHex = walletId.map { String(format: "%02x", $0) }.joined()
+        let removedWalletHex = walletId.hexEncodedString()
         guard PendingInvitationStore.shared.removeAll(walletIdHex: removedWalletHex) else {
             logger.error("a pending DashPay invitation of the wallet could not be deleted; refusing the removal")
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete

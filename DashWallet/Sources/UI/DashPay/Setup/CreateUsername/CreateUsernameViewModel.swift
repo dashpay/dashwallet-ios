@@ -838,7 +838,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // anything else keeps the generic wording and the invitation.
                 if let failure = InvitationClaimFailure.classify(error) {
                     handleInvitationClaimFailure(failure)
-                    return .failure(failure.message(sender: invitationSenderName()))
+                    return .failure(failure.message)
                 }
                 return .failure(
                     Self.registrationFailureMessage(error, username: submittedUsername))
@@ -921,24 +921,12 @@ class CreateUsernameViewModel: ObservableObject {
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
-    /// What a failed claim does to the stored invitation: an invalid one is
-    /// removed from this wallet, a reported spend is re-checked by the Home
-    /// card, and one still confirming is kept.
+    /// What a failed claim does to the stored invitation: a refusal is
+    /// re-checked by the Home card, and one still confirming is kept.
     private func handleInvitationClaimFailure(_ failure: InvitationClaimFailure) {
-        if failure.endsInvitation {
-            // "Invalid" may be this wallet's network only; named explicitly
-            // because the result can arrive after a wallet switch.
-            if let pendingInvitation {
-                PendingInvitationStore.shared.remove(pendingInvitation, reason: .definitiveOutcome)
-            }
-        } else if failure == .reportedUsed {
+        if failure == .refused {
             PendingInvitationViewModel.shared.recheck()
         }
-    }
-
-    private func invitationSenderName() -> String {
-        InvitationOutcomeDialogs.senderName(
-            InvitationValidationPolicy.inviter(from: invitationURI.flatMap { DWInvitationService.shared.preview(for: $0) }))
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {

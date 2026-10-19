@@ -125,22 +125,23 @@ final class InvitationValidationPolicyTests: XCTestCase {
     }
 
     func testWrappedClaimFailuresAreRecognized() {
+        // The claim reports an invalid parameter for its identity keys as well
+        // as for the link: the card's link-only status query decides.
         XCTAssertEqual(
-            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidNetwork("testnet"))), .invalid)
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidNetwork("testnet"))), .refused)
         XCTAssertEqual(
-            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("bad link"))), .invalid)
+            InvitationClaimFailure.classify(wrapped(PlatformWalletError.invalidParameter("identityPubkeys is empty"))),
+            .refused)
         // The wallet's typed error can concern another asset lock of the
         // same registration (a recovered Core lock): only reported.
         let typed = InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockAlreadyConsumed("other outpoint")))
-        XCTAssertEqual(typed, .reportedUsed)
-        XCTAssertEqual(typed?.endsInvitation, false)
+        XCTAssertEqual(typed, .refused)
         // The shape the SDK produces for a node's consensus rejection. It is
         // not proof-verified, so it is only reported: nothing is deleted
         // until the card's status query confirms it.
         let reported = InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
             PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform")))
-        XCTAssertEqual(reported, .reportedUsed)
-        XCTAssertEqual(reported?.endsInvitation, false)
+        XCTAssertEqual(reported, .refused)
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
@@ -148,15 +149,13 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertEqual(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
                 "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
-            .reportedUsed)
+            .refused)
     }
 
     func testUntypedSpentTextNeverDeletesTheInvitation() {
         let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
             "asset lock outpoint already completely used")))
-        XCTAssertEqual(failure, .reportedUsed)
-        XCTAssertEqual(failure?.endsInvitation, false)
-        XCTAssertEqual(InvitationClaimFailure.invalid.endsInvitation, true)
+        XCTAssertEqual(failure, .refused)
     }
 
     func testFailedNameRefreshNotificationsStayWithinTheRetryBudget() {
@@ -174,7 +173,6 @@ final class InvitationValidationPolicyTests: XCTestCase {
         let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
             "invitation islock proof was rejected … the funding transaction is not yet chain-locked")))
         XCTAssertEqual(failure, .stillConfirming)
-        XCTAssertEqual(failure?.endsInvitation, false)
     }
 
     // MARK: - The wallet's state is read again after the status query
@@ -240,11 +238,10 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertTrue(CreateUsernameViewModel.invitationPays(for: "alice", tier: nil, isContested: contested))
     }
 
-    func testClaimFailureWordingNamesTheSender() {
-        XCTAssertTrue(InvitationClaimFailure.invalid.message(sender: "alice").contains("alice"))
-        // Not proven spent, so it does not say "claimed".
-        XCTAssertFalse(InvitationClaimFailure.reportedUsed.message(sender: "alice").contains("claimed"))
-        XCTAssertFalse(InvitationClaimFailure.stillConfirming.message(sender: "alice").contains("alice"))
+    func testClaimFailureWordingClaimsNoVerdict() {
+        // Not proven spent or invalid, so it says neither.
+        XCTAssertFalse(InvitationClaimFailure.refused.message.contains("claimed"))
+        XCTAssertFalse(InvitationClaimFailure.refused.message.contains("not valid"))
     }
 
     func testUnrelatedFailureIsNotAnInvitationVerdict() {

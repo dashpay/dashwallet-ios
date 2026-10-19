@@ -98,7 +98,7 @@ extension InvitationScope {
               let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
         return InvitationScope(
             networkRawValue: WalletEnvironment.networkKind(for: network).rawValue,
-            walletIdHex: walletId.map { String(format: "%02x", $0) }.joined())
+            walletIdHex: walletId.hexEncodedString())
     }
 
     /// `scope` is both the selected wallet and the one the SDK is bound to —
@@ -122,7 +122,9 @@ extension InvitationScope {
 struct PendingInvitation: Equatable, CustomStringConvertible {
     /// The link as received. Contains the voucher key — never log it.
     let rawLink: String
-    let receivedAt: Date
+    /// nil when its metadata is gone (a reinstall keeps the Keychain item but
+    /// not the defaults) — a made-up date would differ on every reload.
+    let receivedAt: Date?
     /// The link arrived before a wallet existed.
     let fromOnboarding: Bool
     /// Where it is stored.
@@ -135,7 +137,7 @@ struct PendingInvitation: Equatable, CustomStringConvertible {
     }
 
     var description: String {
-        "PendingInvitation(scope: \(scope), receivedAt: \(receivedAt), fromOnboarding: \(fromOnboarding), link: <redacted>)"
+        "PendingInvitation(scope: \(scope), receivedAt: \(receivedAt.map { "\($0)" } ?? "unknown"), fromOnboarding: \(fromOnboarding), link: <redacted>)"
     }
 }
 
@@ -218,6 +220,11 @@ final class KeychainInvitationSecretStorage: InvitationSecretStorage {
 @MainActor
 final class PendingInvitationStore: ObservableObject {
 
+    /// Singleton justification (arch guardrail #4): it is the one owner of
+    /// the invitation Keychain items and their metadata, and it observes the
+    /// active wallet itself; the deep-link entry, the Home card, the claim
+    /// and the wiper must all see the same copy. Tests build their own
+    /// instance over `InvitationSecretStorage` and a private defaults suite.
     static let shared = PendingInvitationStore()
 
     enum ReceiveOutcome: Equatable {
@@ -381,7 +388,7 @@ final class PendingInvitationStore: ObservableObject {
         // Stored as `timeIntervalSinceReferenceDate`, Date's own
         // representation, so it reads back equal: a reloaded invitation must
         // compare equal to the one that was shown, or the card re-checks it.
-        let receivedAt = (meta["receivedAt"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:)) ?? Date()
+        let receivedAt = (meta["receivedAt"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:))
         let fromOnboarding = meta["fromOnboarding"] as? Bool ?? false
         return PendingInvitation(rawLink: rawLink, receivedAt: receivedAt, fromOnboarding: fromOnboarding, scope: scope)
     }
@@ -553,7 +560,7 @@ final class PendingInvitationStore: ObservableObject {
     }
 
     private static func digest(_ normalizedURI: String) -> String {
-        SHA256.hash(data: Data(normalizedURI.utf8)).map { String(format: "%02x", $0) }.joined()
+        Data(SHA256.hash(data: Data(normalizedURI.utf8))).hexEncodedString()
     }
 
     /// Forget every invitation stored for a wallet that is being removed
@@ -634,10 +641,9 @@ final class PendingInvitationStore: ObservableObject {
     }
 
     private func writeMetadata(_ invitation: PendingInvitation) {
-        defaults.set([
-            "receivedAt": invitation.receivedAt.timeIntervalSinceReferenceDate,
-            "fromOnboarding": invitation.fromOnboarding,
-        ], forKey: metadataKey(invitation.scope))
+        var meta: [String: Any] = ["fromOnboarding": invitation.fromOnboarding]
+        meta["receivedAt"] = invitation.receivedAt?.timeIntervalSinceReferenceDate
+        defaults.set(meta, forKey: metadataKey(invitation.scope))
     }
 
     /// Delete every stored invitation, across networks and wallets. Metadata

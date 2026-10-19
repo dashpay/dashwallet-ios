@@ -106,7 +106,10 @@ final class InvitationEntry: NSObject {
         }
     }
 
-    private static func topmost(from controller: UIViewController) -> UIViewController {
+    /// The controller a dialog can be presented from: the end of the
+    /// presentation chain, short of one already being dismissed (UIKit
+    /// drops a presentation from it).
+    static func topmost(from controller: UIViewController) -> UIViewController {
         var top = controller
         while let presented = top.presentedViewController, !presented.isBeingDismissed {
             top = presented

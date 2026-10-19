@@ -33,12 +33,12 @@ class CreateUsernameViewController: UIViewController {
     private let definedUsername: String?
 
     @objc
-    init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
+    init(dashPayModel: DWDashPayProtocol, definedUsername: String?) {
         // `dashPayModel` is part of the Obj-C navigation contract but
         // the SwiftUI flow drives registration straight through
         // `DWIdentityRegistrationBridge` / the coordinator, so it is
         // not stored here.
-        self.invitationURI = invitationURL?.absoluteString
+        self.invitationURI = nil
         self.invitationTier = nil
         self.pendingInvitation = nil
         self.definedUsername = definedUsername

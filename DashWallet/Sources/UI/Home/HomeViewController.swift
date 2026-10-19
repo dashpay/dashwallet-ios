@@ -624,11 +624,7 @@ extension HomeViewController: HomeViewDelegate {
         guard let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
         // Over whatever is already up (a sheet, another alert), or UIKit
         // refuses the presentation silently.
-        var presenter: UIViewController = tabBarController ?? self
-        while let presented = presenter.presentedViewController, !presented.isBeingDismissed {
-            presenter = presented
-        }
-        presenter.present(dialog, animated: true)
+        InvitationEntry.topmost(from: tabBarController ?? self).present(dialog, animated: true)
     }
 
     /// Where the DashPay row goes while a contested name is being voted on —

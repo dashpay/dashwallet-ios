@@ -233,21 +233,24 @@ enum InvitationValidationPolicy {
 }
 
 /// How a failed invitation claim ends — pure, so it is unit-testable.
+///
+/// No claim error ends the invitation: the Home card's status query, which
+/// reads only the link and proof-verifies the voucher, is the one thing that
+/// removes it.
 enum InvitationClaimFailure: Equatable {
-    /// The link can never be claimed by this wallet. Ends this wallet's copy.
-    case invalid
-    /// The claim failed with a "spent" report — the wallet's typed error,
-    /// the node's consensus code, or error text. None is proof that this
-    /// voucher was spent: the node's rejection is not proof-verified, and
-    /// the typed error can concern another asset lock in the same
-    /// registration. The invitation stays; the card's proof-verified status
-    /// query is the only thing that removes a spent voucher.
-    case reportedUsed
+    /// The claim was refused for a reason only the card's status query can
+    /// settle:
+    /// - a "spent" report — the wallet's typed error, the node's consensus
+    ///   code, or error text. The node's rejection is not proof-verified, and
+    ///   the typed error can concern another asset lock in the same
+    ///   registration;
+    /// - an invalid parameter or network. The claim reports those for its
+    ///   identity keys as well as for the link, so they say nothing certain
+    ///   about the invitation.
+    case refused
     /// The InstantSend proof went stale before the funding block was
     /// chain-locked; the same invitation claims fine a few minutes later.
     case stillConfirming
-
-    var endsInvitation: Bool { self == .invalid }
 
     /// `IdentityAssetLockTransactionOutPointAlreadyConsumedError`, as a node
     /// reports it.
@@ -258,12 +261,12 @@ enum InvitationClaimFailure: Equatable {
     static func classify(_ error: Error) -> InvitationClaimFailure? {
         let underlying = unwrap(error)
         switch underlying {
-        case PlatformWalletError.assetLockAlreadyConsumed:
-            return .reportedUsed
-        case PlatformWalletError.invalidParameter, PlatformWalletError.invalidNetwork:
-            return .invalid
+        case PlatformWalletError.assetLockAlreadyConsumed,
+             PlatformWalletError.invalidParameter,
+             PlatformWalletError.invalidNetwork:
+            return .refused
         case let error as PlatformWalletError where error.consensusError?.code == outPointAlreadyConsumedCode:
-            return .reportedUsed
+            return .refused
         default:
             break
         }
@@ -271,7 +274,7 @@ enum InvitationClaimFailure: Equatable {
         // names the cause. "Not yet chain-locked" is decided wallet-side.
         let text = String(describing: underlying).lowercased()
         if text.contains("already consumed") || text.contains("already completely used") {
-            return .reportedUsed
+            return .refused
         }
         if text.contains("not yet chain-locked") {
             return .stillConfirming
@@ -279,18 +282,15 @@ enum InvitationClaimFailure: Equatable {
         return nil
     }
 
-    /// The user-facing wording; `sender` is the inviter's name.
-    func message(sender: String) -> String {
+    /// The user-facing wording.
+    var message: String {
         switch self {
-        case .reportedUsed:
-            // Not proven spent (see the case): the Home card's check names
-            // the outcome, so this does not.
+        case .refused:
+            // Not proven either way (see the case): the Home card's check
+            // names the outcome, so this does not.
             return NSLocalizedString(
                 "This invitation couldn't be used. Check it on the Home screen.",
                 comment: "DashPay Invitations")
-        case .invalid:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your invitation from %@ is not valid", comment: ""), sender)
         case .stillConfirming:
             return NSLocalizedString(
                 "The invitation is still confirming on the network. Try again in a few minutes.",

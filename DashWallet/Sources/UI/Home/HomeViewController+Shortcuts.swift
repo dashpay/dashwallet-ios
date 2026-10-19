@@ -51,7 +51,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         case .reportAnIssue:
             break
         case .createUsername:
-            showCreateUsername(withInvitation: nil, definedUsername: nil)
+            showCreateUsername(definedUsername: nil)
         case .receive:
             delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
         case .explore:
@@ -178,7 +178,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     /// invitation mode. The Join DashPay sheet is skipped — the invitation
     /// pays, so there is no funding source to choose and no balance to check.
     func showCreateUsername(withInvitation invitation: PendingInvitation, tier: InvitationTier) {
-        guard let uri = invitation.normalizedURI else { return }
+        // A second tap on Create lands while the first push animates: only
+        // Home itself pushes the form.
+        guard let uri = invitation.normalizedURI,
+              navigationController?.topViewController === self else { return }
         let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationTier: tier)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
@@ -189,7 +192,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
     #endif
 
-    func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
+    func showCreateUsername(definedUsername: String?) {
         #if DASHPAY
         // A registration waiting to be recovered goes straight to the form.
         // A Core-funded attempt that failed with a recoverable asset lock has
@@ -199,7 +202,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         // one screen that recognizes a pending recovery and waives the balance
         // requirement. The recovery IS the funding.
         if DWIdentityRegistrationCoordinator.shared.registrationRecovery().isPending {
-            pushCreateUsernameForm(invitationURL: nil, definedUsername: definedUsername)
+            pushCreateUsernameForm(definedUsername: definedUsername)
             return
         }
 
@@ -232,15 +235,14 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         CreateUsernameViewModel.discardChosenFundingSource()
         let trimmed = definedUsername?.trimmingCharacters(in: .whitespacesAndNewlines)
         pushCreateUsernameForm(
-            invitationURL: nil,
             definedUsername: (trimmed?.isEmpty ?? true) ? nil : trimmed)
     }
     #endif
 
 
     #if DASHPAY
-    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {
-        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: invitationURL, definedUsername: definedUsername)
+    private func pushCreateUsernameForm(definedUsername: String? = nil) {
+        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, definedUsername: definedUsername)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {

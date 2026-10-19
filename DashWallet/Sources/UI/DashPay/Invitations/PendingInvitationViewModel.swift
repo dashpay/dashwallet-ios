@@ -180,10 +180,13 @@ final class PendingInvitationViewModel: ObservableObject {
         for name in [Notification.Name("DWAppDidUnlockNotification"),
                      UIApplication.didBecomeActiveNotification,
                      SwiftDashSDKWalletState.activeWalletDidChangeNotification] {
-            observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+            observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] note in
                 MainActor.assumeIsolated {
                     guard let self else { return }
-                    self.store.reload()
+                    // The store reloads on a wallet change itself.
+                    if note.name != SwiftDashSDKWalletState.activeWalletDidChangeNotification {
+                        self.store.reload()
+                    }
                     self.validateIfPossible()
                     // Back in a wallet whose verdict is still waiting: offer
                     // it to the Home on screen again.
@@ -207,7 +210,9 @@ final class PendingInvitationViewModel: ObservableObject {
     /// Forget the invitation locally; nothing goes to the network. Opening
     /// the link again brings it back.
     func hide() {
-        guard let invitation, isActive(invitation.scope) else { return }
+        // Removed by its own scope, so this needs no bound wallet: the card
+        // can show while the host is not bound, and Hide must still work.
+        guard let invitation else { return }
         validationTask?.cancel()
         store.remove(invitation, reason: .hidden)
     }

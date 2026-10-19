@@ -652,7 +652,6 @@ struct MainMenuScreen: View {
     ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
-            invitationURL: nil,
             definedUsername: definedUsername
         )
         controller.hidesBottomBarWhenPushed = true

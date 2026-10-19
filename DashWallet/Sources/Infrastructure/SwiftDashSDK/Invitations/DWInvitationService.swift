@@ -26,17 +26,11 @@ import SwiftDashSDK
 
 @MainActor
 protocol DWInvitationServicing: AnyObject {
-    /// Canonical invitation URI for any accepted transport, or nil.
-    func normalize(_ input: String) -> String?
     /// Read-only structural preview of a normalized invitation URI.
     /// nil while the wallet is not hydrated or on a hard parse error;
     /// a malformed-but-recognized link returns a preview with
     /// `structurallyValid == false`.
     func preview(for uri: String) -> ManagedPlatformWallet.InvitationPreview?
-    /// True when this wallet already has a DashPay identity — claiming
-    /// an invitation registers a NEW identity, so the flow is not
-    /// offered to registered users.
-    var hasLocalIdentity: Bool { get }
     /// Resolve the inviter's DPNS username and send them a contact
     /// request from the (just-claimed) local identity. PIN-gated by the
     /// contacts service; throws on resolution or send failure.
@@ -70,17 +64,9 @@ final class DWInvitationService: DWInvitationServicing {
 
     private init() {}
 
-    func normalize(_ input: String) -> String? {
-        DWInvitationLinkNormalizer.normalize(input)
-    }
-
     func preview(for uri: String) -> ManagedPlatformWallet.InvitationPreview? {
         guard let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
         return try? wallet.parseInvitation(uri: uri)
-    }
-
-    var hasLocalIdentity: Bool {
-        DWCurrentUserIdentityInfo.shared.identityId != nil
     }
 
     func sendContactRequestToInviter(username: String) async throws {
