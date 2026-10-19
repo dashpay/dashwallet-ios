@@ -705,6 +705,13 @@ final class AppConnectV2LoginTests: XCTestCase {
         // This wallet's key on the identity with no current key at all: it
         // is derived for the app's contract, so Platform's read is behind.
         XCTAssertEqual(encryptionState([mine], current: nil, bindings: []), .outOfDate)
+        // So is a disabled key the store places on the app.
+        let disabledTheirs = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33), disabled: true)
+        XCTAssertEqual(
+            encryptionState(
+                [disabledTheirs], rule: .unique, current: nil,
+                bindings: [.init(keyId: 9, data: disabledTheirs.data, singleContractId: Self.appId)]),
+            .outOfDate)
         // This wallet's key, current and disabled, before the fetched keys
         // show it: never registered again.
         XCTAssertEqual(
@@ -788,6 +795,14 @@ final class AppConnectV2LoginTests: XCTestCase {
             },
             pause: { _ in })
         XCTAssertEqual(afterAFailedRead, [.notThisWallets])
+        // When no read answers, the failure is thrown.
+        do {
+            _ = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { throw SDKError.timeout("read") }, pause: { _ in })
+            XCTFail("expected the read failure")
+        } catch SDKError.timeout {
+        }
     }
 
     /// An answer a newer read gives has to be confirmed by a later one.

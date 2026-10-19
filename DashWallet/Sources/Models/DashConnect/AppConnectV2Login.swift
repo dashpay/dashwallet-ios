@@ -488,7 +488,8 @@ extension AppConnect {
     /// that is behind, or fails, is set aside; a newer one is taken and has
     /// to be confirmed in turn; one that conflicts makes the answer out of
     /// date, there being no telling which of the two is behind. An answer
-    /// still unconfirmed at the end is out of date.
+    /// still unconfirmed at the end is out of date, unless no read answered
+    /// at all: then the last failure is thrown.
     static func settle(
         currentKeys: [KeyPurpose: CurrentContractKey],
         maxRereads: Int = 3,
@@ -500,11 +501,20 @@ extension AppConnect {
         var result = try states(keys)
         var confirmed = !result.contains(where: { $0.needsSettling || $0 == .outOfDate })
         var rereads = 0
+        var readFailure: Error?
+        var anyReadAnswered = false
         while !confirmed && rereads < maxRereads {
             rereads += 1
             await pause(rereads)
             // A read that fails says nothing, like one that is behind.
-            guard let later = try? await reread() else { continue }
+            let later: [KeyPurpose: CurrentContractKey]
+            do {
+                later = try await reread()
+            } catch {
+                readFailure = error
+                continue
+            }
+            anyReadAnswered = true
             switch compare(earlier: keys, later: later) {
             case .same:
                 result = result.map(\.settled)
@@ -518,6 +528,8 @@ extension AppConnect {
                 result = try states(keys)
             }
         }
+        // When no read answered at all, the failure is what there is to say.
+        if !confirmed, !anyReadAnswered, let readFailure { throw readFailure }
         return confirmed ? result : result.map { _ in .outOfDate }
     }
 
@@ -607,11 +619,17 @@ extension AppConnect {
         }
         let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
         guard let currentKey else {
-            // Registering a key bound to the app makes it current, so a live
-            // one with no current key at all, or this wallet's key in any
-            // state (it is derived for the app's contract), is a read from
-            // before it landed.
-            if placedOnTheApp || holdsTheDerivedKey { return .outOfDate }
+            // Registering a key bound to the app makes it current, so a key
+            // the store places on the app with no current key at all, live or
+            // disabled, or this wallet's key in any state (it is derived for
+            // the app's contract), is a read from before it landed.
+            let placedInAnyState = currentIdentityPublicKeys.contains { key in
+                key.purpose == purpose && bindings.contains {
+                    $0.keyId == UInt32(bitPattern: key.keyId) && $0.data == key.data
+                        && !$0.hasUnreadableBound && $0.singleContractId == contractId
+                }
+            }
+            if placedInAnyState || holdsTheDerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
         guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),

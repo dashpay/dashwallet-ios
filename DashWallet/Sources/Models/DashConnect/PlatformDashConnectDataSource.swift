@@ -1493,11 +1493,24 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             if let sdkError = error as? SDKError, case .serializationError = sdkError { return .appConnectKeysUnsupported }
             return .appConnectKeysUnreadable
         }
-        let currentKeys: [KeyPurpose: AppConnect.CurrentContractKey]
+        // A first read that fails is tried again, as a later one would be.
+        var firstRead: [KeyPurpose: AppConnect.CurrentContractKey]?
+        var firstReadFailure: Error?
         do {
-            currentKeys = try await firstCurrentKeysRead.value
+            firstRead = try await firstCurrentKeysRead.value
         } catch {
-            throw failedRead(error)
+            firstReadFailure = error
+        }
+        for attempt in 1 ... 2 where firstRead == nil {
+            try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000)
+            do {
+                firstRead = try await readCurrentKeys()
+            } catch {
+                firstReadFailure = error
+            }
+        }
+        guard let currentKeys = firstRead else {
+            throw failedRead(firstReadFailure ?? DashConnectPlatformError.appConnectKeysUnreadable)
         }
         func states(_ currentKeys: [KeyPurpose: AppConnect.CurrentContractKey]) throws -> [AppConnect.EncryptionKeyState] {
             try plan.encryption.enumerated().map { index, grant in
@@ -3742,7 +3755,10 @@ enum DashConnectPlatformQueries {
     /// back the protocol-version read a sheet waits for.
     private static let epochQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.epoch-query")
     private static let documentQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.document-query")
-    private static let contractKeysQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.contract-keys-query")
+    /// Concurrent: a read a failed login no longer waits for cannot be
+    /// stopped, and must not hold back the next login's read.
+    private static let contractKeysQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.dashconnect.contract-keys-query", attributes: .concurrent)
 
     /// The protocol version the network runs, from a proved read of the
     /// current epoch. It throws when that read fails: there is no fallback
