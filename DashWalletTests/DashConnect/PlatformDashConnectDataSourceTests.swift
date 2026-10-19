@@ -245,6 +245,23 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
+    func testProductionParserAcceptsRealAndFixtureKeyRegistrations() throws {
+        let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
+        let parser = PlatformWalletDashConnectStateTransitionParser { bytes in
+            try wallet.parseStateTransition(bytes)
+        }
+        let payloads: [(String, Data)] = [
+            ("real dApp", try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex))),
+            ("tagged", try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))),
+            ("tagless", try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64))),
+        ]
+        for (name, bytes) in payloads {
+            guard case .keyRegistration = try parser.parse(bytes) else {
+                return XCTFail("Expected a key-registration transition: \(name)")
+            }
+        }
+    }
+
     func testParserKeepsAReadOnlyKeyReadOnly() throws {
         let parser = PlatformWalletDashConnectStateTransitionParser { _ in
             Self.parsed(.identityUpdate(.init(
@@ -301,7 +318,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             ])))),
             ("an incomplete row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
                 Self.tokenRow(contractId: contractId, tokenId: tokenId, complete: false)
-            ])), complete: false)),
+            ])))),
             ("an incomplete transition", Self.parsed(
                 .batch(.init(ownerId: ownerId, transitions: [purchase])), complete: false)),
             ("a missing price", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
@@ -326,7 +343,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             XCTAssertThrowsError(try parser.parse(Data([0])), name) {
                 XCTAssertEqual(
                     $0 as? DashConnectPlatformError,
-                    .unsupportedStateTransition("TestKind"),
+                    .unsupportedStateTransition,
                     name)
             }
         }
@@ -575,7 +592,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: transition.addPublicKeys[0].purpose,
                     securityLevel: transition.addPublicKeys[0].securityLevel,
                     publicKeyData: try KeyExchangeCrypto.hash160(attackerPublicKey),
-                    contractBounds: transition.addPublicKeys[0].contractBounds
+                    contractBounds: transition.addPublicKeys[0].contractBounds,
+                    readOnly: false
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -673,7 +691,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: authPublicKey,
-                    contractBounds: nil
+                    contractBounds: nil,
+                    readOnly: false
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -722,7 +741,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: authPublicKey,
-                    contractBounds: nil
+                    contractBounds: nil,
+                    readOnly: false
                 ),
                 transition.addPublicKeys[1],
             ],
@@ -1171,7 +1191,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .authentication,
                     securityLevel: .high,
                     publicKeyData: try KeyExchangeCrypto.hash160(authPublicKey),
-                    contractBounds: nil
+                    contractBounds: nil,
+                    readOnly: false
                 ),
                 DashConnectKeyRegistrationKey(
                     keyId: 7,
@@ -1179,7 +1200,8 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     purpose: .encryption,
                     securityLevel: .medium,
                     publicKeyData: try Secp256k1.compressedPublicKey(privateKey: encryptionPrivateKey),
-                    contractBounds: nil
+                    contractBounds: nil,
+                    readOnly: false
                 ),
             ],
             disablePublicKeyIds: []

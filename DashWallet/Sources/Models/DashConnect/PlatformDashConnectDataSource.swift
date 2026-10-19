@@ -70,7 +70,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
     case tokenPurchaseWrongIdentity
     case tokenPurchaseTokenIdMismatch
-    case unsupportedStateTransition(String)
+    case unsupportedStateTransition
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -167,7 +167,7 @@ struct DashConnectKeyRegistrationKey: Equatable {
     let securityLevel: SecurityLevel
     let publicKeyData: Data
     let contractBounds: ContractBounds?
-    var readOnly = false
+    let readOnly: Bool
 }
 
 struct DashConnectKeyRegistrationTransition: Equatable {
@@ -292,11 +292,13 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
             // The approval sheet and the rebuild in `approveTokenPurchase`
             // cover one batch only: a lone token direct purchase. Any other
             // batch is refused, since its other rows would be signed without
-            // being shown. Row completeness is covered by the guard above:
-            // the SDK marks a batch complete only when every row is.
+            // being shown. The row's own `complete` is checked too, so the
+            // rebuild never rests on the SDK deriving the batch's flag from
+            // its rows.
             guard batch.transitions.count == 1,
                   case .token(let row) = batch.transitions[0],
                   row.action == Self.tokenDirectPurchaseAction,
+                  row.complete,
                   let tokenCount = row.tokenCount,
                   let totalAgreedPrice = row.amount else {
                 throw Self.unsupported(transition)
@@ -323,7 +325,7 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
     ) -> DashConnectPlatformError {
         DWLogger.log(
             "DashConnect refused a scanned transition: \(transition.kindName), complete=\(transition.complete)")
-        return .unsupportedStateTransition(transition.kindName)
+        return .unsupportedStateTransition
     }
 
     /// rs-dpp's action name for a token direct purchase, as the SDK reports
