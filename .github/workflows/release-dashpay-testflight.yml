@@ -2,7 +2,7 @@ name: Release dashpay to TestFlight
 
 run-name: >-
   dashpay ${{ inputs.release_channel }} TestFlight from ${{ inputs.wallet_ref }}
-  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || '.platform-ref' }})
+  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || 'pin or default branch' }})
 
 on:
   workflow_dispatch:
@@ -210,9 +210,9 @@ jobs:
           echo "SCHEMA_CAPTURE_SCRIPT=$tooling/capture_schema_release.py" >> "$GITHUB_ENV"
 
       # A blank `platform_ref` builds the SDK from the commit in `.platform-ref`,
-      # the one DashWalletTests ran against for this wallet commit. A branch cut
-      # before `.platform-ref` existed falls back to Platform's default branch
-      # (a blank checkout ref), so it can still be released.
+      # the pin unit-tests.yml checks out. A branch cut before `.platform-ref`
+      # existed falls back to Platform's default branch (a blank checkout ref),
+      # so it can still be released.
       - name: Resolve the platform ref
         id: platform-ref
         env:
@@ -220,31 +220,42 @@ jobs:
         run: |
           set -euo pipefail
           ref="$REQUESTED_PLATFORM_REF"
-          label="$REQUESTED_PLATFORM_REF"
-          if [[ -z "$ref" ]]; then
-            if [[ -f .platform-ref ]]; then
-              ref=$(tr -d '[:space:]' < .platform-ref)
-              if ! [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
-                echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$ref'"
-                exit 1
-              fi
-              label=".platform-ref ${ref}"
-            else
-              echo "::notice::wallet_ref has no .platform-ref; building against dashpay/platform's default branch"
-              label="default branch"
+          if [[ "$ref" =~ [[:space:]] ]]; then
+            echo "::error::platform_ref must be a single branch, tag or SHA, got '$ref'"
+            exit 1
+          fi
+          pin=""
+          if [[ -f .platform-ref ]]; then
+            pin=$(tr -d '[:space:]' < .platform-ref)
+            if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
+              exit 1
             fi
+          fi
+          if [[ -n "$ref" ]]; then
+            source="$ref"
+            if [[ -n "$pin" && "$ref" != "$pin" ]]; then
+              echo "::warning::platform_ref '$ref' overrides the .platform-ref pin $pin that unit-tests.yml uses"
+            fi
+          elif [[ -n "$pin" ]]; then
+            ref="$pin"
+            source=".platform-ref"
+          else
+            echo "::warning::wallet_ref has no .platform-ref; building against dashpay/platform's default branch"
+            source="default branch"
           fi
           {
             echo "ref=$ref"
-            echo "label=$label"
+            echo "source=$source"
           } >> "$GITHUB_OUTPUT"
-          echo "platform: $label"
+          if [[ "$source" == '.platform-ref' ]]; then echo "platform: $ref (.platform-ref)"; else echo "platform: $source"; fi
 
       - name: Checkout platform
         uses: actions/checkout@v6
         with:
           repository: dashpay/platform
-          # Blank checks out Platform's default branch, so a renamed dev branch needs no edit here.
+          # Blank only when the wallet has no `.platform-ref` and no ref was entered:
+          # then Platform's default branch, so a renamed dev branch needs no edit here.
           ref: ${{ steps.platform-ref.outputs.ref }}
           path: platform
           # Frozen models are regenerated from historical source commits.
@@ -891,7 +902,7 @@ jobs:
           WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
-          REQUESTED_PLATFORM_REF: ${{ steps.platform-ref.outputs.label }}
+          PLATFORM_REF_SOURCE: ${{ steps.platform-ref.outputs.source }}
           REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
           LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
           LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
@@ -910,7 +921,7 @@ jobs:
             echo "- Latest production version: \`${LATEST_PRODUCTION_VERSION}\`"
             echo "- Bundle ID: \`${BUNDLE_ID}\`"
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
-            echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
+            echo "- platform: \`${PLATFORM_SHA}\` (from: \`${PLATFORM_REF_SOURCE}\`)"
             echo "- Channel: \`${RELEASE_CHANNEL}\`"
             if [[ "$RELEASE_CHANNEL" == 'external' ]]; then
               echo "- External group: \`${TESTFLIGHT_GROUP}\`"
