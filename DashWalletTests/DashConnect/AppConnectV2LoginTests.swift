@@ -674,6 +674,9 @@ final class AppConnectV2LoginTests: XCTestCase {
                 [Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))],
                 current: Self.current(5, data: Self.derivedPoint), bindings: []),
             .outOfDate)
+        // This wallet's key on the identity with no current key at all: it
+        // is derived for the app's contract, so Platform's read is behind.
+        XCTAssertEqual(encryptionState([mine], current: nil, bindings: []), .outOfDate)
         // This wallet's key, current and disabled, before the fetched keys
         // show it: never registered again.
         XCTAssertEqual(
@@ -708,6 +711,63 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(passedOver([.encryption: Self.current(12, data: Self.derivedPoint)]), [], "this login's key")
         XCTAssertEqual(passedOver([.encryption: before[.encryption]!]), [], "a read from before the login")
         XCTAssertEqual(passedOver([:]), [], "no current key yet: behind")
+    }
+
+    func testARequirementThisBuildCannotReadIsToldApart() {
+        XCTAssertTrue(AppConnect.isUnreadableRequirement(NSNumber(value: 3)))
+        XCTAssertTrue(AppConnect.isUnreadableRequirement("2"))
+        XCTAssertTrue(AppConnect.isUnreadableRequirement(NSNumber(value: 1.5)))
+        for known: Any? in [nil, NSNull(), NSNumber(value: 0), NSNumber(value: 1), NSNumber(value: 2)] {
+            XCTAssertFalse(AppConnect.isUnreadableRequirement(known))
+        }
+    }
+
+    /// Platform never takes a current-key reference away and never gives a
+    /// disabled key back: a read that does is behind.
+    func testALaterReadThatLosesAKeyIsBehind() {
+        let live = Self.current(9, data: Self.derivedPoint)
+        let disabled = Self.current(9, data: Self.derivedPoint, disabled: true)
+        let other = Self.current(12, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: live]), .same)
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [:]), .behind)
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: disabled], later: [.encryption: live]), .behind)
+        XCTAssertEqual(AppConnect.compare(earlier: [:], later: [.encryption: live]), .newer([.encryption: live]))
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: disabled]), .newer([.encryption: disabled]))
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: other]), .newer([.encryption: other]))
+        // Behind for one purpose, newer for another: the earlier key stays.
+        XCTAssertEqual(
+            AppConnect.compare(earlier: [.encryption: live], later: [.decryption: other]),
+            .newer([.encryption: live, .decryption: other]))
+    }
+
+    func testAStateThatWaitsSettlesOnlyOnAReadThatSaysTheSame() async throws {
+        let theirs = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
+        let disabledCurrent = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
+        let current = Self.current(9, data: disabledCurrent.data, disabled: true)
+        func states(_ keys: [KeyPurpose: AppConnect.CurrentContractKey]) -> [AppConnect.EncryptionKeyState] {
+            [encryptionState([theirs, disabledCurrent], current: keys[.encryption], bindings: [])]
+        }
+        func settle(_ reads: [[KeyPurpose: AppConnect.CurrentContractKey]]) async throws -> [AppConnect.EncryptionKeyState] {
+            var reads = reads
+            var pauses = 0
+            let result = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { reads.removeFirst() }, pause: { pauses += 1 })
+            XCTAssertLessThanOrEqual(pauses, 3)
+            return result.states
+        }
+        let agreed = try await settle([[.encryption: current]])
+        XCTAssertEqual(agreed, [.notThisWallets])
+        // A lagging node that has lost the disabled key does not turn
+        // "leave it alone" into a registration.
+        let lagging = try await settle([[:], [:], [:]])
+        XCTAssertEqual(lagging, [.outOfDate])
+        let caughtUp = try await settle([[:], [.encryption: current]])
+        XCTAssertEqual(caughtUp, [.notThisWallets])
+        // Reads that never agree end out of date.
+        let unknown = Self.current(11, data: Data(repeating: 0x88, count: 33))
+        let changing = try await settle([[.encryption: unknown], [.encryption: current], [.encryption: unknown]])
+        XCTAssertEqual(changing, [.outOfDate])
     }
 
     func testOnlyARequirementThatKeepsACurrentKeyTakesALogin() {

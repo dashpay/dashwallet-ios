@@ -6522,7 +6522,8 @@
 "The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
 "The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
 "The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
-"The app's contract keeps no current encryption key bound to it." = "The app's contract keeps no current encryption key bound to it.";
+"The app's contract keeps no current key bound to it for the encryption it asks for." = "The app's contract keeps no current key bound to it for the encryption it asks for.";
+"This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet." = "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.";
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
 "The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
 "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet." = "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.";

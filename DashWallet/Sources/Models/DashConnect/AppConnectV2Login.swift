@@ -261,7 +261,8 @@ extension AppConnect {
         appOwnerId: Data,
         groupOwners: [Data: Data],
         contractOwners: [Data: Data],
-        appBoundedKeyPurposes: Set<KeyPurpose>
+        appBoundedKeyPurposes: Set<KeyPurpose>,
+        appUnreadableKeyPurposes: Set<KeyPurpose> = []
     ) -> Refusal? {
         if systemContractIds.contains(plan.appId.toBase58String()) {
             return Refusal(.invalid, NSLocalizedString(
@@ -290,9 +291,14 @@ extension AppConnect {
                 }
             }
         }
+        for grant in plan.encryption where appUnreadableKeyPurposes.contains(grant.keyPurpose) {
+            return Refusal(.unsupported, NSLocalizedString(
+                "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.",
+                comment: "DashConnect App Connect v2"))
+        }
         for grant in plan.encryption where !appBoundedKeyPurposes.contains(grant.keyPurpose) {
             return Refusal(.invalid, NSLocalizedString(
-                "The app's contract keeps no current encryption key bound to it.",
+                "The app's contract keeps no current key bound to it for the encryption it asks for.",
                 comment: "DashConnect App Connect v2"))
         }
         return nil
@@ -410,6 +416,84 @@ extension AppConnect {
         }
     }
 
+    /// Whether a `requiresIdentity…BoundedKey` value is one this build
+    /// cannot read, rather than none or one it knows.
+    static func isUnreadableRequirement(_ requirement: Any?) -> Bool {
+        guard let requirement, !(requirement is NSNull) else { return false }
+        guard let value = exactInteger(requirement) as UInt8? else { return true }
+        return value > 2
+    }
+
+    /// How a later read of the current keys compares with an earlier one.
+    /// Platform never takes a current-key reference away and never gives a
+    /// disabled key back, so a read that lacks a key an earlier one named,
+    /// or shows it live again, comes from a node that is behind.
+    enum CurrentKeysRead: Equatable {
+        /// It names the same keys.
+        case same
+        /// It is behind the earlier read for some purpose, and newer for
+        /// none.
+        case behind
+        /// It is newer for some purpose: these are the keys to go on with,
+        /// the earlier read's kept wherever the later one is behind.
+        case newer([KeyPurpose: CurrentContractKey])
+    }
+
+    static func compare(
+        earlier: [KeyPurpose: CurrentContractKey],
+        later: [KeyPurpose: CurrentContractKey]
+    ) -> CurrentKeysRead {
+        guard earlier != later else { return .same }
+        var merged = earlier
+        var isNewer = false
+        for purpose in Set(earlier.keys).union(later.keys) {
+            let before = earlier[purpose]
+            let after = later[purpose]
+            guard before != after else { continue }
+            if let before {
+                guard let after else { continue }
+                if after.keyId == before.keyId && after.data == before.data && before.isDisabled && !after.isDisabled {
+                    continue
+                }
+            }
+            merged[purpose] = after
+            isNewer = true
+        }
+        return isNewer ? .newer(merged) : .behind
+    }
+
+    /// Reads Platform's current keys again while `states` holds a state that
+    /// waits on a later read, or one that is out of date, at most
+    /// `maxRereads` times with `pause` before each. A state that waits
+    /// settles once a read names the same keys; a read that is behind is
+    /// set aside; a newer one is taken and the states are worked out again.
+    /// What still waits at the end is out of date.
+    static func settle(
+        currentKeys: [KeyPurpose: CurrentContractKey],
+        maxRereads: Int = 3,
+        states: ([KeyPurpose: CurrentContractKey]) throws -> [EncryptionKeyState],
+        reread: () async throws -> [KeyPurpose: CurrentContractKey],
+        pause: () async -> Void
+    ) async throws -> (states: [EncryptionKeyState], currentKeys: [KeyPurpose: CurrentContractKey]) {
+        var keys = currentKeys
+        var result = try states(keys)
+        var rereads = 0
+        while rereads < maxRereads, result.contains(where: { $0.needsSettling || $0 == .outOfDate }) {
+            rereads += 1
+            await pause()
+            switch compare(earlier: keys, later: try await reread()) {
+            case .same:
+                result = result.map(\.settled)
+            case .behind:
+                continue
+            case .newer(let merged):
+                keys = merged
+                result = try states(keys)
+            }
+        }
+        return (result.map { $0.needsSettling ? .outOfDate : $0 }, keys)
+    }
+
     /// A JSON number read only when it is an exact integer that fits, so a
     /// value out of range is unreadable rather than wrapped.
     static func exactInteger<Value: FixedWidthInteger>(_ value: Any?) -> Value? {
@@ -517,9 +601,10 @@ extension AppConnect {
         let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
         guard currentKey != nil else {
             // Registering a key bound to the app makes it current, so a live
-            // one with no current key at all is a read from before it landed.
-            if placedOnTheApp { return .outOfDate }
-            if holdsTheDerivedKey { return .notThisWallets }
+            // one with no current key at all, or this wallet's key in any
+            // state (it is derived for the app's contract), is a read from
+            // before it landed.
+            if placedOnTheApp || holdsTheDerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
         // The current key is disabled. A live key of the app's beside it was
