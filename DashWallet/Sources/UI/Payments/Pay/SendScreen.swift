@@ -1075,9 +1075,16 @@ private struct ConfirmContactSendSheet: View {
                     .accessibilityValue(fiatText)
 
                 VStack(spacing: 0) {
-                    DashUIKit.MenuItem(
-                        title: NSLocalizedString("To", comment: "Payment confirmation"),
-                        accessory: .text(contact.displayTitle))
+                    DashUIKit.List8View(
+                        label: NSLocalizedString("To", comment: "Payment confirmation"),
+                        value: contact.displayTitle
+                    ) {
+                        ContactAvatarView(
+                            title: contact.displayTitle,
+                            avatarURL: contact.avatarURL,
+                            identitySeed: contact.contactIdentityId,
+                            size: 24)
+                    }
                     // Every place a duff can occupy, as on the L1 confirmation:
                     // the component's default rounds a Core fee to "0".
                     DashUIKit.MenuItem(
