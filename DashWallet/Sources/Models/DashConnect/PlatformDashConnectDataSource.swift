@@ -87,6 +87,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case otherIdentitiesNotChecked
     case registrationPending
     case appConnectEncryptionKeyChanged
+    case appConnectKeysOutOfDate
+    case appConnectKeysUnreadable
     case registrationPendingOnAnotherIdentity
     case walletChanged
     case ephemeralKeyGenerationFailed
@@ -164,6 +166,14 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.",
                 comment: "DashConnect")
+        case .appConnectKeysOutOfDate:
+            return NSLocalizedString(
+                "The network has not caught up with your identity's keys yet. Try again in a moment.",
+                comment: "DashConnect App Connect v2")
+        case .appConnectKeysUnreadable:
+            return NSLocalizedString(
+                "The wallet could not read your identity's encryption key for this app from the network. Try again.",
+                comment: "DashConnect App Connect v2")
         case .appConnectEncryptionKeyChanged:
             return NSLocalizedString(
                 "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.",
@@ -687,6 +697,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return (.refused(refusal), nil)
             }
             plan.administeredGroupIds = ownership.administeredGroupIds
+            plan.currentKeyRules = ownership.currentKeyRules
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)
@@ -748,14 +759,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func appConnectOwnership(
         _ plan: AppConnect.GrantPlan,
         sdk: SDK
-    ) async throws -> (refusal: AppConnect.Refusal?, administeredGroupIds: Set<Data>) {
+    ) async throws -> (
+        refusal: AppConnect.Refusal?,
+        administeredGroupIds: Set<Data>,
+        currentKeyRules: [KeyPurpose: AppConnect.CurrentKeyRule]
+    ) {
         func ownerId(of contract: [String: Any]) -> Data? {
             (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
         }
         let app = try await sdk.dataContractGetOffMain(id: plan.appId.toBase58String())
         guard let appOwnerId = ownerId(of: app) else {
             return (AppConnect.Refusal(.invalid, NSLocalizedString(
-                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [])
+                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
         }
         var groupOwners: [Data: Data] = [:]
         var administeredGroupIds: Set<Data> = []
@@ -781,20 +796,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         let config = app["config"] as? [String: Any] ?? [:]
-        var boundedKeyPurposes: Set<KeyPurpose> = []
-        if AppConnect.keepsACurrentKey(config["requiresIdentityEncryptionBoundedKey"]) {
-            boundedKeyPurposes.insert(.encryption)
-        }
-        if AppConnect.keepsACurrentKey(config["requiresIdentityDecryptionBoundedKey"]) {
-            boundedKeyPurposes.insert(.decryption)
-        }
+        var currentKeyRules: [KeyPurpose: AppConnect.CurrentKeyRule] = [:]
+        currentKeyRules[.encryption] = AppConnect.currentKeyRule(config["requiresIdentityEncryptionBoundedKey"])
+        currentKeyRules[.decryption] = AppConnect.currentKeyRule(config["requiresIdentityDecryptionBoundedKey"])
         let refusal = AppConnect.ownershipRefusal(
             for: plan,
             appOwnerId: appOwnerId,
             groupOwners: groupOwners,
             contractOwners: contractOwners,
-            appBoundedKeyPurposes: boundedKeyPurposes)
-        return (refusal, administeredGroupIds)
+            appBoundedKeyPurposes: Set(currentKeyRules.keys))
+        return (refusal, administeredGroupIds, currentKeyRules)
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -1397,6 +1408,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         let signer = KeychainSigner(modelContainer: context.modelContainer)
+        // The app's current encryption keys are a second read, from Platform;
+        // it runs while the identity's keys are fetched.
+        let encryptionPurposes = Set(plan.encryption.map(\.keyPurpose)).sorted { $0.rawValue < $1.rawValue }
+        async let contractKeysRead: [String: Any]? = encryptionPurposes.isEmpty ? nil
+            : try await DashConnectPlatformQueries.identityContractKeys(
+                sdk: context.sdk, identityId: identityId,
+                contractId: plan.appId.toBase58String(), purposes: encryptionPurposes)
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
 
@@ -1442,23 +1460,30 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // wallet made it, register it when there is none, leave it out when
         // another wallet made it. Which key is current is Platform's to say:
         // the app's verifier checks the slot against the same proved read.
-        var contractKeys: [Data: [String: Any]] = [:]
-        for contractId in Set(plan.encryption.map(\.binding.contractId)) {
-            let purposes = Set(plan.encryption.filter { $0.binding.contractId == contractId }.map(\.keyPurpose))
-            contractKeys[contractId] = try await DashConnectPlatformQueries.identityContractKeys(
-                sdk: context.sdk,
-                identityId: identityId,
-                contractId: contractId.toBase58String(),
-                purposes: purposes.sorted { $0.rawValue < $1.rawValue })
+        // Wallet rule 3 puts every encryption key on the app's contract.
+        var currentKeys: [KeyPurpose: AppConnect.CurrentContractKey] = [:]
+        do {
+            if let contractKeys = try await contractKeysRead {
+                for purpose in encryptionPurposes {
+                    currentKeys[purpose] = try AppConnect.currentContractKey(
+                        from: contractKeys, identityId: identityId, purpose: purpose)
+                }
+            }
+        } catch {
+            Self.logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(error.localizedDescription, privacy: .public)")
+            throw DashConnectPlatformError.appConnectKeysUnreadable
         }
         var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
         for (index, grant) in plan.encryption.enumerated() {
+            guard let rule = plan.currentKeyRules[grant.keyPurpose] else {
+                throw DashConnectPlatformError.loginContractUnavailable
+            }
             switch AppConnect.encryptionKeyState(
                 derivedPublicKey: encryptionKeys[index].publicKey,
                 purpose: grant.keyPurpose,
                 contractId: grant.binding.contractId,
-                currentKey: try AppConnect.currentContractKey(
-                    from: contractKeys[grant.binding.contractId] ?? [:], identityId: identityId, purpose: grant.keyPurpose),
+                rule: rule,
+                currentKey: currentKeys[grant.keyPurpose],
                 currentIdentityPublicKeys: currentPublicKeys,
                 bindings: bindings
             ) {
@@ -1470,7 +1495,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's; slot left out")
             case .outOfDate:
                 Self.logger.error("🔗 DASHCONNECT :: the identity's keys and Platform's current encryption key disagree")
-                throw DashConnectPlatformError.identityKeysOutOfDate
+                throw DashConnectPlatformError.appConnectKeysOutOfDate
             }
         }
 
@@ -1525,8 +1550,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             signingKeys.append((authKeys[index].publicKeyHash160, authKeys[index].privateKey))
             authKeyIds[index] = keyId
         }
+        var registeredEncryptionSlots: [Int] = []
         for slot in encryptionSlots.indices where encryptionSlots[slot].keyId == nil {
             guard let keyId = freeKeyIds.next() else { throw DashConnectPlatformError.noFreeKeyId }
+            registeredEncryptionSlots.append(slot)
             let keyIndex = encryptionSlots[slot].keyIndex
             add.append(AppConnect.encryptionIdentityPubkey(
                 plan.encryption[keyIndex], keyId: keyId, publicKey: encryptionKeys[keyIndex].publicKey))
@@ -1576,6 +1603,28 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
             }
             Self.logger.info("🔗 DASHCONNECT :: identity updated")
+        }
+
+        // Two wallets of the identity that register the app's key at once
+        // both land, and only the one registered later is current: a key
+        // passed over that way is left out of the response. A read that
+        // still shows the key that was current before is behind, and keeps
+        // the slot; so does a read that fails, the keys being on the
+        // identity already.
+        if !registeredEncryptionSlots.isEmpty,
+           let after = try? await DashConnectPlatformQueries.identityContractKeys(
+               sdk: context.sdk, identityId: identityId,
+               contractId: plan.appId.toBase58String(), purposes: encryptionPurposes) {
+            let passedOver = registeredEncryptionSlots.filter { slot in
+                let purpose = plan.encryption[encryptionSlots[slot].keyIndex].keyPurpose
+                guard let current = try? AppConnect.currentContractKey(
+                    from: after, identityId: identityId, purpose: purpose) else { return false }
+                return current.keyId != encryptionSlots[slot].keyId && current.keyId != currentKeys[purpose]?.keyId
+            }
+            if !passedOver.isEmpty {
+                Self.logger.info("🔗 DASHCONNECT :: another key became the app's current encryption key; slot left out")
+                encryptionSlots = encryptionSlots.enumerated().filter { !passedOver.contains($0.offset) }.map(\.element)
+            }
         }
 
         // Slots: the auth keys in request order, then the encryption keys
