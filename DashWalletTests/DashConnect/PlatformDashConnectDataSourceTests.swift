@@ -270,6 +270,12 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     documentId: Data(repeating: 0x24, count: 32), action: "Delete",
                     amount: nil, recipientId: nil, complete: true, details: nil))
             ])))),
+            ("a credit transfer", Self.parsed(.creditTransfer(.init(
+                identityId: ownerId, recipientId: Data(repeating: 0x25, count: 32), amount: 1)))),
+            ("a contract create", Self.parsed(.dataContractCreate(Self.contractSummary))),
+            ("a contract update", Self.parsed(.dataContractUpdate(Self.contractSummary))),
+            ("an incomplete identity update", Self.parsed(.identityUpdate(.init(
+                identityId: ownerId, addPublicKeys: [], disablePublicKeyIds: [4])), complete: false)),
             ("another kind", Self.parsed(.other)),
         ]
         for (name, transition) in refused {
@@ -291,6 +297,11 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             kindName: "TestKind", ownerId: nil, isSigned: false, userFeeIncrease: 0,
             complete: complete, serialized: Data(), details: nil, kind: kind)
     }
+
+    private static let contractSummary = ManagedPlatformWallet.ParsedDataContractTransition(
+        contractId: Data(repeating: 0x26, count: 32),
+        ownerId: Data(repeating: 0x21, count: 32),
+        documentTypeNames: ["note"])
 
     private static func tokenRow(
         contractId: Data,
