@@ -449,7 +449,7 @@ struct MainMenuScreen: View {
             joinDashPay()
         case .none, .callToAction, .blocked, .failed, .contested:
             // Not registered (or the attempt failed): open the join flow,
-            // which also carries the "Have an invitation?" entry.
+            // which also carries the "Scan invitation QR" entry.
             handleJoinButtonAction()
         case .creationFailed, .interrupted:
             // Straight to the form, whose recovery machinery picks the attempt
@@ -496,8 +496,8 @@ struct MainMenuScreen: View {
     
     private func handleJoinButtonAction() {
         // Always open the info dialog — same reason as HomeView: it is the
-        // only surface carrying "Have an invitation?", and the one-shot latch
-        // hid the redeem path for good from anyone who had already tapped
+        // only surface carrying "Scan invitation QR", and the one-shot latch
+        // hid the scan path for good from anyone who had already tapped
         // Upgrade before their invitation arrived.
         showDashPayInfo = true
     }

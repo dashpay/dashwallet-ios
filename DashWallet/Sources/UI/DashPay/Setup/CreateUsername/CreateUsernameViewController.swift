@@ -27,8 +27,8 @@ class CreateUsernameViewController: UIViewController {
     /// regular self-funded registration.
     private let invitationURI: String?
     private let invitationTier: InvitationTier?
-    /// The Home card's invitation (scope + link), so a claim failure removes
-    /// that wallet's copy and no other.
+    /// The Home card's invitation (scope + link): a claim that finishes on an
+    /// existing identity removes that wallet's copy and no other.
     private let pendingInvitation: PendingInvitation?
     private let definedUsername: String?
 

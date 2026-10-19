@@ -23,8 +23,8 @@ public struct JoinDashPayScreen: View {
     /// Continue was tapped. The sheet that hosts this screen owns what comes
     /// next — `JoinDashPayInfoDialog` turns it into its voting-info page.
     var action: () -> Void
-    /// Non-nil renders the "Have an invitation?" entry — the
-    /// install-then-paste redeem path for invited users (DIP-13).
+    /// Non-nil renders the "Scan invitation QR" entry — the scan path into
+    /// the Home invitation card for invited users (DIP-13).
     var onClaimInvitation: (() -> Void)? = nil
 
     init(action: @escaping () -> Void, onClaimInvitation: (() -> Void)? = nil) {

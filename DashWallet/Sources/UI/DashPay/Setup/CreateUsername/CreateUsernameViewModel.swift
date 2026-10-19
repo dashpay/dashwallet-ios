@@ -836,8 +836,10 @@ class CreateUsernameViewModel: ObservableObject {
             } catch {
                 // A failure about the invitation itself, in its own words;
                 // anything else keeps the generic wording and the invitation.
+                // The registration-activity sink of the Home card re-checks
+                // the invitation once this attempt has ended.
                 if let failure = InvitationClaimFailure.classify(error) {
-                    handleInvitationClaimFailure(failure)
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
                     return .failure(failure.message)
                 }
                 return .failure(
@@ -919,14 +921,6 @@ class CreateUsernameViewModel: ObservableObject {
         let raw = error.localizedDescription
         DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
-    }
-
-    /// What a failed claim does to the stored invitation: a refusal is
-    /// re-checked by the Home card, and one still confirming is kept.
-    private func handleInvitationClaimFailure(_ failure: InvitationClaimFailure) {
-        if failure == .refused {
-            PendingInvitationViewModel.shared.recheck()
-        }
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
