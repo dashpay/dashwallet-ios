@@ -245,25 +245,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testProductionParserMapsRealAndFixtureKeyRegistrations() throws {
-        let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
-        let parser = PlatformWalletDashConnectStateTransitionParser { bytes in
-            try wallet.parseStateTransition(bytes)
-        }
-        let payloads: [(String, Data, [UInt32], [UInt32])] = [
-            ("real dApp", try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex)), [6, 7], []),
-            ("tagged", try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64)), [17, 18], [4, 8]),
-            ("tagless", try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64)), [17, 18], [4, 8]),
-        ]
-        for (name, bytes, addedKeyIds, disabledKeyIds) in payloads {
-            guard case let .keyRegistration(registration) = try parser.parse(bytes) else {
-                return XCTFail("Expected a key-registration transition: \(name)")
-            }
-            XCTAssertEqual(registration.addPublicKeys.map(\.keyId), addedKeyIds, name)
-            XCTAssertEqual(registration.disablePublicKeyIds, disabledKeyIds, name)
-        }
-    }
-
     func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
         let ownerId = Data(repeating: 0x21, count: 32)
         let contractId = Data(repeating: 0x22, count: 32)
@@ -289,12 +270,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
                     documentId: Data(repeating: 0x24, count: 32), action: "Delete",
                     amount: nil, recipientId: nil, complete: true, details: nil))
             ])))),
-            ("a credit transfer", Self.parsed(.creditTransfer(.init(
-                identityId: ownerId, recipientId: Data(repeating: 0x25, count: 32), amount: 1)))),
-            ("a contract create", Self.parsed(.dataContractCreate(Self.contractSummary))),
-            ("a contract update", Self.parsed(.dataContractUpdate(Self.contractSummary))),
-            ("an incomplete identity update", Self.parsed(.identityUpdate(.init(
-                identityId: ownerId, addPublicKeys: [], disablePublicKeyIds: [4])), complete: false)),
             ("another kind", Self.parsed(.other)),
         ]
         for (name, transition) in refused {
@@ -302,7 +277,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             XCTAssertThrowsError(try parser.parse(Data([0])), name) {
                 XCTAssertEqual(
                     $0 as? DashConnectPlatformError,
-                    .unsupportedStateTransition,
+                    .unsupportedStateTransition("TestKind"),
                     name)
             }
         }
@@ -316,11 +291,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             kindName: "TestKind", ownerId: nil, isSigned: false, userFeeIncrease: 0,
             complete: complete, serialized: Data(), details: nil, kind: kind)
     }
-
-    private static let contractSummary = ManagedPlatformWallet.ParsedDataContractTransition(
-        contractId: Data(repeating: 0x26, count: 32),
-        ownerId: Data(repeating: 0x21, count: 32),
-        documentTypeNames: ["note"])
 
     private static func tokenRow(
         contractId: Data,

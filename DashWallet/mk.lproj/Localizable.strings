@@ -6815,6 +6815,3 @@
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
-
-/* DashConnect */
-"This wallet cannot approve the scanned request." = "This wallet cannot approve the scanned request.";
