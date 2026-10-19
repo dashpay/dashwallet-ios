@@ -252,6 +252,13 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(refusal(groupOwner: stranger)?.status, .invalid)
         XCTAssertEqual(refusal(groupOwner: nil)?.status, .invalid, "a group that does not exist")
         XCTAssertEqual(refusal(purposes: [])?.status, .invalid, "the app does not take bound encryption keys")
+        // A requirement this build cannot read asks for an update, whatever
+        // else the contract says.
+        let unreadable = AppConnect.ownershipRefusal(
+            for: plan, appOwnerId: Self.appOwner, groupOwners: [Self.groupId: Self.appOwner],
+            contractOwners: [Self.appId: Self.appOwner], appBoundedKeyPurposes: [],
+            appUnreadableKeyPurposes: [.encryption])
+        XCTAssertEqual(unreadable?.status, .unsupported)
     }
 
     func testOnlyDashPayProfileIsAllowedOnAContractTheAppDoesNotOwn() throws {
@@ -609,7 +616,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                 .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
                 .init(keyId: 9, data: newer.data, singleContractId: Self.appId),
             ]),
-            .notThisWallets)
+            .notThisWalletsIfSettled, "or Platform's read is behind this wallet's key")
     }
 
     /// Platform keeps naming the last key registered after it is disabled.
@@ -627,6 +634,27 @@ final class AppConnectV2LoginTests: XCTestCase {
             .notThisWalletsIfSettled, "registered before the disabled key, or after it with Platform's read behind")
     }
 
+    /// A live current key beside another live key of the app's may be a
+    /// read from before that one was registered.
+    func testALiveCurrentKeyBesideAnotherKeyOfTheAppsWaitsOnALaterRead() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let other = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: other.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([mine, other], current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .currentIfSettled(keyId: 5))
+        XCTAssertEqual(
+            encryptionState([mine, other], current: Self.current(9, data: other.data), bindings: bindings),
+            .notThisWalletsIfSettled)
+        // Under `unique` there is no second key of the app's to wait on.
+        XCTAssertEqual(
+            encryptionState([mine, other], rule: .unique, current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .current(keyId: 5))
+    }
+
     /// The current key is the one registered last, not the one with the
     /// highest id.
     func testTheCurrentKeyIsTheLastRegisteredNotTheHighestId() {
@@ -638,7 +666,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         ]
         XCTAssertEqual(
             encryptionState([theirs, mineLower], current: Self.current(3, data: Self.derivedPoint), bindings: bindings),
-            .current(keyId: 3))
+            .currentIfSettled(keyId: 3), "the higher id need not be the later key; a later read confirms")
         let mineHigher = Self.encryptionKey(9, data: Self.derivedPoint)
         let theirsLower = Self.encryptionKey(3, data: Data(repeating: 0x66, count: 33))
         XCTAssertEqual(
@@ -648,7 +676,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                     .init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId),
                     .init(keyId: 3, data: theirsLower.data, singleContractId: Self.appId),
                 ]),
-            .notThisWallets)
+            .notThisWalletsIfSettled)
     }
 
     /// The fetched keys and Platform's current key are two reads, and either
@@ -733,7 +761,7 @@ final class AppConnectV2LoginTests: XCTestCase {
             var pauses = 0
             let result = try await AppConnect.settle(
                 currentKeys: [.encryption: current], states: states,
-                reread: { reads.removeFirst() }, pause: { pauses += 1 })
+                reread: { reads.removeFirst() }, pause: { _ in pauses += 1 })
             XCTAssertLessThanOrEqual(pauses, 3)
             return result
         }
@@ -745,10 +773,21 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(lagging, [.outOfDate])
         let caughtUp = try await settle([[:], [.encryption: current]])
         XCTAssertEqual(caughtUp, [.notThisWallets])
-        // Reads that conflict never confirm an answer.
+        // A read that conflicts makes the answer out of date, even if a
+        // later one agrees with the first.
         let unknown = Self.current(11, data: Data(repeating: 0x88, count: 33))
-        let changing = try await settle([[.encryption: unknown], [.encryption: unknown], [.encryption: unknown]])
-        XCTAssertEqual(changing, [.outOfDate])
+        let conflicting = try await settle([[.encryption: unknown], [.encryption: current]])
+        XCTAssertEqual(conflicting, [.outOfDate])
+        // A read that fails is set aside.
+        var reads: [[KeyPurpose: AppConnect.CurrentContractKey]?] = [nil, [.encryption: current]]
+        let afterAFailedRead = try await AppConnect.settle(
+            currentKeys: [.encryption: current], states: states,
+            reread: {
+                guard let read = reads.removeFirst() else { throw SDKError.timeout("read") }
+                return read
+            },
+            pause: { _ in })
+        XCTAssertEqual(afterAFailedRead, [.notThisWallets])
     }
 
     /// An answer a newer read gives has to be confirmed by a later one.
@@ -762,7 +801,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         func settle(_ reads: [[KeyPurpose: AppConnect.CurrentContractKey]]) async throws -> [AppConnect.EncryptionKeyState] {
             var reads = reads
             return try await AppConnect.settle(
-                currentKeys: [:], states: states, reread: { reads.removeFirst() }, pause: {})
+                currentKeys: [:], states: states, reread: { reads.removeFirst() }, pause: { _ in })
         }
         // The first read is behind this wallet's registration.
         let confirmed = try await settle([[.encryption: current], [.encryption: current]])
@@ -771,7 +810,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(unconfirmed, [.outOfDate])
         // An answer the first read gives is taken as it is.
         let taken = try await AppConnect.settle(
-            currentKeys: [.encryption: current], states: states, reread: { XCTFail("no reread"); return [:] }, pause: {})
+            currentKeys: [.encryption: current], states: states, reread: { XCTFail("no reread"); return [:] }, pause: { _ in })
         XCTAssertEqual(taken, [.current(keyId: 5)])
     }
 

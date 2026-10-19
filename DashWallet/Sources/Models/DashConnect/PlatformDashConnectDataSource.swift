@@ -1523,7 +1523,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 currentKeys: currentKeys,
                 states: states,
                 reread: readCurrentKeys,
-                pause: { try? await Task.sleep(nanoseconds: 3_000_000_000) })
+                // A node one block behind has usually caught up within a
+                // second; one that has not gets longer.
+                pause: { attempt in try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000) })
         } catch let error as DashConnectPlatformError {
             throw error
         } catch {
@@ -1538,7 +1540,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 encryptionSlots.append((index, nil))
             case .notThisWallets:
                 Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's; slot left out")
-            case .outOfDate, .absentIfSettled, .notThisWalletsIfSettled:
+            case .outOfDate, .absentIfSettled, .notThisWalletsIfSettled, .currentIfSettled:
                 Self.logger.error("🔗 DASHCONNECT :: the identity's keys and Platform's current encryption key disagree")
                 throw DashConnectPlatformError.appConnectKeysOutOfDate
             }

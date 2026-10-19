@@ -377,9 +377,11 @@ extension AppConnect {
         /// cannot place: it holds only once a later read says the same.
         case absentIfSettled
         /// `notThisWallets`, unless Platform's read is behind a live key
-        /// bound to the app that was registered after the disabled current
-        /// one: it holds only once a later read says the same.
+        /// bound to the app that was registered after the current one: it
+        /// holds only once a later read says the same.
         case notThisWalletsIfSettled
+        /// `current`, on the same terms.
+        case currentIfSettled(keyId: UInt32)
 
         /// What the state comes to once a later read of Platform's current
         /// key has said the same.
@@ -387,6 +389,7 @@ extension AppConnect {
             switch self {
             case .absentIfSettled: return .absent
             case .notThisWalletsIfSettled: return .notThisWallets
+            case .currentIfSettled(let keyId): return .current(keyId: keyId)
             default: return self
             }
         }
@@ -482,15 +485,16 @@ extension AppConnect {
     /// `pause` before each, until an answer is confirmed: one from the first
     /// read is taken as it is unless it waits on a later read or is out of
     /// date; any other needs a later read that names the same keys. A read
-    /// that is behind is set aside, a newer one is taken and has to be
-    /// confirmed in turn, and one that conflicts leaves the answer
-    /// unconfirmed. An answer still unconfirmed at the end is out of date.
+    /// that is behind, or fails, is set aside; a newer one is taken and has
+    /// to be confirmed in turn; one that conflicts makes the answer out of
+    /// date, there being no telling which of the two is behind. An answer
+    /// still unconfirmed at the end is out of date.
     static func settle(
         currentKeys: [KeyPurpose: CurrentContractKey],
         maxRereads: Int = 3,
         states: ([KeyPurpose: CurrentContractKey]) throws -> [EncryptionKeyState],
         reread: () async throws -> [KeyPurpose: CurrentContractKey],
-        pause: () async -> Void
+        pause: (_ attempt: Int) async -> Void
     ) async throws -> [EncryptionKeyState] {
         var keys = currentKeys
         var result = try states(keys)
@@ -498,13 +502,17 @@ extension AppConnect {
         var rereads = 0
         while !confirmed && rereads < maxRereads {
             rereads += 1
-            await pause()
-            switch compare(earlier: keys, later: try await reread()) {
+            await pause(rereads)
+            // A read that fails says nothing, like one that is behind.
+            guard let later = try? await reread() else { continue }
+            switch compare(earlier: keys, later: later) {
             case .same:
                 result = result.map(\.settled)
                 confirmed = !result.contains(.outOfDate)
-            case .behind, .conflict:
+            case .behind:
                 continue
+            case .conflict:
+                return result.map { _ in .outOfDate }
             case .newer(let merged):
                 keys = merged
                 result = try states(keys)
@@ -583,24 +591,12 @@ extension AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> EncryptionKeyState {
-        if let currentKey {
-            guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),
-                  fetched.purpose == purpose, fetched.data == currentKey.data,
-                  (fetched.disabledAt != nil) == currentKey.isDisabled else {
-                return .outOfDate
-            }
-            if !currentKey.isDisabled {
-                guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
-                      currentKey.data == derivedPublicKey else {
-                    return .notThisWallets
-                }
-                return .current(keyId: currentKey.keyId)
-            }
-            if rule == .unique { return .notThisWallets }
-        }
+        // The live keys of the purpose besides the current one: placed on
+        // the app by the store, or not placed at all.
         var placedOnTheApp = false
         var unplaced = false
-        for key in currentIdentityPublicKeys where key.purpose == purpose && key.disabledAt == nil {
+        for key in currentIdentityPublicKeys where key.purpose == purpose && key.disabledAt == nil
+            && UInt32(bitPattern: key.keyId) != currentKey?.keyId {
             let keyId = UInt32(bitPattern: key.keyId)
             if let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                !stored.hasUnreadableBound {
@@ -610,7 +606,7 @@ extension AppConnect {
             }
         }
         let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
-        guard currentKey != nil else {
+        guard let currentKey else {
             // Registering a key bound to the app makes it current, so a live
             // one with no current key at all, or this wallet's key in any
             // state (it is derived for the app's contract), is a read from
@@ -618,9 +614,23 @@ extension AppConnect {
             if placedOnTheApp || holdsTheDerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
-        // The current key is disabled. A live key of the app's beside it was
+        guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),
+              fetched.purpose == purpose, fetched.data == currentKey.data,
+              (fetched.disabledAt != nil) == currentKey.isDisabled else {
+            return .outOfDate
+        }
+        // Under `latest`, a live key of the app's beside the current one was
         // registered before it, or after it and Platform's read is behind.
-        if placedOnTheApp || unplaced { return .notThisWalletsIfSettled }
+        let mayBeBehind = rule == .latest && (placedOnTheApp || unplaced)
+        if !currentKey.isDisabled {
+            guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
+                  currentKey.data == derivedPublicKey else {
+                return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
+            }
+            return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
+        }
+        if rule == .unique { return .notThisWallets }
+        if mayBeBehind { return .notThisWalletsIfSettled }
         return holdsTheDerivedKey ? .notThisWallets : .absent
     }
 
