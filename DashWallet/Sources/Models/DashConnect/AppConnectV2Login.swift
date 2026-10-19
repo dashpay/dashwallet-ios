@@ -488,9 +488,9 @@ extension AppConnect {
     /// that is behind, or fails, is set aside; a newer one is taken and has
     /// to be confirmed in turn; one that conflicts makes the answer out of
     /// date, there being no telling which of the two is behind. An answer
-    /// still unconfirmed at the end is out of date, unless no read answered
-    /// at all: then the last failure is thrown. A failure `isFinal` calls so
-    /// is thrown at once.
+    /// still unconfirmed at the end is out of date, unless none of the later
+    /// reads answered: then the last failure is thrown. A failure `isFinal`
+    /// calls so is thrown at once.
     static func settle(
         currentKeys: [KeyPurpose: CurrentContractKey],
         maxRereads: Int = 3,
@@ -590,7 +590,7 @@ extension AppConnect {
     ///
     /// Every key bound to the app becomes current when it is registered, so
     /// with no current key at all a live key the store places on the app
-    /// means Platform's read is behind, and a live key it cannot place is
+    /// means Platform's read is behind, and a key it cannot place is
     /// bound elsewhere once a later read agrees. Beside a current key, a
     /// live key the app may hold was registered before it, or after it with
     /// Platform's read behind, so the answer waits on a later read. Behind
@@ -606,8 +606,8 @@ extension AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> EncryptionKeyState {
-        // The keys of the purpose besides the current one: placed on the app
-        // by the store, in any state, or live and not placed at all.
+        // The keys of the purpose besides the current one, in any state:
+        // placed on the app by the store, or not placed at all.
         var placedInAnyState = false
         var unplaced = false
         for key in currentIdentityPublicKeys where key.purpose == purpose
@@ -616,7 +616,7 @@ extension AppConnect {
             if let stored = bindings.first(where: { $0.keyId == keyId && $0.data == key.data }),
                !stored.hasUnreadableBound {
                 if stored.singleContractId == contractId { placedInAnyState = true }
-            } else if key.disabledAt == nil {
+            } else {
                 unplaced = true
             }
         }

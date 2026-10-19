@@ -256,13 +256,19 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
+            } catch let refusal as AppConnect.Refusal {
+                // A refusal fails the same way on every try: the sheet shows
+                // it as the request's answer, and offers no Approve.
+                self.pendingFailureStatus = refusal.status
+                self.pendingRequest?.login = .refused(refusal)
+                self.approveError = nil
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 // A cancelled PIN prompt is the user declining, not a failure,
                 // whatever an earlier attempt ended in.
                 self.pendingFailureStatus = error as? DashConnectPlatformError == .authorizationCancelled
                     ? nil
-                    : (error as? AppConnect.Refusal)?.status ?? .failed
+                    : .failed
                 self.approveError = String(
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription

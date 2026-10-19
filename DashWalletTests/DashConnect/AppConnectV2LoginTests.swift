@@ -599,6 +599,9 @@ final class AppConnectV2LoginTests: XCTestCase {
         // key the store cannot place is bound elsewhere, once a later read
         // agrees.
         XCTAssertEqual(encryptionState([theirs], current: nil, bindings: []), .absentIfSettled)
+        // A disabled one the store cannot place is weighed the same way.
+        let disabledUnplaced = Self.encryptionKey(7, data: Data(repeating: 0x99, count: 33), disabled: true)
+        XCTAssertEqual(encryptionState([disabledUnplaced], rule: .unique, current: nil, bindings: []), .absentIfSettled)
         // Rotating is never part of a login: a disabled key of this wallet's
         // cannot be added again, and is not replaced either.
         let disabledMine = Self.encryptionKey(6, data: Self.derivedPoint, disabled: true)
