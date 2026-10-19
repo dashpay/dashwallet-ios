@@ -2,7 +2,7 @@ name: Release dashpay to TestFlight
 
 run-name: >-
   dashpay ${{ inputs.release_channel }} TestFlight from ${{ inputs.wallet_ref }}
-  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || 'default branch' }})
+  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || '.platform-ref' }})
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
         default: develop
         type: string
       platform_ref:
-        description: "dashpay/platform branch, tag, or commit SHA — blank uses dashpay/platform's default branch"
+        description: "dashpay/platform branch, tag, or commit SHA — blank uses the pin in wallet_ref's .platform-ref (dashpay/platform's default branch if it has none)"
         required: false
         default: ""
         type: string
@@ -209,12 +209,43 @@ jobs:
           echo "SCHEMA_RELEASE_SCRIPT=$tooling/schema_release.rb" >> "$GITHUB_ENV"
           echo "SCHEMA_CAPTURE_SCRIPT=$tooling/capture_schema_release.py" >> "$GITHUB_ENV"
 
+      # A blank `platform_ref` builds the SDK from the commit in `.platform-ref`,
+      # the one DashWalletTests ran against for this wallet commit. A branch cut
+      # before `.platform-ref` existed falls back to Platform's default branch
+      # (a blank checkout ref), so it can still be released.
+      - name: Resolve the platform ref
+        id: platform-ref
+        env:
+          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
+        run: |
+          set -euo pipefail
+          ref="$REQUESTED_PLATFORM_REF"
+          label="$REQUESTED_PLATFORM_REF"
+          if [[ -z "$ref" ]]; then
+            if [[ -f .platform-ref ]]; then
+              ref=$(tr -d '[:space:]' < .platform-ref)
+              if ! [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+                echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$ref'"
+                exit 1
+              fi
+              label=".platform-ref ${ref}"
+            else
+              echo "::notice::wallet_ref has no .platform-ref; building against dashpay/platform's default branch"
+              label="default branch"
+            fi
+          fi
+          {
+            echo "ref=$ref"
+            echo "label=$label"
+          } >> "$GITHUB_OUTPUT"
+          echo "platform: $label"
+
       - name: Checkout platform
         uses: actions/checkout@v6
         with:
           repository: dashpay/platform
           # Blank checks out Platform's default branch, so a renamed dev branch needs no edit here.
-          ref: ${{ inputs.platform_ref }}
+          ref: ${{ steps.platform-ref.outputs.ref }}
           path: platform
           # Frozen models are regenerated from historical source commits.
           fetch-depth: 0
@@ -860,7 +891,7 @@ jobs:
           WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
-          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref || 'default branch' }}
+          REQUESTED_PLATFORM_REF: ${{ steps.platform-ref.outputs.label }}
           REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
           LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
           LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
