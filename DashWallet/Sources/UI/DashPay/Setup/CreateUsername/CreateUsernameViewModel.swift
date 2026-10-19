@@ -789,6 +789,25 @@ class CreateUsernameViewModel: ObservableObject {
                     "You can only create a non-contested username using this invitation",
                     comment: "DashPay Invitations"))
             }
+            // The card's check again, right before the claim: an identity
+            // that appeared since (a recovered one, another registration)
+            // would otherwise take the username on a resume that never
+            // spends the voucher. A definitive answer goes to the card, which
+            // explains it and removes this copy; an undetermined one proceeds,
+            // as it does on the card. One not chain-locked yet would fail the
+            // claim after the PIN, so it is answered here.
+            if let pendingInvitation,
+               let verdict = await InvitationValidator.validate(pendingInvitation) {
+                if verdict.isDefinitive {
+                    // The case only: the verdict carries the inviter's name.
+                    DWLogger.log("CreateUsername: invitation refused before the claim")
+                    PendingInvitationViewModel.shared.recheck()
+                    return .failure(InvitationClaimFailure.refused.message)
+                }
+                if verdict == .awaitingChainLock {
+                    return .failure(InvitationClaimFailure.stillConfirming.message)
+                }
+            }
             do {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
