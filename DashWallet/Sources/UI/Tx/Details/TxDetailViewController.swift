@@ -222,25 +222,11 @@ class TXDetailViewController: BaseTxDetailsViewController {
             self?.reloadDataSource()
         }
 
-        // The retry and removal rows depend on whether a running transfer is
-        // consuming this transaction's asset lock, and on the lock status
-        // `ShieldedTxLookup` reports; a claim or release and each published
-        // lookup snapshot trigger a rebuild. The registry publishes once a
-        // claim or release has landed, and the rows are rebuilt on the next
-        // main-queue turn.
-        // The projection change, which the transfer routes post when they
-        // finish, rebuilds them as well.
-        let lookupChanged = NotificationCenter.default
-            .publisher(for: .shieldedTxLookupDidChange)
-            .map { _ in () }
-        let projectionChanged = NotificationCenter.default
-            .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
-            .map { _ in () }
-        inFlightLocksObservation = ShieldedAssetLocksInFlight.shared.objectWillChange
-            .map { _ in () }
-            .merge(with: lookupChanged, projectionChanged)
+        // The rows are rebuilt on the next main-queue turn after a recovery
+        // input changes.
+        inFlightLocksObservation = TxDetailModel.recoveryInputChanges()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
+            .sink { [weak self] _ in
                 self?.reloadDataSource()
             }
     }
@@ -635,23 +621,19 @@ extension TXDetailViewController {
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
-        // A funding asset lock parked mid-transfer gets a retry action.
-        // The section is inserted (not pre-appended) so the empty state
-        // adds no phantom section spacing.
-        if let retry = model.stuckAssetLockRetry {
+        // A funding asset lock parked mid-transfer gets a retry action, and
+        // the removal action applies to some stuck transactions (see
+        // `TxDetailModel.offersUnconfirmedRemoval`). The section is inserted
+        // (not pre-appended) so the empty state adds no phantom section
+        // spacing.
+        let actions = model.recoveryActions
+        var recovery: [Item] = actions.retry.map { [.rebroadcast($0.actionTitle)] } ?? []
+        if actions.offersRemoval {
+            recovery.append(.removeUnconfirmed)
+        }
+        if !recovery.isEmpty {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
-            // The remover refuses while any transfer is active.
-            if retry.supportsRemoval, !ShieldedAssetLocksInFlight.shared.hasActivity {
-                currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
-            }
-        } else if model.supportsUnconfirmedRemoval {
-            // Any other transaction stuck in mempool context (a
-            // network-dropped classic send — e.g. a stalled CoinJoin sweep
-            // chunk) gets the removal action alone: there is no retry
-            // route for it, but deleting the local row frees its inputs.
-            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+            currentSnapshot.appendItems(recovery, toSection: .recovery)
         }
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
