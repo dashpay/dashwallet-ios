@@ -225,14 +225,17 @@ jobs:
             echo "::error::platform_ref must be a single branch, tag or SHA, got '$ref'"
             exit 1
           fi
-          if [[ "$ref" =~ ^[0-9a-fA-F]{7,39}$ ]]; then
+          # checkout cannot resolve an abbreviated SHA, and fails only after a
+          # full-history fetch; a hex-named branch or tag is still accepted.
+          if [[ "$ref" =~ ^[0-9a-fA-F]{7,39}$ ]] &&
+             ! git ls-remote --exit-code https://github.com/dashpay/platform "refs/heads/$ref" "refs/tags/$ref" > /dev/null; then
             echo "::error::platform_ref '$ref' looks like an abbreviated SHA; checkout needs the full 40-hex SHA"
             exit 1
           fi
           pin=""
           if [[ -e .platform-ref || -L .platform-ref ]]; then
-            if [[ ! -f .platform-ref ]]; then
-              echo "::error file=.platform-ref::.platform-ref is not a regular file"
+            if [[ -L .platform-ref || ! -f .platform-ref ]]; then
+              echo "::error file=.platform-ref::.platform-ref must be a regular file, not a symlink or directory"
               exit 1
             fi
             pin=$(tr -d '[:space:]' < .platform-ref)
