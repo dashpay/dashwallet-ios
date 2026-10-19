@@ -2099,6 +2099,7 @@
 		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
 		BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000011 /* WalletPreparationFailureTests.swift */; };
 		BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000013 /* HostRecoveryTests.swift */; };
+		BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */; };
 		BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000015 /* AutomaticPreparationTests.swift */; };
 		BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000017 /* AuthenticationGateTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
@@ -3967,6 +3968,7 @@
 		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000011 /* WalletPreparationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPreparationFailureTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000013 /* HostRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostRecoveryTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformProtocolVersionTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000015 /* AutomaticPreparationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticPreparationTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000017 /* AuthenticationGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationGateTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
@@ -7565,6 +7567,7 @@
 				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
 				BABA10000000000000000011 /* WalletPreparationFailureTests.swift */,
 				BABA10000000000000000013 /* HostRecoveryTests.swift */,
+				BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */,
 				BABA10000000000000000015 /* AutomaticPreparationTests.swift */,
 				BABA10000000000000000017 /* AuthenticationGateTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
@@ -10898,6 +10901,7 @@
 				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
 				BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */,
 				BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */,
+				BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */,
 				BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */,
 				BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
