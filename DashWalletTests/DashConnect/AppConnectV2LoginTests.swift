@@ -586,14 +586,15 @@ final class AppConnectV2LoginTests: XCTestCase {
             .notThisWallets)
         // One the fetched keys do not show yet stops the login.
         XCTAssertEqual(encryptionState([], current: Self.current(5, data: theirs.data), bindings: []), .outOfDate)
-        // Nor one whose bound the store cannot place, behind a disabled
-        // current key.
+        // One whose bound the store cannot place, behind a disabled current
+        // key, is no longer current either: a new key shadows nothing, once
+        // a later read confirms the disabled key is current.
         let disabledCurrent = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
         XCTAssertEqual(
             encryptionState(
                 [theirs, disabledCurrent], current: Self.current(9, data: disabledCurrent.data, disabled: true),
                 bindings: []),
-            .notThisWalletsIfSettled)
+            .absentIfSettled)
         // With no current key at all, a key bound to the app would be it: a
         // key the store cannot place is bound elsewhere, once a later read
         // agrees.
@@ -773,13 +774,13 @@ final class AppConnectV2LoginTests: XCTestCase {
             return result
         }
         let agreed = try await settle([[.encryption: current]])
-        XCTAssertEqual(agreed, [.notThisWallets])
-        // A lagging node that has lost the disabled key does not turn
-        // "leave it alone" into a registration.
+        XCTAssertEqual(agreed, [.absent])
+        // A lagging node that has lost the disabled key does not settle the
+        // answer.
         let lagging = try await settle([[:], [:], [:]])
         XCTAssertEqual(lagging, [.outOfDate])
         let caughtUp = try await settle([[:], [.encryption: current]])
-        XCTAssertEqual(caughtUp, [.notThisWallets])
+        XCTAssertEqual(caughtUp, [.absent])
         // A read that conflicts makes the answer out of date, even if a
         // later one agrees with the first.
         let unknown = Self.current(11, data: Data(repeating: 0x88, count: 33))
@@ -794,7 +795,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                 return read
             },
             pause: { _ in })
-        XCTAssertEqual(afterAFailedRead, [.notThisWallets])
+        XCTAssertEqual(afterAFailedRead, [.absent])
         // When no read answers, the failure is thrown.
         do {
             _ = try await AppConnect.settle(
@@ -803,6 +804,17 @@ final class AppConnectV2LoginTests: XCTestCase {
             XCTFail("expected the read failure")
         } catch SDKError.timeout {
         }
+        // A failure called final is thrown at once.
+        var finalReads = 0
+        do {
+            _ = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { finalReads += 1; throw SDKError.serializationError("unreadable") }, pause: { _ in },
+                isFinal: { _ in true })
+            XCTFail("expected the final failure")
+        } catch SDKError.serializationError {
+        }
+        XCTAssertEqual(finalReads, 1)
     }
 
     /// An answer a newer read gives has to be confirmed by a later one.

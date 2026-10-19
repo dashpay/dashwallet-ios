@@ -800,13 +800,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 contractOwners[id] = ownerId(of: try await sdk.dataContractGetOffMain(id: id.toBase58String()))
             }
         }
-        let config = app["config"] as? [String: Any] ?? [:]
+        // A contract whose config this build cannot read says nothing of its
+        // key requirements, which is not the same as having none.
+        let config = app["config"] as? [String: Any]
         var currentKeyRules: [KeyPurpose: AppConnect.CurrentKeyRule] = [:]
         var unreadableKeyPurposes: Set<KeyPurpose> = []
         for (purpose, field) in [
             (KeyPurpose.encryption, "requiresIdentityEncryptionBoundedKey"),
             (.decryption, "requiresIdentityDecryptionBoundedKey"),
         ] {
+            guard let config else {
+                unreadableKeyPurposes.insert(purpose)
+                continue
+            }
             switch AppConnect.keyRequirement(config[field]) {
             case .currentKey(let rule): currentKeyRules[purpose] = rule
             case .noCurrentKey: break
@@ -1488,10 +1494,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // wallet made it, register it when there is none, leave it out when
         // another wallet made it. Which key is current is Platform's to say:
         // the app's verifier checks the slot against the same proved read.
+        // An answer this build cannot read reads the same on every try.
+        func isUnreadableAnswer(_ error: Error) -> Bool {
+            if let sdkError = error as? SDKError, case .serializationError = sdkError { return true }
+            return false
+        }
         func failedRead(_ error: Error) -> DashConnectPlatformError {
             Self.logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(error.localizedDescription, privacy: .public)")
-            if let sdkError = error as? SDKError, case .serializationError = sdkError { return .appConnectKeysUnsupported }
-            return .appConnectKeysUnreadable
+            return isUnreadableAnswer(error) ? .appConnectKeysUnsupported : .appConnectKeysUnreadable
+        }
+        // A node one block behind has usually caught up within a second;
+        // one that has not gets longer.
+        func pause(_ attempt: Int) async {
+            try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000)
         }
         // A first read that fails is tried again, as a later one would be.
         var firstRead: [KeyPurpose: AppConnect.CurrentContractKey]?
@@ -1501,8 +1516,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch {
             firstReadFailure = error
         }
-        for attempt in 1 ... 2 where firstRead == nil {
-            try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000)
+        for attempt in 1 ... 2 where firstRead == nil && !(firstReadFailure.map(isUnreadableAnswer) ?? false) {
+            await pause(attempt)
             do {
                 firstRead = try await readCurrentKeys()
             } catch {
@@ -1536,9 +1551,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 currentKeys: currentKeys,
                 states: states,
                 reread: readCurrentKeys,
-                // A node one block behind has usually caught up within a
-                // second; one that has not gets longer.
-                pause: { attempt in try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000) })
+                pause: pause,
+                isFinal: isUnreadableAnswer)
         } catch let error as DashConnectPlatformError {
             throw error
         } catch {
@@ -1623,6 +1637,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if !add.isEmpty || !disable.isEmpty {
             Self.logger.info(
                 "🔗 DASHCONNECT :: registering \(add.count, privacy: .public) key(s), disabling \(disable.count, privacy: .public)")
+            // The reads above can take seconds: an approval cancelled in the
+            // meantime registers nothing.
+            try Task.checkCancellation()
             do {
                 try await signer.withAdditionalSigningKeys(signingKeys) {
                     try await context.wallet.updateIdentity(

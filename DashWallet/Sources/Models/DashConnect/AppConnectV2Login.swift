@@ -489,13 +489,15 @@ extension AppConnect {
     /// to be confirmed in turn; one that conflicts makes the answer out of
     /// date, there being no telling which of the two is behind. An answer
     /// still unconfirmed at the end is out of date, unless no read answered
-    /// at all: then the last failure is thrown.
+    /// at all: then the last failure is thrown. A failure `isFinal` calls so
+    /// is thrown at once.
     static func settle(
         currentKeys: [KeyPurpose: CurrentContractKey],
         maxRereads: Int = 3,
         states: ([KeyPurpose: CurrentContractKey]) throws -> [EncryptionKeyState],
         reread: () async throws -> [KeyPurpose: CurrentContractKey],
-        pause: (_ attempt: Int) async -> Void
+        pause: (_ attempt: Int) async -> Void,
+        isFinal: (Error) -> Bool = { _ in false }
     ) async throws -> [EncryptionKeyState] {
         var keys = currentKeys
         var result = try states(keys)
@@ -511,6 +513,7 @@ extension AppConnect {
             do {
                 later = try await reread()
             } catch {
+                if isFinal(error) { throw error }
                 readFailure = error
                 continue
             }
@@ -588,12 +591,12 @@ extension AppConnect {
     /// Every key bound to the app becomes current when it is registered, so
     /// with no current key at all a live key the store places on the app
     /// means Platform's read is behind, and a live key it cannot place is
-    /// bound elsewhere once a later read agrees. Behind a disabled current
-    /// key, a live key the app may hold was registered before it, or after
-    /// it with Platform's read behind; it is left alone once a later read
-    /// agrees, so a key of unknown origin is never shadowed by a second
-    /// one; under `unique`, nothing can be added behind a disabled current
-    /// key at all.
+    /// bound elsewhere once a later read agrees. Beside a current key, a
+    /// live key the app may hold was registered before it, or after it with
+    /// Platform's read behind, so the answer waits on a later read. Behind
+    /// a disabled current key that a later read confirms, a key registered
+    /// before it is no longer current, and a new one shadows nothing; under
+    /// `unique`, nothing can be added behind a disabled current key at all.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -648,8 +651,11 @@ extension AppConnect {
             return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
         }
         if rule == .unique { return .notThisWallets }
-        if mayBeBehind { return .notThisWalletsIfSettled }
-        return holdsTheDerivedKey ? .notThisWallets : .absent
+        // Behind a disabled current key, a key of the app's registered
+        // before it is no longer current either, so a new key shadows
+        // nothing; this wallet's own key cannot be added a second time.
+        if holdsTheDerivedKey { return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets }
+        return mayBeBehind ? .absentIfSettled : .absent
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to
