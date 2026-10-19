@@ -696,29 +696,9 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertTrue(AppConnect.EncryptionKeyState.absentIfSettled.needsSettling)
     }
 
-    /// A key this login registered is passed over when Platform names a key
-    /// that is neither it nor the one current before the login.
-    func testARegisteredKeyIsPassedOverOnlyByAThirdKey() {
-        let registered: [(slot: Int, purpose: KeyPurpose, keyId: UInt32)] = [
-            (slot: 0, purpose: .encryption, keyId: 12), (slot: 1, purpose: .decryption, keyId: 13),
-        ]
-        let before = [KeyPurpose.encryption: Self.current(4, data: Data(repeating: 0x44, count: 33), disabled: true)]
-        func passedOver(_ after: [KeyPurpose: AppConnect.CurrentContractKey]) -> Set<Int> {
-            AppConnect.passedOverSlots(registered: registered, before: before, after: after)
-        }
-        let other = Self.current(20, data: Data(repeating: 0x66, count: 33))
-        XCTAssertEqual(passedOver([.encryption: other, .decryption: other]), [0, 1])
-        XCTAssertEqual(passedOver([.encryption: Self.current(12, data: Self.derivedPoint)]), [], "this login's key")
-        XCTAssertEqual(passedOver([.encryption: before[.encryption]!]), [], "a read from before the login")
-        XCTAssertEqual(passedOver([:]), [], "no current key yet: behind")
-    }
-
     func testARequirementThisBuildCannotReadIsToldApart() {
-        XCTAssertTrue(AppConnect.isUnreadableRequirement(NSNumber(value: 3)))
-        XCTAssertTrue(AppConnect.isUnreadableRequirement("2"))
-        XCTAssertTrue(AppConnect.isUnreadableRequirement(NSNumber(value: 1.5)))
-        for known: Any? in [nil, NSNull(), NSNumber(value: 0), NSNumber(value: 1), NSNumber(value: 2)] {
-            XCTAssertFalse(AppConnect.isUnreadableRequirement(known))
+        for unreadable: Any in [NSNumber(value: 3), "2", NSNumber(value: 1.5), NSNumber(value: true)] {
+            XCTAssertEqual(AppConnect.keyRequirement(unreadable), .unreadable, "\(unreadable)")
         }
     }
 
@@ -733,7 +713,8 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(AppConnect.compare(earlier: [.encryption: disabled], later: [.encryption: live]), .behind)
         XCTAssertEqual(AppConnect.compare(earlier: [:], later: [.encryption: live]), .newer([.encryption: live]))
         XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: disabled]), .newer([.encryption: disabled]))
-        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: other]), .newer([.encryption: other]))
+        // Key ids say nothing of order.
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: other]), .conflict)
         // Behind for one purpose, newer for another: the earlier key stays.
         XCTAssertEqual(
             AppConnect.compare(earlier: [.encryption: live], later: [.decryption: other]),
@@ -754,7 +735,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                 currentKeys: [.encryption: current], states: states,
                 reread: { reads.removeFirst() }, pause: { pauses += 1 })
             XCTAssertLessThanOrEqual(pauses, 3)
-            return result.states
+            return result
         }
         let agreed = try await settle([[.encryption: current]])
         XCTAssertEqual(agreed, [.notThisWallets])
@@ -764,21 +745,42 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(lagging, [.outOfDate])
         let caughtUp = try await settle([[:], [.encryption: current]])
         XCTAssertEqual(caughtUp, [.notThisWallets])
-        // Reads that never agree end out of date.
+        // Reads that conflict never confirm an answer.
         let unknown = Self.current(11, data: Data(repeating: 0x88, count: 33))
-        let changing = try await settle([[.encryption: unknown], [.encryption: current], [.encryption: unknown]])
+        let changing = try await settle([[.encryption: unknown], [.encryption: unknown], [.encryption: unknown]])
         XCTAssertEqual(changing, [.outOfDate])
     }
 
+    /// An answer a newer read gives has to be confirmed by a later one.
+    func testAnAnswerFromANewerReadNeedsASecondRead() async throws {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let mineBinding = AppConnect.KeyBinding(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)
+        let current = Self.current(5, data: Self.derivedPoint)
+        func states(_ keys: [KeyPurpose: AppConnect.CurrentContractKey]) -> [AppConnect.EncryptionKeyState] {
+            [encryptionState([mine], current: keys[.encryption], bindings: [mineBinding])]
+        }
+        func settle(_ reads: [[KeyPurpose: AppConnect.CurrentContractKey]]) async throws -> [AppConnect.EncryptionKeyState] {
+            var reads = reads
+            return try await AppConnect.settle(
+                currentKeys: [:], states: states, reread: { reads.removeFirst() }, pause: {})
+        }
+        // The first read is behind this wallet's registration.
+        let confirmed = try await settle([[.encryption: current], [.encryption: current]])
+        XCTAssertEqual(confirmed, [.current(keyId: 5)])
+        let unconfirmed = try await settle([[.encryption: current], [:], [:]])
+        XCTAssertEqual(unconfirmed, [.outOfDate])
+        // An answer the first read gives is taken as it is.
+        let taken = try await AppConnect.settle(
+            currentKeys: [.encryption: current], states: states, reread: { XCTFail("no reread"); return [:] }, pause: {})
+        XCTAssertEqual(taken, [.current(keyId: 5)])
+    }
+
     func testOnlyARequirementThatKeepsACurrentKeyTakesALogin() {
-        XCTAssertEqual(AppConnect.currentKeyRule(NSNumber(value: 0)), .unique)
-        XCTAssertEqual(AppConnect.currentKeyRule(NSNumber(value: 2)), .latest)
-        XCTAssertNil(AppConnect.currentKeyRule(NSNumber(value: 1)), "Multiple")
-        XCTAssertNil(AppConnect.currentKeyRule(NSNull()))
-        XCTAssertNil(AppConnect.currentKeyRule(nil))
-        XCTAssertNil(AppConnect.currentKeyRule(NSNumber(value: true)))
-        XCTAssertNil(AppConnect.currentKeyRule(NSNumber(value: 2.5)))
-        XCTAssertNil(AppConnect.currentKeyRule("2"))
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 0)), .currentKey(.unique))
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 2)), .currentKey(.latest))
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 1)), .noCurrentKey, "Multiple")
+        XCTAssertEqual(AppConnect.keyRequirement(NSNull()), .noCurrentKey)
+        XCTAssertEqual(AppConnect.keyRequirement(nil), .noCurrentKey)
     }
 
     /// Under `Unique` the first key registered stays current for good, and

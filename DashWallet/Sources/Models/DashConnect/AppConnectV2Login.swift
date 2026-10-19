@@ -406,37 +406,54 @@ extension AppConnect {
         case latest
     }
 
-    /// The rule a contract's `requiresIdentity…BoundedKey` value names, or
-    /// nil for `Multiple` (1), none, or a value this build cannot read.
-    static func currentKeyRule(_ requirement: Any?) -> CurrentKeyRule? {
-        switch exactInteger(requirement) as UInt8? {
-        case 0: return .unique
-        case 2: return .latest
-        default: return nil
+    /// What a contract's `requiresIdentity…BoundedKey` value says about the
+    /// current key a login sends.
+    enum KeyRequirement: Equatable {
+        /// It keeps one, under this rule.
+        case currentKey(CurrentKeyRule)
+        /// None, or `Multiple` (1): it keeps no current key.
+        case noCurrentKey
+        /// A value this build cannot read.
+        case unreadable
+    }
+
+    static func keyRequirement(_ value: Any?) -> KeyRequirement {
+        guard let value, !(value is NSNull) else { return .noCurrentKey }
+        switch exactInteger(value) as UInt8? {
+        case 0: return .currentKey(.unique)
+        case 1: return .noCurrentKey
+        case 2: return .currentKey(.latest)
+        default: return .unreadable
         }
     }
 
-    /// Whether a `requiresIdentity…BoundedKey` value is one this build
-    /// cannot read, rather than none or one it knows.
-    static func isUnreadableRequirement(_ requirement: Any?) -> Bool {
-        guard let requirement, !(requirement is NSNull) else { return false }
-        guard let value = exactInteger(requirement) as UInt8? else { return true }
-        return value > 2
+    /// A JSON number read only when it is an exact integer that fits, so a
+    /// value out of range is unreadable rather than wrapped.
+    static func exactInteger<Value: FixedWidthInteger>(_ value: Any?) -> Value? {
+        guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return nil }
+        let whole = number.int64Value
+        guard Double(whole) == number.doubleValue else { return nil }
+        return Value(exactly: whole)
     }
 
     /// How a later read of the current keys compares with an earlier one.
     /// Platform never takes a current-key reference away and never gives a
     /// disabled key back, so a read that lacks a key an earlier one named,
-    /// or shows it live again, comes from a node that is behind.
+    /// or shows it live again, comes from a node that is behind. Key ids say
+    /// nothing of order, so two reads that name different keys cannot be
+    /// ordered at all.
     enum CurrentKeysRead: Equatable {
         /// It names the same keys.
         case same
         /// It is behind the earlier read for some purpose, and newer for
         /// none.
         case behind
-        /// It is newer for some purpose: these are the keys to go on with,
-        /// the earlier read's kept wherever the later one is behind.
+        /// It is newer for some purpose and behind or the same for the rest:
+        /// these are the keys to go on with, the earlier read's kept wherever
+        /// the later one is behind.
         case newer([KeyPurpose: CurrentContractKey])
+        /// The two name different keys for some purpose.
+        case conflict
     }
 
     static func compare(
@@ -452,9 +469,8 @@ extension AppConnect {
             guard before != after else { continue }
             if let before {
                 guard let after else { continue }
-                if after.keyId == before.keyId && after.data == before.data && before.isDisabled && !after.isDisabled {
-                    continue
-                }
+                guard after.keyId == before.keyId && after.data == before.data else { return .conflict }
+                if before.isDisabled { continue }
             }
             merged[purpose] = after
             isNewer = true
@@ -462,45 +478,39 @@ extension AppConnect {
         return isNewer ? .newer(merged) : .behind
     }
 
-    /// Reads Platform's current keys again while `states` holds a state that
-    /// waits on a later read, or one that is out of date, at most
-    /// `maxRereads` times with `pause` before each. A state that waits
-    /// settles once a read names the same keys; a read that is behind is
-    /// set aside; a newer one is taken and the states are worked out again.
-    /// What still waits at the end is out of date.
+    /// Reads Platform's current keys again, at most `maxRereads` times with
+    /// `pause` before each, until an answer is confirmed: one from the first
+    /// read is taken as it is unless it waits on a later read or is out of
+    /// date; any other needs a later read that names the same keys. A read
+    /// that is behind is set aside, a newer one is taken and has to be
+    /// confirmed in turn, and one that conflicts leaves the answer
+    /// unconfirmed. An answer still unconfirmed at the end is out of date.
     static func settle(
         currentKeys: [KeyPurpose: CurrentContractKey],
         maxRereads: Int = 3,
         states: ([KeyPurpose: CurrentContractKey]) throws -> [EncryptionKeyState],
         reread: () async throws -> [KeyPurpose: CurrentContractKey],
         pause: () async -> Void
-    ) async throws -> (states: [EncryptionKeyState], currentKeys: [KeyPurpose: CurrentContractKey]) {
+    ) async throws -> [EncryptionKeyState] {
         var keys = currentKeys
         var result = try states(keys)
+        var confirmed = !result.contains(where: { $0.needsSettling || $0 == .outOfDate })
         var rereads = 0
-        while rereads < maxRereads, result.contains(where: { $0.needsSettling || $0 == .outOfDate }) {
+        while !confirmed && rereads < maxRereads {
             rereads += 1
             await pause()
             switch compare(earlier: keys, later: try await reread()) {
             case .same:
                 result = result.map(\.settled)
-            case .behind:
+                confirmed = !result.contains(.outOfDate)
+            case .behind, .conflict:
                 continue
             case .newer(let merged):
                 keys = merged
                 result = try states(keys)
             }
         }
-        return (result.map { $0.needsSettling ? .outOfDate : $0 }, keys)
-    }
-
-    /// A JSON number read only when it is an exact integer that fits, so a
-    /// value out of range is unreadable rather than wrapped.
-    static func exactInteger<Value: FixedWidthInteger>(_ value: Any?) -> Value? {
-        guard let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() else { return nil }
-        let whole = number.int64Value
-        guard Double(whole) == number.doubleValue else { return nil }
-        return Value(exactly: whole)
+        return confirmed ? result : result.map { _ in .outOfDate }
     }
 
     /// The key Platform names as the identity's current one for a contract
@@ -562,7 +572,8 @@ extension AppConnect {
     /// key, a live key the app may hold was registered before it, or after
     /// it with Platform's read behind; it is left alone once a later read
     /// agrees, so a key of unknown origin is never shadowed by a second
-    /// one. Under `unique` nothing can be added at all.
+    /// one; under `unique`, nothing can be added behind a disabled current
+    /// key at all.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -611,20 +622,6 @@ extension AppConnect {
         // registered before it, or after it and Platform's read is behind.
         if placedOnTheApp || unplaced { return .notThisWalletsIfSettled }
         return holdsTheDerivedKey ? .notThisWallets : .absent
-    }
-
-    /// The encryption slots this login registered whose key another one,
-    /// registered later, has replaced as current: `after` names a key that
-    /// is neither the slot's nor the one current before the login.
-    static func passedOverSlots(
-        registered: [(slot: Int, purpose: KeyPurpose, keyId: UInt32)],
-        before: [KeyPurpose: CurrentContractKey],
-        after: [KeyPurpose: CurrentContractKey]
-    ) -> Set<Int> {
-        Set(registered.filter { entry in
-            guard let current = after[entry.purpose] else { return false }
-            return current.keyId != entry.keyId && current.keyId != before[entry.purpose]?.keyId
-        }.map(\.slot))
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to

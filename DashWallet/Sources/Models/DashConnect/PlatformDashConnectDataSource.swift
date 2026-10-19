@@ -802,14 +802,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let config = app["config"] as? [String: Any] ?? [:]
         var currentKeyRules: [KeyPurpose: AppConnect.CurrentKeyRule] = [:]
-        currentKeyRules[.encryption] = AppConnect.currentKeyRule(config["requiresIdentityEncryptionBoundedKey"])
-        currentKeyRules[.decryption] = AppConnect.currentKeyRule(config["requiresIdentityDecryptionBoundedKey"])
         var unreadableKeyPurposes: Set<KeyPurpose> = []
-        if AppConnect.isUnreadableRequirement(config["requiresIdentityEncryptionBoundedKey"]) {
-            unreadableKeyPurposes.insert(.encryption)
-        }
-        if AppConnect.isUnreadableRequirement(config["requiresIdentityDecryptionBoundedKey"]) {
-            unreadableKeyPurposes.insert(.decryption)
+        for (purpose, field) in [
+            (KeyPurpose.encryption, "requiresIdentityEncryptionBoundedKey"),
+            (.decryption, "requiresIdentityDecryptionBoundedKey"),
+        ] {
+            switch AppConnect.keyRequirement(config[field]) {
+            case .currentKey(let rule): currentKeyRules[purpose] = rule
+            case .noCurrentKey: break
+            case .unreadable: unreadableKeyPurposes.insert(purpose)
+            }
         }
         let refusal = AppConnect.ownershipRefusal(
             for: plan,
@@ -1491,7 +1493,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             if let sdkError = error as? SDKError, case .serializationError = sdkError { return .appConnectKeysUnsupported }
             return .appConnectKeysUnreadable
         }
-        var currentKeys: [KeyPurpose: AppConnect.CurrentContractKey]
+        let currentKeys: [KeyPurpose: AppConnect.CurrentContractKey]
         do {
             currentKeys = try await firstCurrentKeysRead.value
         } catch {
@@ -1517,7 +1519,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // of date may be Platform's read catching up.
         let keyStates: [AppConnect.EncryptionKeyState]
         do {
-            (keyStates, currentKeys) = try await AppConnect.settle(
+            keyStates = try await AppConnect.settle(
                 currentKeys: currentKeys,
                 states: states,
                 reread: readCurrentKeys,
@@ -1644,34 +1646,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
             }
             Self.logger.info("🔗 DASHCONNECT :: identity updated")
-        }
-
-        // Another wallet of the identity can register the app's key while
-        // this login runs, and the key registered later is current: a slot
-        // whose key has been passed over that way is left out of the
-        // response, whether this login registered it or sends it again. A
-        // read that still names the key that was current before is behind,
-        // and keeps the slot; so does a read that fails. A node may also be
-        // behind this login's key but not the other one, so the slot goes
-        // only when a read a few seconds later names the same key.
-        let sent = encryptionSlots.enumerated().compactMap { slot, entry in
-            entry.keyId.map { (slot: slot, purpose: plan.encryption[entry.keyIndex].keyPurpose, keyId: $0) }
-        }
-        if !sent.isEmpty, let after = try? await readCurrentKeys() {
-            let candidates = AppConnect.passedOverSlots(registered: sent, before: currentKeys, after: after)
-            if !candidates.isEmpty {
-                try? await Task.sleep(nanoseconds: 3_000_000_000)
-                if let confirming = try? await readCurrentKeys() {
-                    let passedOver = candidates.filter { slot in
-                        let purpose = plan.encryption[encryptionSlots[slot].keyIndex].keyPurpose
-                        return after[purpose] == confirming[purpose]
-                    }
-                    if !passedOver.isEmpty {
-                        Self.logger.info("🔗 DASHCONNECT :: another key became the app's current encryption key; slot left out")
-                        encryptionSlots = encryptionSlots.enumerated().filter { !passedOver.contains($0.offset) }.map(\.element)
-                    }
-                }
-            }
         }
 
         // Slots: the auth keys in request order, then the encryption keys
