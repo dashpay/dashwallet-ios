@@ -77,6 +77,20 @@ final class ContactItemSearchFilterTests: XCTestCase {
         XCTAssertEqual(emptyProfile.displayTitle, "bob")
     }
 
+    func testAliasWinsOverProfileNameAndAnEmptyAliasFallsToIt() {
+        let both = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "Bob",
+            alias: "My Brother", createdAt: Self.anyDate)
+        let emptyAlias = ContactItem.fixture(
+            relationship: .established, username: "bob.dash", profileDisplayName: "Bob",
+            alias: "", createdAt: Self.anyDate)
+
+        XCTAssertEqual(both.displayTitle, "My Brother")
+        XCTAssertTrue(both.displayTitleIsName)
+        XCTAssertEqual(emptyAlias.displayTitle, "Bob")
+        XCTAssertTrue(emptyAlias.displayTitleIsName)
+    }
+
     func testEmptyAndWhitespaceQueriesMatchEverything() {
         let item = ContactItem.fixture(
             relationship: .incoming,
