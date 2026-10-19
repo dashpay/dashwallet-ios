@@ -12,6 +12,18 @@ import Combine
 import XCTest
 @testable import dashpay
 
+/// Counts row rebuilds: `reloadDataSource()` starts each one by assigning an
+/// empty snapshot.
+private final class CountingDetailViewController: TXDetailViewController {
+    private(set) var rebuilds = 0
+
+    override var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! {
+        didSet {
+            if currentSnapshot?.numberOfSections == 0 { rebuilds += 1 }
+        }
+    }
+}
+
 final class TxDetailRecoveryRowsTests: XCTestCase {
 
     private typealias Input = TxDetailModel.RecoveryInput
@@ -97,10 +109,44 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let recorder = Recorder(TxDetailModel.recoveryInputChanges(
             lookup: ShieldedTxLookup(), registry: registry))
 
-        registry.beginFundingCall()
+        XCTAssertTrue(registry.beginFundingCall())
         XCTAssertEqual(recorder.count(of: .inFlightLocks), 1)
         registry.endFundingCall()
         XCTAssertEqual(recorder.count(of: .inFlightLocks), 2)
+    }
+
+    // MARK: - Open screen
+
+    /// Runs the main queue until `controller` has rebuilt its rows `count`
+    /// times, or ten seconds pass (the swap-order lookup reads a database).
+    @MainActor
+    private func waitForRebuilds(_ count: Int, of controller: CountingDetailViewController) {
+        let deadline = Date().addingTimeInterval(10)
+        while controller.rebuilds < count, Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+    }
+
+    @MainActor
+    func testAnOpenScreenRebuildsItsRowsOnEachRecoveryInput() {
+        let inputs = PassthroughSubject<Input, Never>()
+        let transaction = Transaction(
+            syntheticTxid: txidWire, directionRaw: 1, netAmount: -1_000,
+            fee: nil, contextRaw: 0, date: Date())
+        let controller = CountingDetailViewController(model: TxDetailModel(transaction: transaction))
+        controller.recoveryInputs = inputs.eraseToAnyPublisher()
+        controller.loadViewIfNeeded()
+
+        // `viewDidLoad` builds the rows, and its swap-order lookup rebuilds
+        // them once more when it lands. Only the inputs rebuild them after.
+        waitForRebuilds(2, of: controller)
+        XCTAssertEqual(controller.rebuilds, 2)
+
+        for (index, input) in [Input.lockLookup, .inFlightLocks, .projection].enumerated() {
+            inputs.send(input)
+            waitForRebuilds(3 + index, of: controller)
+            XCTAssertEqual(controller.rebuilds, 3 + index, "after \(input)")
+        }
     }
 
     // MARK: - Removal

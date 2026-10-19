@@ -6710,6 +6710,9 @@
 /* A resume was refused because the same transfer is still running */
 "This transfer is still in progress. Check its status again in a few minutes." = "This transfer is still in progress. Check its status again in a few minutes.";
 
+/* Refused while the wallet reloads after a removed transaction */
+"The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes." = "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.";
+
 /* Remove never-accepted transaction: refused while a transfer is running */
 "A transfer is still in progress. Try again when it has finished, or restart the app if it never does." = "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.";
 

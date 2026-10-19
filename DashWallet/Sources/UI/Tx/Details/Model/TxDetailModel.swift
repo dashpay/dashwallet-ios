@@ -636,23 +636,34 @@ extension TxDetailModel {
         !transferActive && (retry.map(\.supportsRemoval) ?? isInMempool)
     }
 
+    /// `stuckAssetLockRetry`, except while a removal reloads the wallet, when
+    /// a retry would only be refused.
+    var currentRetry: StuckAssetLockRetry? {
+        ShieldedAssetLocksInFlight.shared.isRemovalInProgress ? nil : stuckAssetLockRetry
+    }
+
     /// The recovery actions for this transaction now: `stuckAssetLockRetry`
     /// and `offersUnconfirmedRemoval(retry:transferActive:isInMempool:)`,
-    /// both from one read of the retry.
+    /// both from one read of the retry, and neither while a removal reloads
+    /// the wallet.
     var recoveryActions: (retry: StuckAssetLockRetry?, offersRemoval: Bool) {
-        let retry = stuckAssetLockRetry
-        let offersRemoval = Self.offersUnconfirmedRemoval(
-            retry: retry,
-            transferActive: ShieldedAssetLocksInFlight.shared.hasActivity,
-            isInMempool: transaction.state == .processing)
+        // While a removal reloads the wallet a retry or a removal would only
+        // be refused, so neither is offered; the registry publishes when the
+        // reload ends.
+        let retry = currentRetry
+        let offersRemoval = !ShieldedAssetLocksInFlight.shared.isRemovalInProgress
+            && Self.offersUnconfirmedRemoval(
+                retry: retry,
+                transferActive: ShieldedAssetLocksInFlight.shared.hasActivity,
+                isInMempool: transaction.state == .processing)
         return (retry, offersRemoval)
     }
 
     /// Which input of the recovery rows changed.
     enum RecoveryInput {
         /// What the registry reports changed: an outpoint's first claim or
-        /// last release, or the first funding call starting or the last one
-        /// ending.
+        /// last release, the first funding call starting or the last one
+        /// ending, or a removal's reload starting or ending.
         case inFlightLocks
         /// The lock lookup published a changed snapshot or a new consumed
         /// mark.

@@ -9,6 +9,7 @@
 //  lock that is still claimed must refuse a second attempt.
 //
 
+import Combine
 import XCTest
 import SwiftDashSDK
 @testable import dashpay
@@ -90,8 +91,8 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
     @MainActor
     func testFundingCallsCountAsActivityBeforeAnyLockExists() {
         let registry = ShieldedAssetLocksInFlight()
-        registry.beginFundingCall()
-        registry.beginFundingCall()
+        XCTAssertTrue(registry.beginFundingCall())
+        XCTAssertTrue(registry.beginFundingCall())
         XCTAssertTrue(registry.hasActivity)
 
         registry.endFundingCall()
@@ -101,10 +102,55 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
 
         // An extra end must not go below zero: the next call still counts.
         registry.endFundingCall()
-        registry.beginFundingCall()
+        XCTAssertTrue(registry.beginFundingCall())
         XCTAssertTrue(registry.hasActivity)
         registry.endFundingCall()
         XCTAssertFalse(registry.hasActivity)
+    }
+
+    @MainActor
+    func testARemovalIsAdmittedOnlyWithoutActivityAndHoldsOffTransfers() {
+        let registry = ShieldedAssetLocksInFlight()
+        registry.claim(lockA)
+        XCTAssertEqual(registry.beginRemoval(), .transferActive, "a lock is being consumed")
+        registry.release(lockA)
+        XCTAssertTrue(registry.beginFundingCall())
+        XCTAssertEqual(registry.beginRemoval(), .transferActive, "a fresh transfer is running")
+        registry.endFundingCall()
+
+        // Screens offering a removal or a retry rebuild when the hold starts
+        // and when it ends.
+        var published = 0
+        let subscription = registry.objectWillChange.sink { published += 1 }
+        defer { subscription.cancel() }
+
+        XCTAssertEqual(registry.beginRemoval(), .admitted)
+        XCTAssertEqual(published, 1)
+        XCTAssertTrue(registry.isRemovalInProgress)
+        XCTAssertEqual(registry.beginRemoval(), .removalHeld, "one removal at a time")
+        XCTAssertFalse(registry.beginFundingCall(), "no transfer starts during the reload")
+        XCTAssertFalse(registry.hasActivity, "a refused funding call is not counted")
+        XCTAssertEqual(registry.admitResume(lockA), .walletReloading)
+        XCTAssertFalse(registry.contains(lockA), "a refused resume claims nothing")
+
+        registry.endRemoval()
+        XCTAssertEqual(published, 2)
+        XCTAssertFalse(registry.isRemovalInProgress)
+        XCTAssertTrue(registry.beginFundingCall())
+        registry.endFundingCall()
+    }
+
+    @MainActor
+    func testAResumeClaimsALockOnlyWhileNoOtherAttemptHasIt() {
+        let registry = ShieldedAssetLocksInFlight()
+        XCTAssertEqual(registry.admitResume(lockA), .admitted)
+        XCTAssertTrue(registry.contains(lockA))
+        XCTAssertEqual(registry.admitResume(lockA), .claimedElsewhere)
+        XCTAssertEqual(registry.admitResume(lockB), .admitted, "another lock is independent")
+
+        registry.release(lockA)
+        registry.release(lockB)
+        XCTAssertFalse(registry.hasActivity, "the refused resume added no claim")
     }
 
     // MARK: - Coordinator
@@ -131,6 +177,30 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
             return XCTFail("expected assetLockInFlight, got \(String(describing: coordinator.lastFailure))")
         }
         XCTAssertTrue(ShieldedAssetLocksInFlight.shared.contains(lockA), "the refusal must not release the running claim")
+    }
+
+    @MainActor
+    func testResumeIsRefusedWhileARemovalReloadsTheWallet() async throws {
+        let registry = ShieldedAssetLocksInFlight.shared
+        guard registry.beginRemoval() == .admitted else {
+            return XCTFail("the shared registry has activity left over")
+        }
+        defer { registry.endRemoval() }
+        let coordinator = ShieldedTransferCoordinator()
+        let lock = lockA
+
+        // Not awaited: an admitted resume would go on to the PIN prompt and
+        // never return, so the test waits for the refusal with a deadline.
+        Task { await coordinator.resumeAssetLock(outPointTxidWire: lock.txidWire, outPointVout: lock.vout) }
+        let deadline = Date().addingTimeInterval(2)
+        while coordinator.phase == .idle, Date() < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+
+        guard case .walletReloading? = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError else {
+            return XCTFail("expected walletReloading, got \(String(describing: coordinator.lastFailure))")
+        }
+        XCTAssertFalse(registry.contains(lockA), "a refused resume claims nothing")
     }
 
     @MainActor

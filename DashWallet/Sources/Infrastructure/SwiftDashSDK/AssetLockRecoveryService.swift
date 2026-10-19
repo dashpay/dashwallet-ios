@@ -42,7 +42,8 @@ struct AssetLockRecoveryService {
         case noIdentity
         case unsupportedRoute
         /// The coordinator refused the resume because a running transfer is
-        /// consuming, or may be consuming, the lock.
+        /// consuming, or may be consuming, the lock, or because a removal is
+        /// reloading the wallet.
         case inProgress(String)
         case failed(String)
 
@@ -224,6 +225,8 @@ struct AssetLockRecoveryService {
         var awaitingSync = 0
         /// Skipped because a running transfer is still consuming the lock.
         var inProgress = 0
+        /// Nothing was attempted: a removal was reloading the wallet.
+        var deferredForReload = false
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
@@ -341,6 +344,15 @@ struct AssetLockRecoveryService {
                     progress: @MainActor (Int, Int) -> Void = { _, _ in }) async -> BulkOutcome {
         var outcome = BulkOutcome()
         guard !pending.isEmpty else { return outcome }
+        // The whole pass, PIN prompt included, counts as activity, so no
+        // removal reloads the wallet between one recovery and the next. A
+        // pass started during a removal's reload is deferred before the PIN.
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            DWLogger.log("LOCK-RETRY bulk deferred count=\(pending.count): a removal is reloading the wallet")
+            outcome.deferredForReload = true
+            return outcome
+        }
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         // One gate for the batch: authorize here, then run every resume inside
         // `preauthorized`, whose task-local suppresses only the second prompt
@@ -544,7 +556,7 @@ struct AssetLockRecoveryService {
             switch failure {
             case .authCancelled:
                 throw DWIdentityAuthorizer.AuthError.cancelled
-            case .assetLockInFlight:
+            case .assetLockInFlight, .walletReloading:
                 throw RecoveryError.inProgress(message)
             default:
                 break

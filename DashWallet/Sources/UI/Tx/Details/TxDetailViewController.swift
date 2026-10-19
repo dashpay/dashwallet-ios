@@ -113,6 +113,9 @@ class TXDetailViewController: BaseTxDetailsViewController {
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
     private var inFlightLocksObservation: AnyCancellable?
+    /// What `viewDidLoad` subscribes to for rebuilding the recovery rows;
+    /// tests replace it before the view loads.
+    var recoveryInputs: AnyPublisher<TxDetailModel.RecoveryInput, Never> = TxDetailModel.recoveryInputChanges()
 
     enum Section: CaseIterable {
         case header
@@ -224,7 +227,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
         // The rows are rebuilt on the next main-queue turn after a recovery
         // input changes.
-        inFlightLocksObservation = TxDetailModel.recoveryInputChanges()
+        inFlightLocksObservation = recoveryInputs
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.reloadDataSource()
@@ -287,13 +290,18 @@ extension TXDetailViewController {
     /// several-minute worst case rather than claiming early success.
     private func retryStuckAssetLock() {
         guard !isRetryingAssetLock else { return }
-        guard let retry = model.stuckAssetLockRetry else {
+        // `currentRetry`, not `stuckAssetLockRetry`: a tap on a row built
+        // just before a removal began must not retry during its reload.
+        guard let retry = model.currentRetry else {
             // The row was built before a transfer started consuming this
             // lock: say so and drop the row rather than ignore the tap.
             if model.isAssetLockRetryInFlight {
                 presentDashUIKitToast(
                     style: .info,
                     message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+                reloadDataSource()
+            } else if ShieldedAssetLocksInFlight.shared.isRemovalInProgress {
+                presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
                 reloadDataSource()
             }
             return
@@ -331,6 +339,10 @@ extension TXDetailViewController {
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
+            } catch AssetLockRecoveryService.RecoveryError.inProgress(let message) {
+                // Refused because another attempt is consuming the lock or a
+                // removal is reloading the wallet: nothing failed.
+                toast = (message, .info)
             } catch {
                 failure = error
             }
@@ -410,6 +422,10 @@ extension TXDetailViewController {
                 }
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
                 self?.presentRemovalRefused()
+            } catch UnconfirmedTransactionRemover.RemovalError.removalInProgress {
+                // Another removal is reloading the wallet: nothing failed.
+                self?.presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
+                self?.reloadDataSource()
             } catch {
                 let alert = UIAlertController(
                     title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),

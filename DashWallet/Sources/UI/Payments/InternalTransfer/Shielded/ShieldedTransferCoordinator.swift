@@ -272,8 +272,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `performAssetLock` built, as the SDK reported it, so a failed attempt's
     /// "Try again" can RESUME the existing lock instead of building a second
     /// one. Set when that attempt fails, unless its broadcast was definitely
-    /// rejected; cleared on `reset()` and at the start of a fresh attempt.
-    /// The Core → Platform route never sets it.
+    /// rejected, and when a resume of a lock is refused (another attempt has
+    /// it, or a removal is reloading the wallet), so "Try again" resumes that
+    /// lock rather than building a new one; cleared on `reset()` and at the
+    /// start of a fresh attempt. A fresh Core → Platform attempt never sets
+    /// it.
     private(set) var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
 
     /// The lock this coordinator has registered in `ShieldedAssetLocksInFlight`.
@@ -302,6 +305,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// Another attempt is still consuming this asset lock — typically a
         /// transfer waiting for its ChainLock. A second resume would race it.
         case assetLockInFlight
+        /// A removed transaction is being dropped and the wallet runtime
+        /// reloaded; a transfer started meanwhile would be stopped by it.
+        case walletReloading
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -373,6 +379,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "This transfer is still in progress. Check its status again in a few minutes.",
                     comment: "A resume was refused because the same transfer is still running")
+            case .walletReloading:
+                return ShieldedAssetLocksInFlight.walletReloadingMessage
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -571,7 +579,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         // Counts as activity from here on, so a removal cannot reload the
         // runtime while this attempt authorizes and builds its lock.
-        ShieldedAssetLocksInFlight.shared.beginFundingCall()
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            handleFailure(CoordinatorError.walletReloading)
+            return
+        }
         defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         do {
@@ -1126,7 +1137,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         // Counts as activity from here on, so a removal cannot reload the
         // runtime while this attempt authorizes and builds its lock.
-        ShieldedAssetLocksInFlight.shared.beginFundingCall()
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            handleFailure(CoordinatorError.walletReloading)
+            return
+        }
         defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         do {
@@ -1470,22 +1484,31 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// its ChainLock. A fresh transfer's new lock is claimed from the moment
     /// the SDK builds it, before its row exists, so this also covers it.
     private func beginTransfer(consuming txidWire: Data, vout: UInt32) -> Bool {
-        if phase == .idle,
-           ShieldedAssetLocksInFlight.shared.contains(.init(txidWire: txidWire, vout: vout)) {
+        // A running or finished attempt keeps its claim; the phase gate
+        // refuses (and logs) this tap.
+        guard phase == .idle else { return beginTransfer() }
+        let outPoint = ShieldedAssetLocksInFlight.OutPoint(txidWire: txidWire, vout: vout)
+        switch ShieldedAssetLocksInFlight.shared.admitResume(outPoint) {
+        case .walletReloading:
+            Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): a removal is reloading the wallet")
+            // The caller's `reset()` cleared "Try again"'s outpoint; a refused
+            // resume keeps it, so the next tap resumes this lock instead of
+            // building a new one.
+            lastAssetLockOutPoint = outPoint
+            handleFailure(CoordinatorError.walletReloading)
+            return false
+        case .claimedElsewhere:
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock is still being consumed by another attempt")
+            lastAssetLockOutPoint = outPoint
             handleFailure(CoordinatorError.assetLockInFlight)
             return false
+        case .admitted:
+            break
         }
-        guard beginTransfer() else { return false }
-        claimInFlightOutPoint(.init(txidWire: txidWire, vout: vout))
-        return true
-    }
-
-    /// Registers this attempt's lock, once per attempt.
-    private func claimInFlightOutPoint(_ outPoint: ShieldedAssetLocksInFlight.OutPoint) {
-        guard inFlightOutPoint == nil else { return }
-        ShieldedAssetLocksInFlight.shared.claim(outPoint)
+        // Idle was checked above with no suspension since, so this admits.
+        _ = beginTransfer()
         inFlightOutPoint = outPoint
+        return true
     }
 
     private func releaseInFlightOutPoint() {
@@ -1657,7 +1680,12 @@ typealias NewAssetLockCapture = OSAllocatedUnfairLock<ShieldedAssetLocksInFlight
 /// before the lock's row is persisted. The registry also counts the fresh
 /// transfers that will build a new lock, from before their authorization
 /// until the transfer's attempt ends, so `hasActivity` covers one that has not
-/// built its lock yet.
+/// built its lock yet; a bulk recovery pass counts the same way.
+///
+/// A removal that deletes rows and reloads the wallet runtime is admitted
+/// here only while nothing is active (`beginRemoval`), and holds the reload
+/// until `endRemoval`; meanwhile no funding call starts and no resume claims a
+/// lock.
 ///
 /// Claims are counted per lock, so one coordinator's release cannot clear a
 /// claim another coordinator still holds. Reads are thread-safe, like
@@ -1674,8 +1702,12 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
-    /// Fresh transfers that will build or are building a new asset lock.
+    /// Fresh transfers that will build or are building a new asset lock, and
+    /// bulk recovery passes.
     private var fundingCalls = 0
+    /// A removal is deleting rows and reloading the wallet runtime; see
+    /// `beginRemoval`.
+    private var removalHeld = false
 
     /// Production code uses `shared`; tests build their own registries.
     init() {}
@@ -1695,14 +1727,36 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         lock.withLock { !claims.isEmpty || fundingCalls > 0 }
     }
 
+    /// Whether a removal holds the runtime reload (`beginRemoval`), so no
+    /// transfer may start.
+    var isRemovalInProgress: Bool {
+        lock.withLock { removalHeld }
+    }
+
+    /// What `beginRemoval` would answer now, without holding anything.
+    var removalAdmission: RemovalAdmission {
+        lock.withLock { currentRemovalAdmission() }
+    }
+
+    /// What a transfer, a recovery or a removal refused during a removal's
+    /// reload tells the user.
+    static var walletReloadingMessage: String {
+        NSLocalizedString(
+            "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.",
+            comment: "Refused while the wallet reloads after a removed transaction")
+    }
+
     // Only the first claim and the last release change what `contains`
-    // answers, and only the first and the last funding call change
-    // `hasActivity`, so only those publish. Each operation decides that in the
-    // same critical section as its change.
+    // answers, only the first and the last funding call change `hasActivity`,
+    // and only `beginRemoval`/`endRemoval` change `isRemovalInProgress`, so
+    // only those publish. Each operation decides that in the same critical
+    // section as its change.
     //
-    // The mutating calls below are for `ShieldedTransferCoordinator` (and the
-    // tests) only: claims are counted, not owned, so a release from anywhere
-    // else would drop a running transfer's claim.
+    // Claims and releases are for `ShieldedTransferCoordinator` (`claim` for
+    // the tests) only: claims are counted, not owned, so a release from
+    // anywhere else would drop a running transfer's claim. Funding calls are
+    // also held by `AssetLockRecoveryService`'s bulk pass, and removals by
+    // `UnconfirmedTransactionRemover`.
 
     @MainActor
     func claim(_ outPoint: OutPoint) {
@@ -1735,13 +1789,41 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         if wasLast { objectWillChange.send() }
     }
 
+    /// Why `admitResume` refused, or that it claimed the lock.
+    enum ResumeAdmission {
+        case admitted
+        /// Another attempt has the lock claimed.
+        case claimedElsewhere
+        /// A removal holds the runtime reload (`beginRemoval`).
+        case walletReloading
+    }
+
+    /// Claims `outPoint` for a resume, in the same critical section as the
+    /// checks that may refuse it, so no removal is admitted in between.
     @MainActor
-    func beginFundingCall() {
-        let isFirst = lock.withLock { () -> Bool in
-            fundingCalls += 1
-            return fundingCalls == 1
+    func admitResume(_ outPoint: OutPoint) -> ResumeAdmission {
+        let admission = lock.withLock { () -> ResumeAdmission in
+            if removalHeld { return .walletReloading }
+            if claims[outPoint, default: 0] > 0 { return .claimedElsewhere }
+            claims[outPoint] = 1
+            return .admitted
         }
-        if isFirst { objectWillChange.send() }
+        if case .admitted = admission { objectWillChange.send() }
+        return admission
+    }
+
+    /// Counts a fresh transfer, or a bulk recovery pass, as activity until
+    /// `endFundingCall`. False, with nothing counted, while a removal holds
+    /// the runtime reload.
+    @MainActor
+    func beginFundingCall() -> Bool {
+        let admitted = lock.withLock { () -> (admitted: Bool, isFirst: Bool) in
+            guard !removalHeld else { return (false, false) }
+            fundingCalls += 1
+            return (true, fundingCalls == 1)
+        }
+        if admitted.isFirst { objectWillChange.send() }
+        return admitted.admitted
     }
 
     @MainActor
@@ -1752,5 +1834,47 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
             return fundingCalls == 0
         }
         if wasLast { objectWillChange.send() }
+    }
+
+    /// Why `beginRemoval` refused, or that it admitted the removal.
+    enum RemovalAdmission {
+        case admitted
+        /// A transfer is building or consuming an asset lock.
+        case transferActive
+        /// Another removal holds the runtime reload.
+        case removalHeld
+    }
+
+    /// Admits a removal that deletes transaction rows and reloads the wallet
+    /// runtime, which would stop a running transfer's SDK call. Refused while
+    /// any transfer is active or another removal holds it. Until
+    /// `endRemoval`, `beginFundingCall` and `admitResume` refuse, so no
+    /// transfer of a `ShieldedTransferCoordinator` and no bulk recovery pass
+    /// starts during the reload. Identity registrations and top-ups do not use
+    /// this registry yet.
+    @MainActor
+    func beginRemoval() -> RemovalAdmission {
+        let admission = lock.withLock { () -> RemovalAdmission in
+            let admission = currentRemovalAdmission()
+            if case .admitted = admission { removalHeld = true }
+            return admission
+        }
+        if case .admitted = admission { objectWillChange.send() }
+        return admission
+    }
+
+    /// The removal admission rule; call with `lock` held.
+    private func currentRemovalAdmission() -> RemovalAdmission {
+        if removalHeld { return .removalHeld }
+        return claims.isEmpty && fundingCalls == 0 ? .admitted : .transferActive
+    }
+
+    @MainActor
+    func endRemoval() {
+        let wasHeld = lock.withLock { () -> Bool in
+            defer { removalHeld = false }
+            return removalHeld
+        }
+        if wasHeld { objectWillChange.send() }
     }
 }

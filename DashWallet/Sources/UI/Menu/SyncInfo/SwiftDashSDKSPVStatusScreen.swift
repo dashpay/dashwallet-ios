@@ -507,10 +507,12 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(pendingRecoveries.isEmpty || isRecoveringPending ? .secondary : .dash.primaryText)
+                    .foregroundColor(pendingRecoveries.isEmpty || isRecoveringPending || isDroppingUnconfirmed ? .secondary : .dash.primaryText)
                     .cornerRadius(8)
                 }
-                .disabled(pendingRecoveries.isEmpty || isRecoveringPending)
+                // A recovery pass and a drop-all exclude each other (see
+                // `ShieldedAssetLocksInFlight.beginRemoval`).
+                .disabled(pendingRecoveries.isEmpty || isRecoveringPending || isDroppingUnconfirmed)
 
                 if let recoveryResultMessage {
                     Text(recoveryResultMessage)
@@ -573,10 +575,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(Color.dash.gray300.opacity(0.3))
-                .foregroundColor(rescanEnabled && !isDroppingUnconfirmed ? .red : .secondary)
+                .foregroundColor(rescanEnabled && !isDroppingUnconfirmed && !isRecoveringPending ? .red : .secondary)
                 .cornerRadius(8)
             }
-            .disabled(!rescanEnabled || isDroppingUnconfirmed)
+            .disabled(!rescanEnabled || isDroppingUnconfirmed || isRecoveringPending)
 
             if !rescanEnabled {
                 Text(NSLocalizedString(
@@ -834,6 +836,12 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
+            if outcome.deferredForReload {
+                recoveryResultIsError = false
+                recoveryResultMessage = ShieldedAssetLocksInFlight.walletReloadingMessage
+                return
+            }
+
             if outcome.cancelled, outcome.attempted == 0, outcome.inProgress == 0 {
                 recoveryResultIsError = false
                 recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")
@@ -979,12 +987,19 @@ extension SwiftDashSDKSPVStatusScreen {
                     }
                 }
                 Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), outcome=\(String(describing: outcome.outcome), privacy: .public)")
+            } catch UnconfirmedTransactionRemover.RemovalError.removalInProgress {
+                // Another removal is reloading the wallet: nothing failed.
+                dropResultIsError = false
+                dropResultMessage = ShieldedAssetLocksInFlight.walletReloadingMessage
             } catch {
                 dropResultIsError = true
                 dropResultMessage = error.localizedDescription
                 Self.logger.error("🛰️ SPV-STATUS :: bulk unconfirmed drop failed: \(String(describing: error), privacy: .public)")
             }
             isDroppingUnconfirmed = false
+            // The drop deletes the locks of the dropped transactions; the
+            // pending list read before it would offer to resume them.
+            refreshPendingRecoveries()
         }
     }
 
