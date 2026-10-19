@@ -1,12 +1,6 @@
 import Foundation
 import XCTest
-#if canImport(dashwallet)
-@testable import dashwallet
-#elseif canImport(dashpay)
 @testable import dashpay
-#else
-@testable import ShieldedBalanceHarness
-#endif
 
 @MainActor
 private final class RecoveryTestClock {

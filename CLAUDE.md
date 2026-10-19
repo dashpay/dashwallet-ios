@@ -20,7 +20,12 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
   xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay -sdk iphonesimulator \
     -destination 'generic/platform=iOS Simulator' ARCHS=arm64 build
   ```
-- **Tests**: the unit-test target is **currently broken** (pre-existing breakage; new tests such as `PhraseRepairEngineTests` / `PaymentProtocolTests` are written compile-ready but unrunnable). Verification standard while it's broken: clean `dashpay` build + a testnet smoke of the touched flow. `fastlane test` (iPhone 17 simulator) once the target is repaired.
+- **Tests**: `DashWalletTests` runs against the `dashpay` host app through the `dashwallet-dashpay` scheme, in the **Debug** configuration (the only one with `ENABLE_TESTABILITY`, which every `@testable import dashpay` needs). Cmd+U in Xcode, or:
+  ```bash
+  xcodebuild test -workspace DashWallet.xcworkspace -scheme dashwallet-dashpay -configuration Debug \
+    -destination 'platform=iOS Simulator,name=iPhone 17' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+  ```
+  Every test file must be in the target: files under `DashWalletTests/Notifications/` are picked up automatically (synchronized folder), everything else needs the four `project.pbxproj` entries. `scripts/ci/check_test_target_membership.py` fails CI on a forgotten file. The host app needs the gitignored `*-Info.plist` files in `DashWallet/`; without the real ones, `scripts/ci/make-placeholder-plists.sh` writes inert placeholders. CI runs the suite on every PR (`.github/workflows/unit-tests.yml`) against the platform commit pinned in `.platform-ref`.
 
 ### Required tools
 - Xcode 16+
@@ -72,7 +77,7 @@ the frozen upgrade-time mnemonic import contract.
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
 - **CrowdNode release posture**: temporarily suspend/hide CrowdNode for the migration release. Its implementation is already app/SDK-owned, so it does not block DashSync teardown and must not regain a DashSync fallback.
-- **Platform release pin**: temporary local integration branches are development-only. Upstream all required changes and make the final migration/release build consume platform `v4.2-dev` (or an explicitly selected release SHA/tag).
+- **Platform release pin**: temporary local integration branches are development-only. Upstream all required changes and make the final migration/release build consume platform `v5.0-dev` at 5.0.0-rc.4 (`5b41ca376b`, what testnet runs) or a later commit with the same `v13.rs`/`v14.rs`, or a later line whose protocol 14 is the one testnet runs (`v5.1-dev` at `d4750290ff` has the same `v13.rs`/`v14.rs` as 5.0.0-rc.4), or an explicitly selected release SHA/tag. Not `v4.2-dev`: its pre-release protocol 14 differs, and the testnet pin in `SwiftDashSDKHost.platformVersion(for:)` builds transitions from the linked SDK's v14.
 - **Mainnet is the fresh-install default**: `WalletEnvironment.networkKind` returns `.mainnet` when `CURRENT_CHAIN_TYPE_KEY` is absent, in ALL build configurations; testnet requires an explicit in-app switch, which writes the key. (This reverses the temporary testnet default of 2026-07-03, taken while mainnet Platform DAPI was unreachable — revisited by the owner 2026-08-07.) An install that never used the switcher moves to mainnet on its next launch. When touching this, verify mainnet Platform DAPI is actually reachable in the SDK build being shipped.
 
 ## UI Development — SwiftUI-First (Mandatory)
