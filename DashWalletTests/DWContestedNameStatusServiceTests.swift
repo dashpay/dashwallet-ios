@@ -15,16 +15,31 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
 
     private let service = DWContestedNameStatusService.shared
 
+    /// Bookmarks are scoped to the wallet that made them, and the no-`walletId`
+    /// accessors resolve the ACTIVE wallet — which a test host without a wallet
+    /// (CI, a fresh simulator) does not have, so they answer nil by design. The
+    /// tests therefore pin their own wallet scope explicitly.
+    private let walletId = Data([0x77])
+
     override func setUp() {
         super.setUp()
+        clearWalletScopedEntries()
         service.clearPending(for: .mainnet)
         service.clearPending(for: .testnet)
     }
 
     override func tearDown() {
+        clearWalletScopedEntries()
         service.clearPending(for: .mainnet)
         service.clearPending(for: .testnet)
         super.tearDown()
+    }
+
+    private func clearWalletScopedEntries() {
+        for network in [Network.mainnet, .testnet] {
+            UserDefaults.standard.removeObject(
+                forKey: "DWPendingContestedDPNSEntries.\(network.persistenceScope).77")
+        }
     }
 
     func testLegacyLookupFailureDoesNotBlockOtherBookmarks() async throws {
@@ -51,11 +66,12 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             label: "Beta",
             network: .testnet,
             identityId: Data([1]),
+            walletId: walletId,
             submittedAt: submittedAt)
 
-        XCTAssertEqual(service.pendingLabel(for: .testnet), "beta")
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1]), walletId: walletId), ["beta"])
         XCTAssertEqual(
-            service.pendingVotingEndTime(for: .testnet),
+            service.pendingVotingEndTime(label: "beta", for: .testnet, walletId: walletId),
             submittedAt.addingTimeInterval(95 * 60))
     }
 
@@ -66,21 +82,23 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             label: "TestnetName",
             network: .testnet,
             identityId: Data([1]),
+            walletId: walletId,
             submittedAt: submittedAt)
 
-        XCTAssertNil(service.pendingLabel(for: .mainnet))
-        XCTAssertNil(service.pendingVotingEndTime(for: .mainnet))
+        XCTAssertTrue(service.pendingLabels(for: .mainnet, identityId: Data([1]), walletId: walletId).isEmpty)
+        XCTAssertNil(service.pendingVotingEndTime(label: "testnetname", for: .mainnet, walletId: walletId))
 
         service.recordSubmission(
             label: "MainnetName",
             network: .mainnet,
             identityId: Data([1]),
+            walletId: walletId,
             submittedAt: submittedAt)
 
-        XCTAssertEqual(service.pendingLabel(for: .testnet), "testnetname")
-        XCTAssertEqual(service.pendingLabel(for: .mainnet), "mainnetname")
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1]), walletId: walletId), ["testnetname"])
+        XCTAssertEqual(service.pendingLabels(for: .mainnet, identityId: Data([1]), walletId: walletId), ["mainnetname"])
         XCTAssertEqual(
-            service.pendingVotingEndTime(for: .mainnet),
+            service.pendingVotingEndTime(label: "mainnetname", for: .mainnet, walletId: walletId),
             submittedAt.addingTimeInterval((14 * 24 * 60 + 5) * 60))
     }
 
@@ -91,22 +109,24 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
             label: "Gamma",
             network: .testnet,
             identityId: Data([1]),
+            walletId: walletId,
             submittedAt: submittedAt)
 
-        service.recordVotingEndTime(authoritativeEnd, label: "Gamma", network: .testnet)
+        service.recordVotingEndTime(authoritativeEnd, label: "Gamma", network: .testnet, walletId: walletId)
 
         XCTAssertEqual(
-            service.pendingVotingEndTime(for: .testnet),
+            service.pendingVotingEndTime(label: "gamma", for: .testnet, walletId: walletId),
             authoritativeEnd)
     }
+
     func testPendingContestDoesNotHideRecoveryForAnotherIdentity() {
-        service.recordSubmission(label: "Alpha", network: .testnet, identityId: Data([1]))
-        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1])), ["alpha"])
-        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: Data([2])).isEmpty)
-        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: nil).isEmpty)
-        service.recordSubmission(label: "Beta", network: .testnet, identityId: Data([2]))
-        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([2])), ["beta"])
-        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1])), ["alpha"])
+        service.recordSubmission(label: "Alpha", network: .testnet, identityId: Data([1]), walletId: walletId)
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1]), walletId: walletId), ["alpha"])
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: Data([2]), walletId: walletId).isEmpty)
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: nil, walletId: walletId).isEmpty)
+        service.recordSubmission(label: "Beta", network: .testnet, identityId: Data([2]), walletId: walletId)
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([2]), walletId: walletId), ["beta"])
+        XCTAssertEqual(service.pendingLabels(for: .testnet, identityId: Data([1]), walletId: walletId), ["alpha"])
     }
 
     private enum LookupFailure: Error { case offline }

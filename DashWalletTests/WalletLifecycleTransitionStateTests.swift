@@ -6,19 +6,12 @@
 //  the safety-critical part of the lifecycle-overlay work: which operation
 //  may begin from which phase, that an authorized wipe is admitted after
 //  every failure phase, and that `advance(to:)` rejects
-//  an ownerless transition from idle. Written compile-ready per the repo's
-//  current test-target posture (the unit-test target is temporarily broken);
-//  the tests are pure MainActor state-machine checks with no SDK/FFI use.
+//  an ownerless transition from idle. The tests are pure MainActor
+//  state-machine checks with no SDK/FFI use.
 //
 
 import XCTest
-#if canImport(dashpay)
 @testable import dashpay
-#elseif canImport(dashwallet)
-@testable import dashwallet
-#else
-@testable import WalletPreparationHarness
-#endif
 
 @MainActor
 final class WalletLifecycleTransitionStateTests: XCTestCase {
@@ -238,6 +231,39 @@ final class WalletLifecycleTransitionStateTests: XCTestCase {
         let state = makeState(in: phase)
         try await state.prepareWallet {} failure: { WalletPreparationFailure(error: $0) }
         XCTAssertEqual(state.phase, phase)
+    }
+
+    func testRecoveryPresentationHoldDefersKeysCardKicksAndReplaysOnRelease() {
+        let state = WalletLifecycleTransitionState()
+        state.fail(.failedWalletOpen(WalletPreparationFailure(keys: .unreadable, status: -25291)))
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        state.holdRecoveryPresentation()
+        XCTAssertFalse(state.allowsAutomaticWalletPreparation)
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "Nothing was refused")
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        XCTAssertTrue(state.releaseRecoveryPresentation())
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "Consumed")
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        // A store card refuses kicks on its own; the hold records nothing.
+        state.fail(.failedWalletOpen(WalletPreparationFailure(error: NSError(domain: "SwiftData.SwiftDataError", code: 1))))
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        XCTAssertFalse(state.releaseRecoveryPresentation())
+    }
+
+    /// The overlay window and its view model are released at idle; a hold
+    /// they never released must not block the next keys card's kicks.
+    func testFinishDropsARecoveryPresentationHoldItsOwnerNeverReleased() {
+        let state = WalletLifecycleTransitionState()
+        let keys = WalletPreparationFailure(keys: .unreadable, status: -25291)
+        state.fail(.failedWalletOpen(keys))
+        state.holdRecoveryPresentation()
+        state.recordDeferredAutomaticPreparation()
+        state.finish()
+        state.fail(.failedWalletOpen(keys))
+        XCTAssertTrue(state.allowsAutomaticWalletPreparation)
+        XCTAssertFalse(state.releaseRecoveryPresentation(), "No kick carried over from the released card")
     }
 
     func testUnrelatedStartupFailureKeepsExistingRecoveryFlow() async {

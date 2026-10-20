@@ -30,8 +30,6 @@ import Foundation
 /// rows are a synchronous database commit, and a marker that reached disk
 /// after them could be lost by an interruption that keeps the rows. A start
 /// on the other network, or one in a later launch, still rebuilds.
-///
-/// Foundation-only so the wallet-preparation harness can compile it.
 enum SPVChainStoreRebuild {
 
     /// Serializes the multi-step file operations: imports and the Keychain
