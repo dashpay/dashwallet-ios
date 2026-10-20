@@ -17,6 +17,7 @@
 //  the migration plan for why parallel-observe mode exists.
 //
 
+import Combine
 import OSLog
 import SwiftData
 import SwiftUI
@@ -77,9 +78,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     // MARK: - Pending transfers UI state
 
-    /// Locks awaiting a recovery resume, re-read when the card appears and
-    /// after a pass so the count reflects what actually remains.
+    /// Locks awaiting a recovery resume, re-read when the card appears, after
+    /// a pass so the count reflects what actually remains, and whenever a
+    /// running transfer's claim, the lock lookup or the probe store changes.
     @State private var pendingRecoveries: [AssetLockRecoveryService.PendingRecovery] = []
+    /// One publisher for every instance, so a body update keeps the
+    /// screen's subscription.
+    private static let pendingRecoveriesChanges = AssetLockRecoveryService.pendingRecoveriesChanges()
     @State private var isRecoveringPending = false
     /// "3 of 23" progress while the pass runs.
     @State private var recoveryProgress: (done: Int, total: Int)?
@@ -118,6 +123,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     rescanFiltersCard
                     dropUnconfirmedCard
                     pendingTransfersCard
+                        .onAppear { refreshPendingRecoveriesUnlessBusy() }
+                        .onReceive(Self.pendingRecoveriesChanges) { _ in refreshPendingRecoveriesUnlessBusy() }
                     connectedPeersCard
                     if let lastError = coordinator.lastError {
                         errorCard(message: lastError)
@@ -524,9 +531,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
             .padding(16)
             .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
-            .onAppear { refreshPendingRecoveries() }
         } else {
-            Color.clear.frame(height: 0).onAppear { refreshPendingRecoveries() }
+            Color.clear.frame(height: 0)
         }
     }
 
@@ -804,11 +810,22 @@ extension SwiftDashSDKSPVStatusScreen {
         return row.birthHeight
     }
 
-    /// Validate the "From height…" text field to a `UInt32` and start
-    /// the rescan. A non-numeric or empty entry is rejected with an
-    /// error banner rather than defaulted to `0`.
+    /// Re-read the locks awaiting a recovery resume; the card re-renders
+    /// only when the set of locks changed.
     func refreshPendingRecoveries() {
-        pendingRecoveries = AssetLockRecoveryService.pendingRecoveries()
+        let pending = AssetLockRecoveryService.pendingRecoveries()
+        if Set(pending) != Set(pendingRecoveries) { pendingRecoveries = pending }
+    }
+
+    /// The card appeared, or something the list depends on changed while the
+    /// screen is up (an attempt running when it opened has failed, say). Not
+    /// while this screen's pass or drop runs, which refresh the list when
+    /// they end, nor while any removal reloads the wallet, whose end
+    /// publishes again.
+    private func refreshPendingRecoveriesUnlessBusy() {
+        guard !isRecoveringPending, !isDroppingUnconfirmed,
+              !ShieldedAssetLocksInFlight.shared.isRemovalInProgress else { return }
+        refreshPendingRecoveries()
     }
 
     func runPendingRecovery() {

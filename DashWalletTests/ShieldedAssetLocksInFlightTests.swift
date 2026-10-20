@@ -35,6 +35,57 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Core Sync's pending list
+
+    /// The Core Sync screen keeps its pending list in state and re-reads it
+    /// on these emissions, so a lock whose running attempt fails while the
+    /// screen is up comes back on it, and one probed already spent leaves.
+    @MainActor
+    func testThePendingListIsAnnouncedWhenARunningAttemptReleasesItsLock() {
+        let registry = ShieldedAssetLocksInFlight()
+        let lookup = ShieldedTxLookup()
+        let probes = AssetLockProbeStore.shared
+        let probeWallet = "pendingRecoveriesChangesTest"
+        // A run killed before its cleanup leaves the probe filed, and a
+        // repeat record posts nothing.
+        probes.clearForWallet(walletIdHex: probeWallet)
+        defer { probes.clearForWallet(walletIdHex: probeWallet) }
+        var emissions = 0
+        let subscription = AssetLockRecoveryService
+            .pendingRecoveriesChanges(lookup: lookup, registry: registry, probes: probes)
+            .sink { emissions += 1 }
+        /// Runs the main queue until `count` emissions, then a little longer
+        /// so a further one has a chance to land.
+        func drain(until count: Int) {
+            let deadline = Date().addingTimeInterval(10)
+            while emissions < count, Date() < deadline {
+                RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+            }
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        }
+
+        registry.claim(lockA)
+        drain(until: 1)
+        XCTAssertEqual(emissions, 1, "the attempt claimed its lock")
+
+        registry.release(lockA)
+        drain(until: 2)
+        XCTAssertEqual(emissions, 2, "the attempt failed and released it")
+
+        lookup.markConsumed(txidWire: lockB.txidWire)
+        drain(until: 3)
+        XCTAssertEqual(emissions, 3, "the lookup changed")
+
+        probes.record(txid: lockA.txidWire, walletIdHex: probeWallet)
+        drain(until: 4)
+        XCTAssertEqual(emissions, 4, "the lock was probed already spent")
+
+        probes.clearForWallet(walletIdHex: probeWallet)
+        drain(until: 5)
+        XCTAssertEqual(emissions, 5, "the probes were cleared")
+        subscription.cancel()
+    }
+
     // MARK: - Registry
 
     @MainActor

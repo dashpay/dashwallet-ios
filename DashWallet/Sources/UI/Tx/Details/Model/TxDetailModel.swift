@@ -877,19 +877,23 @@ extension TxDetailModel {
         /// The transaction projection changed (e.g. a shielded transfer
         /// finished).
         case projection
+        /// The probe store recorded or cleared an already-spent lock.
+        case probes
     }
 
     /// Emits whenever the recovery rows may need a rebuild. The retry and
     /// removal rows depend on whether a running transfer is consuming this
     /// transaction's asset lock or any transfer is active, and on the lock
-    /// status `lookup` reports; every change `registry` or `lookup`
-    /// publishes emits (see `RecoveryInput` for what each publishes). The
+    /// status `lookup` reports and `probes` holds; every change `registry`,
+    /// `lookup` or `probes` publishes emits (see `RecoveryInput` for what
+    /// each publishes). The
     /// registry publishes once the change has landed. The defaults are the
     /// shared instances the rows read; tests pass their own. Each emission
     /// names its source so a test can tell its own trigger from app-wide
     /// projection changes.
     static func recoveryInputChanges(lookup: ShieldedTxLookup = .shared,
-                                     registry: ShieldedAssetLocksInFlight = .shared)
+                                     registry: ShieldedAssetLocksInFlight = .shared,
+                                     probes: AssetLockProbeStore = .shared)
         -> AnyPublisher<RecoveryInput, Never> {
         let lookupChanged = NotificationCenter.default
             .publisher(for: .shieldedTxLookupDidChange, object: lookup)
@@ -897,9 +901,12 @@ extension TxDetailModel {
         let projectionChanged = NotificationCenter.default
             .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
             .map { _ in RecoveryInput.projection }
+        let probesChanged = NotificationCenter.default
+            .publisher(for: AssetLockProbeStore.didChangeNotification, object: probes)
+            .map { _ in RecoveryInput.probes }
         return registry.objectWillChange
             .map { _ in RecoveryInput.inFlightLocks }
-            .merge(with: lookupChanged, projectionChanged)
+            .merge(with: lookupChanged, projectionChanged, probesChanged)
             .eraseToAnyPublisher()
     }
 

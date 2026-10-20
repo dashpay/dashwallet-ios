@@ -25,6 +25,7 @@
 //  registration flow, which owns key preparation and phase UI.
 //
 
+import Combine
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -210,7 +211,7 @@ struct AssetLockRecoveryService {
     // MARK: - Bulk recovery
 
     /// One funding lock the bulk pass will act on.
-    struct PendingRecovery {
+    struct PendingRecovery: Hashable {
         let txidWire: Data
         let vout: UInt32
         let fundingTypeRaw: Int
@@ -330,6 +331,28 @@ struct AssetLockRecoveryService {
                 vout: entry.info.vout,
                 fundingTypeRaw: entry.info.fundingTypeRaw)
         }
+    }
+
+    /// Emits on the main queue, once per burst, when `pendingRecoveries()` may answer
+    /// differently for the same wallet: `registry` reports a change (a
+    /// running transfer claimed or released a lock — its attempt failed, say
+    /// — or a funding call or removal started or ended), `lookup` published a
+    /// changed snapshot or a consumed mark, or `probes` recorded or cleared
+    /// an already-spent lock. The wallet runtime binding or switching is not
+    /// among them: `SwiftDashSDKHost` publishes neither. The defaults
+    /// are the shared instances the list reads; tests pass their own.
+    static func pendingRecoveriesChanges(lookup: ShieldedTxLookup = .shared,
+                                         registry: ShieldedAssetLocksInFlight = .shared,
+                                         probes: AssetLockProbeStore = .shared)
+        -> AnyPublisher<Void, Never> {
+        let center = NotificationCenter.default
+        return registry.objectWillChange
+            .merge(with: center.publisher(for: .shieldedTxLookupDidChange, object: lookup).map { _ in },
+                   center.publisher(for: AssetLockProbeStore.didChangeNotification, object: probes).map { _ in })
+            // A finished transfer releases, ends its funding call and marks
+            // its lock consumed in quick succession: one re-read covers them.
+            .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 
     /// Resume every pending lock, gating authentication ONCE for the whole

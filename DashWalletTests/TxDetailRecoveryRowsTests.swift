@@ -111,6 +111,20 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
     }
 
     @MainActor
+    func testAProbeStoreChangeIsAnnounced() {
+        let probes = AssetLockProbeStore.shared
+        let wallet = "recoveryInputChangesTest"
+        probes.clearForWallet(walletIdHex: wallet)
+        let recorder = Recorder(TxDetailModel.recoveryInputChanges(
+            lookup: ShieldedTxLookup(), registry: ShieldedAssetLocksInFlight()))
+
+        probes.record(txid: txidWire, walletIdHex: wallet)
+        XCTAssertEqual(recorder.count(of: .probes), 1, "recorded")
+        probes.clearForWallet(walletIdHex: wallet)
+        XCTAssertEqual(recorder.count(of: .probes), 2, "cleared")
+    }
+
+    @MainActor
     func testAFundingCallStartingAndEndingIsAnnounced() {
         // A fresh transfer counts as active before any lock exists, which
         // hides the removal row.
@@ -154,7 +168,7 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         // `viewDidLoad` builds the rows once; after that only the inputs
         // rebuild them, once each.
         waitForRebuilds(1, of: controller, "viewDidLoad")
-        for (index, input) in [Input.lockLookup, .inFlightLocks, .projection].enumerated() {
+        for (index, input) in [Input.lockLookup, .inFlightLocks, .projection, .probes].enumerated() {
             inputs.send(input)
             waitForRebuilds(2 + index, of: controller, "after \(input)")
         }
