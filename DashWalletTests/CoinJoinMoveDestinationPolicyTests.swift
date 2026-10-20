@@ -266,3 +266,59 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
         XCTAssertNil(VM.preparedChecklistIndex(preparation: .done, phase: .failed("x")))
     }
 }
+
+/// How a CoinJoin sweep with failed chunks is reported.
+final class CoinJoinSweepFailureTests: XCTestCase {
+
+    private func failure(accepted: Int, failed: Int, unknown: Int) -> NSError? {
+        WalletSendService.coinJoinSweepFailure(
+            acceptedCount: accepted, failedChunkCount: failed, unknownChunkCount: unknown)
+    }
+
+    private func isPartial(_ error: NSError?) -> Bool {
+        guard let error else { return false }
+        return WalletSendService.isCoinJoinSweepRetryable(error)
+            && WalletSendService.coinJoinSweepUserMessage(for: error)
+            == WalletSendService.coinJoinSweepUserMessage(for: failure(accepted: 1, failed: 1, unknown: 0)!)
+    }
+
+    func testNoFailedChunkIsNoFailure() {
+        XCTAssertNil(failure(accepted: 3, failed: 0, unknown: 0))
+    }
+
+    /// Everything that failed may still land: not offered again.
+    func testEveryFailureUnknownIsBroadcastUnknown() throws {
+        for error in [failure(accepted: 0, failed: 2, unknown: 2), failure(accepted: 1, failed: 1, unknown: 1)] {
+            let error = try XCTUnwrap(error)
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error))
+            XCTAssertFalse(WalletSendService.isCoinJoinSweepRetryable(error))
+            XCTAssertEqual(WalletSendService.coinJoinSweepUserMessage(for: error), error.localizedDescription)
+        }
+    }
+
+    /// A plainly rejected chunk left coins to sweep again.
+    func testRejectedNextToMovedIsPartial() throws {
+        XCTAssertTrue(isPartial(failure(accepted: 1, failed: 2, unknown: 1)))
+        XCTAssertTrue(isPartial(failure(accepted: 0, failed: 2, unknown: 1)))
+        XCTAssertFalse(WalletSendService.isBroadcastUnknownError(try XCTUnwrap(failure(accepted: 0, failed: 2, unknown: 1))))
+    }
+
+    /// The diagnostic keeps the SDK's reason and drops the txid.
+    func testDiagnosticCarriesTheReasonWithoutTheTxid() throws {
+        let txid = String(repeating: "ab", count: 32)
+        let reason = WalletSendService.sweepChunkFailureReason(
+            SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(txid: txid, reason: "no peer echo"))
+        XCTAssertEqual(reason, "unknown: no peer echo")
+        let error = try XCTUnwrap(WalletSendService.coinJoinSweepFailure(
+            acceptedCount: 0, failedChunkCount: 1, unknownChunkCount: 1, reason: reason))
+        let diagnostic = try XCTUnwrap(error.userInfo[WalletSendService.diagnosticKey] as? String)
+        XCTAssertTrue(diagnostic.contains("unknown: no peer echo"))
+        XCTAssertFalse(diagnostic.contains(txid))
+        XCTAssertFalse(error.localizedDescription.contains("no peer echo"))
+    }
+
+    /// Nothing left the wallet: the chunk's own error is reported.
+    func testNothingMovedIsLeftToTheCaller() {
+        XCTAssertNil(failure(accepted: 0, failed: 2, unknown: 0))
+    }
+}

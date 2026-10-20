@@ -419,8 +419,10 @@ final class WalletSendService: NSObject {
     /// A heavy mixer's account is swept across several independent chunk
     /// transactions, so the sweep can end up partly done. In that case the
     /// accepted chunks are recorded and the balance re-tallied exactly as on a
-    /// full sweep, and only then does this throw `.coinJoinSweepPartial` — the
-    /// caller must not show "moved" over coins that are still in the account.
+    /// full sweep, and only then does this throw the error
+    /// `coinJoinSweepFailure` picks (`.coinJoinSweepPartial` or
+    /// `.broadcastUnknown`) — the caller must not show "moved" over coins that
+    /// are still in the account or not yet confirmed.
     ///
     /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
     ///   message; the on-chain amount delivered is this minus the network fee.
@@ -474,7 +476,12 @@ final class WalletSendService: NSObject {
             Self.recordSweepTxids(error.unknownTxids)
             // The wallet applied them locally; re-tally so the balance shows it.
             await MainActor.run { SwiftDashSDKWalletState.shared.refreshCoinJoinBalance() }
-            throw error
+            let counts = "\(error.failedChunkCount) failed (\(error.unknownTxids.count) unknown)"
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep incomplete — nothing accepted, \(counts, privacy: .public)")
+            throw Self.coinJoinSweepFailure(
+                acceptedCount: 0, failedChunkCount: error.failedChunkCount,
+                unknownChunkCount: error.unknownTxids.count,
+                reason: Self.sweepChunkFailureReason(error.otherFailure ?? error.underlying)) ?? error
         }
         let txids = outcome.txids
         guard !txids.isEmpty else {
@@ -509,16 +516,16 @@ final class WalletSendService: NSObject {
 
         // Everything above ran for the accepted chunks — the txids are in the
         // withdrawal store and the balance is re-tallied — so it is safe to fail
-        // here. Reported as a failure because the coins the failed chunks hold
-        // are still in the CoinJoin account: a re-run sweeps the remainder, and
-        // a success screen would tell the user there is nothing left to move.
-        if outcome.isPartial {
-            Self.logger.error(
-                "💸 TXSEND :: CoinJoin sweep partial — \(txids.count, privacy: .public) chunk(s) broadcast, \(outcome.failedChunkCount, privacy: .public) failed: \(String(describing: outcome.firstFailure), privacy: .public)")
-            throw Self.makeError(
-                code: .coinJoinSweepPartial,
-                description: "CoinJoin sweep moved \(txids.count) of \(txids.count + outcome.failedChunkCount) transactions"
-            )
+        // here. Reported as a failure because a success screen would say every
+        // coin moved: a rejected chunk's coins are still in the account, and an
+        // unknown chunk's are not confirmed yet.
+        if let failure = Self.coinJoinSweepFailure(
+            acceptedCount: txids.count, failedChunkCount: outcome.failedChunkCount,
+            unknownChunkCount: outcome.unknownTxids.count,
+            reason: outcome.firstFailure.map(Self.sweepChunkFailureReason)) {
+            let diagnostic = failure.userInfo[Self.diagnosticKey] as? String ?? "-"
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep incomplete (code \(failure.code, privacy: .public)) — \(diagnostic, privacy: .public)")
+            throw failure
         }
         return amount
     }
@@ -659,16 +666,100 @@ final class WalletSendService: NSObject {
         logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(hexes.joined(separator: ","), privacy: .public)")
     }
 
+    /// An error's type and code for the exported log. Not its description:
+    /// send and builder errors quote txids, outpoints and addresses, which
+    /// lead to the wallet's own addresses (the sender's os.Logger keeps the
+    /// detail, outside the export).
+    static func logSummary(of error: Error) -> String {
+        let nsError = error as NSError
+        return "\(type(of: error)) \(nsError.domain) #\(nsError.code)"
+    }
+
+    /// A failed sweep for the exported log: `logSummary(of:)` plus what it
+    /// says without a txid — the diagnostic `coinJoinSweepFailure` attached,
+    /// a send error's reason, or this service's own description.
+    static func coinJoinSweepLogLine(for error: Error) -> String {
+        let nsError = error as NSError
+        let detail: String?
+        if let diagnostic = nsError.userInfo[diagnosticKey] as? String {
+            detail = diagnostic
+        } else if error is SwiftDashSDKTransactionSender.SendError {
+            detail = sweepChunkFailureReason(error)
+        } else if nsError.domain == errorDomain {
+            detail = nsError.localizedDescription
+        } else {
+            detail = nil
+        }
+        return logSummary(of: error) + (detail.map { " (\($0))" } ?? "")
+    }
+
+    /// A chunk's broadcast error for the diagnostic: the SDK's reason for a
+    /// rejected or unknown outcome, without the txid it also carries, or for
+    /// a wallet that is not ready; anything else (a builder error may quote
+    /// an outpoint) as `logSummary(of:)`.
+    static func sweepChunkFailureReason(_ error: Error) -> String {
+        switch error {
+        case SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason):
+            return "unknown: \(reason)"
+        case SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason):
+            return "rejected: \(reason)"
+        case SwiftDashSDKTransactionSender.SendError.walletNotReady(let reason):
+            return "wallet not ready: \(reason)"
+        default:
+            return logSummary(of: error)
+        }
+    }
+
+    /// The error a sweep with failed chunks surfaces; nil when none failed,
+    /// or when none was accepted or unknown (the sender throws that case's
+    /// chunk error itself and never gets here).
+    ///
+    /// - Every failed chunk ended unknown: `.broadcastUnknown`, not offered
+    ///   again. The wallet applies a transaction before it waits for peers, so
+    ///   those coins already read as spent and a re-run has nothing to sweep.
+    /// - Otherwise, when a chunk was accepted or may still land: partial. The
+    ///   other failed chunks' coins are still in the CoinJoin account, and a
+    ///   re-run sweeps only them. An unknown chunk counts as moved here, as
+    ///   the re-tallied balance and the withdrawal history already show it.
+    ///
+    /// The diagnostic carries the chunk counts and `reason` (one failed
+    /// chunk's error).
+    static func coinJoinSweepFailure(
+        acceptedCount: Int, failedChunkCount: Int, unknownChunkCount: Int, reason: String? = nil
+    ) -> NSError? {
+        guard failedChunkCount > 0 else { return nil }
+        let diagnostic = "CoinJoin sweep: \(acceptedCount) accepted, \(unknownChunkCount) unknown, "
+            + "\(failedChunkCount - unknownChunkCount) failed otherwise" + (reason.map { "; \($0)" } ?? "")
+        if unknownChunkCount == failedChunkCount {
+            return makeError(
+                code: .broadcastUnknown,
+                description: BroadcastOutcomeCopy.coinJoinSweepUnknown,
+                diagnostic: diagnostic)
+        }
+        guard acceptedCount > 0 || unknownChunkCount > 0 else { return nil }
+        return makeError(code: .coinJoinSweepPartial, description: "CoinJoin sweep incomplete", diagnostic: diagnostic)
+    }
+
+    /// Whether a failed CoinJoin sweep may be offered again right away: not
+    /// when its transactions may all still land.
+    static func isCoinJoinSweepRetryable(_ error: Error) -> Bool {
+        !isBroadcastUnknownError(error as NSError)
+    }
+
     /// User-facing message for a CoinJoin sweep failure, or nil if the user
     /// simply cancelled authentication (callers stay silent). Centralizes the
     /// cancel predicate + copy so every sweep entry point behaves identically.
     ///
     /// A partial sweep gets its own copy: "try again" is still the right
     /// action, but telling the user nothing moved would contradict the
-    /// transactions already in their history.
+    /// transactions already in their history. An unknown outcome keeps its
+    /// own "don't send it again" copy.
     static func coinJoinSweepUserMessage(for error: Error) -> String? {
         let nsError = error as NSError
         guard !isAuthenticationCancelledError(nsError) else { return nil }
+        if isBroadcastUnknownError(nsError) {
+            return nsError.localizedDescription
+        }
         if nsError.domain == errorDomain, nsError.code == ErrorCode.coinJoinSweepPartial.rawValue {
             return NSLocalizedString(
                 "Some of your CoinJoin funds were moved. Please try again to move the rest.",
@@ -907,6 +998,14 @@ private extension WalletSendService {
             NSLocalizedString(
                 "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
                 comment: "Send dispatched but no network acceptance signal arrived")
+        }
+
+        /// `unknown` for a CoinJoin sweep, whose chunks were not all
+        /// confirmed. Same "while it's open" qualifier, for the same reason.
+        static var coinJoinSweepUnknown: String {
+            NSLocalizedString(
+                "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.",
+                comment: "CoinJoin sweep dispatched but no network acceptance signal arrived for some of it")
         }
     }
 

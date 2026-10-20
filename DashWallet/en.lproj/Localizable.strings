@@ -2998,6 +2998,9 @@
 /* Send dispatched but no network acceptance signal arrived */
 "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
 
+/* CoinJoin sweep dispatched but no network acceptance signal arrived for some of it */
+"We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through." = "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.";
+
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
 

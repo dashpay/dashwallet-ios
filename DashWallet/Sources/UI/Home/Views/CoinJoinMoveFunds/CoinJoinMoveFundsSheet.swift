@@ -243,7 +243,19 @@ struct CoinJoinMoveFundsSheet: View {
         }
     }
 
-    private func failedBody(message: String, destination: CoinJoinMoveFundsViewModel.Destination) -> some View {
+    private func retry(_ destination: CoinJoinMoveFundsViewModel.Destination) {
+        Task {
+            switch destination {
+            case .wallet:
+                await viewModel.moveToWallet()
+            case .shielded:
+                await viewModel.retryShielded()
+            }
+        }
+    }
+
+    /// A nil `destination` offers no retry, only Close.
+    private func failedBody(message: String, destination: CoinJoinMoveFundsViewModel.Destination?) -> some View {
         VStack(spacing: 0) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .resizable()
@@ -261,24 +273,25 @@ struct CoinJoinMoveFundsSheet: View {
 
             Spacer(minLength: 12)
 
-            ButtonsGroup(
-                orientation: .horizontal,
-                size: .large,
-                positiveButtonText: NSLocalizedString("Try again", comment: ""),
-                positiveButtonAction: {
-                    Task {
-                        switch destination {
-                        case .wallet:
-                            await viewModel.moveToWallet()
-                        case .shielded:
-                            await viewModel.retryShielded()
-                        }
-                    }
-                },
-                negativeButtonText: NSLocalizedString("Close", comment: ""),
-                negativeButtonAction: onDismiss)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            if let destination {
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                    positiveButtonAction: { retry(destination) },
+                    negativeButtonText: NSLocalizedString("Close", comment: ""),
+                    negativeButtonAction: onDismiss)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            } else {
+                DashButton(
+                    text: NSLocalizedString("Close", comment: ""),
+                    style: .filled,
+                    stretch: true,
+                    action: onDismiss)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            }
         }
     }
 }
@@ -321,6 +334,14 @@ extension CoinJoinMoveFundsSheet {
 #Preview("Submitted, unconfirmed") {
     CoinJoinMoveFundsSheet(
         previewViewModel: .preview(amountDuffs: 99_000_000, stage: .submittedUnconfirmed))
+}
+
+#Preview("Failed — wallet, no retry") {
+    CoinJoinMoveFundsSheet(
+        previewViewModel: .preview(
+            amountDuffs: 99_000_000,
+            stage: .failed(message: "We couldn't confirm all of your CoinJoin funds reached the network.",
+                           destination: nil)))
 }
 
 #Preview("Failed — shielded") {

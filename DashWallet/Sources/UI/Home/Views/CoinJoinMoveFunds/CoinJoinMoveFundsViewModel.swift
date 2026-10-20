@@ -55,8 +55,9 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         case submittedUnconfirmed
         /// `destination` picks the retry path: a failed wallet sweep retries
         /// the sweep, a failed shielded flow retries (or resumes) the drain
-        /// asset lock.
-        case failed(message: String, destination: Destination)
+        /// asset lock. Nil offers no retry: a wallet sweep whose outcome is
+        /// unknown may still land.
+        case failed(message: String, destination: Destination?)
     }
 
     @Published private(set) var stage: Stage = .choice
@@ -165,7 +166,9 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             stage = .success(.wallet)
         } catch {
             if let message = WalletSendService.coinJoinSweepUserMessage(for: error) {
-                stage = .failed(message: message, destination: .wallet)
+                Self.log("move to wallet — sweep failed: \(WalletSendService.coinJoinSweepLogLine(for: error))")
+                let retryable = WalletSendService.isCoinJoinSweepRetryable(error)
+                stage = .failed(message: message, destination: retryable ? .wallet : nil)
             } else {
                 stage = .choice
             }
@@ -382,7 +385,8 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
                 unobservedConsolidationTxids = outcome.unknownTxids
                 consolidationSent = !outcome.txids.isEmpty
                 // Counts only: a txid leads to the consolidation address.
-                Self.log("move to Shielded — consolidation broadcast \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) failed\(outcome.firstFailure.map { " first failure: \(Self.summary(of: $0))" } ?? "")")
+                let failure = outcome.firstFailure.map { ", one: \(WalletSendService.logSummary(of: $0))" } ?? ""
+                Self.log("move to Shielded — consolidation broadcast \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) failed\(failure)")
                 // A chunk that failed may still have reached peers (an
                 // unconfirmed broadcast), and the wallet may not show its
                 // inputs as spent yet; a drain now could spend them a second
@@ -403,7 +407,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
                 Self.log("move to Shielded — consolidation outcome unknown")
                 return Self.preparingMessage
             } catch {
-                Self.log("move to Shielded — consolidation failed, nothing accepted: \(Self.summary(of: error))")
+                Self.log("move to Shielded — consolidation failed, nothing accepted: \(WalletSendService.logSummary(of: error))")
                 return Self.genericFailureMessage
             }
             guard !consolidationTxids.isEmpty else {
@@ -482,15 +486,6 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// Exported-log line (DWLogger reaches "Share logs"; os.Logger does not).
     private static func log(_ message: String) {
         DWLogger.log("🛡️ COINJOIN-SHIELD :: \(message)", className: "CoinJoinMoveFundsViewModel")
-    }
-
-    /// An error's type and code for the exported log. Not its description:
-    /// send and builder errors quote txids, outpoints and addresses, which
-    /// lead to the consolidation address (the sender's os.Logger keeps the
-    /// detail, outside the export).
-    private static func summary(of error: Error) -> String {
-        let nsError = error as NSError
-        return "\(type(of: error)) \(nsError.domain) #\(nsError.code)"
     }
 
     /// "Try again" from a failed shielded attempt. Mirrors

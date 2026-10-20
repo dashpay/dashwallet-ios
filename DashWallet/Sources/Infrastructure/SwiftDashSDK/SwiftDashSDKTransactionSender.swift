@@ -219,16 +219,19 @@ final class SwiftDashSDKTransactionSender: NSObject {
         /// ready to record in `CoinJoinWithdrawalStore` (matches
         /// `Transaction.txHashData`).
         let txids: [Data]
-        /// How many chunks did not broadcast.
+        /// How many chunks were not accepted, including the unknown ones.
         let failedChunkCount: Int
-        /// The first failed chunk's error; nil when every chunk broadcast.
+        /// The first failed chunk's error, preferring one that was not unknown
+        /// (it says why coins are left); nil when every chunk broadcast.
         let firstFailure: Error?
         /// Wire-order txids of the chunks whose broadcast ended
         /// `transactionStatusUnknown`: they may have reached peers.
         let unknownTxids: [Data]
 
-        /// Some chunks broadcast and some did not: coins remain in the CoinJoin
-        /// account, and a re-run sweeps the remainder.
+        /// Some chunks broadcast and some did not. A rejected chunk's coins
+        /// remain in the CoinJoin account; an unknown chunk's were applied to
+        /// the wallet before the broadcast waited for peers (see
+        /// `WalletSendService.coinJoinSweepFailure`).
         var isPartial: Bool { !txids.isEmpty && failedChunkCount > 0 }
     }
 
@@ -239,6 +242,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let unknownTxids: [Data]
         /// The first unknown chunk's error.
         let underlying: Error
+        /// Every chunk that was not accepted, unknown or not.
+        let failedChunkCount: Int
+        /// The first failed chunk's error that was not unknown, if any.
+        let otherFailure: Error?
 
         var errorDescription: String? { underlying.localizedDescription }
     }
@@ -307,11 +314,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // no change (the addOutput amount is ignored); `finalizeAtomic` resolves
             // dual-chain `/0/`+`/1/` signing.
             // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
-            // throw only if nothing broadcast at all (a re-run sweeps the remainder).
-            // A mixed outcome is reported through `CoinJoinSweepOutcome`, not swallowed.
+            // throw only if none was accepted (`CoinJoinSweepUnknownError` when one
+            // may still land). A mixed outcome is reported through
+            // `CoinJoinSweepOutcome`, not swallowed.
             var txids: [Data] = []
             var failedChunkCount = 0
-            var firstError: Error?
+            var firstOther: Error?
             // An unconfirmed broadcast may have reached peers: when nothing was
             // accepted it is the error reported, ahead of a rejection, so a
             // caller can tell it apart from "nothing moved".
@@ -349,21 +357,24 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     txids.append(txid)
                 } catch {
                     failedChunkCount += 1
-                    firstError = firstError ?? error
                     if case SendError.transactionStatusUnknown = error {
                         firstUnknown = firstUnknown ?? error
                         if let chunkTxid { unknownTxids.append(chunkTxid) }
+                    } else {
+                        firstOther = firstOther ?? error
                     }
                     Self.logger.error(
                         "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
                 }
             }
             if txids.isEmpty, let firstUnknown {
-                throw CoinJoinSweepUnknownError(unknownTxids: unknownTxids, underlying: firstUnknown)
+                throw CoinJoinSweepUnknownError(
+                    unknownTxids: unknownTxids, underlying: firstUnknown,
+                    failedChunkCount: failedChunkCount, otherFailure: firstOther)
             }
-            if txids.isEmpty, let firstError { throw firstError }
+            if txids.isEmpty, let firstOther { throw firstOther }
             return CoinJoinSweepOutcome(
-                txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstError,
+                txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstOther ?? firstUnknown,
                 unknownTxids: unknownTxids)
         }
 
