@@ -91,7 +91,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWBasePressableControl.h"
 
 #if DASHPAY
-#import "DWInvitationSetupState.h"
 #import "DPAlertViewController.h"
 #import "DWDashPayConstants.h"
 #import "DWCreateUsernameViewController.h"
