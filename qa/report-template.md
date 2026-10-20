@@ -36,6 +36,7 @@ never mean success. Evidence links must resolve inside this run directory.
 | Simulator model, iOS version, UDID, fresh-state evidence | NOT RECORDED |
 | Testnet selection, account scope and scan start | NOT RECORDED |
 | Operator import completed (never include phrase or PIN) | NOT RECORDED |
+| Fixed PIN policy version; setup/authentication method and any required handoff | NOT RECORDED |
 
 ## Required checks
 

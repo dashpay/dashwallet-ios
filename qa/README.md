@@ -23,6 +23,24 @@ Use [report-template.md](report-template.md) for every attempt, including blocke
 ones. Save it as `qa-results/<UTC timestamp>-<unique suffix>/report.md`; keep all
 run artifacts underneath that directory. Record each retry as a new run.
 
+## Fixed simulator PIN
+
+PIN policy version: `1`. Use **`1111`** when setting and confirming the app PIN
+on each new dedicated QA simulator, including preparation and restore. Reuse
+`1111` for subsequent authentication prompts. Do not ask the operator to choose
+or supply a PIN. This is a public test fixture value for disposable testnet
+installations only; never change an existing personal wallet's PIN.
+
+Enter the fixed PIN automatically when the runner permits credential setup.
+The current Codex computer-use tool requires a human handoff for creation of a
+new authentication credential, including the app PIN. With that tool, give the
+operator the fixed value and ask only for manual entry, confirmation and
+submission; do not claim unattended setup or bypass the restriction. Record that
+intervention separately from sync time. An unattended run with this limitation
+is `blocked` at PIN setup until a permitted setup mechanism is available.
+This limitation does not require asking the operator for the PIN again when
+authenticating with the already configured test PIN.
+
 ## Preflight and build provenance
 
 1. Read the fixture version and readiness status. Confirm that the operator has
@@ -58,6 +76,7 @@ run artifacts underneath that directory. Record each retry as a new run.
 1. Create a dedicated disposable simulator and record its UDID. Never erase an
    operator's existing simulator. Install the recorded app. Uninstalling alone
    does not establish a fresh wallet because simulator Keychain data can survive.
+   Apply the fixed simulator PIN policy whenever onboarding requests PIN setup.
 2. Explicitly select testnet before importing; fresh installs default to mainnet.
    Confirm the fixture account scope and scan start precede its first activity.
    Do not import into an SPV store anchored after that activity.

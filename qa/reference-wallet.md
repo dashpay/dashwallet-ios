@@ -96,6 +96,9 @@ ignored `qa-results/`. They are local evidence, not committed baseline results.
 1. Select clean app/platform revisions and record build provenance as described
    in [README.md](README.md). Explicitly select testnet, create the new wallet in
    a dedicated simulator, and store the phrase in Keychain without capture.
+   Set and confirm app PIN `1111` using the fixed simulator PIN policy in that
+   playbook; do not ask the operator to choose a PIN. The existing preparation
+   wallet already uses this PIN.
 2. Record account/derivation scope and scan start. Receive testnet funds from an
    operator-selected faucet or test wallet. Size funding and subsequent transfers
    from actual fee estimates so ordinary and shielded balances remain positive;
