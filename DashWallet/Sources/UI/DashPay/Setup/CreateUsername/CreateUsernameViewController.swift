@@ -392,7 +392,7 @@ struct CreateUsernameView: View {
             // DPNS verdict from an earlier visit was reused unchecked.
             // Invitation mode first: it decides which names are allowed, and
             // no draft from an earlier registration is restored into it.
-            if let invitationURI, let invitationAmountDuffs {
+            if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI, amountDuffs: invitationAmountDuffs, invitation: pendingInvitation)
             }
             viewModel.refreshRegistrationRecoveryState()

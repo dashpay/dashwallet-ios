@@ -590,12 +590,13 @@ class CreateUsernameViewModel: ObservableObject {
     var isInvitationMode: Bool { invitationURI != nil }
 
     /// What the invitation funds, read before the form opened. nil outside
-    /// invitation mode.
+    /// invitation mode, or when the form was opened without a checked
+    /// invitation.
     @Published private(set) var invitationAmountDuffs: UInt64? = nil
 
     /// Which usernames the invitation pays for: judged against the contested
     /// cost as it stands, so a protocol version read after the form opened
-    /// moves it too. nil outside invitation mode.
+    /// moves it too. nil when the amount is unknown, which gates no name.
     var invitationTier: InvitationTier? {
         invitationAmountDuffs.map {
             InvitationValidationPolicy.tier(amountDuffs: $0, contestedDuffs: contestedFee.fundingDuffs)
@@ -626,7 +627,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String, amountDuffs: UInt64, invitation: PendingInvitation? = nil) {
+    func configureInvitationMode(uri: String, amountDuffs: UInt64? = nil, invitation: PendingInvitation? = nil) {
         invitationURI = uri
         invitationAmountDuffs = amountDuffs
         pendingInvitation = invitation
@@ -1147,7 +1148,9 @@ class CreateUsernameViewModel: ObservableObject {
             platformEligible: hasEnoughPlatform)
         // Invitation-claim mode: the voucher pays the registration, so
         // no local balance is required and the cost rule stays hidden.
-        // Which names the voucher covers is `invitationTier`'s gate.
+        // Which names the voucher covers is `invitationTier`'s gate; with
+        // the amount unknown nothing is gated, and a voucher that falls short
+        // fails at claim time through the normal error alert.
         let voucherFunded = isInvitationMode
         // A paid Core lock is resumed, never paid again. An existing identity
         // is judged by its shortfall above instead.

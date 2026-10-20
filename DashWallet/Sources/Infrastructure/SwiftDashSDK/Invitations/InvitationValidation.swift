@@ -153,7 +153,8 @@ enum InvitationValidationPolicy {
         previewIsValid: Bool,
         inviter: InvitationInviter,
         walletState: @MainActor () -> InvitationWalletState,
-        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus) async -> InvitationValidation? {
+        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus
+    ) async -> InvitationValidation? {
         func local(_ state: InvitationWalletState) -> InvitationValidation? {
             localVerdict(
                 hasRegisteredUsername: state.hasRegisteredUsername,
