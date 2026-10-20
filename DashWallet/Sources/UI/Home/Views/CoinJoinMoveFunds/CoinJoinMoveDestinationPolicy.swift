@@ -119,11 +119,14 @@ enum CoinJoinMoveDestinationPolicy {
 /// gave a 23 KB transition), so a 65–100-input drain is accepted by Core and
 /// then stuck as an asset lock Platform cannot consume until the ChainLock
 /// fallback (dashpay/platform#5460) ships in the SDK. An account above
-/// `consolidationThreshold` is therefore first consolidated — swept to one fresh
-/// address of its own CoinJoin account in ≤500-input regular transactions —
-/// and drained once those outputs are final. The coins never leave the
-/// CoinJoin account until the drain, so an interrupted attempt leaves them on
-/// one CoinJoin address, and the next attempt drains them directly.
+/// `consolidationThreshold` is therefore first consolidated — its final UTXOs
+/// swept to one fresh address of its own CoinJoin account in ≤500-input
+/// regular transactions, one round per attempt — and drained once few enough
+/// UTXOs are left and final; with 50 or more not final, nothing is
+/// consolidated until fewer are (`Step.blockedByPending`). The
+/// coins never leave the CoinJoin account until the drain, so an interrupted
+/// attempt leaves them in it, on fewer UTXOs, for the next attempt to plan
+/// from.
 ///
 /// Pure: the inputs come from `SwiftDashSDKTransactionSender.coinJoinUtxoState(expecting:)`
 /// so `CoinJoinShieldPlannerTests` can pin every branch without a wallet.
@@ -146,22 +149,45 @@ enum CoinJoinShieldPlanner {
         /// The account holds no spendable UTXO — there is nothing to shield.
         case nothingToMove
         /// More UTXOs than one drain may safely spend
-        /// (`consolidationThreshold`): consolidate first.
+        /// (`consolidationThreshold`): consolidate the final ones first.
         case consolidate
         /// Few enough UTXOs, but `pending` of them are not final yet. The
         /// drain builder spends only final inputs (confirmed or
         /// InstantSend-locked), so draining now would leave them behind.
         case awaitFinality(pending: Int)
+        /// More UTXOs than one drain may safely spend, and so many of them
+        /// (`pending`) are not final that consolidating the final ones could
+        /// never get the account under the threshold.
+        case blockedByPending(pending: Int)
         /// Every UTXO is final and one asset lock can spend them all.
         case drain
+
+        var isBlockedByPending: Bool {
+            if case .blockedByPending = self { return true }
+            return false
+        }
     }
 
     /// The next step for an account with `utxoCount` spendable UTXOs of which
     /// `finalCount` are final.
+    ///
+    /// The consolidation spends final UTXOs only — an unconfirmed input that
+    /// never locks would leave every coin swept with it behind a transaction
+    /// that cannot confirm. An attempt runs one round, which turns the final
+    /// UTXOs into one output per ≤500 of them, and the next attempt plans
+    /// from those outputs, so it can take more than one round. Every round
+    /// leaves fewer final UTXOs, and the account gets under the threshold
+    /// once the pending UTXOs plus one output fit — reachable only while
+    /// fewer than `consolidationThreshold` are pending, so a round is planned
+    /// only then. The threshold counts pending
+    /// UTXOs as well: one that locks before the drain is built becomes one of
+    /// its inputs.
     static func nextStep(utxoCount: Int, finalCount: Int) -> Step {
         guard utxoCount > 0 else { return .nothingToMove }
-        if utxoCount > consolidationThreshold { return .consolidate }
         let pending = utxoCount - min(finalCount, utxoCount)
+        if utxoCount > consolidationThreshold {
+            return pending < consolidationThreshold ? .consolidate : .blockedByPending(pending: pending)
+        }
         return pending > 0 ? .awaitFinality(pending: pending) : .drain
     }
 
@@ -198,6 +224,9 @@ enum CoinJoinShieldPlanner {
         consolidationTxids: [Data],
         utxos: [(txid: Data, isFinal: Bool)]
     ) -> Bool {
+        // Polled every second: skip building the set when there is nothing
+        // to look up.
+        guard !consolidationTxids.isEmpty else { return true }
         let finalTxids = Set(utxos.lazy.filter { $0.isFinal }.map { $0.txid })
         return consolidationTxids.allSatisfy { finalTxids.contains($0) }
     }

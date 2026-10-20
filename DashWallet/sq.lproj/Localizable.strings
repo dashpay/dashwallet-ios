@@ -2310,6 +2310,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Ky identitet ende nuk ka emra përdoruesi. Gjej një për ta blerë ose regjistruar te skeda „Gjej emra“.";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Fonde të pamjaftueshme në këtë balancë: duhen %@ DASH, në dispozicion %@ DASH.";
 

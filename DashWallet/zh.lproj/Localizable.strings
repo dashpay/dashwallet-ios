@@ -2310,6 +2310,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "该身份尚无用户名。请在“查找名称”标签页中找一个购买或注册。";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "该余额资金不足：需要 %@ DASH，可用 %@ DASH。";
 

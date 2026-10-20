@@ -19,6 +19,7 @@
 
 import XCTest
 @testable import dashpay
+import SwiftDashSDK
 
 /// Pins the one policy that decides what all three "move mixed coins" surfaces
 /// offer — the post-sync popup and the durable Settings / Tools rows. The
@@ -173,8 +174,45 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
     func testOverTheCapConsolidates() {
         XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 101, finalCount: 101), .consolidate)
         XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 104, finalCount: 104), .consolidate)
-        // Finality does not matter above the cap — the sweep is a regular tx.
-        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 2_000, finalCount: 0), .consolidate)
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 2_000, finalCount: 2_000), .consolidate)
+        // More than one round: 51 outputs, consolidated again next time.
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 25_100, finalCount: 25_100), .consolidate)
+    }
+
+    /// The consolidation spends final UTXOs only; it runs around up to 49
+    /// pending ones, which plus one output fit under the threshold.
+    func testOverTheThresholdConsolidatesAroundFewPendingCoins() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 104, finalCount: 55), .consolidate)
+        // The smallest round: 2 final inputs into 1 output, 49 + 1 = 50.
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 51, finalCount: 2), .consolidate)
+        // 600 final make 2 outputs, 49 + 2 = 51: the next attempt's round is
+        // the smallest one above.
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 649, finalCount: 600), .consolidate)
+        // A single pending coin does not block a multi-round consolidation.
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 25_001, finalCount: 25_000), .consolidate)
+    }
+
+    /// The outpoint set the consolidation hands the sweep holds only final
+    /// rows, and the sweep's filter keeps exactly those.
+    func testSweepInputsKeepOnlyTheFinalOutpoints() {
+        typealias Sender = SwiftDashSDKTransactionSender
+        let final = Sender.CoinJoinUtxoState.Entry(txid: Data([0xaa]), vout: 0, valueDuffs: 1_000, isFinal: true)
+        let pending = Sender.CoinJoinUtxoState.Entry(txid: Data([0xaa]), vout: 1, valueDuffs: 1_000, isFinal: false)
+        let state = Sender.CoinJoinUtxoState(
+            binding: Sender.CoinJoinWalletBinding(walletId: Data([1]), network: .testnet),
+            entries: [final, pending])
+        let late = Sender.CoinJoinOutpoint(txid: Data([0xbb]), vout: 0)
+        let rows = [final.outpoint, pending.outpoint, late]
+
+        XCTAssertEqual(Sender.sweepInputs(rows, restrictedTo: state.finalOutpoints) { $0 }, [final.outpoint])
+        XCTAssertEqual(Sender.sweepInputs(rows, restrictedTo: nil) { $0 }, rows)
+    }
+
+    func testOverTheThresholdWithTooManyPendingCoinsIsBlocked() {
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 104, finalCount: 54), .blockedByPending(pending: 50))
+        XCTAssertEqual(CoinJoinShieldPlanner.nextStep(utxoCount: 2_000, finalCount: 0), .blockedByPending(pending: 2_000))
+        XCTAssertTrue(CoinJoinShieldPlanner.Step.blockedByPending(pending: 50).isBlockedByPending)
+        XCTAssertFalse(CoinJoinShieldPlanner.Step.awaitFinality(pending: 50).isBlockedByPending)
     }
 
     /// After a consolidation the output is not final until InstantSend locks
@@ -245,8 +283,9 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
         XCTAssertTrue(chunks.allSatisfy { $0.count <= 500 })
     }
 
-    /// A consolidation produces one output per chunk; even very large
-    /// accounts land at or under the direct-drain threshold after one pass.
+    /// A consolidation produces one output per chunk; an all-final account of
+    /// 25 000 lands at the direct-drain threshold after one pass (pending
+    /// UTXOs count on top, see `testOverTheThresholdConsolidatesAroundFewPendingCoins`).
     func testOneConsolidationPassFitsUnderTheThreshold() {
         XCTAssertLessThanOrEqual(chunkSizes(25_000).count, CoinJoinShieldPlanner.consolidationThreshold)
     }

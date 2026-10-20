@@ -2310,6 +2310,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "На овој идентитет сè уште нема кориснички имиња. Најдете некое за купување или регистрација во картичката „Најди имиња“.";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Нема доволно средства на ова салдо: потребни се %@ DASH, достапни се %@ DASH.";
 

@@ -2310,6 +2310,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "이 아이덴티티에는 아직 사용자 이름이 없습니다. ‘이름 찾기’ 탭에서 구매하거나 등록할 이름을 찾아보세요.";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "이 잔액으로는 자금이 부족합니다: %@ DASH 필요, %@ DASH 사용 가능.";
 

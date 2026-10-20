@@ -271,10 +271,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///     CoinJoin address for the Shielded consolidation).
     ///   - binding: When set, the sweep refuses to run unless this is still the
     ///     active wallet and network.
+    ///   - outpoints: When set, only these UTXOs are spent (the ones still
+    ///     unspent), and fewer than two of them are not swept: one input
+    ///     would only pay a fee. The Shielded consolidation passes the final
+    ///     ones it planned from: an unconfirmed input that never locks would
+    ///     leave every coin swept with it behind a transaction that cannot
+    ///     confirm.
     /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids
     ///   and any chunk failure. Throws only when nothing broadcast at all.
     static func sweepCoinJoin(
-        to address: String, expecting binding: CoinJoinWalletBinding? = nil
+        to address: String, expecting binding: CoinJoinWalletBinding? = nil,
+        outpoints: Set<CoinJoinOutpoint>? = nil
     ) throws -> CoinJoinSweepOutcome {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
@@ -301,8 +308,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
             // left out, matching `coinJoinUtxoState(expecting:)`: coin
             // selection never spends them.
-            let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
-                .filter { !$0.isLocked }
+            let utxos = Self.sweepInputs(
+                manager.accountUtxos(for: walletId, balance: cjBalance).filter { !$0.isLocked },
+                restrictedTo: outpoints
+            ) { CoinJoinOutpoint(txid: $0.outpointTxid, vout: $0.outpointVout) }
+            if let outpoints, utxos.count < 2 {
+                Self.logger.info(
+                    "💸 TXSEND :: coinjoin sweep — \(utxos.count, privacy: .public) of \(outpoints.count, privacy: .public) planned UTXO(s) still spendable, not sweeping")
+                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
+            }
             guard !utxos.isEmpty else {
                 return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
             }
@@ -447,6 +461,21 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
     }
 
+    /// A CoinJoin UTXO's outpoint; the txid is in wire order.
+    struct CoinJoinOutpoint: Hashable {
+        let txid: Data
+        let vout: UInt32
+    }
+
+    /// The `rows` a sweep spends: those whose outpoint is in `outpoints`, or
+    /// all of them when it is nil.
+    static func sweepInputs<Row>(
+        _ rows: [Row], restrictedTo outpoints: Set<CoinJoinOutpoint>?, outpoint: (Row) -> CoinJoinOutpoint
+    ) -> [Row] {
+        guard let outpoints else { return rows }
+        return rows.filter { outpoints.contains(outpoint($0)) }
+    }
+
     /// The CoinJoin account's spendable UTXO set, as `CoinJoinShieldPlanner`
     /// reads it.
     struct CoinJoinUtxoState {
@@ -459,6 +488,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
             /// Confirmed or InstantSend-locked — what the drain builder
             /// accepts as an input (see `CoinJoinShieldPlanner.isFinal`).
             let isFinal: Bool
+
+            var outpoint: CoinJoinOutpoint { CoinJoinOutpoint(txid: txid, vout: vout) }
         }
 
         let binding: CoinJoinWalletBinding
@@ -468,6 +499,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         var finalCount: Int { entries.reduce(0) { $0 + ($1.isFinal ? 1 : 0) } }
         var totalDuffs: UInt64 { entries.reduce(0) { $0 + $1.valueDuffs } }
         var txidFinality: [(txid: Data, isFinal: Bool)] { entries.map { ($0.txid, $0.isFinal) } }
+        var finalOutpoints: Set<CoinJoinOutpoint> {
+            Set(entries.lazy.filter(\.isFinal).map(\.outpoint))
+        }
     }
 
     /// Snapshot of the CoinJoin account's spendable UTXOs with their finality.

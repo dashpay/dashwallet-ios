@@ -2310,6 +2310,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Δεν υπάρχουν ακόμη ονόματα χρήστη σε αυτή την ταυτότητα. Βρείτε ένα για αγορά ή καταχώρηση στην καρτέλα «Εύρεση ονομάτων».";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Ανεπαρκή κεφάλαια σε αυτό το υπόλοιπο: απαιτούνται %@ DASH, διαθέσιμα %@ DASH.";
 
