@@ -796,9 +796,16 @@ class CreateUsernameViewModel: ObservableObject {
             // explains it and removes this copy; an undetermined one proceeds,
             // as it does on the card. One not chain-locked yet would fail the
             // claim after the PIN, so it is answered here.
-            if let pendingInvitation,
-               let verdict = await InvitationValidator.validate(pendingInvitation) {
-                if verdict.isDefinitive {
+            if let pendingInvitation {
+                let verdict = await InvitationValidator.validate(pendingInvitation)
+                // The query can outlast a wallet switch, and the validator
+                // answers nil for that too; the claim spends from the
+                // wallet active now, so the scope is checked again here.
+                guard InvitationScope.isActiveAndBound(pendingInvitation.scope) else {
+                    DWLogger.log("CreateUsername: wallet changed during the invitation check; not claiming")
+                    return .cancelled
+                }
+                if let verdict, verdict.isDefinitive {
                     // The case only: the verdict carries the inviter's name.
                     DWLogger.log("CreateUsername: invitation refused before the claim")
                     PendingInvitationViewModel.shared.recheck()
