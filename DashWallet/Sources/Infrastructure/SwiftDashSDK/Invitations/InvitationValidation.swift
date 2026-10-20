@@ -46,7 +46,9 @@ enum InvitationValidation: Equatable {
         case belowMinimum
     }
 
-    case valid(tier: InvitationTier, amountDuffs: UInt64, inviter: InvitationInviter)
+    /// Which usernames it pays for follows from `amountDuffs` and the
+    /// contested cost at the time (`InvitationValidationPolicy.tier`).
+    case valid(amountDuffs: UInt64, inviter: InvitationInviter)
     case invalid(InvalidReason, inviter: InvitationInviter)
     case alreadyClaimed(inviter: InvitationInviter)
     /// The wallet already has a username.
@@ -73,14 +75,9 @@ enum InvitationValidation: Equatable {
         }
     }
 
-    var tier: InvitationTier? {
-        if case .valid(let tier, _, _) = self { return tier }
-        return nil
-    }
-
     /// What the voucher funds; nil unless valid.
     var amountDuffs: UInt64? {
-        if case .valid(_, let amountDuffs, _) = self { return amountDuffs }
+        if case .valid(let amountDuffs, _) = self { return amountDuffs }
         return nil
     }
 
@@ -150,20 +147,13 @@ enum InvitationValidationPolicy {
     /// the wallet may have learned its own earlier claim's identity (or a
     /// username), and a verdict from the state before would turn that
     /// claim into "already claimed". nil when the wallet cannot answer.
-    ///
-    /// - Parameter contestedDuffs: the network's contested-name cost (it
-    ///   follows the protocol version), read once the status is known.
-    ///   Only the tier depends on it, and the form re-derives that from
-    ///   the voucher amount as the cost changes.
     @MainActor
     static func decide(
         uri: String?,
         previewIsValid: Bool,
         inviter: InvitationInviter,
         walletState: @MainActor () -> InvitationWalletState,
-        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus,
-        contestedDuffs: @MainActor () -> UInt64
-    ) async -> InvitationValidation? {
+        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus) async -> InvitationValidation? {
         func local(_ state: InvitationWalletState) -> InvitationValidation? {
             localVerdict(
                 hasRegisteredUsername: state.hasRegisteredUsername,
@@ -176,10 +166,9 @@ enum InvitationValidationPolicy {
         if let verdict = local(before) { return verdict }
         guard let uri else { return .invalid(.malformed, inviter: .unknown) }
 
-        let result: Result<(status: ManagedPlatformWallet.InvitationClaimStatus, contestedDuffs: UInt64), Error>
+        let result: Result<ManagedPlatformWallet.InvitationClaimStatus, Error>
         do {
-            let status = try await queryStatus(uri)
-            result = .success((status, contestedDuffs()))
+            result = .success(try await queryStatus(uri))
         } catch {
             result = .failure(error)
         }
@@ -188,12 +177,11 @@ enum InvitationValidationPolicy {
         guard !after.isLoading else { return nil }
         if let verdict = local(after) { return verdict }
         switch result {
-        case .success(let answer):
+        case .success(let status):
             return verdict(
-                status: answer.status,
+                status: status,
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
-                contestedDuffs: answer.contestedDuffs,
                 localIdentityId: after.identityId)
         case .failure(let error):
             return verdict(error: error, inviter: inviter)
@@ -208,19 +196,17 @@ enum InvitationValidationPolicy {
         status: ManagedPlatformWallet.InvitationClaimStatus,
         inviter: InvitationInviter,
         minimumDuffs: UInt64,
-        contestedDuffs: UInt64,
         localIdentityId: Data? = nil
     ) -> InvitationValidation {
-        let tier = tier(amountDuffs: status.amountDuffs, contestedDuffs: contestedDuffs)
         if let localIdentityId {
             guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasOtherIdentity }
             // Our own earlier claim: only the username is left to register.
-            return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
+            return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
         }
         if status.alreadyClaimed { return .alreadyClaimed(inviter: inviter) }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
-        return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
+        return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
     }
 
     /// Which usernames `amountDuffs` pays for when a contested name costs
@@ -397,8 +383,7 @@ enum InvitationValidator {
                     logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
                     throw error
                 }
-            },
-            contestedDuffs: { ContestedUsernameFee.shared.amounts.fundingDuffs })
+            })
     }
 
     private static func currentWalletState() -> InvitationWalletState {

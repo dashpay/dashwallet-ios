@@ -27,7 +27,7 @@ final class PendingInvitationViewModel: ObservableObject {
         case undetermined
         /// A ChainLock-only invitation still waiting for its ChainLock.
         case awaitingChainLock
-        case valid(tier: InvitationTier, amountDuffs: UInt64)
+        case valid(amountDuffs: UInt64)
     }
 
     @Published private(set) var invitation: PendingInvitation?
@@ -412,8 +412,8 @@ final class PendingInvitationViewModel: ObservableObject {
             return
         }
         switch lastVerdict?.validation {
-        case .valid(let tier, let amount, _)?:
-            cardState = .valid(tier: tier, amountDuffs: amount)
+        case .valid(let amount, _)?:
+            cardState = .valid(amountDuffs: amount)
         case .undetermined?:
             cardState = .undetermined
         case .awaitingChainLock?:

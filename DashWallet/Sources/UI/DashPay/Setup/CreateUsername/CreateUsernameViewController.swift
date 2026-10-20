@@ -1322,10 +1322,9 @@ struct CreateUsernameView: View {
             return total > base ? total - base : 0
         }
         if isNamingInstantUsername { return 0 }
-        if viewModel.isInvitationMode || DWCurrentUserIdentityInfo.shared.hasIdentity {
-            // The voucher funds the identity (an invitation claim), or an
-            // identity with no top-up route here registers on what it holds:
-            // only the contest fund is at stake.
+        if DWCurrentUserIdentityInfo.shared.hasIdentity {
+            // An identity with no top-up route here (an invitation claim)
+            // registers on what it holds: only the contest fund is at stake.
             return viewModel.contestedFee.fundDuffs
         }
         return viewModel.newIdentityFundingDuffs(isContested: true)
