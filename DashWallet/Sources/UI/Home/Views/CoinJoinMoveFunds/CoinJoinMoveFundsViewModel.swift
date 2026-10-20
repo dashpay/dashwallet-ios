@@ -116,11 +116,19 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     private var consolidationSent = false
 
     /// The committed asset lock a retry must resume, kept here because
-    /// `coordinator.reset()` clears the coordinator's copy: a resume refused
-    /// or cancelled before it reaches the proof must not lose it. Any other
-    /// outcome clears it, so a lock that can't be resumed is not retried
-    /// forever.
+    /// `coordinator.reset()` clears the coordinator's copy. A failed resume
+    /// does not prove the lock consumed, so only `.success` or
+    /// `.submittedUnconfirmed` (the shield was submitted) clears it; until
+    /// then every retry resumes it, never a fresh drain.
     private var unresumedLock: (txidWire: Data, vout: UInt32)?
+
+    /// Wire-order txids of this sheet's consolidations whose broadcast outcome
+    /// was unknown (they may have reached peers). No new attempt plans until
+    /// each one's output is in the CoinJoin account — evidence the wallet
+    /// applied it and so shows its inputs as spent. The output stays until a
+    /// drain spends it, unlike the transaction record, which the SDK drops
+    /// once it is chainlocked.
+    private var unobservedConsolidationTxids: [Data] = []
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -187,6 +195,20 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         stage = .shielding
         preparation = nil
         consolidationSent = false
+        if !unobservedConsolidationTxids.isEmpty {
+            guard let state = binding.flatMap({ SwiftDashSDKTransactionSender.coinJoinUtxoState(expecting: $0) }) else {
+                Self.log("move to Shielded — the active wallet changed, or its CoinJoin UTXOs can't be read; stopping")
+                stage = .failed(message: Self.genericFailureMessage, destination: .shielded)
+                return
+            }
+            // Any output counts, final or not: it shows the wallet applied it.
+            guard Set(state.entries.map(\.txid)).isSuperset(of: unobservedConsolidationTxids) else {
+                Self.log("move to Shielded — an earlier consolidation is not in the wallet yet, not replanning")
+                stage = .failed(message: Self.preparingMessage, destination: .shielded)
+                return
+            }
+            unobservedConsolidationTxids = []
+        }
         // A prior failed attempt leaves the coordinator terminal; reset so
         // `beginTransfer()` doesn't silently bail.
         if coordinator.phase != .idle {
@@ -357,6 +379,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
                     try SwiftDashSDKTransactionSender.sweepCoinJoin(to: address, expecting: binding)
                 }.value
                 consolidationTxids = outcome.txids
+                unobservedConsolidationTxids = outcome.unknownTxids
                 consolidationSent = !outcome.txids.isEmpty
                 // Counts only: a txid leads to the consolidation address.
                 Self.log("move to Shielded — consolidation broadcast \(outcome.txids.count) tx(s), \(outcome.failedChunkCount) failed\(outcome.firstFailure.map { " first failure: \(Self.summary(of: $0))" } ?? "")")
@@ -371,10 +394,12 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
                         "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.",
                         comment: "CoinJoin")
                 }
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown {
-                // The broadcast may have reached peers; a retry right away could
-                // spend the same coins again before the wallet sees it.
+            } catch let error as SwiftDashSDKTransactionSender.CoinJoinSweepUnknownError {
+                // The broadcasts may have reached peers. The wallet applies a
+                // transaction before waiting for them, which spends its inputs
+                // locally; the next attempt waits until their outputs show.
                 consolidationSent = true
+                unobservedConsolidationTxids = error.unknownTxids
                 Self.log("move to Shielded — consolidation outcome unknown")
                 return Self.preparingMessage
             } catch {
@@ -487,12 +512,11 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             // Resume re-authorizes on its own (fresh user action).
             await coordinator.resumeAssetLock(
                 outPointTxidWire: op.txidWire, outPointVout: op.vout, expecting: binding)
-            if case .failed(let message) = coordinator.phase,
-               message == ShieldedTransferCoordinator.CoordinatorError.authCancelled.errorDescription
-                || message == ShieldedTransferCoordinator.CoordinatorError.noWallet.errorDescription {
-                // Stopped before the proof: the lock is still there to resume.
-            } else {
+            switch coordinator.phase {
+            case .success, .submittedUnconfirmed:
                 unresumedLock = nil
+            default:
+                break
             }
             finishFromCoordinatorPhase()
             return

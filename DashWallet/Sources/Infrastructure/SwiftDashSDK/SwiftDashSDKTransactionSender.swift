@@ -223,10 +223,24 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let failedChunkCount: Int
         /// The first failed chunk's error; nil when every chunk broadcast.
         let firstFailure: Error?
+        /// Wire-order txids of the chunks whose broadcast ended
+        /// `transactionStatusUnknown`: they may have reached peers.
+        let unknownTxids: [Data]
 
         /// Some chunks broadcast and some did not: coins remain in the CoinJoin
         /// account, and a re-run sweeps the remainder.
         var isPartial: Bool { !txids.isEmpty && failedChunkCount > 0 }
+    }
+
+    /// Thrown by `sweepCoinJoin` when no chunk was accepted and at least one
+    /// ended `transactionStatusUnknown`; carries every such chunk's txid.
+    struct CoinJoinSweepUnknownError: LocalizedError {
+        /// Wire-order txids of the chunks whose outcome is unknown.
+        let unknownTxids: [Data]
+        /// The first unknown chunk's error.
+        let underlying: Error
+
+        var errorDescription: String? { underlying.localizedDescription }
     }
 
     /// Sweep the entire CoinJoin-account balance to `address` (the user's own
@@ -273,7 +287,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
             // address the account for UTXO enumeration.
             guard let cjBalance = Self.coinJoinAccountBalance(in: manager.accountBalances(for: walletId)) else {
-                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
+                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
@@ -283,7 +297,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
                 .filter { !$0.isLocked }
             guard !utxos.isEmpty else {
-                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil)
+                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
             }
 
             // Drain each balanced ≤500-input chunk to `address`. `useOnlyAddedInputs`
@@ -302,7 +316,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // accepted it is the error reported, ahead of a rejection, so a
             // caller can tell it apart from "nothing moved".
             var firstUnknown: Error?
+            var unknownTxids: [Data] = []
             for (index, chunk) in Self.balancedChunks(utxos, maxPerChunk: Self.maxInputsPerSweep).enumerated() {
+                var chunkTxid: Data?
                 do {
                     let builder = try CoreTransactionBuilder(network: network)
                     try builder.addInputs(
@@ -323,25 +339,32 @@ final class SwiftDashSDKTransactionSender: NSObject {
                         accountIndex: Self.coinJoinAccountIndex)
                     // Serialize BEFORE broadcast — broadcasting consumes the handle.
                     let txData = try tx.serializedData()
-                    let outcome = try core.broadcastTransactionWithOutcome(tx)
-                    _ = try Self.requireAccepted(outcome)
                     // Wire (internal) byte order to match `Transaction.txHashData` /
                     // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                     // so reverse it back to wire order.
-                    txids.append(Data(Self.computeTxHash(from: txData).reversed()))
+                    let txid = Data(Self.computeTxHash(from: txData).reversed())
+                    chunkTxid = txid
+                    let outcome = try core.broadcastTransactionWithOutcome(tx)
+                    _ = try Self.requireAccepted(outcome)
+                    txids.append(txid)
                 } catch {
                     failedChunkCount += 1
                     firstError = firstError ?? error
                     if case SendError.transactionStatusUnknown = error {
                         firstUnknown = firstUnknown ?? error
+                        if let chunkTxid { unknownTxids.append(chunkTxid) }
                     }
                     Self.logger.error(
                         "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
                 }
             }
-            if txids.isEmpty, let error = firstUnknown ?? firstError { throw error }
+            if txids.isEmpty, let firstUnknown {
+                throw CoinJoinSweepUnknownError(unknownTxids: unknownTxids, underlying: firstUnknown)
+            }
+            if txids.isEmpty, let firstError { throw firstError }
             return CoinJoinSweepOutcome(
-                txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstError)
+                txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstError,
+                unknownTxids: unknownTxids)
         }
 
         let outcome: CoinJoinSweepOutcome

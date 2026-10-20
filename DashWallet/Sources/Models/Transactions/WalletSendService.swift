@@ -466,7 +466,16 @@ final class WalletSendService: NSObject {
         let destination = resolved.address
 
         Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
-        let outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
+        let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
+        do {
+            outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
+        } catch let error as SwiftDashSDKTransactionSender.CoinJoinSweepUnknownError {
+            // These may still land: tag them like accepted ones.
+            Self.recordSweepTxids(error.unknownTxids)
+            // The wallet applied them locally; re-tally so the balance shows it.
+            await MainActor.run { SwiftDashSDKWalletState.shared.refreshCoinJoinBalance() }
+            throw error
+        }
         let txids = outcome.txids
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
@@ -482,14 +491,9 @@ final class WalletSendService: NSObject {
         // single "CoinJoin Withdrawals" cell. A large UTXO set is swept across
         // multiple transactions (chunks); the sender returns wire-order txids
         // (matching PersistentTransaction.txid / Transaction.txHashData), so
-        // record each directly.
-        for txid in txids {
-            CoinJoinWithdrawalStore.shared.record(txid: txid)
-        }
-        let recordedHexes: [String] = txids.map { (txid: Data) in
-            txid.reversed().map { String(format: "%02x", $0) }.joined()
-        }
-        Self.logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
+        // record each directly — the unknown-outcome chunks too, which may
+        // still land.
+        Self.recordSweepTxids(txids + outcome.unknownTxids)
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
@@ -642,6 +646,17 @@ final class WalletSendService: NSObject {
                 biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
             completion(outcome == .ok, outcome == .cancelled)
         }
+    }
+
+    /// Tag sweep txids (wire order) so the home screen groups them into the
+    /// single "CoinJoin Withdrawals" cell — the unknown-outcome chunks too,
+    /// which may still land.
+    private static func recordSweepTxids(_ txids: [Data]) {
+        for txid in txids {
+            CoinJoinWithdrawalStore.shared.record(txid: txid)
+        }
+        let hexes = txids.map { Data($0.reversed()).map { String(format: "%02x", $0) }.joined() }
+        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(hexes.joined(separator: ","), privacy: .public)")
     }
 
     /// User-facing message for a CoinJoin sweep failure, or nil if the user
