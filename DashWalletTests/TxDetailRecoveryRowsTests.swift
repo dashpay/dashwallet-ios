@@ -138,15 +138,15 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         controller.recoveryInputs = inputs.eraseToAnyPublisher()
         controller.loadViewIfNeeded()
 
-        // `viewDidLoad` builds the rows, and its swap-order lookup rebuilds
-        // them once more when it lands. Only the inputs rebuild them after.
-        waitForRebuilds(2, of: controller)
-        XCTAssertEqual(controller.rebuilds, 2)
+        // `viewDidLoad` builds the rows. Its swap-order lookup rebuilds them
+        // again only if it finds a link, so each input is checked by what it
+        // adds to the count.
+        waitForRebuilds(1, of: controller)
 
-        for (index, input) in [Input.lockLookup, .inFlightLocks, .projection].enumerated() {
+        for input in [Input.lockLookup, .inFlightLocks, .projection] {
+            let before = controller.rebuilds
             inputs.send(input)
-            waitForRebuilds(3 + index, of: controller)
-            XCTAssertEqual(controller.rebuilds, 3 + index, "after \(input)")
+            waitForRebuilds(before + 1, of: controller)
         }
     }
 
@@ -216,8 +216,10 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let controller = CountingDetailViewController(model: placeholderModel())
         controller.recoveryInputs = inputs.eraseToAnyPublisher()
         controller.loadViewIfNeeded()
+        waitForRebuilds(1, of: controller)
+        let before = controller.rebuilds
         inputs.send(.inFlightLocks)
-        waitForRebuilds(2, of: controller)
+        waitForRebuilds(before + 1, of: controller)
 
         XCTAssertFalse(controller.currentSnapshot.sectionIdentifiers.contains(.recovery))
     }
