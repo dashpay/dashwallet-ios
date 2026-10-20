@@ -498,11 +498,20 @@ final class InternalTransferViewModel: ObservableObject {
             return Task { [weak self] in
                 let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
                     context: context, operation: operation)
+                // Leaving or reselecting Max reset the form; that selection
+                // owns its state now.
                 guard let self, self.isCoreShieldedDrain,
-                      selection == self.coreDrainSelection,
-                      self.coreDrainContext == context,
+                      selection == self.coreDrainSelection else { return }
+                guard self.coreDrainContext == context,
                       self.coreDrainOperation == operation,
-                      (try? CoreShieldedDrainService.currentContext()) == context else { return }
+                      (try? CoreShieldedDrainService.currentContext()) == context else {
+                    // Same selection, but its wallet, network or operation no
+                    // longer matches: drop this result, release the gate and
+                    // re-derive the form from the current context.
+                    self.isCoreDrainLoading = false
+                    self.refreshCoreDrainPreview()
+                    return
+                }
                 if outcome?.state == .completed {
                     self.showCoreDrainCompletion()
                 } else {
@@ -589,7 +598,7 @@ final class InternalTransferViewModel: ObservableObject {
                 case .ready:
                     self.maxNotice = NSLocalizedString("Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.", comment: "Core drain estimate")
                 case .inputLimitMayBeExceeded:
-                    self.maxNotice = NSLocalizedString("This balance may need more than 500 inputs. Max will check the limit before sending; the amount and fees are currently unavailable.", comment: "Core drain input limit preview")
+                    self.maxNotice = NSLocalizedString("This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.", comment: "Core drain input limit preview")
                 }
                 self.coreShieldedDrainConfirmation = CoreShieldedDrainConfirmation(
                     context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,
@@ -1856,7 +1865,10 @@ final class InternalTransferViewModel: ObservableObject {
         if isCoreShieldedDrain {
             return route == .coreToShielded && !isIdentitySource && !isIdentityDestination
                 && isChainSynced && !isCoreDrainLoading && !coreDrainPending
-                && coreShieldedDrainConfirmation != nil
+                // A whole-wallet spend is never authorized without an amount
+                // and fee to show (an input-limit preview has neither).
+                && coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil
+                && coreShieldedDrainConfirmation?.totalFeeCredits != nil
                 && (try? CoreShieldedDrainService.currentContext()) == coreShieldedDrainConfirmation?.context
         }
         if hasUnavailableSourceBalance { return false }

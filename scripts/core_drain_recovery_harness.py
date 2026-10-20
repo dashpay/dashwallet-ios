@@ -53,11 +53,15 @@ struct Quote {
     static var quotes = 0
     static var lookups: [UUID] = []
     static var suspendNextStatus = false
+    static var unavailable = false
     static var statusGate: CheckedContinuation<Void, Never>?
     static var didRemoveMarker: (() -> Void)?
     var store: Self { self }
     func load(_ context: CoreShieldedDrainContext) throws -> CoreShieldedDrainOperation? { Self.recorded }
-    static func currentContext() throws -> CoreShieldedDrainContext { context }
+    static func currentContext() throws -> CoreShieldedDrainContext {
+        if unavailable { throw ServiceError.unavailable }
+        return context
+    }
     func status(for operation: CoreShieldedDrainOperation) async throws -> WalletDrainOutcome {
         Self.lookups.append(operation.id)
         let outcome = Self.outcome
@@ -82,8 +86,8 @@ struct Quote {
         return Quote()
     }
     enum ServiceError: LocalizedError {
-        case contextChanged
-        var errorDescription: String? { "Context changed" }
+        case contextChanged, unavailable
+        var errorDescription: String? { self == .unavailable ? "Wallet unavailable" : "Context changed" }
     }
 }
 @MainActor final class InternalTransferRunner {
@@ -137,6 +141,7 @@ final class RecoveryFormTests: XCTestCase {
         CoreShieldedDrainService.quotes = 0
         CoreShieldedDrainService.lookups = []
         CoreShieldedDrainService.suspendNextStatus = false
+        CoreShieldedDrainService.unavailable = false
         CoreShieldedDrainService.statusGate = nil
         CoreShieldedDrainService.didRemoveMarker = nil
         return operation
@@ -272,6 +277,28 @@ final class RecoveryFormTests: XCTestCase {
         CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "devnet-b")
         await completeResume(action)
         XCTAssertFalse(form.coreDrainCompleted)
+        // The rejected result still releases the gate: the form re-derives
+        // its state and reports the changed context.
+        await form.coreDrainTask?.value
+        XCTAssertFalse(form.isCoreDrainLoading)
+        XCTAssertFalse(form.isCoreShieldedDrain)
+        XCTAssertEqual(form.maxNotice, "Context changed")
+    }
+    @MainActor func testResumeRejectedWhileWalletUnavailableKeepsAnAction() async {
+        let (form, action) = await suspendedResume()
+        CoreShieldedDrainService.unavailable = true
+        await completeResume(action)
+        await form.coreDrainTask?.value
+        XCTAssertFalse(form.coreDrainCompleted)
+        XCTAssertFalse(form.isCoreDrainLoading)
+        XCTAssertNotNil(form.coreDrainActionTitle)
+        XCTAssertEqual(form.maxNotice, "Wallet unavailable")
+        CoreShieldedDrainService.unavailable = false
+        InternalTransferRunner.shared.didStartResume = nil
+        let retry = form.performCoreDrainAction()
+        XCTAssertNotNil(retry)
+        await retry?.value
+        XCTAssertTrue(form.coreDrainCompleted)
     }
     @MainActor func testSuccessfulResumeShowsSuccessAfterRunnerClearsMarker() async throws {
         _ = reset()
