@@ -252,10 +252,54 @@ enum PlatformPaymentIdentityFundingPolicy {
     }
 }
 
+// MARK: - Completion collaborators
+
+/// The in-flight contested-name bookkeeping a completed registration clears.
+/// Production is `DWContestedNameStatusService.shared`.
+@MainActor
+protocol ContestedNamePendingClearing: AnyObject {
+    func clearPending(label: String, for network: Network, walletId: Data?)
+}
+
+extension DWContestedNameStatusService: ContestedNamePendingClearing {}
+
+/// The username form draft a completed registration clears. Production is
+/// `UsernameRegistrationDraftStore`.
+@MainActor
+protocol UsernameRegistrationDraftClearing {
+    func clear(for scope: UsernameRegistrationDraftStore.Scope)
+}
+
+extension UsernameRegistrationDraftStore: UsernameRegistrationDraftClearing {}
+
+extension DWIdentityRegistrationCoordinator {
+    /// What the registration completion step writes and checks beside the
+    /// SDK. Production clears the contested-name bookmark and the form draft
+    /// and checks the host's active context; the completion test substitutes
+    /// recorders so the step runs without a wallet.
+    struct Collaborators {
+        var contestedNames: any ContestedNamePendingClearing
+        var draftStore: any UsernameRegistrationDraftClearing
+        /// `isActiveContext(walletId:network:)`: the host runs `walletId` on
+        /// `network` and both are the selected ones.
+        var isActiveContext: @MainActor (Data, Network) -> Bool
+
+        @MainActor
+        static var production: Collaborators {
+            Collaborators(
+                contestedNames: DWContestedNameStatusService.shared,
+                draftStore: UsernameRegistrationDraftStore(),
+                isActiveContext: { DWIdentityRegistrationCoordinator.isActiveContext(walletId: $0, network: $1) })
+        }
+    }
+}
+
 @MainActor
 final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     static let shared = DWIdentityRegistrationCoordinator()
+
+    private let collaborators: Collaborators
 
     /// `DWLogger`, not `os.Logger`: a failed registration has to be readable
     /// from the "Share application logs" export, which ships only the
@@ -455,7 +499,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
     private let authorizer = DWIdentityAuthorizer()
 
-    private init() {}
+    private convenience init() {
+        self.init(collaborators: .production)
+    }
+
+    /// A coordinator over substitute collaborators. The completion test uses
+    /// it; `shared` is built over `Collaborators.production`.
+    init(collaborators: Collaborators) {
+        self.collaborators = collaborators
+    }
 
     /// Value copy of the persisted Core asset lock used to recover a
     /// registration after process death. Keeping only the outpoint and
@@ -981,6 +1033,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 signer: signer,
                 nowUnix: UInt32(Date().timeIntervalSince1970))
             identityId = try managed.getId()
+            // The voucher is spent now, whatever happens to the username
+            // next: from here on this is an ordinary "identity exists,
+            // username required" recovery, not an invitation. Cleared by the
+            // link itself, not "the current wallet": the user may have
+            // switched wallet while the claim ran.
+            // A failed removal is retried on every reload until it succeeds.
+            PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
         }
         return identityId
     }
@@ -1171,7 +1230,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
-        guard Self.isActiveContext(walletId: walletId, network: network) else {
+        guard collaborators.isActiveContext(walletId, network) else {
             throw CoordinatorError.contextChanged
         }
         if let resumedIdentityId {
@@ -1601,19 +1660,44 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             _ = try? await wallet.syncDpnsNames(identityId: identityId)
         }
 
-        // Step 4: mark complete + mirror to DWGlobalOptions. The
-        // controller transition triggers the phaseSubscription
-        // sink which posts the notification + writes
-        // DWGlobalOptions (skipped for contested submissions —
-        // see handlePhaseChange).
+        // Step 4: mark complete + mirror to DWGlobalOptions. Keep the captured
+        // wallet/network guards inside the balance refresh so a later context
+        // switch cannot publish into another wallet.
+        return completeNameRegistration(
+            identityId: identityId, username: username, nameState: nameState, draftScope: draftScope,
+            walletId: wallet.walletId, network: network, newController: newController
+        ) {
+            await DWCurrentUserIdentityInfo.shared.refreshBalanceFromNetwork(
+                identityId: identityId, wallet: wallet, network: network)
+        }
+    }
+
+    /// Step 4 of `registerNames`: mark complete + mirror to DWGlobalOptions.
+    /// The controller transition triggers the phaseSubscription sink which
+    /// posts the notification + writes DWGlobalOptions (skipped for contested
+    /// submissions — see handlePhaseChange).
+    ///
+    /// Completion bookkeeping and the success return must not depend on
+    /// `refreshBalance`, the optional network read of the identity's credits:
+    /// it starts in its own task after the completion is recorded.
+    func completeNameRegistration(
+        identityId: Identifier,
+        username: String,
+        nameState: UsernameRegistrationRecoveryFlow.NameState,
+        draftScope: UsernameRegistrationDraftStore.Scope,
+        walletId: Data,
+        network: Network,
+        newController: DWIdentityRegistrationController,
+        refreshBalance: @escaping @MainActor () async -> Void
+    ) -> Identifier {
         if nameState == .owned {
-            DWContestedNameStatusService.shared.clearPending(label: username, for: network, walletId: wallet.walletId)
+            collaborators.contestedNames.clearPending(label: username, for: network, walletId: walletId)
         }
         if temporaryUsernameError == nil {
-            UsernameRegistrationDraftStore().clear(for: draftScope)
+            collaborators.draftStore.clear(for: draftScope)
         }
         do {
-            try validateRegistrationContext(walletId: wallet.walletId, network: network)
+            try validateRegistrationContext(walletId: walletId, network: network)
         } catch {
             // Preserve the successful result and original scoped bookkeeping;
             // never mirror it into a newly selected wallet or report failure.
@@ -1628,12 +1712,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         newController.enterCompleted(identityId: identityId)
         Self.logger.info("🪪 IDENT-COORD :: registration complete")
 
-        // Completion bookkeeping and the success return must not depend on this
-        // optional network read. Keep the captured wallet/network guards inside
-        // the refresh so a later context switch cannot publish into another wallet.
         Task { @MainActor in
-            await DWCurrentUserIdentityInfo.shared.refreshBalanceFromNetwork(
-                identityId: identityId, wallet: wallet, network: network)
+            await refreshBalance()
         }
         return identityId
     }

@@ -2,11 +2,7 @@ import Foundation
 import SwiftData
 import SwiftDashSDK
 import XCTest
-#if canImport(dashwallet)
-@testable import dashwallet
-#elseif canImport(dashpay)
 @testable import dashpay
-#endif
 
 /// Picking a main username on the Identities screen: the pick is written
 /// to `PersistentIdentity.mainDpnsName`, and a failed save must leave the

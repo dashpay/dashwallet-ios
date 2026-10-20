@@ -23,8 +23,8 @@ public struct JoinDashPayScreen: View {
     /// Continue was tapped. The sheet that hosts this screen owns what comes
     /// next — `JoinDashPayInfoDialog` turns it into its voting-info page.
     var action: () -> Void
-    /// Non-nil renders the "Have an invitation?" entry — the
-    /// install-then-paste redeem path for invited users (DIP-13).
+    /// Non-nil renders the "Scan invitation QR" entry — the scan path into
+    /// the Home invitation card for invited users (DIP-13).
     var onClaimInvitation: (() -> Void)? = nil
 
     init(action: @escaping () -> Void, onClaimInvitation: (() -> Void)? = nil) {
@@ -113,9 +113,9 @@ public struct JoinDashPayScreen: View {
                         action: action
                     )
 
-                    // The redeem screen takes both a pasted link and a scan,
-                    // and it funds the registration itself — so it stays
-                    // tappable while the button above is greyed out.
+                    // A scanned invitation funds the registration itself, so
+                    // this stays tappable while the button above is greyed
+                    // out.
                     if let onClaimInvitation {
                         DashUIKit.DashButton(
                             text: NSLocalizedString("Scan invitation QR", comment: ""),

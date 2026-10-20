@@ -208,7 +208,8 @@ class CreateUsernameViewModel: ObservableObject {
     /// Locked and mid-vote answers keep the callout: it carries their
     /// detail.
     var showContestedWarning: Bool {
-        guard isContestedCandidate else { return false }
+        // A non-contested-only invitation says why instead (the tier note).
+        guard isContestedCandidate, !isNonContestedInvitation else { return false }
         if uiState.usernameBlockedRule == .invalidCritical {
             return isLockedContestedName || activeContestContenders != nil
         }
@@ -342,7 +343,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// changes. Re-runs validation, because the cost rule's verdict depends on
     /// it.
     func setActiveFundingSource(_ source: DWIdentityFundingSource) {
-        guard activeFundingSource != source else { return }
+        // An invitation claim is paid by the invitation, whatever the form's
+        // picker state says.
+        guard !isInvitationMode, activeFundingSource != source else { return }
         activeFundingSource = source
         validateUsername(username: username)
     }
@@ -586,13 +589,46 @@ class CreateUsernameViewModel: ObservableObject {
 
     var isInvitationMode: Bool { invitationURI != nil }
 
+    /// Which usernames the invitation pays for, read from its funded amount
+    /// before the form opened. nil outside invitation mode.
+    @Published private(set) var invitationTier: InvitationTier? = nil
+
+    /// The stored invitation being claimed (scope + link), when the form was
+    /// opened from the Home card.
+    private var pendingInvitation: PendingInvitation?
+
+    /// The invitation pays for non-contested names only, so a name that
+    /// would go to a masternode vote cannot be submitted with it.
+    var isNonContestedInvitation: Bool { invitationTier == .nonContested }
+
+    /// Whether an invitation of this tier pays for `label`; always true
+    /// without a non-contested-only invitation.
+    nonisolated static func invitationPays(
+        for label: String, tier: InvitationTier?,
+        isContested: (String) -> Bool = { DWContestedNameStatusService.isContestedLabel($0) }
+    ) -> Bool {
+        tier != .nonContested || !isContested(label)
+    }
+
+    /// The non-contested requirement ("20–23 characters" OR "a digit 2–9")
+    /// for a non-contested-only invitation; `.hidden` otherwise.
+    @Published private(set) var nonContestedRule: UsernameValidationRuleResult = .hidden
+
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String) {
+    func configureInvitationMode(uri: String, tier: InvitationTier? = nil, invitation: PendingInvitation? = nil) {
         invitationURI = uri
+        invitationTier = tier
+        pendingInvitation = invitation
+        // A check started under the previous rules answers a different
+        // question; its result must not enable Continue here.
+        availabilityCheckTask?.cancel()
+        availabilityCheckLabel = nil
         invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
-        // The voucher pays; an existing identity is not topped up on this path.
+        // The invitation pays; no source is picked or judged, and an existing
+        // identity is not topped up on this path.
+        activeFundingSource = .invitation
         existingIdentityCredits = nil
         validateUsername(username: username)
     }
@@ -788,10 +824,51 @@ class CreateUsernameViewModel: ObservableObject {
         // `handleRegistrationPhase` — the coordinator publishes the
         // same phases for every funding source.
         if let invitationURI {
+            // The claim spends the voucher from the active wallet; an
+            // invitation stored for another wallet or network must not.
+            if let pendingInvitation, !InvitationScope.isActiveAndBound(pendingInvitation.scope) {
+                DWLogger.log("CreateUsername: invitation belongs to another wallet or network; not claiming")
+                submittedRegistrationUsername = nil
+                self.onRegistrationStarted = nil
+                return .cancelled
+            }
             defer {
                 submittedRegistrationUsername = nil
                 didNotifyRegistrationStarted = false
                 self.onRegistrationStarted = nil
+            }
+            // The form's rule again, on the name actually submitted: the
+            // voucher cannot pay for a name that goes to a vote.
+            guard Self.invitationPays(for: submittedUsername, tier: invitationTier) else {
+                return .failure(NSLocalizedString(
+                    "You can only create a non-contested username using this invitation",
+                    comment: "DashPay Invitations"))
+            }
+            // The card's check again, right before the claim: an identity
+            // that appeared since (a recovered one, another registration)
+            // would otherwise take the username on a resume that never
+            // spends the voucher. A definitive answer goes to the card, which
+            // explains it and removes this copy; an undetermined one proceeds,
+            // as it does on the card. One not chain-locked yet would fail the
+            // claim after the PIN, so it is answered here.
+            if let pendingInvitation {
+                let verdict = await InvitationValidator.validate(pendingInvitation)
+                // The query can outlast a wallet switch, and the validator
+                // answers nil for that too; the claim spends from the
+                // wallet active now, so the scope is checked again here.
+                guard InvitationScope.isActiveAndBound(pendingInvitation.scope) else {
+                    DWLogger.log("CreateUsername: wallet changed during the invitation check; not claiming")
+                    return .cancelled
+                }
+                if let verdict, verdict.isDefinitive {
+                    // The case only: the verdict carries the inviter's name.
+                    DWLogger.log("CreateUsername: invitation refused before the claim")
+                    PendingInvitationViewModel.shared.recheck()
+                    return .failure(InvitationClaimFailure.refused.message)
+                }
+                if verdict == .awaitingChainLock {
+                    return .failure(InvitationClaimFailure.stillConfirming.message)
+                }
             }
             do {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
@@ -821,6 +898,16 @@ class CreateUsernameViewModel: ObservableObject {
                 // it from disk. Announce it explicitly here, the same way
                 // `DWCurrentUserIdentityInfo.reconcileRecoveredIdentity()` does
                 // for identities that arrive outside the bridge's flow.
+                // This wallet has its username, so its copy of the
+                // invitation is done with. A claim that created the identity
+                // already retired every copy; one that finished on an identity
+                // the wallet already had (an earlier claim, or a paid Core
+                // lock) removes nothing, and the card would then read the new
+                // username as "already has one". Only this wallet's copy: on
+                // that route the voucher may still be unspent.
+                if let pendingInvitation {
+                    PendingInvitationStore.shared.retireFinished(pendingInvitation)
+                }
                 DWCurrentUserIdentityInfo.shared.refreshFromSDK()
                 NotificationCenter.default.post(
                     name: .DWDashPayRegistrationStatusUpdated, object: nil)
@@ -828,6 +915,14 @@ class CreateUsernameViewModel: ObservableObject {
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
+                // A failure about the invitation itself, in its own words;
+                // anything else keeps the generic wording and the invitation.
+                // The registration-activity sink of the Home card re-checks
+                // the invitation once this attempt has ended.
+                if let failure = InvitationClaimFailure.classify(error) {
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    return .failure(failure.message)
+                }
                 return .failure(
                     Self.registrationFailureMessage(error, username: submittedUsername))
             }
@@ -972,6 +1067,14 @@ class CreateUsernameViewModel: ObservableObject {
             takenNameSalePriceCredits = nil
         }
 
+        let nonContestedVerdict: UsernameValidationRuleResult = !isNonContestedInvitation
+            ? .hidden
+            : (username.isEmpty ? .empty
+                : (DWContestedNameStatusService.isContestedLabel(username) ? .invalid : .valid))
+        if nonContestedRule != nonContestedVerdict {
+            nonContestedRule = nonContestedVerdict
+        }
+
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             if isContestedCandidate {
@@ -1057,7 +1160,10 @@ class CreateUsernameViewModel: ObservableObject {
             hasEnoughFunding = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         }
         let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughFunding
+        // A non-contested-only invitation cannot pay for a contested name.
+        let tierAllowsName = Self.invitationPays(for: username, tier: invitationTier, isContested: { _ in isContested })
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
+            && tierAllowsName
             && !isIdentityLoading && DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady
 
         // Same label as the existing check state → carry its rule forward
@@ -1159,7 +1265,7 @@ class CreateUsernameViewModel: ObservableObject {
                     activeContestEndsAt = nil
                     takenNameSalePriceCredits = nil
                     uiState.usernameBlockedRule = .valid
-                    uiState.canContinue = true
+                    uiState.canContinue = Self.invitationPays(for: username, tier: invitationTier)
                     return
                 }
             }
@@ -1251,7 +1357,9 @@ class CreateUsernameViewModel: ObservableObject {
         activeContestEndsAt = activeContestEnd
         takenNameSalePriceCredits = salePriceCredits
         uiState.usernameBlockedRule = result
-        uiState.canContinue = (result == .valid)
+        // Availability alone does not allow the name: the invitation's tier
+        // may have been set while this check ran.
+        uiState.canContinue = (result == .valid) && Self.invitationPays(for: username, tier: invitationTier)
         armContestBoundaryRevalidation()
     }
 
