@@ -1352,8 +1352,16 @@ final class InternalTransferViewModel: ObservableObject {
             .sink { [weak self] balance in
                 self?.coreBalanceDuffs = balance?.total ?? 0
                 self?.coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
-                self?.refreshCoreDrainPreview()
             }
+            .store(in: &cancellables)
+
+        // The balance is republished on every wallet event, unchanged or not.
+        // A drain refresh drops the estimate (disabling Continue) and, with a
+        // pending marker, queries the SDK, so only a changed balance earns one.
+        SwiftDashSDKWalletState.shared.$balance
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshCoreDrainPreview() }
             .store(in: &cancellables)
 
         PlatformAddressSyncCoordinator.shared.$platformBalanceState
