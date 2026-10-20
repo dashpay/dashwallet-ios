@@ -956,6 +956,17 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(box.label?.contains("V4V.App") ?? false)
     }
 
+    /// Without `sender` the deep-link router rejects a `pay=` link, so the scan still falls back to
+    /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
+    func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
+        let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
+        // The rewrite was not applied: it would carry the label naming the sender. This holds on
+        // every network; the verdicts below alone would also pass on mainnet for a testnet address.
+        XCTAssertNil(box.label)
+        XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
+        XCTAssertFalse(box.isValidDashPaymentIntent)
+    }
+
     /// The plain `dashwallet:<address>` alias is not a deep-link action and still reads as `dash:`.
     func testParsedBoxKeepsPlainDashWalletAlias() {
         let box = ParsedPaymentURI.parse(paymentString: "dashwallet:Xabc?amount=1")
