@@ -139,6 +139,60 @@ struct SwapKitSwapResponse: Decodable {
     let memo: String?
     let error: String?
     let message: String?
+    let meta: SwapKitSwapMeta?
+}
+
+/// The deposit-channel part of a `/v3/swap` response's `meta`.
+///
+/// Decoding never throws: `meta` is a provider-specific bag, and a field arriving in an
+/// unexpected shape must not fail the whole swap response — the deadline is a nicety, the
+/// deposit address is not.
+struct SwapKitSwapMeta: Decodable {
+    /// Unix seconds after which the deposit channel stops accepting a deposit, as the server
+    /// sent it — unchecked; see `depositDeadline(now:)`.
+    let depositChannelExpiration: Double?
+
+    private enum CodingKeys: String, CodingKey {
+        case depositChannelExpiration
+    }
+
+    init(from decoder: Decoder) throws {
+        guard let container = try? decoder.container(keyedBy: CodingKeys.self) else {
+            depositChannelExpiration = nil
+            return
+        }
+        if let number = try? container.decode(Double.self, forKey: .depositChannelExpiration) {
+            depositChannelExpiration = number
+        } else if let string = try? container.decode(String.self, forKey: .depositChannelExpiration) {
+            depositChannelExpiration = Double(string)
+        } else {
+            depositChannelExpiration = nil
+        }
+    }
+
+    /// The longest deposit window taken at face value. Providers use hours to a few days; a
+    /// value far beyond that is a unit mix-up (milliseconds), not a deadline.
+    static let maxDepositWindow: TimeInterval = 30 * 24 * 60 * 60
+
+    /// The deadline as a date, or nil when it is missing, not a finite number, already past,
+    /// or implausibly far ahead. Tracking keys an order's lifetime off this, so a bad value
+    /// must read as "no deadline" rather than be stored.
+    func depositDeadline(now: Date = Date()) -> Date? {
+        guard let seconds = depositChannelExpiration, seconds.isFinite else { return nil }
+        let date = Date(timeIntervalSince1970: seconds)
+        guard date > now, date <= now.addingTimeInterval(Self.maxDepositWindow) else { return nil }
+        return date
+    }
+}
+
+// MARK: - Balance Response
+
+/// One asset an address holds on a chain, from `/balance`.
+struct SwapKitBalanceItem: Decodable {
+    /// SwapKit asset identifier, e.g. `ARB.USDT-0xFd08…` (contract case as the chain has it).
+    let identifier: String?
+    /// Human-unit amount as a decimal string.
+    let value: String?
 }
 
 // MARK: - Price Response

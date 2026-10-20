@@ -593,6 +593,18 @@
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
+/* Dash DEX / tx history row title */
+"Converting · %@" = "Converting · %@";
+
+/* Dash DEX */
+"Not confirmed" = "Not confirmed";
+
+/* Dash DEX / tx history row title */
+"Not converted · %@" = "Not converted · %@";
+
+/* Dash DEX */
+"Refunded" = "Refunded";
+
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
 
@@ -2280,6 +2292,9 @@
 
 "Lock the name" = "鎖定該名稱";
 
+/* Dash DEX */
+"Stuck" = "Stuck";
+
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "投票結束";
 
@@ -3845,6 +3860,9 @@
 
 /* No comment provided by engineer. */
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "此操作會抹除本裝置上儲存的全部 %ld 個錢包。它們只能憑助記詞復原。從本裝置刪除後無法復原。";
+
+/* Dash DEX */
+"Waiting for the provider" = "Waiting for the provider";
 
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "本裝置上仍存有來自先前安裝的錢包資料。要繼續使用這些錢包，還是刪除所有錢包資料重新開始？刪除前請確認每一份助記詞都已備份。";
