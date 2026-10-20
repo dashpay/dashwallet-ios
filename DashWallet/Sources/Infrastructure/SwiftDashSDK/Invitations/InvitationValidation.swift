@@ -6,9 +6,10 @@
 //  network, and which usernames it can pay for.
 //
 //  The link does not say whether it funds a contested username. The inviter
-//  picks the amount — 0.25 DASH for any name, 0.03 DASH for non-contested
-//  names only — and the invitee reads it back from the funding asset lock
-//  (Android: `RequestUserNameViewModel.isInviteForContestedNames`).
+//  picks the amount — the contested-name cost for any name (see
+//  `ContestedUsernameFee`), 0.03 DASH for non-contested names only — and the
+//  invitee reads it back from the funding asset lock (Android:
+//  `RequestUserNameViewModel.isInviteForContestedNames`).
 //
 
 import Foundation
@@ -179,7 +180,7 @@ enum InvitationValidationPolicy {
                 status: status,
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
-                contestedDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME),
+                contestedDuffs: ContestedUsernameFee.shared.amounts.fundingDuffs,
                 localIdentityId: after.identityId)
         case .failure(let error):
             return verdict(error: error, inviter: inviter)
