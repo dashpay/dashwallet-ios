@@ -20,6 +20,10 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
     /// `Documents/SwiftDashSDK/ResetIntents/<scope>.coinjoin-rescan` — the
     /// reset's durable per-scope intent, outside every deleted directory.
     let resetIntents: URL
+    /// `Documents/SwiftDashSDK/ChainStoreRebuilds/<scope>/<wallet id>` — the
+    /// pending import rebuilds (see `SPVChainStoreRebuild`), outside every
+    /// deleted directory.
+    let chainStoreRebuilds: URL
 
     init(documents: URL) {
         let sdk = documents.appendingPathComponent("SwiftDashSDK", isDirectory: true)
@@ -27,6 +31,7 @@ struct WalletLocalStoreRoots: Equatable, Sendable {
         shielded = sdk.appendingPathComponent("Shielded", isDirectory: true)
         spv = documents.appendingPathComponent("SPV", isDirectory: true)
         resetIntents = sdk.appendingPathComponent("ResetIntents", isDirectory: true)
+        chainStoreRebuilds = sdk.appendingPathComponent("ChainStoreRebuilds", isDirectory: true)
     }
 
     /// The roots under the user's Documents directory (created if missing,
@@ -97,6 +102,36 @@ enum WalletLocalStoreResetError: Error, Equatable {
     case removalFailed(root: String, scope: String, code: String)
 }
 
+/// An empty marker file that must reach stable storage before the change it
+/// announces: the file, then the directory entries that name it.
+enum DurableMarkerFile {
+    /// Write an empty file at `url` atomically and flush it. An existing
+    /// file is replaced.
+    static func write(at url: URL) throws {
+        try Data().write(to: url, options: .atomic)
+        try flushToStableStorage(url)
+    }
+
+    /// Flush `directory` and each parent up to and including `root`, which
+    /// must be `directory` itself or one of its ancestors.
+    static func flushDirectories(from directory: URL, through root: URL) throws {
+        let rootPath = root.standardizedFileURL.path
+        var current = directory.standardizedFileURL
+        while true {
+            try flushToStableStorage(current)
+            let parent = current.deletingLastPathComponent()
+            if current.path == rootPath || parent.path == current.path { return }
+            current = parent
+        }
+    }
+
+    /// `F_FULLFSYNC` on the file or directory, through the barrier shared
+    /// with the Core drain marker store.
+    static func flushToStableStorage(_ url: URL) throws {
+        try DurableFileStorage.flush(url)
+    }
+}
+
 /// The reset's durable intent, one marker file per scope that had wallet
 /// rows, written before the first removal and kept outside every deleted
 /// directory. Directory removal is not atomic: an interruption can unlink
@@ -123,12 +158,9 @@ struct WalletLocalStoreResetIntent: Sendable {
     func record(scopes: some Sequence<String>, fileManager: FileManager = .default) throws {
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         for scope in scopes {
-            let url = marker(for: scope)
-            try Data().write(to: url, options: .atomic)
-            try DurableFileStorage.flush(url)
+            try DurableMarkerFile.write(at: marker(for: scope))
         }
-        try DurableFileStorage.flush(directory)
-        try DurableFileStorage.flush(directory.deletingLastPathComponent())
+        try DurableMarkerFile.flushDirectories(from: directory, through: directory.deletingLastPathComponent())
     }
 
     func isPending(scope: String, fileManager: FileManager = .default) -> Bool {

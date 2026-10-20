@@ -66,7 +66,7 @@ struct BuySellPortalView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                NavigationBar(leading: { NavigationBarElement.back.button { onBack() } })
+                DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack() } })
 
                 VStack(alignment: .leading, spacing: 20) {
                     topIntro

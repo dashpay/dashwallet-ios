@@ -124,11 +124,11 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         for (scope, fails, extra) in [(a, extraScopeFails, true), (b, !extraScopeFails, false)] {
             let delete = {
                 try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-                    walletId, networkScope: scope.networkScope,
+                    walletId,
                     deleteWallet: { _ in
                         if fails { throw DeletionFailure.unavailable }
                         remainingScopes.remove(scope.networkScope)
-                    }, keepsWalletOnAnotherScope: extra, drainStore: self.store)
+                    }, keepsWalletOnAnotherScope: extra, scope: scope.networkScope, drainStore: self.store)
             }
             if fails { XCTAssertThrowsError(try delete()) }
             else { XCTAssertNoThrow(try delete()) }
@@ -147,9 +147,10 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         // cleanup is harmless, and another wallet's marker remains intact.
         for _ in 0..<2 {
             try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-                walletId, networkScope: failed.context.networkScope,
+                walletId,
                 deleteWallet: { _ in remainingScopes.remove(failed.context.networkScope) },
-                keepsWalletOnAnotherScope: extraScopeFails, drainStore: reopened)
+                keepsWalletOnAnotherScope: extraScopeFails, scope: failed.context.networkScope,
+                drainStore: reopened)
         }
         XCTAssertTrue(remainingScopes.isEmpty)
         XCTAssertNil(try reopened.load(a))
