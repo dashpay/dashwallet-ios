@@ -392,7 +392,7 @@ struct CreateUsernameView: View {
             // DPNS verdict from an earlier visit was reused unchecked.
             // Invitation mode first: it decides which names are allowed, and
             // no draft from an earlier registration is restored into it.
-            if let invitationURI {
+            if let invitationURI, let invitationAmountDuffs {
                 viewModel.configureInvitationMode(uri: invitationURI, amountDuffs: invitationAmountDuffs, invitation: pendingInvitation)
             }
             viewModel.refreshRegistrationRecoveryState()
@@ -1322,13 +1322,12 @@ struct CreateUsernameView: View {
             return total > base ? total - base : 0
         }
         if isNamingInstantUsername { return 0 }
-        if DWCurrentUserIdentityInfo.shared.hasIdentity {
-            // An identity with no top-up route here (an invitation claim)
-            // registers on what it holds: only the contest fund is at stake.
+        if viewModel.isInvitationMode || DWCurrentUserIdentityInfo.shared.hasIdentity {
+            // The voucher funds the identity (an invitation claim), or an
+            // identity with no top-up route here registers on what it holds:
+            // only the contest fund is at stake.
             return viewModel.contestedFee.fundDuffs
         }
-        // An invitation funds the new identity with whatever its voucher holds.
-        if let voucher = viewModel.invitationAmountDuffs { return voucher }
         return viewModel.newIdentityFundingDuffs(isContested: true)
     }
 

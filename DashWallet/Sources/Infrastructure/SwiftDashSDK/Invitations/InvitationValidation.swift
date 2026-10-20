@@ -151,8 +151,10 @@ enum InvitationValidationPolicy {
     /// username), and a verdict from the state before would turn that
     /// claim into "already claimed". nil when the wallet cannot answer.
     ///
-    /// - Parameter contestedDuffs: the network's contested-name cost, read
-    ///   once the status is known (it follows the protocol version).
+    /// - Parameter contestedDuffs: the network's contested-name cost (it
+    ///   follows the protocol version), read once the status is known.
+    ///   Only the tier depends on it, and the form re-derives that from
+    ///   the voucher amount as the cost changes.
     @MainActor
     static func decide(
         uri: String?,
@@ -160,7 +162,7 @@ enum InvitationValidationPolicy {
         inviter: InvitationInviter,
         walletState: @MainActor () -> InvitationWalletState,
         queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus,
-        contestedDuffs: @MainActor () async -> UInt64
+        contestedDuffs: @MainActor () -> UInt64
     ) async -> InvitationValidation? {
         func local(_ state: InvitationWalletState) -> InvitationValidation? {
             localVerdict(
@@ -177,7 +179,7 @@ enum InvitationValidationPolicy {
         let result: Result<(status: ManagedPlatformWallet.InvitationClaimStatus, contestedDuffs: UInt64), Error>
         do {
             let status = try await queryStatus(uri)
-            result = .success((status, await contestedDuffs()))
+            result = .success((status, contestedDuffs()))
         } catch {
             result = .failure(error)
         }
@@ -396,12 +398,7 @@ enum InvitationValidator {
                     throw error
                 }
             },
-            contestedDuffs: {
-                // Read before judging: the figure follows the protocol
-                // version, which may not have been read yet this launch.
-                await ContestedUsernameFee.shared.refresh()
-                return ContestedUsernameFee.shared.amounts.fundingDuffs
-            })
+            contestedDuffs: { ContestedUsernameFee.shared.amounts.fundingDuffs })
     }
 
     private static func currentWalletState() -> InvitationWalletState {

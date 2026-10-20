@@ -590,13 +590,12 @@ class CreateUsernameViewModel: ObservableObject {
     var isInvitationMode: Bool { invitationURI != nil }
 
     /// What the invitation funds, read before the form opened. nil outside
-    /// invitation mode, or when the form was opened without a checked
-    /// invitation.
+    /// invitation mode.
     @Published private(set) var invitationAmountDuffs: UInt64? = nil
 
     /// Which usernames the invitation pays for: judged against the contested
     /// cost as it stands, so a protocol version read after the form opened
-    /// moves it too. nil when the amount is unknown.
+    /// moves it too. nil outside invitation mode.
     var invitationTier: InvitationTier? {
         invitationAmountDuffs.map {
             InvitationValidationPolicy.tier(amountDuffs: $0, contestedDuffs: contestedFee.fundingDuffs)
@@ -627,7 +626,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String, amountDuffs: UInt64? = nil, invitation: PendingInvitation? = nil) {
+    func configureInvitationMode(uri: String, amountDuffs: UInt64, invitation: PendingInvitation? = nil) {
         invitationURI = uri
         invitationAmountDuffs = amountDuffs
         pendingInvitation = invitation

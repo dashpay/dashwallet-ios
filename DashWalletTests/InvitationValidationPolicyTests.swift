@@ -62,6 +62,15 @@ final class InvitationValidationPolicyTests: XCTestCase {
             walletState: { self.state() },
             queryStatus: { _ in self.status(amount: 15_000_000) },
             contestedDuffs: { ContestedUsernameFee.Amounts.reduced.fundingDuffs })
+
+        // The form derives the tier from the voucher amount and the cost it
+        // follows, not from the verdict.
+        let form = CreateUsernameViewModel.makeForPreview(contestedFee: .legacy)
+        form.configureInvitationMode(uri: "dashpay://invite?x", amountDuffs: 15_000_000)
+        XCTAssertEqual(form.invitationTier, .nonContested)
+        let reducedForm = CreateUsernameViewModel.makeForPreview(contestedFee: .reduced)
+        reducedForm.configureInvitationMode(uri: "dashpay://invite?x", amountDuffs: 15_000_000)
+        XCTAssertEqual(reducedForm.invitationTier, .contested)
         XCTAssertEqual(verdict, .valid(tier: .contested, amountDuffs: 15_000_000, inviter: inviter))
     }
 
