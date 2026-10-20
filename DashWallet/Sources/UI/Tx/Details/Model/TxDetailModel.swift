@@ -848,20 +848,20 @@ extension TxDetailModel {
 
     /// The recovery actions for this transaction now: `stuckAssetLockRetry`
     /// and `offersUnconfirmedRemoval(retry:transferActive:isInMempool:)`,
-    /// both from one read of the retry, and neither while a removal reloads
-    /// the wallet.
+    /// both from one read of the retry and of the removal state, and neither
+    /// while a removal reloads the wallet.
     var recoveryActions: (retry: StuckAssetLockRetry?, offersRemoval: Bool) {
         // While a removal reloads the wallet a retry or a removal would only
         // be refused, so neither is offered; the registry publishes when the
         // reload ends.
-        let retry = currentRetry
-        let offersRemoval = !ShieldedAssetLocksInFlight.shared.isRemovalInProgress
-            && Self.offersUnconfirmedRemoval(
-                retry: retry,
-                transferActive: ShieldedAssetLocksInFlight.shared.hasActivity,
-                // A Buy swap placeholder's stand-in transaction reads as
-                // `.processing` but is no transaction to remove.
-                isInMempool: swapOrderPlaceholder == nil && transaction.state == .processing)
+        guard !ShieldedAssetLocksInFlight.shared.isRemovalInProgress else { return (nil, false) }
+        let retry = stuckAssetLockRetry
+        let offersRemoval = Self.offersUnconfirmedRemoval(
+            retry: retry,
+            transferActive: ShieldedAssetLocksInFlight.shared.hasActivity,
+            // A Buy swap placeholder's stand-in transaction reads as
+            // `.processing` but is no transaction to remove.
+            isInMempool: swapOrderPlaceholder == nil && transaction.state == .processing)
         return (retry, offersRemoval)
     }
 
@@ -924,7 +924,7 @@ extension TxDetailModel {
     /// before the app was reinstalled (ticket 32104).
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
-    var stuckAssetLockRetry: StuckAssetLockRetry? {
+    private var stuckAssetLockRetry: StuckAssetLockRetry? {
         // A transfer still consuming its lock (e.g. waiting for the
         // ChainLock) is not stuck, and a retry would only be refused.
         guard !isConsumedByRunningTransfer else { return nil }

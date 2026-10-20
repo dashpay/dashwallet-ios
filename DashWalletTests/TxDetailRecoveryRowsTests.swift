@@ -125,6 +125,7 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         while controller.rebuilds < count, Date() < deadline {
             RunLoop.main.run(until: Date().addingTimeInterval(0.01))
         }
+        XCTAssertGreaterThanOrEqual(controller.rebuilds, count, "rebuilds")
     }
 
     @MainActor

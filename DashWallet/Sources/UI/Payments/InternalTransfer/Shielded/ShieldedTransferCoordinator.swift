@@ -1395,6 +1395,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// consuming that lock.
     func reset() {
         guard !phase.isInFlight else {
+            assertionFailure("reset() while a transfer is in flight")
             Self.logger.warning("🛡️ SHIELD-TX :: reset() ignored while a transfer is in flight")
             return
         }

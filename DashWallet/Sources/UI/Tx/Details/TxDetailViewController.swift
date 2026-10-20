@@ -661,8 +661,9 @@ extension TXDetailViewController {
         // the removal action applies to some stuck transactions (see
         // `TxDetailModel.offersUnconfirmedRemoval`). The section is inserted
         // (not pre-appended) so the empty state adds no phantom section
-        // spacing.
-        let actions = model.recoveryActions
+        // spacing. A Buy swap placeholder has no tax category section to
+        // insert it after, and nothing to recover.
+        let actions = hasTransaction ? model.recoveryActions : (retry: nil, offersRemoval: false)
         var recovery: [Item] = actions.retry.map { [.rebroadcast($0.actionTitle)] } ?? []
         if actions.offersRemoval {
             recovery.append(.removeUnconfirmed)
