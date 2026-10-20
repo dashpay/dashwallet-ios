@@ -822,16 +822,99 @@ extension TxDetailModel {
         var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
-    /// True when the "Remove if Not on Network" action applies outside
-    /// the asset-lock retry route: the local store still has this
-    /// transaction in mempool context (`.processing` — never IS-locked,
-    /// never mined), which is exactly the state a network-dropped send
-    /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
-    /// `UnconfirmedTransactionRemover` re-verifies the local state and
-    /// checks a block explorer before touching anything.
-    var supportsUnconfirmedRemoval: Bool {
-        guard swapOrderPlaceholder == nil else { return false }
-        return transaction.state == .processing
+    /// True when the "Remove if Not on Network" action applies. A funding
+    /// asset lock parked mid-transfer qualifies while the network has shown
+    /// no acceptance (`StuckAssetLockRetry.supportsRemoval`). Any other
+    /// transaction qualifies while the local store still has it in mempool
+    /// context (`.processing` — never IS-locked, never mined), which is
+    /// exactly the state a network-dropped send (e.g. a stalled CoinJoin
+    /// sweep chunk) is stuck in: there is no retry route for it, but deleting
+    /// the local row frees its inputs. `UnconfirmedTransactionRemover`
+    /// re-verifies the local state and checks a block explorer before
+    /// touching anything. Not offered while any transfer builds or consumes
+    /// an asset lock, which the remover refuses: its runtime reload would
+    /// stop that transfer.
+    static func offersUnconfirmedRemoval(retry: StuckAssetLockRetry?,
+                                         transferActive: Bool,
+                                         isInMempool: Bool) -> Bool {
+        !transferActive && (retry.map(\.supportsRemoval) ?? isInMempool)
+    }
+
+    /// `stuckAssetLockRetry`, except while a removal reloads the wallet, when
+    /// a retry would only be refused.
+    var currentRetry: StuckAssetLockRetry? {
+        ShieldedAssetLocksInFlight.shared.isRemovalInProgress ? nil : stuckAssetLockRetry
+    }
+
+    /// The recovery actions for this transaction now: `stuckAssetLockRetry`
+    /// and `offersUnconfirmedRemoval(retry:transferActive:isInMempool:)`,
+    /// both from one read of the retry and of the removal state, and neither
+    /// while a removal reloads the wallet.
+    var recoveryActions: (retry: StuckAssetLockRetry?, offersRemoval: Bool) {
+        // While a removal reloads the wallet a retry or a removal would only
+        // be refused, so neither is offered; the registry publishes when the
+        // reload ends.
+        guard !ShieldedAssetLocksInFlight.shared.isRemovalInProgress else { return (nil, false) }
+        let retry = stuckAssetLockRetry
+        let offersRemoval = Self.offersUnconfirmedRemoval(
+            retry: retry,
+            transferActive: ShieldedAssetLocksInFlight.shared.hasActivity,
+            // A Buy swap placeholder's stand-in transaction reads as
+            // `.processing` but is no transaction to remove.
+            isInMempool: swapOrderPlaceholder == nil && transaction.state == .processing)
+        return (retry, offersRemoval)
+    }
+
+    /// Which input of the recovery rows changed.
+    enum RecoveryInput {
+        /// What the registry reports changed: an outpoint's first claim or
+        /// last release, the first funding call starting or the last one
+        /// ending, or a removal's reload starting or ending.
+        case inFlightLocks
+        /// The lock lookup published a changed snapshot or a new consumed
+        /// mark.
+        case lockLookup
+        /// The transaction projection changed (e.g. a shielded transfer
+        /// finished).
+        case projection
+        /// The probe store recorded or cleared an already-spent lock.
+        case probes
+    }
+
+    /// Emits whenever the recovery rows may need a rebuild. The retry and
+    /// removal rows depend on whether a running transfer is consuming this
+    /// transaction's asset lock or any transfer is active, and on the lock
+    /// status `lookup` reports and `probes` holds; every change `registry`,
+    /// `lookup` or `probes` publishes emits (see `RecoveryInput` for what
+    /// each publishes). The
+    /// registry publishes once the change has landed. The defaults are the
+    /// shared instances the rows read; tests pass their own. Each emission
+    /// names its source so a test can tell its own trigger from app-wide
+    /// projection changes.
+    static func recoveryInputChanges(lookup: ShieldedTxLookup = .shared,
+                                     registry: ShieldedAssetLocksInFlight = .shared,
+                                     probes: AssetLockProbeStore = .shared)
+        -> AnyPublisher<RecoveryInput, Never> {
+        let lookupChanged = NotificationCenter.default
+            .publisher(for: .shieldedTxLookupDidChange, object: lookup)
+            .map { _ in RecoveryInput.lockLookup }
+        let projectionChanged = NotificationCenter.default
+            .publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .map { _ in RecoveryInput.projection }
+        let probesChanged = NotificationCenter.default
+            .publisher(for: AssetLockProbeStore.didChangeNotification, object: probes)
+            .map { _ in RecoveryInput.probes }
+        return registry.objectWillChange
+            .map { _ in RecoveryInput.inFlightLocks }
+            .merge(with: lookupChanged, projectionChanged, probesChanged)
+            .eraseToAnyPublisher()
+    }
+
+    /// True while a running transfer has claimed an output of this
+    /// transaction — for a new lock from the moment the SDK builds it, before
+    /// the lock's row exists or appears in `ShieldedTxLookup`.
+    var isConsumedByRunningTransfer: Bool {
+        ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer
@@ -848,7 +931,22 @@ extension TxDetailModel {
     /// before the app was reinstalled (ticket 32104).
     ///
     /// Only 4 (consumed) never qualifies — that one is done.
-    var stuckAssetLockRetry: StuckAssetLockRetry? {
+    private var stuckAssetLockRetry: StuckAssetLockRetry? {
+        // A transfer still consuming its lock (e.g. waiting for the
+        // ChainLock) is not stuck, and a retry would only be refused.
+        guard !isConsumedByRunningTransfer else { return nil }
+        return assetLockRetryCandidate
+    }
+
+    /// True when this transaction's lock would be offered a retry but a
+    /// running transfer is still consuming it.
+    var isAssetLockRetryInFlight: Bool {
+        isConsumedByRunningTransfer && assetLockRetryCandidate != nil
+    }
+
+    private var assetLockRetryCandidate: StuckAssetLockRetry? {
+        // A Buy swap order shown before its Dash transaction exists has no
+        // asset lock to retry.
         guard swapOrderPlaceholder == nil else { return nil }
         let info = transaction.identityFundingLockInfo
             ?? transaction.platformFundingLockInfo

@@ -265,6 +265,10 @@ struct HomeViewContent<Content: View>: View {
     /// confirm sheet closes the moment it begins — so its outcome is
     /// announced here, where the user lands.
     @ObservedObject private var internalTransfers = InternalTransferRunner.shared
+    /// A pending "to Shielded" row whose lock is still being consumed is not
+    /// stuck: it must not offer "tap to finish", which would start a second
+    /// attempt on the same lock.
+    @ObservedObject private var shieldedLocksInFlight = ShieldedAssetLocksInFlight.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -882,6 +886,12 @@ struct HomeViewContent<Content: View>: View {
             // Same precedence for the amount treatment: only a metadata-less
             // internal move drops the +/- sign for the circulating-arrows glyph.
             let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
+            let isShieldingInFlight = txItem.shieldedOutPoint.map {
+                shieldedLocksInFlight.contains(.init(txidWire: $0.txidWire, vout: $0.vout))
+            } ?? false
+            // A transfer still running reads as an ordinary internal transfer
+            // (its route chip); only a stuck one offers "tap to finish".
+            let offersShieldedFinish = txItem.isPendingShieldedTransfer && !isShieldingInFlight
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -910,7 +920,7 @@ struct HomeViewContent<Content: View>: View {
                     ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
-                details: txItem.isPendingShieldedTransfer
+                details: offersShieldedFinish
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
                     : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
@@ -933,7 +943,7 @@ struct HomeViewContent<Content: View>: View {
             ) {
                 // A stuck "to Shielded" transfer opens the recovery sheet
                 // instead of the read-only detail/gift-card sheets.
-                if txItem.isPendingShieldedTransfer {
+                if offersShieldedFinish {
                     self.pendingShieldedRecovery = txItem
                 } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY

@@ -6272,6 +6272,7 @@
 "%d already spent" = "%d already spent";
 "%d change" = "%d change";
 "%d could not be reached" = "%d could not be reached";
+"%d still in progress" = "%d still in progress";
 "%d evonodes" = "%d evonodes";
 "%d finished" = "%d finished";
 "%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
@@ -6721,6 +6722,16 @@
 "Your username request did not go through. Try again." = "Your username request did not go through. Try again.";
 "Your wallet could not be opened. Do not delete this app. Try again or contact support for help." = "Your wallet could not be opened. Do not delete this app. Try again or contact support for help.";
 "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes." = "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.";
+
+/* A resume was refused because the same transfer is still running */
+"This transfer is still in progress. Check its status again in a few minutes." = "This transfer is still in progress. Check its status again in a few minutes.";
+
+/* Refused while the wallet reloads after a removed transaction */
+"The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes." = "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.";
+
+/* Remove never-accepted transaction: refused while a transfer is running */
+"A transfer is still in progress. Try again when it has finished, or restart the app if it never does." = "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.";
+
 "Your wallet isn’t ready yet. Please try again in a moment." = "Your wallet isn’t ready yet. Please try again in a moment.";
 "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result." = "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.";
 "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends." = "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.";

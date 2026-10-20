@@ -888,7 +888,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// is returned to a second own Platform address.
     public func fundFromCore(
         recipientAmountDuffs: UInt64,
-        lockValueDuffs: UInt64
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
     ) async throws {
         let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
         let signer = KeychainSigner(modelContainer: env.container, network: env.network)
@@ -901,7 +902,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             fundingAccountIndex: 0,
             platformAccountIndex: env.accountIndex,
             recipients: env.recipients,
-            signer: signer)
+            signer: signer,
+            onAssetLockBuilt: onAssetLockBuilt)
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
@@ -2068,7 +2070,7 @@ final class ShieldedTxLookup {
     /// reconstructed during restore or reconciled from an unauthenticated
     /// already-consumed report; neither pending nor done); `vout` + the txid
     /// form the outpoint a recovery resume needs.
-    struct ShieldedLockInfo: Sendable {
+    struct ShieldedLockInfo: Sendable, Equatable {
         let amountDuffs: UInt64
         let statusRaw: Int
         let vout: UInt32
@@ -2084,7 +2086,7 @@ final class ShieldedTxLookup {
     /// Value-only result crossing from the detached SwiftData reader back to
     /// the main actor. Persistent models and `ModelContext` never cross that
     /// boundary.
-    private struct SnapshotBuildResult: Sendable {
+    struct SnapshotBuildResult: Sendable {
         let map: [String: ShieldedLockInfo]?
         let assetLockCount: Int
         let typesSeen: [Int]
@@ -2096,12 +2098,38 @@ final class ShieldedTxLookup {
     private let lock = NSLock()
     /// txid (display-order hex, lowercased) → locked amount + status + vout.
     private var infoByTxid: [String: ShieldedLockInfo] = [:]
+    /// Locks a transfer reported consumed that the published snapshot does
+    /// not show as consumed (4) yet. Reads report them as consumed until a
+    /// snapshot does.
+    private var consumedOverlay: Set<String> = []
 
     /// Main-actor generation prevents a slow read from an old container (or
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
 
-    private init() {}
+    /// Where `refresh` reads from: the active model container, and the
+    /// snapshot built from it off the main actor.
+    struct RefreshSource: Sendable {
+        let activeContainer: @MainActor @Sendable () -> ModelContainer?
+        let buildSnapshot: @Sendable (ModelContainer) async -> SnapshotBuildResult
+
+        /// The running wallet's container, read through SwiftData in a
+        /// detached task.
+        static let live = RefreshSource(
+            activeContainer: { SwiftDashSDKHost.shared.modelContainer },
+            buildSnapshot: { container in
+                await Task.detached(priority: .utility) {
+                    ShieldedTxLookup.buildSnapshot(in: container)
+                }.value
+            })
+    }
+
+    private let source: RefreshSource
+
+    /// Production code uses `shared`; tests build their own lookups.
+    init(source: RefreshSource = .live) {
+        self.source = source
+    }
 
     /// Locked shielded amount (duffs) for an L1 funding txid, or `nil` if the
     /// txid is not a tracked shielded asset lock. `txidHex` must be
@@ -2136,7 +2164,7 @@ final class ShieldedTxLookup {
         defer { lock.unlock() }
         guard let entry = infoByTxid[key],
               Self.identityFundingTypes.contains(entry.fundingTypeRaw) else { return nil }
-        return entry
+        return overlaid(entry, key: key)
     }
 
     /// The whole snapshot as (display-order hex txid, info) pairs. The caller
@@ -2145,7 +2173,7 @@ final class ShieldedTxLookup {
     func allEntries() -> [(txidHex: String, info: ShieldedLockInfo)] {
         lock.lock()
         defer { lock.unlock() }
-        return infoByTxid.map { (txidHex: $0.key, info: $0.value) }
+        return infoByTxid.map { (txidHex: $0.key, info: overlaid($0.value, key: $0.key)) }
     }
 
     private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
@@ -2153,7 +2181,34 @@ final class ShieldedTxLookup {
         lock.lock()
         defer { lock.unlock() }
         guard let entry = infoByTxid[key], entry.fundingTypeRaw == fundingType else { return nil }
-        return entry
+        return overlaid(entry, key: key)
+    }
+
+    /// Caller holds `lock`.
+    private func overlaid(_ entry: ShieldedLockInfo, key: String) -> ShieldedLockInfo {
+        guard consumedOverlay.contains(key) else { return entry }
+        return ShieldedLockInfo(
+            amountDuffs: entry.amountDuffs,
+            statusRaw: AssetLockRecoveryService.consumedStatus,
+            vout: entry.vout,
+            fundingTypeRaw: entry.fundingTypeRaw,
+            walletId: entry.walletId)
+    }
+
+    /// Records that a transfer consumed the asset lock funded by `txidWire`,
+    /// before the store and the next snapshot show it: the SDK can flush the
+    /// lock's final status after its call returns, and a refresh can be
+    /// superseded or fail. Reads report the lock as consumed until a
+    /// published snapshot does.
+    @MainActor
+    func markConsumed(txidWire: Data) {
+        let key = Transaction.displayHex(txidWire).lowercased()
+        lock.lock()
+        let inserted = consumedOverlay.insert(key).inserted
+        lock.unlock()
+        if inserted {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
+        }
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
@@ -2167,7 +2222,7 @@ final class ShieldedTxLookup {
         let generation = refreshGeneration
         let refreshID = String(UUID().uuidString.prefix(8))
 
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+        guard let container = source.activeContainer() else {
             store([:])
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] skipped reason=\(reason) — no model container")
@@ -2178,13 +2233,11 @@ final class ShieldedTxLookup {
         DWLogger.log(
             "🛡️ SHIELD-TX-REFRESH [\(refreshID)] start reason=\(reason) generation=\(generation)")
 
-        let result = await Task.detached(priority: .utility) {
-            Self.buildSnapshot(in: container)
-        }.value
+        let result = await source.buildSnapshot(container)
         let elapsedMS = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
 
         guard generation == refreshGeneration,
-              SwiftDashSDKHost.shared.modelContainer === container else {
+              source.activeContainer() === container else {
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] stale after \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain)")
             return
@@ -2244,7 +2297,9 @@ final class ShieldedTxLookup {
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId)
-                func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
+                func rank(_ statusRaw: Int) -> Int {
+                    statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
+                }
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
             }
@@ -2278,11 +2333,32 @@ final class ShieldedTxLookup {
         }
     }
 
-    private func store(_ map: [String: ShieldedLockInfo]) {
+    /// Publishes `map` as the snapshot. `refresh` is its only production
+    /// caller; tests publish snapshots through it directly.
+    @MainActor
+    func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
+        let changed = infoByTxid != map
         infoByTxid = map
+        // A snapshot that shows a lock consumed speaks for it itself. A lock
+        // missing from the snapshot keeps its mark: an empty snapshot is also
+        // what a refresh without a model container stores.
+        consumedOverlay = consumedOverlay.filter {
+            map[$0]?.statusRaw != AssetLockRecoveryService.consumedStatus
+        }
         lock.unlock()
+        if changed {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
+        }
     }
+}
+
+extension Notification.Name {
+    /// Posted on the main actor when what `ShieldedTxLookup` reports changes:
+    /// a published snapshot that differs from the previous one, or a lock a
+    /// transfer marked consumed. A superseded refresh posts nothing. The
+    /// notification's object is the posting lookup.
+    static let shieldedTxLookupDidChange = Notification.Name("ShieldedTxLookupDidChange")
 }
 
 // MARK: - DerivedPlatformAddress selection

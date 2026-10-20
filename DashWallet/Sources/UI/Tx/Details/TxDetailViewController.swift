@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 import SwiftUI
 import DashUIKit
@@ -111,6 +112,10 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    private var inFlightLocksObservation: AnyCancellable?
+    /// What `viewDidLoad` subscribes to for rebuilding the recovery rows;
+    /// tests replace it before the view loads.
+    var recoveryInputs: AnyPublisher<TxDetailModel.RecoveryInput, Never> = TxDetailModel.recoveryInputChanges()
 
     enum Section: CaseIterable {
         case header
@@ -220,6 +225,14 @@ class TXDetailViewController: BaseTxDetailsViewController {
             self?.reloadDataSource()
         }
 
+        // The rows are rebuilt on the next main-queue turn after a recovery
+        // input changes.
+        inFlightLocksObservation = recoveryInputs
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reloadDataSource()
+            }
+
         // A swap order shown before its Dash transaction exists changes status while the
         // screen is up.
         model.observeSwapOrderPlaceholder { [weak self] in
@@ -282,7 +295,23 @@ extension TXDetailViewController {
     /// spans the whole recovery, so the HUD honestly covers a
     /// several-minute worst case rather than claiming early success.
     private func retryStuckAssetLock() {
-        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        guard !isRetryingAssetLock else { return }
+        // `currentRetry`, not `stuckAssetLockRetry`: a tap on a row built
+        // just before a removal began must not retry during its reload.
+        guard let retry = model.currentRetry else {
+            // The row was built before a transfer started consuming this
+            // lock: say so and drop the row rather than ignore the tap.
+            if model.isAssetLockRetryInFlight {
+                presentDashUIKitToast(
+                    style: .info,
+                    message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+                reloadDataSource()
+            } else if ShieldedAssetLocksInFlight.shared.isRemovalInProgress {
+                presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
+                reloadDataSource()
+            }
+            return
+        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
@@ -316,6 +345,10 @@ extension TXDetailViewController {
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
+            } catch AssetLockRecoveryService.RecoveryError.inProgress(let message) {
+                // Refused because another attempt is consuming the lock or a
+                // removal is reloading the wallet: nothing failed.
+                toast = (message, .info)
             } catch {
                 failure = error
             }
@@ -395,6 +428,10 @@ extension TXDetailViewController {
                 }
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
                 self?.presentRemovalRefused()
+            } catch UnconfirmedTransactionRemover.RemovalError.removalInProgress {
+                // Another removal is reloading the wallet: nothing failed.
+                self?.presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
+                self?.reloadDataSource()
             } catch {
                 let alert = UIAlertController(
                     title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
@@ -620,22 +657,20 @@ extension TXDetailViewController {
         if hasTransaction {
             currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         }
-        // A funding asset lock parked mid-transfer gets a retry action.
-        // The section is inserted (not pre-appended) so the empty state
-        // adds no phantom section spacing.
-        if let retry = model.stuckAssetLockRetry {
+        // A funding asset lock parked mid-transfer gets a retry action, and
+        // the removal action applies to some stuck transactions (see
+        // `TxDetailModel.offersUnconfirmedRemoval`). The section is inserted
+        // (not pre-appended) so the empty state adds no phantom section
+        // spacing. A Buy swap placeholder has no tax category section to
+        // insert it after, and nothing to recover.
+        let actions = hasTransaction ? model.recoveryActions : (retry: nil, offersRemoval: false)
+        var recovery: [Item] = actions.retry.map { [.rebroadcast($0.actionTitle)] } ?? []
+        if actions.offersRemoval {
+            recovery.append(.removeUnconfirmed)
+        }
+        if !recovery.isEmpty {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
-            if retry.supportsRemoval {
-                currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
-            }
-        } else if model.supportsUnconfirmedRemoval {
-            // Any other transaction stuck in mempool context (a
-            // network-dropped classic send — e.g. a stalled CoinJoin sweep
-            // chunk) gets the removal action alone: there is no retry
-            // route for it, but deleting the local row frees its inputs.
-            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+            currentSnapshot.appendItems(recovery, toSection: .recovery)
         }
         if hasTransaction {
             currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
