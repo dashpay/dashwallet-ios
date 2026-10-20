@@ -1484,7 +1484,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                             newController: newController)
                     }
                     _ = try await wallet.registerDpnsName(
-                        identityId: identityId, name: username, signer: signer)
+                        identityId: identityId, name: username, signer: signer,
+                        maxContestFund: ContestedUsernameFee.shared.amounts.contestFundCeilingCredits)
                 })
             Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username)")
             // A request for another name is now on Platform: an earlier one's

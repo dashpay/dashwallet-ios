@@ -76,6 +76,17 @@ final class ContestedUsernameFeeTests: XCTestCase {
         XCTAssertEqual(Amounts.reduced.fundingDuffs, 15_000_000)
     }
 
+    /// On protocol 14 a contested registration states the reduced fund as
+    /// the most it pays, so a contest whose fund to join has doubled is
+    /// refused rather than charged. The legacy pair, which is also that of a
+    /// version not read yet, states none: the SDK states the fund to join.
+    func testContestFundCeilingOnlyForTheReducedFund() {
+        XCTAssertEqual(Amounts.forProtocolVersion(14).contestFundCeilingCredits, 10_000_000_000)
+        XCTAssertEqual(Amounts.forProtocolVersion(15).contestFundCeilingCredits, 10_000_000_000)
+        XCTAssertNil(Amounts.forProtocolVersion(13).contestFundCeilingCredits)
+        XCTAssertNil(Amounts.forProtocolVersion(nil).contestFundCeilingCredits)
+    }
+
     /// An existing identity needs the fund plus the per-name fee headroom,
     /// and what a new identity is funded with covers that for two names.
     func testRegistrationCreditsFollowTheFund() {

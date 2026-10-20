@@ -421,7 +421,8 @@ struct UsernameMarketplaceService {
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
-            signer: KeychainSigner(modelContainer: container))
+            signer: KeychainSigner(modelContainer: container),
+            maxContestFund: ContestedUsernameFee.shared.amounts.contestFundCeilingCredits)
         Self.logger.info("🏷️ MARKET :: contested request submitted for \(label, privacy: .public)")
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative

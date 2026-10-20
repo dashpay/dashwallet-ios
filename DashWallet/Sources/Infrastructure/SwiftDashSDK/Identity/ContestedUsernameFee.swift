@@ -69,6 +69,21 @@ final class ContestedUsernameFee: ObservableObject {
         /// identity-create and document fees.
         var fundingDuffs: UInt64 { fundDuffs + 5_000_000 }
 
+        /// The most a contested name registration states it pays into its
+        /// contest. Left to the SDK (nil), it states the fund to join read
+        /// just before signing, which from protocol 14 doubles once a contest
+        /// holds 250 contenders, and pays that. With the reduced fund stated,
+        /// Platform refuses such a contest instead: it charges the
+        /// transition's fees but puts nothing into the contest.
+        ///
+        /// Nil for the legacy pair: below protocol 14 the fund never doubles
+        /// and must be paid exactly, which the SDK states; and legacy is also
+        /// the pair of a version not read yet, whose 0.2 DASH stated on a
+        /// protocol 14 network would require the identity to hold it.
+        var contestFundCeilingCredits: UInt64? {
+            self == .reduced ? fundCredits : nil
+        }
+
         /// Protocol versions 1–13: 0.2 DASH fund, 0.25 DASH to fund.
         static let legacy = Amounts(fundCredits: 20_000_000_000)
         /// Protocol version 14 and later: 0.1 DASH fund, 0.15 DASH to fund.
