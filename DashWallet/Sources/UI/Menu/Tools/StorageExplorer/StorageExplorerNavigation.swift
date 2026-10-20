@@ -118,23 +118,18 @@ extension View {
     }
 }
 
-/// The bar's refresh circle: a spinner while `isRefreshing`, disabled until
-/// the refresh finishes.
+/// The bar's refresh circle, disabled (and dimmed by DashUIKit) while
+/// `isRefreshing`.
 struct StorageExplorerRefreshButton: View {
     let accessibilityLabel: String
     let isRefreshing: Bool
     let action: () -> Void
 
     var body: some View {
-        DashUIKit.NavigationBarCircleButton(accessibilityLabel: accessibilityLabel, action: action) {
-            if isRefreshing {
-                SwiftUI.ProgressView()
-                    .controlSize(.small)
-            } else {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14, weight: .semibold))
-            }
-        }
-        .disabled(isRefreshing)
+        DashUIKit.NavigationBarCircleButton(
+            .system("arrow.clockwise"),
+            accessibilityLabel: Text(accessibilityLabel),
+            action: action)
+            .disabled(isRefreshing)
     }
 }

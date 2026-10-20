@@ -119,7 +119,10 @@ struct UsernameVotingScreen: View {
                     viewModel.endSelecting()
                 }
         } else {
-            Menu {
+            DashUIKit.NavigationBarCircleMenu(
+                .system("ellipsis"),
+                accessibilityLabel: Text(NSLocalizedString("More", comment: "Voting"))
+            ) {
                 Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
                     ForEach(ContestSort.allCases) { option in
                         Text(option.title).tag(option)
@@ -137,14 +140,7 @@ struct UsernameVotingScreen: View {
                               systemImage: "checklist")
                     }
                 }
-            } label: {
-                DashUIKit.NavigationBarCircleIcon {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 14, weight: .semibold))
-                }
-                .frame(height: 44)
             }
-            .accessibilityLabel(NSLocalizedString("More", comment: "Voting"))
         }
     }
 

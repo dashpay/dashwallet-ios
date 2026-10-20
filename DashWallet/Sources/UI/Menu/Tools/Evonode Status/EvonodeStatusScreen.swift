@@ -54,13 +54,10 @@ struct EvonodeStatusScreen: View {
                 },
                 trailing: {
                     DashUIKit.NavigationBarCircleButton(
-                        accessibilityLabel: NSLocalizedString("Refresh", comment: ""),
-                        action: { Task { await viewModel.request() } }
-                    ) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 14, weight: .semibold))
-                    }
-                    .disabled(viewModel.isLoading)
+                        .system("arrow.clockwise"),
+                        accessibilityLabel: Text(NSLocalizedString("Refresh", comment: "")),
+                        action: { Task { await viewModel.request() } })
+                        .disabled(viewModel.isLoading)
                 })
 
             content
