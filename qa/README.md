@@ -3,17 +3,20 @@
 Run this scenario on demand to check that the iOS wallet restores known Core and
 shielded funds, recovers the supported history, and retains them after relaunch.
 This is a text playbook for a human-assisted agent, not an installed agent,
-executable test runner, or CI job. Scenario ID: `wallet-restore-sync`; version: `1`.
+executable test runner, or CI job. Scenario ID: `wallet-restore-sync`; version: `2`.
 
-The [reference wallet](reference-wallet.md) is **partially prepared and blocked**:
-the tested SDK's shielding transition was rejected by testnet protocol 14.
-Its preparation
-and first successful restore must happen before this scenario can produce a
-passing result. Do not invent addresses, transaction IDs, balances, or a baseline.
+The [reference wallet](reference-wallet.md) is **READY**. Its first restore and
+relaunch passed the v2 checks: completed Core and shielded sync, exact balances,
+and recovery of known transaction/note facts. Keep this wallet unchanged between
+runs. Block hashes and historical chain-anchor verification are not required;
+heights and scan indexes establish sync coverage, not chain continuity.
+Version 2 removes the v1 block-hash/anchor requirement without changing expected
+balances, known operations, or sync/relaunch checks. Source commit SHAs and
+framework checksums remain required for build provenance.
 
 ## Starting a run
 
-Ask your agent: “Read qa/README.md and run wallet-restore-sync v1 against the
+Ask your agent: “Read qa/README.md and run wallet-restore-sync v2 against the
 selected app and platform revisions. Follow the reference wallet and report
 template. Pause for me to enter the recovery phrase. Save results locally.”
 
@@ -90,19 +93,20 @@ authenticating with the already configured test PIN.
 5. For Core, observe `SyncingActivityMonitor.syncDone`, the scanned height and
    wallet's durable persisted watermark. The transient SPV `synced` state or a
    100% label is insufficient. Require persisted coverage through the fixture's
-   Core anchor, and record the current network/scanned tip and any persistence
-   lag. `syncDone` itself does not guarantee persister catch-up.
+   last known Core transaction height. Record the current network/scanned tip
+   and any persistence lag. `syncDone` itself does not guarantee persister catch-up.
 6. For shielded funds, require a successful pass for the active wallet that was
    neither skipped nor a cooldown no-op,
    a bound shielded wallet, and persisted scan coverage of the fixture's
    note commitment boundary. Record the current pass result and watermark;
    `isSyncing == false`, a cached timestamp, or Core sync completion is insufficient.
-7. Verify the fixture anchors still belong to the relevant chains and inspect
-   whether the fixture has gained activity. Compare exact Core and shielded
-   balances using their declared integer units and balance categories. Compare
-   each required historical operation using the fixture's restore assertions.
-   Unexpected activity or a replaced anchor makes the fixture comparison
-   `inconclusive`; do not rewrite its expected values during the test.
+7. Compare exact Core and shielded balances using their declared integer units
+   and categories, and verify the known operations using the fixture's restore
+   assertions. Assume the dedicated wallet has no new activity; do not query
+   historical blocks or compare block hashes as a prerequisite. If additional
+   activity or a testnet reset is actually observed, report `inconclusive` and
+   re-prepare the fixture separately. An unexplained mismatch after verified sync
+   is `failed`; do not assume a network reset or rewrite expectations to make it pass.
 8. Terminate and relaunch the same installed app without clearing any state.
    Recheck both sync domains, balances, required history, and persisted coverage.
    Do not require a transient UI state to remain visible continuously.

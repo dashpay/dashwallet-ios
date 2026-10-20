@@ -1,6 +1,6 @@
 # Wallet restore and sync report
 
-Template version: `1`. Copy into the run's ignored output directory.
+Template version: `2`. Copy into the run's ignored output directory.
 Replace `NOT RECORDED`; use `unavailable` with a reason when needed. Unfilled rows
 never mean success. Evidence links must resolve inside this run directory.
 
@@ -46,8 +46,8 @@ assertions. Repeat relevant values after relaunch; do not just write “same”.
 
 | Check | Expected | Observed before relaunch | Observed after relaunch | Status and evidence |
 | --- | --- | --- | --- | --- |
-| Core/Platform anchors remain valid; no fixture drift | Fixture anchors/activity | NOT RECORDED | NOT RECORDED | NOT RECORDED |
-| Core completion and persisted coverage | syncDone; coverage through fixture anchor | NOT RECORDED | NOT RECORDED | NOT RECORDED |
+| Fixed fixture facts | Known operations; no observed additional activity or testnet reset | NOT RECORDED | NOT RECORDED | NOT RECORDED |
+| Core completion and persisted coverage | syncDone; coverage through last known Core transaction | NOT RECORDED | NOT RECORDED | NOT RECORDED |
 | Shielded completion and persisted coverage | Bound wallet; successful pass excluding skips/cooldown no-ops; fixture boundary covered | NOT RECORDED | NOT RECORDED | NOT RECORDED |
 | Core balance categories, integer duffs | NOT RECORDED | NOT RECORDED | NOT RECORDED | NOT RECORDED |
 | Shielded balance categories, integer credits | NOT RECORDED | NOT RECORDED | NOT RECORDED | NOT RECORDED |
@@ -59,9 +59,10 @@ assertions. Repeat relevant values after relaunch; do not just write “same”.
 
 ## Observations and evidence
 
-Record Core network/scanned/persisted heights, Platform anchor, shielded scan
+Record Core network/scanned/persisted heights and shielded scan
 watermarks and pass result, last errors, and timestamped progress samples. Include
-the source of each measurement. Record sync durations with start/end definitions;
+the source of each measurement. Block hashes and historical chain-anchor checks
+are not required. Record sync durations with start/end definitions;
 build and operator-entry time are separate. Memory and history counts are optional
 observations with measurement method and scope, never invented or pass criteria.
 

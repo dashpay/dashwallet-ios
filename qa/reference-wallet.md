@@ -1,180 +1,134 @@
-# Reference wallet preparation
+# Reference wallet
 
-Fixture ID: `testnet-restore-mixed`. Fixture format version: `1`.
-Preparation status: **PARTIAL — BLOCKED** (2026-10-20).
-First successful restore: **NOT RUN**.
-The wallet exists, but successful shielding and withdrawal are missing.
-Observed preparation balances below are not a ready restore fixture or baseline.
+Fixture ID: `testnet-restore-mixed`. Fixture data version: `1`.
+Status: **READY** for `wallet-restore-sync v2` (2026-10-20).
+First restore and relaunch: **PASSED** under v2 criteria.
 
-This dedicated testnet wallet will contain ordinary and shielded funds. Prepare
-it once, then reserve it for restore tests. Preparation is a separate operator
-session; asking an agent to run the restore scenario does not authorize funding
-or transactions. Use testnet funds only, never an existing personal wallet.
+This dedicated testnet wallet contains ordinary and shielded funds. Keep it
+unchanged between restore runs. Running the test does not authorize funding or
+new transactions. If additional activity or a testnet reset is observed, prepare
+a new fixture data version separately; do not silently change expected values.
 
-## Secret handling
+## Secret and simulator setup
 
-Reserve the macOS Keychain service `org.dash.wallet.qa` and account
-`testnet-restore-mixed-v1` for its recovery phrase. These are identifiers, not
-credentials. The item was created locally on 2026-10-20. The operator stores and retrieves
-the phrase through a trusted local interface and enters it manually during
-restore. Do not pass it through chat, agent tool output, command arguments,
-environment variables, files, screenshots, or reports. Other operators provision
-their own Keychain item through an agreed secure handoff outside this repository.
+The recovery phrase is stored locally in macOS Keychain, service
+`org.dash.wallet.qa`, account `testnet-restore-mixed-v1`. These are public lookup
+identifiers, not credentials. Other operators need this test wallet's phrase
+provisioned securely outside Git before running the scenario.
 
-## Current preparation checkpoint
+Use operator-assisted import by default. The first restore used explicitly
+authorized native Keychain copy/paste without emitting the phrase in tool output,
+files, logs or screenshots, then replaced the clipboard with the public service
+identifier. Never put the phrase in chat, command arguments, environment
+variables, reports or this repository.
 
-The app created a new wallet on a dedicated simulator and its phrase was saved
-in the Keychain item above. The one-time preparation used an in-memory transfer
-through the native UI; the phrase was not emitted in tool output or saved in
-files, logs, screenshots, or this repository. Routine restores still use the
-operator-assisted procedure.
+Use the fixed simulator PIN `1111` per [README.md](README.md). Enter it automatically
+for existing-PIN authentication; new-PIN setup follows the tool's handoff policy.
+Explicitly select testnet before import and on relaunch. The first run used
+`-CURRENT_CHAIN_TYPE_KEY 1` and verified the `TESTNET` UI label.
 
-The in-app faucet provided 1 tDash. A normal Core self-transfer of 0.1 tDash
-succeeded. This covers a transparent spend and change, not payment to a separate
-wallet. Shielding 0.4 tDash then created a Core asset lock, but Platform rejected
-the next step: `ShieldFromAssetLock` is no longer accepted at protocol version 14;
-the response says version 13 was the last to accept this transition type.
-The app shows **Pending — tap to finish**. No shielded funds were credited and
-no withdrawal was attempted. The restore scenario is blocked at fixture preflight.
+## Expected balances and recoverable facts
 
-Confirmed Core operations observed in the preparation wallet:
+Values are exact integers: 1 tDash = 100,000,000 duffs; 1 duff = 1,000 credits.
+Rounded UI values alone do not establish equality.
 
-| Operation | Transaction ID | Amount and actual Core fee |
-| --- | --- | --- |
-| Faucet receive, height 1575931 | `b49ef78b6f378816d1f20eccce0c38bfff367ac012fe2e53a6507bf6ac934740` | Received 100,000,000 duffs; faucet-paid fee not established |
-| Self-transfer, height 1575932 | `759428909557fafd3ee8d8996885639222ce4cd6c2904ac45e2f936a2eb6b4c4` | Principal 10,000,000 duffs stays in this wallet; fee 226 duffs |
-| Pending shielding asset lock, height 1575932 | `9e873498aeb189d63942322fb69710a9aa14f288cc54d26547663567314b2d41` | Locked 40,212,852 duffs; Core fee 263 duffs; Platform fee not finalized |
-
-At 2026-10-20 07:52 UTC, the preparation store contained two confirmed, unspent,
-unlocked Core outputs totaling **59,786,659 duffs**, a pending asset lock of
-**40,212,852 duffs**, and **zero shielded notes / zero credits**. These reconcile
-as 100,000,000 − 226 − 263 − 40,212,852 = 59,786,659 duffs.
-The attempted shield principal was 40,000,000 duffs; do not treat the larger
-asset-lock amount or its estimated Platform overhead as a successful shield.
-The receive/self-transfer address is `yebQWeLYDnjhjBwQfRe6FFE22GGpAR1aRH`.
-The preparation store records block 1575932 as
-`000000e8c9dbbf8ded9313361fac389f5c4d4b7b96fec65f23db904748da72ca`;
-this is local confirmation evidence, not an independently verified fixture anchor.
-
-Retain the preparation simulator and its app storage to finish the pending
-asset lock after selecting an SDK compatible with the live testnet protocol.
-Do not repeat funding or shielding blindly, erase that simulator, or mark the
-fixture ready. Record any dependency update and continuation as a new preparation
-attempt, then complete withdrawal and a fresh restore before establishing a baseline.
-
-Build used for this unsuccessful preparation (not a successful restore reference):
-
-- App: [dashpay/dashwallet-ios](https://github.com/dashpay/dashwallet-ios/commit/67664632ac60374be9b5e928a2610961e4c8357a),
-  `67664632ac60374be9b5e928a2610961e4c8357a`; no application source changes.
-- Platform and app `.platform-ref`:
-  [dashpay/platform](https://github.com/dashpay/platform/commit/2f4d161c89bd1750a5cc2ceef391e1cee192a9a7),
-  `2f4d161c89bd1750a5cc2ceef391e1cee192a9a7`; clean checkout.
-- rust-dashcore resolved in `Cargo.lock`:
-  [7302d0a6eb8770f5b1cb000363afdf8b86c67ce7](https://github.com/dashpay/rust-dashcore/commit/7302d0a6eb8770f5b1cb000363afdf8b86c67ce7).
-  Crates: `dash-network`, `dash-network-seeds`, `dash-spv`, `dashcore`,
-  `dashcore-private`, `dashcore-rpc`, `dashcore-rpc-json`, `dashcore_hashes`,
-  `git-state`, `key-wallet`, `key-wallet-ffi`, `key-wallet-manager`.
-  No local rust-dashcore override was used.
-- `Cargo.lock` SHA-256:
-  `0613167bb16894d0e564831a692b768716dbfb987cd0a88cd134189904556074`.
-- Framework built from that Platform checkout using
-  `SKIP_EXAMPLE_APP_BUILD=1 CARGO_BUILD_JOBS=6 bash build_ios.sh --target sim --profile release`.
-  `DashSDKFFI.xcframework/ios-arm64-simulator/librs_unified_sdk_ffi.a` SHA-256:
-  `8199c5bdcb1200f6816cd515a2788cd8edeb11ba412ec7448d8826e19a127605`.
-- App build: `dashpay`, Debug, arm64 simulator; bundle `org.dashfoundation.dash`.
-  Both framework and app builds succeeded. Environment: arm64 macOS 26.6.2,
-  Xcode 26.6 (17F113), iPhone 17 / iOS 26.5 (23F77).
-- Testnet was explicitly selected before wallet creation with launch arguments
-  `-CURRENT_CHAIN_TYPE_KEY 1`, and the UI showed `TESTNET`. Repeat those
-  arguments on relaunch; this does not establish a persisted network preference.
-
-Full provenance, selected database evidence, and the blocked report stay under
-ignored `qa-results/`. They are local evidence, not committed baseline results.
-
-## One-time preparation
-
-1. Select clean app/platform revisions and record build provenance as described
-   in [README.md](README.md). Explicitly select testnet, create the new wallet in
-   a dedicated simulator, and store the phrase in Keychain without capture.
-   Set and confirm app PIN `1111` using the fixed simulator PIN policy in that
-   playbook; do not ask the operator to choose a PIN. The existing preparation
-   wallet already uses this PIN.
-2. Record account/derivation scope and scan start. Receive testnet funds from an
-   operator-selected faucet or test wallet. Size funding and subsequent transfers
-   from actual fee estimates so ordinary and shielded balances remain positive;
-   do not hardcode guessed fees or spend a maximum amount.
-3. Send part of the ordinary funds to an operator-controlled testnet recipient,
-   shield part of the remaining funds, then withdraw part of the shielded funds
-   back to this wallet's Core address. Use the app's supported flows. Record each
-   actual amount, fee (or explicitly unavailable fee), transaction/transition ID,
-   confirmation evidence, and resulting balance. Preserve preparation evidence
-   under its own ignored `qa-results/` directory.
-4. Wait for operations to settle. Record Core height/hash, Platform height/hash,
-   and the relevant shielded commitment boundary, including the source and
-   meaning of each watermark. Capture exact final balances and their categories.
-5. Establish expected facts from confirmed preparation receipts, network evidence
-   where observable, and the preparation wallet's state. Shielded values require
-   wallet-side evidence; do not pretend a public explorer reveals them. Reconcile
-   transfers and fees, with explicit unit conversions. An unexplained discrepancy
-   means preparation is incomplete.
-6. Perform a fresh restore using the scenario. Require exact known balances and
-   recoverable history, then verify relaunch. Document which shielded details are
-   recoverable without assuming original labels, dates, fees, or row grouping.
-   Do not redefine correctness simply to match what the restored app displays.
-7. After operator review, fill the records below and set status to `READY` with a
-   fixture version. Record the first successful build metadata. Full reports stay
-   ignored; only reviewed non-secret fixture facts and the compact build record
-   belong in Git. Committing still requires explicit permission.
-
-## Fixture facts to complete
-
-Every `NOT RECORDED` entry below is a missing prerequisite, not an example value.
-
-| Field | Value |
+| Field | Expected |
 | --- | --- |
-| Fixture data version and preparation UTC date | NOT RECORDED |
-| Account indexes, derivation scope, scan start | NOT RECORDED |
-| Public testnet addresses needed for checks | NOT RECORDED |
-| Core anchor height and block hash, evidence source | NOT RECORDED |
-| Platform anchor height and block hash, evidence source | NOT RECORDED |
-| Shielded commitment boundary and index semantics | NOT RECORDED |
-| Expected Core total/spendable/unconfirmed balances in duffs | NOT RECORDED |
-| Expected shielded balance categories in native integer credits | NOT RECORDED |
-| Other nonzero balance categories and their units | NOT RECORDED |
-| Last fixture activity and confirmation evidence | NOT RECORDED |
+| Core total / confirmed unlocked | 69,786,469 duffs (0.69786469 tDash) |
+| Core unconfirmed | 0 duffs |
+| Shielded unspent notes | 29,822,232,000 credits (0.29822232 tDash) |
+| Historical spent shielded note | 40,048,712,000 credits, excluded from balance |
+| Account scope | Core BIP44 account 0; shielded account 0 |
+| Scan start | Before first fixture activity; first fresh restore used birth height 0 |
+| Last known Core transaction height | 1576055; persisted sync must cover it |
+| Shielded scan coverage | Exclusive index at least 4983; SDK persists aligned_start + total_notes_scanned |
+| Other balances | No additional nonzero category observed; no identity or username created |
 
-| Required operation | ID and confirmed anchor | Actual principal and fee with units | Facts required after restore and evidence source |
-| --- | --- | --- | --- |
-| Ordinary receive | NOT RECORDED | NOT RECORDED | NOT RECORDED |
-| Ordinary send | NOT RECORDED | NOT RECORDED | NOT RECORDED |
-| Shielding | NOT RECORDED | NOT RECORDED | NOT RECORDED |
-| Partial withdrawal to Core | NOT RECORDED | NOT RECORDED | NOT RECORDED |
+Core receive/self-transfer address: `yebQWeLYDnjhjBwQfRe6FFE22GGpAR1aRH`.
+Core withdrawal destination, selected by the app in the same wallet:
+`yaahottcPc9Bs7P53o6CpZRWkgwsaRBiey`.
 
-Require exact balances and the operation facts established above; a total UI row
-count is only an observation unless its grouping and scope are explicitly defined.
-Record amounts in their native integer units. The current UI converts 1,000 credits
-to 1 duff; rounded display amounts cannot establish exact shielded equality.
+| Operation | Core transaction ID | Required restored facts |
+| --- | --- | --- |
+| Faucet receive | `b49ef78b6f378816d1f20eccce0c38bfff367ac012fe2e53a6507bf6ac934740` | +100,000,000 duffs, confirmed; observed height 1575931 |
+| Core self-transfer | `759428909557fafd3ee8d8996885639222ce4cd6c2904ac45e2f936a2eb6b4c4` | 10,000,000-duff principal stays in wallet; net -226 duffs, confirmed; observed height 1575932 |
+| Shielding asset lock | `9e873498aeb189d63942322fb69710a9aa14f288cc54d26547663567314b2d41` | Lock 40,212,852 duffs; wallet net -40,213,115 duffs; confirmed; note position 4980 with 40,048,712,000 credits, now spent |
+| Partial withdrawal | `ca576477f4fb58c19fa565cbdee8a7be6b233c8e4e108b1c880ff96b5bb856ad` | +9,999,810 Core duffs, confirmed; observed height 1576055; unspent change note position 4982 with 29,822,232,000 credits |
+
+Heights and commitment indexes support sync coverage. Block hashes, historical
+chain continuity proofs, and independent explorer/RPC queries are not pass criteria.
+
+Shielded restoration need not retain original dates, fee labels, row grouping
+or operation classification. The first restore showed a residual “Shielded Spend”
+of 0.69870944 tDash with unknown date: a sum of recovered notes, not a net
+withdrawal amount. Restored note height fields reflected scan response height
+636598 instead of creation heights 636563/636564. Check the known Core operations
+and note positions, values and spent flags above; do not require those UI labels
+or original Platform dates. Immediate spendability/cooldown is outside this test.
+
+## Preparation and reconciliation
+
+The wallet received 1 tDash and made a 0.1 tDash Core self-transfer (fee 226 duffs).
+The initial shielding attempt created the asset lock (Core fee 263 duffs) but
+used an SDK transition rejected by protocol 14. Updating to the build below and
+resuming that existing lock succeeded; no duplicate funding or asset lock was made.
+
+At 12:17:17 UTC on 2026-10-20, the SDK reported:
+40,212,852,000 locked credits − 164,140,000 pool-fee credits =
+40,048,712,000 shielded credits. At 12:19:09 UTC, a withdrawal of
+10,000,000,000 credits with a 226,480,000-credit Platform fee left
+29,822,232,000 shielded credits.
+
+The Core withdrawal delivered 9,999,810 duffs. Its 190-duff difference from the
+requested 10,000,000 duffs is recorded separately; independent attribution of that
+difference is unavailable. Faucet-paid fee is also unavailable. Neither is
+substituted with a guessed fee. The confirmed final Core balance reconciles as:
+100,000,000 − 226 − 263 − 40,212,852 + 9,999,810 = 69,786,469 duffs.
+Evidence comes from preparation SDK receipts/logs and selected persisted records.
+
+To prepare a replacement fixture, create a dedicated testnet wallet, store its
+phrase securely, fund it, perform the ordinary send, shield part, and withdraw
+part to the same wallet. Wait for confirmations and record actual amounts,
+fees, transaction IDs, final balances and sync coverage. Perform a fresh restore
+and relaunch, then review and version the fixture. Preserve positive Core and
+shielded balances. Do not repeat these preparation operations in routine tests.
 
 ## First successful restore metadata
 
-This compact record identifies the original working combination, not a golden
-performance result or proof that all later versions are correct.
+Run: `20261020-v14-restore-run1`, 2026-10-20; operator: Bartosz; agent: Codex.
+Fixture data v1. The existing execution was reassessed as **passed** under scenario
+v2 at the operator's request. Its earlier v1 `inconclusive` verdict concerned only
+the now-removed historical block-anchor requirement. No execution was repeated,
+no expected balances were changed, and no additional spending was performed.
 
-| Field | Value |
+Both source checkouts were clean. The original working combination is:
+
+| Component | Source / artifact |
 | --- | --- |
-| Successful run ID, UTC date, reviewer | NOT RECORDED |
-| Scenario version and fixture data version | NOT RECORDED |
-| App repository URL, full SHA and commit link | NOT RECORDED |
-| Platform repository URL, full SHA and commit link | NOT RECORDED |
-| App platform pin and actual resolved package location | NOT RECORDED |
-| Effective rust-dashcore sources, full SHAs, crate mapping, overrides | NOT RECORDED |
-| Cargo.lock SHA-256 and clean source verification | NOT RECORDED |
-| Framework build command/profile and source provenance | NOT RECORDED |
-| Simulator library relative path and SHA-256 | NOT RECORDED |
-| App build command/configuration and bundle identifier | NOT RECORDED |
-| Mac, macOS, Xcode, Rust, simulator and agent/tool versions | NOT RECORDED |
+| iOS app | [dashpay/dashwallet-ios, 7465095d2a0a0bef0888394d271a563502580951](https://github.com/dashpay/dashwallet-ios/commit/7465095d2a0a0bef0888394d271a563502580951) |
+| Actual Platform / SwiftDashSDK | [dashpay/platform, d959e62c5591bae3a107956bffdd7b00e5fab819](https://github.com/dashpay/platform/commit/d959e62c5591bae3a107956bffdd7b00e5fab819); runtime 5.0.0-rc.5 |
+| App platform pin | `5b41ca376b310a1792ddd9f3106e1224f9c275b6`; actual sibling checkout above selected explicitly; pin not edited |
+| Package location | `../platform/packages/swift-sdk` relative to the tested app checkout |
+| rust-dashcore | [dashpay/rust-dashcore, f22f7d6bd9f0cdd9f4cd6831b57b38610b9f0fdf](https://github.com/dashpay/rust-dashcore/commit/f22f7d6bd9f0cdd9f4cd6831b57b38610b9f0fdf); no patch/path override |
+| Cargo.lock SHA-256 | `e3f04226fc5694e07c8d80007a663a4d4feffec6f6965a124f430b0eab4390c7` |
+| Framework binary | `DashSDKFFI.xcframework/ios-arm64-simulator/librs_unified_sdk_ffi.a` |
+| Framework SHA-256 | `0e42c28eae721e7ee1cb4d86eeea381717cee472d60500fa349b56880857eaed` |
+| Framework build | From actual Platform source, `SKIP_EXAMPLE_APP_BUILD=1 CARGO_BUILD_JOBS=6 bash build_ios.sh --target sim --profile release`; previous QA Cargo target cache reused through CARGO_TARGET_DIR |
+| App build | `xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath <run>/DerivedData -jobs 6 ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build` |
+| App bundle / binary SHA-256 | `org.dashfoundation.dash` / `0e9a177e263b6ab53233683d97904301b99a50b746e5ce46fe2851e39d67aa0d` |
+| Environment | arm64 Mac, macOS 26.6.2; Xcode 26.6 (17F113); Rust 1.98.1; CocoaPods 1.15.2; iPhone 17 / iOS 26.5 simulator; exact Mac model and agent/tool versions unavailable |
 
-Keep this first record unchanged when testing another revision. If the fixture
-receives new funds, is spent from, or its anchors are replaced, explicitly prepare
-a new data version before expecting exact equality again. A routine test must
-report this drift rather than silently updating the fixture.
+All twelve Cargo.lock crates resolved to the rust-dashcore revision above:
+`dash-network`, `dash-network-seeds`, `dash-spv`, `dashcore`, `dashcore-private`,
+`dashcore-rpc`, `dashcore-rpc-json`, `dashcore_hashes`, `git-state`, `key-wallet`,
+`key-wallet-ffi`, and `key-wallet-manager`.
+
+The fresh simulator's wallet ID matched preparation. Core reported `syncDone`
+with durable coverage at 12:54:43.403 UTC; shielded sync recovered both notes and
+completed at 12:54:44.820, about 53 seconds after import. Relaunch retained both
+exact balances, all four Core transactions and both note states; Core and
+shielded sync completed again. Timings are informational, not thresholds.
+
+Full reports, selected evidence and detailed local paths remain under ignored
+`qa-results/`. Only these non-secret fixture facts and compact provenance belong
+in Git. Preserve this first successful build record when testing other revisions.
