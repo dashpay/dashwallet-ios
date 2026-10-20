@@ -24,6 +24,15 @@ private final class CountingDetailViewController: TXDetailViewController {
     }
 }
 
+/// A model whose swap-order and placeholder lookups never call back, so an
+/// open screen rebuilds its rows only on `viewDidLoad` and on the recovery
+/// inputs. (The explorer-fee lookup asks nothing for the sent transaction
+/// and the placeholder these tests open.)
+private final class QuietTxDetailModel: TxDetailModel {
+    override func resolveSwapExplorerLink(completion: @escaping () -> Void) {}
+    override func observeSwapOrderPlaceholder(onChange: @escaping () -> Void) {}
+}
+
 final class TxDetailRecoveryRowsTests: XCTestCase {
 
     private typealias Input = TxDetailModel.RecoveryInput
@@ -118,14 +127,17 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
     // MARK: - Open screen
 
     /// Runs the main queue until `controller` has rebuilt its rows `count`
-    /// times, or ten seconds pass (the swap-order lookup reads a database).
+    /// times, or ten seconds pass, then a little longer so a further rebuild
+    /// has a chance to land, and checks it stopped at exactly `count`.
     @MainActor
-    private func waitForRebuilds(_ count: Int, of controller: CountingDetailViewController) {
+    private func waitForRebuilds(_ count: Int, of controller: CountingDetailViewController,
+                                 _ message: String = "") {
         let deadline = Date().addingTimeInterval(10)
         while controller.rebuilds < count, Date() < deadline {
             RunLoop.main.run(until: Date().addingTimeInterval(0.01))
         }
-        XCTAssertGreaterThanOrEqual(controller.rebuilds, count, "rebuilds")
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertEqual(controller.rebuilds, count, message)
     }
 
     @MainActor
@@ -134,19 +146,17 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let transaction = Transaction(
             syntheticTxid: txidWire, directionRaw: 1, netAmount: -1_000,
             fee: nil, contextRaw: 0, date: Date())
-        let controller = CountingDetailViewController(model: TxDetailModel(transaction: transaction))
+        let controller = CountingDetailViewController(model: QuietTxDetailModel(transaction: transaction))
         controller.recoveryInputs = inputs.eraseToAnyPublisher()
         controller.loadViewIfNeeded()
 
-        // `viewDidLoad` builds the rows. Its swap-order lookup rebuilds them
-        // again only if it finds a link, so each input is checked by what it
-        // adds to the count.
-        waitForRebuilds(1, of: controller)
-
-        for input in [Input.lockLookup, .inFlightLocks, .projection] {
-            let before = controller.rebuilds
+        continueAfterFailure = false
+        // `viewDidLoad` builds the rows once; after that only the inputs
+        // rebuild them, once each.
+        waitForRebuilds(1, of: controller, "viewDidLoad")
+        for (index, input) in [Input.lockLookup, .inFlightLocks, .projection].enumerated() {
             inputs.send(input)
-            waitForRebuilds(before + 1, of: controller)
+            waitForRebuilds(2 + index, of: controller, "after \(input)")
         }
     }
 
@@ -196,7 +206,7 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
             depositMemo: "",
             ownerWalletId: "aa11",
             ownerNetwork: "0")
-        return TxDetailModel(swapOrder: BuySwapOrderItem(order: order))
+        return QuietTxDetailModel(swapOrder: BuySwapOrderItem(order: order))
     }
 
     /// A Buy order shown before its deposit is on chain stands on a
@@ -216,10 +226,10 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let controller = CountingDetailViewController(model: placeholderModel())
         controller.recoveryInputs = inputs.eraseToAnyPublisher()
         controller.loadViewIfNeeded()
-        waitForRebuilds(1, of: controller)
-        let before = controller.rebuilds
+        continueAfterFailure = false
+        waitForRebuilds(1, of: controller, "viewDidLoad")
         inputs.send(.inFlightLocks)
-        waitForRebuilds(before + 1, of: controller)
+        waitForRebuilds(2, of: controller, "after inFlightLocks")
 
         XCTAssertFalse(controller.currentSnapshot.sectionIdentifiers.contains(.recovery))
     }
