@@ -172,4 +172,52 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         XCTAssertFalse(removal(nil, active: false, inMempool: false),
                        "nothing stuck in mempool")
     }
+
+    // MARK: - Buy swap placeholder
+
+    private func placeholderModel() -> TxDetailModel {
+        let order = SwapOrder(
+            id: "0xdeposit",
+            direction: "buy",
+            service: "swapkit",
+            fromAsset: "ARB.USDT-0XFD086BC7",
+            toAsset: "DASH",
+            toAddress: "XdestinationAddress",
+            depositAddress: "0xdeposit",
+            expectedToAmount: "2.51",
+            status: .notStarted,
+            outboundTxHash: nil,
+            timestamp: Int64(Date().timeIntervalSince1970) * 1000,
+            finalisedAt: -1,
+            fromAmount: "150",
+            depositSeenAt: nil,
+            providerDeniedAt: nil,
+            depositMemo: "",
+            ownerWalletId: "aa11",
+            ownerNetwork: "0")
+        return TxDetailModel(swapOrder: BuySwapOrderItem(order: order))
+    }
+
+    /// A Buy order shown before its deposit is on chain stands on a
+    /// `.processing` placeholder transaction, which is nothing to retry or
+    /// remove.
+    func testABuySwapPlaceholderOffersNoRecoveryAction() {
+        let actions = placeholderModel().recoveryActions
+        XCTAssertNil(actions.retry)
+        XCTAssertFalse(actions.offersRemoval)
+    }
+
+    /// A placeholder screen has no tax category section, after which the
+    /// recovery section would be inserted.
+    @MainActor
+    func testAnOpenBuySwapPlaceholderScreenBuildsNoRecoverySection() {
+        let inputs = PassthroughSubject<Input, Never>()
+        let controller = CountingDetailViewController(model: placeholderModel())
+        controller.recoveryInputs = inputs.eraseToAnyPublisher()
+        controller.loadViewIfNeeded()
+        inputs.send(.inFlightLocks)
+        waitForRebuilds(2, of: controller)
+
+        XCTAssertFalse(controller.currentSnapshot.sectionIdentifiers.contains(.recovery))
+    }
 }
