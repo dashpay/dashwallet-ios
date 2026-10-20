@@ -589,9 +589,19 @@ class CreateUsernameViewModel: ObservableObject {
 
     var isInvitationMode: Bool { invitationURI != nil }
 
-    /// Which usernames the invitation pays for, read from its funded amount
-    /// before the form opened. nil outside invitation mode.
-    @Published private(set) var invitationTier: InvitationTier? = nil
+    /// What the invitation funds, read before the form opened. nil outside
+    /// invitation mode, or when the form was opened without a checked
+    /// invitation.
+    @Published private(set) var invitationAmountDuffs: UInt64? = nil
+
+    /// Which usernames the invitation pays for: judged against the contested
+    /// cost as it stands, so a protocol version read after the form opened
+    /// moves it too. nil when the amount is unknown.
+    var invitationTier: InvitationTier? {
+        invitationAmountDuffs.map {
+            InvitationValidationPolicy.tier(amountDuffs: $0, contestedDuffs: contestedFee.fundingDuffs)
+        }
+    }
 
     /// The stored invitation being claimed (scope + link), when the form was
     /// opened from the Home card.
@@ -617,9 +627,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String, tier: InvitationTier? = nil, invitation: PendingInvitation? = nil) {
+    func configureInvitationMode(uri: String, amountDuffs: UInt64? = nil, invitation: PendingInvitation? = nil) {
         invitationURI = uri
-        invitationTier = tier
+        invitationAmountDuffs = amountDuffs
         pendingInvitation = invitation
         // A check started under the previous rules answers a different
         // question; its result must not enable Continue here.
@@ -1138,10 +1148,7 @@ class CreateUsernameViewModel: ObservableObject {
             platformEligible: hasEnoughPlatform)
         // Invitation-claim mode: the voucher pays the registration, so
         // no local balance is required and the cost rule stays hidden.
-        // Whether the voucher actually covers the cost is only known at
-        // claim time (the amount is not in the link) — the coordinator
-        // surfaces an insufficient-voucher failure through the normal
-        // error alert.
+        // Which names the voucher covers is `invitationTier`'s gate.
         let voucherFunded = isInvitationMode
         // A paid Core lock is resumed, never paid again. An existing identity
         // is judged by its shortfall above instead.

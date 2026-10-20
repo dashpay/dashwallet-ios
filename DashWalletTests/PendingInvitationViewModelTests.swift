@@ -285,9 +285,9 @@ final class PendingInvitationViewModelTests: XCTestCase {
         XCTAssertEqual(store.receive(linkA), .stored)
         await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
 
-        var tier: InvitationTier?
-        viewModel.create { _, proceededTier in tier = proceededTier }
-        XCTAssertEqual(tier, .nonContested)
+        var amount: UInt64?
+        viewModel.create { _, proceededAmount in amount = proceededAmount }
+        XCTAssertEqual(amount, 3_000_000)
         XCTAssertEqual(validator.calls.count, 1)
     }
 

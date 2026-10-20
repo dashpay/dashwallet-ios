@@ -240,9 +240,9 @@ final class PendingInvitationViewModel: ObservableObject {
     }
 
     /// Re-checks a stale verdict first, so a voucher spent in the meantime is
-    /// caught before the PIN. Calls `proceed` with the invitation and its
-    /// tier only when it is still valid.
-    func create(proceed: @escaping (PendingInvitation, InvitationTier) -> Void) {
+    /// caught before the PIN. Calls `proceed` with the invitation and what
+    /// its voucher funds only when it is still valid.
+    func create(proceed: @escaping (PendingInvitation, UInt64) -> Void) {
         // The claim spends the voucher from whatever wallet is active, so the
         // invitation must be that wallet's own.
         guard let invitation, isActive(invitation.scope) else { return }
@@ -253,17 +253,17 @@ final class PendingInvitationViewModel: ObservableObject {
         }
         if let lastVerdict, lastVerdict.invitation == invitation,
            Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime,
-           let tier = lastVerdict.validation.tier {
-            proceed(invitation, tier)
+           let amountDuffs = lastVerdict.validation.amountDuffs {
+            proceed(invitation, amountDuffs)
             return
         }
         lastVerdict = nil
         Task {
             guard let verdict = await self.runValidation(),
-                  let tier = verdict.tier,
+                  let amountDuffs = verdict.amountDuffs,
                   self.invitation == invitation,
                   self.isActive(invitation.scope) else { return }
-            proceed(invitation, tier)
+            proceed(invitation, amountDuffs)
         }
     }
 

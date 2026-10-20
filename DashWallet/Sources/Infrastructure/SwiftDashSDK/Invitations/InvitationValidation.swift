@@ -78,6 +78,12 @@ enum InvitationValidation: Equatable {
         return nil
     }
 
+    /// What the voucher funds; nil unless valid.
+    var amountDuffs: UInt64? {
+        if case .valid(_, let amountDuffs, _) = self { return amountDuffs }
+        return nil
+    }
+
     /// The verdict is a fact about the voucher itself, true in every wallet
     /// and network the link is stored under — so every copy goes. The other
     /// definitive verdicts are about the wallet that was checked (it already
@@ -144,13 +150,17 @@ enum InvitationValidationPolicy {
     /// the wallet may have learned its own earlier claim's identity (or a
     /// username), and a verdict from the state before would turn that
     /// claim into "already claimed". nil when the wallet cannot answer.
+    ///
+    /// - Parameter contestedDuffs: the network's contested-name cost, read
+    ///   once the status is known (it follows the protocol version).
     @MainActor
     static func decide(
         uri: String?,
         previewIsValid: Bool,
         inviter: InvitationInviter,
         walletState: @MainActor () -> InvitationWalletState,
-        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus
+        queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus,
+        contestedDuffs: @MainActor () async -> UInt64
     ) async -> InvitationValidation? {
         func local(_ state: InvitationWalletState) -> InvitationValidation? {
             localVerdict(
@@ -164,9 +174,10 @@ enum InvitationValidationPolicy {
         if let verdict = local(before) { return verdict }
         guard let uri else { return .invalid(.malformed, inviter: .unknown) }
 
-        let result: Result<ManagedPlatformWallet.InvitationClaimStatus, Error>
+        let result: Result<(status: ManagedPlatformWallet.InvitationClaimStatus, contestedDuffs: UInt64), Error>
         do {
-            result = .success(try await queryStatus(uri))
+            let status = try await queryStatus(uri)
+            result = .success((status, await contestedDuffs()))
         } catch {
             result = .failure(error)
         }
@@ -175,12 +186,12 @@ enum InvitationValidationPolicy {
         guard !after.isLoading else { return nil }
         if let verdict = local(after) { return verdict }
         switch result {
-        case .success(let status):
+        case .success(let answer):
             return verdict(
-                status: status,
+                status: answer.status,
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
-                contestedDuffs: ContestedUsernameFee.shared.amounts.fundingDuffs,
+                contestedDuffs: answer.contestedDuffs,
                 localIdentityId: after.identityId)
         case .failure(let error):
             return verdict(error: error, inviter: inviter)
@@ -198,7 +209,7 @@ enum InvitationValidationPolicy {
         contestedDuffs: UInt64,
         localIdentityId: Data? = nil
     ) -> InvitationValidation {
-        let tier: InvitationTier = status.amountDuffs >= contestedDuffs ? .contested : .nonContested
+        let tier = tier(amountDuffs: status.amountDuffs, contestedDuffs: contestedDuffs)
         if let localIdentityId {
             guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasOtherIdentity }
             // Our own earlier claim: only the username is left to register.
@@ -208,6 +219,12 @@ enum InvitationValidationPolicy {
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
         return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
+    }
+
+    /// Which usernames `amountDuffs` pays for when a contested name costs
+    /// `contestedDuffs`.
+    static func tier(amountDuffs: UInt64, contestedDuffs: UInt64) -> InvitationTier {
+        amountDuffs >= contestedDuffs ? .contested : .nonContested
     }
 
     /// The SDK's claim-status call draws the definitive/undetermined line:
@@ -378,6 +395,12 @@ enum InvitationValidator {
                     logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
                     throw error
                 }
+            },
+            contestedDuffs: {
+                // Read before judging: the figure follows the protocol
+                // version, which may not have been read yet this launch.
+                await ContestedUsernameFee.shared.refresh()
+                return ContestedUsernameFee.shared.amounts.fundingDuffs
             })
     }
 

@@ -41,6 +41,30 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertEqual(verdict(status(amount: 24_999_999)).tier, .nonContested)
     }
 
+    /// The contested cost follows the protocol version: on 14 a 0.15 DASH
+    /// voucher pays for a contested name, on 13 it does not.
+    func testTierFollowsTheProtocolsContestedCost() {
+        let reduced = ContestedUsernameFee.Amounts.reduced.fundingDuffs
+        let legacy = ContestedUsernameFee.Amounts.legacy.fundingDuffs
+        XCTAssertEqual(reduced, 15_000_000)
+        XCTAssertEqual(legacy, 25_000_000)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 15_000_000, contestedDuffs: reduced), .contested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 14_999_999, contestedDuffs: reduced), .nonContested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 15_000_000, contestedDuffs: legacy), .nonContested)
+    }
+
+    @MainActor
+    func testDecideJudgesTheTierByTheCostItIsGiven() async {
+        let verdict = await InvitationValidationPolicy.decide(
+            uri: "dashpay://invite?x",
+            previewIsValid: true,
+            inviter: inviter,
+            walletState: { self.state() },
+            queryStatus: { _ in self.status(amount: 15_000_000) },
+            contestedDuffs: { ContestedUsernameFee.Amounts.reduced.fundingDuffs })
+        XCTAssertEqual(verdict, .valid(tier: .contested, amountDuffs: 15_000_000, inviter: inviter))
+    }
+
     func testBelowMinimumIsInvalid() {
         XCTAssertEqual(verdict(status(amount: 299_999)), .invalid(.belowMinimum, inviter: inviter))
         XCTAssertEqual(verdict(status(amount: 300_000)).tier, .nonContested)
@@ -196,7 +220,8 @@ final class InvitationValidationPolicyTests: XCTestCase {
                 // the query is in flight.
                 current = self.state(identity: claimed.prospectiveIdentityId)
                 return claimed
-            })
+            },
+            contestedDuffs: { self.contested })
         XCTAssertEqual(verdict?.tier, .nonContested, "our own claim resumes; it is not \"already claimed\"")
     }
 
@@ -211,7 +236,8 @@ final class InvitationValidationPolicyTests: XCTestCase {
             queryStatus: { _ in
                 current.hasRegisteredUsername = true
                 return self.status(amount: 3_000_000)
-            })
+            },
+            contestedDuffs: { self.contested })
         XCTAssertEqual(verdict, .alreadyHasIdentity)
     }
 
@@ -226,7 +252,8 @@ final class InvitationValidationPolicyTests: XCTestCase {
             queryStatus: { _ in
                 current.isLoading = true
                 return self.status(amount: 3_000_000, claimed: true)
-            })
+            },
+            contestedDuffs: { self.contested })
         XCTAssertNil(verdict)
     }
 

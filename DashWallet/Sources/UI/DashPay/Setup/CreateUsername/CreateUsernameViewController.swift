@@ -26,7 +26,7 @@ class CreateUsernameViewController: UIViewController {
     /// when this form is claiming a DIP-13 invitation; nil for the
     /// regular self-funded registration.
     private let invitationURI: String?
-    private let invitationTier: InvitationTier?
+    private let invitationAmountDuffs: UInt64?
     /// The Home card's invitation (scope + link): a claim that finishes on an
     /// existing identity removes that wallet's copy and no other.
     private let pendingInvitation: PendingInvitation?
@@ -39,17 +39,18 @@ class CreateUsernameViewController: UIViewController {
         // `DWIdentityRegistrationBridge` / the coordinator, so it is
         // not stored here.
         self.invitationURI = nil
-        self.invitationTier = nil
+        self.invitationAmountDuffs = nil
         self.pendingInvitation = nil
         self.definedUsername = definedUsername
         super.init(nibName: nil, bundle: nil)
     }
 
     /// Invitation claim from the Home card: the invitation was validated
-    /// there, so its tier (which usernames it pays for) is already known.
-    init(invitation: PendingInvitation, invitationURI: String, invitationTier: InvitationTier) {
+    /// there, so what it funds (and so which usernames it pays for) is
+    /// already known.
+    init(invitation: PendingInvitation, invitationURI: String, invitationAmountDuffs: UInt64) {
         self.invitationURI = invitationURI
-        self.invitationTier = invitationTier
+        self.invitationAmountDuffs = invitationAmountDuffs
         self.pendingInvitation = invitation
         self.definedUsername = nil
         super.init(nibName: nil, bundle: nil)
@@ -99,7 +100,7 @@ class CreateUsernameViewController: UIViewController {
 
         let content = CreateUsernameView(
             invitationURI: invitationURI,
-            invitationTier: invitationTier,
+            invitationAmountDuffs: invitationAmountDuffs,
             pendingInvitation: pendingInvitation,
             definedUsername: definedUsername,
             finish: { [weak self] in
@@ -281,8 +282,8 @@ struct CreateUsernameView: View {
     /// Normalized invitation URI when claiming (invitation mode); nil
     /// for the regular self-funded registration.
     var invitationURI: String? = nil
-    /// Which usernames the invitation pays for; nil when unknown.
-    var invitationTier: InvitationTier? = nil
+    /// What the invitation funds; nil when unknown.
+    var invitationAmountDuffs: UInt64? = nil
     /// The Home card's invitation this claim is for (scope + link).
     var pendingInvitation: PendingInvitation? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
@@ -392,7 +393,7 @@ struct CreateUsernameView: View {
             // Invitation mode first: it decides which names are allowed, and
             // no draft from an earlier registration is restored into it.
             if let invitationURI {
-                viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier, invitation: pendingInvitation)
+                viewModel.configureInvitationMode(uri: invitationURI, amountDuffs: invitationAmountDuffs, invitation: pendingInvitation)
             }
             viewModel.refreshRegistrationRecoveryState()
             viewModel.refreshContestedFee()
@@ -1326,6 +1327,8 @@ struct CreateUsernameView: View {
             // registers on what it holds: only the contest fund is at stake.
             return viewModel.contestedFee.fundDuffs
         }
+        // An invitation funds the new identity with whatever its voucher holds.
+        if let voucher = viewModel.invitationAmountDuffs { return voucher }
         return viewModel.newIdentityFundingDuffs(isContested: true)
     }
 
