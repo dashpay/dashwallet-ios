@@ -66,6 +66,8 @@ final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendabl
         }
     }
 
+    override var gatesOnWalletSendPool: Bool { direction == .toCoinbase }
+
     override init() {
         super.init()
 

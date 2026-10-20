@@ -12,6 +12,9 @@
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ asetettiin myyntiin hintaan %2$@ DASH";
 
+/* Send amount fits the balance once incoming funds confirm */
+"%@ DASH is still confirming. Wait a few minutes or enter a smaller amount." = "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount.";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
