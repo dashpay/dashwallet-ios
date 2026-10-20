@@ -947,6 +947,38 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(box.hasExplicitScheme)
     }
 
+    /// #1092: a scanned `dashwallet://pay=` link is read the way the same link opened as a deep
+    /// link is — address, amount, sender, and the label naming the requesting app.
+    func testParsedBoxReadsDashWalletPayLinkLikeDeepLink() {
+        let link = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=0.01916910&sender=v4v.app"
+        let box = ParsedPaymentURI.parse(paymentString: link)
+        XCTAssertEqual(box.rawString, link)
+        XCTAssertEqual(box.scheme, "dash")
+        XCTAssertEqual(box.address, "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
+        XCTAssertEqual(box.amount, 1_916_910)
+        XCTAssertEqual(box.callbackScheme, "v4v.app")
+        XCTAssertTrue(box.label?.contains("V4V.App") ?? false)
+    }
+
+    /// Without `sender` the deep-link router rejects a `pay=` link, so the scan still falls back to
+    /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
+    func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
+        let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
+        // The rewrite was not applied: it would carry the label naming the sender. This holds on
+        // every network; the verdicts below alone would also pass on mainnet for a testnet address.
+        XCTAssertNil(box.label)
+        XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
+        XCTAssertFalse(box.isValidDashPaymentIntent)
+    }
+
+    /// The plain `dashwallet:<address>` alias is not a deep-link action and still reads as `dash:`.
+    func testParsedBoxKeepsPlainDashWalletAlias() {
+        let box = ParsedPaymentURI.parse(paymentString: "dashwallet:Xabc?amount=1")
+        XCTAssertEqual(box.scheme, "dash")
+        XCTAssertEqual(box.address, "Xabc")
+        XCTAssertEqual(box.amount, 100_000_000)
+    }
+
     // MARK: - PaymentURIBuilder (dash: serializer — DSPaymentRequest parity)
 
     private static let builderAddr = "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"

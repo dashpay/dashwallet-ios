@@ -3216,7 +3216,7 @@ extension HomeViewModel {
             contextReady: identityState.contextReady,
             // Not gated on sync — same as the More entry. Gating made the
             // banner appear only once the chain had caught up, so the surface
-            // that carries the "Have an invitation?" entry was missing for the
+            // that carries the "Scan invitation QR" entry was missing for the
             // whole of a long sync. It now stays put and renders as
             // unavailable (`isSyncing`) instead of vanishing.
             syncDone: true,

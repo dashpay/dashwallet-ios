@@ -762,7 +762,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         if let manager = SwiftDashSDKHost.shared.manager {
             var stopAttempted = false
             do {
-                if try manager.isSpvRunning() {
+                // `isSpvRunning()` turns false once background sync has failed,
+                // while the SDK holds the client until it is stopped, so a
+                // client this coordinator started is stopped either way.
+                if try (runningNetwork != nil || manager.isSpvRunning()) {
                     stopAttempted = true
                     try await manager.stopSpv()
                 }
