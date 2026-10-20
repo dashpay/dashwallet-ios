@@ -76,17 +76,6 @@ final class ContestedUsernameFeeTests: XCTestCase {
         XCTAssertEqual(Amounts.reduced.fundingDuffs, 15_000_000)
     }
 
-    /// On protocol 14 a contested registration states the reduced fund as
-    /// the most it pays, so a contest whose fund to join has doubled is
-    /// refused rather than charged. The legacy pair, which is also that of a
-    /// version not read yet, states none: the SDK states the fund to join.
-    func testContestFundCeilingOnlyForTheReducedFund() {
-        XCTAssertEqual(Amounts.forProtocolVersion(14).contestFundCeilingCredits, 10_000_000_000)
-        XCTAssertEqual(Amounts.forProtocolVersion(15).contestFundCeilingCredits, 10_000_000_000)
-        XCTAssertNil(Amounts.forProtocolVersion(13).contestFundCeilingCredits)
-        XCTAssertNil(Amounts.forProtocolVersion(nil).contestFundCeilingCredits)
-    }
-
     /// An existing identity needs the fund plus the per-name fee headroom,
     /// and what a new identity is funded with covers that for two names.
     func testRegistrationCreditsFollowTheFund() {
@@ -207,6 +196,60 @@ final class ContestedUsernameFeeTests: XCTestCase {
         network.version = 14
         await fee.refresh()
         XCTAssertEqual(fee.amounts, .legacy)
+    }
+
+    /// A contested registration states the fund of the version known for its
+    /// network, the figure the screens show, so a contest past the doubling
+    /// thresholds (0.4 DASH at 300 contenders) is refused rather than
+    /// charged. The version is read only when none is known; without one, or
+    /// with another network running, nothing is signed.
+    func testContestFundCeilingFollowsTheKnownVersion() async throws {
+        let network = Network()
+        let fee = makeFee(network)
+        XCTAssertEqual(fee.amounts, .legacy)
+
+        do {
+            _ = try await fee.contestFundCeilingCredits(scope: "testnet")
+            XCTFail("a version that cannot be read must not be signed with")
+        } catch is ContestedUsernameFee.UnresolvedProtocolVersion {}
+
+        // Read at signing because none is known yet.
+        network.version = 14
+        let reduced = try await fee.contestFundCeilingCredits(scope: "testnet")
+        XCTAssertEqual(reduced, 10_000_000_000)
+        XCTAssertEqual(fee.amounts, .reduced)
+
+        // Known: not read again, a failing read cannot change it.
+        network.version = nil
+        let kept = try await fee.contestFundCeilingCredits(scope: "testnet")
+        XCTAssertEqual(kept, 10_000_000_000)
+
+        // Another network running by now: its figure is not this one's.
+        network.scope = "devnet"
+        network.version = 14
+        do {
+            _ = try await fee.contestFundCeilingCredits(scope: "testnet")
+            XCTFail("another network's figure must not be signed with")
+        } catch is ContestedUsernameFee.UnresolvedProtocolVersion {}
+    }
+
+    /// Below 14 the legacy fund: the one shown, and the exact amount a
+    /// protocol-13 contest takes. A known version is not read again at
+    /// signing: the read stays off the payment path.
+    func testContestFundCeilingBelowProtocol14() async throws {
+        let reads = ReadCounter()
+        let fee = ContestedUsernameFee(defaults: defaults, source: {
+            ("testnet", {
+                reads.increment()
+                return 13
+            })
+        })
+        let first = try await fee.contestFundCeilingCredits(scope: "testnet")
+        let second = try await fee.contestFundCeilingCredits(scope: "testnet")
+        XCTAssertEqual(first, 20_000_000_000)
+        XCTAssertEqual(second, 20_000_000_000)
+        XCTAssertEqual(fee.amounts, .legacy)
+        XCTAssertEqual(reads.count, 1)
     }
 
     func testFollowsTheNetworkAcrossActivation() async {

@@ -417,12 +417,15 @@ struct UsernameMarketplaceService {
         guard let network = WalletEnvironment.network else {
             throw ServiceError.noNetwork
         }
+        // Before the PIN prompt: a fund that cannot be stated stops here.
+        let maxContestFund = try await ContestedUsernameFee.shared
+            .contestFundCeilingCredits(scope: network.persistenceScope)
         try await authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
             signer: KeychainSigner(modelContainer: container),
-            maxContestFund: ContestedUsernameFee.shared.amounts.contestFundCeilingCredits)
+            maxContestFund: maxContestFund)
         Self.logger.info("🏷️ MARKET :: contested request submitted for \(label, privacy: .public)")
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative
