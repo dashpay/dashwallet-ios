@@ -236,11 +236,10 @@ final class HostRecoveryTests: XCTestCase {
         try FileManager.default.createDirectory(
             at: roots.chainStoreRebuilds.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data([0]).write(to: roots.chainStoreRebuilds)
-        let host = makeHost()
-        _ = try await start(host)
+        let resolved = try await start()
         XCTAssertEqual(persisted.createAttempts, ["wallet-a", "wallet-b"])
         XCTAssertEqual(persisted.rows.count, 2)
-        XCTAssertNotNil(host.wallet)
+        XCTAssertNotNil(persisted.rows[resolved.walletId])
         XCTAssertFalse(try localStoreRecovery().isPending())
         XCTAssertNil(pendingChainStoreRebuilds())
     }
