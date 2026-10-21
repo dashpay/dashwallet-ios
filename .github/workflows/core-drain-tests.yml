@@ -1,0 +1,26 @@
+name: Core Shielded Max recovery
+
+on:
+  pull_request:
+    paths:
+      - 'DashWallet/Sources/UI/Payments/InternalTransfer/**'
+      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift'
+      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift'
+      - 'DashWalletTests/CoreShieldedDrainStoreTests.swift'
+      - 'scripts/test_core_drain.py'
+      - 'scripts/core_drain_recovery_harness.py'
+      - '.github/workflows/core-drain-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test durable markers and form recovery
+        run: python3 scripts/test_core_drain.py
