@@ -278,7 +278,10 @@ final class InternalTransferRunner: ObservableObject {
             if status.state == .completed {
                 // A concurrent resume can consume the lock while authorization
                 // is open. The generic resume reports AlreadyConsumed as
-                // unconfirmed; the UUID lookup supplies authenticated evidence.
+                // unconfirmed; the UUID lookup reads the SDK's drain receipt
+                // instead. That receipt is not yet authenticated evidence: the
+                // SDK also writes it on an unverified already-consumed report
+                // (#1230).
                 phase = .success
                 notice = .succeeded
             } else if status.state == .pending {
