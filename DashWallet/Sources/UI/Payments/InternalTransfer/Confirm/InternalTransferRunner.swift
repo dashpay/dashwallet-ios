@@ -93,6 +93,7 @@ final class InternalTransferRunner: ObservableObject {
         /// The user backed out of the PIN prompt, or it failed. Not an error
         /// state — the caller returns to what it was showing.
         case notAuthorized
+        case rejected
     }
 
     @Published private(set) var phase: Phase = .idle
@@ -164,10 +165,21 @@ final class InternalTransferRunner: ObservableObject {
     /// leaving it to them meant the sheet closed first and the user met the
     /// prompt on whatever screen they landed on. `preauthorized` below is what
     /// keeps that inner gate from asking a second time.
-    func start(_ request: InternalTransferRequest) async -> StartOutcome {
+    func start(
+        _ request: InternalTransferRequest,
+        preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>
+    ) async -> StartOutcome {
         guard phase != .inFlight, !isAwaitingAuthorization else {
             notice = .busy
             return .busy
+        }
+
+        do {
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation.get())
+        } catch {
+            phase = .failed(error.localizedDescription)
+            notice = .failed(error.localizedDescription)
+            return .rejected
         }
 
         // Claimed BEFORE the gate, not after. `phase` only becomes `.inFlight`
@@ -187,12 +199,21 @@ final class InternalTransferRunner: ObservableObject {
             return .notAuthorized
         }
 
+        do {
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation.get())
+        } catch {
+            phase = .failed(error.localizedDescription)
+            notice = .failed(error.localizedDescription)
+            return .rejected
+        }
+
         // Clear what the previous transfer left, so this one is not read
         // through its outcome.
         self.request = request
         phase = .idle
         platformShieldCapacityChange = nil
         coordinator.reset()
+        coordinator.bindConfirmationPreparation(preparation)
 
         // Claimed here, not inside the task `run` schedules: `defer` clears
         // `isAwaitingAuthorization` the moment this returns, and until the
@@ -201,7 +222,7 @@ final class InternalTransferRunner: ObservableObject {
         // guards and started a second transfer behind the first.
         phase = .inFlight
         notice = .started
-        run(request)
+        run(request, preparation: preparation)
         return .started
     }
 
@@ -216,16 +237,25 @@ final class InternalTransferRunner: ObservableObject {
     /// held the gate open for this exact transfer. Without it the user would
     /// be asked for the PIN twice: once on the sheet, once again from inside
     /// the coordinator.
-    private func run(_ request: InternalTransferRequest) {
+    private func run(_ request: InternalTransferRequest, preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>) {
         Task {
+            let prepared: SwiftDashSDKHost.PlatformPreparation
+            do {
+                prepared = try preparation.get()
+                try SwiftDashSDKHost.shared.validatePlatformOperation(prepared)
+            } catch {
+                phase = .failed(error.localizedDescription)
+                notice = .failed(error.localizedDescription)
+                return
+            }
             await DWIdentityAuthorizer.preauthorized {
                 switch request.kind {
                 case .route(let route):
                     await runRoute(route, request)
                 case .identityTopUp(let topUp):
-                    await runTopUp(topUp, request)
+                    await runTopUp(topUp, request, preparation: prepared)
                 case .identityWithdrawal(let withdrawal):
-                    await runWithdrawal(withdrawal, request)
+                    await runWithdrawal(withdrawal, request, preparation: prepared)
                 }
             }
         }
@@ -264,26 +294,32 @@ final class InternalTransferRunner: ObservableObject {
     /// Both identity executors report the same three outcomes, so they reduce
     /// the same way: a result is success, a message is failure, and a bare
     /// nil is neither — the executor declined without anything to say.
-    private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest) async {
+    private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest,
+                          preparation: SwiftDashSDKHost.PlatformPreparation) async {
         phase = .inFlight
         let newBalance = await topUpExecutor.topUp(
             identityId: topUp.identityId,
             amountDuffs: request.amountDuffsUnsigned,
-            source: .init(spending: topUp.source))
-        phase = outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+            source: .init(spending: topUp.source),
+            preparation: preparation)
+        phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
         announce(phase)
     }
 
     private func runWithdrawal(
         _ withdrawal: IdentityWithdrawalTransfer,
-        _ request: InternalTransferRequest
+        _ request: InternalTransferRequest,
+        preparation: SwiftDashSDKHost.PlatformPreparation
     ) async {
         phase = .inFlight
         let succeeded = await withdrawExecutor.withdraw(
             identityId: withdrawal.identityId,
             amountCredits: request.creditsAmount,
-            target: withdrawal.target)
-        phase = outcome(succeeded: succeeded, message: consume(&withdrawExecutor.errorMessage))
+            target: withdrawal.target,
+            preparation: preparation)
+        phase = withdrawExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: succeeded, message: consume(&withdrawExecutor.errorMessage))
         announce(phase)
     }
 

@@ -187,7 +187,36 @@ final class SendViewModel: ObservableObject {
     /// the sync monitor singleton.
     @Published private(set) var isChainSynced = false
 
+    @Published private var protocolCompatibility: WalletProtocolCompatibility?
+    private var isProtocolRuntimeReady = false
+    /// Captured before any amount/fee calculation and kept with its cached quotes.
+    private var platformPreparation: SwiftDashSDKHost.PlatformPreparation?
+
+    func platformPreparationForConfirmation() throws -> SwiftDashSDKHost.PlatformPreparation {
+        guard let platformPreparation else {
+            throw SDKError.platformPreparationExpired("Review the amount after Platform compatibility is verified")
+        }
+        try SwiftDashSDKHost.shared.validatePlatformOperation(platformPreparation)
+        return platformPreparation
+    }
+
+    private var hasCurrentPlatformPreparation: Bool {
+        #if DEBUG
+        if isPreviewInstance { return true }
+        #endif
+        guard let route, route != .coreToCore else { return true }
+        return (try? platformPreparationForConfirmation()) != nil
+    }
     private var cancellables = Set<AnyCancellable>()
+
+    private var protocolCompatibilityMessage: String? {
+        #if DEBUG
+        if isPreviewInstance { return nil }
+        #endif
+        guard let route, route != .coreToCore else { return nil }
+        return WalletProtocolCompatibility.blockingMessage(for: protocolCompatibility)
+    }
+
 
     #if DEBUG
     /// True only for `makeForPreview` instances — see the guard in `deinit`.
@@ -213,6 +242,13 @@ final class SendViewModel: ObservableObject {
 
     init(pinnedSource: ChainNetwork? = nil) {
         self.pinnedSource = pinnedSource
+        SwiftDashSDKHost.shared.protocolCompatibility.$snapshot
+            .combineLatest(SwiftDashSDKHost.shared.protocolCompatibility.$isRuntimeReady)
+            .sink { [weak self] snapshot, runtimeReady in
+                self?.compatibilityDidChange(snapshot, runtimeReady: runtimeReady)
+            }
+            .store(in: &cancellables)
+
         if let pinnedSource {
             source = pinnedSource
         }
@@ -337,11 +373,13 @@ final class SendViewModel: ObservableObject {
     /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
     /// Cached rather than computed per keystroke — it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
-        guard let feeKind = shieldedFeeKind(for: route) else {
+        guard hasCurrentPlatformPreparation,
+              let feeKind = shieldedFeeKind(for: route) else {
             shieldedSpendCeilingCredits = nil
             return
         }
-        shieldedSpendCeilingCredits = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
+        let ceiling = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
+        shieldedSpendCeilingCredits = hasCurrentPlatformPreparation ? ceiling : nil
     }
 
     // MARK: - Destination classification
@@ -599,8 +637,32 @@ final class SendViewModel: ObservableObject {
     /// Refreshes route-dependent async state — the Platform → Core route
     /// needs the withdrawal preflight (fee headroom + full-balance payout),
     /// Platform → Shielded the shield-capacity preflight.
+    private func compatibilityDidChange(_ snapshot: WalletProtocolCompatibility?, runtimeReady: Bool) {
+        guard protocolCompatibility != snapshot || isProtocolRuntimeReady != runtimeReady else { return }
+        isProtocolRuntimeReady = runtimeReady
+        protocolCompatibility = snapshot
+        guard route != nil, route != .coreToCore else { return }
+        routeDidChange()
+    }
+
     private func routeDidChange() {
+        preflightTask?.cancel()
+        preflightTask = nil
+        withdrawalPreflight = nil
+        withdrawalPreflightFailed = false
+        shieldPreflightTask?.cancel()
+        shieldPreflightTask = nil
+        platformShieldCapacity = nil
+        shieldPreflightFailed = false
+        shieldedSpendCeilingCredits = nil
+        platformPreparation = nil
         clearShieldedMaxSelection()
+        if let route, route != .coreToCore {
+            guard isProtocolRuntimeReady, protocolCompatibilityMessage == nil,
+                  let preparation = try? SwiftDashSDKHost.shared.preparePlatformOperation()
+            else { return }
+            platformPreparation = preparation
+        }
         refreshShieldedSpendCeiling()
         refreshWithdrawalPreflight()
         refreshShieldPreflight()
@@ -612,11 +674,18 @@ final class SendViewModel: ObservableObject {
             preflightTask = nil
             return
         }
-        guard preflightTask == nil else { return }
+        guard preflightTask == nil,
+              let preparation = try? platformPreparationForConfirmation() else { return }
+        withdrawalPreflight = nil
         withdrawalPreflightFailed = false
         preflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
             guard let self, !Task.isCancelled else { return }
+            guard (try? SwiftDashSDKHost.shared.validatePlatformOperation(preparation)) != nil else {
+                self.withdrawalPreflight = nil
+                self.preflightTask = nil
+                return
+            }
             self.withdrawalPreflight = result
             self.withdrawalPreflightFailed = result == nil
             self.preflightTask = nil
@@ -629,7 +698,8 @@ final class SendViewModel: ObservableObject {
             shieldPreflightTask = nil
             return
         }
-        guard shieldPreflightTask == nil else { return }
+        guard shieldPreflightTask == nil,
+              let preparation = try? platformPreparationForConfirmation() else { return }
         // Fail closed while resolving: a preflight only starts when the
         // cached capacity is suspect (route entry, balance change, Max
         // retry), so clear it rather than let `canContinue` accept a stale
@@ -639,6 +709,11 @@ final class SendViewModel: ObservableObject {
         shieldPreflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightShield()
             guard let self, !Task.isCancelled else { return }
+            guard (try? SwiftDashSDKHost.shared.validatePlatformOperation(preparation)) != nil else {
+                self.platformShieldCapacity = nil
+                self.shieldPreflightTask = nil
+                return
+            }
             self.platformShieldCapacity = result.map(PlatformShieldCapacity.init)
             self.shieldPreflightFailed = result == nil
             self.shieldPreflightTask = nil
@@ -975,6 +1050,7 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
+        if let message = protocolCompatibilityMessage { return message }
         #if DASHPAY
         // Both are independent of the amount: the first says nothing can ever
         // be sent on this channel, the second reports the attempt that just
@@ -1179,6 +1255,7 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
+        guard protocolCompatibilityMessage == nil, hasCurrentPlatformPreparation else { return false }
         #if DASHPAY
         // Terminal for this contact for the rest of the session: see
         // `contactSendOutcomeIsUnknown`.
@@ -1239,6 +1316,11 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
+        guard hasCurrentPlatformPreparation else {
+            clearShieldedMaxSelection()
+            shieldedMaxNotice = protocolCompatibilityMessage ?? Self.feeEstimateUnavailableMessage
+            return
+        }
         if hasUnavailableSourceBalance {
             clearShieldedMaxSelection()
             shieldedMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")

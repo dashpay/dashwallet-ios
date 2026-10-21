@@ -38,6 +38,7 @@ final class IdentityWithdrawViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    @Published private(set) var submittedUnconfirmed = false
 
     private let authorizer = DWIdentityAuthorizer()
 
@@ -97,7 +98,8 @@ final class IdentityWithdrawViewModel: ObservableObject {
     func withdraw(
         identityId: Data,
         amountCredits: UInt64,
-        target: IdentityWithdrawalTarget
+        target: IdentityWithdrawalTarget,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
     ) async -> Bool {
         guard !isProcessing else { return false }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
@@ -106,8 +108,17 @@ final class IdentityWithdrawViewModel: ObservableObject {
             return false
         }
         isProcessing = true
+        submittedUnconfirmed = false
         defer { isProcessing = false }
 
+        let confirmedPreparation: SwiftDashSDKHost.PlatformPreparation
+        do {
+            confirmedPreparation = try preparation ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+            try SwiftDashSDKHost.shared.validatePlatformOperation(confirmedPreparation)
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
         do {
             try await authorizer.authorize()
         } catch {
@@ -116,6 +127,10 @@ final class IdentityWithdrawViewModel: ObservableObject {
         }
 
         do {
+            guard SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId else {
+                throw SDKError.platformPreparationExpired("The selected wallet changed; review and confirm again")
+            }
+            try SwiftDashSDKHost.shared.validatePlatformOperation(confirmedPreparation)
             let signer = KeychainSigner(modelContainer: modelContainer)
             switch target {
             case .transparent:
@@ -123,20 +138,30 @@ final class IdentityWithdrawViewModel: ObservableObject {
                       !address.isEmpty else {
                     throw WithdrawError.noCoreReceiveAddress
                 }
-                try await wallet.withdrawCredits(
-                    identityId: identityId,
-                    amount: amountCredits,
-                    toAddress: address,
-                    signer: signer)
+                try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: confirmedPreparation) {
+                    try await wallet.withdrawCredits(
+                        identityId: identityId,
+                        amount: amountCredits,
+                        toAddress: address,
+                        signer: signer)
+                }
 
             case .platform:
                 try await transferToOwnPlatformAddress(
                     identityId: identityId,
                     amountCredits: amountCredits,
                     wallet: wallet,
-                    signer: signer)
+                    signer: signer,
+                    preparation: confirmedPreparation)
             }
             return true
+        } catch PlatformWalletError.platformWriteUnconfirmed,
+                PlatformWalletError.transactionBroadcastUnconfirmed {
+            submittedUnconfirmed = true
+            errorMessage = NSLocalizedString(
+                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+                comment: "Identity transfer result unknown")
+            return false
         } catch {
             errorMessage = error.localizedDescription
             return false
@@ -150,7 +175,8 @@ final class IdentityWithdrawViewModel: ObservableObject {
         identityId: Data,
         amountCredits: UInt64,
         wallet: ManagedPlatformWallet,
-        signer: KeychainSigner
+        signer: KeychainSigner,
+        preparation: SwiftDashSDKHost.PlatformPreparation
     ) async throws {
         guard let destination = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address,
@@ -165,10 +191,12 @@ final class IdentityWithdrawViewModel: ObservableObject {
             addressType: storageBytes[storageBytes.startIndex],
             hash: Data(storageBytes.dropFirst()),
             credits: amountCredits)
-        try await wallet.transferCreditsToAddresses(
-            fromIdentityId: identityId,
-            recipients: [recipient],
-            signer: signer)
+        try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+            try await wallet.transferCreditsToAddresses(
+                fromIdentityId: identityId,
+                recipients: [recipient],
+                signer: signer)
+        }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
     }
 }

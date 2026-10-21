@@ -380,6 +380,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case shieldedPoolTooSmall(currentNotes: UInt64)
         case noShieldedFallbackAddress
         case shieldedCreateUnconfirmed
+        case platformWriteUnconfirmed
         case missingInvitation
         case alreadyInFlight
         case invalidTemporaryUsername
@@ -447,6 +448,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
                 return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+            case .platformWriteUnconfirmed:
+                return NSLocalizedString(
+                    "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
+                    comment: "DashPay registration or purchase result unknown")
             case .missingInvitation:
                 return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
@@ -496,7 +501,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         _ username: String,
         fundingSource: DWIdentityFundingSource = .core,
         invitationURI: String? = nil,
-        temporaryUsername: String? = nil
+        temporaryUsername: String? = nil,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
 
@@ -532,24 +538,28 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identitySnapshot.isLoading else { throw CoordinatorError.noWallet }
+        let preparation = try preparation ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
         return try await UsernameRegistrationRecoveryFlow.route(
             identityId: identitySnapshot.identityId,
             resume: { identityId in
                 try await self.resumeUsernameRegistration(
-                    identityId: identityId, username: username, temporaryUsername: temporaryUsername)
+                    identityId: identityId, username: username, temporaryUsername: temporaryUsername,
+                    preparation: preparation)
             },
             create: {
                 try await self.createIdentityAndUsername(
                     username, fundingSource: fundingSource, invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername, wallet: wallet,
-                    network: network, modelContainer: modelContainer)
+                    network: network, modelContainer: modelContainer, preparation: preparation)
             })
     }
 
     private func createIdentityAndUsername(
         _ username: String, fundingSource: DWIdentityFundingSource,
         invitationURI: String?, temporaryUsername: String?, wallet: ManagedPlatformWallet,
-        network: Network, modelContainer: ModelContainer
+        network: Network, modelContainer: ModelContainer,
+        preparation: SwiftDashSDKHost.PlatformPreparation
     ) async throws -> Identifier {
         let recoveryLock = lookupRegistrationRecoveryLock(
             walletId: wallet.walletId,
@@ -623,6 +633,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
         } catch {
             newController.enterFailed(error.localizedDescription)
             throw error
@@ -681,7 +692,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs)),
+                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs),
+                                        preparation: preparation),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
         } catch {
@@ -691,7 +703,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
-            wallet: wallet, network: network, signer: signer, newController: newController)
+            wallet: wallet, network: network, signer: signer, newController: newController,
+            preparation: preparation)
     }
 
     /// Inputs captured before authorization; helpers never resolve a new wallet.
@@ -705,10 +718,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let username: String
         let invitationURI: String?
         let requiredIdentityFundingDuffs: UInt64
+        let preparation: SwiftDashSDKHost.PlatformPreparation
     }
 
     /// Submit only the selected funding route when no paid lock or identity exists.
     private func createFundedIdentity(_ context: IdentityCreationContext) async throws -> Identifier {
+        try SwiftDashSDKHost.shared.validatePlatformOperation(context.preparation)
         let wallet = context.wallet
         let modelContainer = context.modelContainer
         let signer = context.signer
@@ -719,12 +734,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let identityId: Identifier
         switch context.fundingSource {
         case .core:
-            let result = try await wallet.registerIdentityWithFunding(
-                amountDuffs: requiredIdentityFundingDuffs,
-                accountIndex: Self.defaultAccountIndex,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer)
+            let result = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: context.preparation) {
+                try await wallet.registerIdentityWithFunding(
+                    amountDuffs: requiredIdentityFundingDuffs,
+                    accountIndex: Self.defaultAccountIndex,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer)
+            }
             identityId = result.0
 
         case .platformPayment:
@@ -737,13 +754,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 targetCredits: targetCredits)
             Self.logger.info("🪪 IDENT-COORD :: PP inputs=\(inputs.count, privacy: .public) targetCredits=\(targetCredits, privacy: .public)")
             do {
-                let created = try await wallet.registerIdentityFromAddresses(
-                    inputs: inputs,
-                    output: nil,
-                    identityIndex: Self.pinnedIdentityIndex,
-                    identityPubkeys: pubkeys,
-                    identitySigner: signer,
-                    addressSigner: signer)
+                let created = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: context.preparation) {
+                    try await wallet.registerIdentityFromAddresses(
+                        inputs: inputs,
+                        output: nil,
+                        identityIndex: Self.pinnedIdentityIndex,
+                        identityPubkeys: pubkeys,
+                        identitySigner: signer,
+                        addressSigner: signer)
+                }
                 identityId = created.identityId
             } catch {
                 guard Self.isPlatformAddressInsufficientFunds(error) else {
@@ -763,7 +782,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: wallet.walletId,
                 modelContainer: modelContainer,
                 pubkeys: pubkeys,
-                signer: signer)
+                signer: signer,
+                preparation: context.preparation)
 
         case .invitation:
             // DIP-13 claim: register the invitee's identity funded
@@ -773,12 +793,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard let invitationURI else {
                 throw CoordinatorError.missingInvitation
             }
-            let managed = try await wallet.claimInvitation(
-                uri: invitationURI,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer,
-                nowUnix: UInt32(Date().timeIntervalSince1970))
+            let managed = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: context.preparation) {
+                try await wallet.claimInvitation(
+                    uri: invitationURI,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer,
+                    nowUnix: UInt32(Date().timeIntervalSince1970))
+            }
             identityId = try managed.getId()
         }
         return identityId
@@ -832,12 +854,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         ])
                 }
                 Self.logger.info("🪪 IDENT-COORD :: recovery — resuming original asset lock vout=\(outPoint.vout, privacy: .public)")
-                let result = try await wallet.resumeIdentityWithAssetLock(
-                    outPointTxid: outPoint.txidWire,
-                    outPointVout: outPoint.vout,
-                    identityIndex: Self.pinnedIdentityIndex,
-                    identityPubkeys: pubkeys,
-                    signer: signer)
+                try SwiftDashSDKHost.shared.validatePlatformOperation(context.preparation)
+                let result = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: context.preparation) {
+                    try await wallet.resumeIdentityWithAssetLock(
+                        outPointTxid: outPoint.txidWire,
+                        outPointVout: outPoint.vout,
+                        identityIndex: Self.pinnedIdentityIndex,
+                        identityPubkeys: pubkeys,
+                        signer: signer)
+                }
                 identityId = result.0
             }
         } else {
@@ -847,13 +872,25 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Preserve payment/creation failure phases independently of funding dispatch.
+    private func preservingUnconfirmedOutcome(_ error: Error) -> Error {
+        switch error {
+        case PlatformWalletError.platformWriteUnconfirmed,
+             PlatformWalletError.transactionBroadcastUnconfirmed:
+            return CoordinatorError.platformWriteUnconfirmed
+        default:
+            return error
+        }
+    }
+
     private func reportIdentityCreationFailure(
         _ error: Error, controller: DWIdentityRegistrationController
     ) -> Error {
+        let error = preservingUnconfirmedOutcome(error)
         if let coordError = error as? CoordinatorError {
-            if case .shieldedCreateUnconfirmed = coordError {
+            switch coordError {
+            case .shieldedCreateUnconfirmed, .platformWriteUnconfirmed:
                 failedAtPhase = .creatingID
-            } else {
+            default:
                 failedAtPhase = .processingPayment
             }
             lastErrorMessage = coordError.localizedDescription
@@ -876,7 +913,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     func resumeUsernameRegistration(
         identityId: Identifier,
         username: String,
-        temporaryUsername: String? = nil
+        temporaryUsername: String? = nil,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
     ) async throws -> Identifier {
         guard !phase.isActive, controller?.phase.isActive != true else {
             throw CoordinatorError.alreadyInFlight
@@ -897,6 +935,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 throw CoordinatorError.invalidTemporaryUsername
             }
         }
+        let preparation = try preparation ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
         resetState()
         currentUsername = username
         registrationWalletId = wallet.walletId
@@ -920,6 +960,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
         do {
             try validateRegistrationContext(walletId: wallet.walletId, network: network)
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
             // Restore signing material after seed recovery. Use this identity's
             // recorded derivation index, never assume the selected identity is 0.
             guard let index = try wallet.managedIdentity(identityId: identityId).getIdentityIndex() else {
@@ -935,7 +976,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: KeychainSigner(modelContainer: container),
-            newController: newController)
+            newController: newController, preparation: preparation)
     }
 
     private func validateRegistrationContext(walletId: Data, network: Network) throws {
@@ -1001,6 +1042,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         identityId: Identifier, username: String, temporaryUsername: String?,
         wallet: ManagedPlatformWallet, network: Network, signer: KeychainSigner,
         newController: DWIdentityRegistrationController,
+        preparation: SwiftDashSDKHost.PlatformPreparation,
         authorize: () async throws -> Void = {}
     ) async throws -> Identifier {
         defer { DWCurrentUserIdentityInfo.shared.refreshFromSDK() }
@@ -1008,7 +1050,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             return try await registerNames(
                 identityId: identityId, username: username, temporaryUsername: temporaryUsername,
                 wallet: wallet, network: network, signer: signer, newController: newController,
-                authorize: authorize)
+                preparation: preparation, authorize: authorize)
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch {
@@ -1023,6 +1065,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         identityId: Identifier, username: String, temporaryUsername: String?,
         wallet: ManagedPlatformWallet, network: Network, signer: KeychainSigner,
         newController: DWIdentityRegistrationController,
+        preparation: SwiftDashSDKHost.PlatformPreparation,
         authorize: () async throws -> Void
     ) async throws -> Identifier {
         try validateRegistrationContext(walletId: wallet.walletId, network: network)
@@ -1048,15 +1091,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         username, identityId: identityId, wallet: wallet)
                 },
                 register: {
-                    _ = try await wallet.registerDpnsName(
-                        identityId: identityId, name: username, signer: signer)
+                    try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+                    _ = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                        try await wallet.registerDpnsName(
+                            identityId: identityId, name: username, signer: signer)
+                    }
                 })
             Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username, privacy: .public)")
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error), privacy: .public)")
-            throw CoordinatorError.dpnsRegistration(error)
+            throw CoordinatorError.dpnsRegistration(preservingUnconfirmedOutcome(error))
         }
 
         if !isContestedSubmission || nameState == .owned {
@@ -1130,8 +1176,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                             temporaryUsername, identityId: identityId, wallet: wallet)
                     },
                     register: {
-                        _ = try await wallet.registerDpnsName(
-                            identityId: identityId, name: temporaryUsername, signer: signer)
+                        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+                        _ = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                            try await wallet.registerDpnsName(
+                                identityId: identityId, name: temporaryUsername, signer: signer)
+                        }
                     })
                 DWCurrentUserIdentityInfo.persistConfirmedUsername(
                     temporaryUsername, identityId: identityId, walletId: wallet.walletId, container: registrationContainer)
@@ -1207,13 +1256,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     func startClaimInvitation(
         username: String,
         invitationURI: String,
-        temporaryUsername: String? = nil
+        temporaryUsername: String? = nil,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
     ) async throws -> Identifier {
         try await startCreateUsername(
             username,
             fundingSource: .invitation,
             invitationURI: invitationURI,
-            temporaryUsername: temporaryUsername)
+            temporaryUsername: temporaryUsername, preparation: preparation)
     }
 
     /// Direct purchase of a marketplace-listed name from the
@@ -1230,7 +1280,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// writes (a purchase never writes a contested bookmark, so the
     /// deferral branch in `handlePhaseChange` cannot trigger).
     @discardableResult
-    func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
+    func startPurchaseUsername(
+        name: String, priceCredits: UInt64,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
+    ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name, privacy: .public) priceCredits=\(priceCredits, privacy: .public)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
@@ -1246,6 +1299,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let identitySnapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identitySnapshot.isLoading else { throw CoordinatorError.noWallet }
         let selectedIdentityId = identitySnapshot.identityId
+        let preparation = try preparation ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
 
         // Single-flight — same rationale as `startCreateUsername`: the
         // funding FFI calls race to their terminal even if we stop
@@ -1287,6 +1342,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
         } catch {
             newController.enterFailed(error.localizedDescription)
             throw error
@@ -1318,10 +1374,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         (requiredCredits - heldCredits + 999) / 1_000,
                         Self.minimumCoreTopUpDuffs)
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs, privacy: .public)")
-                    _ = try await wallet.topUpIdentityWithFunding(
-                        identityId: existingId,
-                        amountDuffs: shortfallDuffs,
-                        accountIndex: Self.defaultAccountIndex)
+                    try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+                    _ = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                        try await wallet.topUpIdentityWithFunding(
+                            identityId: existingId,
+                            amountDuffs: shortfallDuffs,
+                            accountIndex: Self.defaultAccountIndex)
+                    }
                 }
             } else {
                 // Fresh identity, funded with the full purchase amount.
@@ -1340,20 +1399,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     network: network))
                 newController.enterInFlight()
                 let fundingDuffs = (requiredCredits + 999) / 1_000
-                let result = try await wallet.registerIdentityWithFunding(
-                    amountDuffs: fundingDuffs,
-                    accountIndex: Self.defaultAccountIndex,
-                    identityIndex: Self.pinnedIdentityIndex,
-                    identityPubkeys: pubkeys,
-                    signer: signer)
+                try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+                let result = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                    try await wallet.registerIdentityWithFunding(
+                        amountDuffs: fundingDuffs,
+                        accountIndex: Self.defaultAccountIndex,
+                        identityIndex: Self.pinnedIdentityIndex,
+                        identityPubkeys: pubkeys,
+                        signer: signer)
+                }
                 identityId = result.0
             }
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error), privacy: .public)")
             failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
-            lastErrorMessage = error.localizedDescription
-            newController.enterFailed(error.localizedDescription)
-            throw CoordinatorError.identityRegistration(error)
+            let reportedError = preservingUnconfirmedOutcome(error)
+            lastErrorMessage = reportedError.localizedDescription
+            newController.enterFailed(reportedError.localizedDescription)
+            throw CoordinatorError.identityRegistration(reportedError)
         }
 
         // The purchase itself — exact-price: the SDK pre-flights the
@@ -1362,18 +1425,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // index keys on the normalized label.
         do {
             try validatePurchaseContext(walletId: wallet.walletId, network: network, identityId: selectedIdentityId)
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
             let normalized = (try? SwiftDashSDKHost.shared.sdk?.dpnsNormalizeLabel(name))
                 .flatMap { $0 } ?? name.lowercased()
-            _ = try await wallet.purchaseDpnsName(
-                purchaserIdentityId: identityId,
-                name: normalized,
-                expectedPriceCredits: priceCredits,
-                signer: signer)
+            _ = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                try await wallet.purchaseDpnsName(
+                    purchaserIdentityId: identityId,
+                    name: normalized,
+                    expectedPriceCredits: priceCredits,
+                    signer: signer)
+            }
             Self.logger.info("🪪 IDENT-COORD :: purchased \(name, privacy: .public) for \(priceCredits, privacy: .public) credits")
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error), privacy: .public)")
             failedAtPhase = .registrationUsername
-            let coordError = CoordinatorError.purchase(error)
+            let coordError = CoordinatorError.purchase(preservingUnconfirmedOutcome(error))
             lastErrorMessage = coordError.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw coordError
@@ -2015,7 +2081,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         walletId: Data,
         modelContainer: ModelContainer,
         pubkeys: [ManagedPlatformWallet.IdentityPubkey],
-        signer: KeychainSigner
+        signer: KeychainSigner,
+        preparation: SwiftDashSDKHost.PlatformPreparation
     ) async throws -> Identifier {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw CoordinatorError.noSDK
@@ -2054,18 +2121,20 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination, privacy: .public) contested=\(contested, privacy: .public)")
         do {
-            let identityId = try await manager.shieldedIdentityCreateFromPool(
-                walletId: walletId,
-                // Per-operation Orchard spend authority (seedless
-                // shielded bind) — same pattern as the app's other
-                // shielded spends in `ShieldedTransferCoordinator`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                denomination: denomination,
-                sendToAddressOnCreationFailure: fallbackAddressBytes,
-                identitySigner: signer)
+            let identityId = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                try await manager.shieldedIdentityCreateFromPool(
+                    walletId: walletId,
+                    // Per-operation Orchard spend authority (seedless
+                    // shielded bind) — same pattern as the app's other
+                    // shielded spends in `ShieldedTransferCoordinator`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    denomination: denomination,
+                    sendToAddressOnCreationFailure: fallbackAddressBytes,
+                    identitySigner: signer)
+            }
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
             return identityId

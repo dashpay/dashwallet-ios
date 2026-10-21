@@ -1968,6 +1968,7 @@
 		D9B1027C784C2F7ABE856C66 /* PaymentIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DE6B63FE6B9E24278B870E /* PaymentIntent.swift */; };
 		DA38F1C5CD32A52891D02D0E /* MayaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */; };
 		DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */; };
+		A12280000000000000000002 /* WalletProtocolCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12280000000000000000001 /* WalletProtocolCompatibilityTests.swift */; };
 		DA5A00000000000000000001 /* DWDashPayIdentityKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5A00000000000000000003 /* DWDashPayIdentityKeys.swift */; };
 		DA5A00000000000000000002 /* DWDashPayIdentityKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5A00000000000000000003 /* DWDashPayIdentityKeys.swift */; };
 		DA5A00000000000000000004 /* DashPayIdentityKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5A00000000000000000005 /* DashPayIdentityKeysTests.swift */; };
@@ -2076,6 +2077,12 @@
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
 		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
+		24CAE0F59C6912E3100DD6D9 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2810B5A0391A0E9F8BA75A44 /* ProtocolCompatibilityBanner.swift */; };
+		37073F1701FD566FBB158D47 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817F5D3C43D9D0BACEAD27A0 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
+		5A6021A453D21DFFAC8AD456 /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 608465F486B3F9801C82C850 /* WalletProtocolCompatibilityController.swift */; };
+		5AB9D51D588A37DCAE6685EB /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 608465F486B3F9801C82C850 /* WalletProtocolCompatibilityController.swift */; };
+		62D8C3A8C3B76AB18193FF76 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817F5D3C43D9D0BACEAD27A0 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
+		EE4A14D13A5CF665A1E86BD0 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2810B5A0391A0E9F8BA75A44 /* ProtocolCompatibilityBanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3819,6 +3826,7 @@
 		D9155233A128831C0ABF18A3 /* BIP70PaymentService+App.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "BIP70PaymentService+App.swift"; sourceTree = "<group>"; };
 		D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertCardRow.swift; sourceTree = "<group>"; };
 		DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastedAmountNormalizationTests.swift; sourceTree = "<group>"; };
+		A12280000000000000000001 /* WalletProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
 		DA5A00000000000000000003 /* DWDashPayIdentityKeys.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWDashPayIdentityKeys.swift; sourceTree = "<group>"; };
 		DA5A00000000000000000005 /* DashPayIdentityKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayIdentityKeysTests.swift; sourceTree = "<group>"; };
 		DA8890030000000000000003 /* DWSecureAllocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureAllocator.h; sourceTree = "<group>"; };
@@ -3917,6 +3925,9 @@
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
 		222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashPayRecoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2810B5A0391A0E9F8BA75A44 /* ProtocolCompatibilityBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolCompatibilityBanner.swift; path = DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift; sourceTree = "<group>"; };
+		608465F486B3F9801C82C850 /* WalletProtocolCompatibilityController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityController.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletProtocolCompatibilityController.swift; sourceTree = "<group>"; };
+		817F5D3C43D9D0BACEAD27A0 /* SwiftDashSDKProtocolCompatibilityClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SwiftDashSDKProtocolCompatibilityClient.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKProtocolCompatibilityClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -7377,6 +7388,9 @@
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
+				608465F486B3F9801C82C850 /* WalletProtocolCompatibilityController.swift */,
+				817F5D3C43D9D0BACEAD27A0 /* SwiftDashSDKProtocolCompatibilityClient.swift */,
+				2810B5A0391A0E9F8BA75A44 /* ProtocolCompatibilityBanner.swift */,
 				C9D2C9552A320AC100D15901 /* DashPay */,
 				2ADF83FB23632D55008459A7 /* Shared */,
 				75D5F3C7191EC270004AB296 /* DashWallet */,
@@ -7524,6 +7538,7 @@
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
+				A12280000000000000000001 /* WalletProtocolCompatibilityTests.swift */,
 				DA5A00000000000000000005 /* DashPayIdentityKeysTests.swift */,
 				D5E2D975669CB53883D56803 /* DWAvatarUploadClientTests.swift */,
 			);
@@ -9919,6 +9934,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A6021A453D21DFFAC8AD456 /* WalletProtocolCompatibilityController.swift in Sources */,
+				37073F1701FD566FBB158D47 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
+				24CAE0F59C6912E3100DD6D9 /* ProtocolCompatibilityBanner.swift in Sources */,
 				553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */,
 				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
@@ -10834,6 +10852,7 @@
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
+				A12280000000000000000002 /* WalletProtocolCompatibilityTests.swift in Sources */,
 				DA5A00000000000000000004 /* DashPayIdentityKeysTests.swift in Sources */,
 				215F9BB0CAADF4D47D95C444 /* DWAvatarUploadClientTests.swift in Sources */,
 			);
@@ -10873,6 +10892,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5AB9D51D588A37DCAE6685EB /* WalletProtocolCompatibilityController.swift in Sources */,
+				62D8C3A8C3B76AB18193FF76 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
+				EE4A14D13A5CF665A1E86BD0 /* ProtocolCompatibilityBanner.swift in Sources */,
 				7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */,
 				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
@@ -13258,7 +13280,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/Moya/Moya.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.modulemap\" -Xcc -fmodule-map-file=\"${PODS_CONFIGURATION_BUILD_DIR}/SQLiteMigrationManager.swift/SQLiteMigrationManager.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/FBLPromises/PromisesObjC.modulemap\" -Xcc -fmodule-map-file=\"${PODS_ROOT}/Headers/Public/SSZipArchive/SSZipArchive.modulemap\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PIGGYCARDS_ENABLED DASHPAY $(DASH_DEVNET_FLAGS)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PIGGYCARDS_ENABLED DASHPAY $(DASH_DEVNET_FLAGS) TESTFLIGHT";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
 				SWIFT_OBJC_INTERFACE_HEADER_NAME = "dashwallet-Swift.h";
 				SWIFT_VERSION = 5.0;
@@ -13450,7 +13472,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -DDASHPAY";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashfoundation.dash;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PIGGYCARDS_ENABLED DASHPAY $(DASH_DEVNET_FLAGS)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "PIGGYCARDS_ENABLED DASHPAY $(DASH_DEVNET_FLAGS) TESTFLIGHT";
 				SWIFT_OBJC_BRIDGING_HEADER = "DashWallet/dashwallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

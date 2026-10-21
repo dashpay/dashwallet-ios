@@ -54,6 +54,7 @@ struct InternalTransferConfirmSheet: View {
         platformShieldAmountWasMax: Bool = false,
         identityTopUp: IdentityTopUpTransfer? = nil,
         identityWithdrawal: IdentityWithdrawalTransfer? = nil,
+        preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
         onCancel: @escaping () -> Void,
         onSubmitted: @escaping () -> Void,
         onPlatformShieldCapacityChanged: @escaping (UInt64?, Bool) -> Void
@@ -72,7 +73,8 @@ struct InternalTransferConfirmSheet: View {
             withdrawalFeeCredits: withdrawalFeeCredits,
             isFullPlatformWithdrawal: isFullPlatformWithdrawal,
             isFullShieldedSweep: isFullShieldedSweep,
-            platformShieldAmountWasMax: platformShieldAmountWasMax))
+            platformShieldAmountWasMax: platformShieldAmountWasMax,
+            preparation: preparation))
         self.onCancel = onCancel
         self.onSubmitted = onSubmitted
         self.onPlatformShieldCapacityChanged = onPlatformShieldCapacityChanged
@@ -207,6 +209,7 @@ private func confirmSheetSample(
         platformShieldAmountWasMax: false,
         identityTopUp: identityTopUp,
         identityWithdrawal: identityWithdrawal,
+        preparation: .failure(SDKError.protocolCompatibilityUnavailable("Preview")),
         onCancel: {},
         onSubmitted: {},
         onPlatformShieldCapacityChanged: { _, _ in })

@@ -133,10 +133,6 @@ struct AssetLockRecoveryService {
                txidWire: Data,
                vout: UInt32,
                refreshLookup: Bool = true) async throws -> Outcome {
-        // Resolved before the resume suspends: a wallet switch during the
-        // round-trip must not file this probe under whatever wallet is active
-        // when the answer arrives.
-        let originatingWalletIdHex = AssetLockProbeStore.currentWalletIdHex()
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
@@ -177,13 +173,9 @@ struct AssetLockRecoveryService {
                 // settles it. Reporting `.completed` would be worse still.
                 outcome = .submittedAwaitingSync
             } else if coordinator.lastResumeReport == .alreadyConsumed {
-                // Platform reported this outpoint already spent. The SDK keeps
-                // the lock at `RecoveredFromChain` (the report is not
-                // quorum-authenticated), so record the probe here — otherwise
-                // the answer dies with this call and every later launch offers
-                // the same futile retry. Recorded at the service layer so the
-                // single-row and bulk callers share it.
-                AssetLockProbeStore.shared.record(txid: txidWire, walletIdHex: originatingWalletIdHex)
+                // The coordinator records the advisory probe for its captured
+                // wallet, including calls made directly by the recovery sheet.
+                // Rust retains the nonterminal lock and its recovery proof.
                 outcome = .completionUnconfirmed
             } else {
                 outcome = .completed

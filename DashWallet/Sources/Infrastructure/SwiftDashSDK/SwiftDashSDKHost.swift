@@ -29,6 +29,8 @@
 //
 
 import Foundation
+import Combine
+import UIKit
 import OSLog
 import SwiftData
 import SwiftDashSDK
@@ -151,6 +153,9 @@ final class SwiftDashSDKHost {
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
+    private var runtimeID = UUID()
+    let protocolCompatibility = WalletProtocolCompatibilityController(log: { DWLogger.log($0) })
+    private var lifecycleObservers = Set<AnyCancellable>()
 
     /// Watches for contact-crypto work that gets deferred *after* the
     /// load-time unlock. See `unlockDashPayContactCrypto`. Replaced (and the
@@ -190,7 +195,13 @@ final class SwiftDashSDKHost {
         }
     }
 
-    private init() {}
+    private init() {
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { _ = self?.protocolCompatibility.willEnterForeground() }
+            }
+            .store(in: &lifecycleObservers)
+    }
 
     // MARK: - Import scan floor
 
@@ -206,47 +217,52 @@ final class SwiftDashSDKHost {
 
     // MARK: - Platform protocol version
 
-    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
-    ///
-    /// **Testnet stays pinned to 13.** Testnet Drive moved past v12 to v13,
-    /// whose validation set changed the shielded identity-create exit
-    /// denominations (v12/V8 `[0.1, 0.3, 0.5, 1.0]` → v13/V9 `[0.03, 0.1,
-    /// 0.25, 0.5, 1.0]`). Staying at v12 made the client build shielded
-    /// transitions against the old set, so a contested (0.25 DASH) shielded
-    /// username create failed client-side ("denomination 25000000000 is not a
-    /// member …") even though the server requires exactly 0.25. Pinning
-    /// explicitly also avoids a race where the shielded build runs before the
-    /// SDK has ratcheted to the network version. Bump this when the agreed
-    /// testnet protocol moves past v13.
-    ///
-    /// **Mainnet uses `0` — auto-detect.** The pin above was chosen for
-    /// testnet but applied to every network, which put the client two versions
-    /// ahead of mainnet. Platform v13 (`DRIVE_VERSION_V8`) switches the
-    /// compacted address-balance proof to the two-proof
-    /// `CompactedAddressBalanceProof` bincode envelope, while "nodes and
-    /// clients on v12 and below keep the legacy single GroveDB proof"
-    /// (rs-platform-version `version/v13.rs`). A v13 client therefore decodes
-    /// mainnet's legacy proof as the envelope, consumes the structure and
-    /// trips on the remainder:
-    ///
-    ///     proof: corrupted error: compacted address balance proof contains trailing bytes
-    ///
-    /// — observed 20× across three nodes on a mainnet device (2026-07-31),
-    /// with testnet clean, and it retries then gives up, so the Platform
-    /// address balance never populates there.
-    ///
-    /// `0` is what the SDK is designed for: it seeds at the per-network
-    /// `min_protocol_version` floor (mainnet 11, testnet 12) with auto-detect
-    /// on, ratcheting up as the network reports newer versions — "so this
-    /// picks the right wire without a Swift-side network→version map"
-    /// (`SDK.init(network:platformVersion:)`). A hard pin also disables
-    /// `refreshProtocolVersion()`, which is documented as a no-op while
-    /// pinned, so the client could never learn the network's real version.
-    ///
-    /// Devnet/regtest follow mainnet's auto-detect: no shielded-denomination
-    /// contract is pinned for them, and `makeRuntime` rejects regtest anyway.
-    static func platformVersion(for network: Network) -> UInt32 {
-        network == .testnet ? 13 : 0
+    /// Both production networks learn supported versions from verified metadata.
+    /// Active runtimes explicitly check compatibility before Platform writes;
+    /// the linked framework still determines which protocol versions are supported.
+    static func platformVersion(for network: Network) -> UInt32 { 0 }
+
+    /// Cheap, authoritative native gate. No network request is made here.
+    @discardableResult
+    func requirePlatformWriteCompatibility() throws -> PlatformWritePermit {
+        protocolCompatibility.sample()
+        guard let sdk, runningNetwork == WalletEnvironment.network else {
+            throw SDKError.protocolCompatibilityUnavailable("The active wallet is not ready")
+        }
+        return try sdk.platformWritePermit()
+    }
+
+    struct PlatformPreparation {
+        fileprivate let sdk: SDK
+        fileprivate let runtimeID: UUID
+        fileprivate let permit: PlatformWritePermit
+    }
+
+    /// Capture with the fee/amount summary, before user confirmation.
+    func preparePlatformOperation() throws -> PlatformPreparation {
+        guard let sdk, runningNetwork == WalletEnvironment.network else {
+            throw SDKError.protocolCompatibilityUnavailable("The active wallet is not ready")
+        }
+        return PlatformPreparation(sdk: sdk, runtimeID: runtimeID, permit: try sdk.platformWritePermit())
+    }
+
+    func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
+        guard preparation.runtimeID == runtimeID, preparation.sdk === sdk,
+              runningNetwork == WalletEnvironment.network else {
+            throw SDKError.platformPreparationExpired("Wallet runtime changed; review and confirm again")
+        }
+        try preparation.sdk.validatePlatformWritePermit(preparation.permit)
+    }
+
+    /// Carry the confirmed generation into the native operation, including
+    /// time spent waiting in Swift's and Rust's worker queues.
+    func withPlatformOperation<T>(
+        preparation: PlatformPreparation,
+        operation: () async throws -> T
+    ) async throws -> T {
+        try validatePlatformOperation(preparation)
+        return try await preparation.sdk.withPlatformWritePermit(
+            preparation.permit, operation: operation)
     }
 
     // MARK: - Wallet presence
@@ -488,6 +504,7 @@ final class SwiftDashSDKHost {
         let manager: PlatformWalletManager
         let modelContainer: ModelContainer
         let network: Network
+        let runtimeID: UUID?
     }
 
     /// Start the host for `network`. Idempotent: re-entering with the same
@@ -508,8 +525,13 @@ final class SwiftDashSDKHost {
         let resolvedWallet: ManagedPlatformWallet
         Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
-            resolvedWallet = try await loadPersistedWallet(manager: handles.manager, network: network)
+            resolvedWallet = try await loadPersistedWallet(
+                manager: handles.manager, network: network, generation: handles.runtimeID)
         } catch HostError.walletNotFound {
+            if handles.runtimeID != runtimeID {
+                await handles.manager.shutdown()
+                throw CancellationError()
+            }
             // Reinstall recovery (C6-C): the SwiftData store dies with the app
             // but WalletStorage mnemonics live in the keychain — rebuild the
             // wallet rows from them instead of failing the start. Before this,
@@ -530,20 +552,20 @@ final class SwiftDashSDKHost {
                 // The freshly built manager was never published — tear it
                 // down deterministically instead of leaving it to the
                 // deinit fallback.
-                await handles.manager.shutdown()
+                try await discardRuntime(handles)
                 throw HostError.walletNotFound(network)
             }
             resolvedWallet = recovered
         } catch let error as HostError {
-            await handles.manager.shutdown()
+            try await discardRuntime(handles)
             throw error
         } catch {
             Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
-            await handles.manager.shutdown()
+            try await discardRuntime(handles)
             throw HostError.walletBootstrapFailed(error)
         }
 
-        publish(handles: handles, wallet: resolvedWallet)
+        try await publish(handles: handles, wallet: resolvedWallet)
         Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
         Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
         DWLogger.log("HOST started for \(network.rawValue)")
@@ -611,6 +633,7 @@ final class SwiftDashSDKHost {
                     let (targetManager, isTemporary) = try await managerForStoredWalletOperation(
                         network: targetNetwork)
                     do {
+                        try validateRuntimeGeneration(handles.runtimeID)
                         _ = try await createAndPersist(
                             mnemonic: mnemonic,
                             manager: targetManager,
@@ -635,14 +658,14 @@ final class SwiftDashSDKHost {
             // assigned to `self.manager`, so it must be shut down directly.
             // `createAndPersist` has already rolled back any provisional
             // mnemonic it wrote.
-            await handles.manager.shutdown()
+            try await discardRuntime(handles)
             throw error
         }
 
+        try await publish(handles: handles, wallet: createdWallet)
         if let kind = registryNetworkKind(for: network) {
             WalletEnvironment.setActiveWalletId(createdWallet.walletId, for: kind)
         }
-        publish(handles: handles, wallet: createdWallet)
 
         let origin = isImported ? "imported" : "created"
         Self.logger.info("🪺 HOST :: \(origin, privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
@@ -940,12 +963,19 @@ final class SwiftDashSDKHost {
     /// invariant doesn't hold here.
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        runtimeID = UUID()
+        protocolCompatibility.detach()
+        return await shutDownPublishedRuntime(generation: runtimeID)
+    }
+
+    private func shutDownPublishedRuntime(generation: UUID) async -> PlatformWalletShutdownMetrics? {
+        let retiringManager = manager
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
         drainWatch?.cancel()
         await drainWatch?.value
 
-        let metrics = await manager?.shutdown()
+        let metrics = await retiringManager?.shutdown()
         if let metrics {
             let stepSummary = metrics.steps
                 .map { "\($0.name)=\($0.milliseconds)ms(code \($0.ffiCode))" }
@@ -957,7 +987,7 @@ final class SwiftDashSDKHost {
                 "HOST shutdown: total=\(metrics.totalMilliseconds)ms offMain=\(metrics.ranOffMainThread) \(stepSummary)")
         }
 
-        clearRuntimeReferences()
+        if runtimeID == generation { clearRuntimeReferences() }
         return metrics
     }
 
@@ -978,11 +1008,32 @@ final class SwiftDashSDKHost {
     // MARK: - Runtime bootstrap
 
     private func buildRuntime(for network: Network) async throws -> RuntimeHandles {
+        let generation = UUID()
+        runtimeID = generation
+        protocolCompatibility.detach()
         if manager != nil {
-            await stopAsync()
+            await shutDownPublishedRuntime(generation: generation)
         }
+        try validateRuntimeGeneration(generation)
+        do {
+            return try await makeRuntime(for: network, generation: generation)
+        } catch {
+            try validateRuntimeGeneration(generation)
+            protocolCompatibility.detach()
+            throw error
+        }
+    }
 
-        return try await makeRuntime(for: network)
+    private func validateRuntimeGeneration(_ generation: UUID?) throws {
+        if let generation, generation != runtimeID { throw CancellationError() }
+    }
+
+    /// An obsolete bootstrap may clean up only its own manager, never the
+    /// replacement's compatibility binding or runtime references.
+    private func discardRuntime(_ handles: RuntimeHandles) async throws {
+        await handles.manager.shutdown()
+        try validateRuntimeGeneration(handles.runtimeID)
+        if handles.runtimeID != nil { protocolCompatibility.detach() }
     }
 
     /// Dedicated queue parking the blocking SDK construction
@@ -1011,6 +1062,7 @@ final class SwiftDashSDKHost {
                 let started = CFAbsoluteTimeGetCurrent()
                 do {
                     let sdk = try SDK(network: network, platformVersion: platformVersion)
+                    try sdk.setProtocolCompatibilityPolicy(.requireVerified)
                     let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
                     // Logged HERE, on the build queue, so offMain= is
                     // evidence of where the work actually ran — a log after
@@ -1031,7 +1083,7 @@ final class SwiftDashSDKHost {
     ///
     /// SDK construction and store opening/migration use dedicated queues.
     /// Manager configuration and context access remain on the MainActor.
-    private func makeRuntime(for network: Network) async throws -> RuntimeHandles {
+    private func makeRuntime(for network: Network, generation: UUID? = nil) async throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
@@ -1067,8 +1119,17 @@ final class SwiftDashSDKHost {
             Self.logger.info(
                 "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
+            try validateRuntimeGeneration(generation)
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
+        }
+
+        try validateRuntimeGeneration(generation)
+        if let generation {
+            await protocolCompatibility.attach(
+                client: SwiftDashSDKProtocolCompatibilityClient(sdk: newSDK),
+                network: network.networkName, runtimeID: generation).value
+            try validateRuntimeGeneration(generation)
         }
 
         guard configurationIdentity.scope == network.persistenceScope,
@@ -1093,10 +1154,12 @@ final class SwiftDashSDKHost {
             Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.source.rawValue, privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
+            try validateRuntimeGeneration(generation)
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
         }
 
+        try validateRuntimeGeneration(generation)
         guard configurationIdentity.scope == network.persistenceScope,
               configurationIdentity.quorumURL == (network == .devnet ? DevnetConfiguration.quorumURL : nil) else {
             throw HostError.devnetConfigurationChanged
@@ -1119,7 +1182,7 @@ final class SwiftDashSDKHost {
             sdk: newSDK,
             manager: newManager,
             modelContainer: container,
-            network: network)
+            network: network, runtimeID: generation)
     }
 
     /// A persistence handler over `network`'s SwiftData store, built without
@@ -1209,10 +1272,12 @@ final class SwiftDashSDKHost {
     /// cannot interleave with other lifecycle operations.
     private func loadPersistedWallet(
         manager: PlatformWalletManager,
-        network: Network
+        network: Network,
+        generation: UUID?
     ) async throws -> ManagedPlatformWallet {
         let loadStarted = CFAbsoluteTimeGetCurrent()
         let restored = try await manager.loadFromPersistor()
+        try validateRuntimeGeneration(generation)
         let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
         DWLogger.log("HOST stage 4/4 loadFromPersistor for \(network.rawValue) restored=\(restored.count) in \(loadMs)ms")
         if let resolved = resolveActiveWallet(in: manager, network: network) {
@@ -1223,7 +1288,8 @@ final class SwiftDashSDKHost {
             // own main-actor turn at least keeps them out of wallet load,
             // which is on the launch critical path.
             Task { [weak self] in
-                self?.unlockDashPayContactCrypto(manager: manager, wallet: resolved)
+                guard let self, self.runtimeID == generation else { return }
+                self.unlockDashPayContactCrypto(manager: manager, wallet: resolved)
             }
             return resolved
         }
@@ -1263,6 +1329,7 @@ final class SwiftDashSDKHost {
         manager: PlatformWalletManager,
         wallet: ManagedPlatformWallet
     ) {
+        let generation = runtimeID
         let walletId = wallet.walletId
         let idTag = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
         // Existence-only probe on the active wallet's own id — the same check
@@ -1299,7 +1366,7 @@ final class SwiftDashSDKHost {
             var attemptsLeft = 5
             var drained = false
             for await statuses in manager.$dashPayUnlockStatus.values {
-                if Task.isCancelled || self == nil { return }
+                guard !Task.isCancelled, self?.runtimeID == generation else { return }
                 guard let status = statuses[walletId] else { continue }
                 if status.pendingAccountBuilds == 0, !status.draining {
                     guard drained else { continue }
@@ -1457,7 +1524,7 @@ final class SwiftDashSDKHost {
     /// rest. Returns the resolved active wallet, or nil when nothing could be
     /// provisioned (the caller then fails the start with `walletNotFound`).
     private func provisionDevnetWallets(handles: RuntimeHandles) async -> ManagedPlatformWallet? {
-        guard handles.network == .devnet else { return nil }
+        guard handles.network == .devnet, handles.runtimeID == runtimeID else { return nil }
 
         let sourcePhrase: String?
         switch devnetProvisioningSource() {
@@ -1496,6 +1563,7 @@ final class SwiftDashSDKHost {
             // network-scoped walletId.
             var attemptedPhrases = Set<String>()
             for entry in Self.persistedMnemonics() {
+                guard handles.runtimeID == runtimeID else { return nil }
                 let phrase = Mnemonic.normalizePhrase(entry.mnemonic)
                 guard Mnemonic.validate(phrase), attemptedPhrases.insert(phrase).inserted else { continue }
                 if await createDevnetWallet(phrase: phrase, manager: handles.manager) {
@@ -1503,6 +1571,8 @@ final class SwiftDashSDKHost {
                 }
             }
         }
+
+        guard handles.runtimeID == runtimeID else { return nil }
 
         // Pin the FROM-network active wallet's devnet twin BEFORE resolving,
         // so `resolveActiveWallet`'s registry branch binds it instead of
@@ -1635,12 +1705,17 @@ final class SwiftDashSDKHost {
         }
     }
 
-    private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {
+    private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) async throws {
+        guard handles.runtimeID == runtimeID else {
+            await handles.manager.shutdown()
+            throw CancellationError()
+        }
         sdk = handles.sdk
         manager = handles.manager
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        protocolCompatibility.markRuntimeReady(runtimeID: runtimeID)
     }
 
     // MARK: - ModelContainer

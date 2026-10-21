@@ -170,6 +170,8 @@ struct CreateUsernameView: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
+                        .padding(.top, 12)
                     Text(viewModel.isResumingUsername
                         ? NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
                         : NSLocalizedString("Create your username", comment: "Usernames"))
@@ -297,10 +299,16 @@ struct CreateUsernameView: View {
                     DashButton(
                         text: primaryButtonText,
                         isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
-                            && !screenLockedAfterAuth,
+                            && !screenLockedAfterAuth && viewModel.protocolCompatibilityMessage == nil,
                         isLoading: inProgress
                     ) {
                         isTextInputFocused = false
+                        do {
+                            try viewModel.prepareConfirmation()
+                        } catch {
+                            registrationErrorMessage = error.localizedDescription
+                            return
+                        }
 
                         // `viewModel.uiState.canContinue` is only true after
                         // `checkIfBlocked` flips `usernameBlockedRule` to
@@ -388,7 +396,10 @@ struct CreateUsernameView: View {
                     onSubmit: { temporaryUsername in
                         confirmContestedSubmission(temporaryUsername: temporaryUsername)
                     },
-                    onCancel: { showContestedConfirmation = false })
+                    onCancel: {
+                        viewModel.clearConfirmation()
+                        showContestedConfirmation = false
+                    })
             }
             .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
@@ -400,7 +411,9 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("Buy", comment: "")) {
                 performPurchase()
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                viewModel.clearConfirmation()
+            }
         } message: {
             Text(String.localizedStringWithFormat(
                 NSLocalizedString(

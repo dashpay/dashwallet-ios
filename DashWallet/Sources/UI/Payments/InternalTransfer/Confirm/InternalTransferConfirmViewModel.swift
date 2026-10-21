@@ -60,6 +60,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     @Published private(set) var platformShieldCapacityChange:
         InternalTransferRunner.PlatformShieldCapacityChange?
 
+    private let preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>
     private let runner: InternalTransferRunner
     private var cancellables = Set<AnyCancellable>()
 
@@ -78,6 +79,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
         isFullPlatformWithdrawal: Bool,
         isFullShieldedSweep: Bool,
         platformShieldAmountWasMax: Bool,
+        preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
         runner: InternalTransferRunner = .shared
     ) {
         // Precedence matches what the view did before: an identity transfer
@@ -110,6 +112,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
         self.networkFeeCredits = networkFeeCredits
         self.totalDuffs = totalDuffs
         self.runner = runner
+        self.preparation = preparation
 
         // `dropFirst` because the runner is shared: whatever a previous
         // transfer left in this property is already there at subscribe time,
@@ -161,7 +164,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     /// announced by a toast on the surface behind it.
     func confirm() async -> Bool {
         guard case .transfer(let request) = mode else { return false }
-        return await runner.start(request) != .notAuthorized
+        return await runner.start(request, preparation: preparation) != .notAuthorized
     }
 
     // MARK: - Request accessors

@@ -49,18 +49,19 @@ private struct InternalTransferToastModifier: ViewModifier {
             }
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
-                guard runner.notice != nil else { return }
+                guard let notice = runner.notice else { return }
+                let duration = notice == .submitted ? 8 : Self.duration
 
                 // A notice raised while this screen was away has already spent
                 // its life unseen — announcing it now would date-stamp an old
                 // outcome as current. Anything still inside its window is fair
                 // to show, for the rest of that window.
                 let age = runner.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
-                guard age < Self.duration else {
+                guard age < duration else {
                     runner.notice = nil
                     return
                 }
-                try? await Task.sleep(for: .seconds(Self.duration - age))
+                try? await Task.sleep(for: .seconds(duration - age))
                 // Cancelled when the notice changes or the view goes away, so
                 // a later one restarts the countdown instead of being cut
                 // short by the previous one.
@@ -73,7 +74,8 @@ private struct InternalTransferToastModifier: ViewModifier {
         switch notice {
         case .started: return .loading
         case .busy: return .warning
-        case .succeeded, .submitted: return .success
+        case .succeeded: return .success
+        case .submitted: return .warning
         case .failed: return .error
         }
     }
@@ -94,8 +96,8 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "")
         case .submitted:
             return NSLocalizedString(
-                "Transfer sent — waiting for the network to confirm it",
-                comment: "Internal transfer accepted but not yet confirmed")
+                "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
+                comment: "The transfer may have reached the network; avoid sending twice")
         case .failed(let reason):
             return reason
         }

@@ -224,6 +224,19 @@ class MainTabbarController: UITabBarController {
         delegate = self
         tabBar.barTintColor = .dw_background()
         setupRatesErrorHandling()
+        let banner = UIHostingController(rootView: ProtocolCompatibilityBanner(
+            controller: SwiftDashSDKHost.shared.protocolCompatibility))
+        banner.sizingOptions = .intrinsicContentSize
+        banner.view.backgroundColor = .clear
+        addChild(banner)
+        view.addSubview(banner.view)
+        banner.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            banner.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            banner.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            banner.view.bottomAnchor.constraint(equalTo: tabBar.topAnchor, constant: -8),
+        ])
+        banner.didMove(toParent: self)
     }
 }
 

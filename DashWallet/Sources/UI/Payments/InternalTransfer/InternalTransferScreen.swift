@@ -11,6 +11,7 @@ import DashUIKit
 /// rewrite the amount already presented for confirmation.
 private struct InternalTransferConfirmation: Identifiable {
     let id = UUID()
+    let preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>
     /// Balance-to-balance route; `nil` exactly when one of the identity
     /// transfers below is set.
     let route: InternalTransferRoute?
@@ -170,6 +171,7 @@ struct InternalTransferScreen: View {
                 platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
                 identityTopUp: submission.identityTopUp,
                 identityWithdrawal: submission.identityWithdrawal,
+                preparation: submission.preparation,
                 onCancel: { confirmation = nil },
                 onSubmitted: {
                     leavesAfterConfirmation = true
@@ -247,6 +249,7 @@ struct InternalTransferScreen: View {
         let identityWithdrawal = viewModel.identityWithdrawalTransfer
         let isIdentityTransfer = identityTopUp != nil || identityWithdrawal != nil
         confirmation = InternalTransferConfirmation(
+            preparation: Result { try viewModel.platformPreparationForConfirmation() },
             route: isIdentityTransfer ? nil : viewModel.route,
             dashDuffs: viewModel.dashDuffs,
             amountDuffsUnsigned: viewModel.dashDuffsUnsigned,

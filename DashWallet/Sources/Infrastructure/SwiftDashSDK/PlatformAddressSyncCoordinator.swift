@@ -1310,7 +1310,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             // can't skip, and isn't skipped by, the BLAST stop above.
             do {
                 if try manager.isShieldedSyncRunning() {
-                    try manager.stopShieldedSync()
+                    try await manager.stopShieldedSync()
                 }
                 Self.logger.info("🛡️ SHIELD :: stopped")
             } catch {

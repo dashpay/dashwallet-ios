@@ -45,7 +45,7 @@ final class AssetLockProbeStore {
 
     static let shared = AssetLockProbeStore()
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let lock = NSLock()
     /// Scoped per wallet (`<legacyKey>_<activeWalletIdHex>`) exactly as
     /// `CoinJoinWithdrawalStore` is: an outpoint probed while wallet A was
@@ -55,15 +55,13 @@ final class AssetLockProbeStore {
     private var cacheKey: String?
     private var cache: Set<Data>?
 
-    private init() {}
-
-    private func resolvedKey() -> String {
-        key(forWalletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
     }
 
     /// The storage key for an EXPLICIT wallet. Callers that suspend before
     /// writing must resolve their wallet up front and pass it here: the active
-    /// wallet can change mid-flight, and `resolvedKey()` would then file the
+    /// wallet can change mid-flight, and using the active wallet would then file the
     /// result under whichever wallet happens to be active at write time.
     private func key(forWalletIdHex walletIdHex: String?) -> String {
         guard let walletIdHex, !walletIdHex.isEmpty else { return legacyKey }
@@ -85,8 +83,6 @@ final class AssetLockProbeStore {
         return set
     }
 
-    private func loaded() -> Set<Data> { loaded(key: resolvedKey()) }
-
     /// Record that `txid` (WIRE order) was probed and reported already spent.
     /// Idempotent and thread-safe.
     /// `walletIdHex` is the wallet the probe belongs to, captured before the
@@ -107,8 +103,14 @@ final class AssetLockProbeStore {
     /// Whether `txid` (WIRE order, e.g. `Transaction.txHashData`) has already
     /// been probed and answered "already spent". Thread-safe; cheap.
     func contains(_ txid: Data) -> Bool {
+        contains(txid, walletIdHex: Self.currentWalletIdHex())
+    }
+
+    /// Explicit-wallet lookup for work that has already captured its runtime.
+    func contains(_ txid: Data, walletIdHex: String?) -> Bool {
+        let key = key(forWalletIdHex: walletIdHex)
         lock.lock(); defer { lock.unlock() }
-        return loaded().contains(txid)
+        return loaded(key: key).contains(txid)
     }
 
     /// Clear a SINGLE wallet's probes (per-wallet Remove flow — the removed

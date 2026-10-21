@@ -778,6 +778,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 await PlatformAddressSyncCoordinator.shared.prepareLocalShieldedState(
                     manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
+            } catch is CancellationError {
+                // A superseded initialization must not tear down its replacement.
+                return
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
