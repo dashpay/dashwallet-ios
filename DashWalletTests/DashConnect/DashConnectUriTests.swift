@@ -132,6 +132,29 @@ final class DashConnectUriTests: XCTestCase {
         }
     }
 
+    // MARK: - Scanned codes
+
+    func testScannedStringAcceptsBothDashConnectSchemes() throws {
+        let keyUri = try validKeyUri()
+        let stUri = validStUri()
+
+        XCTAssertEqual(DashConnectDeepLink.uri(from: keyUri), keyUri)
+        XCTAssertEqual(DashConnectDeepLink.uri(from: stUri), stUri)
+        XCTAssertEqual(DashConnectDeepLink.uri(from: " \(keyUri)\n"), keyUri)
+    }
+
+    func testScannedStringRejectsPaymentCodes() {
+        for code in [
+            "XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy",
+            "dash:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy?amount=0.1",
+            "pay:XnhkeQZLtHqzYqbxLXaAvB9RLnKGrRWKgy",
+            "https://yap.pr/login",
+            "",
+        ] {
+            XCTAssertNil(DashConnectDeepLink.uri(from: code), code)
+        }
+    }
+
 
     private func assertKeyError(_ uri: String, _ expected: DashConnectUriError) {
         XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(uri)) { error in
