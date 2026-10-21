@@ -304,6 +304,24 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
         XCTAssertEqual(VM.preparedChecklistIndex(preparation: .done, phase: .success), 5)
         XCTAssertNil(VM.preparedChecklistIndex(preparation: .done, phase: .failed("x")))
     }
+
+    // MARK: Cancelled PIN prompt
+
+    func testCancelledPromptReturnsToTheChoiceWithoutACommittedLock() {
+        XCTAssertEqual(CoinJoinMoveFundsViewModel.stageAfterAuthCancel(committedLock: false), .choice)
+    }
+
+    /// A committed lock is finished by resuming it, so the sheet stays on the
+    /// Shielded retry and never offers the wallet destination again.
+    func testCancelledPromptKeepsTheShieldedRetryWhileALockIsCommitted() {
+        // Looked up the way the app does, so it holds in any locale.
+        let message = NSLocalizedString(
+            "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
+            comment: "CoinJoin")
+        XCTAssertEqual(
+            CoinJoinMoveFundsViewModel.stageAfterAuthCancel(committedLock: true),
+            .failed(message: message, destination: .shielded))
+    }
 }
 
 /// How a CoinJoin sweep with failed chunks is reported.

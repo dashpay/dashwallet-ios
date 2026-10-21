@@ -143,6 +143,35 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// The committed asset lock a retry resumes: the coordinator's, or the
+    /// one kept across its resets. After a terminal `.success` it still names
+    /// the lock that was spent; only the stages before it read this.
+    private var committedLock: (txidWire: Data, vout: UInt32)? {
+        coordinator.lastAssetLockOutPoint ?? unresumedLock
+    }
+
+    private var hasCommittedLock: Bool { committedLock != nil }
+
+    /// `coordinator.reset()` that keeps a committed lock for the retry: the
+    /// reset clears the coordinator's copy of the outpoint.
+    private func resetCoordinator() {
+        unresumedLock = committedLock
+        coordinator.reset()
+    }
+
+    /// Where a cancelled PIN prompt leaves the sheet: the destination choice,
+    /// or — while a committed lock waits for its resume — the Shielded retry,
+    /// which resumes it.
+    nonisolated static func stageAfterAuthCancel(committedLock: Bool) -> Stage {
+        committedLock ? unresumedLockStage : .choice
+    }
+
+    /// The Shielded retry offered while a committed lock waits for its
+    /// resume; its Try again resumes the lock.
+    nonisolated static var unresumedLockStage: Stage {
+        .failed(message: unresumedLockMessage, destination: .shielded)
+    }
+
     var isInFlight: Bool {
         switch stage {
         case .movingToWallet, .shielding:
@@ -155,9 +184,16 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     // MARK: Actions
 
     /// Destination 1: the existing one-hop sweep into the spendable BIP44
-    /// balance. Auth-cancel returns to the choice screen silently.
+    /// balance. Auth-cancel returns to the choice screen silently. Refused
+    /// while this sheet holds a committed Shielded lock: that transfer is
+    /// finished by resuming it, not by a sweep of what is left.
     func moveToWallet() async {
         guard !isInFlight else { return }
+        guard !hasCommittedLock else {
+            Self.log("move to wallet — refused, a committed Shielded lock is not resumed yet")
+            stage = Self.unresumedLockStage
+            return
+        }
         stage = .movingToWallet
         do {
             guard let binding else {
@@ -191,7 +227,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     func moveToShielded() async {
         guard !isInFlight else { return }
         // A committed lock is resumed, never followed by a second drain.
-        if unresumedLock != nil {
+        if hasCommittedLock {
             preparation = nil
             await retryShielded()
             return
@@ -206,7 +242,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         // A prior failed attempt leaves the coordinator terminal; reset so
         // `beginTransfer()` doesn't silently bail.
         if coordinator.phase != .idle {
-            coordinator.reset()
+            resetCoordinator()
         }
 
         // Read before the prompt only to choose the checklist, and to stop
@@ -282,7 +318,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
            case .failed(let message) = coordinator.phase,
            message == ShieldedTransferCoordinator.CoordinatorError.authCancelled.errorDescription {
             Self.log("move to Shielded — cancelled before the drain")
-            coordinator.reset()
+            resetCoordinator()
             preparation = nil
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             stage = .failed(message: Self.preparingMessage, destination: .shielded)
@@ -662,6 +698,12 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             comment: "CoinJoin")
     }
 
+    nonisolated private static var unresumedLockMessage: String {
+        NSLocalizedString(
+            "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
+            comment: "CoinJoin")
+    }
+
     private static var unconfirmedMessage: String {
         NSLocalizedString(
             "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.",
@@ -684,15 +726,14 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// left the CoinJoin account untouched.
     func retryShielded() async {
         guard !isInFlight else { return }
-        if let op = coordinator.lastAssetLockOutPoint ?? unresumedLock {
-            unresumedLock = op
+        if let op = committedLock {
             guard let binding, binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current() else {
                 Self.log("move to Shielded — resume refused, the active wallet changed")
                 stage = .failed(message: Self.genericFailureMessage, destination: .shielded)
                 return
             }
             stage = .shielding
-            coordinator.reset()
+            resetCoordinator()
             // Resume re-authorizes on its own (fresh user action).
             await coordinator.resumeAssetLock(
                 outPointTxidWire: op.txidWire, outPointVout: op.vout, expecting: binding)
@@ -707,7 +748,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
         // No committed lock to resume: plan afresh from the UTXO set as it is
         // now, a consolidation that already landed included.
-        coordinator.reset()
+        resetCoordinator()
         await moveToShielded()
     }
 
@@ -727,9 +768,11 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             // return to the destination choice (mirrors the wallet leg's
             // auth-cancel handling). Message-compare against the same
             // localized source the coordinator maps the cancel to.
+            // A committed lock still waits for its resume, so the sheet
+            // stays on the retry instead of offering the destinations again.
             if message == ShieldedTransferCoordinator.CoordinatorError.authCancelled.errorDescription {
-                coordinator.reset()
-                stage = .choice
+                resetCoordinator()
+                stage = Self.stageAfterAuthCancel(committedLock: hasCommittedLock)
             } else {
                 stage = .failed(message: message, destination: .shielded)
             }

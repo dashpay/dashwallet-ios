@@ -6361,6 +6361,7 @@
 
 /* CoinJoin */
 "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
+"Your mixed coins are locked for the Shielded balance. Please try again to finish moving them." = "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.";
 "Some votes already cast" = "Some votes already cast";
 "Special Purpose Account" = "Special Purpose Account";
 "Still calculating the withdrawable amount. Tap Max again in a moment." = "Still calculating the withdrawable amount. Tap Max again in a moment.";
