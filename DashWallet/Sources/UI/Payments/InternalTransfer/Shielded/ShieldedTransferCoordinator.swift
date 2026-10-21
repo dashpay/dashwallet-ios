@@ -511,6 +511,41 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case coinJoinDrain
     }
 
+    /// Why the transfer must stop after the prompt, before anything is built
+    /// or broadcast, or nil.
+    private func executionRefusal(
+        funding: AssetLockFundingSource,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?,
+        env: Environment
+    ) -> Error? {
+        // After the prompt, so a switch while it was open is caught too; the
+        // sync gate below then reads the pinned wallet's state.
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — the active wallet changed")
+            return CoordinatorError.noWallet
+        }
+
+        // A cancelled task stops here, before anything is built or broadcast.
+        // Reported as a cancel: the caller went away, nothing failed.
+        if Task.isCancelled {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — task cancelled")
+            return CoordinatorError.authCancelled
+        }
+
+        // Re-check at the execution boundary, not only where the surface was
+        // offered. The drain is whole-account and its value is computed
+        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
+        // was open would lock a UTXO set the user never saw. The BIP44 route
+        // carries an explicit amount and its own screens gate on
+        // `isChainSynced`, so this is the drain's check alone.
+        if case .coinJoinDrain = funding,
+           SyncingActivityMonitor.shared.state != .syncDone {
+            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
+            return CoordinatorError.coinJoinDrainRequiresSync
+        }
+        return nil
+    }
+
     /// `recipientRaw43` nil = the wallet's own default Orchard address (the
     /// internal transfer); an external Send passes the recipient's raw
     /// 43-byte payload. The recipient receives exactly `recipientAmountDuffs`:
@@ -576,32 +611,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // After the prompt, so a switch while it was open is caught too; the
-        // sync gate below then reads the pinned wallet's state.
-        guard isStillBound(binding, env: env) else {
-            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — the active wallet changed")
-            handleFailure(CoordinatorError.noWallet)
-            return
-        }
-
-        // A cancelled task stops here, before anything is built or broadcast.
-        // Reported as a cancel: the caller went away, nothing failed.
-        if Task.isCancelled {
-            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — task cancelled")
-            handleFailure(CoordinatorError.authCancelled)
-            return
-        }
-
-        // Re-check at the execution boundary, not only where the surface was
-        // offered. The drain is whole-account and its value is computed
-        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
-        // was open would lock a UTXO set the user never saw. The BIP44 route
-        // carries an explicit amount and its own screens gate on
-        // `isChainSynced`, so this is the drain's check alone.
-        if case .coinJoinDrain = funding,
-           SyncingActivityMonitor.shared.state != .syncDone {
-            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
-            handleFailure(CoordinatorError.coinJoinDrainRequiresSync)
+        if let refusal = executionRefusal(funding: funding, expecting: binding, env: env) {
+            handleFailure(refusal)
             return
         }
 

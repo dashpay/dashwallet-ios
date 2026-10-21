@@ -295,28 +295,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 throw SendError.walletNotReady("the active wallet changed")
             }
             let core = try wallet.coreWallet()
-            let walletId = wallet.walletId
-
-            // CoinJoin account-0 balance descriptor (mirrors
-            // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
-            // address the account for UTXO enumeration.
-            guard let cjBalance = Self.coinJoinAccountBalance(in: manager.accountBalances(for: walletId)) else {
-                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
-            }
-
-            // Snapshot the account's spendable UTXOs (after the recovery scan has
-            // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
-            // left out, matching `coinJoinUtxoState(expecting:)`: coin
-            // selection never spends them.
-            let utxos = Self.sweepInputs(
-                manager.accountUtxos(for: walletId, balance: cjBalance).filter { !$0.isLocked },
-                restrictedTo: outpoints
-            ) { CoinJoinOutpoint(txid: $0.outpointTxid, vout: $0.outpointVout) }
-            if let outpoints, utxos.count < 2 {
-                Self.logger.info(
-                    "💸 TXSEND :: coinjoin sweep — \(utxos.count, privacy: .public) of \(outpoints.count, privacy: .public) planned UTXO(s) still spendable, not sweeping")
-                return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
-            }
+            let utxos = Self.sweepUtxos(manager: manager, walletId: wallet.walletId, restrictedTo: outpoints)
             guard !utxos.isEmpty else {
                 return CoinJoinSweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
             }
@@ -423,6 +402,33 @@ final class SwiftDashSDKTransactionSender: NSObject {
         balances.first(where: {
             $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
         })
+    }
+
+    /// The CoinJoin rows a sweep spends: the unlocked ones, only those in
+    /// `outpoints` when it is set. None when there is nothing worth sweeping:
+    /// no CoinJoin account, or fewer than two of the planned rows left.
+    @MainActor
+    private static func sweepUtxos(
+        manager: PlatformWalletManager, walletId: Data, restrictedTo outpoints: Set<CoinJoinOutpoint>?
+    ) -> [PlatformWalletManager.AccountUtxo] {
+        // CoinJoin account-0 balance descriptor (mirrors
+        // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
+        // address the account for UTXO enumeration.
+        guard let cjBalance = coinJoinAccountBalance(in: manager.accountBalances(for: walletId)) else { return [] }
+        // Snapshot the account's spendable UTXOs (after the recovery scan has
+        // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
+        // left out, matching `coinJoinUtxoState(expecting:)`: coin
+        // selection never spends them.
+        let utxos = sweepInputs(
+            manager.accountUtxos(for: walletId, balance: cjBalance).filter { !$0.isLocked },
+            restrictedTo: outpoints
+        ) { CoinJoinOutpoint(txid: $0.outpointTxid, vout: $0.outpointVout) }
+        if let outpoints, utxos.count < 2 {
+            logger.info(
+                "💸 TXSEND :: coinjoin sweep — \(utxos.count, privacy: .public) of \(outpoints.count, privacy: .public) planned UTXO(s) still spendable, not sweeping")
+            return []
+        }
+        return utxos
     }
 
     /// The CoinJoin account's descriptor and UTXO rows (locked ones included),
@@ -566,7 +572,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let script = ScriptAddressCodec.scriptPubKey(forAddress: candidate.address, network: network),
                   !fundedScripts.contains(script)
             else { continue }
-            logger.info("💸 TXSEND :: coinjoin consolidation address index=\(candidate.addressIndex, privacy: .public) of \(external.addresses.count, privacy: .public) watched (gap \(external.gapLimit, privacy: .public))")
+            let watched = external.addresses.count, gap = external.gapLimit
+            logger.info(
+                "💸 TXSEND :: coinjoin consolidation address index=\(candidate.addressIndex, privacy: .public) of \(watched, privacy: .public) watched (gap \(gap, privacy: .public))")
             return candidate.address
         }
         return nil
