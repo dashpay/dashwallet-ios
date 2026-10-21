@@ -1,0 +1,178 @@
+import Foundation
+import XCTest
+@testable import PlatformPreparationHarness
+
+@MainActor
+final class PlatformPreparationTests: XCTestCase {
+    private let firstWallet = Data([1])
+    private let secondWallet = Data([2])
+
+    private func makeHost(selectedWallet: Bool = true) -> SwiftDashSDKHost {
+        WalletEnvironment.network = .mainnet
+        WalletEnvironment.selectedWalletID = selectedWallet ? firstWallet : nil
+        return SwiftDashSDKHost(sdk: SDK(), walletID: firstWallet)
+    }
+
+    private func expectExpired(
+        _ host: SwiftDashSDKHost,
+        _ preparation: SwiftDashSDKHost.PlatformPreparation,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        var didRun = false
+        do {
+            _ = try await host.withPlatformOperation(preparation: preparation) {
+                didRun = true
+                return "submitted"
+            }
+            XCTFail("An obsolete confirmation must be rejected", file: file, line: line)
+        } catch WalletOperationPreparationError.expired {
+            XCTAssertFalse(didRun, "Refuse before invoking the operation", file: file, line: line)
+        } catch {
+            XCTFail("Expected a local expired-preparation error, got \(error)", file: file, line: line)
+        }
+    }
+
+    func testStatusGenerationAndNewerObservationDoNotInvalidateConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        var completed = 0
+        for status in ProtocolCompatibility.Status.allCases {
+            host.sdk!.snapshot.status = status
+            host.sdk!.snapshot.generation += 1
+            host.sdk!.snapshot.verifiedProtocolVersion = 99
+            try host.validatePlatformOperation(preparation)
+            try await host.withPlatformOperation(preparation: preparation) { completed += 1 }
+        }
+        XCTAssertEqual(completed, 3)
+    }
+
+    func testUnavailableAndCheckingSnapshotsAllowPreparationWithoutVerifiedVersion() async throws {
+        for status in [ProtocolCompatibility.Status.unavailable, .checking] {
+            let host = makeHost()
+            host.sdk!.snapshot.status = status
+            host.sdk!.snapshot.verifiedProtocolVersion = nil
+            let preparation = try host.preparePlatformOperation()
+            let value = try await host.withPlatformOperation(preparation: preparation) { 42 }
+            XCTAssertEqual(value, 42)
+        }
+    }
+
+    func testSelectedWalletChangeRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        WalletEnvironment.selectedWalletID = secondWallet
+        await expectExpired(host, preparation)
+    }
+
+    func testFallbackWalletChangeRejectsConfirmation() async throws {
+        let host = makeHost(selectedWallet: false)
+        let preparation = try host.preparePlatformOperation()
+        host.wallet = ManagedPlatformWallet(walletId: secondWallet)
+        await expectExpired(host, preparation)
+    }
+
+    func testSelectedNetworkChangeRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        WalletEnvironment.network = .testnet
+        await expectExpired(host, preparation)
+    }
+
+    func testRunningNetworkChangeRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.runningNetwork = .testnet
+        await expectExpired(host, preparation)
+    }
+
+    func testSDKReplacementWithSameSnapshotRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        let replacement = SDK()
+        replacement.snapshot = host.sdk!.snapshot
+        host.sdk = replacement
+        await expectExpired(host, preparation)
+    }
+
+    func testRuntimeReplacementRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.runtimeID = UUID()
+        await expectExpired(host, preparation)
+    }
+
+    func testEffectiveOperationVersionChangeRejectsConfirmation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.sdk!.snapshot.effectiveProtocolVersion += 1
+        await expectExpired(host, preparation)
+    }
+
+    func testMissingLocalContextRejectsPreparation() async {
+        let mutations: [(SwiftDashSDKHost) -> Void] = [
+            { $0.sdk = nil },
+            { $0.runningNetwork = nil },
+            { $0.runningNetwork = .testnet },
+            { $0.wallet = nil; WalletEnvironment.selectedWalletID = nil },
+        ]
+        for mutate in mutations {
+            let host = makeHost()
+            mutate(host)
+            do {
+                _ = try host.preparePlatformOperation()
+                XCTFail("Missing wallet/runtime context must refuse preparation")
+            } catch WalletOperationPreparationError.unavailable {
+                // Expected local context failure, independent of check status.
+            } catch {
+                XCTFail("Unexpected error: \(error)")
+            }
+        }
+    }
+
+    private enum TestFailure: Error, Equatable { case snapshot, operation }
+
+    func testSnapshotBridgeFailurePropagatesWithoutInvokingOperation() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.sdk!.snapshotError = TestFailure.snapshot
+        var didRun = false
+        do {
+            try await host.withPlatformOperation(preparation: preparation) { didRun = true }
+            XCTFail("A missing effective operation version must propagate its error")
+        } catch {
+            XCTAssertEqual(error as? TestFailure, .snapshot)
+        }
+        XCTAssertFalse(didRun)
+    }
+
+    func testSuccessfulOperationHasNoRetroactivePreparationFailure() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        let result = try await host.withPlatformOperation(preparation: preparation) {
+            // The operation has been dispatched. Lifecycle changes during its
+            // await cannot turn its successful outcome into a retry prompt.
+            host.runtimeID = UUID()
+            host.sdk!.snapshot.effectiveProtocolVersion += 1
+            WalletEnvironment.selectedWalletID = secondWallet
+            await Task.yield()
+            return "confirmed transaction"
+        }
+        XCTAssertEqual(result, "confirmed transaction")
+        await expectExpired(host, preparation)
+    }
+
+    func testOperationFailureIsPreserved() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        do {
+            try await host.withPlatformOperation(preparation: preparation) {
+                host.runtimeID = UUID()
+                throw TestFailure.operation
+            }
+            XCTFail("The operation error must propagate")
+        } catch {
+            XCTAssertEqual(error as? TestFailure, .operation)
+        }
+    }
+}
