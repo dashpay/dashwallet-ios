@@ -492,6 +492,65 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     // MARK: - Public API
 
+    /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
+    /// never the newest asset lock or a timestamp shared with another caller.
+    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation) async {
+        guard beginTransfer() else { return }
+        lastAssetLockOutPoint = nil
+        let service = CoreShieldedDrainService()
+        let env: Environment
+        let operation: CoreShieldedDrainOperation
+        do {
+            try await authorize()
+            _ = try service.manager(for: confirmation.context)
+            guard SyncingActivityMonitor.shared.state == .syncDone else {
+                throw CoreShieldedDrainService.ServiceError.requiresSync
+            }
+            guard try await service.pending(confirmation.context) == nil else {
+                throw CoreShieldedDrainFileStore.StoreError.pendingOperation
+            }
+            _ = try service.manager(for: confirmation.context)
+            guard SyncingActivityMonitor.shared.state == .syncDone else {
+                throw CoreShieldedDrainService.ServiceError.requiresSync
+            }
+            env = try resolveEnvironment()
+            operation = try service.prepare(confirmation.context)
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .locking
+        let result = await env.manager.shieldedFundFromWalletDrain(
+            walletId: env.walletId, operationId: operation.id,
+            recipientRaw43: env.shieldedRecipient)
+        if let outpoint = result.outpoint {
+            lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
+        }
+        do {
+            try service.settle(operation, outcome: result)
+        } catch {
+            // The result may be successful but cleanup failed. Keep the marker
+            // and resolve it by UUID before allowing another drain.
+            phase = .submittedUnconfirmed
+            return
+        }
+        switch result.state {
+        case .notSent:
+            if let error = result.error { handleFailure(error) }
+            else { handleFailure(CoreShieldedDrainService.ServiceError.unavailable) }
+            return
+        case .pending:
+            phase = .submittedUnconfirmed
+        case .completed:
+            phase = .broadcasting
+            phase = .success
+        }
+        await ShieldedTxLookup.shared.refresh(reason: "wallet-drain-settled")
+        NotificationCenter.default.post(name: .swiftDashSDKTransactionProjectionDidChange, object: nil)
+        scheduleShieldedResync(manager: env.manager)
+    }
+
     /// Route 1: BIP44 Core UTXOs → asset-lock → Type 18 shield.
     /// Stages: `.signing → .locking → .proving → .broadcasting → .success`.
     /// The intermediate stages are polled from `PersistentAssetLock.statusRaw`;
@@ -682,7 +741,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         outPointTxidWire: Data,
         outPointVout: UInt32,
         recipientRaw43 recipientOverride: Data? = nil,
-        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil,
+        expectedDrainContext: CoreShieldedDrainContext? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
@@ -706,6 +766,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
             Self.logger.error("🛡️ SHIELD-TX :: resume refused — the active wallet changed")
             handleFailure(CoordinatorError.noWallet)
             return
+        }
+
+        if let expectedDrainContext {
+            do {
+                _ = try CoreShieldedDrainService().manager(for: expectedDrainContext)
+            } catch {
+                handleFailure(error)
+                return
+            }
         }
 
         // The lock is already broadcast/locked — only the Orchard proof + the
@@ -1658,7 +1727,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             if phase == .locking {
                 phase = .proving
             }
-        case 4: // Consumed — the ST has landed, FFI is almost back.
+        case 4, 6: // Consumed / DrainCompleted — the ST has landed, FFI is almost back.
             if phase == .locking || phase == .proving {
                 phase = .broadcasting
             }

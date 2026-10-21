@@ -432,9 +432,224 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
     @Published private(set) var isFullShieldedSweep = false
-    /// Why Max could not produce an amount (or is still resolving one).
-    /// Surfaced through `amountValidationMessage` so tapping Max is never a
-    /// silent no-op.
+    @Published private(set) var isCoreShieldedDrain = false
+    @Published private(set) var isCoreDrainLoading = false
+    @Published private(set) var coreShieldedDrainConfirmation: CoreShieldedDrainConfirmation?
+    @Published private(set) var coreDrainPending = false
+    @Published private(set) var coreDrainCompleted = false
+    private var coreDrainOperation: CoreShieldedDrainOperation?
+    private var coreDrainHasOutpoint = false
+    private var coreDrainContext: CoreShieldedDrainContext?
+    private var coreDrainTask: Task<Void, Never>?
+    private var coreDrainGeneration = UUID()
+    // Selection lifetime survives balance-only refreshes, unlike preview tasks.
+    private var coreDrainSelection = UUID()
+    // The selection whose resume is still running. Its lock reads as pending
+    // until the resume returns, so a refresh meanwhile would offer Resume again.
+    private var coreDrainResumeSelection: UUID?
+
+    var coreDrainDashDisplay: String? {
+        guard isCoreShieldedDrain else { return nil }
+        guard let credits = coreShieldedDrainConfirmation?.estimatedRecipientCredits else {
+            return NSLocalizedString("Max", comment: "Whole wallet intent")
+        }
+        return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+
+    var coreDrainFiatDisplay: String? {
+        guard isCoreShieldedDrain else { return nil }
+        guard coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil,
+              let fiat = try? CurrencyExchanger.shared.convertDash(amount: parsedDashAmount, to: fiatCurrencyCode)
+        else { return "—" }
+        return "≈ " + Self.formatTyped(fiat, fractionDigits: 2)
+    }
+
+    var canShowTransferPreview: Bool {
+        canContinue && (!isCoreShieldedDrain || coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil)
+    }
+
+    var coreDrainEstimateNotice: String? {
+        isCoreShieldedDrain && coreShieldedDrainConfirmation != nil ? maxNotice : nil
+    }
+
+    var coreDrainCompletionNotice: String? {
+        coreDrainCompleted
+            ? NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+            : nil
+    }
+
+    var coreDrainActionTitle: String? {
+        guard isCoreShieldedDrain, !isCoreDrainLoading else { return nil }
+        if coreDrainCompleted { return NSLocalizedString("New transfer", comment: "Start a separate transfer") }
+        if coreDrainPending {
+            return coreDrainHasOutpoint
+                ? NSLocalizedString("Resume transfer", comment: "Resume the same asset lock")
+                : NSLocalizedString("Check status", comment: "Read-only drain lookup")
+        }
+        return coreShieldedDrainConfirmation == nil
+            ? NSLocalizedString("Try again", comment: "Retry drain preview") : nil
+    }
+
+    @discardableResult
+    func performCoreDrainAction() -> Task<Void, Never>? {
+        guard !isCoreDrainLoading else { return nil }
+        if coreDrainPending, coreDrainHasOutpoint, let context = coreDrainContext {
+            isCoreDrainLoading = true
+            // The shared runner owns execution even if this form goes away.
+            let selection = coreDrainSelection
+            let operation = coreDrainOperation
+            coreDrainResumeSelection = selection
+            return Task { [weak self] in
+                let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
+                    context: context, operation: operation)
+                guard let self else { return }
+                if self.coreDrainResumeSelection == selection { self.coreDrainResumeSelection = nil }
+                // Leaving or reselecting Max reset the form; that selection
+                // owns its state now.
+                guard self.isCoreShieldedDrain,
+                      selection == self.coreDrainSelection else { return }
+                guard self.coreDrainContext == context,
+                      self.coreDrainOperation == operation,
+                      (try? CoreShieldedDrainService.currentContext()) == context else {
+                    // Same selection, but its wallet, network or operation no
+                    // longer matches: drop this result, release the gate and
+                    // re-derive the form from the current context.
+                    self.isCoreDrainLoading = false
+                    self.refreshCoreDrainPreview()
+                    return
+                }
+                if outcome?.state == .completed {
+                    self.showCoreDrainCompletion()
+                } else {
+                    self.refreshCoreDrainPreview()
+                }
+            }
+        } else {
+            if coreDrainCompleted {
+                coreDrainSelection = UUID()
+                coreDrainCompleted = false
+                coreDrainOperation = nil
+            }
+            refreshCoreDrainPreview()
+            return nil
+        }
+    }
+
+    private func showCoreDrainCompletion() {
+        // Terminal evidence supersedes any still-running balance preview.
+        coreDrainTask?.cancel()
+        coreDrainGeneration = UUID()
+        coreDrainCompleted = true
+        coreDrainPending = false
+        coreDrainHasOutpoint = false
+        isCoreDrainLoading = false
+        coreShieldedDrainConfirmation = nil
+        maxNotice = nil
+    }
+
+    /// The drain found nothing to move. With nothing spendable at all, the
+    /// precise reason (still confirming, or only mixed coins) is the shared
+    /// Core Max explanation, not the fees.
+    private func coreDrainInsufficientFundsMessage() -> String {
+        guard coreSpendableDuffs == 0 else {
+            return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
+        }
+        return Self.coreZeroMaxMessage(
+            totalDuffs: coreBalanceDuffs,
+            confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+            excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
+    }
+
+    private func refreshCoreDrainPreview() {
+        // While this selection's resume runs the form stays busy; the resume
+        // refreshes itself when it returns.
+        guard isCoreShieldedDrain, !coreDrainCompleted,
+              coreDrainResumeSelection != coreDrainSelection else { return }
+        coreDrainTask?.cancel()
+        let generation = UUID()
+        coreDrainGeneration = generation
+        isCoreDrainLoading = true
+        coreShieldedDrainConfirmation = nil
+        maxNotice = NSLocalizedString("Checking available funds and fees…", comment: "Core drain preview")
+        coreDrainTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let context = try CoreShieldedDrainService.currentContext()
+                if let previous = self.coreDrainContext, previous != context {
+                    self.clearMaxSelection()
+                    self.amountText = "0"
+                    self.maxNotice = CoreShieldedDrainService.ServiceError.contextChanged.localizedDescription
+                    return
+                }
+                self.coreDrainContext = context
+                let service = CoreShieldedDrainService()
+                // Retain the UUID before status can clear its marker and
+                // suspend. An overlapping balance refresh must query this same
+                // operation even when it cancels the first status task.
+                if self.coreDrainOperation == nil {
+                    self.coreDrainOperation = try service.store.load(context)
+                }
+                let outcome: WalletDrainOutcome?
+                if let operation = self.coreDrainOperation {
+                    outcome = try await service.status(for: operation)
+                } else {
+                    outcome = nil
+                }
+                guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
+                if outcome?.state == .completed {
+                    self.showCoreDrainCompletion()
+                    return
+                }
+                let pending = outcome?.state == .pending ? outcome : nil
+                self.coreDrainPending = pending != nil
+                self.coreDrainHasOutpoint = pending?.outpoint != nil
+                if pending != nil {
+                    self.maxNotice = NSLocalizedString(
+                        "A previous Max transfer is still pending. Check its status or resume it before starting another.",
+                        comment: "Core drain recovery")
+                    self.isCoreDrainLoading = false
+                    return
+                }
+                let manager = try service.manager(for: context)
+                let quote = try await manager.shieldedWalletDrainPreview(walletId: context.walletId)
+                guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
+                _ = try service.manager(for: context)
+                self.isCoreDrainLoading = false
+                switch quote.status {
+                case .insufficientFunds:
+                    self.maxNotice = self.coreDrainInsufficientFundsMessage()
+                    return
+                case .ready:
+                    self.maxNotice = NSLocalizedString(
+                        "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.",
+                        comment: "Core drain estimate")
+                case .inputLimitMayBeExceeded:
+                    self.maxNotice = NSLocalizedString(
+                        "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.",
+                        comment: "Core drain input limit preview")
+                }
+                self.coreShieldedDrainConfirmation = CoreShieldedDrainConfirmation(
+                    context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,
+                    estimatedRecipientCredits: quote.estimatedRecipientCredits,
+                    estimatedL1FeeDuffs: quote.estimatedL1FeeDuffs, poolFeeCredits: quote.poolFeeCredits)
+                self.isApplyingMax = true
+                if let credits = quote.estimatedRecipientCredits, credits >= 1000 {
+                    self.applyMaxAmountText(credits / 1000)
+                } else {
+                    self.maxAmountDuffs = nil
+                    self.amountText = "0"
+                }
+                self.isApplyingMax = false
+            } catch {
+                guard !Task.isCancelled, generation == self.coreDrainGeneration else { return }
+                self.isCoreDrainLoading = false
+                self.maxNotice = error.localizedDescription
+            }
+        }
+    }
+
+    /// Why Max could not produce an amount, is still resolving one, or has
+    /// an estimate to explain. Estimates are shown separately from errors.
     @Published private(set) var maxNotice: String?
     /// Exact duff amount selected by Max. Fiat text is presentation-only and
     /// may round to two decimals, so reparsing it must never move the transfer
@@ -447,6 +662,7 @@ final class InternalTransferViewModel: ObservableObject {
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
+            if isCoreShieldedDrain && maxAmountDuffs == nil { return }
             if let maxAmountDuffs {
                 isApplyingMax = true
                 defer { isApplyingMax = false }
@@ -1126,6 +1342,7 @@ final class InternalTransferViewModel: ObservableObject {
     #endif
 
     deinit {
+        coreDrainTask?.cancel()
         identityBalanceRefreshTask?.cancel()
         #if DEBUG
         if isPreviewInstance { return }
@@ -1142,6 +1359,16 @@ final class InternalTransferViewModel: ObservableObject {
             .sink { [weak self] _ in self?.applyAdvancedMode() }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.isCoreShieldedDrain else { return }
+                self.clearMaxSelection()
+                self.amountText = "0"
+                self.maxNotice = CoreShieldedDrainService.ServiceError.contextChanged.localizedDescription
+            }
+            .store(in: &cancellables)
+
         isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
@@ -1154,6 +1381,15 @@ final class InternalTransferViewModel: ObservableObject {
                 self?.coreBalanceDuffs = balance?.total ?? 0
                 self?.coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
             }
+            .store(in: &cancellables)
+
+        // The balance is republished on every wallet event, unchanged or not.
+        // A drain refresh drops the estimate (disabling Continue) and, with a
+        // pending marker, queries the SDK, so only a changed balance earns one.
+        SwiftDashSDKWalletState.shared.$balance
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshCoreDrainPreview() }
             .store(in: &cancellables)
 
         PlatformAddressSyncCoordinator.shared.$platformBalanceState
@@ -1333,6 +1569,10 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     var parsedDashAmount: Decimal {
+        if isCoreShieldedDrain {
+            guard let credits = coreShieldedDrainConfirmation?.estimatedRecipientCredits else { return 0 }
+            return Decimal(credits) / Decimal(100_000_000_000 as UInt64)
+        }
         if let maxAmountDuffs {
             return maxAmountDuffs.dashAmount
         }
@@ -1398,6 +1638,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
+        if coreDrainCompleted { return nil }
+        if isCoreShieldedDrain && !isChainSynced {
+            return CoreShieldedDrainService.ServiceError.requiresSync.localizedDescription
+        }
+        if isCoreShieldedDrain && coreShieldedDrainConfirmation != nil { return nil }
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
         if hasUnavailableSourceBalance {
@@ -1653,6 +1898,15 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
+        if isCoreShieldedDrain {
+            return route == .coreToShielded && !isIdentitySource && !isIdentityDestination
+                && isChainSynced && !isCoreDrainLoading && !coreDrainPending
+                // A whole-wallet spend is never authorized without an amount
+                // and fee to show (an input-limit preview has neither).
+                && coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil
+                && coreShieldedDrainConfirmation?.totalFeeCredits != nil
+                && (try? CoreShieldedDrainService.currentContext()) == coreShieldedDrainConfirmation?.context
+        }
         if hasUnavailableSourceBalance { return false }
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -1815,6 +2069,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// fee math is banned inside View structs; frozen into the submission at
     /// Continue. `nil` renders as "—".
     var confirmNetworkFeeCredits: UInt64? {
+        if isCoreShieldedDrain { return coreShieldedDrainConfirmation?.totalFeeCredits }
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -1866,6 +2121,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// `canContinue` fails closed before that can be confirmed, but the row
     /// must never show the un-inflated number.
     var confirmTotalDuffs: Int64? {
+        if isCoreShieldedDrain { return coreShieldedDrainConfirmation.flatMap { Int64(exactly: $0.candidateBalanceDuffs) } }
         switch route {
         case .coreToShielded:
             guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
@@ -1994,6 +2250,12 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        if route == .coreToShielded, !isIdentitySource, !isIdentityDestination {
+            clearMaxSelection()
+            isCoreShieldedDrain = true
+            refreshCoreDrainPreview()
+            return
+        }
         if hasUnavailableSourceBalance {
             clearMaxSelection()
             maxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
@@ -2012,27 +2274,9 @@ final class InternalTransferViewModel: ObservableObject {
         let sourceDuffs: UInt64
         switch route {
         case .coreToShielded:
-            // Fee-on-top Max: the lock is amount + pool fee, so the largest
-            // recipient amount is L1-fee-aware spendable minus the pool fee.
-            // Fails closed (fills 0) when the fee estimate is unavailable.
-            guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
-                maxNotice = Self.feeEstimateUnavailableMessage
-                sourceDuffs = 0
-                break
-            }
-            sourceDuffs = coreSpendableDuffs > feeDuffs
-                ? coreSpendableDuffs - feeDuffs : 0
-            if coreSpendableDuffs == 0 {
-                maxNotice = Self.coreZeroMaxMessage(
-                    totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
-                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
-            } else if sourceDuffs == 0 {
-                maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
-            }
-            // A Max below the balance card's total is not worth a notice: the
-            // fee reserve and unconfirmed coins are ordinary, and saying so in
-            // the slot that otherwise carries errors reads as one.
+            // The eligible Core-to-own-Shielded route was handled above.
+            // Identity destinations do not offer Max.
+            return
         case .coreToPlatform:
             // Fee-on-top Max: the lock is amount + static reserve, so the
             // largest topup is the L1-fee-aware spendable minus that reserve.
@@ -2211,6 +2455,18 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func clearMaxSelection() {
+        coreDrainTask?.cancel()
+        coreDrainTask = nil
+        coreDrainGeneration = UUID()
+        coreDrainSelection = UUID()
+        isCoreShieldedDrain = false
+        isCoreDrainLoading = false
+        coreShieldedDrainConfirmation = nil
+        coreDrainPending = false
+        coreDrainCompleted = false
+        coreDrainOperation = nil
+        coreDrainHasOutpoint = false
+        coreDrainContext = nil
         maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
