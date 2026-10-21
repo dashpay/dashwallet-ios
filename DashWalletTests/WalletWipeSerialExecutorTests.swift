@@ -88,7 +88,8 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
             },
             clearAppState: { _ in
                 appStateCleared = true
-            }
+            },
+            scope: "testnet"
         ))
 
         XCTAssertFalse(appStateCleared)

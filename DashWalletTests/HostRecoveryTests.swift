@@ -211,6 +211,48 @@ final class HostRecoveryTests: XCTestCase {
         XCTAssertEqual(coinJoin.resetScopes, [])
     }
 
+    private func pendingChainStoreRebuilds() -> [Data]? {
+        SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: roots.chainStoreRebuilds)
+    }
+
+    func testRecreatedWalletsArmTheChainStoreRebuildAndAFailedCreateKeepsIt() async throws {
+        // Wallet B's create throws; the SDK may have landed its rows first,
+        // so its marker stays with wallet A's.
+        persisted.failingMnemonic = "wallet-b"
+        do { _ = try await start() } catch {}
+        XCTAssertEqual(pendingChainStoreRebuilds(), [Data("wallet-a".utf8), Data("wallet-b".utf8)])
+    }
+
+    func testSurvivingWalletIsNotArmedByARecoveryOfAnother() async throws {
+        let a = Data("wallet-a".utf8)
+        persisted.rows[a] = TestWalletRow(walletId: a)
+        try resetIntent().record(scopes: ["mainnet"])
+        _ = try await start()
+        XCTAssertEqual(pendingChainStoreRebuilds(), [Data("wallet-b".utf8)])
+    }
+
+    func testRecoveryStillOpensTheWalletWhenTheMarkerCannotBeWritten() async throws {
+        // A file where the marker directory should be.
+        try FileManager.default.createDirectory(
+            at: roots.chainStoreRebuilds.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data([0]).write(to: roots.chainStoreRebuilds)
+        let resolved = try await start()
+        XCTAssertEqual(persisted.createAttempts, ["wallet-a", "wallet-b"])
+        XCTAssertEqual(persisted.rows.count, 2)
+        XCTAssertNotNil(persisted.rows[resolved.walletId])
+        XCTAssertFalse(try localStoreRecovery().isPending())
+        XCTAssertNil(pendingChainStoreRebuilds())
+    }
+
+    func testHealthyStoreArmsNoChainStoreRebuild() async throws {
+        for name in ["wallet-a", "wallet-b"] {
+            let id = Data(name.utf8)
+            persisted.rows[id] = TestWalletRow(walletId: id)
+        }
+        _ = try await start()
+        XCTAssertNil(pendingChainStoreRebuilds())
+    }
+
     func testPartialRecoveryFailsThenNextLaunchCreatesOnlyMissingWallet() async throws {
         persisted.failingMnemonic = "wallet-b"
         let first = makeHost()
