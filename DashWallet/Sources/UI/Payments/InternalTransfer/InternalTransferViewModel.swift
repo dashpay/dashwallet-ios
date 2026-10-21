@@ -444,6 +444,9 @@ final class InternalTransferViewModel: ObservableObject {
     private var coreDrainGeneration = UUID()
     // Selection lifetime survives balance-only refreshes, unlike preview tasks.
     private var coreDrainSelection = UUID()
+    // The selection whose resume is still running. Its lock reads as pending
+    // until the resume returns, so a refresh meanwhile would offer Resume again.
+    private var coreDrainResumeSelection: UUID?
 
     var coreDrainDashDisplay: String? {
         guard isCoreShieldedDrain else { return nil }
@@ -495,12 +498,15 @@ final class InternalTransferViewModel: ObservableObject {
             // The shared runner owns execution even if this form goes away.
             let selection = coreDrainSelection
             let operation = coreDrainOperation
+            coreDrainResumeSelection = selection
             return Task { [weak self] in
                 let outcome = await InternalTransferRunner.shared.resumeCoreDrain(
                     context: context, operation: operation)
+                guard let self else { return }
+                if self.coreDrainResumeSelection == selection { self.coreDrainResumeSelection = nil }
                 // Leaving or reselecting Max reset the form; that selection
                 // owns its state now.
-                guard let self, self.isCoreShieldedDrain,
+                guard self.isCoreShieldedDrain,
                       selection == self.coreDrainSelection else { return }
                 guard self.coreDrainContext == context,
                       self.coreDrainOperation == operation,
@@ -542,7 +548,10 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func refreshCoreDrainPreview() {
-        guard isCoreShieldedDrain, !coreDrainCompleted else { return }
+        // While this selection's resume runs the form stays busy; the resume
+        // refreshes itself when it returns.
+        guard isCoreShieldedDrain, !coreDrainCompleted,
+              coreDrainResumeSelection != coreDrainSelection else { return }
         coreDrainTask?.cancel()
         let generation = UUID()
         coreDrainGeneration = generation

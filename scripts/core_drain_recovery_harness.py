@@ -117,6 +117,7 @@ struct Quote {
     var coreDrainTask: Task<Void, Never>?
     var coreDrainGeneration = UUID()
     var coreDrainSelection = UUID()
+    var coreDrainResumeSelection: UUID?
     var isFullShieldedSweep = false
     var shieldedSweepAmountCredits: UInt64?
     var isPlatformShieldMaxDerived = false
@@ -239,20 +240,20 @@ final class RecoveryFormTests: XCTestCase {
         XCTAssertNil(form.maxNotice)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
-    @MainActor func testResumeCompletionInvalidatesStillSuspendedPendingPreview() async {
+    @MainActor func testBalanceRefreshDuringResumeKeepsTheFormBusy() async {
         let (form, action) = await suspendedResume()
-        CoreShieldedDrainService.suspendNextStatus = true
-        let lookupStarted = expectation(description: "Pending lookup suspended")
-        CoreShieldedDrainService.didRemoveMarker = { lookupStarted.fulfill() }
+        let lookups = CoreShieldedDrainService.lookups
+        // A balance change while the runner is still proving the lock: the
+        // lock reads as pending, but the form must not offer Resume again.
         form.refreshCoreDrainPreview()
-        let preview = form.coreDrainTask
-        await fulfillment(of: [lookupStarted], timeout: 2)
+        await form.coreDrainTask?.value
+        XCTAssertTrue(form.isCoreDrainLoading)
+        XCTAssertNil(form.coreDrainActionTitle)
+        XCTAssertNil(form.performCoreDrainAction())
+        XCTAssertEqual(CoreShieldedDrainService.lookups, lookups)
         await completeResume(action)
-        CoreShieldedDrainService.statusGate?.resume()
-        CoreShieldedDrainService.statusGate = nil
-        await preview?.value
         XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertFalse(form.coreDrainPending)
+        XCTAssertFalse(form.isCoreDrainLoading)
         XCTAssertNil(form.maxNotice)
     }
     @MainActor func testResumeCompletionIsRejectedAfterReselectingSameOperation() async {
