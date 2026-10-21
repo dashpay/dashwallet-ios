@@ -65,6 +65,55 @@ final class PlatformPreparationTests: XCTestCase {
         await expectExpired(host, preparation)
     }
 
+    func testSelectedAndPublishedWalletMismatchRejectsPreparation() async {
+        let host = makeHost()
+        WalletEnvironment.selectedWalletID = secondWallet
+        do {
+            _ = try host.preparePlatformOperation()
+            XCTFail("The selected wallet must match the wallet that will execute the operation")
+        } catch WalletOperationPreparationError.unavailable {
+            // The selected wallet has not been published by the host yet.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testPublishedWalletReplacementRejectsConfirmationWithUnchangedSelection() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.wallet = ManagedPlatformWallet(walletId: secondWallet)
+        XCTAssertEqual(WalletEnvironment.selectedWalletID, firstWallet)
+        await expectExpired(host, preparation)
+    }
+
+    func testMissingPublishedWalletRejectsPreparationEvenWithSelection() async {
+        let host = makeHost()
+        host.wallet = nil
+        XCTAssertEqual(WalletEnvironment.selectedWalletID, firstWallet)
+        do {
+            _ = try host.preparePlatformOperation()
+            XCTFail("A registry ID cannot substitute for a published wallet")
+        } catch WalletOperationPreparationError.unavailable {
+            // A wallet must be bound before a quote can be confirmed.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testMissingPublishedWalletRejectsConfirmationWithUnchangedSelection() async throws {
+        let host = makeHost()
+        let preparation = try host.preparePlatformOperation()
+        host.wallet = nil
+        await expectExpired(host, preparation)
+    }
+
+    func testAbsentSelectionUsesPublishedWallet() async throws {
+        let host = makeHost(selectedWallet: false)
+        let preparation = try host.preparePlatformOperation()
+        let value = try await host.withPlatformOperation(preparation: preparation) { "submitted" }
+        XCTAssertEqual(value, "submitted")
+    }
+
     func testFallbackWalletChangeRejectsConfirmation() async throws {
         let host = makeHost(selectedWallet: false)
         let preparation = try host.preparePlatformOperation()

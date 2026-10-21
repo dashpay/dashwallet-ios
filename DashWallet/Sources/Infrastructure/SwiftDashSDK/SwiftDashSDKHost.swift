@@ -394,8 +394,10 @@ final class SwiftDashSDKHost {
     /// Bind a displayed quote to the actual wallet/runtime and operation version.
     /// The status and generation of informational checks are deliberately ignored.
     func preparePlatformOperation() throws -> PlatformPreparation {
+        let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
         guard let sdk, runningNetwork == WalletEnvironment.network,
-              let walletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) ?? wallet?.walletId else {
+              let walletID = wallet?.walletId,
+              selectedWalletID == nil || selectedWalletID == walletID else {
             throw WalletOperationPreparationError.unavailable("The active wallet is not ready")
         }
         return PlatformPreparation(sdk: sdk, runtimeID: runtimeID, walletID: walletID,
@@ -403,9 +405,11 @@ final class SwiftDashSDKHost {
     }
 
     func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
+        let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
         guard preparation.runtimeID == runtimeID, preparation.sdk === sdk,
               runningNetwork == WalletEnvironment.network,
-              preparation.walletID == (WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) ?? wallet?.walletId),
+              preparation.walletID == wallet?.walletId,
+              selectedWalletID == nil || selectedWalletID == preparation.walletID,
               preparation.protocolVersion == (try preparation.sdk.protocolCompatibility()).effectiveProtocolVersion else {
             throw WalletOperationPreparationError.expired("Wallet or operation version changed; review and confirm again")
         }
