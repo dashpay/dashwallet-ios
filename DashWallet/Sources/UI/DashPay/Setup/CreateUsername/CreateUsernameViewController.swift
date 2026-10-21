@@ -26,7 +26,7 @@ class CreateUsernameViewController: UIViewController {
     /// when this form is claiming a DIP-13 invitation; nil for the
     /// regular self-funded registration.
     private let invitationURI: String?
-    private let invitationTier: InvitationTier?
+    private let invitationAmountDuffs: UInt64?
     /// The Home card's invitation (scope + link): a claim that finishes on an
     /// existing identity removes that wallet's copy and no other.
     private let pendingInvitation: PendingInvitation?
@@ -39,17 +39,18 @@ class CreateUsernameViewController: UIViewController {
         // `DWIdentityRegistrationBridge` / the coordinator, so it is
         // not stored here.
         self.invitationURI = nil
-        self.invitationTier = nil
+        self.invitationAmountDuffs = nil
         self.pendingInvitation = nil
         self.definedUsername = definedUsername
         super.init(nibName: nil, bundle: nil)
     }
 
     /// Invitation claim from the Home card: the invitation was validated
-    /// there, so its tier (which usernames it pays for) is already known.
-    init(invitation: PendingInvitation, invitationURI: String, invitationTier: InvitationTier) {
+    /// there, so what it funds (and so which usernames it pays for) is
+    /// already known.
+    init(invitation: PendingInvitation, invitationURI: String, invitationAmountDuffs: UInt64) {
         self.invitationURI = invitationURI
-        self.invitationTier = invitationTier
+        self.invitationAmountDuffs = invitationAmountDuffs
         self.pendingInvitation = invitation
         self.definedUsername = nil
         super.init(nibName: nil, bundle: nil)
@@ -99,7 +100,7 @@ class CreateUsernameViewController: UIViewController {
 
         let content = CreateUsernameView(
             invitationURI: invitationURI,
-            invitationTier: invitationTier,
+            invitationAmountDuffs: invitationAmountDuffs,
             pendingInvitation: pendingInvitation,
             definedUsername: definedUsername,
             finish: { [weak self] in
@@ -281,8 +282,8 @@ struct CreateUsernameView: View {
     /// Normalized invitation URI when claiming (invitation mode); nil
     /// for the regular self-funded registration.
     var invitationURI: String? = nil
-    /// Which usernames the invitation pays for; nil when unknown.
-    var invitationTier: InvitationTier? = nil
+    /// What the invitation funds; nil when unknown.
+    var invitationAmountDuffs: UInt64? = nil
     /// The Home card's invitation this claim is for (scope + link).
     var pendingInvitation: PendingInvitation? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
@@ -392,9 +393,10 @@ struct CreateUsernameView: View {
             // Invitation mode first: it decides which names are allowed, and
             // no draft from an earlier registration is restored into it.
             if let invitationURI {
-                viewModel.configureInvitationMode(uri: invitationURI, tier: invitationTier, invitation: pendingInvitation)
+                viewModel.configureInvitationMode(uri: invitationURI, amountDuffs: invitationAmountDuffs, invitation: pendingInvitation)
             }
             viewModel.refreshRegistrationRecoveryState()
+            viewModel.refreshContestedFee()
             if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
                 viewModel.username = definedUsername
             }
@@ -523,7 +525,7 @@ struct CreateUsernameView: View {
                     showsContestFeeNote: !isNamingInstantUsername,
                     identityPaidContestFeeDuffs:
                         !isNamingInstantUsername && existingIdentityTopUpDuffs(nameCount: 1) != nil
-                            ? UsernameMarketplaceService.contestedFundCredits / 1000
+                            ? viewModel.contestedFee.fundDuffs
                             : nil,
                     onConfirm: { confirmRequestAccepted() })
             }
@@ -1323,11 +1325,9 @@ struct CreateUsernameView: View {
         if DWCurrentUserIdentityInfo.shared.hasIdentity {
             // An identity with no top-up route here (an invitation claim)
             // registers on what it holds: only the contest fund is at stake.
-            // The fund is the marketplace's figure, credits to duffs
-            // (1 duff = 1000 credits).
-            return UsernameMarketplaceService.contestedFundCredits / 1000
+            return viewModel.contestedFee.fundDuffs
         }
-        return UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME)
+        return viewModel.newIdentityFundingDuffs(isContested: true)
     }
 
     /// The top-up the confirmation states for an existing identity, or nil
@@ -1522,6 +1522,12 @@ struct CreateUsernameView: View {
                     "The chosen balance can't pay for this request. Check your balances and try again.",
                     comment: "Usernames: confirm the funding source"))
             }
+            return
+        }
+        if let excess = viewModel.fundingExceedingConfirmation(source: payingSource, nameCount: nameCount) {
+            refuseSubmission(DWIdentityRegistrationCoordinator.CoordinatorError
+                .topUpExceedsConfirmed(neededDuffs: excess.neededDuffs, confirmedDuffs: excess.confirmedDuffs)
+                .localizedDescription)
             return
         }
         // The two-name top-up can need Core where the one-name one did not:

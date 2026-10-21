@@ -50,7 +50,7 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewScanInvitation()
     /// Create on the pending-invitation card: the username form in
     /// invitation mode, paid for by the invitation.
-    func homeViewCreateUsername(with invitation: PendingInvitation, tier: InvitationTier)
+    func homeViewCreateUsername(with invitation: PendingInvitation, amountDuffs: UInt64)
     /// A verdict that ended the pending invitation — present its dialog.
     func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation)
     /// Opens the internal-transfer form with Shielded preselected as the
@@ -375,8 +375,8 @@ struct HomeViewContent<Content: View>: View {
                         AcceptInvitationCard(
                             viewModel: pendingInvitationViewModel,
                             isSyncing: viewModel.isSyncing,
-                            onCreate: { invitation, tier in
-                                delegate?.homeViewCreateUsername(with: invitation, tier: tier)
+                            onCreate: { invitation, amountDuffs in
+                                delegate?.homeViewCreateUsername(with: invitation, amountDuffs: amountDuffs)
                             })
                         .padding(.horizontal, 20)
                     } else if viewModel.showJoinDashpay {
