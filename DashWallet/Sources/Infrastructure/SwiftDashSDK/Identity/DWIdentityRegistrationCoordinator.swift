@@ -1102,7 +1102,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                                 comment: "DashPay registration recovery")
                         ])
                 }
-                Self.logger.info("🪪 IDENT-COORD :: recovery — resuming original asset lock vout=\(outPoint.vout, privacy: .public)")
+                Self.logger.info("🪪 IDENT-COORD :: recovery — resuming original asset lock vout=\(outPoint.vout)")
                 try SwiftDashSDKHost.shared.validatePlatformOperation(context.preparation)
                 let result = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: context.preparation) {
                     try await wallet.resumeIdentityWithAssetLock(
@@ -1813,7 +1813,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         name: String, priceCredits: UInt64,
         preparation: SwiftDashSDKHost.PlatformPreparation? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name, privacy: .public) priceCredits=\(priceCredits, privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name) priceCredits=\(priceCredits)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw CoordinatorError.noWallet
