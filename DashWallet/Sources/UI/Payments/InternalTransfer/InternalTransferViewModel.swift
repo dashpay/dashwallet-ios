@@ -958,7 +958,7 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func compatibilityDidChange(_ snapshot: WalletProtocolCompatibility?, runtimeReady: Bool) {
-        guard protocolCompatibility != snapshot || isProtocolRuntimeReady != runtimeReady else { return }
+        guard protocolCompatibility?.effectiveVersion != snapshot?.effectiveVersion || isProtocolRuntimeReady != runtimeReady else { return }
         isProtocolRuntimeReady = runtimeReady
         protocolCompatibility = snapshot
         routeDidChange()
@@ -974,7 +974,7 @@ final class InternalTransferViewModel: ObservableObject {
         platformIdentityFundableDuffs = nil
         platformPreparation = nil
         clearMaxSelection()
-        guard isProtocolRuntimeReady, protocolCompatibilityMessage == nil,
+        guard isProtocolRuntimeReady,
               let preparation = try? SwiftDashSDKHost.shared.preparePlatformOperation()
         else { return }
         platformPreparation = preparation
@@ -1157,12 +1157,12 @@ final class InternalTransferViewModel: ObservableObject {
 
     @Published private var protocolCompatibility: WalletProtocolCompatibility?
     private var isProtocolRuntimeReady = false
-    /// The same native generation covers cached quotes, Max, and confirmation.
+    /// The same wallet/runtime and operation version cover quotes and confirmation.
     private var platformPreparation: SwiftDashSDKHost.PlatformPreparation?
 
     func platformPreparationForConfirmation() throws -> SwiftDashSDKHost.PlatformPreparation {
         guard let platformPreparation else {
-            throw SDKError.platformPreparationExpired("Review the amount after Platform compatibility is verified")
+            throw WalletOperationPreparationError.expired("Review the amount and confirm again")
         }
         try SwiftDashSDKHost.shared.validatePlatformOperation(platformPreparation)
         return platformPreparation
@@ -1176,12 +1176,7 @@ final class InternalTransferViewModel: ObservableObject {
     }
     private var cancellables = Set<AnyCancellable>()
 
-    private var protocolCompatibilityMessage: String? {
-        #if DEBUG
-        if isPreviewInstance { return nil }
-        #endif
-        return WalletProtocolCompatibility.blockingMessage(for: protocolCompatibility)
-    }
+
 
 
     #if DEBUG
@@ -1476,7 +1471,6 @@ final class InternalTransferViewModel: ObservableObject {
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
-        if let message = protocolCompatibilityMessage { return message }
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
         if hasUnavailableSourceBalance {
@@ -1731,7 +1725,7 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
-        guard protocolCompatibilityMessage == nil, hasCurrentPlatformPreparation else { return false }
+        guard hasCurrentPlatformPreparation else { return false }
         if hasUnavailableSourceBalance { return false }
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -2073,7 +2067,7 @@ final class InternalTransferViewModel: ObservableObject {
     func fillMaxFromWallet() {
         guard hasCurrentPlatformPreparation else {
             clearMaxSelection()
-            maxNotice = protocolCompatibilityMessage ?? Self.feeEstimateUnavailableMessage
+            maxNotice = Self.feeEstimateUnavailableMessage
             return
         }
         if hasUnavailableSourceBalance {

@@ -128,7 +128,7 @@ final class IdentityWithdrawViewModel: ObservableObject {
 
         do {
             guard SwiftDashSDKHost.shared.wallet?.walletId == wallet.walletId else {
-                throw SDKError.platformPreparationExpired("The selected wallet changed; review and confirm again")
+                throw WalletOperationPreparationError.expired("The selected wallet changed; review and confirm again")
             }
             try SwiftDashSDKHost.shared.validatePlatformOperation(confirmedPreparation)
             let signer = KeychainSigner(modelContainer: modelContainer)

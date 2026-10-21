@@ -21,8 +21,7 @@ struct SwiftDashSDKProtocolCompatibilityClient: WalletProtocolCompatibilityClien
         switch value.status {
         case .unavailable: status = .unavailable
         case .checking: status = .checking
-        case .supported: status = .supported
-        case .unsupported: status = .unsupported
+        case .checked: status = .checked
         }
         return WalletProtocolCompatibility(
             generation: value.generation, status: status,

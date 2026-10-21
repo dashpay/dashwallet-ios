@@ -137,15 +137,10 @@ final class EvonodeStatusViewModel: ObservableObject {
                 detail: detail)
         case .invalidParameter(let detail), .invalidState(let detail), .protocolError(let detail),
              .cryptoError(let detail), .notFound(let detail), .notImplemented(let detail),
-             .internalError(let detail), .unknown(let detail), .consensusRejection(_, let detail):
+             .internalError(let detail), .unknown(let detail):
             return .failed(
                 title: NSLocalizedString("Couldn't get the evonode's status.", comment: "Evonode status"),
                 detail: detail)
-        case .protocolCompatibilityUnavailable, .protocolCompatibilityChecking,
-             .unsupportedProtocolVersion, .platformPreparationExpired:
-            return .failed(
-                title: NSLocalizedString("Couldn't get the evonode's status.", comment: "Evonode status"),
-                detail: sdkError.localizedDescription)
         }
     }
 

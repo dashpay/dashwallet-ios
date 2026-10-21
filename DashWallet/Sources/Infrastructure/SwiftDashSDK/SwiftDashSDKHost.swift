@@ -218,51 +218,43 @@ final class SwiftDashSDKHost {
     // MARK: - Platform protocol version
 
     /// Both production networks learn supported versions from verified metadata.
-    /// Active runtimes explicitly check compatibility before Platform writes;
+    /// Active runtimes observe network versions in the background;
     /// the linked framework still determines which protocol versions are supported.
     static func platformVersion(for network: Network) -> UInt32 { 0 }
-
-    /// Cheap, authoritative native gate. No network request is made here.
-    @discardableResult
-    func requirePlatformWriteCompatibility() throws -> PlatformWritePermit {
-        protocolCompatibility.sample()
-        guard let sdk, runningNetwork == WalletEnvironment.network else {
-            throw SDKError.protocolCompatibilityUnavailable("The active wallet is not ready")
-        }
-        return try sdk.platformWritePermit()
-    }
 
     struct PlatformPreparation {
         fileprivate let sdk: SDK
         fileprivate let runtimeID: UUID
-        fileprivate let permit: PlatformWritePermit
+        fileprivate let walletID: Data
+        fileprivate let protocolVersion: UInt32
     }
 
-    /// Capture with the fee/amount summary, before user confirmation.
+    /// Bind a displayed quote to the actual wallet/runtime and operation version.
+    /// The status and generation of informational checks are deliberately ignored.
     func preparePlatformOperation() throws -> PlatformPreparation {
-        guard let sdk, runningNetwork == WalletEnvironment.network else {
-            throw SDKError.protocolCompatibilityUnavailable("The active wallet is not ready")
+        guard let sdk, runningNetwork == WalletEnvironment.network,
+              let walletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) ?? wallet?.walletId else {
+            throw WalletOperationPreparationError.unavailable("The active wallet is not ready")
         }
-        return PlatformPreparation(sdk: sdk, runtimeID: runtimeID, permit: try sdk.platformWritePermit())
+        return PlatformPreparation(sdk: sdk, runtimeID: runtimeID, walletID: walletID,
+            protocolVersion: try sdk.protocolCompatibility().effectiveProtocolVersion)
     }
 
     func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
         guard preparation.runtimeID == runtimeID, preparation.sdk === sdk,
-              runningNetwork == WalletEnvironment.network else {
-            throw SDKError.platformPreparationExpired("Wallet runtime changed; review and confirm again")
+              runningNetwork == WalletEnvironment.network,
+              preparation.walletID == (WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) ?? wallet?.walletId),
+              preparation.protocolVersion == (try preparation.sdk.protocolCompatibility()).effectiveProtocolVersion else {
+            throw WalletOperationPreparationError.expired("Wallet or operation version changed; review and confirm again")
         }
-        try preparation.sdk.validatePlatformWritePermit(preparation.permit)
     }
 
-    /// Carry the confirmed generation into the native operation, including
-    /// time spent waiting in Swift's and Rust's worker queues.
     func withPlatformOperation<T>(
         preparation: PlatformPreparation,
         operation: () async throws -> T
     ) async throws -> T {
         try validatePlatformOperation(preparation)
-        return try await preparation.sdk.withPlatformWritePermit(
-            preparation.permit, operation: operation)
+        return try await operation()
     }
 
     // MARK: - Wallet presence
@@ -1062,7 +1054,6 @@ final class SwiftDashSDKHost {
                 let started = CFAbsoluteTimeGetCurrent()
                 do {
                     let sdk = try SDK(network: network, platformVersion: platformVersion)
-                    try sdk.setProtocolCompatibilityPolicy(.requireVerified)
                     let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
                     // Logged HERE, on the build queue, so offMain= is
                     // evidence of where the work actually ran — a log after
@@ -1126,9 +1117,9 @@ final class SwiftDashSDKHost {
 
         try validateRuntimeGeneration(generation)
         if let generation {
-            await protocolCompatibility.attach(
+            protocolCompatibility.attach(
                 client: SwiftDashSDKProtocolCompatibilityClient(sdk: newSDK),
-                network: network.networkName, runtimeID: generation).value
+                network: network.networkName, runtimeID: generation)
             try validateRuntimeGeneration(generation)
         }
 

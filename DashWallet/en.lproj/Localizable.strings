@@ -6121,13 +6121,7 @@
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
 
-/* Platform protocol compatibility */
-"This network requires a newer version of Dash Wallet." = "This network requires a newer version of Dash Wallet.";
-"Checking Platform compatibility…" = "Checking Platform compatibility…";
-"Platform compatibility could not be checked. Try again before continuing." = "Platform compatibility could not be checked. Try again before continuing.";
-"Platform compatibility could not be checked. Platform operations are paused. Core remains available." = "Platform compatibility could not be checked. Platform operations are paused. Core remains available.";
-"This network requires a newer version of Dash Wallet. Check for an update in TestFlight. Core remains available." = "This network requires a newer version of Dash Wallet. Check for an update in TestFlight. Core remains available.";
-"This network requires a newer version of Dash Wallet. Check the App Store for an update. Core remains available." = "This network requires a newer version of Dash Wallet. Check the App Store for an update. Core remains available.";
+/* Informational protocol version notice */
+"The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
+"The network uses a newer protocol than this version of the app. Check for updates in TestFlight." = "The network uses a newer protocol than this version of the app. Check for updates in TestFlight.";
 "Check for update" = "Check for update";
-"Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status." = "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.";
-"Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status." = "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.";

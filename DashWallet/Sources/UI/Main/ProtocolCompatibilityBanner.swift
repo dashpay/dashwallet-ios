@@ -14,20 +14,12 @@ final class ProtocolCompatibilityBannerViewModel: ObservableObject {
     }
 
     var message: String? {
-        switch snapshot?.status {
-        case .checking:
-            return NSLocalizedString("Checking Platform compatibility…", comment: "Protocol compatibility")
-        case .unavailable:
-            return NSLocalizedString("Platform compatibility could not be checked. Platform operations are paused. Core remains available.", comment: "Protocol compatibility")
-        case .unsupported:
-            #if TESTFLIGHT
-            return NSLocalizedString("This network requires a newer version of Dash Wallet. Check for an update in TestFlight. Core remains available.", comment: "Protocol compatibility")
-            #else
-            return NSLocalizedString("This network requires a newer version of Dash Wallet. Check the App Store for an update. Core remains available.", comment: "Protocol compatibility")
-            #endif
-        case .supported, nil:
-            return nil
-        }
+        guard snapshot?.newerProtocolAvailable == true else { return nil }
+        #if TESTFLIGHT
+        return NSLocalizedString("The network uses a newer protocol than this version of the app. Check for updates in TestFlight.", comment: "Protocol version advisory")
+        #else
+        return NSLocalizedString("The network uses a newer protocol than this version of the app. Check for available updates.", comment: "Protocol version advisory")
+        #endif
     }
 
     var updateURL: URL? {
@@ -38,10 +30,8 @@ final class ProtocolCompatibilityBannerViewModel: ObservableObject {
         #endif
     }
 
-    func retry() { controller.refresh() }
-
     /// Local snapshots only: this never requests network data. It also observes
-    /// unsupported versions learned by background sync on a cloned SDK.
+    /// newer versions learned by background sync on a cloned SDK.
     func observe() async {
         while !Task.isCancelled {
             controller.sample()
@@ -63,21 +53,11 @@ struct ProtocolCompatibilityBanner: View {
         Group {
             if let message = model.message {
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top, spacing: 10) {
-                        if model.snapshot?.status == .checking {
-                            SwiftUI.ProgressView()
-                                .accessibilityLabel(Text(NSLocalizedString("Checking Platform compatibility…", comment: "Protocol compatibility")))
-                        }
-                        Text(message)
-                            .font(.footnote)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    if model.snapshot?.status == .unavailable {
-                        Button(NSLocalizedString("Try again", comment: "Protocol compatibility retry")) {
-                            model.retry()
-                        }
-                    } else if model.snapshot?.status == .unsupported, let url = model.updateURL {
-                        Button(NSLocalizedString("Check for update", comment: "Protocol compatibility update")) {
+                    Text(message)
+                        .font(.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let url = model.updateURL {
+                        Button(NSLocalizedString("Check for update", comment: "Protocol version update")) {
                             openURL(url)
                         }
                     }

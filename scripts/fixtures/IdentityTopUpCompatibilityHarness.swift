@@ -1,20 +1,9 @@
 import Foundation
 
-enum SDKError: Error {
-    case protocolCompatibilityUnavailable(String)
-    case protocolCompatibilityChecking(String)
-    case unsupportedProtocolVersion(String)
-    case platformPreparationExpired(String)
-    case networkError(String)
-}
-
+enum SDKError: Error { case networkError(String) }
+enum WalletOperationPreparationError: Error { case expired(String) }
 enum PlatformWalletError: Error {
-    case protocolCompatibilityUnavailable(String)
-    case protocolCompatibilityChecking(String)
-    case unsupportedProtocolVersion(String)
-    case platformPreparationExpired(String)
     case transactionBroadcastUnconfirmed(String)
-    case platformWriteUnconfirmed(String)
     case walletOperation(String)
 }
 
@@ -34,14 +23,12 @@ enum PlatformPaymentIdentityFundingPolicy {
     struct IdentityAddressInput { let addressType: UInt8; let hash: Data; let credits: UInt64 }
     let walletId = Data([1])
     var topUpCalls = 0
-    var receivedPreparations: [Int?] = []
     var failure: Error?
     var afterTopUp: () -> Void = {}
     func topUpFromAddresses(
         identityId: Data, inputs: [IdentityAddressInput], addressSigner: KeychainSigner
     ) async throws -> UInt64 {
         topUpCalls += 1
-        receivedPreparations.append(SwiftDashSDKHost.scopedPreparation?.generation)
         if let failure { throw failure }
         afterTopUp()
         return 97
@@ -50,7 +37,6 @@ enum PlatformPaymentIdentityFundingPolicy {
 
 @MainActor final class NativeManager {
     var unshieldCalls = 0
-    var receivedPreparations: [Int?] = []
     var failure: Error?
     var afterUnshield: () -> Void = {}
     func shieldedUnshield(
@@ -58,24 +44,23 @@ enum PlatformPaymentIdentityFundingPolicy {
         amount: UInt64
     ) async throws {
         unshieldCalls += 1
-        receivedPreparations.append(SwiftDashSDKHost.scopedPreparation?.generation)
         if let failure { throw failure }
         afterUnshield()
     }
 }
 
 @MainActor final class SwiftDashSDKHost {
-    struct PlatformPreparation: Sendable { let generation: Int }
-    @TaskLocal static var scopedPreparation: PlatformPreparation?
+    struct PlatformPreparation: Sendable { let operationVersion: Int }
     static let shared = SwiftDashSDKHost()
     var wallet: ManagedPlatformWallet? = ManagedPlatformWallet()
     var manager: NativeManager? = NativeManager()
-    var generation = 0
+    var checkGeneration = 0
+    var operationVersion = 0
     var scopeCalls = 0
     var rejectScopeCall: Int?
     func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
-        if preparation.generation != generation {
-            throw SDKError.platformPreparationExpired("Changed")
+        if preparation.operationVersion != operationVersion {
+            throw WalletOperationPreparationError.expired("Changed")
         }
     }
     func withPlatformOperation<T>(
@@ -84,9 +69,9 @@ enum PlatformPaymentIdentityFundingPolicy {
         scopeCalls += 1
         try validatePlatformOperation(preparation)
         if rejectScopeCall == scopeCalls {
-            throw SDKError.platformPreparationExpired("Changed at scope admission")
+            throw WalletOperationPreparationError.expired("Changed at scope admission")
         }
-        return try await Self.$scopedPreparation.withValue(preparation, operation: operation)
+        return try await operation()
     }
 }
 

@@ -299,7 +299,7 @@ struct CreateUsernameView: View {
                     DashButton(
                         text: primaryButtonText,
                         isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
-                            && !screenLockedAfterAuth && viewModel.protocolCompatibilityMessage == nil,
+                            && !screenLockedAfterAuth,
                         isLoading: inProgress
                     ) {
                         isTextInputFocused = false

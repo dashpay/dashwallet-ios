@@ -1490,7 +1490,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return false
         }
         do {
-            try SwiftDashSDKHost.shared.requirePlatformWriteCompatibility()
             let preparation = try confirmationPreparation?.get()
                 ?? SwiftDashSDKHost.shared.preparePlatformOperation()
             try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
@@ -1524,14 +1523,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Preserve the user's confirmed generation through Swift and Rust queues.
     private func performPrepared<T>(_ operation: () async throws -> T) async throws -> T {
         guard let operationPreparation else {
-            throw SDKError.platformPreparationExpired("Review and confirm the operation again")
+            throw WalletOperationPreparationError.expired("Review and confirm the operation again")
         }
         return try await SwiftDashSDKHost.shared.withPlatformOperation(
             preparation: operationPreparation, operation: operation)
     }
 
     private func handleFailure(_ error: Error) {
-        SwiftDashSDKHost.shared.protocolCompatibility.sample()
         Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
         lastFailure = error
         let message: String

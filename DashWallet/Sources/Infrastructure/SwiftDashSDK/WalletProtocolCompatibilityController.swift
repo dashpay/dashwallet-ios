@@ -1,10 +1,10 @@
 import Combine
 import Foundation
 
-/// Presentation snapshot only. Rust owns proof verification and write admission.
+/// Informational snapshot only. Rust owns proof and signature verification.
 struct WalletProtocolCompatibility: Equatable, Sendable {
     enum Status: String, Sendable {
-        case unavailable, checking, supported, unsupported
+        case unavailable, checking, checked
     }
 
     let generation: UInt64
@@ -13,15 +13,19 @@ struct WalletProtocolCompatibility: Equatable, Sendable {
     let effectiveVersion: UInt32?
     let maximumSupportedVersion: UInt32?
 
-    static func blockingMessage(for snapshot: Self?) -> String? {
-        switch snapshot?.status {
-        case .supported: return nil
-        case .unsupported:
-            return NSLocalizedString("This network requires a newer version of Dash Wallet.", comment: "Protocol compatibility")
-        case .checking:
-            return NSLocalizedString("Checking Platform compatibility…", comment: "Protocol compatibility")
-        case .unavailable, nil:
-            return NSLocalizedString("Platform compatibility could not be checked. Try again before continuing.", comment: "Protocol compatibility")
+
+    var newerProtocolAvailable: Bool {
+        guard let verifiedVersion, let maximumSupportedVersion else { return false }
+        return verifiedVersion > maximumSupportedVersion
+    }
+}
+
+enum WalletOperationPreparationError: LocalizedError {
+    case unavailable(String)
+    case expired(String)
+    var errorDescription: String? {
+        switch self {
+        case .unavailable(let message), .expired(let message): return message
         }
     }
 }
@@ -70,8 +74,6 @@ final class WalletProtocolCompatibilityController: ObservableObject {
     }
 
     func detach() {
-        // Invalidate Rust admission synchronously, including outstanding handles.
-        if let client { _ = try? client.beginCheck() }
         pending?.cancel()
         pending = nil
         requestID = nil
@@ -91,15 +93,11 @@ final class WalletProtocolCompatibilityController: ObservableObject {
     /// Called on actual background → foreground, never on didBecomeActive/Face ID.
     @discardableResult
     func willEnterForeground() -> Task<Void, Never> {
-        // A native result may have completed while suspended, before its Swift
-        // continuation ran. Every real foreground needs a fresh admission token.
-        pending?.cancel()
-        pending = nil
         return refresh()
     }
 
     /// Repeated manual requests share the current attempt.
-    /// `beginCheck` closes the native write gate before any asynchronous dispatch.
+    /// Starting or failing a check has no effect on operation availability.
     @discardableResult
     func refresh() -> Task<Void, Never> {
         if let pending { return pending }
@@ -156,8 +154,7 @@ final class WalletProtocolCompatibilityController: ObservableObject {
     }
 
     private func recordUnavailable() {
-        // A bridge failure must never erase already authenticated incompatibility.
-        guard snapshot?.status != .unsupported else { return }
+        // Keep past verified evidence even when the latest bridge call fails.
         snapshot = WalletProtocolCompatibility(
             generation: snapshot?.generation ?? 0, status: .unavailable,
             verifiedVersion: snapshot?.verifiedVersion,

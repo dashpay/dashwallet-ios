@@ -6224,13 +6224,7 @@
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 
-/* Platform protocol compatibility */
-"This network requires a newer version of Dash Wallet." = "Ta sieć wymaga nowszej wersji Dash Wallet.";
-"Checking Platform compatibility…" = "Sprawdzanie zgodności z Platform…";
-"Platform compatibility could not be checked. Try again before continuing." = "Nie udało się sprawdzić zgodności z Platform. Spróbuj ponownie przed kontynuowaniem.";
-"Platform compatibility could not be checked. Platform operations are paused. Core remains available." = "Nie udało się sprawdzić zgodności z Platform. Operacje Platform są wstrzymane. Core pozostaje dostępny.";
-"This network requires a newer version of Dash Wallet. Check for an update in TestFlight. Core remains available." = "Ta sieć wymaga nowszej wersji Dash Wallet. Sprawdź aktualizacje w TestFlight. Core pozostaje dostępny.";
-"This network requires a newer version of Dash Wallet. Check the App Store for an update. Core remains available." = "Ta sieć wymaga nowszej wersji Dash Wallet. Sprawdź aktualizacje w App Store. Core pozostaje dostępny.";
+/* Informational protocol version notice */
+"The network uses a newer protocol than this version of the app. Check for available updates." = "Sieć używa nowszego protokołu niż ta wersja aplikacji. Sprawdź dostępność aktualizacji.";
+"The network uses a newer protocol than this version of the app. Check for updates in TestFlight." = "Sieć używa nowszego protokołu niż ta wersja aplikacji. Sprawdź aktualizacje w TestFlight.";
 "Check for update" = "Sprawdź aktualizacje";
-"Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status." = "Transfer mógł dotrzeć do sieci, ale jego wynik nie jest jeszcze potwierdzony. Nie wysyłaj go ponownie. Poczekaj na synchronizację portfela i sprawdź jego status.";
-"Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status." = "Wynik przelewu jest niepotwierdzony. Nie wysyłaj go ponownie; poczekaj na synchronizację portfela i sprawdź jego status.";

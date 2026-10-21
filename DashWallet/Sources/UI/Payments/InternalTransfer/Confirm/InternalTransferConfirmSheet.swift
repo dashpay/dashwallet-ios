@@ -209,7 +209,7 @@ private func confirmSheetSample(
         platformShieldAmountWasMax: false,
         identityTopUp: identityTopUp,
         identityWithdrawal: identityWithdrawal,
-        preparation: .failure(SDKError.protocolCompatibilityUnavailable("Preview")),
+        preparation: .failure(WalletOperationPreparationError.unavailable("Preview")),
         onCancel: {},
         onSubmitted: {},
         onPlatformShieldCapacityChanged: { _, _ in })

@@ -534,18 +534,7 @@ final class IdentityTopUpViewModel: ObservableObject {
     @Published private(set) var submittedUnconfirmed = false
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
-    @Published private var protocolCompatibility: WalletProtocolCompatibility?
-    private var compatibilitySubscription: AnyCancellable?
-    var protocolCompatibilityMessage: String? {
-        WalletProtocolCompatibility.blockingMessage(for: protocolCompatibility)
-    }
-
     private let authorizer = DWIdentityAuthorizer()
-
-    init() {
-        compatibilitySubscription = SwiftDashSDKHost.shared.protocolCompatibility.$snapshot
-            .sink { [weak self] in self?.protocolCompatibility = $0 }
-    }
 
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
@@ -588,7 +577,6 @@ final class IdentityTopUpViewModel: ObservableObject {
     /// `nil` when the shielded route's unshield estimate is unavailable —
     /// callers show "no number" rather than only the transition fee.
     static func estimatedFeeCredits(source: FundingSource) -> UInt64? {
-        guard (try? SwiftDashSDKHost.shared.requirePlatformWriteCompatibility()) != nil else { return nil }
         let unshieldFee: UInt64
         if source == .shielded {
             // `nil`, not `0`, when there is no estimate — see the doc above.
@@ -697,7 +685,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         _ preparation: SwiftDashSDKHost.PlatformPreparation, walletId: Data
     ) throws {
         guard SwiftDashSDKHost.shared.wallet?.walletId == walletId else {
-            throw SDKError.platformPreparationExpired("The selected wallet changed; review and confirm again")
+            throw WalletOperationPreparationError.expired("The selected wallet changed; review and confirm again")
         }
         try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
     }
@@ -769,26 +757,8 @@ final class IdentityTopUpViewModel: ObservableObject {
                     inputs: [input],
                     addressSigner: signer)
             }
-        } catch let error as SDKError {
-            switch error {
-            case .protocolCompatibilityUnavailable, .protocolCompatibilityChecking,
-                 .unsupportedProtocolVersion, .platformPreparationExpired:
-                throw TopUpError.movedToPlatform(error)
-            default:
-                throw error
-            }
-        } catch let error as PlatformWalletError {
-            switch error {
-            case .protocolCompatibilityUnavailable, .protocolCompatibilityChecking,
-                 .unsupportedProtocolVersion, .platformPreparationExpired:
-                // Rust can refuse after the local guard. The first leg has
-                // already settled, so another shielded spend is not a retry.
-                throw TopUpError.movedToPlatform(error)
-            default:
-                // In particular, an unknown broadcast outcome must retain its
-                // original recovery meaning, never imply a safe resubmission.
-                throw error
-            }
+        } catch let error as WalletOperationPreparationError {
+            throw TopUpError.movedToPlatform(error)
         }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
@@ -983,7 +953,7 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || viewModel.submittedUnconfirmed || effectiveDuffs == nil || viewModel.protocolCompatibilityMessage != nil)
+                .disabled(viewModel.isProcessing || viewModel.submittedUnconfirmed || effectiveDuffs == nil)
                 .opacity(effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)

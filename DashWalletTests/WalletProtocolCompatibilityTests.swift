@@ -27,21 +27,21 @@ private final class CompatibilityClient: WalletProtocolCompatibilityClient, @unc
     func refresh(generation: UInt64) throws -> WalletProtocolCompatibility {
         // The production executor must keep the blocking bridge off MainActor.
         guard !Thread.isMainThread else { throw NSError(domain: "blocking-main-thread", code: 1) }
-        return finish(.supported, generation: generation)
+        return finish(.checked, generation: generation)
     }
 
-    func finish(_ status: WalletProtocolCompatibility.Status, generation: UInt64) -> WalletProtocolCompatibility {
+    func finish(_ status: WalletProtocolCompatibility.Status, generation: UInt64, version: UInt32? = nil) -> WalletProtocolCompatibility {
         lock.lock()
         defer { lock.unlock() }
-        let result = make(status, generation: generation)
+        let result = make(status, generation: generation, version: version)
         if generation == value.generation { value = result }
         return result
     }
 
-    private func make(_ status: WalletProtocolCompatibility.Status, generation: UInt64) -> WalletProtocolCompatibility {
+    private func make(_ status: WalletProtocolCompatibility.Status, generation: UInt64, version: UInt32? = nil) -> WalletProtocolCompatibility {
         WalletProtocolCompatibility(
             generation: generation, status: status,
-            verifiedVersion: status == .unsupported ? 15 : (status == .supported ? 14 : nil),
+            verifiedVersion: version ?? value.verifiedVersion ?? (status == .checked ? 14 : nil),
             effectiveVersion: 14, maximumSupportedVersion: 14)
     }
 }
@@ -77,12 +77,12 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         _ = client.finish(.unavailable, generation: 1)
         controller.sample()
         XCTAssertEqual(model.snapshot?.status, .unavailable)
-        XCTAssertTrue(model.message?.contains("Core") == true)
-        XCTAssertFalse(model.message?.contains("newer version") == true)
-        _ = client.finish(.unsupported, generation: 1)
+        XCTAssertNil(model.message)
+        XCTAssertFalse(model.message?.contains("newer protocol") == true)
+        _ = client.finish(.checked, generation: 1, version: 15)
         controller.sample()
-        XCTAssertEqual(model.snapshot?.status, .unsupported)
-        XCTAssertTrue(model.message?.contains("newer version") == true)
+        XCTAssertEqual(model.snapshot?.verifiedVersion, 15)
+        XCTAssertTrue(model.message?.contains("newer protocol") == true)
         #if TESTFLIGHT
         XCTAssertNil(model.updateURL)
         XCTAssertTrue(model.message?.contains("TestFlight") == true)
@@ -91,7 +91,7 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         #endif
     }
 
-    func testRefreshClosesGateSynchronouslyAndCoalescesRequests() async {
+    func testRefreshIsInformationalAndCoalescesRequests() async {
         let delayed = DelayedCompatibilityChecks()
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController(execute: { _, _ in try await delayed.run() })
@@ -99,31 +99,28 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         XCTAssertEqual(controller.snapshot?.status, .checking)
         let repeated = controller.refresh()
         await delayed.waitForCalls(1)
-        await delayed.resolve(.success(client.finish(.supported, generation: 1)))
+        await delayed.resolve(.success(client.finish(.checked, generation: 1)))
         await task.value
         await repeated.value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
         XCTAssertEqual(try client.snapshot().generation, 1)
     }
 
-    func testForegroundSupersedesPendingNativeResult() async {
+    func testForegroundJoinsPendingCheckWithoutDelayingRuntimeReadiness() async {
         let delayed = DelayedCompatibilityChecks()
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController(execute: { _, _ in try await delayed.run() })
-        let initial = controller.attach(client: client, network: "testnet", runtimeID: UUID())
+        let id = UUID()
+        let initial = controller.attach(client: client, network: "testnet", runtimeID: id)
+        controller.markRuntimeReady(runtimeID: id)
+        XCTAssertTrue(controller.isRuntimeReady)
         await delayed.waitForCalls(1)
-        let preForegroundResult = client.finish(.supported, generation: 1)
         let foreground = controller.willEnterForeground()
-        XCTAssertEqual(controller.snapshot?.status, .checking)
-        XCTAssertEqual(try client.snapshot().generation, 2)
-        await delayed.waitForCalls(2)
-        await delayed.resolve(.success(preForegroundResult))
+        XCTAssertEqual(try client.snapshot().generation, 1)
+        await delayed.resolve(.success(client.finish(.checked, generation: 1)))
         await initial.value
-        XCTAssertEqual(controller.snapshot?.status, .checking)
-        await delayed.resolve(.success(client.finish(.supported, generation: 2)))
         await foreground.value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
-        XCTAssertEqual(controller.snapshot?.generation, 2)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
     }
 
     func testOldSuccessCannotPublishIntoReplacementOnSameNetwork() async {
@@ -136,13 +133,13 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         let replacementID = UUID()
         let second = controller.attach(client: new, network: "testnet", runtimeID: replacementID)
         await delayed.waitForCalls(2)
-        await delayed.resolve(.success(old.finish(.supported, generation: 1)))
+        await delayed.resolve(.success(old.finish(.checked, generation: 1)))
         await first.value
         XCTAssertEqual(controller.runtimeID, replacementID)
         XCTAssertEqual(controller.snapshot?.status, .checking)
-        await delayed.resolve(.success(new.finish(.supported, generation: 1)))
+        await delayed.resolve(.success(new.finish(.checked, generation: 1)))
         await second.value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
     }
 
     func testOldFailureCannotClearNewRuntimeAndABAChangesRemainScoped() async {
@@ -155,14 +152,14 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         let client = CompatibilityClient()
         let third = controller.attach(client: client, network: "mainnet", runtimeID: UUID())
         await delayed.waitForCalls(3)
-        await delayed.resolve(.success(client.finish(.supported, generation: 1)), at: 2)
+        await delayed.resolve(.success(client.finish(.checked, generation: 1)), at: 2)
         await third.value
         await delayed.resolve(.failure(NSError(domain: "offline", code: 1)))
         await first.value
         await delayed.resolve(.failure(NSError(domain: "offline", code: 2)))
         await second.value
         XCTAssertEqual(controller.network, "mainnet")
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
     }
 
     func testFailureLeavesBindingUsableAndManualRetryRestoresCompatibility() async {
@@ -178,32 +175,32 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         XCTAssertEqual(controller.runtimeID, id)
         let retry = controller.refresh()
         await delayed.waitForCalls(2)
-        await delayed.resolve(.success(client.finish(.supported, generation: 2)))
+        await delayed.resolve(.success(client.finish(.checked, generation: 2)))
         await retry.value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
     }
 
-    func testForegroundInvalidatesPriorSuccessBeforeAwait() async {
+    func testForegroundStartsAnInformationalCheck() async {
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController()
         await controller.attach(client: client, network: "mainnet", runtimeID: UUID()).value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
         let task = controller.willEnterForeground()
         XCTAssertEqual(controller.snapshot?.status, .checking)
         XCTAssertEqual(try client.snapshot().generation, 2)
         await task.value
-        XCTAssertEqual(controller.snapshot?.status, .supported)
+        XCTAssertEqual(controller.snapshot?.status, .checked)
     }
 
-    func testDetachInvalidatesNativeAdmissionAndDiscardsCompletion() async {
+    func testDetachDiscardsCompletionWithoutChangingSDK() async {
         let delayed = DelayedCompatibilityChecks()
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController(execute: { _, _ in try await delayed.run() })
         let task = controller.attach(client: client, network: "testnet", runtimeID: UUID())
         await delayed.waitForCalls(1)
         controller.detach()
-        XCTAssertEqual(try client.snapshot().generation, 2)
-        await delayed.resolve(.success(client.finish(.supported, generation: 1)))
+        XCTAssertEqual(try client.snapshot().generation, 1)
+        await delayed.resolve(.success(client.finish(.checked, generation: 1)))
         await task.value
         XCTAssertNil(controller.snapshot)
         XCTAssertNil(controller.runtimeID)
@@ -212,12 +209,12 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
     func testRefreshCompletionUsesNewestAuthoritativeSnapshot() async {
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController(execute: { _, generation in
-            let completed = client.finish(.supported, generation: generation)
-            _ = client.finish(.unsupported, generation: generation)
+            let completed = client.finish(.checked, generation: generation)
+            _ = client.finish(.checked, generation: generation, version: 15)
             return completed
         })
         await controller.attach(client: client, network: "testnet", runtimeID: UUID()).value
-        XCTAssertEqual(controller.snapshot?.status, .unsupported)
+        XCTAssertEqual(controller.snapshot?.verifiedVersion, 15)
     }
 
     func testRuntimeReadinessCannotBePublishedByObsoleteRuntime() async {
@@ -237,10 +234,38 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController()
         await controller.attach(client: client, network: "testnet", runtimeID: UUID()).value
-        _ = client.finish(.unsupported, generation: 1)
+        _ = client.finish(.checked, generation: 1, version: 15)
         controller.sample()
-        XCTAssertEqual(controller.snapshot?.status, .unsupported)
+        XCTAssertEqual(controller.snapshot?.verifiedVersion, 15)
         XCTAssertEqual(controller.snapshot?.verifiedVersion, 15)
         XCTAssertEqual(try client.snapshot().generation, 1)
     }
+    func testCheckingAndFailureAreSilentWithoutNewerEvidence() async {
+        let delayed = DelayedCompatibilityChecks()
+        let controller = WalletProtocolCompatibilityController(execute: { _, _ in try await delayed.run() })
+        let model = ProtocolCompatibilityBannerViewModel(controller: controller)
+        let id = UUID()
+        let task = controller.attach(client: CompatibilityClient(), network: "testnet", runtimeID: id)
+        controller.markRuntimeReady(runtimeID: id)
+        XCTAssertNil(model.message)
+        await delayed.waitForCalls(1)
+        await delayed.resolve(.failure(NSError(domain: "offline", code: 1)))
+        await task.value
+        XCTAssertNil(model.message)
+        XCTAssertTrue(controller.isRuntimeReady)
+    }
+
+    func testFailedRefreshPreservesVerifiedNewerProtocolNotice() async {
+        let client = CompatibilityClient()
+        let controller = WalletProtocolCompatibilityController()
+        let model = ProtocolCompatibilityBannerViewModel(controller: controller)
+        await controller.attach(client: client, network: "testnet", runtimeID: UUID()).value
+        _ = client.finish(.checked, generation: 1, version: 15)
+        controller.sample()
+        _ = client.finish(.unavailable, generation: 1)
+        controller.sample()
+        XCTAssertNotNil(model.message)
+        XCTAssertEqual(controller.snapshot?.status, .unavailable)
+    }
+
 }

@@ -59,9 +59,7 @@ class CreateUsernameViewModel: ObservableObject {
     private var onRegistrationStarted: (@MainActor () -> Void)?
     private var confirmationPreparation: SwiftDashSDKHost.PlatformPreparation?
     @Published private var protocolCompatibility: WalletProtocolCompatibility?
-    var protocolCompatibilityMessage: String? {
-        WalletProtocolCompatibility.blockingMessage(for: protocolCompatibility)
-    }
+
 
     /// Capture before presenting the contested-name or purchase confirmation.
     func prepareConfirmation() throws {
@@ -74,7 +72,7 @@ class CreateUsernameViewModel: ObservableObject {
     private func takeConfirmationPreparation() throws -> SwiftDashSDKHost.PlatformPreparation {
         defer { confirmationPreparation = nil }
         guard let preparation = confirmationPreparation else {
-            throw SDKError.platformPreparationExpired("Review and confirm the registration again")
+            throw WalletOperationPreparationError.expired("Review and confirm the registration again")
         }
         try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
         return preparation
@@ -330,7 +328,7 @@ class CreateUsernameViewModel: ObservableObject {
         SwiftDashSDKHost.shared.protocolCompatibility.$snapshot
             .sink { [weak self] snapshot in
                 guard let self else { return }
-                if protocolCompatibility != snapshot { clearConfirmation() }
+                if protocolCompatibility?.effectiveVersion != snapshot?.effectiveVersion { clearConfirmation() }
                 protocolCompatibility = snapshot
             }
             .store(in: &cancellableBag)

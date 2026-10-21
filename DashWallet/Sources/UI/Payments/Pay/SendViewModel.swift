@@ -194,7 +194,7 @@ final class SendViewModel: ObservableObject {
 
     func platformPreparationForConfirmation() throws -> SwiftDashSDKHost.PlatformPreparation {
         guard let platformPreparation else {
-            throw SDKError.platformPreparationExpired("Review the amount after Platform compatibility is verified")
+            throw WalletOperationPreparationError.expired("Review the amount and confirm again")
         }
         try SwiftDashSDKHost.shared.validatePlatformOperation(platformPreparation)
         return platformPreparation
@@ -209,13 +209,7 @@ final class SendViewModel: ObservableObject {
     }
     private var cancellables = Set<AnyCancellable>()
 
-    private var protocolCompatibilityMessage: String? {
-        #if DEBUG
-        if isPreviewInstance { return nil }
-        #endif
-        guard let route, route != .coreToCore else { return nil }
-        return WalletProtocolCompatibility.blockingMessage(for: protocolCompatibility)
-    }
+
 
 
     #if DEBUG
@@ -638,7 +632,7 @@ final class SendViewModel: ObservableObject {
     /// needs the withdrawal preflight (fee headroom + full-balance payout),
     /// Platform → Shielded the shield-capacity preflight.
     private func compatibilityDidChange(_ snapshot: WalletProtocolCompatibility?, runtimeReady: Bool) {
-        guard protocolCompatibility != snapshot || isProtocolRuntimeReady != runtimeReady else { return }
+        guard protocolCompatibility?.effectiveVersion != snapshot?.effectiveVersion || isProtocolRuntimeReady != runtimeReady else { return }
         isProtocolRuntimeReady = runtimeReady
         protocolCompatibility = snapshot
         guard route != nil, route != .coreToCore else { return }
@@ -658,7 +652,7 @@ final class SendViewModel: ObservableObject {
         platformPreparation = nil
         clearShieldedMaxSelection()
         if let route, route != .coreToCore {
-            guard isProtocolRuntimeReady, protocolCompatibilityMessage == nil,
+            guard isProtocolRuntimeReady,
                   let preparation = try? SwiftDashSDKHost.shared.preparePlatformOperation()
             else { return }
             platformPreparation = preparation
@@ -1050,7 +1044,6 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
-        if let message = protocolCompatibilityMessage { return message }
         #if DASHPAY
         // Both are independent of the amount: the first says nothing can ever
         // be sent on this channel, the second reports the attempt that just
@@ -1255,7 +1248,7 @@ final class SendViewModel: ObservableObject {
     }
 
     var canContinue: Bool {
-        guard protocolCompatibilityMessage == nil, hasCurrentPlatformPreparation else { return false }
+        guard hasCurrentPlatformPreparation else { return false }
         #if DASHPAY
         // Terminal for this contact for the rest of the session: see
         // `contactSendOutcomeIsUnknown`.
@@ -1318,7 +1311,7 @@ final class SendViewModel: ObservableObject {
     func fillMaxFromWallet() {
         guard hasCurrentPlatformPreparation else {
             clearShieldedMaxSelection()
-            shieldedMaxNotice = protocolCompatibilityMessage ?? Self.feeEstimateUnavailableMessage
+            shieldedMaxNotice = Self.feeEstimateUnavailableMessage
             return
         }
         if hasUnavailableSourceBalance {

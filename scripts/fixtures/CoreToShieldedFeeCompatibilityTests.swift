@@ -3,7 +3,7 @@ import XCTest
 
 final class CoreToShieldedFeeCompatibilityTests: XCTestCase {
     @MainActor
-    func testCheckClosesCachedQuoteAndRetryRequotesChangedVersion() async {
+    func testCheckFailureKeepsCachedQuoteAndRealVersionChangeRequotes() async {
         let host = SwiftDashSDKHost.shared
         host.reset()
         XCTAssertEqual(CoreToShieldedAmountPolicy.poolFeeCredits, 50_000_100)
@@ -12,7 +12,7 @@ final class CoreToShieldedFeeCompatibilityTests: XCTestCase {
 
         host.compatible = false
         host.generation += 1
-        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits)
+        XCTAssertEqual(CoreToShieldedAmountPolicy.poolFeeCredits, 50_000_100)
         XCTAssertEqual(host.manager?.calls, 1)
 
         host.compatible = true
@@ -37,7 +37,7 @@ final class CoreToShieldedFeeCompatibilityTests: XCTestCase {
     func testQuoteChangedDuringNativeEstimateIsDiscarded() async {
         let host = SwiftDashSDKHost.shared
         host.reset()
-        host.manager?.onEstimate = { host.generation += 1 }
+        host.manager?.onEstimate = { host.version += 1 }
         XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits)
         host.manager?.onEstimate = nil
         XCTAssertEqual(CoreToShieldedAmountPolicy.poolFeeCredits, 50_000_100)

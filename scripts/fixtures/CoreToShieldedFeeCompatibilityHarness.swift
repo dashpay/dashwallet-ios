@@ -7,7 +7,6 @@ final class SwiftDashSDKHost {
     static let shared = SwiftDashSDKHost()
     struct PlatformPreparation: Equatable {
         let runtime: UUID
-        let generation: UInt64
         let version: UInt32
     }
     enum Refusal: Error { case incompatible, changed, estimateFailed }
@@ -31,8 +30,7 @@ final class SwiftDashSDKHost {
     var compatible = true
 
     func preparePlatformOperation() throws -> PlatformPreparation {
-        guard compatible else { throw Refusal.incompatible }
-        return PlatformPreparation(runtime: runtime, generation: generation, version: version)
+        return PlatformPreparation(runtime: runtime, version: version)
     }
 
     func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
