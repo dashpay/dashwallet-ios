@@ -547,6 +547,19 @@ final class InternalTransferViewModel: ObservableObject {
         maxNotice = nil
     }
 
+    /// The drain found nothing to move. With nothing spendable at all, the
+    /// precise reason (still confirming, or only mixed coins) is the shared
+    /// Core Max explanation, not the fees.
+    private func coreDrainInsufficientFundsMessage() -> String {
+        guard coreSpendableDuffs == 0 else {
+            return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
+        }
+        return Self.coreZeroMaxMessage(
+            totalDuffs: coreBalanceDuffs,
+            confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+            excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
+    }
+
     private func refreshCoreDrainPreview() {
         // While this selection's resume runs the form stays busy; the resume
         // refreshes itself when it returns.
@@ -591,7 +604,9 @@ final class InternalTransferViewModel: ObservableObject {
                 self.coreDrainPending = pending != nil
                 self.coreDrainHasOutpoint = pending?.outpoint != nil
                 if pending != nil {
-                    self.maxNotice = NSLocalizedString("A previous Max transfer is still pending. Check its status or resume it before starting another.", comment: "Core drain recovery")
+                    self.maxNotice = NSLocalizedString(
+                        "A previous Max transfer is still pending. Check its status or resume it before starting another.",
+                        comment: "Core drain recovery")
                     self.isCoreDrainLoading = false
                     return
                 }
@@ -602,12 +617,16 @@ final class InternalTransferViewModel: ObservableObject {
                 self.isCoreDrainLoading = false
                 switch quote.status {
                 case .insufficientFunds:
-                    self.maxNotice = NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
+                    self.maxNotice = self.coreDrainInsufficientFundsMessage()
                     return
                 case .ready:
-                    self.maxNotice = NSLocalizedString("Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.", comment: "Core drain estimate")
+                    self.maxNotice = NSLocalizedString(
+                        "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.",
+                        comment: "Core drain estimate")
                 case .inputLimitMayBeExceeded:
-                    self.maxNotice = NSLocalizedString("This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.", comment: "Core drain input limit preview")
+                    self.maxNotice = NSLocalizedString(
+                        "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.",
+                        comment: "Core drain input limit preview")
                 }
                 self.coreShieldedDrainConfirmation = CoreShieldedDrainConfirmation(
                     context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,

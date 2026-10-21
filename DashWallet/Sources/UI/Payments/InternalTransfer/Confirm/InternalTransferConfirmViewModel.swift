@@ -145,7 +145,9 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
     var coreDrainExplanation: String? {
         guard request?.coreShieldedDrain != nil else { return nil }
-        return NSLocalizedString("All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.", comment: "Core drain confirmation")
+        return NSLocalizedString(
+            "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.",
+            comment: "Core drain confirmation")
     }
 
     var summary: TransferConfirmSummary {

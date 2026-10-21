@@ -128,6 +128,7 @@ struct Quote {
     var maxAmountDuffs: UInt64?
     var isApplyingMax = false
     func applyMaxAmountText(_ amount: UInt64) { amountText = String(amount) }
+    func coreDrainInsufficientFundsMessage() -> String { "Insufficient funds" }
 ''' + methods + "\n}\n")
     (tests / "RecoveryFormTests.swift").write_text(r'''
 import XCTest
