@@ -129,6 +129,10 @@ completed at 12:54:44.820, about 53 seconds after import. Relaunch retained both
 exact balances, all four Core transactions and both note states; Core and
 shielded sync completed again. Timings are informational, not thresholds.
 
-Full reports, selected evidence and detailed local paths remain under ignored
-`qa-results/`. Only these non-secret fixture facts and compact provenance belong
-in Git. Preserve this first successful build record when testing other revisions.
+Start preparation from the application repository root (locate it with
+`git rev-parse --show-toplevel`). Full reports, selected evidence and detailed
+local paths remain under `./qa-results/` relative to that root. Resolve this
+output directory to an absolute path before changing directories; only the
+repository-root `/qa-results/` is ignored by Git. Only these non-secret fixture
+facts and compact provenance belong in Git. Preserve this first successful
+build record when testing other revisions.

@@ -23,8 +23,13 @@ template. Pause for me to enter the recovery phrase. Save results locally.”
 Follow repository instructions. Do not change application code, dependency pins,
 or expected results to make a run pass. Do not commit, push, or upload reports.
 Use [report-template.md](report-template.md) for every attempt, including blocked
-ones. Save it as `qa-results/<UTC timestamp>-<unique suffix>/report.md`; keep all
-run artifacts underneath that directory. Record each retry as a new run.
+ones. Start the run from the application repository root (locate it with
+`git rev-parse --show-toplevel`). Save the report as
+`./qa-results/<UTC timestamp>-<unique suffix>/report.md` relative to that root;
+keep all run artifacts underneath that directory. Resolve the output directory
+to an absolute path before changing directories for build or SDK commands:
+only the repository-root `/qa-results/` is ignored by Git. Record each retry as
+a new run.
 
 ## Fixed simulator PIN
 
