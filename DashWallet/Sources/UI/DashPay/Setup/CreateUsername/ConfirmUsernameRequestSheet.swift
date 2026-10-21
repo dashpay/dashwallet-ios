@@ -60,6 +60,16 @@ struct ConfirmUsernameRequestSheet: View {
     @State private var hasAccepted = false
 
     var body: some View {
+        content
+            // The acceptance covers the amounts that were on screen: if
+            // either figure moves while the sheet is up, it has to be given
+            // again. An identity that already holds enough keeps its top-up
+            // at zero while the contest fee it pays changes.
+            .onChange(of: amountDuffs) { _, _ in hasAccepted = false }
+            .onChange(of: identityPaidContestFeeDuffs) { _, _ in hasAccepted = false }
+    }
+
+    @ViewBuilder private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -197,13 +207,13 @@ struct ConfirmUsernameRequestSheet: View {
 
 #if DEBUG
 
-/// The contested request: 0.25 DASH and the fee note, nothing accepted yet,
+/// The contested request: its cost and the fee note, nothing accepted yet,
 /// so Confirm is greyed out.
 #Preview("Requested name — contested") {
     ConfirmUsernameRequestSheet(
         kind: .requested,
         username: "TestUser01",
-        amountDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME),
+        amountDuffs: ContestedUsernameFee.Amounts.legacy.fundingDuffs,
         showsContestFeeNote: true,
         onConfirm: {})
         .background(Color.dash.primaryBackground)
