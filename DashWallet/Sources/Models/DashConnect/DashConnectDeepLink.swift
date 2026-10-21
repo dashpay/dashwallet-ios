@@ -52,7 +52,16 @@ final class DashConnectDeepLink: NSObject {
     /// `absoluteString` returns what the app emitted.
     @objc(uriFromURL:)
     static func uri(from url: URL) -> String? {
-        let candidate = url.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines)
+        uri(from: url.absoluteString)
+    }
+
+    /// The DashConnect URI `string` holds, or `nil` when it is not one.
+    ///
+    /// For a carrier that hands over text rather than a `URL`: the Home
+    /// scanner reads the same payload off a QR code.
+    @objc(uriFromString:)
+    static func uri(from string: String) -> String? {
+        let candidate = string.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard DashConnectUri.isKeyUri(candidate) || DashConnectUri.isStUri(candidate) else {
             return nil

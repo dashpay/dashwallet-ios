@@ -192,6 +192,22 @@ NS_ASSUME_NONNULL_END
     NSAssert(![NSThread isMainThread], nil);
 
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    // A DashConnect request is not a payment: hand it over whole before the payment parse below
+    // rejects it. Malformed payloads are reported by the Connections screen, as for a tapped link.
+    NSString *dashConnectURI = [DWDashConnectDeepLink uriFromString:addr];
+    if (dashConnectURI && [self.delegate respondsToSelector:@selector(qrScanModel:didScanDashConnectURI:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+            [qrCodeObject setValid];
+            self.qrCodeObject = qrCodeObject;
+
+            [self.delegate qrScanModel:self didScanDashConnectURI:dashConnectURI];
+        });
+
+        return;
+    }
+
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
     // The URI parse, `pay:` normalization and address validity are app-side now (the box). (Paper-wallet
     // sweep — the old WIF/BIP38 arm — was dropped in C8 step 5.)

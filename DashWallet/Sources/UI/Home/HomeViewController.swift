@@ -743,6 +743,24 @@ extension HomeViewController: ShortcutsActionDelegate {
     }
 }
 
+// MARK: - DWQRScanModelDelegate
+
+extension HomeViewController {
+    /// The Home scanner (the Scan shortcut, `dashwallet://scanqr`) also reads
+    /// DashConnect codes, and opens the Connections screen with them — the
+    /// same place a tapped `dash-key:` / `dash-st:` link goes.
+    ///
+    /// The scan delegate is `DWBasePayViewController`; only Home answers this
+    /// optional half, so the lock screen and the Send scanners keep treating
+    /// these codes as not-a-payment.
+    @objc(qrScanModel:didScanDashConnectURI:)
+    func qrScanModel(_ viewModel: DWQRScanModel, didScanDashConnectURI uri: String) {
+        dismiss(animated: true) { [weak self] in
+            (self?.tabBarController as? MainTabbarController)?.openDashConnect(uri)
+        }
+    }
+}
+
 // MARK: - SyncingActivityMonitorObserver
 
 extension HomeViewController: SyncingActivityMonitorObserver {
