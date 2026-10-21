@@ -683,9 +683,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // The rebuild marker has the resync marker's contract (below): it
         // survives a failed startSpv and is consumed only once the client
         // that anchors the rebuilt store is running.
+        // The SDK runs the blocking native start off the main actor: opening
+        // the SPV store can take many seconds (a one-time storage migration
+        // took 14 s on a device), and the blocking overload froze the UI for
+        // all of it. The main actor is free for the whole await below.
         do {
-            try SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
-                try manager.startSpv(config: config)
+            try await SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
+                try await manager.startSpv(config: config)
             })
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
@@ -694,14 +698,31 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         // The resync marker survives a failed startSpv (the store is empty
         // either way; the next launch simply re-applies), and is consumed
-        // only once the resynced client is actually running.
+        // only once the resynced client is actually running — which it is
+        // even when a network switch overtook the start below.
         if appliedChainResync {
             SPVChainResyncMarker.clear(for: network)
             Self.logger.info("🛰️ SPVCOORD :: chain resync applied on \(network.rawValue, privacy: .public)")
         }
 
+        // Recorded before the overtake check: the client is running either
+        // way, and `performStop` stops a client this coordinator owns.
         runningNetwork = network
         runningScope = scope
+
+        // `prepareForNetworkSwitch()` runs outside the lifecycle queue, so a
+        // switch can land during the start's await (the stop has the same
+        // check after its own await). Its preparation already detached the
+        // subscriptions and cleared the published state; re-attaching here
+        // would publish the outgoing network's progress and balance as the
+        // new network's. The switch's refresh, queued behind this start,
+        // begins with a reset that stops the client just started.
+        if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+            Self.logger.info(
+                "🛰️ SPVCOORD :: network switch prepared during the start of \(network.rawValue, privacy: .public); leaving it to the switch")
+            return .failure(StartError.superseded)
+        }
+
         lastError = nil
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
