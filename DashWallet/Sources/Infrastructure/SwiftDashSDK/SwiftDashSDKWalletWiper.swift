@@ -223,6 +223,15 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // Whatever this wipe leaves behind, the app-level gate's cached view of
         // which networks hold material is about to be wrong.
         defer { WalletEnvironment.invalidateWalletMaterialCache() }
+        #if DASHPAY
+        // Invitation receipt is suspended by the first erase and stays so
+        // until the wipe — registry reset and teardown included — is over.
+        defer {
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { PendingInvitationStore.shared.resumeReceipt() }
+            }
+        }
+        #endif
         let storage = WalletStorage()
         let walletIdsByNetwork: [Network: Set<Data>]
 
@@ -235,6 +244,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         "recovery wipe requires exactly one distinct SDK mnemonic; refusing legacy and SDK deletion")
                     return false
                 }
+
+                guard eraseInvitationsBeforeDestruction() else { return false }
 
                 try SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccountsBeforeWipe(
                     matching: authorizedMnemonic)
@@ -255,6 +266,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 return false
             }
         } else {
+            guard eraseInvitationsBeforeDestruction() else { return false }
+
             if authorization.removesAllLegacyMnemonicAccounts {
                 do {
                     try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
@@ -310,10 +323,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
+        // Marker files behind their own lock; safe on this queue too.
+        SPVChainStoreRebuild.clearAll()
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.
         DWContestedNameStatusService.resetForWipe()
+        DWCurrentUserIdentityInfo.resetPendingMainNamesForWipe()
 
         // Clear every network-scoped active-wallet registry entry only after
         // the network stores and the global SDK Keychain inventory are empty.
@@ -324,6 +340,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         WalletEnvironment.setActiveWalletId(nil, for: .devnet)
         // The wallet devnet was last entered from is gone too.
         WalletEnvironment.devnetProvisioningSourceWalletId = nil
+#if DASHPAY
+        // The row reads its registration reports ahead of contest and
+        // ownership state, so an old approval or "interrupted" would otherwise
+        // come back on a wallet created or restored after the reset. After the
+        // registry is emptied: a registration still unwinding writes its
+        // report only into the selected wallet's scope, and there is none now.
+        UsernamePrefs.clearAllRegistrationRecords()
+#endif
 
         let elapsed = startedAt.duration(to: .now)
         logger.info(
@@ -380,6 +404,31 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let teardownMs = Int((CFAbsoluteTimeGetCurrent() - teardownStarted) * 1000)
         DWLogger.log("🧹 WIPE runtime teardown awaited \(teardownMs)ms")
         return true
+    }
+
+    /// Erase every pending DashPay invitation (each holds a voucher key)
+    /// before anything else is destroyed: once the mnemonics are gone a
+    /// phrase-authorized wipe can no longer be retried, and a surviving
+    /// pre-onboarding copy would bind to the next wallet. On failure the wipe
+    /// stops here with nothing deleted, so a retry repeats it.
+    private static func eraseInvitationsBeforeDestruction() -> Bool {
+        #if DASHPAY
+        var erased = true
+        // Suspend receipt first, so no link can be stored again until the
+        // wipe is over (`performWipe` resumes it on every exit).
+        let erase = {
+            erased = MainActor.assumeIsolated {
+                PendingInvitationStore.shared.eraseForWipe()
+            }
+        }
+        if Thread.isMainThread { erase() } else { DispatchQueue.main.sync(execute: erase) }
+        if !erased {
+            logger.error("a pending DashPay invitation could not be removed from the Keychain; refusing the wipe")
+        }
+        return erased
+        #else
+        return true
+        #endif
     }
 
     /// Match each SDK-owned Keychain wallet id to the network discriminant
@@ -521,6 +570,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// and must not be papered over by a weaker deletion path.
     @MainActor
     private static func deletionBackend(for network: Network, forFullWipe: Bool = false) async throws -> DeletionBackend {
+        // A shielded stop in flight keeps the SDK's manager registry
+        // read-locked for its whole drain (up to 10 s). A temporary manager
+        // built below registers there synchronously on the main actor, so it
+        // would block the UI until the drain ends.
+        await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
         let host = SwiftDashSDKHost.shared
         let backend: DeletionBackend
         do {
@@ -565,6 +619,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let finished = DispatchSemaphore(value: 0)
         let result = WalletWipeResultAccumulator()
         Task { @MainActor in
+            // A background identity recovery can still write identity rows and
+            // DPNS names for the wallet deleted below. The runtime teardown
+            // that would stop it (`handleWalletWiped`) runs only after this
+            // deletion, so stop it here first.
+            await PlatformAddressSyncCoordinator.shared.cancelAndAwaitIdentityRecovery()
+
             let host = SwiftDashSDKHost.shared
             var networks: [Network] = [.mainnet, .testnet]
             // Devnet joins the wipe when this device holds devnet material:
@@ -603,6 +663,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             for network in networks {
                 do {
                     let backend = try await deletionBackend(for: network, forFullWipe: true)
+                    // The live manager's synchronous `deleteWallet` throws
+                    // while a shielded stop is in flight on it. Nothing below
+                    // suspends before the deletions.
+                    await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
                     var walletIds = backend.loadedWalletIds
                     walletIds.formUnion(storedWalletIdsByNetwork[network] ?? [])
 
@@ -614,7 +678,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                                 walletId,
                                 deleteWallet: { id in
                                     try backend.delete(id)
-                                })
+                                },
+                                scope: network.persistenceScope)
                         } catch {
                             result.recordFailure()
                             logDeletionFailure(error, walletId: walletId, network: network)
@@ -694,7 +759,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         // configured scope's own deletion removes it last.
                         try deleteWalletFromSDK(walletId, deleteWallet: {
                             try backend.delete($0, preservingSharedSecrets: true)
-                        })
+                        }, keepsWalletOnAnotherScope: true, scope: scope)
                     } catch {
                         result.recordFailure()
                         logDeletionFailure(error, walletId: walletId, network: .devnet)
@@ -771,6 +836,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
             let network: Network
             let walletId: Data
             let backend: DeletionBackend
+            /// The persistence scope whose rows `backend` deletes.
+            let scope: String
             /// True for the extra devnet scopes swept ahead of the configured
             /// one: they must not remove the shared devnet mnemonic, which
             /// still names the rows the authoritative leg is about to delete.
@@ -810,6 +877,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                             network: .devnet,
                             walletId: walletId,
                             backend: .offline(handler),
+                            scope: scope,
                             preservesSharedSecrets: true))
                     }
                 }
@@ -818,7 +886,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     deletions.append(PendingDeletion(
                         network: network,
                         walletId: walletId,
-                        backend: backend))
+                        backend: backend,
+                        scope: network.persistenceScope))
                 } else {
                     // Built a detached manager only to find nothing to delete on
                     // this network — shut it down now rather than leaving it to
@@ -827,6 +896,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 }
             }
 
+            // The live manager's synchronous `deleteWallet` throws while a
+            // shielded stop is in flight on it. Nothing below suspends before
+            // the deletions.
+            await PlatformAddressSyncCoordinator.shared.awaitPendingShieldedStop()
             for deletion in deletions {
                 try deleteWalletFromSDK(
                     deletion.walletId,
@@ -834,7 +907,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         try deletion.backend.delete(
                             walletId,
                             preservingSharedSecrets: deletion.preservesSharedSecrets)
-                    })
+                    },
+                    keepsWalletOnAnotherScope: deletion.preservesSharedSecrets,
+                    scope: deletion.scope)
 
                 let kind = WalletEnvironment.networkKind(for: deletion.network)
                 if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
@@ -869,7 +944,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
     static func deleteWalletFromSDK(
         _ walletId: Data,
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
-        clearAppState: (@MainActor (Data) -> Void)? = nil
+        clearAppState: (@MainActor (Data) -> Void)? = nil,
+        keepsWalletOnAnotherScope: Bool = false,
+        scope: String
     ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
@@ -877,6 +954,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
             }
             try manager.deleteWallet(walletId: walletId)
         }
+
+#if DASHPAY
+        // First, while a failure still leaves the wallet intact for a retry:
+        // a pending invitation held for this wallet carries a voucher key.
+        let removedWalletHex = walletId.hexEncodedString()
+        guard PendingInvitationStore.shared.removeAll(walletIdHex: removedWalletHex) else {
+            logger.error("a pending DashPay invitation of the wallet could not be deleted; refusing the removal")
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+        }
+#endif
 
         do {
             try deleteWallet(walletId)
@@ -900,6 +987,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // One wallet id covers every devnet scope it has rows in, so
+            // only the rebuild pending on the scope whose rows were just
+            // deleted is dropped; the wallet's other scopes keep theirs.
+            SPVChainStoreRebuild.finish(walletIds: [walletId], scope: scope)
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on
@@ -911,6 +1002,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // runs).
         GeneratedWalletIdentityMarker.clear(walletId: walletId)
 #if DASHPAY
+        // Nor its username registration reports (in-flight, completed, lost,
+        // failed instant name) and form drafts, which would resurface under
+        // the same keys. One wallet id covers every devnet scope it has rows
+        // in, so a store-only sweep of one scope leaves them to the deletion
+        // that removes the wallet itself.
+        if !keepsWalletOnAnotherScope {
+            UsernamePrefs.clearRegistrationRecords(walletIdHex: walletId.hexEncodedString())
+        }
         DWSameSeedIdentityRecoveryCoordinator.shared.forgetWallet(walletId: walletId)
 #endif
     }

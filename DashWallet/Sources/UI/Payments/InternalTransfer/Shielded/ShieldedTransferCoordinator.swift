@@ -1520,7 +1520,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
     }
 
-    /// Preserve the user's confirmed generation through Swift and Rust queues.
+    /// Recheck the user's wallet/runtime and operation version before submission.
     private func performPrepared<T>(_ operation: () async throws -> T) async throws -> T {
         guard let operationPreparation else {
             throw WalletOperationPreparationError.expired("Review and confirm the operation again")
@@ -1557,12 +1557,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
     }
 
-    /// A failed retry gate cannot prove the earlier dispatch did not execute.
+    /// An ambiguous broadcast cannot prove the dispatch did not execute.
     /// Keep the submitted state so this sheet never offers a fresh payment.
     private func handlePlatformSpendError(_ error: Error) {
         switch error {
-        case PlatformWalletError.platformWriteUnconfirmed,
-             PlatformWalletError.transactionBroadcastUnconfirmed:
+        case PlatformWalletError.transactionBroadcastUnconfirmed:
             phase = .submittedUnconfirmed
             schedulePlatformResync()
             if let manager = SwiftDashSDKHost.shared.manager {

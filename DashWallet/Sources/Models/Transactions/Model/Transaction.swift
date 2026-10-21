@@ -586,6 +586,12 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var date: Date
 
+    /// When the wallet's store first held the transaction (the row's `createdAt`); nil
+    /// for a transaction with no row. Unlike `date` it does not move when the transaction
+    /// is mined. A row written anew — the wallet restored, the transaction dropped and
+    /// seen again — carries the time of that instead.
+    let firstStored: Date?
+
     var shortDateString: String {
         _shortDateString
     }
@@ -672,6 +678,7 @@ class Transaction: TransactionDataItem, Identifiable {
         self.date = ts == 0
             ? Date()
             : Date(timeIntervalSince1970: TimeInterval(ts))
+        self.firstStored = p.createdAt
     }
 
     /// Synthetic wrapper for a transaction that has no persisted row: the
@@ -695,6 +702,7 @@ class Transaction: TransactionDataItem, Identifiable {
             context: contextRaw,
             externalSentAddresses: externalSentAddresses)
         self.date = date
+        self.firstStored = nil
     }
 }
 

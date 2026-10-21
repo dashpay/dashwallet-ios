@@ -149,6 +149,7 @@ struct SendScreen: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.asciiCapable)
                     .lineLimit(2...4)
+                    .accessibilityIdentifier("send_address_field")
                     .focused($addressFieldFocused)
                     .onAppear {
                         // Rendered after tapping the locked card → put the
@@ -211,6 +212,7 @@ struct SendScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("send_address_locked")
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
@@ -309,8 +311,6 @@ struct SendSourceScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -429,21 +429,18 @@ struct ExternalSendAmountScreen: View {
         VStack(spacing: 0) {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                })
                 SendContactIntro(
                     contact: contact,
-                    balanceDuffs: viewModel.coreToCoreSpendableDuffs,
-                    onBack: onBack)
+                    balanceDuffs: viewModel.coreToCoreSpendableDuffs)
                     .padding(.horizontal, 20)
-                    .padding(.top, 10)
             } else {
                 SendStepHeader(onBack: onBack)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
             }
             #else
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
             #endif
 
             ScrollView {
@@ -714,7 +711,10 @@ struct ExternalSendAmountScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                // Shorter text always passes: a unit switch can leave more decimals than
+                // the new unit allows, and refusing backspace would lock the field.
+                } else if newValue.count < viewModel.amountText.count
+                    || InternalTransferViewModel.typedTextFitsPrecision(newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })
@@ -723,33 +723,25 @@ struct ExternalSendAmountScreen: View {
 
 // MARK: - Shared step chrome
 
-/// Back-chevron + "Send" title, shared by the source and amount steps.
+/// Back + "Send" title, shared by the source and amount steps.
 private struct SendStepHeader: View {
     var onBack: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
+        DashUIKit.NavigationBar(
+            leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
+            central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
+                    .foregroundColor(Color.dash.primaryText)
+            })
     }
 }
 
 #if DASHPAY
 
-/// The contact route's header: the design system's TopIntro — back control, a
-/// large left-aligned title, and the recipient named underneath.
+/// The contact route's intro under its navigation bar: the design system's
+/// TopIntro — a large left-aligned title, and the recipient named underneath.
 ///
 /// `TopIntroView` draws the title. The recipient line is composed here rather
 /// than passed as its `mainDescription` because the component's descriptions
@@ -765,7 +757,6 @@ private struct SendContactIntro: View {
     /// button is gated on, not the raw balance — typing the number shown here
     /// must not come back as "insufficient balance".
     let balanceDuffs: UInt64
-    var onBack: () -> Void
 
     /// Hidden first, like the merchant pay screen: the number is here to be
     /// consulted, not broadcast to whoever is looking at the phone.
@@ -778,16 +769,6 @@ private struct SendContactIntro: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text(NSLocalizedString("Back", comment: "")))
-
             VStack(alignment: .leading, spacing: 4) {
                 DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))
 

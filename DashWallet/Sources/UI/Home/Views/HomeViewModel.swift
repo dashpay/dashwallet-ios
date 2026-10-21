@@ -555,7 +555,7 @@ class HomeViewModel: ObservableObject {
     /// Fails OPEN: a save whose payload we can't inspect is treated as
     /// relevant, so an unexpected notification shape costs a redundant reload
     /// rather than a feed that stops updating.
-    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+    static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
         guard let userInfo = notification.userInfo else { return true }
         var sawInspectableChange = false
         for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
@@ -1031,6 +1031,30 @@ class HomeViewModel: ObservableObject {
             else { continue }
             items.append(.platformActivity(platform))
         }
+
+        // Buy swap orders made in this wallet whose deposit is on record but whose Dash is
+        // not in the wallet: there is no transaction to hang a row on yet. Once the payout is
+        // here, that transaction is the row (`SwapOrderMetadataProvider` labels it — and its
+        // order-to-transaction assignment is the one read here) and the order's own row goes.
+        let now = Date()
+        let walletId = SwapOrder.currentOwnerWalletId
+        let network = SwapOrder.currentOwnerNetwork
+        let payouts = SwapOrderMetadataProvider.shared
+        for order in SwapOrdersDAOImpl.shared.currentOrders
+            where order.isOwned(byWalletId: walletId, network: network)
+                && order.isBuyHistoryRow(
+                    walletPayout: payouts.walletPayout(forOrderID: order.id, walletId: walletId, network: network),
+                    now: now) {
+            let swapItem = BuySwapOrderItem(order: order)
+            guard windowCovers(date: swapItem.date) else { continue }
+            guard self.passesCategoryFilter(
+                categories: [.received],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.swapOrder(swapItem))
+        }
     }
 
     /// Publish a rebuilt group array and the paging/gate state to the main
@@ -1426,6 +1450,21 @@ extension HomeViewModel {
                 }
                 .store(in: &cancellableBag)
         }
+
+        // Buy order rows have no transaction behind them, so no per-tx metadata update can
+        // reach them: any order change rebuilds the feed. Debounced — a poll can write
+        // several orders back to back.
+        SwapOrdersDAOImpl.shared.observeAll()
+            .dropFirst()
+            .map { _ in () }
+            // …and so does an order's payout turning up in the wallet, which takes the
+            // order's own row away.
+            .merge(with: swapOrderMetadata.assignmentsChanged)
+            .debounce(for: .milliseconds(300), scheduler: self.queue)
+            .sink { [weak self] _ in
+                self?.reloadTxDataSource()
+            }
+            .store(in: &cancellableBag)
     }
     
     private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
@@ -2053,6 +2092,25 @@ class SwiftDashSDKWalletSource: TransactionSource {
             in: ModelContext(container), walletId: walletId,
             minFirstSeen: UInt64(max(0, cutoff.timeIntervalSince1970)), limit: nil)
         return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// `fetchRecent(firstSeenSince:)` for callers that conclude something
+    /// from a transaction being ABSENT: nil when the store read failed,
+    /// where the lenient variant falls back and can hand back an empty list
+    /// that only means "could not read". Safe from any thread.
+    static func fetchRecentOrFail(firstSeenSince cutoff: Date) -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        do {
+            let rows = try scopedRows(
+                in: ModelContext(container), walletId: walletId,
+                minFirstSeen: UInt64(max(0, cutoff.timeIntervalSince1970)), maxFirstSeen: .max,
+                updatedAfter: .distantPast, limit: nil)
+            return SwiftDashSDKWalletTransactionSnapshot(
+                walletId: walletId, transactions: rows.map { wrap($0, walletId: walletId) })
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: ranged fetch failed (\(error))")
+            return nil
+        }
     }
 
     /// The subset of wallet transactions whose txid (wire order) is in
@@ -3094,18 +3152,36 @@ enum JoinDashPayRegistrationPolicy {
 }
 
 enum JoinDashPayBannerPolicy {
+    /// - Parameters:
+    ///   - hasVotePending: a contested name this wallet submitted is out for a
+    ///     masternode vote. It SHOWS the row: the vote is the row's own
+    ///     `.voting` state, and the row is the only place that reports it.
+    ///     Without this the row vanished the moment the instant companion
+    ///     registered — `hasRegisteredUsername` went true while the requested
+    ///     name was still being voted on, so the wallet reported no progress
+    ///     for the name the user actually asked for. Still subject to
+    ///     dismissal, so Home's close control keeps working.
+    ///   - hasRegistrationInProgress: an attempt is running, which SUPPRESSES
+    ///     the call to action — offering to join is wrong while an attempt is
+    ///     in flight.
     static func shouldShow(
         contextReady: Bool,
         syncDone: Bool,
         dismissed: Bool,
         hasRegisteredUsername: Bool,
-        hasRegistrationInProgress: Bool
+        hasRegistrationInProgress: Bool,
+        hasVotePending: Bool = false,
+        reportsRegistration: Bool = false
     ) -> Bool {
-        contextReady &&
-            syncDone &&
-            !dismissed &&
-            !hasRegisteredUsername &&
-            !hasRegistrationInProgress
+        // A registration this wallet started is reported on the same row, and
+        // that report is its only surface once the create screen has stepped
+        // aside — so it shows whether or not the call to action was dismissed.
+        reportsRegistration ||
+            (contextReady &&
+                syncDone &&
+                !dismissed &&
+                (hasVotePending ||
+                    (!hasRegisteredUsername && !hasRegistrationInProgress)))
     }
 }
 
@@ -3140,13 +3216,17 @@ extension HomeViewModel {
             contextReady: identityState.contextReady,
             // Not gated on sync — same as the More entry. Gating made the
             // banner appear only once the chain had caught up, so the surface
-            // that carries the "Have an invitation?" entry was missing for the
+            // that carries the "Scan invitation QR" entry was missing for the
             // whole of a long sync. It now stays put and renders as
             // unavailable (`isSyncing`) instead of vanishing.
             syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
-            hasRegistrationInProgress: identityScopedRegistrationState)
+            hasRegistrationInProgress: identityScopedRegistrationState,
+            // The vote is progress on the name the user asked for, so the row
+            // stays up for it even once a companion name has registered.
+            hasVotePending: identityState.hasIdentity && joinDashPayState == .voting,
+            reportsRegistration: joinDashPayState.isRegistrationReport)
     }
     
     private func observeDashPay() {

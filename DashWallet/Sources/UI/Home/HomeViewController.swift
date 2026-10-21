@@ -53,7 +53,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
-    private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
     #else
     var isBackButtonHidden: Bool = true
@@ -117,6 +116,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        #if DASHPAY
+        // A verdict that finished while Home was off screen is shown now.
+        if let outcome = PendingInvitationViewModel.shared.undeliveredOutcome {
+            homeViewPresentInvitationOutcome(outcome)
+        }
+        #endif
+
         // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
         viewModel.refreshEvonodeEpochBlocks()
 
@@ -141,38 +147,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         presentCrowdNodeBalanceReminderIfNeeded()
     }
 
-    #if DASHPAY
-    func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if DWInvitationService.shared.hasLocalIdentity {
-            let title = NSLocalizedString("Username already found", comment: "")
-            let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
-            let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        if SyncingActivityMonitor.shared.state != .syncDone {
-            let state = DWInvitationSetupState()
-            state.invitation = url
-            state.chosenUsername = definedUsername
-            invitationSetup = state
-            return
-        }
-
-        // The redeem screen owns validation: an unrecognized or
-        // structurally invalid link renders its inline error state
-        // (and the field stays editable), so no pre-flight alert is
-        // needed. Claim-time failures (already claimed, wrong network,
-        // insufficient voucher) surface in the username form's error
-        // alert from the coordinator.
-        let prefill = DWInvitationLinkNormalizer.normalize(url) ?? url.absoluteString
-        ClaimInvitationFlow.pushRedeemScreen(
-            on: navigationController,
-            dashPayModel: model.dashPayModel,
-            initialLink: prefill,
-            definedUsername: definedUsername)
-    }
-    #endif
 
     // MARK: - Private
 
@@ -578,14 +552,35 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
-        // Pass the cropped image through so the profile bridge can compute
-        // the avatar hash from the uploaded bytes.
-        model.dashPayModel.userProfile.updateModel.update(
-            withDisplayName: rawDisplayName,
-            aboutMe: rawAboutMe,
-            avatarURLString: avatarURLString,
-            avatarImage: avatarImage)
-        controller.dismiss(animated: true, completion: nil)
+        // Same credit gate as the More entry: a write the identity cannot pay
+        // for must not be broadcast, and a balance running low is worth saying
+        // once — before the write, not after it.
+        Task { @MainActor in
+            switch await controller.confirmAgainstIdentityCredits() {
+            case .proceed:
+                break
+            case .stop:
+                controller.dismiss(animated: true)
+                return
+            case .topUp:
+                // After the editor is gone, not onto it: this screen is the one
+                // being dismissed, so whatever presented it does the presenting.
+                let presenter = controller.presentingViewController
+                controller.dismiss(animated: true) {
+                    presenter?.present(IdentityCreditGate.makeTopUpController(), animated: true)
+                }
+                return
+            }
+
+            // Pass the cropped image through so the profile bridge can compute
+            // the avatar hash from the uploaded bytes.
+            model.dashPayModel.userProfile.updateModel.update(
+                withDisplayName: rawDisplayName,
+                aboutMe: rawAboutMe,
+                avatarURLString: avatarURLString,
+                avatarImage: avatarImage)
+            controller.dismiss(animated: true, completion: nil)
+        }
     }
 
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
@@ -603,8 +598,64 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     #if DASHPAY
-    func homeViewClaimInvitation() {
-        showClaimInvitation()
+    func homeViewRequestUsernameForRecovery(username: String) {
+        showCreateUsernameForRecovery(definedUsername: username)
+    }
+
+    func homeViewScanInvitation() {
+        InvitationEntry.presentScanner(from: self) { [weak self] in
+            (self?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
+        }
+    }
+
+    func homeViewCreateUsername(with invitation: PendingInvitation, tier: InvitationTier) {
+        showCreateUsername(withInvitation: invitation, tier: tier)
+    }
+
+    func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation) {
+        // Every Home built this session hears the verdict; only the one on
+        // screen shows it. Off screen it stays undelivered and `viewDidAppear`
+        // shows it on return.
+        guard viewIfLoaded?.window != nil else { return }
+        // Only a verdict still waiting for the active wallet: one reached for
+        // another wallet stays for that wallet's Home.
+        guard PendingInvitationViewModel.shared.undeliveredOutcome == outcome else { return }
+        PendingInvitationViewModel.shared.acknowledgeOutcome(outcome)
+        guard let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
+        // Over whatever is already up (a sheet, another alert), or UIKit
+        // refuses the presentation silently.
+        InvitationEntry.topmost(from: tabBarController ?? self).present(dialog, animated: true)
+    }
+
+    /// Where the DashPay row goes while a contested name is being voted on —
+    /// the same screen the More row pushes (`MainMenuScreen`), so both
+    /// surfaces report the vote in one place.
+    func homeViewShowUsernameRequestStatus(username: String?) {
+        // The label the row is showing wins. It reaches `.voting` from the
+        // bookmark OR from the identity's pending contested name, and the
+        // bookmark itself returns nothing while `identityId` is unresolved —
+        // so navigating on the bookmark alone left the row's tap and its ⓘ
+        // dead on exactly the wallets that can display it.
+        guard let label = (username?.isEmpty == false ? username : nil)
+            ?? DWContestedNameStatusService.shared.pendingLabel
+            ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+        else { return }
+
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label),
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onRetryCompanion: { [weak self] name in self?.showCreateUsernameForRecovery(definedUsername: name) })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
+    func homeViewShieldFunds() {
+        // Preselected, not pinned — the transfer form still lets the user
+        // change their mind about either endpoint.
+        let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
     }
     #endif
 
@@ -696,14 +747,6 @@ extension HomeViewController: SyncingActivityMonitorObserver {
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         if state == .syncDone {
-            #if DASHPAY
-            if let invitationSetup = invitationSetup, let invitation = invitationSetup.invitation {
-                handleDeeplink(invitation, definedUsername: invitationSetup.chosenUsername)
-                self.invitationSetup = nil
-                return
-            }
-            #endif
-
             presentCrowdNodeBalanceReminderIfNeeded()
         }
     }

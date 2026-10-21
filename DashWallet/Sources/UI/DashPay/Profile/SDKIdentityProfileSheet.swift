@@ -166,9 +166,17 @@ struct SDKIdentityProfileSheet: View {
         // `dpnsNames` and `hasIdentity`.
         .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
             NavigationStack {
-                CreateUsernameView(invitationURI: nil, definedUsername: nil, suppressShieldedHint: true) {
-                    showingUsernameRecovery = false
-                }
+                CreateUsernameView(
+                    invitationURI: nil,
+                    definedUsername: nil,
+                    // Both exits close the cover: the shielded question moved
+                    // to the Join DashPay sheet's privacy page, and a handoff
+                    // to the status row leaves this screen just the same.
+                    finish: { showingUsernameRecovery = false },
+                    handOffToStatusRow: { showingUsernameRecovery = false },
+                    // The form draws its own back arrow; without this it is a
+                    // visible control that does nothing inside a cover.
+                    onBack: { showingUsernameRecovery = false })
                 .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
@@ -658,8 +666,7 @@ final class IdentityTopUpViewModel: ObservableObject {
                     modelContainer: modelContainer,
                     preparation: confirmedPreparation)
             }
-        } catch PlatformWalletError.platformWriteUnconfirmed,
-                PlatformWalletError.transactionBroadcastUnconfirmed {
+        } catch PlatformWalletError.transactionBroadcastUnconfirmed {
             submittedUnconfirmed = true
             errorMessage = NSLocalizedString(
                 "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",

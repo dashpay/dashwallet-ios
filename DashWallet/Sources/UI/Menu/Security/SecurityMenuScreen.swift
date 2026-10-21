@@ -40,9 +40,11 @@ struct SecurityMenuScreen: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
-            }
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button {
+                    vc.popViewController(animated: true)
+                }
+            })
 
             TopIntro(title: NSLocalizedString("Security", comment: ""))
                 .padding(.leading, 20)
@@ -141,21 +143,7 @@ struct SecurityMenuScreen: View {
         } message: {
             Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
         }
-        .alert(
-            recoveryPhraseFlow.alertState?.title ?? "",
-            isPresented: Binding(
-                get: { recoveryPhraseFlow.alertState != nil },
-                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                recoveryPhraseFlow.dismissAlert()
-            }
-            Button(NSLocalizedString("Retry", comment: "")) {
-                recoveryPhraseFlow.retry()
-            }
-        } message: {
-            Text(recoveryPhraseFlow.alertState?.message ?? "")
-        }
+        .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
     
     private func handleNavigation(_ destination: SecurityMenuNavigationDestination?) {

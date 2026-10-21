@@ -466,10 +466,10 @@ private struct MerchantListNavBar: View {
     let onInfo: () -> Void
 
     var body: some View {
-        NavigationBar(
-            leading: { NavigationBarElement.back.button(action: onBack) },
+        DashUIKit.NavigationBar(
+            leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
             central: { Text(title).font(.subheadMedium) },
-            trailing: { NavigationBarElement.info.button(action: onInfo) }
+            trailing: { DashUIKit.NavigationBarElement.info.button(action: onInfo) }
         )
         .background(Color.dash.primaryBackground)
     }

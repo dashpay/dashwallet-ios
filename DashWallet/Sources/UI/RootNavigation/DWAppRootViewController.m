@@ -25,10 +25,6 @@
 #import "DWURLRequestHandler.h"
 #import "dashwallet-Swift.h"
 
-#if DASHPAY
-#import "DWInvitationSetupState.h"
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
@@ -49,14 +45,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
-@property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+/// An invitation arrived while locked: it is already stored; after unlock
+/// only Home is brought forward. The link itself (a voucher key) is never
+/// kept for replay.
+@property (nonatomic, assign) BOOL showsInvitationAfterUnlock;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
 
 - (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 - (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
-#if DASHPAY
-@property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
-#endif
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 
@@ -88,20 +84,29 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #if DASHPAY
 - (void)handleDeeplink:(NSURL *)url {
+    // An invitation opened before the wallet exists is kept for it; the Home
+    // card offers it once setup finishes. Nothing is shown during onboarding.
     if (self.model.hasAWallet == NO) {
-        self.invitationSetup.invitation = url;
+        [DWInvitationEntry receive:url presenter:nil];
         return;
     }
 
-    // Defer URL until unlocked.
-    // This also prevents an issue with too fast unlocking via Face ID.
+    // While locked: store the invitation now and defer only bringing Home
+    // forward. Keeping the URL for replay would let a wipe from the lock
+    // screen be followed by the erased invitation being written back.
+    // Deferring navigation also avoids an issue with too fast unlocking via
+    // Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredDeeplinkToProcess == nil) {
-        self.deferredDeeplinkToProcess = url;
+    if (isLocked) {
+        if ([DWInvitationEntry receive:url presenter:nil]) {
+            self.showsInvitationAfterUnlock = YES;
+        }
         return;
     }
 
-    [self.mainController handleDeeplink:url definedUsername:nil];
+    if ([DWInvitationEntry receive:url presenter:self]) {
+        [self.mainController showHomeForInvitation];
+    }
 }
 #endif
 
@@ -205,9 +210,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // still running means "no wallet" is a lie about to become true.
     // Deciding now would show Create/Recover to an upgrading user whose
     // wallet is milliseconds from appearing — and route their typed
-    // phrase into the recover screen's wipe branch. Hold the launch
-    // background and decide once the migrator settles (typically well
-    // under a second; bounded fallback in the poller).
+    // phrase into the recover screen's wipe branch. Hand the launch to the
+    // migration hold: it keeps the launch background, shows progress and a
+    // blocking Try Again card on failure, and calls back only once a wallet
+    // is present or there is nothing to migrate. Setup is never offered
+    // while the old wallet is still in the keychain.
     const BOOL keyMigrationPending =
         !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
     if (!hasAWallet && !keyMigrationPending) {
@@ -219,8 +226,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     }
 
     if (keyMigrationPending) {
-        [self presentInitialControllerWhenKeyMigrationSettles:
-                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
+        __weak typeof(self) weakSelf = self;
+        [DWLegacyWalletMigrationLaunchHold beginWithCompletion:^(BOOL migratedWalletPresent) {
+            [weakSelf presentInitialControllerAfterKeyMigration:migratedWalletPresent];
+        }];
     }
 
     if (hasAWallet) {
@@ -299,24 +308,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 #pragma mark - Key migration launch hold
 
-/// Poll the key migrator's terminal state, then present the initial
-/// controller the normal launch decision would have picked: main (behind
-/// the lock screen — `PinStore` reads DashSync's PIN records in place, so
-/// the migrated wallet keeps its old PIN) when the wallet landed, setup
-/// otherwise. Bounded by `deadline` so a wedged migrator degrades to the
-/// old behavior instead of a blank screen.
-- (void)presentInitialControllerWhenKeyMigrationSettles:(NSDate *)deadline {
-    if (![DWSwiftDashSDKKeyMigrator migrationSettled] && [deadline timeIntervalSinceNow] > 0) {
-        __weak typeof(self) weakSelf = self;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-                           [weakSelf presentInitialControllerWhenKeyMigrationSettles:deadline];
-                       });
-        return;
-    }
-
-    const BOOL hasAWallet = self.model.hasAWallet;
-    if (hasAWallet) {
+/// Completion of the migration hold: present the initial controller the
+/// normal launch decision would have picked. Main (behind the lock screen —
+/// `PinStore` reads DashSync's PIN records in place, so the migrated wallet
+/// keeps its old PIN) when the wallet landed; setup only when the hold
+/// reports that nothing was left to migrate. A failed import never reaches
+/// this method — the hold keeps its blocking card up until a retry lands.
+- (void)presentInitialControllerAfterKeyMigration:(BOOL)migratedWalletPresent {
+    if (migratedWalletPresent && self.model.hasAWallet) {
         if ([self.model shouldShowLockScreen]) {
             [self showLockControllerIfNeeded];
         }
@@ -339,19 +338,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
 
 #if DASHPAY
-    if (self.invitationSetup.invitation != nil) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self.mainController handleDeeplink:self.invitationSetup.invitation
-                                definedUsername:self.invitationSetup.chosenUsername];
-            self.invitationSetup = nil;
-        });
-    }
+    [DWInvitationEntry walletSetupDidFinish];
+    [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
 }
 
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    // Nothing received before the wipe may be acted on after it.
+    self.showsInvitationAfterUnlock = NO;
+#if DASHPAY
+    [DWInvitationEntry discardHeldNotice];
+#endif
+
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -476,15 +476,20 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.alpha = 1.0;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
-            if (self.deferredDeeplinkToProcess) {
+            BOOL showsInvitation = NO;
 #if DASHPAY
-                [self handleDeeplink:self.deferredDeeplinkToProcess];
-#endif
+            showsInvitation = self.showsInvitationAfterUnlock;
+            self.showsInvitationAfterUnlock = NO;
+            if (showsInvitation) {
+                [self.mainController showHomeForInvitation];
             }
-            else if (self.deferredURLToProcess) {
+            // Explain a link refused while locked (already has a username,
+            // another invitation pending, could not be saved).
+            [DWInvitationEntry presentHeldNoticeFrom:self];
+#endif
+            if (!showsInvitation && self.deferredURLToProcess) {
                 [self handleURL:self.deferredURLToProcess];
             }
-            self.deferredDeeplinkToProcess = nil;
             self.deferredURLToProcess = nil;
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
@@ -654,21 +659,17 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
 
     [DWWalletLifecycleOverlayBridge setLockScreenVisible:YES];
+    // A window created without a scene is not shown; attach it to the app window's scene.
+    if (self.lockWindow.windowScene == nil) {
+        self.lockWindow.windowScene = self.view.window.windowScene
+                                          ?: [UIApplication sharedApplication].delegate.window.windowScene;
+    }
     self.lockWindow.rootViewController = navigationController;
     [self.lockWindow makeKeyAndVisible];
 
     self.lockController = controller;
     self.displayedLockNavigationController = navigationController;
 }
-
-#if DASHPAY
-- (DWInvitationSetupState *)invitationSetup {
-    if (_invitationSetup == nil) {
-        _invitationSetup = [[DWInvitationSetupState alloc] init];
-    }
-    return _invitationSetup;
-}
-#endif
 
 @end
 
