@@ -52,6 +52,28 @@ final class AssetLockRecoveryTests: XCTestCase {
         XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
     }
 
+    func testDrainContextChangeAfterAuthorizationNeverResubmitsAssetLock() async {
+        let wallet = Data(repeating: 0x31, count: 32)
+        let txid = Data(repeating: 0x78, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        CoreShieldedDrainService.resolveManager = { _ in manager }
+        defer { CoreShieldedDrainService.resolveManager = nil }
+        coordinator.onAuthorize = {
+            CoreShieldedDrainService.resolveManager = { _ in
+                throw CoreShieldedDrainService.TestError.contextChanged
+            }
+        }
+        await coordinator.resumeAssetLock(
+            outPointTxidWire: txid, outPointVout: 0,
+            expectedDrainContext: .init(walletId: wallet, networkScope: "testnet"))
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(coordinator.phase, .failed)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertNil(manager.receivedTxid)
+    }
+
     func testProbePersistenceIsWalletScopedAndNeverMarksAnotherOutpoint() {
         let suite = "RecoveryHarness-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!

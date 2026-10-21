@@ -24,6 +24,21 @@ final class TestManager {
         if let error { throw error }
     }
 }
+// Dependency seam for the drain context check added by develop. Recovery
+// tests must explicitly supply an outcome instead of fabricating a manager.
+struct CoreShieldedDrainContext {
+    let walletId: Data
+    let networkScope: String
+}
+@MainActor
+struct CoreShieldedDrainService {
+    enum TestError: Error { case contextChanged }
+    static var resolveManager: ((CoreShieldedDrainContext) throws -> TestManager)?
+    func manager(for context: CoreShieldedDrainContext) throws -> TestManager {
+        guard let resolveManager = Self.resolveManager else { throw TestError.contextChanged }
+        return try resolveManager(context)
+    }
+}
 @MainActor
 final class ShieldedTxLookup {
     static let shared = ShieldedTxLookup()

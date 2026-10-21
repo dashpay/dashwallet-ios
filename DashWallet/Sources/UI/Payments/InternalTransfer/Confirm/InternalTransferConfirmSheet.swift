@@ -52,6 +52,7 @@ struct InternalTransferConfirmSheet: View {
         isFullPlatformWithdrawal: Bool = false,
         isFullShieldedSweep: Bool = false,
         platformShieldAmountWasMax: Bool = false,
+        coreShieldedDrain: CoreShieldedDrainConfirmation? = nil,
         identityTopUp: IdentityTopUpTransfer? = nil,
         identityWithdrawal: IdentityWithdrawalTransfer? = nil,
         preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
@@ -74,6 +75,7 @@ struct InternalTransferConfirmSheet: View {
             isFullPlatformWithdrawal: isFullPlatformWithdrawal,
             isFullShieldedSweep: isFullShieldedSweep,
             platformShieldAmountWasMax: platformShieldAmountWasMax,
+            coreShieldedDrain: coreShieldedDrain,
             preparation: preparation))
         self.onCancel = onCancel
         self.onSubmitted = onSubmitted
@@ -105,6 +107,12 @@ struct InternalTransferConfirmSheet: View {
                         .padding(.top, 14)
 
                     TransferSummaryCard(summary: viewModel.summary)
+                    if let feeDetails = viewModel.coreDrainFeeDetails {
+                        Text(feeDetails).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    if let explanation = viewModel.coreDrainExplanation {
+                        Text(explanation).font(.footnote).foregroundStyle(.secondary)
+                    }
 
                     privacyTip
                 }

@@ -26,6 +26,7 @@ private struct InternalTransferConfirmation: Identifiable {
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
     let platformShieldAmountWasMax: Bool
+    let coreShieldedDrain: CoreShieldedDrainConfirmation?
     /// Identity-destination submission: the top-up the confirm sheet runs
     /// instead of a route.
     let identityTopUp: IdentityTopUpTransfer?
@@ -120,6 +121,23 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
+                        if let completion = viewModel.coreDrainCompletionNotice {
+                            Text(completion)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                        }
+                        if let estimateNotice = viewModel.coreDrainEstimateNotice {
+                            Text(estimateNotice)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 20)
+                        }
+                        if let action = viewModel.coreDrainActionTitle {
+                            Button(action) { viewModel.performCoreDrainAction() }
+                                .disabled(viewModel.isCoreDrainLoading)
+                        }
                         // Sits under the cards, not in the middle of the gap
                         // above the keypad: a spacer on each side used to split
                         // the slack evenly, which floated the line away from
@@ -134,7 +152,7 @@ struct InternalTransferScreen: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 4)
                                 .padding(.horizontal, 20)
-                        } else if viewModel.canContinue {
+                        } else if viewModel.canShowTransferPreview {
                             TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                                 .padding(.top, 4)
                                 .padding(.horizontal, 20)
@@ -178,6 +196,7 @@ struct InternalTransferScreen: View {
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
                 platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
+                coreShieldedDrain: submission.coreShieldedDrain,
                 identityTopUp: submission.identityTopUp,
                 identityWithdrawal: submission.identityWithdrawal,
                 preparation: submission.preparation,
@@ -244,7 +263,7 @@ struct InternalTransferScreen: View {
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: false,
+            inProgress: viewModel.isCoreDrainLoading,
             actionHandler: presentConfirmation
         )
     }
@@ -270,6 +289,7 @@ struct InternalTransferScreen: View {
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
             platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax,
+            coreShieldedDrain: viewModel.coreShieldedDrainConfirmation,
             identityTopUp: identityTopUp,
             identityWithdrawal: identityWithdrawal)
     }
@@ -283,6 +303,7 @@ struct InternalTransferScreen: View {
     }
 
     private var dashAmountText: String {
+        if let amount = viewModel.coreDrainDashDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             return keypadBinding.wrappedValue
@@ -295,6 +316,7 @@ struct InternalTransferScreen: View {
     }
 
     private var fiatAmountText: String {
+        if let amount = viewModel.coreDrainFiatDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             guard viewModel.parsedDashAmount > 0,

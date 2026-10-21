@@ -176,11 +176,20 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
+/* Core drain recovery */
+"A previous Max transfer is still pending. Check its status or resume it before starting another." = "A previous Max transfer is still pending. Check its status or resume it before starting another.";
+
+/* Core drain confirmation */
+"All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded." = "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.";
+
 /* DashConnect token purchase */
 "Approve token purchase?" = "Approve token purchase?";
 
 /* DashConnect token purchase */
 "Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
+
+/* Core drain insufficient funds */
+"Available funds do not cover the transfer fees." = "Available funds do not cover the transfer fees.";
 
 /* DashConnect */
 "Available on test networks only" = "Available on test networks only";
@@ -190,6 +199,15 @@
 
 /* Devnet */
 "Base58 identifier (optional)" = "Base58 identifier (optional)";
+
+/* Read-only drain lookup */
+"Check status" = "Check status";
+
+/* Core drain persistence guard */
+"Check the pending Max transfer before starting another." = "Check the pending Max transfer before starting another.";
+
+/* Core drain preview */
+"Checking available funds and fees…" = "Checking available funds and fees…";
 
 /* DashConnect token purchase */
 "Contract %@" = "Contract %@";
@@ -218,8 +236,17 @@
 /* Inactivity reminder */
 "Don't remind me again" = "Don't remind me again";
 
+/* Drain fee breakdown */
+"Estimated Core fee: %@\nShielded pool fee: %@" = "Estimated Core fee: %@\nShielded pool fee: %@";
+
 /* Inactivity reminder */
 "It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* Core drain estimate */
+"Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
+
+/* Start a separate transfer */
+"New transfer" = "New transfer";
 
 /* DashPay Notifications */
 "No notifications match your search" = "No notifications match your search";
@@ -244,6 +271,9 @@
 
 /* Inactivity reminder */
 "Remind me later" = "Remind me later";
+
+/* Resume the same asset lock */
+"Resume transfer" = "Resume transfer";
 
 /* Devnet */
 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
@@ -284,6 +314,12 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* Core drain */
+"The wallet or network changed. Select Max again." = "The wallet or network changed. Select Max again.";
+
+/* Core drain input limit preview */
+"This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
+
 /* DashConnect token purchase */
 "Token ID" = "Token ID";
 
@@ -296,8 +332,17 @@
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
+/* Core drain recovery success */
+"Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
+
+/* A wallet drain has an unresolved outcome */
+"Transfer status is pending. Open Core to Shielded and tap Max to check or resume it." = "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.";
+
 /* Dash DEX */
 "Waiting for the provider" = "Waiting for the provider";
+
+/* Core drain */
+"Wallet unavailable. Try again." = "Wallet unavailable. Try again.";
 
 /* DashConnect token purchase */
 "You pay up to this amount. The final price may be lower." = "You pay up to this amount. The final price may be lower.";

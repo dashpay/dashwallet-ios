@@ -79,6 +79,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
         isFullPlatformWithdrawal: Bool,
         isFullShieldedSweep: Bool,
         platformShieldAmountWasMax: Bool,
+        coreShieldedDrain: CoreShieldedDrainConfirmation? = nil,
         preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
         runner: InternalTransferRunner = .shared
     ) {
@@ -104,11 +105,12 @@ final class InternalTransferConfirmViewModel: ObservableObject {
                 withdrawalFeeCredits: withdrawalFeeCredits,
                 isFullPlatformWithdrawal: isFullPlatformWithdrawal,
                 isFullShieldedSweep: isFullShieldedSweep,
-                platformShieldAmountWasMax: platformShieldAmountWasMax))
+                platformShieldAmountWasMax: platformShieldAmountWasMax,
+                coreShieldedDrain: coreShieldedDrain))
         } ?? .unavailable
 
         self.dashDuffs = dashDuffs
-        self.fiatText = fiatText
+        self.fiatText = coreShieldedDrain.map { $0.estimatedRecipientCredits == nil ? "—" : "≈ " + fiatText } ?? fiatText
         self.networkFeeCredits = networkFeeCredits
         self.totalDuffs = totalDuffs
         self.runner = runner
@@ -130,7 +132,25 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     /// Digits only — `SwapAmountView` draws the Dash logo beside them rather
     /// than taking a symbol inside the string.
     var dashAmountText: String {
-        (request?.amountDuffsUnsigned ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        if let drain = request?.coreShieldedDrain {
+            guard let credits = drain.estimatedRecipientCredits else { return NSLocalizedString("Max", comment: "Whole wallet intent") }
+            return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        }
+        return (request?.amountDuffsUnsigned ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+
+    var coreDrainFeeDetails: String? {
+        guard let drain = request?.coreShieldedDrain else { return nil }
+        let coreFee = drain.estimatedL1FeeDuffs.map { $0.dashAmount.formattedDashAmount } ?? "—"
+        let poolFee = InternalTransferSummaryFigures.networkFeeFiat(credits: drain.poolFeeCredits) ?? "—"
+        return String(format: NSLocalizedString("Estimated Core fee: %@\nShielded pool fee: %@", comment: "Drain fee breakdown"), coreFee, poolFee)
+    }
+
+    var coreDrainExplanation: String? {
+        guard request?.coreShieldedDrain != nil else { return nil }
+        return NSLocalizedString(
+            "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.",
+            comment: "Core drain confirmation")
     }
 
     var summary: TransferConfirmSummary {
