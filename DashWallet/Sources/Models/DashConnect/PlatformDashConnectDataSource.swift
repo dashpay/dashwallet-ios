@@ -1180,9 +1180,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 try await signer.withAdditionalSigningKeys([
                     (publicKey: sessionKeyHash160, privateKey: sessionPrivateKey),
                 ]) {
+                    // The session key is not derived at the identity's key
+                    // path, so the SDK records no derivation for it.
                     try await context.wallet.updateIdentity(
                         identityId: context.identityId,
                         addPublicKeys: [key],
+                        externalKeyIds: [key.keyId],
                         revision: pending.submittedRevision,
                         signer: signer
                     )
@@ -1632,9 +1635,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 "🔗 DASHCONNECT :: registering \(add.count, privacy: .public) key(s), disabling \(disable.count, privacy: .public)")
             do {
                 try await signer.withAdditionalSigningKeys(signingKeys) {
+                    // Connect keys are not derived at the identity's key
+                    // path, so the SDK records no derivation for them.
                     try await context.wallet.updateIdentity(
                         identityId: context.identityId,
                         addPublicKeys: add,
+                        externalKeyIds: add.map(\.keyId),
                         disablePublicKeyIds: disable,
                         signer: signer
                     )
@@ -1978,9 +1984,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 privateKey: derivedMaterial.encryptionPrivateKey
             ),
         ]) {
+            // Connect keys are not derived at the identity's key path, so
+            // the SDK records no derivation for them.
             try await authorized.wallet.updateIdentity(
                 identityId: authorized.identityId,
                 addPublicKeys: missingKeys.map(Self.makeManagedIdentityPubkey),
+                externalKeyIds: missingKeys.map(\.keyId),
                 signer: signer
             )
         }
