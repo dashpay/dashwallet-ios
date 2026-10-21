@@ -737,7 +737,7 @@ extension TxDetailModel {
     /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
     /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
     /// 4 = consumed (transfer complete), 5 = recovered from chain after a
-    /// restore. Nil when the lookup has no entry.
+    /// restore, 6 = Max drain completed. Nil when the lookup has no entry.
     private var shieldedStatusText: String? {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
@@ -769,13 +769,13 @@ extension TxDetailModel {
 
     /// User-facing name of an asset-lock status (shared by the shielded and
     /// platform funding routes).
-    private static func lockStatusText(_ statusRaw: Int) -> String? {
+    static func lockStatusText(_ statusRaw: Int) -> String? {
         switch statusRaw {
         case 0, 1:
             return NSLocalizedString("Broadcasting", comment: "")
         case 2, 3:
             return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
-        case 4:
+        case 4, 6: // Consumed, or a Max drain recorded as completed
             return NSLocalizedString("Completed", comment: "Shielded transfer status")
         case 5:
             // RecoveredFromChain: the lock is final on Core, but whether it
