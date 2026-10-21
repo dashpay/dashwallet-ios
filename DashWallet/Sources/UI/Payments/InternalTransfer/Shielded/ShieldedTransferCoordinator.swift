@@ -1670,7 +1670,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             if phase == .locking {
                 phase = .proving
             }
-        case 4: // Consumed — the ST has landed, FFI is almost back.
+        case 4, 6: // Consumed / DrainCompleted — the ST has landed, FFI is almost back.
             if phase == .locking || phase == .proving {
                 phase = .broadcasting
             }
