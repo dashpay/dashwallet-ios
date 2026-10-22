@@ -6420,6 +6420,7 @@
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
 "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts" = "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts";
 "Connected since %@" = "Connected since %@";
+"Connected to %@. Go back to your browser to continue." = "Connected to %@. Go back to your browser to continue.";
 "Connections" = "Connections";
 "Contact is no longer available" = "Contact is no longer available";
 "Contender details" = "Contender details";

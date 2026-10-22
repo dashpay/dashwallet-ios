@@ -80,6 +80,14 @@ typedef NS_ENUM(NSUInteger, QRCodeObjectType) {
 - (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput;
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel;
 
+@optional
+
+/// A DashConnect request (`dash-key:` / `dash-st:`) was scanned.
+///
+/// Only a delegate that implements this is handed one. Every other scanner
+/// reads the code as before: not a payment, so "Not a Dash QR code".
+- (void)qrScanModel:(DWQRScanModel *)viewModel didScanDashConnectURI:(NSString *)uri;
+
 @end
 
 NS_ASSUME_NONNULL_END

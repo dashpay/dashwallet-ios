@@ -1861,6 +1861,13 @@ final class AppConnectLoginTests: XCTestCase {
         }
     }
 
+    func testOnlyTheOneQrLoginSignsInAtApproval() {
+        XCTAssertTrue(AppConnect.Login.oneQR(.current).signsInAtApproval)
+        // The two-QR login still waits for the app's key-registration code.
+        XCTAssertFalse(AppConnect.Login.twoQR.signsInAtApproval)
+        XCTAssertFalse(AppConnect.Login.unresolved.signsInAtApproval)
+    }
+
     func testTheOneQrLoginHasTermsAndTheTwoQrLoginHasNone() {
         XCTAssertEqual(AppConnect.login(protocolVersion: 13), .twoQR)
         XCTAssertEqual(AppConnect.login(protocolVersion: 14), .oneQR(.current))
