@@ -50,7 +50,7 @@ struct WalletDrainOutcome {
 @MainActor final class InternalTransferRunner {
     enum StartOutcome: Equatable { case started, busy, notAuthorized, rejected }
     enum Phase: Equatable { case idle, inFlight, success, submittedUnconfirmed, failed(String) }
-    enum Notice { case busy, succeeded, drainPending, failed(String) }
+    enum Notice: Equatable { case started, busy, succeeded, submitted, drainPending, failed(String) }
     let authorizer = Authorizer()
     let coordinator = Coordinator()
     var phase: Phase = .idle
@@ -59,6 +59,7 @@ struct WalletDrainOutcome {
     var isCoreDrainRecovery = false
     var startOutcome: StartOutcome = .rejected
     func start(_ request: Int, preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>) async -> StartOutcome { startOutcome }
+    // ANNOUNCE_METHOD
     // RESUME_METHOD
 }
 @MainActor final class ConfirmationModel {

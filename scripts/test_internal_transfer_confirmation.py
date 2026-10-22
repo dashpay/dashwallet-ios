@@ -24,9 +24,10 @@ with tempfile.TemporaryDirectory(prefix='transfer-confirmation-tests-') as temp:
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
     runner = method('InternalTransferRunner.swift', '    func resumeCoreDrain(')
+    announce = method('InternalTransferRunner.swift', '    private func announce(').replace('private func', 'func', 1)
     confirm = method('InternalTransferConfirmViewModel.swift', '    func confirm()')
     scaffold = (repo / 'scripts/fixtures/InternalTransferConfirmationHarness.swift').read_text()
-    (sources / 'Harness.swift').write_text(scaffold.replace('// RESUME_METHOD', runner).replace('// CONFIRM_METHOD', confirm))
+    (sources / 'Harness.swift').write_text(scaffold.replace('// RESUME_METHOD', runner).replace('// CONFIRM_METHOD', confirm).replace('// ANNOUNCE_METHOD', announce))
     (tests / 'Tests.swift').symlink_to(repo / 'scripts/fixtures/InternalTransferConfirmationTests.swift')
     (root / 'Package.swift').write_text('''// swift-tools-version: 5.9
 import PackageDescription

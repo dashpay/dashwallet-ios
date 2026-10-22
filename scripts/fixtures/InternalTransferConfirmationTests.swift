@@ -2,6 +2,17 @@ import XCTest
 @testable import ConfirmationHarness
 
 @MainActor final class ConfirmationTests: XCTestCase {
+    func testUnconfirmedTerminalPhaseReplacesStartedNoticeWithWarning() {
+        let runner = InternalTransferRunner()
+        runner.notice = .started
+        runner.announce(.inFlight)
+        XCTAssertEqual(runner.notice, .started)
+        runner.announce(.submittedUnconfirmed)
+        XCTAssertEqual(runner.notice, .submitted)
+        runner.announce(.failed("refused"))
+        XCTAssertEqual(runner.notice, .failed("refused"))
+    }
+
     func testRejectedConfirmationRemainsDistinctFromSubmissionAndCancelledAuthorization() async {
         let model = ConfirmationModel()
         for outcome in [InternalTransferRunner.StartOutcome.rejected, .notAuthorized, .started, .busy] {

@@ -69,8 +69,7 @@ final class InternalTransferRunner: ObservableObject {
     static let shared = InternalTransferRunner()
 
     /// The one lifecycle callers render from, whichever executor is running.
-    /// `submittedUnconfirmed` is route-only — no identity transition lands in
-    /// that state.
+    /// `submittedUnconfirmed` also covers identity transfers with an unknown outcome.
     enum Phase: Equatable {
         case idle
         case inFlight
@@ -128,8 +127,7 @@ final class InternalTransferRunner: ObservableObject {
         /// like Confirm did nothing.
         case busy
         case succeeded
-        /// Accepted by the network but not yet confirmed — a shielded spend
-        /// whose receipt has not landed.
+        /// A submitted transfer whose execution result could not be confirmed.
         case submitted
         case drainPending
         case failed(String)
@@ -434,7 +432,8 @@ final class InternalTransferRunner: ObservableObject {
         case .success: notice = .succeeded
         case .failed(let message): notice = .failed(message)
         case .idle: notice = nil
-        case .inFlight, .submittedUnconfirmed: break
+        case .submittedUnconfirmed: notice = .submitted
+        case .inFlight: break
         }
     }
 
