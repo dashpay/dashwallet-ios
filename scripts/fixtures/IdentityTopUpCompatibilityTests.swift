@@ -54,6 +54,19 @@ import XCTest
         }
     }
 
+    func testAmbiguousSecondLegSetsNonRetryablePresentationState() async {
+        host.wallet!.failure = PlatformWalletError.transactionBroadcastUnconfirmed("proof unavailable after dispatch")
+        let model = IdentityTopUpViewModel()
+        let result = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertNil(result)
+        XCTAssertTrue(model.submittedUnconfirmed)
+        XCTAssertFalse(model.isProcessing)
+        XCTAssertTrue(model.errorMessage?.contains("may have been submitted") == true)
+        XCTAssertFalse(model.errorMessage?.contains("Finish the top-up from Platform") == true)
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+    }
+
     func testSecondLegRefusalKeepsSettledFirstLeg() async {
         host.wallet!.failure = PlatformWalletError.walletOperation("rejected")
         do {

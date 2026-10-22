@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'DashWallet/Sources/UI/Payments/**'
+      - 'DashWallet/Sources/UI/Home/Views/CoinJoinMoveFunds/CoinJoinMoveFundsViewModel.swift'
       - 'DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift'
       - 'DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift'
       - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/**'

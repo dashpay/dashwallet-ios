@@ -1487,10 +1487,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Explicit retry of the same committed lock and recipient. Refresh the
     /// operation version only within the original wallet/runtime, then use the
     /// normal authorization and post-authorization validation in resumeAssetLock.
-    func retryLastAssetLock(recipientRaw43: Data) async {
+    func retryLastAssetLock(recipientRaw43: Data? = nil) async {
         guard case .failed = phase, let outpoint = lastAssetLockOutPoint else { return }
         do {
-            guard let original = try confirmationPreparation?.get() else {
+            guard let original = try confirmationPreparation?.get() ?? operationPreparation else {
                 throw WalletOperationPreparationError.expired("Review and confirm the operation again")
             }
             let current = try SwiftDashSDKHost.shared.preparePlatformRecoveryOperation(matching: original)
@@ -1507,6 +1507,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         } catch {
             handleFailure(error)
         }
+    }
+
+    /// A rejected local snapshot needs a fresh quote and user confirmation.
+    var requiresFreshConfirmation: Bool {
+        guard let lastFailure else { return false }
+        if case CoordinatorError.transferFailed(let cause) = lastFailure {
+            return cause is WalletOperationPreparationError
+        }
+        return lastFailure is WalletOperationPreparationError
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.

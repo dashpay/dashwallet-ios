@@ -12,7 +12,20 @@ final class AssetLockRecoveryTests: XCTestCase {
         await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: true)
     }
 
-    private func checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: Bool) async {
+    func testExplicitCoinJoinRetryRechecksRecordedProbeWithoutAnotherDrain() async {
+        await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: false, coinJoin: true)
+    }
+
+    func testExplicitCoinJoinRetryCannotSubmitWithoutAuthorization() async {
+        await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: true, coinJoin: true)
+    }
+
+    func testCoinJoinChoiceAfterCancelledRecoveryKeepsSameLock() async {
+        await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: true, coinJoin: true, fromChoice: true)
+    }
+
+    private func checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: Bool, coinJoin: Bool = false,
+                                                         fromChoice: Bool = false) async {
         let wallet = Data(repeating: 0x33, count: 32)
         let walletHex = wallet.map { String(format: "%02x", $0) }.joined()
         let txid = Data(repeating: 0x7a, count: 32)
@@ -30,27 +43,81 @@ final class AssetLockRecoveryTests: XCTestCase {
         manager.error = PlatformWalletError.assetLockAlreadyConsumed
         let coordinator = ShieldedTransferCoordinator(environment: .init(
             manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
-        coordinator.phase = .failed
-        coordinator.confirmationPreparation = .success(.init(walletId: wallet))
+        coordinator.phase = .failed("test failure")
+        if coinJoin {
+            coordinator.operationPreparation = .init(walletId: wallet)
+        } else {
+            coordinator.confirmationPreparation = .success(.init(walletId: wallet))
+        }
         coordinator.lastAssetLockOutPoint = (txid, 3)
         if cancelAuthorization { coordinator.authorizationError = CancellationError() }
 
-        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        if coinJoin {
+            let caller = CoinJoinRetryHarness(coordinator)
+            await caller.retryShielded()
+            XCTAssertEqual(caller.stage, cancelAuthorization ? .choice : .submittedUnconfirmed)
+            if fromChoice {
+                coordinator.authorizationError = nil
+                await caller.moveToShielded()
+                XCTAssertEqual(caller.stage, .submittedUnconfirmed)
+            }
+            XCTAssertEqual(caller.newDrainCalls, 0)
+        } else {
+            await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        }
 
-        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(coordinator.authorizations, fromChoice ? 2 : 1)
         XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
         XCTAssertEqual(coordinator.lastAssetLockOutPoint?.vout, 3)
         XCTAssertTrue(AssetLockProbeStore.shared.contains(txid, vout: 3, walletIdHex: walletHex))
-        if cancelAuthorization {
+        if cancelAuthorization && !fromChoice {
             XCTAssertEqual(manager.calls, 0)
-            XCTAssertEqual(coordinator.phase, .failed)
+            XCTAssertEqual(coordinator.phase, .failed("Authentication cancelled"))
         } else {
             XCTAssertEqual(manager.calls, 1)
             XCTAssertEqual(manager.receivedTxid, txid)
             XCTAssertEqual(manager.receivedVout, 3)
-            XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [recipient])
+            XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43),
+                           [coinJoin ? Data(repeating: 1, count: 43) : recipient])
             XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
         }
+    }
+
+    func testStaleSendRetryReturnsToFormWithoutResubmittingOldConfirmation() {
+        let manager = TestManager()
+        let errors: [Error] = [
+            WalletOperationPreparationError.expired("operation version changed"),
+            ShieldedTransferCoordinator.CoordinatorError.transferFailed(
+                WalletOperationPreparationError.expired("runtime changed")),
+        ]
+        for error in errors {
+            for route in [SendRetryHarness.Route.coreToShielded, .platformToShielded] {
+                let coordinator = ShieldedTransferCoordinator(environment: .init(
+                    manager: manager, walletId: Data([1]), shieldedRecipient: Data(repeating: 1, count: 43)))
+                coordinator.phase = .failed("test failure")
+                coordinator.lastFailure = error
+                let caller = SendRetryHarness(coordinator)
+                caller.route = route
+                caller.tryAgain()
+                XCTAssertEqual(caller.cancellations, 1)
+                XCTAssertEqual(caller.confirmations, 0)
+                XCTAssertEqual(coordinator.phase, .failed("test failure"))
+            }
+        }
+        XCTAssertEqual(manager.calls, 0)
+    }
+
+    func testOtherSendFailureRetainsOrdinaryRetry() {
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: Data([1]), shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .failed("test failure")
+        coordinator.lastFailure = NSError(domain: "test", code: 1)
+        let caller = SendRetryHarness(coordinator)
+        caller.tryAgain()
+        XCTAssertEqual(caller.cancellations, 0)
+        XCTAssertEqual(caller.confirmations, 1)
+        XCTAssertEqual(coordinator.phase, .idle)
     }
 
     func testDirectRecoverySheetRecordsSpentProbeUnderOriginatingWallet() async {
@@ -153,7 +220,7 @@ final class AssetLockRecoveryTests: XCTestCase {
             outPointTxidWire: txid, outPointVout: 0,
             expectedDrainContext: .init(walletId: wallet, networkScope: "testnet"))
         XCTAssertEqual(coordinator.authorizations, 1)
-        XCTAssertEqual(coordinator.phase, .failed)
+        XCTAssertEqual(coordinator.phase, .failed("test failure"))
         XCTAssertEqual(manager.calls, 0)
         XCTAssertNil(manager.receivedTxid)
     }

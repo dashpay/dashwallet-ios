@@ -28,6 +28,7 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
     # The production control flow and error classification are unchanged.
     # Only the native SDK, persistence, and address-provider boundaries are fakes.
     methods = "\n".join(declaration(marker) for marker in (
+        "    func topUp(",
         "    enum TopUpError: LocalizedError {",
         "    private func validatePreparation(",
         "    private func topUpFromShielded(",

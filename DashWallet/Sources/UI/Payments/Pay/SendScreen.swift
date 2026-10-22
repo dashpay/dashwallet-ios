@@ -1561,6 +1561,10 @@ struct SendConfirmSheet: View {
             }
             return
         }
+        if coordinator.requiresFreshConfirmation {
+            onCancel()
+            return
+        }
         coordinator.reset()
         confirm()
     }

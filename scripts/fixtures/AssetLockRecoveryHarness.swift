@@ -28,7 +28,7 @@ final class TestManager {
         if let error { throw error }
     }
 }
-enum WalletOperationPreparationError: Error { case expired(String) }
+enum WalletOperationPreparationError: Error { case expired(String), unavailable(String) }
 @MainActor final class SwiftDashSDKHost {
     struct PlatformPreparation { let walletId: Data }
     static let shared = SwiftDashSDKHost()
@@ -65,7 +65,11 @@ extension Notification.Name {
 }
 @MainActor
 final class ShieldedTransferCoordinator {
-    enum Phase: Equatable { case idle, proving, broadcasting, success, submittedUnconfirmed, failed }
+    enum CoordinatorError: Error {
+        case transferFailed(Error), authCancelled
+        var errorDescription: String? { "Authentication cancelled" }
+    }
+    enum Phase: Equatable { case idle, proving, broadcasting, success, submittedUnconfirmed, failed(String) }
     enum ResumeReport { case alreadyConsumed }
     struct Environment {
         let manager: TestManager
@@ -93,8 +97,48 @@ final class ShieldedTransferCoordinator {
     }
     func stopAssetLockPolling() {}
     func performPrepared(_ body: () async throws -> Void) async throws { try await body() }
-    func handleFailure(_ error: Error) { phase = .failed }
+    func handleFailure(_ error: Error) {
+        phase = .failed(error is CancellationError ? CoordinatorError.authCancelled.errorDescription! : "test failure")
+    }
+    enum Funding { case coinJoinDrain }
+    var newAssetLockCalls = 0
+    func performAssetLock(funding: Funding) async { newAssetLockCalls += 1 }
     func handleSpendError(_ error: Error, manager: TestManager) { phase = .submittedUnconfirmed }
     func scheduleShieldedResync(manager: TestManager) {}
     // PRODUCTION_METHODS
+}
+
+// Actual caller retry methods are inserted by the runner. Presentation and
+// fresh-send boundaries only record calls; native work uses the coordinator above.
+@MainActor final class SwiftDashSDKWalletState {
+    static let shared = SwiftDashSDKWalletState()
+    func refreshCoinJoinBalance() {}
+}
+@MainActor final class CoinJoinRetryHarness {
+    enum Destination { case shielded }
+    enum Stage: Equatable {
+        case choice, shielding, success(Destination), submittedUnconfirmed
+        case failed(message: String, destination: Destination)
+    }
+    var stage: Stage = .choice
+    var isInFlight = false
+    let coordinator: ShieldedTransferCoordinator
+    var newDrainCalls: Int { coordinator.newAssetLockCalls }
+    init(_ coordinator: ShieldedTransferCoordinator) { self.coordinator = coordinator }
+    // COINJOIN_MOVE
+    // COINJOIN_FINISH
+    // COINJOIN_RETRY
+}
+
+@MainActor final class SendRetryHarness {
+    enum Route { case coreToShielded, platformToShielded }
+    var route: Route = .platformToShielded
+    var destinationRaw43: Data?
+    let coordinator: ShieldedTransferCoordinator
+    var cancellations = 0
+    var confirmations = 0
+    init(_ coordinator: ShieldedTransferCoordinator) { self.coordinator = coordinator }
+    func onCancel() { cancellations += 1 }
+    func confirm() { confirmations += 1 }
+    // SEND_RETRY
 }

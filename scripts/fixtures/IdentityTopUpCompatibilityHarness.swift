@@ -8,7 +8,13 @@ enum PlatformWalletError: Error {
     case walletOperation(String)
 }
 
+enum TestBoundaryError: Error { case unusedRoute }
 struct ModelContainer {}
+struct TestAuthorizer { func authorize() async throws {} }
+extension UInt64 {
+    var dashAmount: UInt64 { self }
+    var formattedDashAmountWithoutCurrencySymbol: String { String(self) }
+}
 struct MnemonicResolver {}
 struct KeychainSigner { init(modelContainer: ModelContainer) {} }
 enum SwiftDashSDKContactsService { enum ServiceError: Error { case noWallet } }
@@ -18,6 +24,13 @@ enum AddressTransformer {
 enum PlatformPaymentIdentityFundingPolicy {
     static let creditsPerDuff: UInt64 = 1_000
     static let feeHeadroomCredits: UInt64 = 5
+    enum PlanningError: Error { case insufficient(UInt64, UInt64) }
+    static func candidates(walletId: Data, modelContainer: ModelContainer) throws -> [Int] {
+        throw TestBoundaryError.unusedRoute
+    }
+    static func makeInputs(candidates: [Int], targetCredits: UInt64) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
+        throw TestBoundaryError.unusedRoute
+    }
 }
 
 @MainActor final class ManagedPlatformWallet {
@@ -26,6 +39,9 @@ enum PlatformPaymentIdentityFundingPolicy {
     var topUpCalls = 0
     var failure: Error?
     var afterTopUp: () -> Void = {}
+    func topUpIdentityWithFunding(identityId: Data, amountDuffs: UInt64, accountIndex: Int) async throws -> UInt64 {
+        throw TestBoundaryError.unusedRoute
+    }
     func topUpFromAddresses(
         identityId: Data, inputs: [IdentityAddressInput], addressSigner: KeychainSigner
     ) async throws -> UInt64 {
@@ -55,6 +71,8 @@ enum PlatformPaymentIdentityFundingPolicy {
     static let shared = SwiftDashSDKHost()
     var wallet: ManagedPlatformWallet? = ManagedPlatformWallet()
     var manager: NativeManager? = NativeManager()
+    var modelContainer: ModelContainer? = ModelContainer()
+    func preparePlatformOperation() throws -> PlatformPreparation { .init(operationVersion: operationVersion) }
     var checkGeneration = 0
     var operationVersion = 0
     var scopeCalls = 0
@@ -86,6 +104,11 @@ enum PlatformPaymentIdentityFundingPolicy {
 }
 
 @MainActor final class IdentityTopUpViewModel {
+    enum FundingSource { case transparent, platform, shielded }
     var stepLabel: String?
+    var isProcessing = false
+    var submittedUnconfirmed = false
+    var errorMessage: String?
+    let authorizer = TestAuthorizer()
     // PRODUCTION_TOP_UP
 }
