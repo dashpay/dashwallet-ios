@@ -74,7 +74,8 @@ final class SwiftDashSDKHost {
     var onAuthorize: () -> Void = {}
     func stopAssetLockPolling() {}
     func handleFailure(_ error: Error) { lastFailure = error; phase = .failed(error.localizedDescription) }
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43: Data) async {
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43: Data,
+                         retryUnverifiedConsumption: Bool = false) async {
         phase = .signing
         attempted.append((outPointTxidWire, outPointVout, recipientRaw43))
         onAuthorize()

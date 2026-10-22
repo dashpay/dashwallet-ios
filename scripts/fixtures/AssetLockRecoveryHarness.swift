@@ -17,11 +17,27 @@ final class TestManager {
     var error: Error?
     var calls = 0
     var receivedTxid: Data?
+    var receivedVout: UInt32?
+    var receivedRecipients: [ShieldedFundFromAssetLockRecipient] = []
     func shieldedResumeFundFromAssetLock(walletId: Data, outPointTxid: Data, outPointVout: UInt32,
                                          recipients: [ShieldedFundFromAssetLockRecipient]) async throws {
         calls += 1
         receivedTxid = outPointTxid
+        receivedVout = outPointVout
+        receivedRecipients = recipients
         if let error { throw error }
+    }
+}
+enum WalletOperationPreparationError: Error { case expired(String) }
+@MainActor final class SwiftDashSDKHost {
+    struct PlatformPreparation { let walletId: Data }
+    static let shared = SwiftDashSDKHost()
+    var recoveryPreparation: ((PlatformPreparation) throws -> PlatformPreparation)?
+    func preparePlatformRecoveryOperation(matching original: PlatformPreparation) throws -> PlatformPreparation {
+        guard let recoveryPreparation else {
+            throw WalletOperationPreparationError.expired("Configure the preparation boundary for this test")
+        }
+        return try recoveryPreparation(original)
     }
 }
 // Dependency seam for the drain context check added by develop. Recovery
@@ -59,13 +75,23 @@ final class ShieldedTransferCoordinator {
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
     var phase: Phase = .idle
     var lastResumeReport: ResumeReport?
+    var lastFailure: Error?
+    var confirmationPreparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>?
+    var operationPreparation: SwiftDashSDKHost.PlatformPreparation?
+    var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
     let environment: Environment
     var authorizations = 0
     var onAuthorize: (() -> Void)?
+    var authorizationError: Error?
     init(environment: Environment) { self.environment = environment }
     func beginTransfer() -> Bool { phase == .idle }
     func resolveEnvironment() throws -> Environment { environment }
-    func authorize() async throws { authorizations += 1; onAuthorize?() }
+    func authorize() async throws {
+        authorizations += 1
+        onAuthorize?()
+        if let authorizationError { throw authorizationError }
+    }
+    func stopAssetLockPolling() {}
     func performPrepared(_ body: () async throws -> Void) async throws { try await body() }
     func handleFailure(_ error: Error) { phase = .failed }
     func handleSpendError(_ error: Error, manager: TestManager) { phase = .submittedUnconfirmed }

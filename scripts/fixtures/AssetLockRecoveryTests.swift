@@ -4,6 +4,55 @@ import XCTest
 
 @MainActor
 final class AssetLockRecoveryTests: XCTestCase {
+    func testExplicitSendRetryAuthorizesRecordedProbeAndPreservesUnverifiedOutcome() async {
+        await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: false)
+    }
+
+    func testExplicitSendRetryWithRecordedProbeCannotSubmitWithoutAuthorization() async {
+        await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: true)
+    }
+
+    private func checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: Bool) async {
+        let wallet = Data(repeating: 0x33, count: 32)
+        let walletHex = wallet.map { String(format: "%02x", $0) }.joined()
+        let txid = Data(repeating: 0x7a, count: 32)
+        let recipient = Data(repeating: 5, count: 43)
+        defer {
+            AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletHex)
+            SwiftDashSDKHost.shared.recoveryPreparation = nil
+        }
+        AssetLockProbeStore.shared.record(txid: txid, vout: 3, walletIdHex: walletHex)
+        SwiftDashSDKHost.shared.recoveryPreparation = { original in
+            XCTAssertEqual(original.walletId, wallet)
+            return original
+        }
+        let manager = TestManager()
+        manager.error = PlatformWalletError.assetLockAlreadyConsumed
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .failed
+        coordinator.confirmationPreparation = .success(.init(walletId: wallet))
+        coordinator.lastAssetLockOutPoint = (txid, 3)
+        if cancelAuthorization { coordinator.authorizationError = CancellationError() }
+
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.vout, 3)
+        XCTAssertTrue(AssetLockProbeStore.shared.contains(txid, vout: 3, walletIdHex: walletHex))
+        if cancelAuthorization {
+            XCTAssertEqual(manager.calls, 0)
+            XCTAssertEqual(coordinator.phase, .failed)
+        } else {
+            XCTAssertEqual(manager.calls, 1)
+            XCTAssertEqual(manager.receivedTxid, txid)
+            XCTAssertEqual(manager.receivedVout, 3)
+            XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [recipient])
+            XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        }
+    }
+
     func testDirectRecoverySheetRecordsSpentProbeUnderOriginatingWallet() async {
         let wallet = Data(repeating: 0x29, count: 32)
         let walletHex = wallet.map { String(format: "%02x", $0) }.joined()

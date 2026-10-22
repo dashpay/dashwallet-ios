@@ -15,7 +15,8 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     (source / "AssetLockProbeStore.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockProbeStore.swift")
     production = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedTransferCoordinator.swift").read_text()
     methods = []
-    for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase("):
+    for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
+                   "    func retryLastAssetLock(", "    func reset()"):
         start = production.index(marker)
         opening = production.index("{", start)
         depth, end = 1, opening + 1

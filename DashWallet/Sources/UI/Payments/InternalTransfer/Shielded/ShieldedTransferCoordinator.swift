@@ -1502,7 +1502,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             await resumeAssetLock(
                 outPointTxidWire: outpoint.txidWire,
                 outPointVout: outpoint.vout,
-                recipientRaw43: recipientRaw43)
+                recipientRaw43: recipientRaw43,
+                retryUnverifiedConsumption: true)
         } catch {
             handleFailure(error)
         }
