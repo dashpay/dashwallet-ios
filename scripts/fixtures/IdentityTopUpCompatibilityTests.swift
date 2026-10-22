@@ -35,6 +35,7 @@ import XCTest
     func testAmbiguousSecondLegRetainsUnknownOutcome() async {
         let unknowns: [PlatformWalletError] = [
             .transactionBroadcastUnconfirmed("may be sent"),
+            .shieldedSpendUnconfirmed("may be spent"),
         ]
         for unknown in unknowns {
             host.wallet = ManagedPlatformWallet()
@@ -43,13 +44,43 @@ import XCTest
             do {
                 _ = try await topUp()
                 XCTFail("Expected unknown broadcast outcome")
-            } catch PlatformWalletError.transactionBroadcastUnconfirmed {
+            } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+                    PlatformWalletError.shieldedSpendUnconfirmed {
             } catch {
                 XCTFail("Unknown outcome mislabeled as safe top-up from Platform: \(error)")
             }
             XCTAssertEqual(host.manager!.unshieldCalls, 1)
             XCTAssertEqual(host.wallet!.topUpCalls, 1)
         }
+    }
+
+    func testSecondLegRefusalKeepsSettledFirstLeg() async {
+        host.wallet!.failure = PlatformWalletError.walletOperation("rejected")
+        do {
+            _ = try await topUp()
+            XCTFail("Expected second-leg refusal")
+        } catch IdentityTopUpViewModel.TopUpError.movedToPlatform(let cause) {
+            guard case PlatformWalletError.walletOperation = cause else {
+                return XCTFail("Lost original refusal: \(cause)")
+            }
+        } catch {
+            XCTFail("Lost settled first leg: \(error)")
+        }
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+    }
+
+    func testCancelledSecondLegRetainsUnknownOutcome() async {
+        host.wallet!.failure = CancellationError()
+        do {
+            _ = try await topUp()
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+        } catch {
+            XCTFail("Cancellation was misclassified: \(error)")
+        }
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
     }
 
     func testAmbiguousUnshieldDoesNotStartIdentityTopUp() async {

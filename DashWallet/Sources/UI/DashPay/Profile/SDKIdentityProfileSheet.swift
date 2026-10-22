@@ -765,7 +765,18 @@ final class IdentityTopUpViewModel: ObservableObject {
                     inputs: [input],
                     addressSigner: signer)
             }
-        } catch let error as WalletOperationPreparationError {
+        } catch {
+            // An unknown second-leg result may already have credited the
+            // identity. Keep its diagnostic instead of suggesting a new top-up.
+            if case PlatformWalletError.transactionBroadcastUnconfirmed = error {
+                throw error
+            }
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                throw error
+            }
+            if error is CancellationError {
+                throw error
+            }
             throw TopUpError.movedToPlatform(error)
         }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
