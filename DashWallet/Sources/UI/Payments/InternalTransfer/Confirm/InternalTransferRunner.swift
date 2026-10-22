@@ -288,12 +288,15 @@ final class InternalTransferRunner: ObservableObject {
             isCoreDrainRecovery = true
             defer { isCoreDrainRecovery = false }
             coordinator.reset()
+            coordinator.bindConfirmationPreparation(Result {
+                try SwiftDashSDKHost.shared.preparePlatformOperation()
+            })
             phase = .inFlight
             attemptedResume = true
             await DWIdentityAuthorizer.preauthorized {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
-                    expectedDrainContext: context)
+                    expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
             let status = try await service.status(for: pending.operation)
             if status.state == .completed {

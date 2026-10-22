@@ -177,14 +177,12 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
     // MARK: - Actions
 
-    /// Runs the auth gate, then hands the transfer off. Returns whether the
-    /// sheet has finished with the user: it stays open when the PIN prompt was
-    /// backed out of, so Confirm can simply be tapped again — everything else,
-    /// including a refusal because another transfer is still running, is
-    /// announced by a toast on the surface behind it.
-    func confirm() async -> Bool {
-        guard case .transfer(let request) = mode else { return false }
-        return await runner.start(request, preparation: preparation) != .notAuthorized
+    /// Preserve the runner outcome so the sheet can distinguish submission,
+    /// cancelled authorization, and a stale confirmation. A rejected snapshot
+    /// dismisses only the sheet; Continue on the amount form captures a fresh one.
+    func confirm() async -> InternalTransferRunner.StartOutcome {
+        guard case .transfer(let request) = mode else { return .rejected }
+        return await runner.start(request, preparation: preparation)
     }
 
     // MARK: - Request accessors

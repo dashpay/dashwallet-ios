@@ -177,12 +177,12 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     /// Create on the pending-invitation card: straight to the form in
     /// invitation mode. The Join DashPay sheet is skipped — the invitation
     /// pays, so there is no funding source to choose and no balance to check.
-    func showCreateUsername(withInvitation invitation: PendingInvitation, tier: InvitationTier) {
+    func showCreateUsername(withInvitation invitation: PendingInvitation, amountDuffs: UInt64) {
         // A second tap on Create lands while the first push animates: only
         // Home itself pushes the form.
         guard let uri = invitation.normalizedURI,
               navigationController?.topViewController === self else { return }
-        let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationTier: tier)
+        let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationAmountDuffs: amountDuffs)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
             guard result else { return }

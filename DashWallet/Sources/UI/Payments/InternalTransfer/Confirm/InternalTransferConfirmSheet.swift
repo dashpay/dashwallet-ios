@@ -160,9 +160,13 @@ struct InternalTransferConfirmSheet: View {
         guard !isSubmitting else { return }
         isSubmitting = true
         Task {
-            let handedOff = await viewModel.confirm()
+            let outcome = await viewModel.confirm()
             isSubmitting = false
-            if handedOff { onSubmitted() }
+            switch outcome {
+            case .started, .busy: onSubmitted()
+            case .rejected: onCancel()
+            case .notAuthorized: break
+            }
         }
     }
 

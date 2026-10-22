@@ -6,9 +6,10 @@
 //  network, and which usernames it can pay for.
 //
 //  The link does not say whether it funds a contested username. The inviter
-//  picks the amount — 0.25 DASH for any name, 0.03 DASH for non-contested
-//  names only — and the invitee reads it back from the funding asset lock
-//  (Android: `RequestUserNameViewModel.isInviteForContestedNames`).
+//  picks the amount — the contested-name cost for any name (see
+//  `ContestedUsernameFee`), 0.03 DASH for non-contested names only — and the
+//  invitee reads it back from the funding asset lock (Android:
+//  `RequestUserNameViewModel.isInviteForContestedNames`).
 //
 
 import Foundation
@@ -45,7 +46,9 @@ enum InvitationValidation: Equatable {
         case belowMinimum
     }
 
-    case valid(tier: InvitationTier, amountDuffs: UInt64, inviter: InvitationInviter)
+    /// Which usernames it pays for follows from `amountDuffs` and the
+    /// contested cost at the time (`InvitationValidationPolicy.tier`).
+    case valid(amountDuffs: UInt64, inviter: InvitationInviter)
     case invalid(InvalidReason, inviter: InvitationInviter)
     case alreadyClaimed(inviter: InvitationInviter)
     /// The wallet already has a username.
@@ -72,8 +75,9 @@ enum InvitationValidation: Equatable {
         }
     }
 
-    var tier: InvitationTier? {
-        if case .valid(let tier, _, _) = self { return tier }
+    /// What the voucher funds; nil unless valid.
+    var amountDuffs: UInt64? {
+        if case .valid(let amountDuffs, _) = self { return amountDuffs }
         return nil
     }
 
@@ -179,7 +183,6 @@ enum InvitationValidationPolicy {
                 status: status,
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
-                contestedDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME),
                 localIdentityId: after.identityId)
         case .failure(let error):
             return verdict(error: error, inviter: inviter)
@@ -194,19 +197,23 @@ enum InvitationValidationPolicy {
         status: ManagedPlatformWallet.InvitationClaimStatus,
         inviter: InvitationInviter,
         minimumDuffs: UInt64,
-        contestedDuffs: UInt64,
         localIdentityId: Data? = nil
     ) -> InvitationValidation {
-        let tier: InvitationTier = status.amountDuffs >= contestedDuffs ? .contested : .nonContested
         if let localIdentityId {
             guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasOtherIdentity }
             // Our own earlier claim: only the username is left to register.
-            return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
+            return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
         }
         if status.alreadyClaimed { return .alreadyClaimed(inviter: inviter) }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
-        return .valid(tier: tier, amountDuffs: status.amountDuffs, inviter: inviter)
+        return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
+    }
+
+    /// Which usernames `amountDuffs` pays for when a contested name costs
+    /// `contestedDuffs`.
+    static func tier(amountDuffs: UInt64, contestedDuffs: UInt64) -> InvitationTier {
+        amountDuffs >= contestedDuffs ? .contested : .nonContested
     }
 
     /// The SDK's claim-status call draws the definitive/undetermined line:

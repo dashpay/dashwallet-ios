@@ -121,7 +121,7 @@ enum CoreToShieldedAmountPolicy {
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
     /// Reuse the quote only while its native preparation remains valid.
-    /// A new check, protocol version, or runtime invalidates it even when
+    /// A changed effective version or runtime invalidates it even when
     /// the amount form remains open across that change.
     private static var cachedPoolFee: (
         preparation: SwiftDashSDKHost.PlatformPreparation, credits: UInt64?
@@ -146,10 +146,16 @@ enum CoreToShieldedAmountPolicy {
             return nil
         }
 
-        let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
-        let value: UInt64? = overflow ? nil : total
+        let value = poolFeeCredits(addingBaseCostTo: shieldedFee)
         cachedPoolFee = (preparation, value)
         return value
+    }
+
+    /// Pure fee arithmetic shared with the current develop regression tests.
+    static func poolFeeCredits(addingBaseCostTo shieldedFeeCredits: UInt64?) -> UInt64? {
+        guard let shieldedFeeCredits else { return nil }
+        let (total, overflow) = shieldedFeeCredits.addingReportingOverflow(assetLockBaseCostCredits)
+        return overflow ? nil : total
     }
 
     /// Pool fee in whole duffs, rounded UP so a duff-denominated lock always

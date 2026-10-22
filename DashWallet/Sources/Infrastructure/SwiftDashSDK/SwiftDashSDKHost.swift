@@ -379,10 +379,15 @@ final class SwiftDashSDKHost {
 
     // MARK: - Platform protocol version
 
-    /// Both production networks learn supported versions from verified metadata.
-    /// Active runtimes observe network versions in the background;
-    /// the linked framework still determines which protocol versions are supported.
-    static func platformVersion(for network: Network) -> UInt32 { 0 }
+    /// Testnet keeps develop's activated-version floor so an immediate
+    /// operation cannot build protocol 13 before the background check finishes.
+    /// Observation remains informational even when the SDK version is pinned.
+    static func platformVersion(for network: Network) -> UInt32 {
+        switch network {
+        case .testnet: return 14
+        case .mainnet, .devnet, .regtest: return 0
+        }
+    }
 
     struct PlatformPreparation {
         fileprivate let sdk: SDK
@@ -1304,6 +1309,7 @@ final class SwiftDashSDKHost {
         sdk = nil
         modelContainer = nil
         runningNetwork = nil
+        ContestedUsernameFee.shared.runtimeDidStop()
 
         Self.logger.info("🪺 HOST :: stopped")
         DWLogger.log("HOST stopped")
@@ -2059,6 +2065,7 @@ final class SwiftDashSDKHost {
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
         protocolCompatibility.markRuntimeReady(runtimeID: runtimeID)
+        ContestedUsernameFee.shared.runtimeDidStart()
     }
 
     // MARK: - ModelContainer

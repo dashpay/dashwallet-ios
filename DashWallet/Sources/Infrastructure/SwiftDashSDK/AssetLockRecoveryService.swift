@@ -132,7 +132,8 @@ struct AssetLockRecoveryService {
     func retry(fundingTypeRaw: Int,
                txidWire: Data,
                vout: UInt32,
-               refreshLookup: Bool = true) async throws -> Outcome {
+               refreshLookup: Bool = true,
+               retryUnverifiedConsumption: Bool = true) async throws -> Outcome {
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
@@ -154,7 +155,8 @@ struct AssetLockRecoveryService {
                     outPointVout: vout,
                     recipientAmountDuffs: recipientAmountDuffs)
             } else {
-                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
+                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout,
+                                                  retryUnverifiedConsumption: retryUnverifiedConsumption)
             }
             try Self.checkTerminalPhase(coordinator)
             // Branch on the coordinator's typed report, NOT on
@@ -282,8 +284,8 @@ struct AssetLockRecoveryService {
 
     /// Every tracked funding lock still worth retrying: a status that is not a
     /// finished transfer, a route this service handles, and no recorded
-    /// already-spent probe. This is the same predicate the per-transaction
-    /// action uses, applied to the whole snapshot.
+    /// already-spent probe. Explicit per-transaction recovery can recheck a
+    /// previously reported outpoint; bulk recovery skips it to avoid loops.
     ///
     /// Restoring a wallet turns every shielded funding lock into
     /// `RecoveredFromChain` at once, so this is routinely dozens of entries —
@@ -299,7 +301,7 @@ struct AssetLockRecoveryService {
                   entry.info.fundingTypeRaw == bulkFundingTypeRaw,
                   bulkStatusAllowsRecovery(entry.info.statusRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
-                  !AssetLockProbeStore.shared.contains(txidWire)
+                  !AssetLockProbeStore.shared.contains(txidWire, vout: entry.info.vout)
             else { return nil }
             return PendingRecovery(
                 txidWire: txidWire,
@@ -368,7 +370,7 @@ struct AssetLockRecoveryService {
                     // One refresh for the pass, in `recoverAll`. Per item it is
                     // a full lookup rebuild on top of the one `resumeAssetLock`
                     // already does, and nothing between iterations reads it.
-                    refreshLookup: false)
+                    refreshLookup: false, retryUnverifiedConsumption: false)
                 let step: BulkStep
                 switch result {
                 case .completed: step = .completed

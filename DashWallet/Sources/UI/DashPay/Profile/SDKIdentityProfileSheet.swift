@@ -666,7 +666,8 @@ final class IdentityTopUpViewModel: ObservableObject {
                     modelContainer: modelContainer,
                     preparation: confirmedPreparation)
             }
-        } catch PlatformWalletError.transactionBroadcastUnconfirmed {
+        } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed {
             submittedUnconfirmed = true
             errorMessage = NSLocalizedString(
                 "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",

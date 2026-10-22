@@ -726,7 +726,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, expectedDrainContext: CoreShieldedDrainContext? = nil) async {
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, expectedDrainContext: CoreShieldedDrainContext? = nil, retryUnverifiedConsumption: Bool = false) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
@@ -742,7 +742,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // sheet and the bulk service enter here; neither may lose this advisory
         // result when its presenter closes or file it under a newly active wallet.
         let probeWalletIdHex = env.walletId.map { String(format: "%02x", $0) }.joined()
-        if AssetLockProbeStore.shared.contains(outPointTxidWire, walletIdHex: probeWalletIdHex) {
+        if !retryUnverifiedConsumption,
+           AssetLockProbeStore.shared.contains(outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex) {
             lastResumeReport = .alreadyConsumed
             phase = .submittedUnconfirmed
             return
@@ -790,10 +791,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // A DAPI endpoint reported this exact outpoint as consumed, but
             // rejection responses are not quorum-authenticated. Rust retains
             // the ChainLock proof and records nonterminal consumption-unknown
-            // state, so suppress retries without claiming verified success.
+            // state, so suppress bulk retries without claiming verified success.
+            // A later explicit action can authorize another probe of this outpoint.
             terminalPhase = mappedPhase
             lastResumeReport = .alreadyConsumed
-            AssetLockProbeStore.shared.record(txid: outPointTxidWire, walletIdHex: probeWalletIdHex)
+            AssetLockProbeStore.shared.record(txid: outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex)
             Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
@@ -1490,6 +1492,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastFailure = nil
         lastResumeReport = nil
+        operationPreparation = nil
         phase = .idle
     }
 

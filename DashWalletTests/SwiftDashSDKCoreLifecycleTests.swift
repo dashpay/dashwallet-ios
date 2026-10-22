@@ -17,6 +17,20 @@ private enum CoreLifecycleTestError: Error {
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
 
+    /// The Core → Shielded pool fee is the shielded fee plus the asset-lock
+    /// base cost, whatever protocol version produced the shielded fee.
+    func testPoolFeeAddsTheAssetLockBaseCost() {
+        typealias Policy = CoreToShieldedAmountPolicy
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 162_851_200), 162_851_200 + Policy.assetLockBaseCostCredits)
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 114_140_000), 114_140_000 + Policy.assetLockBaseCostCredits)
+    }
+
+    /// No estimate, or a sum that overflows, gives no fee: callers fail closed.
+    func testPoolFeeIsNilWithoutAnEstimateOrOnOverflow() {
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: nil))
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: UInt64.max))
+    }
+
     func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
         let id = Data([1])
         var adopted = false

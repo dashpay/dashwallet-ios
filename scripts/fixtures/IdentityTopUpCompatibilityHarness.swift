@@ -4,6 +4,7 @@ enum SDKError: Error { case networkError(String) }
 enum WalletOperationPreparationError: Error { case expired(String) }
 enum PlatformWalletError: Error {
     case transactionBroadcastUnconfirmed(String)
+    case shieldedSpendUnconfirmed(String)
     case walletOperation(String)
 }
 

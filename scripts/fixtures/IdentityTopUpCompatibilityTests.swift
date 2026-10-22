@@ -52,6 +52,19 @@ import XCTest
         }
     }
 
+    func testAmbiguousUnshieldDoesNotStartIdentityTopUp() async {
+        host.manager!.failure = PlatformWalletError.shieldedSpendUnconfirmed("may be sent")
+        do {
+            _ = try await topUp()
+            XCTFail("Expected unknown unshield outcome")
+        } catch PlatformWalletError.shieldedSpendUnconfirmed {
+        } catch {
+            XCTFail("Unshield outcome was misclassified: \(error)")
+        }
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 0)
+    }
+
     func testFirstLegFailureNeverClaimsFundsLanded() async {
         host.manager!.failure = PlatformWalletError.walletOperation("rejected")
         do {

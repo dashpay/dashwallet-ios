@@ -27,6 +27,7 @@ struct SwiftDashSDKProtocolCompatibilityClient: WalletProtocolCompatibilityClien
             generation: value.generation, status: status,
             verifiedVersion: value.verifiedProtocolVersion,
             effectiveVersion: value.effectiveProtocolVersion,
-            maximumSupportedVersion: value.maximumSupportedProtocolVersion)
+            maximumSupportedVersion: value.maximumSupportedProtocolVersion,
+            newerProtocolAvailable: value.newerProtocolAvailable)
     }
 }

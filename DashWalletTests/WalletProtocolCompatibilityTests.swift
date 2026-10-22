@@ -9,7 +9,7 @@ private final class CompatibilityClient: WalletProtocolCompatibilityClient, @unc
     private let lock = NSLock()
     private var value = WalletProtocolCompatibility(
         generation: 0, status: .unavailable, verifiedVersion: nil,
-        effectiveVersion: 12, maximumSupportedVersion: 14)
+        effectiveVersion: 12, maximumSupportedVersion: 14, newerProtocolAvailable: false)
 
     func beginCheck() throws -> UInt64 {
         lock.lock()
@@ -42,7 +42,8 @@ private final class CompatibilityClient: WalletProtocolCompatibilityClient, @unc
         WalletProtocolCompatibility(
             generation: generation, status: status,
             verifiedVersion: version ?? value.verifiedVersion ?? (status == .checked ? 14 : nil),
-            effectiveVersion: 14, maximumSupportedVersion: 14)
+            effectiveVersion: 14, maximumSupportedVersion: 14,
+            newerProtocolAvailable: (version ?? value.verifiedVersion ?? 14) > 14)
     }
 }
 

@@ -14,10 +14,8 @@ struct WalletProtocolCompatibility: Equatable, Sendable {
     let maximumSupportedVersion: UInt32?
 
 
-    var newerProtocolAvailable: Bool {
-        guard let verifiedVersion, let maximumSupportedVersion else { return false }
-        return verifiedVersion > maximumSupportedVersion
-    }
+    let newerProtocolAvailable: Bool
+
 }
 
 enum WalletOperationPreparationError: LocalizedError {
@@ -159,7 +157,8 @@ final class WalletProtocolCompatibilityController: ObservableObject {
             generation: snapshot?.generation ?? 0, status: .unavailable,
             verifiedVersion: snapshot?.verifiedVersion,
             effectiveVersion: snapshot?.effectiveVersion,
-            maximumSupportedVersion: snapshot?.maximumSupportedVersion)
+            maximumSupportedVersion: snapshot?.maximumSupportedVersion,
+            newerProtocolAvailable: snapshot?.newerProtocolAvailable ?? false)
     }
 
     nonisolated private static let refreshQueue = DispatchQueue(
