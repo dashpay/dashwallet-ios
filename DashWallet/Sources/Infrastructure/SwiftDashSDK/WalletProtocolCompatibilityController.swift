@@ -39,6 +39,7 @@ protocol WalletProtocolCompatibilityClient: Sendable {
 @MainActor
 final class WalletProtocolCompatibilityController: ObservableObject {
     typealias Execute = @Sendable (any WalletProtocolCompatibilityClient, UInt64) async throws -> WalletProtocolCompatibility
+    typealias WaitForObservation = @Sendable () async throws -> Void
 
     @Published private(set) var snapshot: WalletProtocolCompatibility?
     @Published private(set) var network: String?
@@ -46,18 +47,28 @@ final class WalletProtocolCompatibilityController: ObservableObject {
     private(set) var runtimeID: UUID?
     private var client: (any WalletProtocolCompatibilityClient)?
     private var pending: Task<Void, Never>?
+    private var observation: Task<Void, Never>?
     private var requestID: UUID?
     private let execute: Execute
+    private let waitForObservation: WaitForObservation
     private let log: (String) -> Void
 
     init(
         execute: @escaping Execute = { client, generation in
             try await WalletProtocolCompatibilityController.executeOffMain(client: client, generation: generation)
         },
+        waitForObservation: @escaping WaitForObservation = {
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        },
         log: @escaping (String) -> Void = { _ in }
     ) {
         self.execute = execute
+        self.waitForObservation = waitForObservation
         self.log = log
+    }
+
+    deinit {
+        observation?.cancel()
     }
 
     @discardableResult
@@ -68,10 +79,13 @@ final class WalletProtocolCompatibilityController: ObservableObject {
         self.client = client
         self.network = network
         self.runtimeID = runtimeID
+        startObserving(runtimeID: runtimeID)
         return refresh()
     }
 
     func detach() {
+        observation?.cancel()
+        observation = nil
         pending?.cancel()
         pending = nil
         requestID = nil
@@ -80,6 +94,22 @@ final class WalletProtocolCompatibilityController: ObservableObject {
         snapshot = nil
         network = nil
         runtimeID = nil
+    }
+
+    /// Observe local SDK state for the runtime's lifetime, even when no banner
+    /// is mounted. Verified preflights and sync reads can advance the effective
+    /// version independently of an explicit network check. Publishing that
+    /// change lets open forms prepare fresh quotes through their subscriptions.
+    private func startObserving(runtimeID: UUID) {
+        let waitForObservation = self.waitForObservation
+        observation = Task { [weak self] in
+            while !Task.isCancelled {
+                do { try await waitForObservation() }
+                catch { return }
+                guard !Task.isCancelled, self?.runtimeID == runtimeID else { return }
+                self?.sample()
+            }
+        }
     }
 
     /// The host publishes its wallet/SDK only after local setup has finished.

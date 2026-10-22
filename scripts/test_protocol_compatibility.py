@@ -34,6 +34,26 @@ with tempfile.TemporaryDirectory(prefix="protocol-compatibility-tests-") as dire
         depth += (production[end] == "{") - (production[end] == "}")
         end += 1
     (source / "CoreToShieldedAmountPolicy.swift").write_text(production[start:end] + "\n")
+    def production_method(path, marker):
+        text = (repository / path).read_text()
+        start = text.index(marker)
+        opening = text.index("{", start)
+        depth, end = 1, opening + 1
+        while depth:
+            depth += (text[end] == "{") - (text[end] == "}")
+            end += 1
+        return text[start:end]
+
+    quote_harness = (repository / "scripts/fixtures/ProtocolQuoteObservationHarness.swift").read_text()
+    for label, path in [
+        ("SEND", "DashWallet/Sources/UI/Payments/Pay/SendViewModel.swift"),
+        ("INTERNAL", "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferViewModel.swift"),
+    ]:
+        methods = "\n".join(production_method(path, marker) for marker in [
+            "    private func compatibilityDidChange(", "    private func routeDidChange()",
+        ])
+        quote_harness = quote_harness.replace("// " + label + "_METHODS", methods)
+    (source / "ProtocolQuoteObservationHarness.swift").write_text(quote_harness)
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
 import PackageDescription
 let package = Package(name: "ProtocolCompatibilityHarness", platforms: [.macOS("15.0")], targets: [

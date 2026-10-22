@@ -3,12 +3,20 @@ name: Core Shielded Max recovery
 on:
   pull_request:
     paths:
-      - 'DashWallet/Sources/UI/Payments/InternalTransfer/**'
-      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift'
-      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift'
+      - 'DashWallet/Sources/UI/Payments/**'
+      - 'DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift'
+      - 'DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift'
+      - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/**'
       - 'DashWalletTests/CoreShieldedDrainStoreTests.swift'
+      - 'DashWalletTests/WalletProtocolCompatibilityTests.swift'
       - 'scripts/test_core_drain.py'
       - 'scripts/core_drain_recovery_harness.py'
+      - 'scripts/test_protocol_compatibility.py'
+      - 'scripts/test_platform_preparation.py'
+      - 'scripts/test_asset_lock_recovery.py'
+      - 'scripts/test_identity_top_up_compatibility.py'
+      - 'scripts/test_internal_transfer_confirmation.py'
+      - 'scripts/fixtures/**'
       - '.github/workflows/core-drain-tests.yml'
   workflow_dispatch:
 
@@ -24,3 +32,13 @@ jobs:
           persist-credentials: false
       - name: Test durable markers and form recovery
         run: python3 scripts/test_core_drain.py
+      - name: Test protocol lifecycle, banner and fee cache
+        run: |
+          python3 scripts/test_protocol_compatibility.py
+          python3 scripts/test_protocol_compatibility.py --testflight
+      - name: Test preparation and transfer recovery
+        run: |
+          python3 scripts/test_platform_preparation.py
+          python3 scripts/test_asset_lock_recovery.py
+          python3 scripts/test_identity_top_up_compatibility.py
+          python3 scripts/test_internal_transfer_confirmation.py

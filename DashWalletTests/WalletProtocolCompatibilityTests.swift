@@ -1,3 +1,4 @@
+import Combine
 import XCTest
 #if canImport(ProtocolCompatibilityHarness)
 @testable import ProtocolCompatibilityHarness
@@ -30,6 +31,16 @@ private final class CompatibilityClient: WalletProtocolCompatibilityClient, @unc
         return finish(.checked, generation: generation)
     }
 
+    /// Emulates a verified preflight on a clone advancing the native SDK.
+    func completePreflight(version: UInt32) {
+        lock.lock()
+        defer { lock.unlock() }
+        value = WalletProtocolCompatibility(
+            generation: value.generation, status: value.status,
+            verifiedVersion: version, effectiveVersion: version,
+            maximumSupportedVersion: 14, newerProtocolAvailable: version > 14)
+    }
+
     func finish(_ status: WalletProtocolCompatibility.Status, generation: UInt64, version: UInt32? = nil) -> WalletProtocolCompatibility {
         lock.lock()
         defer { lock.unlock() }
@@ -42,8 +53,28 @@ private final class CompatibilityClient: WalletProtocolCompatibilityClient, @unc
         WalletProtocolCompatibility(
             generation: generation, status: status,
             verifiedVersion: version ?? value.verifiedVersion ?? (status == .checked ? 14 : nil),
-            effectiveVersion: 14, maximumSupportedVersion: 14,
+            effectiveVersion: value.effectiveVersion, maximumSupportedVersion: 14,
             newerProtocolAvailable: (version ?? value.verifiedVersion ?? 14) > 14)
+    }
+}
+
+private actor ObservationTicks {
+    private var pending: [CheckedContinuation<Void, Error>] = []
+    private var calls = 0
+
+    func wait() async throws {
+        try await withCheckedThrowingContinuation {
+            pending.append($0)
+            calls += 1
+        }
+    }
+
+    func waitForCalls(_ count: Int) async {
+        while calls < count { await Task.yield() }
+    }
+
+    func tick() {
+        pending.removeFirst().resume()
     }
 }
 
@@ -69,6 +100,88 @@ private actor DelayedCompatibilityChecks {
 
 @MainActor
 final class WalletProtocolCompatibilityTests: XCTestCase {
+    #if canImport(ProtocolCompatibilityHarness)
+    func testBothOpenFormsRequoteAfterPreflightAdvancesVersionWithoutBanner() async {
+        let host = SwiftDashSDKHost.shared
+        host.reset()
+        host.version = 12
+        let ticks = ObservationTicks()
+        let client = CompatibilityClient()
+        let controller = WalletProtocolCompatibilityController(waitForObservation: { try await ticks.wait() })
+        let runtimeID = UUID()
+        await controller.attach(client: client, network: "mainnet", runtimeID: runtimeID).value
+        controller.markRuntimeReady(runtimeID: runtimeID)
+        let send = SendQuoteObservationHarness(controller: controller)
+        let internalTransfer = InternalQuoteObservationHarness(controller: controller)
+        XCTAssertEqual(send.quotedVersion, 12)
+        XCTAssertEqual(internalTransfer.quotedVersion, 12)
+        await ticks.waitForCalls(1)
+
+        // A verified preflight advances the SDK independently of the explicit
+        // check. No banner or banner view model exists anywhere in this test.
+        host.version = 14
+        client.completePreflight(version: 14)
+        await ticks.tick()
+        await ticks.waitForCalls(2)
+        XCTAssertEqual(send.quotedVersion, 14)
+        XCTAssertEqual(internalTransfer.quotedVersion, 14)
+        XCTAssertEqual(send.quoteRequests, 2)
+        XCTAssertEqual(internalTransfer.quoteRequests, 2)
+        XCTAssertNoThrow(try host.validatePlatformOperation(send.platformPreparation!))
+        XCTAssertNoThrow(try host.validatePlatformOperation(internalTransfer.platformPreparation!))
+
+        await controller.refresh().value
+        XCTAssertEqual(send.quoteRequests, 2, "Check generation alone must not invalidate the quote")
+        XCTAssertEqual(internalTransfer.quoteRequests, 2)
+        controller.detach()
+        await ticks.tick()
+    }
+    #endif
+
+    func testRuntimePublishesPreflightVersionWithoutMountedBanner() async {
+        let ticks = ObservationTicks()
+        let client = CompatibilityClient()
+        let controller = WalletProtocolCompatibilityController(waitForObservation: { try await ticks.wait() })
+        let runtimeID = UUID()
+        await controller.attach(client: client, network: "mainnet", runtimeID: runtimeID).value
+        controller.markRuntimeReady(runtimeID: runtimeID)
+        await ticks.waitForCalls(1)
+        XCTAssertEqual(controller.snapshot?.effectiveVersion, 12)
+
+        let changed = expectation(description: "Open form receives the effective-version change without a banner")
+        let subscription = controller.$snapshot.compactMap { $0?.effectiveVersion }
+            .removeDuplicates().filter { $0 == 14 }.sink { _ in changed.fulfill() }
+        client.completePreflight(version: 14)
+        await ticks.tick()
+        await fulfillment(of: [changed], timeout: 2)
+        XCTAssertEqual(controller.snapshot?.effectiveVersion, 14)
+        XCTAssertEqual(try? client.snapshot().generation, 1, "Observation must not issue another network check")
+        await ticks.waitForCalls(2)
+        controller.detach()
+        await ticks.tick()
+        subscription.cancel()
+    }
+
+    func testDetachedObserverCannotSampleReplacementRuntime() async {
+        let ticks = ObservationTicks()
+        let controller = WalletProtocolCompatibilityController(waitForObservation: { try await ticks.wait() })
+        await controller.attach(client: CompatibilityClient(), network: "mainnet", runtimeID: UUID()).value
+        await ticks.waitForCalls(1)
+        let replacement = CompatibilityClient()
+        await controller.attach(client: replacement, network: "mainnet", runtimeID: UUID()).value
+        await ticks.waitForCalls(2)
+        replacement.completePreflight(version: 14)
+        await ticks.tick() // The cancelled old runtime's outstanding timer.
+        for _ in 0..<10 { await Task.yield() }
+        XCTAssertEqual(controller.snapshot?.effectiveVersion, 12)
+        await ticks.tick()
+        await ticks.waitForCalls(3)
+        XCTAssertEqual(controller.snapshot?.effectiveVersion, 14)
+        controller.detach()
+        await ticks.tick()
+        XCTAssertNil(controller.snapshot)
+    }
+
     func testBannerDistinguishesUnavailableFromUnsupportedAndAllowsCore() async {
         let client = CompatibilityClient()
         let controller = WalletProtocolCompatibilityController()

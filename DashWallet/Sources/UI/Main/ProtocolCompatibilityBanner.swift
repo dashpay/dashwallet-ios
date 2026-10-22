@@ -4,11 +4,9 @@ import SwiftUI
 @MainActor
 final class ProtocolCompatibilityBannerViewModel: ObservableObject {
     @Published private(set) var snapshot: WalletProtocolCompatibility?
-    private let controller: WalletProtocolCompatibilityController
     private var subscription: AnyCancellable?
 
     init(controller: WalletProtocolCompatibilityController) {
-        self.controller = controller
         snapshot = controller.snapshot
         subscription = controller.$snapshot.sink { [weak self] in self?.snapshot = $0 }
     }
@@ -30,15 +28,6 @@ final class ProtocolCompatibilityBannerViewModel: ObservableObject {
         #endif
     }
 
-    /// Local snapshots only: this never requests network data. It also observes
-    /// newer versions learned by background sync on a cloned SDK.
-    func observe() async {
-        while !Task.isCancelled {
-            controller.sample()
-            do { try await Task.sleep(nanoseconds: 1_000_000_000) }
-            catch { return }
-        }
-    }
 }
 
 struct ProtocolCompatibilityBanner: View {
@@ -69,6 +58,5 @@ struct ProtocolCompatibilityBanner: View {
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .task { await model.observe() }
     }
 }
