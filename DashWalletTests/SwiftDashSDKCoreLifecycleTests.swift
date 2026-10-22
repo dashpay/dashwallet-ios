@@ -150,6 +150,38 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(gate.isPending)
     }
 
+    // MARK: - SPV chain resync marker
+
+    /// The start suspends for the whole store open, during which the Sync
+    /// Info screen can arm a new resync for the same network. Consuming the
+    /// applied marker must not take that new request with it.
+    func testClearingTheAppliedResyncLeavesAResyncArmedDuringTheStartPending() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        let applied = SPVChainResyncMarker.Pending(
+            walletId: Data([0xA1]), fromHeight: 1_000, armedBySessionId: "an earlier launch")
+
+        // Armed during the start, by this session, for the same network.
+        SPVChainResyncMarker.arm(walletId: Data([0xB2]), fromHeight: 2_000, network: .testnet, defaults: defaults)
+
+        XCTAssertFalse(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        let pending = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertEqual(pending.walletId, Data([0xB2]))
+        XCTAssertEqual(pending.fromHeight, 2_000)
+        XCTAssertTrue(pending.armedByThisSession)
+    }
+
+    func testClearingTheAppliedResyncConsumesIt() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        SPVChainResyncMarker.arm(walletId: Data([0xA1]), fromHeight: 1_000, network: .testnet, defaults: defaults)
+        let applied = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+
+        XCTAssertTrue(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        XCTAssertNil(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertFalse(
+            SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults),
+            "nothing pending: nothing to consume")
+    }
+
     // MARK: - Devnet start preflight
 
     /// The runtime discovers devnet peers before the SDK is built; the SPV
