@@ -9,6 +9,7 @@ on:
       - 'DashWallet/Sources/Infrastructure/SwiftDashSDK/**'
       - 'DashWalletTests/CoreShieldedDrainStoreTests.swift'
       - 'DashWalletTests/WalletProtocolCompatibilityTests.swift'
+      - 'DashWalletTests/SPVChainStoreRebuildTests.swift'
       - 'scripts/test_core_drain.py'
       - 'scripts/core_drain_recovery_harness.py'
       - 'scripts/test_protocol_compatibility.py'
@@ -16,6 +17,7 @@ on:
       - 'scripts/test_asset_lock_recovery.py'
       - 'scripts/test_identity_top_up_compatibility.py'
       - 'scripts/test_internal_transfer_confirmation.py'
+      - 'scripts/test_spv_start_rebuild.py'
       - 'scripts/fixtures/**'
       - '.github/workflows/core-drain-tests.yml'
   workflow_dispatch:
@@ -42,3 +44,5 @@ jobs:
           python3 scripts/test_asset_lock_recovery.py
           python3 scripts/test_identity_top_up_compatibility.py
           python3 scripts/test_internal_transfer_confirmation.py
+      - name: Test asynchronous SPV start and durable rebuild markers
+        run: python3 scripts/test_spv_start_rebuild.py
