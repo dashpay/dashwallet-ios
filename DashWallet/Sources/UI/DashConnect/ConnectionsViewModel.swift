@@ -237,6 +237,18 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+                // A link goes back through its callback; a scanned code's app
+                // is on another screen, so the user is told to go back to it.
+                if consent.login.signsInAtApproval, !pendingRequestArrivedByLink {
+                    message = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: String(
+                            format: NSLocalizedString(
+                                "Connected to %@. Go back to your browser to continue.",
+                                comment: "DashConnect: a sign-in finished at approval; the placeholder is the app's name"),
+                            consent.appLabel)
+                    )
+                }
             } catch DashConnectPlatformError.approvalOutOfDate {
                 // Another identity, wallet or network became active, or the
                 // network now answers with the other login: what the sheet

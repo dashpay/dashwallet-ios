@@ -81,6 +81,15 @@ enum AppConnect {
             case .unresolved, .refused: return false
             }
         }
+
+        /// Whether approving finishes the sign-in on the wallet's side. The
+        /// two-QR login still needs the app's key-registration code scanned.
+        var signsInAtApproval: Bool {
+            switch self {
+            case .oneQR, .appConnect: return true
+            case .twoQR, .unresolved, .refused: return false
+            }
+        }
     }
 
     /// The login a network at `protocolVersion` gets.

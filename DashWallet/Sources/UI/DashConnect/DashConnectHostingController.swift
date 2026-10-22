@@ -21,18 +21,23 @@ import SwiftUI
 import UIKit
 
 /// Hosts `ConnectionsScreen` and keeps a handle on its view model, so a
-/// `dash-key:` / `dash-st:` link that arrives while the screen is already on
-/// the stack is routed into it instead of pushing a second copy.
+/// `dash-key:` / `dash-st:` request that arrives while the screen is already
+/// on the stack is routed into it instead of pushing a second copy.
 final class DashConnectHostingController: UIHostingController<ConnectionsScreen> {
     private let viewModel: ConnectionsViewModel
     /// Held until `viewDidAppear`: the approval sheet is presented from the
     /// screen, which cannot present while it is still being pushed.
     private var pendingURI: String?
+    /// Whether `pendingURI` was read off a QR code rather than opened as a
+    /// link. A scanned code goes in as a scan, the way the screen's own
+    /// scanner hands one over.
+    private var pendingURIWasScanned = false
 
-    init(navigationController: UINavigationController, uri: String? = nil) {
+    init(navigationController: UINavigationController, uri: String? = nil, scanned: Bool = false) {
         let viewModel = ConnectionsViewModel()
         self.viewModel = viewModel
         pendingURI = uri
+        pendingURIWasScanned = scanned
 
         super.init(rootView: ConnectionsScreen(vc: navigationController, viewModel: viewModel))
     }
@@ -46,9 +51,11 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         consumePendingURI()
     }
 
-    /// Handles a link that arrived for a screen that is already on the stack.
-    func handle(uri: String) {
+    /// Handles a request that arrived for a screen that is already on the
+    /// stack: a link, or with `scanned` a code another screen's scanner read.
+    func handle(uri: String, scanned: Bool = false) {
         pendingURI = uri
+        pendingURIWasScanned = scanned
 
         if isViewLoaded, view.window != nil {
             consumePendingURI()
@@ -58,6 +65,10 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private func consumePendingURI() {
         guard let uri = pendingURI else { return }
         pendingURI = nil
-        viewModel.onURIReceived(uri)
+        if pendingURIWasScanned {
+            viewModel.onQRScanned(uri)
+        } else {
+            viewModel.onURIReceived(uri)
+        }
     }
 }

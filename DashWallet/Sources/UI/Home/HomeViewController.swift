@@ -748,7 +748,7 @@ extension HomeViewController: ShortcutsActionDelegate {
 extension HomeViewController {
     /// The Home scanner (the Scan shortcut, `dashwallet://scanqr`) also reads
     /// DashConnect codes, and opens the Connections screen with them — the
-    /// same place a tapped `dash-key:` / `dash-st:` link goes.
+    /// same place a tapped `dash-key:` / `dash-st:` link goes, but as a scan.
     ///
     /// The scan delegate is `DWBasePayViewController`; only Home answers this
     /// optional half, so the lock screen and the Send scanners keep treating
@@ -756,7 +756,7 @@ extension HomeViewController {
     @objc(qrScanModel:didScanDashConnectURI:)
     func qrScanModel(_ viewModel: DWQRScanModel, didScanDashConnectURI uri: String) {
         dismiss(animated: true) { [weak self] in
-            (self?.tabBarController as? MainTabbarController)?.openDashConnect(uri)
+            (self?.tabBarController as? MainTabbarController)?.openDashConnect(uri, scanned: true)
         }
     }
 }

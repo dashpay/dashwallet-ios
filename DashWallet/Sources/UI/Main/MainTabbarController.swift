@@ -545,11 +545,17 @@ extension MainTabbarController {
     }
 
     /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
+    @objc
+    public func openDashConnect(_ uri: String) {
+        openDashConnect(uri, scanned: false)
+    }
+
+    /// Opens the Connections screen for a `dash-key:` / `dash-st:` request:
+    /// a link, or with `scanned` a code the Home scanner read.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
-    @objc
-    public func openDashConnect(_ uri: String) {
+    func openDashConnect(_ uri: String, scanned: Bool) {
         dismiss(animated: false, completion: nil)
 
         guard let menuNav = menuNavigationController?.navigationController else { return }
@@ -559,11 +565,11 @@ extension MainTabbarController {
         }
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri)
+            connections.handle(uri: uri, scanned: scanned)
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri, scanned: scanned)
         controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }
