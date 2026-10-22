@@ -1554,14 +1554,10 @@ struct SendConfirmSheet: View {
         // instead of building a second lock (which strands the first) —
         // mirrors the internal transfer's retry.
         if route == .coreToShielded,
-           let op = coordinator.lastAssetLockOutPoint,
+           coordinator.lastAssetLockOutPoint != nil,
            let destinationRaw43 {
-            coordinator.reset()
             Task {
-                await coordinator.resumeAssetLock(
-                    outPointTxidWire: op.txidWire,
-                    outPointVout: op.vout,
-                    recipientRaw43: destinationRaw43)
+                await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
             }
             return
         }

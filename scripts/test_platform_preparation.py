@@ -11,6 +11,17 @@ host = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSD
 start = host.index("    struct PlatformPreparation {")
 end = host.index("    // MARK: - Wallet presence", start)
 methods = host[start:end]
+coordinator = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedTransferCoordinator.swift").read_text()
+
+def coordinator_method(marker):
+    start = coordinator.index(marker)
+    end = coordinator.index('{', start) + 1
+    depth = 1
+    while depth:
+        depth += (coordinator[end] == '{') - (coordinator[end] == '}')
+        end += 1
+    return coordinator[start:end]
+
 controller = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletProtocolCompatibilityController.swift").read_text()
 error_start = controller.index("enum WalletOperationPreparationError:")
 error_end = controller.index("\nprotocol WalletProtocolCompatibilityClient", error_start)
@@ -25,6 +36,8 @@ with tempfile.TemporaryDirectory(prefix="platform-preparation-tests-") as direct
     assert scaffold.count("// EXTRACTED_PRODUCTION_METHODS") == 1
     (source / "PlatformPreparationHarness.swift").write_text(
         scaffold.replace("// EXTRACTED_PRODUCTION_METHODS", methods)
+        .replace("// RETRY_METHOD", coordinator_method("    func retryLastAssetLock("))
+        .replace("// RESET_METHOD", coordinator_method("    func reset()"))
         + "\n" + controller[error_start:error_end] + "\n")
     (tests / "PlatformPreparationTests.swift").symlink_to(
         repository / "scripts/fixtures/PlatformPreparationTests.swift")

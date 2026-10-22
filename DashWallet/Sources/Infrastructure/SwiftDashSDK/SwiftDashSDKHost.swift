@@ -393,6 +393,7 @@ final class SwiftDashSDKHost {
         fileprivate let sdk: SDK
         fileprivate let runtimeID: UUID
         fileprivate let walletID: Data
+        fileprivate let network: Network
         fileprivate let protocolVersion: UInt32
     }
 
@@ -405,13 +406,31 @@ final class SwiftDashSDKHost {
               selectedWalletID == nil || selectedWalletID == walletID else {
             throw WalletOperationPreparationError.unavailable("The active wallet is not ready")
         }
-        return PlatformPreparation(sdk: sdk, runtimeID: runtimeID, walletID: walletID,
+        return PlatformPreparation(
+            sdk: sdk,
+            runtimeID: runtimeID,
+            walletID: walletID,
+            network: WalletEnvironment.network,
             protocolVersion: try sdk.protocolCompatibility().effectiveProtocolVersion)
+    }
+
+    /// Refresh only the Platform leg of an already committed asset lock.
+    /// Its original wallet/runtime must still be active; this is not a new quote.
+    func preparePlatformRecoveryOperation(matching preparation: PlatformPreparation) throws -> PlatformPreparation {
+        let current = try preparePlatformOperation()
+        guard current.runtimeID == preparation.runtimeID,
+              current.sdk === preparation.sdk,
+              current.walletID == preparation.walletID,
+              current.network == preparation.network else {
+            throw WalletOperationPreparationError.expired("Wallet session changed; reopen recovery for this transfer")
+        }
+        return current
     }
 
     func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
         let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
         guard preparation.runtimeID == runtimeID, preparation.sdk === sdk,
+              preparation.network == runningNetwork,
               runningNetwork == WalletEnvironment.network,
               preparation.walletID == wallet?.walletId,
               selectedWalletID == nil || selectedWalletID == preparation.walletID,

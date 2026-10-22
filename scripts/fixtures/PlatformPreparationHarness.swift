@@ -44,6 +44,7 @@ enum WalletEnvironment {
 
 @MainActor
 final class SwiftDashSDKHost {
+    static var shared = SwiftDashSDKHost(sdk: SDK(), walletID: Data([1]))
     var sdk: SDK?
     var runningNetwork: Network?
     var wallet: ManagedPlatformWallet?
@@ -56,4 +57,33 @@ final class SwiftDashSDKHost {
     }
 
     // EXTRACTED_PRODUCTION_METHODS
+}
+
+// Only the resume/auth boundary is controlled; retry, reset and host context
+// validation are extracted unchanged from production. No spend is performed.
+@MainActor final class RetryCoordinator {
+    enum Phase { case idle, signing, failed(String) }
+    var phase: Phase = .failed("previous failure")
+    var confirmationPreparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>?
+    var operationPreparation: SwiftDashSDKHost.PlatformPreparation?
+    var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
+    var lastFailure: Error?
+    var lastResumeReport: Int?
+    var attempted: [(Data, UInt32, Data)] = []
+    var authorized: [(Data, UInt32, Data)] = []
+    var onAuthorize: () -> Void = {}
+    func stopAssetLockPolling() {}
+    func handleFailure(_ error: Error) { lastFailure = error; phase = .failed(error.localizedDescription) }
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43: Data) async {
+        phase = .signing
+        attempted.append((outPointTxidWire, outPointVout, recipientRaw43))
+        onAuthorize()
+        do {
+            try SwiftDashSDKHost.shared.validatePlatformOperation(confirmationPreparation!.get())
+            authorized.append((outPointTxidWire, outPointVout, recipientRaw43))
+            throw NSError(domain: "controlled-resume-failure", code: 1)
+        } catch { handleFailure(error) }
+    }
+    // RETRY_METHOD
+    // RESET_METHOD
 }

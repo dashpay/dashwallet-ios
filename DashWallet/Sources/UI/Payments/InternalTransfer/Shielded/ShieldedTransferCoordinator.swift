@@ -1484,6 +1484,30 @@ final class ShieldedTransferCoordinator: ObservableObject {
         schedulePlatformResync()
     }
 
+    /// Explicit retry of the same committed lock and recipient. Refresh the
+    /// operation version only within the original wallet/runtime, then use the
+    /// normal authorization and post-authorization validation in resumeAssetLock.
+    func retryLastAssetLock(recipientRaw43: Data) async {
+        guard case .failed = phase, let outpoint = lastAssetLockOutPoint else { return }
+        do {
+            guard let original = try confirmationPreparation?.get() else {
+                throw WalletOperationPreparationError.expired("Review and confirm the operation again")
+            }
+            let current = try SwiftDashSDKHost.shared.preparePlatformRecoveryOperation(matching: original)
+            reset()
+            confirmationPreparation = .success(current)
+            // Keep the committed lock through another refusal or cancelled PIN.
+            // A later retry must never fall back to building a replacement.
+            lastAssetLockOutPoint = outpoint
+            await resumeAssetLock(
+                outPointTxidWire: outpoint.txidWire,
+                outPointVout: outpoint.vout,
+                recipientRaw43: recipientRaw43)
+        } catch {
+            handleFailure(error)
+        }
+    }
+
     /// Reset to `.idle` so the user can retry from a `.failed` state.
     /// Keeps no in-flight observers — the FFI calls themselves are
     /// uncancellable, so this just resets UI state.
