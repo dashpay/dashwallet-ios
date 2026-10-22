@@ -35,11 +35,11 @@ struct ManagedPlatformWallet {
 
 @MainActor
 enum WalletEnvironment {
-    static var network = Network.mainnet
-    static var networkKind: Network { network }
+    static var network: Network? = .mainnet
+    static var networkKind: Network? { network }
     static var selectedWalletID: Data?
 
-    static func activeWalletId(for network: Network) -> Data? { selectedWalletID }
+    static func activeWalletId(for network: Network?) -> Data? { selectedWalletID }
 }
 
 @MainActor

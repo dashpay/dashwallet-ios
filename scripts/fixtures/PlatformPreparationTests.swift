@@ -162,6 +162,7 @@ final class PlatformPreparationTests: XCTestCase {
         let mutations: [(SwiftDashSDKHost) -> Void] = [
             { $0.sdk = nil },
             { $0.runningNetwork = nil },
+            { $0.runningNetwork = nil; WalletEnvironment.network = nil },
             { $0.runningNetwork = .testnet },
             { $0.wallet = nil; WalletEnvironment.selectedWalletID = nil },
         ]

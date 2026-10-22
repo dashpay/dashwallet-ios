@@ -401,7 +401,7 @@ final class SwiftDashSDKHost {
     /// The status and generation of informational checks are deliberately ignored.
     func preparePlatformOperation() throws -> PlatformPreparation {
         let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
-        guard let sdk, runningNetwork == WalletEnvironment.network,
+        guard let sdk, let network = runningNetwork, network == WalletEnvironment.network,
               let walletID = wallet?.walletId,
               selectedWalletID == nil || selectedWalletID == walletID else {
             throw WalletOperationPreparationError.unavailable("The active wallet is not ready")
@@ -410,7 +410,7 @@ final class SwiftDashSDKHost {
             sdk: sdk,
             runtimeID: runtimeID,
             walletID: walletID,
-            network: WalletEnvironment.network,
+            network: network,
             protocolVersion: try sdk.protocolCompatibility().effectiveProtocolVersion)
     }
 
