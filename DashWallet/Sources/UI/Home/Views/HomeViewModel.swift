@@ -1418,7 +1418,7 @@ extension HomeViewModel {
             _ = try await WalletSendService.shared.sweepCoinJoin()
             return nil
         } catch {
-            DWLogger.log("HomeViewModel: sweep (home popup) failed: \(error)")
+            DWLogger.log("HomeViewModel: sweep (home popup) failed: \(WalletSendService.coinJoinSweepLogLine(for: error))")
             // nil when the user cancelled auth; a message on real failures.
             return WalletSendService.coinJoinSweepUserMessage(for: error)
         }

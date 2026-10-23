@@ -2367,6 +2367,8 @@
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "На овој идентитет сè уште нема кориснички имиња. Најдете некое за купување или регистрација во картичката „Најди имиња“.";
 
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Нема доволно средства на ова салдо: потребни се %@ DASH, достапни се %@ DASH.";
 
@@ -6604,6 +6606,11 @@
 "Sign in to %@ again?" = "Sign in to %@ again?";
 "Sole Requester" = "Sole Requester";
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
+"Preparing your coins" = "Preparing your coins";
+"Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
+"We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through." = "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.";
+"Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
+"Your mixed coins are locked for the Shielded balance. Please try again to finish moving them." = "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.";
 "Some votes already cast" = "Some votes already cast";
 "Special Purpose Account" = "Special Purpose Account";
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";

@@ -1089,6 +1089,9 @@
 /* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
 "Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Sold for %1$@ DASH · %2$@ · %3$@ → %4$@";
 
+/* CoinJoin */
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
+
 /* Username marketplace: browse row whose name is no longer listed */
 "Not for sale now" = "Not for sale now";
 
@@ -3060,6 +3063,9 @@
 
 /* Send dispatched but no network acceptance signal arrived */
 "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
+
+/* CoinJoin sweep dispatched but no network acceptance signal arrived for some of it */
+"We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through." = "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.";
 
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
@@ -6409,6 +6415,16 @@
 "Sign in to %@ again?" = "Sign in to %@ again?";
 "Sole Requester" = "Sole Requester";
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
+
+/* CoinJoin */
+"Preparing your coins" = "Preparing your coins";
+
+/* CoinJoin */
+"Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
+
+/* CoinJoin */
+"Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
+"Your mixed coins are locked for the Shielded balance. Please try again to finish moving them." = "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.";
 "Some votes already cast" = "Some votes already cast";
 "Special Purpose Account" = "Special Purpose Account";
 "Still calculating the withdrawable amount. Tap Max again in a moment." = "Still calculating the withdrawable amount. Tap Max again in a moment.";
