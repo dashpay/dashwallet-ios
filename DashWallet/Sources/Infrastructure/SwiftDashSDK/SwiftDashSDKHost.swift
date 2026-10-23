@@ -255,6 +255,21 @@ protocol CoinJoinRecoveryFlagResetting: AnyObject {
 
 extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
 
+/// The app-global "first historical sync after a restore" gate: while it is
+/// armed and `SyncingActivityMonitor` has not reached `.syncDone`, new Core
+/// spends are refused (`WalletSendService.isBlockedByInitialRestoreSync`).
+/// Production is `DWGlobalOptions.isResyncingWallet`; the phrase restore
+/// arms it in `DWRecoverWalletCommand`, keychain recovery arms it here, and
+/// the monitor clears it at the first `.syncDone`.
+@MainActor
+protocol InitialRestoreSyncGating: AnyObject {
+    func armInitialRestoreSyncGate()
+}
+
+extension DWGlobalOptions: InitialRestoreSyncGating {
+    func armInitialRestoreSyncGate() { isResyncingWallet = true }
+}
+
 extension SwiftDashSDKHost {
     /// What the restore flow and the reset preflight read beside the SDK
     /// runtime. Production reads the keychain, `WalletEnvironment`'s
@@ -265,6 +280,7 @@ extension SwiftDashSDKHost {
         var material: any SwiftDashSDKWalletMaterialReading
         var registry: any SwiftDashSDKActiveWalletRegistry
         var coinJoinRecovery: any CoinJoinRecoveryFlagResetting
+        var restoreSyncGate: any InitialRestoreSyncGating
         var localStoreRoots: () throws -> WalletLocalStoreRoots
 
         @MainActor
@@ -273,6 +289,7 @@ extension SwiftDashSDKHost {
                 material: SwiftDashSDKKeychainWalletMaterial(),
                 registry: WalletEnvironmentActiveWalletRegistry(),
                 coinJoinRecovery: CoinJoinRecovery.shared,
+                restoreSyncGate: DWGlobalOptions.sharedInstance(),
                 localStoreRoots: { try WalletLocalStoreRoots.inDocuments() })
         }
     }
@@ -780,11 +797,21 @@ final class SwiftDashSDKHost {
             // through this branch.
             collaborators.coinJoinRecovery.resetRecoveryFlag(scope: network.persistenceScope)
             do {
-                var recovered = try recoverPersistedWallet(in: rows, network: network)
+                let keychainRecovered = try recoverPersistedWallet(in: rows, network: network)
+                var recovered = keychainRecovered
                 if recovered == nil, network == .devnet {
                     recovered = await provisionDevnet()
                 }
                 guard let recovered else { throw HostError.walletNotFound(network) }
+                if keychainRecovered != nil {
+                    // The rows were recreated at the import floor, so the scan
+                    // that follows is a historical one and a Core spend could
+                    // select an input it has not yet seen spent (ios#1227).
+                    // Arm the same gate the phrase restore arms; the monitor
+                    // clears it at the first `.syncDone`. Only for keychain
+                    // rows: first-entry devnet provisioning keeps its policy.
+                    collaborators.restoreSyncGate.armInitialRestoreSyncGate()
+                }
                 // Existing keychain wallets must all recover before clearing
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
