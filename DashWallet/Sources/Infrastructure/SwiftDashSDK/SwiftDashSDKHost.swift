@@ -350,6 +350,7 @@ final class SwiftDashSDKHost {
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
+    private var runtimeID = UUID()
     private let storeLifetimes = WalletLocalStoreLifetimeBarrier()
     /// Monotonic for this process. Native destroy may leave storage workers
     /// alive, including SPV workers without a Swift persistence callback.
@@ -455,6 +456,64 @@ final class SwiftDashSDKHost {
         case .testnet: return 14
         case .mainnet, .devnet, .regtest: return 0
         }
+    }
+
+    struct PlatformPreparation {
+        fileprivate let sdk: SDK
+        fileprivate let runtimeID: UUID
+        fileprivate let walletID: Data
+        fileprivate let network: Network
+        fileprivate let protocolVersion: UInt32
+    }
+
+    /// Bind a displayed quote to the actual wallet/runtime and operation version.
+    /// The status and generation of informational checks are deliberately ignored.
+    func preparePlatformOperation() throws -> PlatformPreparation {
+        let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
+        guard let sdk, let network = runningNetwork, network == WalletEnvironment.network,
+              let walletID = wallet?.walletId,
+              selectedWalletID == nil || selectedWalletID == walletID else {
+            throw WalletOperationPreparationError.unavailable("The active wallet is not ready")
+        }
+        return PlatformPreparation(
+            sdk: sdk,
+            runtimeID: runtimeID,
+            walletID: walletID,
+            network: network,
+            protocolVersion: try sdk.protocolVersionInfo().effectiveVersion)
+    }
+
+    /// Refresh only the Platform leg of an already committed asset lock.
+    /// Its original wallet/runtime must still be active; this is not a new quote.
+    func preparePlatformRecoveryOperation(matching preparation: PlatformPreparation) throws -> PlatformPreparation {
+        let current = try preparePlatformOperation()
+        guard current.runtimeID == preparation.runtimeID,
+              current.sdk === preparation.sdk,
+              current.walletID == preparation.walletID,
+              current.network == preparation.network else {
+            throw WalletOperationPreparationError.expired("Wallet session changed; reopen recovery for this transfer")
+        }
+        return current
+    }
+
+    func validatePlatformOperation(_ preparation: PlatformPreparation) throws {
+        let selectedWalletID = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
+        guard preparation.runtimeID == runtimeID, preparation.sdk === sdk,
+              preparation.network == runningNetwork,
+              runningNetwork == WalletEnvironment.network,
+              preparation.walletID == wallet?.walletId,
+              selectedWalletID == nil || selectedWalletID == preparation.walletID,
+              preparation.protocolVersion == (try preparation.sdk.protocolVersionInfo()).effectiveVersion else {
+            throw WalletOperationPreparationError.expired("Wallet or operation version changed; review and confirm again")
+        }
+    }
+
+    func withPlatformOperation<T>(
+        preparation: PlatformPreparation,
+        operation: () async throws -> T
+    ) async throws -> T {
+        try validatePlatformOperation(preparation)
+        return try await operation()
     }
 
     // MARK: - Wallet presence
@@ -1289,6 +1348,7 @@ final class SwiftDashSDKHost {
     /// invariant doesn't hold here.
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        runtimeID = UUID()
         protocolCompatibility.detach()
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
@@ -1329,6 +1389,7 @@ final class SwiftDashSDKHost {
     // MARK: - Runtime bootstrap
 
     private func buildRuntime(for network: Network) async throws -> RuntimeHandles {
+        runtimeID = UUID()
         if manager != nil {
             await stopAsync()
         }
@@ -2161,5 +2222,15 @@ enum GeneratedWalletIdentityMarker {
 
     static func clear(walletId: Data, defaults: UserDefaults = .standard) {
         defaults.removeObject(forKey: key(walletId: walletId))
+    }
+}
+
+enum WalletOperationPreparationError: LocalizedError {
+    case unavailable(String)
+    case expired(String)
+    var errorDescription: String? {
+        switch self {
+        case .unavailable(let message), .expired(let message): return message
+        }
     }
 }

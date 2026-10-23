@@ -120,21 +120,38 @@ enum CoreToShieldedAmountPolicy {
     /// (50_000 duffs) × 1000 credits/duff.
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
-    /// Estimated on every read, not cached: the fee follows the running
-    /// manager's protocol version, which differs between networks (see
-    /// `SwiftDashSDKHost.platformVersion(for:)`) and rises in place on an
-    /// auto-detected network once a proof shows a newer one. The estimate is a
-    /// local computation in the SDK with no network round-trip, read per
-    /// render like `CoreToPlatformAmountPolicy.currentReserveCredits`.
+    /// Reuse the quote only while its native preparation remains valid.
+    /// A changed effective version or runtime invalidates it even when
+    /// the amount form remains open across that change.
+    private static var cachedPoolFee: (
+        preparation: SwiftDashSDKHost.PlatformPreparation, credits: UInt64?
+    )?
+
     static var poolFeeCredits: UInt64? {
-        poolFeeCredits(addingBaseCostTo: try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
+        let host = SwiftDashSDKHost.shared
+        if let cached = cachedPoolFee {
+            if (try? host.validatePlatformOperation(cached.preparation)) != nil {
+                return cached.credits
+            }
+            cachedPoolFee = nil
+        }
+        guard let preparation = try? host.preparePlatformOperation(),
+              let shieldedFee = try? host.manager?.estimateShieldedFee(
             kind: .transfer,
-            numActions: 2))
+            numActions: 2),
+              (try? host.validatePlatformOperation(preparation)) != nil
+        else {
+            // Not cached: a failed estimate is a transient FFI condition, and
+            // caching it would keep the screen permanently unusable.
+            return nil
+        }
+
+        let value = poolFeeCredits(addingBaseCostTo: shieldedFee)
+        cachedPoolFee = (preparation, value)
+        return value
     }
 
-    /// A ShieldFromAssetLock pool fee from the shielded fee for the fixed
-    /// `(transfer, 2)` shape: that fee plus the asset-lock base cost; nil
-    /// when there is no estimate or the sum overflows, so callers fail closed.
+    /// Pure fee arithmetic shared with the current develop regression tests.
     static func poolFeeCredits(addingBaseCostTo shieldedFeeCredits: UInt64?) -> UInt64? {
         guard let shieldedFeeCredits else { return nil }
         let (total, overflow) = shieldedFeeCredits.addingReportingOverflow(assetLockBaseCostCredits)
@@ -1147,7 +1164,18 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func routeDidChange() {
+        withdrawalPreflightTask?.cancel()
+        withdrawalPreflightTask = nil
+        withdrawalPreflight = nil
+        withdrawalPreflightFailed = false
+        cancelPlatformShieldPreflight()
+        shieldedSpendCeilingCredits = nil
+        platformIdentityFundableDuffs = nil
+        platformPreparation = nil
         clearMaxSelection()
+        guard let preparation = try? SwiftDashSDKHost.shared.preparePlatformOperation()
+        else { return }
+        platformPreparation = preparation
         refreshShieldedSpendCeiling()
         refreshIdentityPlatformCeiling()
 
@@ -1240,7 +1268,7 @@ final class InternalTransferViewModel: ObservableObject {
         #if DEBUG
         if isPreviewInstance { return }
         #endif
-        guard isIdentityDestination, source == .platform else {
+        guard hasCurrentPlatformPreparation, isIdentityDestination, source == .platform else {
             platformIdentityFundableDuffs = nil
             return
         }
@@ -1248,8 +1276,8 @@ final class InternalTransferViewModel: ObservableObject {
             platformIdentityFundableDuffs = nil
             return
         }
-        platformIdentityFundableDuffs =
-            PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: candidates)
+        let ceiling = PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: candidates)
+        platformIdentityFundableDuffs = hasCurrentPlatformPreparation ? ceiling : nil
     }
 
     /// Net payout of the full-balance (Max) Platform → Core withdrawal, in
@@ -1325,7 +1353,25 @@ final class InternalTransferViewModel: ObservableObject {
     /// the sync monitor singleton.
     @Published private(set) var isChainSynced = false
 
+    /// The same wallet/runtime and operation version cover quotes and confirmation.
+    private var platformPreparation: SwiftDashSDKHost.PlatformPreparation?
+
+    func platformPreparationForConfirmation() throws -> SwiftDashSDKHost.PlatformPreparation {
+        guard let platformPreparation else {
+            throw WalletOperationPreparationError.expired("Review the amount and confirm again")
+        }
+        try SwiftDashSDKHost.shared.validatePlatformOperation(platformPreparation)
+        return platformPreparation
+    }
+
+    private var hasCurrentPlatformPreparation: Bool {
+        #if DEBUG
+        if isPreviewInstance { return true }
+        #endif
+        return (try? platformPreparationForConfirmation()) != nil
+    }
     private var cancellables = Set<AnyCancellable>()
+
 
     #if DEBUG
     /// Stands in for `DWGlobalOptions.isResyncingWallet` in a canvas.
@@ -1426,6 +1472,7 @@ final class InternalTransferViewModel: ObservableObject {
         // picker lists the identity's balance alongside the other three, so
         // the number has to be there before the destination is selected.
         refreshIdentitySnapshot()
+        routeDidChange()
     }
 
     #if DEBUG
@@ -1550,11 +1597,12 @@ final class InternalTransferViewModel: ObservableObject {
     /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
     /// Cached rather than computed per keystroke — it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
-        guard let feeKind = activeShieldedFeeKind else {
+        guard hasCurrentPlatformPreparation, let feeKind = activeShieldedFeeKind else {
             shieldedSpendCeilingCredits = nil
             return
         }
-        shieldedSpendCeilingCredits = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
+        let ceiling = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
+        shieldedSpendCeilingCredits = hasCurrentPlatformPreparation ? ceiling : nil
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -1895,6 +1943,7 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
+        guard hasCurrentPlatformPreparation else { return false }
         if isCoreShieldedDrain {
             return route == .coreToShielded && !isIdentitySource && !isIdentityDestination
                 && isChainSynced && !isCoreDrainLoading && !coreDrainPending
@@ -2247,6 +2296,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        guard hasCurrentPlatformPreparation else {
+            clearMaxSelection()
+            maxNotice = Self.feeEstimateUnavailableMessage
+            return
+        }
         if route == .coreToShielded, !isIdentitySource, !isIdentityDestination {
             clearMaxSelection()
             isCoreShieldedDrain = true
@@ -2477,11 +2531,19 @@ final class InternalTransferViewModel: ObservableObject {
     /// of `routeDidChange` so Max can retry a preflight that failed, instead of
     /// leaving the route stuck at 0 until the user toggles the route.
     private func startWithdrawalPreflightIfNeeded() {
-        guard route == .platformToCore, withdrawalPreflightTask == nil else { return }
+        guard !isIdentitySource, !isIdentityDestination,
+              route == .platformToCore, withdrawalPreflightTask == nil,
+              let preparation = try? platformPreparationForConfirmation() else { return }
+        withdrawalPreflight = nil
         withdrawalPreflightFailed = false
         withdrawalPreflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
             guard let self, !Task.isCancelled else { return }
+            guard (try? SwiftDashSDKHost.shared.validatePlatformOperation(preparation)) != nil else {
+                self.withdrawalPreflight = nil
+                self.withdrawalPreflightTask = nil
+                return
+            }
             self.withdrawalPreflight = result
             self.withdrawalPreflightFailed = result == nil
             self.withdrawalPreflightTask = nil
@@ -2521,7 +2583,9 @@ final class InternalTransferViewModel: ObservableObject {
     private func refreshPlatformShieldPreflight(
         after event: PlatformShieldAmountPolicy.PreflightRefreshEvent = .other
     ) {
-        guard route == .platformToShielded,
+        guard !isIdentitySource, !isIdentityDestination,
+              route == .platformToShielded,
+              let preparation = try? platformPreparationForConfirmation(),
               PlatformShieldAmountPolicy.shouldRefreshPreflight(
                 after: event,
                 awaitingPlatformResync: awaitingPlatformShieldResync)
@@ -2549,6 +2613,7 @@ final class InternalTransferViewModel: ObservableObject {
                       self.platformShieldPreflightGeneration == generation
                 else { return }
 
+                try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
                 let capacity = PlatformShieldCapacity(result)
                 self.platformShieldCapacity = capacity
                 self.isPlatformShieldPreflightLoading = false

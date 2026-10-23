@@ -260,6 +260,14 @@ public final class DWIdentityRegistrationBridge: NSObject {
         _ username: String,
         completion: @escaping (String?, NSError?) -> Void
     ) {
+        startCreateUsername(username, preparation: nil, completion: completion)
+    }
+
+    func startCreateUsername(
+        _ username: String,
+        preparation: SwiftDashSDKHost.PlatformPreparation?,
+        completion: @escaping (String?, NSError?) -> Void
+    ) {
         let source = preferredFundingSource
         let temporaryUsername = sanitizedTemporaryUsername(for: username)
         let verificationURL = sanitizedVerificationURL(for: username)
@@ -272,7 +280,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
                     fundingSource: source,
                     temporaryUsername: temporaryUsername,
                     verificationURL: verificationURL,
-                    authorizedTopUpDuffs: authorizedTopUpDuffs)
+                    authorizedTopUpDuffs: authorizedTopUpDuffs, preparation: preparation)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {

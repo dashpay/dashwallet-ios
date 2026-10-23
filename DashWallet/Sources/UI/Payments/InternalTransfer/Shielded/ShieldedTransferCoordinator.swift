@@ -268,6 +268,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Consumed) without burning CPU.
     private static let assetLockPollInterval: TimeInterval = 0.5
 
+    private var confirmationPreparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>?
+    private var operationPreparation: SwiftDashSDKHost.PlatformPreparation?
+
+    init(confirmationPreparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>? = nil) {
+        self.confirmationPreparation = confirmationPreparation
+    }
+
+    /// The shared runner binds the already quoted generation before handing off.
+    func bindConfirmationPreparation(_ preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>) {
+        guard case .idle = phase else { return }
+        confirmationPreparation = preparation
+    }
+
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
@@ -513,6 +526,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             guard SyncingActivityMonitor.shared.state == .syncDone else {
                 throw CoreShieldedDrainService.ServiceError.requiresSync
             }
+            // The status lookup above can suspend while the host replaces its
+            // runtime or changes the effective operation version. Recheck the
+            // user's confirmation before persisting a new drain operation.
+            guard let operationPreparation else {
+                throw WalletOperationPreparationError.expired("Review and confirm the operation again")
+            }
+            try SwiftDashSDKHost.shared.validatePlatformOperation(operationPreparation)
             env = try resolveEnvironment()
             operation = try service.prepare(confirmation.context)
         } catch {
@@ -655,15 +675,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     // Unreachable: the entry guard derives it for every .bip44.
                     throw CoordinatorError.shieldedPoolFeeUnavailable
                 }
-                try await env.manager.shieldedFundFromAssetLock(
-                    walletId: env.walletId,
-                    fundingAccountIndex: 0,
-                    amountDuffs: lockValueDuffs,
-                    recipients: [recipient])
+                try await performPrepared {
+                    try await env.manager.shieldedFundFromAssetLock(
+                        walletId: env.walletId,
+                        fundingAccountIndex: 0,
+                        amountDuffs: lockValueDuffs,
+                        recipients: [recipient])
+                }
             case .coinJoinDrain:
-                try await env.manager.shieldedFundFromCoinJoinDrain(
-                    walletId: env.walletId,
-                    recipients: [recipient])
+                try await performPrepared {
+                    try await env.manager.shieldedFundFromCoinJoinDrain(
+                        walletId: env.walletId,
+                        recipients: [recipient])
+                }
             }
         } catch {
             stopAssetLockPolling()
@@ -702,7 +726,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, expectedDrainContext: CoreShieldedDrainContext? = nil) async {
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, expectedDrainContext: CoreShieldedDrainContext? = nil, retryUnverifiedConsumption: Bool = false) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
@@ -711,6 +735,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
             env = try resolveEnvironment()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        // Capture the runtime's wallet before any suspension. Both the recovery
+        // sheet and the bulk service enter here; neither may lose this advisory
+        // result when its presenter closes or file it under a newly active wallet.
+        let probeWalletIdHex = env.walletId.map { String(format: "%02x", $0) }.joined()
+        if !retryUnverifiedConsumption,
+           AssetLockProbeStore.shared.contains(outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex) {
+            lastResumeReport = .alreadyConsumed
+            phase = .submittedUnconfirmed
             return
         }
 
@@ -740,11 +775,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             let recipient = ShieldedFundFromAssetLockRecipient(
                 recipientRaw43: recipientOverride ?? env.shieldedRecipient,
                 credits: nil)
-            try await env.manager.shieldedResumeFundFromAssetLock(
-                walletId: env.walletId,
-                outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout,
-                recipients: [recipient])
+            try await performPrepared {
+                try await env.manager.shieldedResumeFundFromAssetLock(
+                    walletId: env.walletId,
+                    outPointTxid: outPointTxidWire,
+                    outPointVout: outPointVout,
+                    recipients: [recipient])
+            }
             terminalPhase = .success
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
@@ -754,9 +791,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // A DAPI endpoint reported this exact outpoint as consumed, but
             // rejection responses are not quorum-authenticated. Rust retains
             // the ChainLock proof and records nonterminal consumption-unknown
-            // state, so suppress retries without claiming verified success.
+            // state, so suppress bulk retries without claiming verified success.
+            // A later explicit action can authorize another probe of this outpoint.
             terminalPhase = mappedPhase
             lastResumeReport = .alreadyConsumed
+            AssetLockProbeStore.shared.record(txid: outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex)
             Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
@@ -871,7 +910,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -890,20 +929,24 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         do {
             if let recipientRaw43 {
-                try await env.manager.shieldedShieldToRecipient(
-                    walletId: env.walletId,
-                    shieldedAccount: 0,
-                    paymentAccount: 0,
-                    recipientRaw43: recipientRaw43,
-                    amount: amountCredits,
-                    addressSigner: signer)
+                try await performPrepared {
+                    try await env.manager.shieldedShieldToRecipient(
+                        walletId: env.walletId,
+                        shieldedAccount: 0,
+                        paymentAccount: 0,
+                        recipientRaw43: recipientRaw43,
+                        amount: amountCredits,
+                        addressSigner: signer)
+                }
             } else {
-                try await env.manager.shieldedShield(
-                    walletId: env.walletId,
-                    shieldedAccount: 0,
-                    paymentAccount: 0,
-                    amount: amountCredits,
-                    addressSigner: signer)
+                try await performPrepared {
+                    try await env.manager.shieldedShield(
+                        walletId: env.walletId,
+                        shieldedAccount: 0,
+                        paymentAccount: 0,
+                        amount: amountCredits,
+                        addressSigner: signer)
+                }
             }
         } catch {
             if case PlatformWalletError.shieldedInsufficientBalance = error {
@@ -1003,15 +1046,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedWithdraw(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority (seedless shielded
-                // bind, platform #4125/#4126); the SDK holds the resolver
-                // alive across the FFI call via withExtendedLifetime.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toCoreAddress: coreAddress,
-                amount: submittedAmount)
+            try await performPrepared {
+                try await env.manager.shieldedWithdraw(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority (seedless shielded
+                    // bind, platform #4125/#4126); the SDK holds the resolver
+                    // alive across the FFI call via withExtendedLifetime.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toCoreAddress: coreAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
@@ -1108,13 +1153,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedUnshield(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see above.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toPlatformAddress: platformAddress,
-                amount: submittedAmount)
+            try await performPrepared {
+                try await env.manager.shieldedUnshield(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see above.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toPlatformAddress: platformAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // The transition may already have credited our Platform address.
             // There is no proof height on this ambiguous path, so never invent
@@ -1191,9 +1238,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(
-                recipientAmountDuffs: recipientAmountDuffs,
-                lockValueDuffs: lockValueDuffs)
+            try await performPrepared {
+                try await PlatformAddressSyncCoordinator.shared.fundFromCore(
+                    recipientAmountDuffs: recipientAmountDuffs,
+                    lockValueDuffs: lockValueDuffs)
+            }
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
@@ -1201,7 +1250,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 modelContainer: env.modelContainer,
                 since: startTime,
                 fundingType: Self.addressAssetLockFundingType)
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1246,12 +1295,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
-                outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout,
-                recipientAmountDuffs: recipientAmountDuffs)
+            try await performPrepared {
+                try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
+                    outPointTxid: outPointTxidWire,
+                    outPointVout: outPointVout,
+                    recipientAmountDuffs: recipientAmountDuffs)
+            }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1307,15 +1358,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         do {
             if fullBalance {
-                try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
+                try await performPrepared {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
+                }
             } else {
-                try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
-                    amountCredits: amountCredits,
-                    address: coreAddress,
-                    feeHeadroomCredits: feeHeadroomCredits)
+                try await performPrepared {
+                    try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
+                        amountCredits: amountCredits,
+                        address: coreAddress,
+                        feeHeadroomCredits: feeHeadroomCredits)
+                }
             }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1376,13 +1431,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedTransfer(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see `performWithdraw`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                recipientRaw43: recipientRaw43,
-                amount: submittedAmount)
+            try await performPrepared {
+                try await env.manager.shieldedTransfer(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see `performWithdraw`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: submittedAmount)
+            }
         } catch {
             handleSpendError(error, manager: env.manager)
             return
@@ -1412,17 +1469,53 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
 
         do {
-            try await PlatformSendExecutor.shared.transfer(
-                destination: destination,
-                amount: amountCredits)
+            try await performPrepared {
+                try await PlatformSendExecutor.shared.transfer(
+                    destination: destination,
+                    amount: amountCredits)
+            }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: platform→platform send completed")
         phase = .success
         schedulePlatformResync()
+    }
+
+    /// Explicit retry of the same committed lock and recipient. Refresh the
+    /// operation version only within the original wallet/runtime, then use the
+    /// normal authorization and post-authorization validation in resumeAssetLock.
+    func retryLastAssetLock(recipientRaw43: Data? = nil) async {
+        guard case .failed = phase, let outpoint = lastAssetLockOutPoint else { return }
+        do {
+            guard let original = try confirmationPreparation?.get() ?? operationPreparation else {
+                throw WalletOperationPreparationError.expired("Review and confirm the operation again")
+            }
+            let current = try SwiftDashSDKHost.shared.preparePlatformRecoveryOperation(matching: original)
+            reset()
+            confirmationPreparation = .success(current)
+            // Keep the committed lock through another refusal or cancelled PIN.
+            // A later retry must never fall back to building a replacement.
+            lastAssetLockOutPoint = outpoint
+            await resumeAssetLock(
+                outPointTxidWire: outpoint.txidWire,
+                outPointVout: outpoint.vout,
+                recipientRaw43: recipientRaw43,
+                retryUnverifiedConsumption: true)
+        } catch {
+            handleFailure(error)
+        }
+    }
+
+    /// A rejected local snapshot needs a fresh quote and user confirmation.
+    var requiresFreshConfirmation: Bool {
+        guard let lastFailure else { return false }
+        if case CoordinatorError.transferFailed(let cause) = lastFailure {
+            return cause is WalletOperationPreparationError
+        }
+        return lastFailure is WalletOperationPreparationError
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.
@@ -1433,6 +1526,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastFailure = nil
         lastResumeReport = nil
+        operationPreparation = nil
         phase = .idle
     }
 
@@ -1507,6 +1601,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
             Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
             return false
         }
+        do {
+            let preparation = try confirmationPreparation?.get()
+                ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+            try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+            operationPreparation = preparation
+        } catch {
+            handleFailure(error)
+            return false
+        }
         lastFailure = nil
         lastResumeReport = nil
         phase = .signing
@@ -1524,6 +1627,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         } catch {
             throw CoordinatorError.authFailed
         }
+        if let operationPreparation {
+            try SwiftDashSDKHost.shared.validatePlatformOperation(operationPreparation)
+        }
+    }
+
+    /// Recheck the user's wallet/runtime and operation version before submission.
+    private func performPrepared<T>(_ operation: () async throws -> T) async throws -> T {
+        guard let operationPreparation else {
+            throw WalletOperationPreparationError.expired("Review and confirm the operation again")
+        }
+        return try await SwiftDashSDKHost.shared.withPlatformOperation(
+            preparation: operationPreparation, operation: operation)
     }
 
     private func handleFailure(_ error: Error) {
@@ -1550,6 +1665,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
             phase = .submittedUnconfirmed
             scheduleShieldedResync(manager: manager)
         } else {
+            handlePlatformSpendError(error)
+        }
+    }
+
+    /// An ambiguous broadcast cannot prove the dispatch did not execute.
+    /// Keep the submitted state so this sheet never offers a fresh payment.
+    private func handlePlatformSpendError(_ error: Error) {
+        switch error {
+        case PlatformWalletError.transactionBroadcastUnconfirmed:
+            phase = .submittedUnconfirmed
+            schedulePlatformResync()
+            if let manager = SwiftDashSDKHost.shared.manager {
+                scheduleShieldedResync(manager: manager)
+            }
+        default:
             handleFailure(CoordinatorError.transferFailed(error))
         }
     }
