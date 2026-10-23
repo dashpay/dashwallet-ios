@@ -255,6 +255,48 @@ protocol CoinJoinRecoveryFlagResetting: AnyObject {
 
 extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
 
+/// The app-global "first historical sync after a restore" gate: while it is
+/// armed and `SyncingActivityMonitor` has not reached `.syncDone`, new Core
+/// spends are refused (`WalletSendService.isBlockedByInitialRestoreSync`).
+/// Production is `DWGlobalOptions.isResyncingWallet`; the phrase restore
+/// arms it in `DWRecoverWalletCommand` for every network, keychain recovery
+/// arms it here for one `persistenceScope`, and the monitor clears it at
+/// the first `.syncDone` of the scope that armed it.
+@MainActor
+protocol InitialRestoreSyncGating: AnyObject {
+    func armInitialRestoreSyncGate(scope: String)
+}
+
+extension DWGlobalOptions: InitialRestoreSyncGating {
+    /// The persisted gate: `resyncingWallet` plus `resyncingWalletScopes`.
+    var initialRestoreSyncGate: InitialRestoreSyncGate {
+        get { InitialRestoreSyncGate(isArmed: isResyncingWallet, scopes: resyncingWalletScopes) }
+        set {
+            resyncingWalletScopes = newValue.scopes
+            isResyncingWallet = newValue.isArmed
+        }
+    }
+
+    /// The gate as the current network's send surfaces see it: armed for
+    /// every network, or for the network currently selected. An arm left
+    /// behind by another network's unfinished scan does not block this one.
+    var isResyncingCurrentNetworkWallet: Bool {
+        initialRestoreSyncGate.blocks(scope: WalletEnvironment.network?.persistenceScope)
+    }
+
+    func armInitialRestoreSyncGate(scope: String) {
+        initialRestoreSyncGate = initialRestoreSyncGate.arming(scope: scope)
+    }
+
+    /// `.syncDone` on `scope`. No write while the gate is disarmed, so the
+    /// monitor's per-tick `.syncDone` costs nothing in the common case.
+    func clearInitialRestoreSyncGate(scope: String?) {
+        let gate = initialRestoreSyncGate
+        guard gate.isArmed else { return }
+        initialRestoreSyncGate = gate.clearing(scope: scope)
+    }
+}
+
 extension SwiftDashSDKHost {
     /// What the restore flow and the reset preflight read beside the SDK
     /// runtime. Production reads the keychain, `WalletEnvironment`'s
@@ -265,6 +307,7 @@ extension SwiftDashSDKHost {
         var material: any SwiftDashSDKWalletMaterialReading
         var registry: any SwiftDashSDKActiveWalletRegistry
         var coinJoinRecovery: any CoinJoinRecoveryFlagResetting
+        var restoreSyncGate: any InitialRestoreSyncGating
         var localStoreRoots: () throws -> WalletLocalStoreRoots
 
         @MainActor
@@ -273,6 +316,7 @@ extension SwiftDashSDKHost {
                 material: SwiftDashSDKKeychainWalletMaterial(),
                 registry: WalletEnvironmentActiveWalletRegistry(),
                 coinJoinRecovery: CoinJoinRecovery.shared,
+                restoreSyncGate: DWGlobalOptions.sharedInstance(),
                 localStoreRoots: { try WalletLocalStoreRoots.inDocuments() })
         }
     }
@@ -780,7 +824,8 @@ final class SwiftDashSDKHost {
             // through this branch.
             collaborators.coinJoinRecovery.resetRecoveryFlag(scope: network.persistenceScope)
             do {
-                var recovered = try recoverPersistedWallet(in: rows, network: network)
+                let keychainRecovered = try recoverPersistedWallet(in: rows, network: network)
+                var recovered = keychainRecovered
                 if recovered == nil, network == .devnet {
                     recovered = await provisionDevnet()
                 }
@@ -789,6 +834,18 @@ final class SwiftDashSDKHost {
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
                 try localStoreRecovery(for: network).finish()
+                if keychainRecovered != nil {
+                    // The rows were recreated at the import floor, so the scan
+                    // that follows is a historical one and a Core spend could
+                    // select an input it has not yet seen spent (ios#1227).
+                    // Arm the same gate the phrase restore arms, scoped to this
+                    // network so another network's `.syncDone` cannot lift it
+                    // mid-scan. Armed last, after every step that can throw,
+                    // so a failed start leaves no gate behind. Devnet rows
+                    // provisioned on first entry are not armed (unchanged).
+                    collaborators.restoreSyncGate.armInitialRestoreSyncGate(
+                        scope: network.persistenceScope)
+                }
                 return recovered
             } catch {
                 await rows.shutdown()

@@ -115,6 +115,14 @@ final class RecordingCoinJoinRecovery: CoinJoinRecoveryFlagResetting {
 }
 
 @MainActor
+final class RecordingRestoreSyncGate: InitialRestoreSyncGating {
+    /// The scopes the host armed the initial-restore-sync gate for, in order.
+    var armedScopes: [String] = []
+
+    func armInitialRestoreSyncGate(scope: String) { armedScopes.append(scope) }
+}
+
+@MainActor
 final class HostRecoveryTests: XCTestCase {
     private var directory: URL!
     private var roots: WalletLocalStoreRoots!
@@ -122,6 +130,7 @@ final class HostRecoveryTests: XCTestCase {
     private var material: ScriptedWalletMaterial!
     private var registry: InMemoryActiveWalletRegistry!
     private var coinJoin: RecordingCoinJoinRecovery!
+    private var restoreSyncGate: RecordingRestoreSyncGate!
 
     override func setUp() async throws {
         directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -135,6 +144,7 @@ final class HostRecoveryTests: XCTestCase {
         material = ScriptedWalletMaterial()
         registry = InMemoryActiveWalletRegistry()
         coinJoin = RecordingCoinJoinRecovery()
+        restoreSyncGate = RecordingRestoreSyncGate()
     }
 
     override func tearDown() async throws {
@@ -148,6 +158,7 @@ final class HostRecoveryTests: XCTestCase {
             material: material,
             registry: registry,
             coinJoinRecovery: coinJoin,
+            restoreSyncGate: restoreSyncGate,
             localStoreRoots: { roots }))
     }
 
@@ -209,6 +220,39 @@ final class HostRecoveryTests: XCTestCase {
         persisted.rows[id] = TestWalletRow(walletId: id)
         _ = try await start()
         XCTAssertEqual(coinJoin.resetScopes, [])
+    }
+
+    // MARK: - Initial restore sync gate (ios#1227)
+
+    func testRecreatingWalletRowsArmsTheInitialRestoreSyncGate() async throws {
+        // Rows recreated from the keychain scan from the import floor, so
+        // Core spends must stay blocked until that historical scan is done,
+        // exactly as after a phrase restore.
+        _ = try await start()
+        XCTAssertEqual(restoreSyncGate.armedScopes, ["mainnet"])
+    }
+
+    func testHealthyStoreDoesNotArmTheInitialRestoreSyncGate() async throws {
+        // A normal launch over persisted rows is a foreground catch-up and
+        // must not delay a payment.
+        for mnemonic in ["wallet-a", "wallet-b"] {
+            let id = Data(mnemonic.utf8)
+            persisted.rows[id] = TestWalletRow(walletId: id)
+        }
+        _ = try await start()
+        XCTAssertEqual(restoreSyncGate.armedScopes, [])
+    }
+
+    func testFailedRecoveryDoesNotArmTheGateUntilAWalletOpens() async throws {
+        persisted.failingMnemonic = "wallet-b"
+        do {
+            _ = try await start()
+            XCTFail("One restored wallet must not mask another's failure")
+        } catch {}
+        XCTAssertEqual(restoreSyncGate.armedScopes, [])
+        persisted.failingMnemonic = nil
+        _ = try await start()
+        XCTAssertEqual(restoreSyncGate.armedScopes, ["mainnet"])
     }
 
     private func pendingChainStoreRebuilds() -> [Data]? {

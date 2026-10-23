@@ -285,6 +285,8 @@ final class WalletSendService: NSObject {
 
     /// A normal foreground catch-up must not delay a payment. Only the first
     /// historical sync after restoring a wallet blocks new Core spends.
+    /// `isResyncingWallet` is the gate as the current network sees it
+    /// (`DWGlobalOptions.isResyncingCurrentNetworkWallet`).
     static func isBlockedByInitialRestoreSync(
         isResyncingWallet: Bool,
         isChainSynced: Bool
@@ -296,7 +298,7 @@ final class WalletSendService: NSObject {
     /// authentication and before inputs are selected or reserved.
     private static func ensureInitialRestoreSyncCompleted() throws {
         guard !isBlockedByInitialRestoreSync(
-            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
             isChainSynced: SyncingActivityMonitor.shared.state == .syncDone
         ) else {
             throw Self.makeError(
@@ -888,5 +890,52 @@ private extension WalletSendService {
             code: code.rawValue,
             userInfo: userInfo
         )
+    }
+}
+
+// MARK: - Initial restore sync gate
+
+/// The persisted "first historical sync after a restore" gate: the
+/// `DWGlobalOptions.resyncingWallet` flag plus the network scopes whose
+/// historical scans armed it. `scopes == nil` means every network (the
+/// phrase restore provisions the phrase on all of them); keychain recovery
+/// arms one `persistenceScope` at a time. Pure, so the arm, clear and block
+/// rules are testable without `NSUserDefaults`; `DWGlobalOptions` maps it
+/// onto its two keys.
+struct InitialRestoreSyncGate: Equatable {
+    var isArmed: Bool
+    /// Armed scopes, sorted; `nil` = every network. Ignored while disarmed.
+    var scopes: [String]?
+
+    static let disarmed = InitialRestoreSyncGate(isArmed: false, scopes: nil)
+    static let everyNetwork = InitialRestoreSyncGate(isArmed: true, scopes: nil)
+
+    /// Arm for `scope`. An every-network arm is never narrowed, and a
+    /// second network joins the first instead of replacing it: keychain
+    /// recovery runs on every network whose rows are missing, and each of
+    /// those scans has to finish before its own network may spend.
+    func arming(scope: String) -> InitialRestoreSyncGate {
+        if isArmed, scopes == nil { return self }
+        var armed = Set(isArmed ? (scopes ?? []) : [])
+        armed.insert(scope)
+        return InitialRestoreSyncGate(isArmed: true, scopes: armed.sorted())
+    }
+
+    /// `.syncDone` on `scope`: lifts an every-network arm, or that one
+    /// scope's arm, leaving the other networks' arms in place. An unknown
+    /// scope lifts nothing it cannot attribute.
+    func clearing(scope: String?) -> InitialRestoreSyncGate {
+        guard isArmed, let scopes else { return .disarmed }
+        guard let scope else { return self }
+        let remaining = scopes.filter { $0 != scope }
+        return remaining.isEmpty ? .disarmed : InitialRestoreSyncGate(isArmed: true, scopes: remaining)
+    }
+
+    /// Whether the gate blocks Core spends on `scope`. An unknown current
+    /// network is treated as blocked: unknown readiness must not spend.
+    func blocks(scope: String?) -> Bool {
+        guard isArmed else { return false }
+        guard let scopes, let scope else { return true }
+        return scopes.contains(scope)
     }
 }
