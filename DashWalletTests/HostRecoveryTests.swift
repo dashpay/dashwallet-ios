@@ -116,10 +116,10 @@ final class RecordingCoinJoinRecovery: CoinJoinRecoveryFlagResetting {
 
 @MainActor
 final class RecordingRestoreSyncGate: InitialRestoreSyncGating {
-    /// How many times the host armed the initial-restore-sync gate.
-    var armed = 0
+    /// The scopes the host armed the initial-restore-sync gate for, in order.
+    var armedScopes: [String] = []
 
-    func armInitialRestoreSyncGate() { armed += 1 }
+    func armInitialRestoreSyncGate(scope: String) { armedScopes.append(scope) }
 }
 
 @MainActor
@@ -229,7 +229,7 @@ final class HostRecoveryTests: XCTestCase {
         // Core spends must stay blocked until that historical scan is done,
         // exactly as after a phrase restore.
         _ = try await start()
-        XCTAssertEqual(restoreSyncGate.armed, 1)
+        XCTAssertEqual(restoreSyncGate.armedScopes, ["mainnet"])
     }
 
     func testHealthyStoreDoesNotArmTheInitialRestoreSyncGate() async throws {
@@ -240,7 +240,7 @@ final class HostRecoveryTests: XCTestCase {
             persisted.rows[id] = TestWalletRow(walletId: id)
         }
         _ = try await start()
-        XCTAssertEqual(restoreSyncGate.armed, 0)
+        XCTAssertEqual(restoreSyncGate.armedScopes, [])
     }
 
     func testFailedRecoveryDoesNotArmTheGateUntilAWalletOpens() async throws {
@@ -249,10 +249,24 @@ final class HostRecoveryTests: XCTestCase {
             _ = try await start()
             XCTFail("One restored wallet must not mask another's failure")
         } catch {}
-        XCTAssertEqual(restoreSyncGate.armed, 0)
+        XCTAssertEqual(restoreSyncGate.armedScopes, [])
         persisted.failingMnemonic = nil
         _ = try await start()
-        XCTAssertEqual(restoreSyncGate.armed, 1)
+        XCTAssertEqual(restoreSyncGate.armedScopes, ["mainnet"])
+    }
+
+    func testRecoveryThatFailsBeforeAWalletOpensArmsNoGate() async throws {
+        // The arm is the last step of the recovery branch, after the marker
+        // work that can throw: a start that fails on the marker (its
+        // directory is gone) leaves no gate behind for a wallet that never
+        // opened.
+        try FileManager.default.removeItem(
+            at: roots.platform.appendingPathComponent("mainnet", isDirectory: true))
+        do {
+            _ = try await start()
+            XCTFail("A recovery whose marker directory is gone must fail the start")
+        } catch {}
+        XCTAssertEqual(restoreSyncGate.armedScopes, [])
     }
 
     private func pendingChainStoreRebuilds() -> [Data]? {

@@ -141,11 +141,29 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         }
     }
 
+    /// Whether a `.syncDone` on `runningScope` lifts the initial-restore-sync
+    /// gate armed for `armedScope` (nil: armed for every network).
+    static func initialRestoreSyncGateClears(armedScope: String?, runningScope: String?) -> Bool {
+        guard let armedScope else { return true }
+        return armedScope == runningScope
+    }
+
     @objc
     public var state: State = .unknown {
         didSet {
             if state == .syncDone {
-                DWGlobalOptions.sharedInstance().isResyncingWallet = false
+                // Only the network whose historical scan armed the gate may
+                // clear it: a `.syncDone` from an already caught-up network
+                // the user switched to mid-scan leaves it armed, or the scan
+                // would resume ungated on the way back (ios#1227). No scope
+                // means the phrase restore armed it for every network.
+                let options = DWGlobalOptions.sharedInstance()
+                if Self.initialRestoreSyncGateClears(
+                    armedScope: options.resyncingWalletScope,
+                    runningScope: WalletEnvironment.network?.persistenceScope) {
+                    options.isResyncingWallet = false
+                    options.resyncingWalletScope = nil
+                }
             }
 
             guard oldValue != state else {

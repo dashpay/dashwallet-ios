@@ -31,6 +31,21 @@ final class PassiveWalletStateUITailTests: XCTestCase {
                 isChainSynced: false))
     }
 
+    func testOnlyTheArmingNetworkClearsTheInitialRestoreSyncGate() {
+        // Keychain recovery arms the gate for one scope: a caught-up network
+        // the user switched to mid-scan must not lift it.
+        XCTAssertFalse(
+            SyncingActivityMonitor.initialRestoreSyncGateClears(
+                armedScope: "testnet", runningScope: "mainnet"))
+        XCTAssertTrue(
+            SyncingActivityMonitor.initialRestoreSyncGateClears(
+                armedScope: "testnet", runningScope: "testnet"))
+        // The phrase restore arms it for every network (no scope).
+        XCTAssertTrue(
+            SyncingActivityMonitor.initialRestoreSyncGateClears(
+                armedScope: nil, runningScope: "mainnet"))
+    }
+
     func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {
         let error = PlatformWalletError.assetLockAlreadyConsumed("test outpoint")
 

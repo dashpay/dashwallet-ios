@@ -259,15 +259,19 @@ extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
 /// armed and `SyncingActivityMonitor` has not reached `.syncDone`, new Core
 /// spends are refused (`WalletSendService.isBlockedByInitialRestoreSync`).
 /// Production is `DWGlobalOptions.isResyncingWallet`; the phrase restore
-/// arms it in `DWRecoverWalletCommand`, keychain recovery arms it here, and
-/// the monitor clears it at the first `.syncDone`.
+/// arms it in `DWRecoverWalletCommand` for every network, keychain recovery
+/// arms it here for one `persistenceScope`, and the monitor clears it at
+/// the first `.syncDone` of the scope that armed it.
 @MainActor
 protocol InitialRestoreSyncGating: AnyObject {
-    func armInitialRestoreSyncGate()
+    func armInitialRestoreSyncGate(scope: String)
 }
 
 extension DWGlobalOptions: InitialRestoreSyncGating {
-    func armInitialRestoreSyncGate() { isResyncingWallet = true }
+    func armInitialRestoreSyncGate(scope: String) {
+        resyncingWalletScope = scope
+        isResyncingWallet = true
+    }
 }
 
 extension SwiftDashSDKHost {
@@ -803,19 +807,22 @@ final class SwiftDashSDKHost {
                     recovered = await provisionDevnet()
                 }
                 guard let recovered else { throw HostError.walletNotFound(network) }
-                if keychainRecovered != nil {
-                    // The rows were recreated at the import floor, so the scan
-                    // that follows is a historical one and a Core spend could
-                    // select an input it has not yet seen spent (ios#1227).
-                    // Arm the same gate the phrase restore arms; the monitor
-                    // clears it at the first `.syncDone`. Only for keychain
-                    // rows: first-entry devnet provisioning keeps its policy.
-                    collaborators.restoreSyncGate.armInitialRestoreSyncGate()
-                }
                 // Existing keychain wallets must all recover before clearing
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
                 try localStoreRecovery(for: network).finish()
+                if keychainRecovered != nil {
+                    // The rows were recreated at the import floor, so the scan
+                    // that follows is a historical one and a Core spend could
+                    // select an input it has not yet seen spent (ios#1227).
+                    // Arm the same gate the phrase restore arms, scoped to this
+                    // network so another network's `.syncDone` cannot lift it
+                    // mid-scan. Armed last, after every step that can throw,
+                    // so a failed start leaves no gate behind. Devnet rows
+                    // provisioned on first entry are not armed (unchanged).
+                    collaborators.restoreSyncGate.armInitialRestoreSyncGate(
+                        scope: network.persistenceScope)
+                }
                 return recovered
             } catch {
                 await rows.shutdown()
