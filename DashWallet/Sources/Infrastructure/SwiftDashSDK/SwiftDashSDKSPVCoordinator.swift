@@ -252,9 +252,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     /// The persistence scope the running client was started on. Kept apart
     /// from `runningNetwork`, whose devnet scope follows the configured devnet
-    /// name and can change while that client is still up.
+    /// name and can change while that client is still up. Readable so a
+    /// `.syncDone` can be attributed to the client that produced it rather
+    /// than to the network key, which a switch flips before the outgoing
+    /// client's resting snapshot has stopped being delivered.
     @MainActor
-    private var runningScope: String?
+    private(set) var runningScope: String?
 
     @MainActor
     var isRunning: Bool { runningNetwork != nil }

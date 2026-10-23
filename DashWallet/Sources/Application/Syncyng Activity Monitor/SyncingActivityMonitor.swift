@@ -149,10 +149,21 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
                 // clear its arm: a `.syncDone` from an already caught-up
                 // network the user switched to mid-scan leaves it in place,
                 // or the scan would resume ungated on the way back
-                // (ios#1227). An every-network arm (phrase restore) clears
-                // as before. See `InitialRestoreSyncGate`.
-                DWGlobalOptions.sharedInstance().clearInitialRestoreSyncGate(
-                    scope: WalletEnvironment.network?.persistenceScope)
+                // (ios#1227). The scope is the running SPV client's, not
+                // `WalletEnvironment.network`: a switch flips the key while
+                // the outgoing client's resting snapshot can still be
+                // replayed (`resetPublishedState`, a reachability update),
+                // and that snapshot must be credited to the network it came
+                // from. With no client (nil) a scoped arm stays; an
+                // every-network arm (phrase restore) clears as before. See
+                // `InitialRestoreSyncGate`.
+                // `state` is main-confined (the coordinator publishes on
+                // main); off main, no client is attributed and a scoped arm
+                // simply stays, which is the conservative outcome.
+                let runningScope: String? = Thread.isMainThread
+                    ? MainActor.assumeIsolated { SwiftDashSDKSPVCoordinator.shared.runningScope }
+                    : nil
+                DWGlobalOptions.sharedInstance().clearInitialRestoreSyncGate(scope: runningScope)
             }
 
             guard oldValue != state else {
