@@ -34,4 +34,4 @@ let package = Package(name: "ProtocolObservation", platforms: [.macOS("15.0")], 
 ])
 ''')
     subprocess.run(["xcrun", "swift", "test", "--package-path", str(package), "--disable-sandbox"]
-                   + (["-Xswiftc", "-DTESTFLIGHT"] if args.testflight else []), check=True)
+                   + (["-Xswiftc", "-DTestflight"] if args.testflight else []), check=True)

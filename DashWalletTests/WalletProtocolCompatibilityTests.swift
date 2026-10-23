@@ -128,7 +128,7 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         client.finish(.success(()))
         await refresh.value
         XCTAssertNotNil(model.message)
-        #if TESTFLIGHT
+        #if Testflight
         XCTAssertTrue(model.message!.contains("TestFlight"))
         XCTAssertNil(model.updateURL)
         #else
