@@ -1617,7 +1617,7 @@ final class InternalTransferViewModel: ObservableObject {
         #if DEBUG
         if let previewIsResyncingWallet { return previewIsResyncingWallet }
         #endif
-        return DWGlobalOptions.sharedInstance().isResyncingWallet
+        return DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet
     }
 
     /// Embedded send/receive sheets pin the route independently of `source`.

@@ -31,19 +31,44 @@ final class PassiveWalletStateUITailTests: XCTestCase {
                 isChainSynced: false))
     }
 
-    func testOnlyTheArmingNetworkClearsTheInitialRestoreSyncGate() {
-        // Keychain recovery arms the gate for one scope: a caught-up network
-        // the user switched to mid-scan must not lift it.
-        XCTAssertFalse(
-            SyncingActivityMonitor.initialRestoreSyncGateClears(
-                armedScope: "testnet", runningScope: "mainnet"))
-        XCTAssertTrue(
-            SyncingActivityMonitor.initialRestoreSyncGateClears(
-                armedScope: "testnet", runningScope: "testnet"))
-        // The phrase restore arms it for every network (no scope).
-        XCTAssertTrue(
-            SyncingActivityMonitor.initialRestoreSyncGateClears(
-                armedScope: nil, runningScope: "mainnet"))
+    func testInitialRestoreSyncGateBlocksAndClearsPerArmedNetwork() {
+        // Keychain recovery arms one network at a time; a second network's
+        // recovery joins the first instead of replacing it.
+        let gate = InitialRestoreSyncGate.disarmed
+            .arming(scope: "mainnet")
+            .arming(scope: "testnet")
+        XCTAssertEqual(gate.scopes, ["mainnet", "testnet"])
+        // Only an armed network is blocked; a network the user switches to
+        // mid-scan keeps its ordinary catch-up ungated.
+        XCTAssertTrue(gate.blocks(scope: "mainnet"))
+        XCTAssertTrue(gate.blocks(scope: "testnet"))
+        XCTAssertFalse(gate.blocks(scope: "devnet-x"))
+        XCTAssertTrue(gate.blocks(scope: nil), "unknown readiness must not spend")
+        // A `.syncDone` lifts its own network's arm and no other.
+        let afterTestnet = gate.clearing(scope: "testnet")
+        XCTAssertEqual(afterTestnet, InitialRestoreSyncGate(isArmed: true, scopes: ["mainnet"]))
+        XCTAssertFalse(afterTestnet.blocks(scope: "testnet"))
+        XCTAssertTrue(afterTestnet.blocks(scope: "mainnet"))
+        XCTAssertEqual(afterTestnet.clearing(scope: "devnet-x"), afterTestnet)
+        XCTAssertEqual(afterTestnet.clearing(scope: nil), afterTestnet)
+        XCTAssertEqual(afterTestnet.clearing(scope: "mainnet"), .disarmed)
+        XCTAssertFalse(InitialRestoreSyncGate.disarmed.blocks(scope: "mainnet"))
+    }
+
+    func testPhraseRestoreGateCoversEveryNetworkAndIsNeverNarrowed() {
+        // The phrase restore arms every network (no scopes): any network's
+        // `.syncDone` clears it, every network is blocked meanwhile, and a
+        // keychain recovery arm on top of it does not narrow it.
+        let gate = InitialRestoreSyncGate.everyNetwork
+        XCTAssertTrue(gate.blocks(scope: "mainnet"))
+        XCTAssertTrue(gate.blocks(scope: "testnet"))
+        XCTAssertEqual(gate.arming(scope: "testnet"), gate)
+        XCTAssertEqual(gate.clearing(scope: "mainnet"), .disarmed)
+        // Stale scopes from a disarmed gate do not revive it.
+        let stale = InitialRestoreSyncGate(isArmed: false, scopes: ["testnet"])
+        XCTAssertFalse(stale.blocks(scope: "testnet"))
+        XCTAssertEqual(stale.arming(scope: "mainnet"), InitialRestoreSyncGate(isArmed: true, scopes: ["mainnet"]))
+        XCTAssertEqual(stale.clearing(scope: "mainnet"), .disarmed)
     }
 
     func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {

@@ -268,9 +268,32 @@ protocol InitialRestoreSyncGating: AnyObject {
 }
 
 extension DWGlobalOptions: InitialRestoreSyncGating {
+    /// The persisted gate: `resyncingWallet` plus `resyncingWalletScopes`.
+    var initialRestoreSyncGate: InitialRestoreSyncGate {
+        get { InitialRestoreSyncGate(isArmed: isResyncingWallet, scopes: resyncingWalletScopes) }
+        set {
+            resyncingWalletScopes = newValue.scopes
+            isResyncingWallet = newValue.isArmed
+        }
+    }
+
+    /// The gate as the current network's send surfaces see it: armed for
+    /// every network, or for the network currently selected. An arm left
+    /// behind by another network's unfinished scan does not block this one.
+    var isResyncingCurrentNetworkWallet: Bool {
+        initialRestoreSyncGate.blocks(scope: WalletEnvironment.network?.persistenceScope)
+    }
+
     func armInitialRestoreSyncGate(scope: String) {
-        resyncingWalletScope = scope
-        isResyncingWallet = true
+        initialRestoreSyncGate = initialRestoreSyncGate.arming(scope: scope)
+    }
+
+    /// `.syncDone` on `scope`. No write while the gate is disarmed, so the
+    /// monitor's per-tick `.syncDone` costs nothing in the common case.
+    func clearInitialRestoreSyncGate(scope: String?) {
+        let gate = initialRestoreSyncGate
+        guard gate.isArmed else { return }
+        initialRestoreSyncGate = gate.clearing(scope: scope)
     }
 }
 

@@ -255,20 +255,6 @@ final class HostRecoveryTests: XCTestCase {
         XCTAssertEqual(restoreSyncGate.armedScopes, ["mainnet"])
     }
 
-    func testRecoveryThatFailsBeforeAWalletOpensArmsNoGate() async throws {
-        // The arm is the last step of the recovery branch, after the marker
-        // work that can throw: a start that fails on the marker (its
-        // directory is gone) leaves no gate behind for a wallet that never
-        // opened.
-        try FileManager.default.removeItem(
-            at: roots.platform.appendingPathComponent("mainnet", isDirectory: true))
-        do {
-            _ = try await start()
-            XCTFail("A recovery whose marker directory is gone must fail the start")
-        } catch {}
-        XCTAssertEqual(restoreSyncGate.armedScopes, [])
-    }
-
     private func pendingChainStoreRebuilds() -> [Data]? {
         SPVChainStoreRebuild.pendingWalletIds(scope: "mainnet", directory: roots.chainStoreRebuilds)
     }

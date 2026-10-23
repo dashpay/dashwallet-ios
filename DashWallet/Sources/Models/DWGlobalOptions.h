@@ -101,10 +101,11 @@ extern NSNotificationName const DWAdvancedModeDidChangeNotification;
 @property (nullable, nonatomic, strong) NSDate *dateHistoricalRatesActivated;
 @property (nonatomic, assign) NSInteger paymentsScreenCurrentTab;
 @property (nonatomic, assign, getter=isResyncingWallet) BOOL resyncingWallet;
-/// The persistence scope (network) whose historical scan armed `resyncingWallet`,
-/// or nil when the phrase restore armed it for every network. `SyncingActivityMonitor`
-/// clears the gate only from a sync on that scope.
-@property (nullable, nonatomic, copy) NSString *resyncingWalletScope;
+/// The persistence scopes (networks) whose historical scans armed `resyncingWallet`,
+/// or nil when the phrase restore armed it for every network. Read and written through
+/// `DWGlobalOptions.initialRestoreSyncGate` (Swift): a scope's `.syncDone` clears that
+/// scope alone, and send surfaces are blocked only on an armed scope.
+@property (nullable, nonatomic, copy) NSArray<NSString *> *resyncingWalletScopes;
 
 @property (nonatomic, assign) DWPaymentCurrency selectedPaymentCurrency;
 
