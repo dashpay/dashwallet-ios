@@ -42,6 +42,18 @@ struct TerritoryPickerView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+                DashUIKit.NavigationBar(
+                    central: {
+                        Text(NSLocalizedString("Location", comment: ""))
+                            .dashFont(.subheadMedium)
+                            .foregroundColor(.dash.primaryText)
+                    },
+                    trailing: {
+                        DashUIKit.NavigationBarElement.close.button {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    })
+
                 // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -115,20 +127,7 @@ struct TerritoryPickerView: View {
                 }
         }
         .background(Color.dash.primaryBackground)
-        .navigationTitle(NSLocalizedString("Location", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.dash.primaryText)
-                }
-            }
-        }
+        .navigationBarHidden(true)
         .onAppear {
             loadTerritories()
         }

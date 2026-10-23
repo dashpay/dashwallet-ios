@@ -62,6 +62,30 @@ struct MerchantFiltersView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.close.button {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                },
+                central: {
+                    Text(NSLocalizedString("Filters", comment: "Explore Dash"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                },
+                trailing: {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Apply", comment: ""),
+                        isEnabled: viewModel.canApply,
+                        size: .small,
+                        style: .plainBlue
+                    ) {
+                        let filters = viewModel.buildFilters()
+                        onApplyFilters(filters)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                })
+
             ScrollView {
                 VStack(spacing: 0) {
                     // Sort By Section - Only show if there are multipele options
@@ -222,22 +246,7 @@ struct MerchantFiltersView: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .navigationBarTitle(NSLocalizedString("Filters", comment: "Explore Dash"), displayMode: .inline)
-        .navigationBarItems(
-            leading: Button(NSLocalizedString("Close", comment: "")) {
-                presentationMode.wrappedValue.dismiss()
-            }
-            .font(.system(size: 15, weight: .medium))
-            .foregroundColor(.dash.blue),
-            trailing: Button(NSLocalizedString("Apply", comment: "")) {
-                let filters = viewModel.buildFilters()
-                onApplyFilters(filters)
-                presentationMode.wrappedValue.dismiss()
-            }
-            .font(.system(size: 15, weight: .medium))
-            .foregroundColor(viewModel.canApply ? .dash.blue : Color.dash.tertiaryText)
-            .disabled(!viewModel.canApply)
-        )
+        .navigationBarHidden(true)
     }
 }
 

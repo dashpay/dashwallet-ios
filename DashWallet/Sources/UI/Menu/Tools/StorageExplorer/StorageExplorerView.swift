@@ -96,12 +96,9 @@ struct StorageExplorerView: View {
                 WalletManagerMetadataStorageListView()
             }
         }
-        .navigationTitle("Storage Explorer")
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { loadCounts() }) {
-                    Image(systemName: "arrow.clockwise")
-                }
+        .storageExplorerPage("Storage Explorer") {
+            StorageExplorerRefreshButton(accessibilityLabel: "Refresh counts", isRefreshing: false) {
+                loadCounts()
             }
         }
         .onAppear { loadCounts() }
@@ -113,7 +110,7 @@ struct StorageExplorerView: View {
         type: T.Type,
         @ViewBuilder destination: @escaping () -> D
     ) -> some View {
-        NavigationLink(destination: destination()) {
+        StorageExplorerLink(destination: destination()) {
             HStack {
                 Label(name, systemImage: icon)
                 Spacer()
@@ -134,7 +131,7 @@ struct StorageExplorerView: View {
         countKey: String,
         @ViewBuilder destination: @escaping () -> D
     ) -> some View {
-        NavigationLink(destination: destination()) {
+        StorageExplorerLink(destination: destination()) {
             HStack {
                 Label(name, systemImage: icon)
                 Spacer()

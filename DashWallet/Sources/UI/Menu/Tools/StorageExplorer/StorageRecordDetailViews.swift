@@ -93,29 +93,21 @@ struct IdentityStorageDetailView: View {
                 FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
             }
         }
-        .navigationTitle("Identity")
-        .navigationBarTitleDisplayMode(.inline)
         #if DASHPAY
         // Pull-to-refresh re-fetches this identity from Platform — the
         // local rows (public keys especially) lag keys added on another
         // device. @Query keeps the form live as the reload persists. The
-        // toolbar button is the same action with a visible affordance.
+        // bar's refresh circle is the same action with a visible affordance.
         .refreshable { await reloadModel.reload(identityIndex: record.identityIndex) }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await reloadModel.reload(identityIndex: record.identityIndex) }
-                } label: {
-                    if reloadModel.isReloading {
-                        SwiftUI.ProgressView()
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                .disabled(reloadModel.isReloading)
-                .accessibilityLabel(Text("Refresh from Platform"))
+        .storageExplorerPage("Identity") {
+            StorageExplorerRefreshButton(
+                accessibilityLabel: "Refresh from Platform",
+                isRefreshing: reloadModel.isReloading) {
+                Task { await reloadModel.reload(identityIndex: record.identityIndex) }
             }
         }
+        #else
+        .storageExplorerPage("Identity")
         #endif
     }
 }
@@ -146,8 +138,7 @@ struct DocumentStorageDetailView: View {
                 }
             }
         }
-        .navigationTitle("Document")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Document")
     }
 }
 
@@ -186,8 +177,7 @@ struct DataContractStorageDetailView: View {
                 FieldRow(label: "Contract Size", value: "\(record.serializedContract.count) bytes")
             }
         }
-        .navigationTitle("Data Contract")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Data Contract")
     }
 }
 
@@ -215,8 +205,7 @@ struct PublicKeyStorageDetailView: View {
                 FieldRow(label: "Accessed", value: dateString(record.lastAccessed))
             }
         }
-        .navigationTitle("Public Key")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Public Key")
     }
 }
 
@@ -245,8 +234,7 @@ struct TokenStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdatedAt))
             }
         }
-        .navigationTitle("Token")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Token")
     }
 }
 
@@ -275,8 +263,7 @@ struct TokenBalanceStorageDetailView: View {
                 FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
             }
         }
-        .navigationTitle("Token Balance")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Token Balance")
     }
 }
 
@@ -307,8 +294,7 @@ struct TokenHistoryStorageDetailView: View {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
         }
-        .navigationTitle("Token History Event")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Token History Event")
     }
 }
 
@@ -337,8 +323,7 @@ struct DocumentTypeStorageDetailView: View {
                 FieldRow(label: "Accessed", value: dateString(record.lastAccessedAt))
             }
         }
-        .navigationTitle("Document Type")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Document Type")
     }
 }
 
@@ -367,8 +352,7 @@ struct IndexStorageDetailView: View {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
         }
-        .navigationTitle("Index")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Index")
     }
 }
 
@@ -395,8 +379,7 @@ struct PropertyStorageDetailView: View {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
         }
-        .navigationTitle("Property")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Property")
     }
 }
 
@@ -414,8 +397,7 @@ struct KeywordStorageDetailView: View {
                 }
             }
         }
-        .navigationTitle("Keyword")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Keyword")
     }
 }
 
@@ -453,8 +435,7 @@ struct SyncStateStorageDetailView: View {
                 FieldRow(label: "Record Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Sync State")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Sync State")
     }
 }
 
@@ -523,8 +504,7 @@ struct PlatformAddressDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Platform Address")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Platform Address")
     }
 }
 
@@ -559,8 +539,7 @@ struct WalletStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Wallet")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Wallet")
     }
 }
 
@@ -606,7 +585,7 @@ struct AccountStorageDetailView: View {
             ForEach(addressSections(), id: \.0) { poolName, addresses in
                 Section("\(poolName) Addresses (\(addresses.count))") {
                     ForEach(addresses) { addr in
-                        NavigationLink(destination: CoreAddressDetailView(record: addr)) {
+                        StorageExplorerLink(destination: CoreAddressDetailView(record: addr)) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(addr.address)
                                     .font(.system(.caption, design: .monospaced))
@@ -633,8 +612,7 @@ struct AccountStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Account")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Account")
     }
 
     /// Group the account's addresses by pool-type tag and present in
@@ -714,8 +692,7 @@ struct CoreAddressDetailView: View {
                     .padding(.bottom, 20)
             }
         }
-        .navigationTitle("Address")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Address")
     }
 }
 
@@ -753,8 +730,7 @@ struct TransactionStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Transaction")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Transaction")
     }
 }
 
@@ -788,8 +764,7 @@ struct UtxoStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("UTXO")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("UTXO")
     }
 }
 
@@ -813,8 +788,7 @@ struct WalletManagerMetadataStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Manager Metadata")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Manager Metadata")
     }
 }
 
@@ -843,7 +817,7 @@ struct DPNSNameStorageDetailView: View {
                 }
             }
             Section("Relationships") {
-                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                StorageExplorerLink(destination: IdentityStorageDetailView(record: record.identity)) {
                     FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
@@ -853,8 +827,7 @@ struct DPNSNameStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("DPNS Name")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("DPNS Name")
     }
 }
 
@@ -880,7 +853,7 @@ struct DashpayProfileStorageDetailView: View {
                 FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
             }
             Section("Relationships") {
-                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                StorageExplorerLink(destination: IdentityStorageDetailView(record: record.identity)) {
                     FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
@@ -890,8 +863,7 @@ struct DashpayProfileStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("DashPay Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("DashPay Profile")
     }
 }
 
@@ -915,7 +887,7 @@ struct DashpayContactProfileStorageDetailView: View {
                 FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
             }
             Section("Relationships") {
-                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                StorageExplorerLink(destination: IdentityStorageDetailView(record: record.owner)) {
                     FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: hexString(record.ownerIdentityId))
@@ -927,8 +899,7 @@ struct DashpayContactProfileStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Contact Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Contact Profile")
     }
 }
 
@@ -960,7 +931,7 @@ struct DashpayContactRequestStorageDetailView: View {
                 FieldRow(label: "Note (owner-private)", value: record.contactNote ?? "—")
             }
             Section("Relationships") {
-                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                StorageExplorerLink(destination: IdentityStorageDetailView(record: record.owner)) {
                     FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex, denorm)", value: hexString(record.ownerIdentityId))
@@ -975,8 +946,7 @@ struct DashpayContactRequestStorageDetailView: View {
                 FieldRow(label: "Row Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("Contact Request")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Contact Request")
     }
 }
 
@@ -1006,8 +976,7 @@ struct DashpayPaymentStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
         }
-        .navigationTitle("DashPay Payment")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("DashPay Payment")
     }
 
     private var statusText: String {
@@ -1061,8 +1030,7 @@ struct InvitationStorageDetailView: View {
                 FieldRow(label: "Updated", value: dateString(record.updatedAt))
             }
         }
-        .navigationTitle("Invitation")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Invitation")
     }
 }
 
@@ -1082,7 +1050,6 @@ struct DashpayIgnoredSenderStorageDetailView: View {
                 FieldRow(label: "Ignored", value: dateString(record.ignoredAt))
             }
         }
-        .navigationTitle("Ignored Sender")
-        .navigationBarTitleDisplayMode(.inline)
+        .storageExplorerPage("Ignored Sender")
     }
 }
