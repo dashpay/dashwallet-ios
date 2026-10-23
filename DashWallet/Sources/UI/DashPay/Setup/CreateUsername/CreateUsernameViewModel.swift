@@ -59,6 +59,25 @@ class CreateUsernameViewModel: ObservableObject {
     private(set) var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
+    private var confirmationPreparation: SwiftDashSDKHost.PlatformPreparation?
+
+
+    /// Capture before presenting the contested-name or purchase confirmation.
+    func prepareConfirmation() throws {
+        confirmationPreparation = nil
+        confirmationPreparation = try SwiftDashSDKHost.shared.preparePlatformOperation()
+    }
+
+    func clearConfirmation() { confirmationPreparation = nil }
+
+    private func takeConfirmationPreparation() throws -> SwiftDashSDKHost.PlatformPreparation {
+        defer { confirmationPreparation = nil }
+        guard let preparation = confirmationPreparation else {
+            throw WalletOperationPreparationError.expired("Review and confirm the registration again")
+        }
+        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+        return preparation
+    }
     /// In-flight DPNS availability check. Cancelled and replaced when
     /// the typed label changes, so only the newest input hits the network.
     private var availabilityCheckTask: Task<Void, Never>?
@@ -806,6 +825,12 @@ class CreateUsernameViewModel: ObservableObject {
         temporaryUsername: String? = nil,
         onRegistrationStarted: @escaping @MainActor () -> Void = {}
     ) async -> UsernameRegistrationOutcome {
+        let preparation: SwiftDashSDKHost.PlatformPreparation
+        do {
+            preparation = try takeConfirmationPreparation()
+        } catch {
+            return .failure(error.localizedDescription)
+        }
         // The cached ceiling tracks the balance publisher, which is enough for
         // per-keystroke validation. Submission spends real UTXOs, so re-derive
         // it once here from the live set: one FFI walk on an explicit user
@@ -889,7 +914,7 @@ class CreateUsernameViewModel: ObservableObject {
                     // accepted link is held on the bridge; this path skips the
                     // bridge, so it has to fetch the link itself.
                     verificationURL: DWIdentityRegistrationBridge.shared
-                        .verificationURL(forSubmissionOf: submittedUsername))
+                        .verificationURL(forSubmissionOf: submittedUsername), preparation: preparation)
                 // This path never REFERENCES `DWIdentityRegistrationBridge.shared`,
                 // so on an invitation-first launch that singleton may never be
                 // constructed, and then never observes the coordinator's phases
@@ -944,7 +969,9 @@ class CreateUsernameViewModel: ObservableObject {
         DWIdentityRegistrationBridge.shared.pendingTemporaryUsername = temporaryUsername
 
         return await withCheckedContinuation { (continuation: CheckedContinuation<UsernameRegistrationOutcome, Never>) in
-            DWIdentityRegistrationBridge.shared.startCreateUsername(submittedUsername) { [weak self] _, error in
+            DWIdentityRegistrationBridge.shared.startCreateUsername(
+                submittedUsername, preparation: preparation
+            ) { [weak self] _, error in
                 Task { @MainActor in
                     self?.submittedRegistrationUsername = nil
                     self?.didNotifyRegistrationStarted = false
@@ -987,9 +1014,10 @@ class CreateUsernameViewModel: ObservableObject {
             return .failure(NSLocalizedString("This username is not for sale.", comment: "Username marketplace"))
         }
         do {
+            let preparation = try takeConfirmationPreparation()
             _ = try await DWIdentityRegistrationCoordinator.shared.startPurchaseUsername(
                 name: name,
-                priceCredits: credits)
+                priceCredits: credits, preparation: preparation)
             return .success
         } catch let error as DWIdentityRegistrationCoordinator.CoordinatorError
             where error.isCompletedPurchase {

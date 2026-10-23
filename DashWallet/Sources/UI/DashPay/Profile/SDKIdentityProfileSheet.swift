@@ -538,18 +538,23 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    @Published private(set) var submittedUnconfirmed = false
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
-
     private let authorizer = DWIdentityAuthorizer()
 
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
+        case movedToPlatform(Error)
 
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            case .movedToPlatform(let error):
+                return NSLocalizedString(
+                    "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
+                    comment: "Identity top-up stopped after successful unshield") + " " + error.localizedDescription
             }
         }
     }
@@ -595,7 +600,10 @@ final class IdentityTopUpViewModel: ObservableObject {
     }
 
     /// nil = cancelled or failed (errorMessage carries the failure).
-    func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
+    func topUp(
+        identityId: Data, amountDuffs: UInt64, source: FundingSource,
+        preparation: SwiftDashSDKHost.PlatformPreparation? = nil
+    ) async -> UInt64? {
         guard !isProcessing else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
@@ -603,9 +611,18 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
         isProcessing = true
+        submittedUnconfirmed = false
         defer {
             isProcessing = false
             stepLabel = nil
+        }
+        let confirmedPreparation: SwiftDashSDKHost.PlatformPreparation
+        do {
+            confirmedPreparation = try preparation ?? SwiftDashSDKHost.shared.preparePlatformOperation()
+            try validatePreparation(confirmedPreparation, walletId: wallet.walletId)
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
         }
         do {
             try await authorizer.authorize()
@@ -614,12 +631,15 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
         do {
+            try validatePreparation(confirmedPreparation, walletId: wallet.walletId)
             switch source {
             case .transparent:
-                return try await wallet.topUpIdentityWithFunding(
-                    identityId: identityId,
-                    amountDuffs: amountDuffs,
-                    accountIndex: 0)
+                return try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: confirmedPreparation) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId,
+                        amountDuffs: amountDuffs,
+                        accountIndex: 0)
+                }
 
             case .platform:
                 let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
@@ -630,18 +650,28 @@ final class IdentityTopUpViewModel: ObservableObject {
                     candidates: candidates,
                     targetCredits: credits)
                 let signer = KeychainSigner(modelContainer: modelContainer)
-                return try await wallet.topUpFromAddresses(
-                    identityId: identityId,
-                    inputs: inputs,
-                    addressSigner: signer)
+                return try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: confirmedPreparation) {
+                    try await wallet.topUpFromAddresses(
+                        identityId: identityId,
+                        inputs: inputs,
+                        addressSigner: signer)
+                }
 
             case .shielded:
                 return try await topUpFromShielded(
                     identityId: identityId,
                     amountDuffs: amountDuffs,
                     wallet: wallet,
-                    modelContainer: modelContainer)
+                    modelContainer: modelContainer,
+                    preparation: confirmedPreparation)
             }
+        } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed {
+            submittedUnconfirmed = true
+            errorMessage = NSLocalizedString(
+                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+                comment: "Identity transfer result unknown")
+            return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
                 errorMessage = String.localizedStringWithFormat(
@@ -658,13 +688,23 @@ final class IdentityTopUpViewModel: ObservableObject {
         }
     }
 
+    private func validatePreparation(
+        _ preparation: SwiftDashSDKHost.PlatformPreparation, walletId: Data
+    ) throws {
+        guard SwiftDashSDKHost.shared.wallet?.walletId == walletId else {
+            throw WalletOperationPreparationError.expired("The selected wallet changed; review and confirm again")
+        }
+        try SwiftDashSDKHost.shared.validatePlatformOperation(preparation)
+    }
+
     /// The privacy-default two-step: Shielded → own Platform address →
     /// identity credits.
     private func topUpFromShielded(
         identityId: Data,
         amountDuffs: UInt64,
         wallet: ManagedPlatformWallet,
-        modelContainer: ModelContainer
+        modelContainer: ModelContainer,
+        preparation: SwiftDashSDKHost.PlatformPreparation
     ) async throws -> UInt64 {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw SwiftDashSDKContactsService.ServiceError.noWallet
@@ -685,12 +725,15 @@ final class IdentityTopUpViewModel: ObservableObject {
         // destination when it returns; the unshield's own fee comes from
         // the shielded side on top of `credits`.
         stepLabel = NSLocalizedString("Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
-        try await manager.shieldedUnshield(
-            walletId: wallet.walletId,
-            resolver: MnemonicResolver(),
-            account: 0,
-            toPlatformAddress: destination,
-            amount: credits)
+        try validatePreparation(preparation, walletId: wallet.walletId)
+        try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+            try await manager.shieldedUnshield(
+                walletId: wallet.walletId,
+                resolver: MnemonicResolver(),
+                account: 0,
+                toPlatformAddress: destination,
+                amount: credits)
+        }
         // Same post-spend refreshes the transfer coordinator schedules —
         // BLAST stays the source of truth for the persisted balances.
         PlatformAddressSyncCoordinator.shared.refreshShieldedBalanceAfterSpend(using: manager)
@@ -708,10 +751,33 @@ final class IdentityTopUpViewModel: ObservableObject {
             hash: Data(storageBytes.dropFirst()),
             credits: claim)
         let signer = KeychainSigner(modelContainer: modelContainer)
-        let newBalance = try await wallet.topUpFromAddresses(
-            identityId: identityId,
-            inputs: [input],
-            addressSigner: signer)
+        do {
+            try validatePreparation(preparation, walletId: wallet.walletId)
+        } catch {
+            throw TopUpError.movedToPlatform(error)
+        }
+        let newBalance: UInt64
+        do {
+            newBalance = try await SwiftDashSDKHost.shared.withPlatformOperation(preparation: preparation) {
+                try await wallet.topUpFromAddresses(
+                    identityId: identityId,
+                    inputs: [input],
+                    addressSigner: signer)
+            }
+        } catch {
+            // An unknown second-leg result may already have credited the
+            // identity. Keep its diagnostic instead of suggesting a new top-up.
+            if case PlatformWalletError.transactionBroadcastUnconfirmed = error {
+                throw error
+            }
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                throw error
+            }
+            if error is CancellationError {
+                throw error
+            }
+            throw TopUpError.movedToPlatform(error)
+        }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
     }
@@ -901,7 +967,7 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
+                .disabled(viewModel.isProcessing || viewModel.submittedUnconfirmed || effectiveDuffs == nil)
                 .opacity(effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -923,7 +989,9 @@ struct IdentityTopUpSheet: View {
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(viewModel.isProcessing)
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            viewModel.submittedUnconfirmed
+                ? NSLocalizedString("Confirmation pending", comment: "Identity transfer result unknown")
+                : NSLocalizedString("Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
