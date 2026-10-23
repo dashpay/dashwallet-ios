@@ -32,6 +32,7 @@ import Foundation
 import OSLog
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 enum MnemonicFirstWalletCreationError: Error {
     case mnemonicPersistence(Error)
@@ -338,6 +339,10 @@ final class SwiftDashSDKHost {
         category: "swift-sdk-migration.host")
 
     // MARK: - Owned state
+
+    let protocolCompatibility = WalletProtocolCompatibilityController(
+        foregroundNotification: UIApplication.willEnterForegroundNotification,
+        log: { DWLogger.log($0) })
 
     private(set) var sdk: SDK?
     private(set) var manager: PlatformWalletManager?
@@ -1344,6 +1349,7 @@ final class SwiftDashSDKHost {
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
         runtimeID = UUID()
+        protocolCompatibility.detach()
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
         drainWatch?.cancel()
@@ -2089,6 +2095,9 @@ final class SwiftDashSDKHost {
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
         ContestedUsernameFee.shared.runtimeDidStart()
+        protocolCompatibility.attach(
+            client: SwiftDashSDKProtocolCompatibilityClient(sdk: handles.sdk),
+            network: String(describing: handles.network))
     }
 
     // MARK: - ModelContainer
