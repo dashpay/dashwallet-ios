@@ -390,20 +390,6 @@ struct SendSourceScreen: View {
 /// directly: same screen, same view model, with the recipient rendered as a
 /// contact and the button executing the send itself (there is no confirmation
 /// after it — `sendToContact` broadcasts in one shot).
-private struct PlatformSendConfirmation: Identifiable {
-    let id = UUID()
-    let route: SendViewModel.Route
-    let destinationAddress: String
-    let destinationRaw43: Data?
-    let dashDuffs: Int64
-    let creditsAmount: UInt64
-    let fiatText: String
-    let withdrawalFeeCredits: UInt64?
-    let isFullPlatformWithdrawal: Bool
-    let isFullShieldedSweep: Bool
-    let preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>
-}
-
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the step that chose the recipient — the source step for an
@@ -418,7 +404,7 @@ struct ExternalSendAmountScreen: View {
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
 
-    @State private var confirmation: PlatformSendConfirmation?
+    @State private var showConfirm = false
     /// Set by the confirm sheet's Done so `onDismiss` can tell a finished send
     /// from a cancelled one — both close the sheet the same way.
     @State private var didCompleteSend = false
@@ -503,29 +489,30 @@ struct ExternalSendAmountScreen: View {
             }
         }
         #endif
-        .sheet(item: $confirmation, onDismiss: {
+        .sheet(isPresented: $showConfirm, onDismiss: {
             guard didCompleteSend else { return }
             didCompleteSend = false
             onSendCompleted()
-        }) { submission in
-            SendConfirmSheet(
-                route: submission.route,
-                destinationAddress: submission.destinationAddress,
-                destinationRaw43: submission.destinationRaw43,
-                dashDuffs: submission.dashDuffs,
-                creditsAmount: submission.creditsAmount,
-                fiatText: submission.fiatText,
-                withdrawalFeeCredits: submission.withdrawalFeeCredits,
-                isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
-                isFullShieldedSweep: submission.isFullShieldedSweep,
-                preparation: submission.preparation,
-                onCancel: { confirmation = nil },
-                onCompleted: {
-                    didCompleteSend = true
-                    confirmation = nil
-                })
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
+        }) {
+            if let route = viewModel.route, route != .coreToCore {
+                SendConfirmSheet(
+                    route: route,
+                    destinationAddress: viewModel.trimmedAddress,
+                    destinationRaw43: shieldedRecipientRaw43,
+                    dashDuffs: viewModel.dashDuffs,
+                    creditsAmount: viewModel.creditsPreview,
+                    fiatText: viewModel.fiatAmountString,
+                    withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
+                    isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                    isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    onCancel: { showConfirm = false },
+                    onCompleted: {
+                        didCompleteSend = true
+                        showConfirm = false
+                    })
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
+            }
         }
     }
 
@@ -583,17 +570,7 @@ struct ExternalSendAmountScreen: View {
         if route == .coreToCore {
             onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
         } else {
-            confirmation = PlatformSendConfirmation(
-                route: route,
-                destinationAddress: viewModel.trimmedAddress,
-                destinationRaw43: shieldedRecipientRaw43,
-                dashDuffs: viewModel.dashDuffs,
-                creditsAmount: viewModel.creditsPreview,
-                fiatText: viewModel.fiatAmountString,
-                withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
-                isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
-                isFullShieldedSweep: viewModel.isFullShieldedSweep,
-                preparation: Result { try viewModel.platformPreparationForConfirmation() })
+            showConfirm = true
         }
     }
 
@@ -1111,35 +1088,7 @@ struct SendConfirmSheet: View {
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
-    @StateObject private var coordinator: ShieldedTransferCoordinator
-
-    init(
-        route: SendViewModel.Route,
-        destinationAddress: String,
-        destinationRaw43: Data?,
-        dashDuffs: Int64,
-        creditsAmount: UInt64,
-        fiatText: String,
-        withdrawalFeeCredits: UInt64?,
-        isFullPlatformWithdrawal: Bool,
-        isFullShieldedSweep: Bool,
-        preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
-        onCancel: @escaping () -> Void,
-        onCompleted: @escaping () -> Void
-    ) {
-        self.route = route
-        self.destinationAddress = destinationAddress
-        self.destinationRaw43 = destinationRaw43
-        self.dashDuffs = dashDuffs
-        self.creditsAmount = creditsAmount
-        self.fiatText = fiatText
-        self.withdrawalFeeCredits = withdrawalFeeCredits
-        self.isFullPlatformWithdrawal = isFullPlatformWithdrawal
-        self.isFullShieldedSweep = isFullShieldedSweep
-        self.onCancel = onCancel
-        self.onCompleted = onCompleted
-        _coordinator = StateObject(wrappedValue: ShieldedTransferCoordinator(confirmationPreparation: preparation))
-    }
+    @StateObject private var coordinator = ShieldedTransferCoordinator()
 
     var body: some View {
         DashUIKit.BottomSheet(
@@ -1554,15 +1503,15 @@ struct SendConfirmSheet: View {
         // instead of building a second lock (which strands the first) —
         // mirrors the internal transfer's retry.
         if route == .coreToShielded,
-           coordinator.lastAssetLockOutPoint != nil,
+           let op = coordinator.lastAssetLockOutPoint,
            let destinationRaw43 {
+            coordinator.reset()
             Task {
-                await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
+                await coordinator.resumeAssetLock(
+                    outPointTxidWire: op.txidWire,
+                    outPointVout: op.vout,
+                    recipientRaw43: destinationRaw43)
             }
-            return
-        }
-        if coordinator.requiresFreshConfirmation {
-            onCancel()
             return
         }
         coordinator.reset()

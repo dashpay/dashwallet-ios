@@ -55,7 +55,6 @@ struct InternalTransferConfirmSheet: View {
         coreShieldedDrain: CoreShieldedDrainConfirmation? = nil,
         identityTopUp: IdentityTopUpTransfer? = nil,
         identityWithdrawal: IdentityWithdrawalTransfer? = nil,
-        preparation: Result<SwiftDashSDKHost.PlatformPreparation, Error>,
         onCancel: @escaping () -> Void,
         onSubmitted: @escaping () -> Void,
         onPlatformShieldCapacityChanged: @escaping (UInt64?, Bool) -> Void
@@ -75,8 +74,7 @@ struct InternalTransferConfirmSheet: View {
             isFullPlatformWithdrawal: isFullPlatformWithdrawal,
             isFullShieldedSweep: isFullShieldedSweep,
             platformShieldAmountWasMax: platformShieldAmountWasMax,
-            coreShieldedDrain: coreShieldedDrain,
-            preparation: preparation))
+            coreShieldedDrain: coreShieldedDrain))
         self.onCancel = onCancel
         self.onSubmitted = onSubmitted
         self.onPlatformShieldCapacityChanged = onPlatformShieldCapacityChanged
@@ -160,13 +158,9 @@ struct InternalTransferConfirmSheet: View {
         guard !isSubmitting else { return }
         isSubmitting = true
         Task {
-            let outcome = await viewModel.confirm()
+            let handedOff = await viewModel.confirm()
             isSubmitting = false
-            switch outcome {
-            case .started, .busy: onSubmitted()
-            case .rejected: onCancel()
-            case .notAuthorized: break
-            }
+            if handedOff { onSubmitted() }
         }
     }
 
@@ -221,7 +215,6 @@ private func confirmSheetSample(
         platformShieldAmountWasMax: false,
         identityTopUp: identityTopUp,
         identityWithdrawal: identityWithdrawal,
-        preparation: .failure(WalletOperationPreparationError.unavailable("Preview")),
         onCancel: {},
         onSubmitted: {},
         onPlatformShieldCapacityChanged: { _, _ in })

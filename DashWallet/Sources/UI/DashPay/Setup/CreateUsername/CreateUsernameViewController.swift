@@ -1391,12 +1391,6 @@ struct CreateUsernameView: View {
     /// Continue's routing. The paying source is settled later, in
     /// `performSubmit` (asked there when the form picked it itself).
     private func beginContinue() {
-        do {
-            try viewModel.prepareConfirmation()
-        } catch {
-            refuseSubmission(error.localizedDescription)
-            return
-        }
         if viewModel.hasUnfinishedCoreTopUp(
             source: payingSource(agreed: nil), nameCount: 1,
             isPurchase: viewModel.canPurchaseListedNameDirectly) {
@@ -1885,3 +1879,4 @@ private struct InstantUsernameForm: View {
         .scrollDismissesKeyboard(.interactively)
     }
 }
+

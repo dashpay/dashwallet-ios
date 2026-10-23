@@ -117,7 +117,6 @@ final class HomeView: UIView {
             pendingInvitationViewModel: self.pendingInvitationViewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
-            protocolCompatibility: SwiftDashSDKHost.shared.protocolCompatibility,
             headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #else
@@ -125,7 +124,6 @@ final class HomeView: UIView {
             viewModel: self.viewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
-            protocolCompatibility: SwiftDashSDKHost.shared.protocolCompatibility,
             headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #endif
@@ -301,7 +299,6 @@ struct HomeViewContent<Content: View>: View {
     /// `HomeView.init`, before `HomeViewController.loadView` assigns
     /// `homeView.shortcutsDelegate` (which forwards into the header view).
     var performShortcut: (ShortcutAction) -> Void = { _ in }
-    let protocolCompatibility: WalletProtocolCompatibilityController
     @ViewBuilder var headerView: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
@@ -363,7 +360,7 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
-                    ProtocolCompatibilityBanner(controller: protocolCompatibility)
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
                         .padding(.horizontal, 16)
 
                     SyncingHeaderView(onFilterTap: {

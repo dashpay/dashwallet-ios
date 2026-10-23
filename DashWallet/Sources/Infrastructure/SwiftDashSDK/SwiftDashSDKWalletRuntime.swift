@@ -1077,9 +1077,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(
                     for: network, preparationsAtStart: preparationsAtStart)
-            } catch is CancellationError {
-                // A superseded initialization must not tear down its replacement.
-                return nil
             } catch SwiftDashSDKSPVCoordinator.StartError.superseded
                 where SwiftDashSDKSPVCoordinator.shared.wasOvertakenByNetworkSwitch(since: preparationsAtStart) {
                 // A network switch prepared while the Core start awaited the

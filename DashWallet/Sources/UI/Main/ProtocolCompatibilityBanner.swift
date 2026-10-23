@@ -1,9 +1,10 @@
 import Combine
 import SwiftUI
+import SwiftDashSDK
 
 @MainActor
 final class ProtocolCompatibilityBannerViewModel: ObservableObject {
-    @Published private(set) var snapshot: WalletProtocolCompatibility?
+    @Published private(set) var snapshot: ProtocolVersionInfo?
     private var subscription: AnyCancellable?
 
     init(controller: WalletProtocolCompatibilityController) {

@@ -25,7 +25,7 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .foregroundColor(.dash.primaryText)
 
             Text(NSLocalizedString(
-                "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
+                "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.",
                 comment: "InternalTransfer"))
                 .font(.callout)
                 .foregroundColor(.dash.secondaryText)

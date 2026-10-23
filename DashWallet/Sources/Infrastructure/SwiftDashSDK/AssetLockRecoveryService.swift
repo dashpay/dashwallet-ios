@@ -132,8 +132,11 @@ struct AssetLockRecoveryService {
     func retry(fundingTypeRaw: Int,
                txidWire: Data,
                vout: UInt32,
-               refreshLookup: Bool = true,
-               retryUnverifiedConsumption: Bool = true) async throws -> Outcome {
+               refreshLookup: Bool = true) async throws -> Outcome {
+        // Resolved before the resume suspends: a wallet switch during the
+        // round-trip must not file this probe under whatever wallet is active
+        // when the answer arrives.
+        let originatingWalletIdHex = AssetLockProbeStore.currentWalletIdHex()
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
@@ -155,8 +158,7 @@ struct AssetLockRecoveryService {
                     outPointVout: vout,
                     recipientAmountDuffs: recipientAmountDuffs)
             } else {
-                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout,
-                                                  retryUnverifiedConsumption: retryUnverifiedConsumption)
+                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
             }
             try Self.checkTerminalPhase(coordinator)
             // Branch on the coordinator's typed report, NOT on
@@ -175,9 +177,13 @@ struct AssetLockRecoveryService {
                 // settles it. Reporting `.completed` would be worse still.
                 outcome = .submittedAwaitingSync
             } else if coordinator.lastResumeReport == .alreadyConsumed {
-                // The coordinator records the advisory probe for its captured
-                // wallet, including calls made directly by the recovery sheet.
-                // Rust retains the nonterminal lock and its recovery proof.
+                // Platform reported this outpoint already spent. The SDK keeps
+                // the lock at `RecoveredFromChain` (the report is not
+                // quorum-authenticated), so record the probe here — otherwise
+                // the answer dies with this call and every later launch offers
+                // the same futile retry. Recorded at the service layer so the
+                // single-row and bulk callers share it.
+                AssetLockProbeStore.shared.record(txid: txidWire, walletIdHex: originatingWalletIdHex)
                 outcome = .completionUnconfirmed
             } else {
                 outcome = .completed
@@ -284,8 +290,8 @@ struct AssetLockRecoveryService {
 
     /// Every tracked funding lock still worth retrying: a status that is not a
     /// finished transfer, a route this service handles, and no recorded
-    /// already-spent probe. Explicit per-transaction recovery can recheck a
-    /// previously reported outpoint; bulk recovery skips it to avoid loops.
+    /// already-spent probe. This is the same predicate the per-transaction
+    /// action uses, applied to the whole snapshot.
     ///
     /// Restoring a wallet turns every shielded funding lock into
     /// `RecoveredFromChain` at once, so this is routinely dozens of entries —
@@ -301,7 +307,7 @@ struct AssetLockRecoveryService {
                   entry.info.fundingTypeRaw == bulkFundingTypeRaw,
                   bulkStatusAllowsRecovery(entry.info.statusRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
-                  !AssetLockProbeStore.shared.contains(txidWire, vout: entry.info.vout)
+                  !AssetLockProbeStore.shared.contains(txidWire)
             else { return nil }
             return PendingRecovery(
                 txidWire: txidWire,
@@ -370,7 +376,7 @@ struct AssetLockRecoveryService {
                     // One refresh for the pass, in `recoverAll`. Per item it is
                     // a full lookup rebuild on top of the one `resumeAssetLock`
                     // already does, and nothing between iterations reads it.
-                    refreshLookup: false, retryUnverifiedConsumption: false)
+                    refreshLookup: false)
                 let step: BulkStep
                 switch result {
                 case .completed: step = .completed

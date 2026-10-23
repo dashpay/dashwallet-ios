@@ -83,9 +83,7 @@ class DWLocationManager: NSObject {
         locationManager.distanceFilter = 100
         geocoder = CLGeocoder()
 
-        // Reading the cached location can synchronously wait for locationd.
-        // Let didUpdateLocations supply it without blocking app startup.
-        currentLocation = nil
+        currentLocation = locationManager.location
 
         super.init()
 

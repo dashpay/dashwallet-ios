@@ -63,7 +63,7 @@ private struct InternalTransferToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
                 guard let remaining = runner.notice?.remainingDisplayTime(
-                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: runner.notice == .submitted ? 8 : Self.duration)
+                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: Self.duration)
                 else { return }
 
                 guard remaining > 0 else {
@@ -90,8 +90,8 @@ private struct InternalTransferToastModifier: ViewModifier {
     private func style(for notice: InternalTransferRunner.Notice) -> ToastStyle {
         switch notice {
         case .started: return .loading
-        case .busy, .drainPending, .submitted: return .warning
-        case .succeeded: return .success
+        case .busy, .drainPending: return .warning
+        case .succeeded, .submitted: return .success
         case .failed: return .error
         }
     }
@@ -112,8 +112,8 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "")
         case .submitted:
             return NSLocalizedString(
-                "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
-                comment: "The transfer may have reached the network; avoid sending twice")
+                "Transfer sent — waiting for the network to confirm it",
+                comment: "Internal transfer accepted but not yet confirmed")
         case .drainPending:
             return NSLocalizedString(
                 "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.",

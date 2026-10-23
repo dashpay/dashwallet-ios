@@ -103,10 +103,6 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// runs its own PIN/biometric gate, so this is the flow's single prompt.
     func moveToShielded() async {
         guard !isInFlight else { return }
-        if coordinator.lastAssetLockOutPoint != nil {
-            await retryShielded()
-            return
-        }
         stage = .shielding
         // A prior failed attempt leaves the coordinator terminal; reset so
         // `beginTransfer()` doesn't silently bail.
@@ -124,10 +120,11 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// left the CoinJoin account untouched.
     func retryShielded() async {
         guard !isInFlight else { return }
-        if coordinator.lastAssetLockOutPoint != nil {
+        if let op = coordinator.lastAssetLockOutPoint {
             stage = .shielding
-            // Keep the same lock and wallet context through failure or PIN cancellation.
-            await coordinator.retryLastAssetLock()
+            coordinator.reset()
+            // Resume re-authorizes on its own (fresh user action).
+            await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
             finishFromCoordinatorPhase()
             return
         }
@@ -152,7 +149,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             // auth-cancel handling). Message-compare against the same
             // localized source the coordinator maps the cancel to.
             if message == ShieldedTransferCoordinator.CoordinatorError.authCancelled.errorDescription {
-                // Preserve any committed lock; the next action resumes it.
+                coordinator.reset()
                 stage = .choice
             } else {
                 stage = .failed(message: message, destination: .shielded)
