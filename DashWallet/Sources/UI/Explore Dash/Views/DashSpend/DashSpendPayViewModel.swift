@@ -270,7 +270,22 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
-        
+
+        // Purchase stays disabled while `error` is set, so an amount refused
+        // while funds were confirming must be re-checked when they land —
+        // otherwise the user waits as told and nothing changes. Only a funds
+        // verdict already on screen is re-checked: `checkAmountForErrors` ends
+        // in `error = nil`, which would clear an error it does not own (merchant
+        // details that failed to load), and with no error up the balance drop
+        // that follows a successful purchase would flag the amount just paid.
+        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.errorIsFundsVerdict else { return }
+                self.checkAmountForErrors()
+            }
+            .store(in: &cancellableBag)
+
         repository[provider]?.isUserSignedInPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
@@ -453,20 +468,29 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
         #endif
 
-        guard !canShowInsufficientFunds else {
-            error = SendAmountError.insufficientFunds
+        let requestedDuffs = requestedDashDuffs
+        let (ceilingDuffs, reserveDuffs) = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
+        guard requestedDuffs <= ceilingDuffs else {
+            // The screen shows the whole balance, the gate counts confirmed
+            // coins only — so right after a receive the shortfall is often
+            // just time, and must not read as "Insufficient funds".
+            error = SendAmountError.walletShortfall(
+                requestedDuffs: requestedDuffs,
+                ceilingDuffs: ceilingDuffs,
+                reserveDuffs: reserveDuffs)
             return
         }
 
         error = nil
     }
-    
-    private var canShowInsufficientFunds: Bool {
+
+    private var errorIsFundsVerdict: Bool {
+        (error as? SendAmountError)?.isFundsVerdict == true
+    }
+
+    private var requestedDashDuffs: UInt64 {
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
-
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
-
-        return dashAmount.plainDashAmount > allAvailableFunds
+        return dashAmount.plainDashAmount
     }
     
     // MARK: - CTX Integration

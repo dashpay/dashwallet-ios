@@ -109,6 +109,125 @@ final class PooledSendableBalanceTests: XCTestCase {
             SwiftDashSDKWalletState.feeAwareMax(spendable: 100_001, reserve: 100_000), 1)
     }
 
+    // MARK: A shortfall that is only waiting on confirmations
+
+    private func pool(confirmed: UInt64, unconfirmed: UInt64) -> SendPoolConfirmationSnapshot {
+        SendPoolConfirmationSnapshot(confirmedDuffs: confirmed, unconfirmedDuffs: unconfirmed)
+    }
+
+    func testAnAmountThatFitsOnceIncomingFundsConfirmIsNamedAsConfirming() {
+        // Just after a receive: 1 DASH confirmed, 2 DASH more in the pool still
+        // waiting on a block or a lock. 2.5 DASH is on screen and refused.
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 250_000_000,
+                reserve: 1_000,
+                sendable: 100_000_000,
+                pool: pool(confirmed: 100_000_000, unconfirmed: 200_000_000)),
+            200_000_000)
+    }
+
+    func testAnAmountThatLeavesNoRoomForTheFeeOnceConfirmedIsStillInsufficient() {
+        // The whole pool, once confirmed, still cannot pay amount + fee:
+        // telling the user to wait would promise a send that then fails.
+        let pool = pool(confirmed: 100_000_000, unconfirmed: 200_000_000)
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 300_000_000, reserve: 1_000, sendable: 100_000_000, pool: pool))
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 299_999_000, reserve: 1_000, sendable: 100_000_000, pool: pool),
+            200_000_000)
+    }
+
+    func testNothingConfirmedYetStillKeepsTheFeeReserve() {
+        // A fee-aware ceiling floors at 0 here: 1 DASH received, none of it
+        // confirmed, 1 DASH entered — it cannot also pay the fee.
+        let pool = pool(confirmed: 0, unconfirmed: 100_000_000)
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 100_000_000, reserve: 300, sendable: 0, pool: pool))
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 99_999_700, reserve: 300, sendable: 0, pool: pool),
+            100_000_000)
+    }
+
+    func testCoinsJustLockedAreStillReportedUntilThePooledFigureCatchesUp() {
+        // The lock has landed in the live pool, the cached pooled figure has
+        // not been re-read: the gate still refuses, and the money is moments
+        // from counting — not "Insufficient funds".
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 250_000_000,
+                reserve: 0,
+                sendable: 100_000_000,
+                pool: pool(confirmed: 300_000_000, unconfirmed: 0)),
+            200_000_000)
+    }
+
+    func testCoinJoinFundsDoNotShrinkTheReportedWait() {
+        // Pool: 1 confirmed + 2 waiting; 1.5 DASH of confirmed CoinJoin lifts
+        // the wallet-wide side, so `sendable` is 2.5. The wait is still 2.
+        XCTAssertEqual(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 280_000_000,
+                reserve: 0,
+                sendable: 250_000_000,
+                pool: pool(confirmed: 100_000_000, unconfirmed: 200_000_000)),
+            200_000_000)
+    }
+
+    func testAPooledFigureThatAlreadyCountsTheUnconfirmedCoinsMeansNoWait() {
+        // Today's pooled figure includes unconfirmed coins; when it is the
+        // smaller of the two (CoinJoin makes the wallet-wide one larger) the
+        // gate already counts them, and waiting changes nothing.
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 350_000_000,
+                reserve: 0,
+                sendable: 300_000_000,
+                pool: pool(confirmed: 100_000_000, unconfirmed: 200_000_000)))
+    }
+
+    func testAReserveAboveEverythingThePoolWillHoldNeverClaimsAWait() {
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 1, reserve: 100_000, sendable: 0,
+                pool: pool(confirmed: 0, unconfirmed: 50_000)))
+    }
+
+    func testAnAmountAboveEverythingThePoolWillHoldIsStillInsufficient() {
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 300_000_001,
+                reserve: 0,
+                sendable: 100_000_000,
+                pool: pool(confirmed: 100_000_000, unconfirmed: 200_000_000)),
+            "waiting would not make this fit")
+    }
+
+    func testAnUnreadablePoolNeverClaimsFundsAreConfirming() {
+        XCTAssertNil(
+            SwiftDashSDKWalletState.fundsStillConfirming(
+                requested: 250_000_000, reserve: 0, sendable: 100_000_000, pool: nil))
+    }
+
+    func testTheConfirmingMessageNamesTheWaitingAmount() {
+        let message = SendAmountError.fundsStillConfirming(200_000_000).errorDescription ?? ""
+        XCTAssertTrue(message.contains("still confirming"), "got: \(message)")
+        XCTAssertTrue(message.contains(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol),
+                      "got: \(message)")
+    }
+
+    func testOnlyAffordabilityVerdictsCountAsFundsVerdicts() {
+        XCTAssertTrue(SendAmountError.insufficientFunds.isFundsVerdict)
+        XCTAssertTrue(SendAmountError.fundsStillConfirming(1).isFundsVerdict)
+        XCTAssertFalse(SendAmountError.maxUnavailable("x").isFundsVerdict,
+                       "a Max explanation must survive a balance change")
+        XCTAssertFalse(SendAmountError.syncingChain.isFundsVerdict)
+    }
+
     // MARK: How Max explains an empty result
 
     func testAConfirmedCoinJoinOnlyBalanceIsNotBlamedOnTheFee() {

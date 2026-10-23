@@ -80,6 +80,8 @@ class CustodialSwapsModel: CoinbaseAmountModel {
         return plainAmount > selectedAccount.info.plainAmountInDash
     }
 
+    override var gatesOnWalletSendPool: Bool { false }
+
     override init() {
         super.init()
     }

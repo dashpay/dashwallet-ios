@@ -96,6 +96,14 @@ public struct WalletBalance: Equatable, Sendable {
     public var maxSendable: UInt64 { spendable > Self.sendFeeReserveDuffs ? spendable - Self.sendFeeReserveDuffs : 0 }
 }
 
+/// The send pool's `confirmed` and `unconfirmed` sums, taken from one read of
+/// its accounts so the two halves describe the same moment. Built by
+/// `SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot()`.
+struct SendPoolConfirmationSnapshot: Equatable, Sendable {
+    let confirmedDuffs: UInt64
+    let unconfirmedDuffs: UInt64
+}
+
 /// The single-flight bookkeeping behind
 /// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
 /// `Task` machinery so the ownership rule can be exercised without a wallet, an
@@ -184,9 +192,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         // The pooled figure, not `balance.spendable`: Max filling from the
         // wallet-wide balance is the same lie the amount gate told, one tap
         // more convincing.
-        Self.feeAwareMax(
-            spendable: sendableDuffs,
-            reserve: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+        feeAwareMaxSendableAndReserve().max
     }
 
     /// `feeAwareMaxSendable`'s arithmetic, separated from the SDK reads so the
@@ -322,6 +328,94 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     static func excludedFromSendPool(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
         guard let pooled, let walletSpendable, walletSpendable > pooled else { return 0 }
         return walletSpendable - pooled
+    }
+
+    /// The send-pool funds the amount gates do not count yet, when counting
+    /// them would make `requestedDuffs` affordable; `nil` when the amount
+    /// already fits under `ceilingDuffs`, or would not fit even then.
+    ///
+    /// `ceilingDuffs` is the gate the caller applied and `reserveDuffs` what
+    /// that gate holds back on top of the amount — 0 for `sendableDuffs`, the
+    /// fee reserve for a fee-aware ceiling (see `feeAwareMaxSendableAndReserve`).
+    /// Those gates are built on `sendableDuffs`, which is capped by
+    /// `WalletBalance.spendable` (confirmed coins only), while the balance on
+    /// screen counts every bucket — so right after a receive an amount the user
+    /// can see is refused. This tells that case apart from a real shortfall so it is not
+    /// reported as "Insufficient funds".
+    ///
+    /// The pool is read live, `sendableDuffs` is the cached pooled figure that
+    /// is refreshed asynchronously after each balance event. For the moment a
+    /// lock or a block has landed and that refresh has not, the coins just
+    /// confirmed are still reported here: the gate is still refusing them, and
+    /// they are moments from counting — that is not a shortfall either.
+    ///
+    /// Always `nil` while the pooled figure is unknown: `sendableDuffs` then
+    /// falls back to the wallet-wide balance, CoinJoin included, which the
+    /// pool total cannot be compared with.
+    public func fundsStillConfirmingDuffs(
+        requestedDuffs: UInt64,
+        ceilingDuffs: UInt64,
+        reserveDuffs: UInt64
+    ) -> UInt64? {
+        guard requestedDuffs > ceilingDuffs, pooledSpendableDuffs != nil else { return nil }
+        return Self.fundsStillConfirming(
+            requested: requestedDuffs,
+            reserve: reserveDuffs,
+            sendable: sendableDuffs,
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot())
+    }
+
+    /// `fundsStillConfirmingDuffs`'s arithmetic, separated from the SDK reads.
+    /// The caller has already found `requested` above its ceiling.
+    ///
+    /// The fit is `requested + reserve <= confirmed + unconfirmed` over the
+    /// pool. A gate that already counts the unconfirmed coins (a pooled figure
+    /// that includes them) sits at that total, so nothing is reported —
+    /// waiting would change nothing there.
+    ///
+    /// What is reported is the larger of the pool's `unconfirmed` and the pool
+    /// total minus `sendable`: the second alone understates the wait when
+    /// CoinJoin funds lift the wallet-wide side of `sendable`, the first alone
+    /// is 0 in the moment after a lock, before the pooled figure is re-read.
+    static func fundsStillConfirming(
+        requested: UInt64,
+        reserve: UInt64,
+        sendable: UInt64,
+        pool: SendPoolConfirmationSnapshot?
+    ) -> UInt64? {
+        guard let pool else { return nil }
+        let onceConfirmed = pool.confirmedDuffs &+ pool.unconfirmedDuffs
+        guard onceConfirmed > sendable, reserve < onceConfirmed,
+              requested <= onceConfirmed - reserve
+        else { return nil }
+        return max(pool.unconfirmedDuffs, onceConfirmed - sendable)
+    }
+
+    /// `feeAwareMaxSendable()` together with the reserve it subtracted, for a
+    /// caller that also needs to know what its ceiling held back — one UTXO
+    /// enumeration instead of two.
+    public func feeAwareMaxSendableAndReserve() -> (max: UInt64, reserve: UInt64) {
+        let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
+        return (Self.feeAwareMax(spendable: sendableDuffs, reserve: reserve), reserve)
+    }
+
+    /// Fires whenever an amount gate's verdict can change: the sendable
+    /// ceiling moved, or coins started or finished confirming — which is what
+    /// decides between "Insufficient funds" and "still confirming" without
+    /// moving the ceiling at all. Emits the current state on subscription.
+    public var sendVerdictInputsPublisher: AnyPublisher<Void, Never> {
+        Publishers.CombineLatest(
+            Self.sendableCeilingPublisher(
+                pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
+                walletSpendable: $balance.map { $0?.spendable }.eraseToAnyPublisher()),
+            unconfirmedDuffsPublisher)
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
+
+    /// The wallet's `unconfirmed` bucket, deduplicated.
+    public var unconfirmedDuffsPublisher: AnyPublisher<UInt64?, Never> {
+        $balance.map { $0?.unconfirmed }.removeDuplicates().eraseToAnyPublisher()
     }
 
     // MARK: - Obj-C bridge
