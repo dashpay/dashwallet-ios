@@ -1407,6 +1407,66 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.approveError)
     }
 
+    /// An App Connect request with a callback, approved from a scanned QR
+    /// code or from a link opened on this phone.
+    private func approveAppConnectRequest(byLink: Bool) async throws -> [URL] {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest(
+            "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a", terms: .current)], loginRequest: request)
+        let opened = OpenedURLs()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
+
+        if byLink {
+            viewModel.onURIReceived("login")
+        } else {
+            viewModel.onQRScanned("login")
+        }
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest == nil }
+        XCTAssertEqual(spy.approvedConsents.count, 1)
+        return opened.urls
+    }
+
+    /// A QR code scanned off another screen is answered there: opening the
+    /// callback on this phone would start an unrelated session of the app.
+    func testApprovingAScannedAppConnectRequestDoesNotOpenItsCallback() async throws {
+        let opened = try await approveAppConnectRequest(byLink: false)
+        XCTAssertEqual(opened, [])
+    }
+
+    /// A link opened by the app on this phone returns to it when answered.
+    func testApprovingALinkedAppConnectRequestOpensItsCallback() async throws {
+        let opened = try await approveAppConnectRequest(byLink: true)
+        XCTAssertEqual(opened.map(\.host), ["yap.pr"])
+        XCTAssertEqual(opened.first?.absoluteString.contains("ac=ok"), true)
+    }
+
+    /// An attempt failed, the next one was cancelled at the PIN prompt, and
+    /// the user then closed the sheet: the app hears the user's last answer,
+    /// a decline, not the earlier failure.
+    func testClosingTheSheetAfterACancelledRetryReportsADecline() async throws {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest(
+            "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a", terms: .current)], loginRequest: request)
+        spy.approveFailures = [DashConnectPlatformError.noIdentity, DashConnectPlatformError.authorizationCancelled]
+        let opened = OpenedURLs()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
+
+        viewModel.onURIReceived("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
+        viewModel.denyPendingRequest()
+
+        XCTAssertEqual(opened.urls.count, 1)
+        XCTAssertEqual(opened.urls.first?.absoluteString.contains("ac=declined"), true)
+    }
+
     /// Another identity became active, or the network answers with the other
     /// login, while the sheet was up: nothing is approved on the old sheet,
     /// and the user decides again on what is true now.
@@ -1613,8 +1673,11 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     private var storedApproveFailures: [Error] = []
     private var storedApprovedConsents: [ConnectionRequest] = []
 
-    init(shown: [ConnectionRequest]) {
+    private let loginRequest: DashKeyRequest
+
+    init(shown: [ConnectionRequest], loginRequest: DashKeyRequest = MockDashConnectDataSource.sampleLoginRequest) {
         self.shown = shown
+        self.loginRequest = loginRequest
     }
 
     /// Thrown by the approvals in order, one each; later approvals succeed.
@@ -1632,7 +1695,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     func parseQR(_ content: String) async throws -> DashConnectQr {
-        .login(MockDashConnectDataSource.sampleLoginRequest)
+        .login(loginRequest)
     }
 
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
@@ -1661,6 +1724,12 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     func remove(id: String, scope: String?) async {}
+}
+
+/// The URLs a view model asked to open, in order.
+@MainActor
+private final class OpenedURLs {
+    var urls: [URL] = []
 }
 
 private enum PurchaseSpyError: LocalizedError {

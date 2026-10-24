@@ -58,10 +58,28 @@ enum AppConnect {
         case twoQR
         /// Registers a session key with these terms.
         case oneQR(SessionKeyTerms)
+        /// An App Connect request v2: registers the keys of this plan.
+        case appConnect(GrantPlan)
+        /// An App Connect request v2 the wallet will not answer; there is
+        /// nothing to approve.
+        case refused(Refusal)
 
         var sessionKeyTerms: SessionKeyTerms? {
             if case .oneQR(let terms) = self { return terms }
             return nil
+        }
+
+        var grantPlan: GrantPlan? {
+            if case .appConnect(let plan) = self { return plan }
+            return nil
+        }
+
+        /// Whether the sheet has something to approve.
+        var isApprovable: Bool {
+            switch self {
+            case .twoQR, .oneQR, .appConnect: return true
+            case .unresolved, .refused: return false
+            }
         }
     }
 
@@ -139,6 +157,32 @@ enum AppConnect {
         return .usable(keyId: keyId)
     }
 
+    /// `count` ids that no key of the identity has, for one update that
+    /// adds `count` keys: above the highest id while they fit, then the
+    /// lowest gaps. Nil when the identity cannot take that many.
+    static func freeKeyIds(
+        count: Int,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> [UInt32]? {
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let highest = taken.max()
+        var ids: [UInt32] = []
+        var next = highest.map { $0 == .max ? nil : $0 + 1 } ?? 0
+        while ids.count < count, let id = next {
+            ids.append(id)
+            next = id == .max ? nil : id + 1
+        }
+        // The identity holds far fewer keys than there are ids, so this
+        // stops within a few steps of the lowest gaps.
+        var gap: UInt32 = 0
+        while ids.count < count {
+            if !taken.contains(gap) && !ids.contains(gap) { ids.append(gap) }
+            guard gap < .max else { return nil }
+            gap += 1
+        }
+        return ids
+    }
+
     /// The id for a new key: one above the highest on the identity, disabled
     /// keys included. Platform only refuses an id the identity already has,
     /// so when the highest is the last id a key can have (a key an app
@@ -196,6 +240,33 @@ enum AppConnect {
         /// login's authentication key, or of its encryption key.
         var isTwoQRAuthenticationKeyShaped = false
         var isTwoQREncryptionKeyShaped = false
+        /// The key's bound as the store holds it; nil for a key with no
+        /// bound, or one this build cannot read (`hasUnreadableBound`).
+        var bound: StoredBound? = nil
+        /// The stored key has the shape of an App Connect v2 auth key:
+        /// HASH160 authentication at HIGH or CRITICAL, with an expiry.
+        var isV2AuthKeyShaped = false
+    }
+
+    /// A key's contract bound, as the wallet's store records it.
+    enum StoredBound: Equatable {
+        case singleContract(Data)
+        case documentType(contractId: Data, name: String)
+        case contractGroup(Data)
+    }
+
+    /// The bound of a stored key: the store's discriminant (`boundsKind`,
+    /// see `singleContractId(boundsKind:boundIds:)`), its ids and, for a
+    /// document type, its name. Nil for no bound and for one that cannot be
+    /// read.
+    static func storedBound(boundsKind: Int, boundIds: [Data]?, documentTypeName: String?) -> StoredBound? {
+        guard let id = boundIds?.first, id.count == 32 else { return nil }
+        switch boundsKind {
+        case 1: return .singleContract(id)
+        case 2: return documentTypeName.map { .documentType(contractId: id, name: $0) }
+        case 3: return .contractGroup(id)
+        default: return nil
+        }
     }
 
     /// Whether the store shows either key of the two-QR login, not disabled,
@@ -241,6 +312,14 @@ enum AppConnect {
         return id
     }
 
+    /// A live key in a shape App Connect registers for an app: HASH160
+    /// authentication at HIGH (a v1 session key, most v2 keys) or CRITICAL
+    /// (a v2 contract-group key).
+    static func isLiveAppConnectAuthKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
+        key.keyType == .ecdsaHash160 && key.purpose == .authentication
+            && (key.securityLevel == .high || key.securityLevel == .critical) && key.disabledAt == nil
+    }
+
     private static func isLiveSessionKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
         key.keyType == .ecdsaHash160
             && key.purpose == .authentication
@@ -267,12 +346,27 @@ enum AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         twoQRAuthenticationKeyHash160: Data? = nil
     ) -> [UInt32] {
-        let granted = Set(grants.map(\.sessionKeyId))
+        let granted = Set(grants.flatMap(\.keyIds))
+        let grantedByV2 = Set(grants.filter { $0.additionalKeyIds != nil || $0.connectionId != nil }.flatMap(\.keyIds))
         return currentIdentityPublicKeys
             .filter { key in
-                guard isLiveSessionKey(key) else { return false }
                 let keyId = UInt32(bitPattern: key.keyId)
-                if granted.contains(keyId) { return true }
+                // A recorded id is disabled only while the key under it has
+                // the shape the grant registered: the id of a registration
+                // that never landed may belong to another key since. A v1
+                // session key is HIGH; a v2 grant's keys may also be a
+                // CRITICAL group key, which the store has to show bound to a
+                // group.
+                if granted.contains(keyId) {
+                    if isLiveSessionKey(key) { return true }
+                    guard grantedByV2.contains(keyId), isLiveAppConnectAuthKey(key),
+                          key.securityLevel == .critical else { return false }
+                    return bindings.contains {
+                        guard $0.keyId == keyId, $0.data == key.data, case .contractGroup = $0.bound else { return false }
+                        return true
+                    }
+                }
+                guard isLiveSessionKey(key) else { return false }
                 guard key.totalBudget != nil, key.expiresAt != nil,
                       key.data != twoQRAuthenticationKeyHash160 else { return false }
                 return bindings.contains {
@@ -283,20 +377,20 @@ enum AppConnect {
             .sorted()
     }
 
-    /// Live session keys whose bound contract is unknown: not behind
-    /// `grants`, and either absent from `bindings` or stored with a bound
-    /// that cannot be read. Any of them could belong to the app being
-    /// disconnected, so a disconnect must stop on these instead of reporting
-    /// every key as turned off.
+    /// Live keys in a shape App Connect registers (`isLiveAppConnectAuthKey`)
+    /// whose bound is unknown: not behind `grants`, and either absent from
+    /// `bindings` or stored with a bound that cannot be read. Any of them
+    /// could belong to the app being disconnected, so a disconnect must stop
+    /// on these instead of reporting every key as turned off.
     static func sessionKeyIdsWithUnknownBinding(
         for grants: [AppConnectGrant],
         bindings: [KeyBinding],
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
     ) -> [UInt32] {
-        let granted = Set(grants.map(\.sessionKeyId))
+        let granted = Set(grants.flatMap(\.keyIds))
         return currentIdentityPublicKeys
             .filter { key in
-                guard isLiveSessionKey(key) else { return false }
+                guard isLiveAppConnectAuthKey(key) else { return false }
                 let keyId = UInt32(bitPattern: key.keyId)
                 return !granted.contains(keyId) && !bindings.contains {
                     $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound
@@ -331,9 +425,14 @@ enum AppConnect {
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> Bool {
-        currentIdentityPublicKeys.contains { key in
+        guard let hash = grant.unconfirmedKeyHash160 else {
+            // A confirmed record: any of its keys (a v2 grant has several).
+            return currentIdentityPublicKeys.contains {
+                grant.keyIds.contains(UInt32(bitPattern: $0.keyId)) && $0.disabledAt == nil
+            }
+        }
+        return currentIdentityPublicKeys.contains { key in
             guard UInt32(bitPattern: key.keyId) == grant.sessionKeyId, key.disabledAt == nil else { return false }
-            guard let hash = grant.unconfirmedKeyHash160 else { return true }
             guard let appContractId = Data.identifier(fromBase58: grant.appContractId) else { return false }
             return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
                 && key.purpose == .authentication && key.securityLevel == .high
@@ -376,7 +475,7 @@ enum AppConnect {
         for grants: [AppConnectGrant]
     ) -> [UInt32] {
         let known = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
-        return Set(grants.map(\.sessionKeyId)).subtracting(known).sorted()
+        return Set(grants.flatMap(\.keyIds)).subtracting(known).sorted()
     }
 
     /// What a disconnect leaves of the matching records once their keys are
@@ -551,6 +650,23 @@ struct AppConnectGrant: Codable, Equatable {
     /// be deleted, or could not be shown to be absent; the record then only
     /// waits for that.
     var keyDisabled: Bool?
+    /// App Connect v2: the grant's other auth keys, in request order after
+    /// `sessionKeyId` (the primary binding's key). The identity's encryption
+    /// key for the app is shared by every device and is not part of a grant.
+    var additionalKeyIds: [UInt32]? = nil
+    /// App Connect v2: the request's `CONNECTION_ID` (hex). A later login
+    /// with the same one replaces this grant's keys.
+    var connectionId: String? = nil
+    /// App Connect v2: the ids of the identity's encryption keys the
+    /// response carries, in slot order. A retry sends the recorded response
+    /// only while it would carry the same ones.
+    var encryptionKeyIds: [UInt32]? = nil
+
+    /// Every auth key of the grant.
+    var keyIds: [UInt32] {
+        [sessionKeyId] + (additionalKeyIds ?? [])
+    }
+
     /// The hex hash160 of the session key, set from just before its
     /// registration is submitted until the key is seen on the identity.
     /// While set, the key may be there or not: an update can land without
