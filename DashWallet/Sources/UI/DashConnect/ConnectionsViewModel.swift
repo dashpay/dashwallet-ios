@@ -19,6 +19,7 @@
 
 import Combine
 import Foundation
+import UIKit
 
 struct ConnectionsScreenMessage: Identifiable, Equatable {
     enum Kind: String {
@@ -67,6 +68,16 @@ final class ConnectionsViewModel: ObservableObject {
 
     private let dataSource: any DashConnectDataSource
     private var pendingLoginRequest: DashKeyRequest?
+    /// Opens an App Connect request's return URL.
+    private let openURL: @MainActor (URL) -> Void
+    /// The status the pending App Connect request's callback reports if the
+    /// user closes the sheet now: set when an approval failed.
+    private var pendingFailureStatus: AppConnect.CallbackStatus?
+    /// Whether the pending request came as a link opened on this phone. Only
+    /// then is its callback opened: a QR code scanned off another screen is
+    /// answered on that screen, and opening the callback here would start an
+    /// unrelated session of the app in this phone's browser.
+    private var pendingRequestArrivedByLink = false
     private var cancellables = Set<AnyCancellable>()
 
     /// Serializes inbound requests.
@@ -89,11 +100,13 @@ final class ConnectionsViewModel: ObservableObject {
 
     init(
         dataSource: (any DashConnectDataSource)? = nil,
-        featureUnavailable: Bool? = nil
+        featureUnavailable: Bool? = nil,
+        openURL: (@MainActor (URL) -> Void)? = nil
     ) {
         let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
         self.featureUnavailable = computedFeatureUnavailable
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
+        self.openURL = openURL ?? { UIApplication.shared.open($0) }
 
         self.dataSource.connections
             .receive(on: DispatchQueue.main)
@@ -104,6 +117,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func onQRScanned(_ content: String) {
+        receive(content, byLink: false)
+    }
+
+    private func receive(_ content: String, byLink: Bool) {
         guard !featureUnavailable else { return }
 
         // A request the user is already looking at owns the screen until they
@@ -161,6 +178,8 @@ final class ConnectionsViewModel: ObservableObject {
                     let connectionRequest = await dataSource.makeConnectionRequest(from: request)
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
+                    pendingRequestArrivedByLink = byLink
+                    pendingFailureStatus = nil
                     pendingRequest = connectionRequest
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
@@ -191,9 +210,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// A `dash-key:` / `dash-st:` link opened by an app running on this phone.
-    /// It carries exactly what the QR code encodes, so it takes the same path.
+    /// It carries exactly what the QR code encodes, so it takes the same path,
+    /// except that only a link's callback is opened.
     func onURIReceived(_ uri: String) {
-        onQRScanned(uri)
+        receive(uri, byLink: true)
     }
 
     func approvePendingRequest() {
@@ -202,7 +222,7 @@ final class ConnectionsViewModel: ObservableObject {
         // authorize the request on screen moments before it is replaced.
         // An unresolved login has nothing to approve; the sheet offers
         // `retryPendingRequest` for it instead.
-        guard let consent = pendingRequest, consent.login != .unresolved,
+        guard let consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
@@ -213,6 +233,7 @@ final class ConnectionsViewModel: ObservableObject {
 
             do {
                 _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
+                openCallback(of: pendingLoginRequest, status: .ok)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
@@ -221,6 +242,8 @@ final class ConnectionsViewModel: ObservableObject {
                 // network now answers with the other login: what the sheet
                 // showed is not what would run. Nothing was signed. The sheet is rebuilt from
                 // the same request as it stands now, for a new decision.
+                // An earlier failure was on the sheet this one replaces.
+                self.pendingFailureStatus = nil
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch DashConnectPlatformError.loginUnresolved {
@@ -233,8 +256,19 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
+            } catch let refusal as AppConnect.Refusal {
+                // A refusal fails the same way on every try: the sheet shows
+                // it as the request's answer, and offers no Approve.
+                self.pendingFailureStatus = refusal.status
+                self.pendingRequest?.login = .refused(refusal)
+                self.approveError = nil
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
+                // A cancelled PIN prompt is the user declining, not a failure,
+                // whatever an earlier attempt ended in.
+                self.pendingFailureStatus = error as? DashConnectPlatformError == .authorizationCancelled
+                    ? nil
+                    : .failed
                 self.approveError = String(
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription
@@ -253,15 +287,38 @@ final class ConnectionsViewModel: ObservableObject {
 
         Task {
             defer { isApproving = false }
+            self.pendingFailureStatus = nil
             self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
     }
 
     func denyPendingRequest() {
         guard !isApproving else { return }
+        // A refused request never showed where it would return, so its
+        // callback is not opened.
+        if let pendingLoginRequest, pendingRequest?.login.isApprovable == true {
+            openCallback(of: pendingLoginRequest, status: pendingFailureStatus ?? .declined)
+        }
         pendingRequest = nil
         pendingLoginRequest = nil
+        pendingFailureStatus = nil
         approveError = nil
+    }
+
+    /// Returns to the app that sent an App Connect request, with how it
+    /// ended (`ac=<status>`). Only the callback the sheet showed ("returns
+    /// to <host>") is opened, and only once the user has answered it. A
+    /// known app's request that returns elsewhere is refused before the
+    /// sheet (`AppConnect.callbackRefusal`); for an app the wallet does not
+    /// know, the user's answer to a sheet naming the host, with its
+    /// warning, stands in for the profile's "ask".
+    /// The app treats it as a nudge to look for the response, never as
+    /// proof of anything.
+    private func openCallback(of request: DashKeyRequest, status: AppConnect.CallbackStatus) {
+        guard pendingRequestArrivedByLink,
+              let callback = request.appConnect?.callback,
+              let url = AppConnect.callbackURL(callback, status: status) else { return }
+        openURL(url)
     }
 
     func approvePendingTokenPurchase() {

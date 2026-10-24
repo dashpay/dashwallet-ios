@@ -658,7 +658,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         switchPreparation.consume()
 
         do {
-            try manager.startSpv(config: config)
+            try await manager.startSpv(config: config)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.spvClient(error))

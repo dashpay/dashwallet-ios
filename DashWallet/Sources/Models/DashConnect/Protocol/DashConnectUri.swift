@@ -190,6 +190,20 @@ enum DashConnectUri {
         )
     }
 
+    /// Whether a `dash-key:` URI asks for request version 2 (`v=2`), and so
+    /// belongs to `parseAppConnectRequest`. The v1 parser cannot tell: it
+    /// measures the body before it reads the version. The query is read as
+    /// that parser reads it, form-decoded, so `v=%32` is version 2 as well.
+    static func isAppConnectUri(_ uri: String) -> Bool {
+        guard isKeyUri(uri), let queryIndex = uri.unicodeScalars.firstIndex(of: "?") else { return false }
+        var query = uri.unicodeScalars[uri.unicodeScalars.index(after: queryIndex)...]
+        if query.first == "?" { query = query.dropFirst() }
+        return query.split(separator: "&").contains { item in
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            return parts.count == 2 && formDecoded(parts[0]) == "v" && formDecoded(parts[1]) == appConnectVersion
+        }
+    }
+
     /// Parses a `dash-key:` URI of version 2. A version 1 URI is
     /// `unsupported` here: it belongs to `parseKeyRequest`.
     static func parseAppConnectRequest(_ uri: String) throws -> AppConnectUri {

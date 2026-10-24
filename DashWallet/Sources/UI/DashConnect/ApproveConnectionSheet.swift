@@ -105,6 +105,17 @@ struct ApproveConnectionSheet: View {
                                 .font(.footnote)
                                 .foregroundColor(.secondaryText)
                         }
+                    } else if case .refused(let refusal) = request.login {
+                        Text(NSLocalizedString(
+                            "This wallet will not answer this sign-in request.",
+                            comment: "DashConnect App Connect v2"))
+                            .font(.subhead)
+                            .foregroundColor(.primaryText)
+                        Text(refusal.reason)
+                            .font(.footnote)
+                            .foregroundColor(.secondaryText)
+                    } else if let plan = request.login.grantPlan {
+                        appConnectPermissions(plan)
                     } else if let terms = request.login.sessionKeyTerms {
                         sessionKeyPermissions(terms)
                     } else if isRelogin {
@@ -152,18 +163,21 @@ struct ApproveConnectionSheet: View {
                         .padding(.bottom, 4)
                 }
 
-                DashButton(
-                    // With the login unresolved there is nothing to approve.
-                    text: request.login == .unresolved
-                        ? NSLocalizedString("Try again", comment: "")
-                        : NSLocalizedString("Approve", comment: "DashConnect"),
-                    style: .filledBlue,
-                    size: .large,
-                    stretch: true,
-                    isEnabled: !isLoading,
-                    isLoading: isLoading,
-                    action: request.login == .unresolved ? onRetry : onApprove
-                )
+                // A refused request has nothing to approve or try again.
+                if !isRefused {
+                    DashButton(
+                        // With the login unresolved there is nothing to approve.
+                        text: request.login == .unresolved
+                            ? NSLocalizedString("Try again", comment: "")
+                            : NSLocalizedString("Approve", comment: "DashConnect"),
+                        style: .filledBlue,
+                        size: .large,
+                        stretch: true,
+                        isEnabled: !isLoading,
+                        isLoading: isLoading,
+                        action: request.login == .unresolved ? onRetry : onApprove
+                    )
+                }
 
                 DashButton(
                     text: NSLocalizedString("Deny", comment: "DashConnect"),
@@ -188,6 +202,11 @@ struct ApproveConnectionSheet: View {
 
     private var isRelogin: Bool {
         request.existingConnection != nil
+    }
+
+    private var isRefused: Bool {
+        if case .refused = request.login { return true }
+        return false
     }
 
     private var titleFormat: String {
@@ -256,6 +275,168 @@ struct ApproveConnectionSheet: View {
             .foregroundColor(.secondaryText)
         }
     }
+
+    /// An App Connect request v2: one line per key the app is given, with
+    /// what it can spend and until when, then how old the request is and
+    /// where the wallet returns. A draft: per-binding toggles and budget and
+    /// lifetime presets are left to the wallet's design.
+    private func appConnectPermissions(_ plan: AppConnect.GrantPlan) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            permissions(
+                granted: [NSLocalizedString("See your username", comment: "DashConnect")]
+                    + plan.auth.map { authGrantText($0, administered: plan.administeredGroupIds.contains($0.binding.id)) }
+                    + plan.encryption.map { _ in
+                        String(
+                            format: NSLocalizedString(
+                                "Receive messages encrypted to you in %@",
+                                comment: "DashConnect App Connect v2: the placeholder is the app's name"),
+                            resolvedAppLabel)
+                    },
+                withheld: [
+                    NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect one-QR login"),
+                    NSLocalizedString("Your Dash balance", comment: "DashConnect one-QR login"),
+                    NSLocalizedString("Registering names or changing your keys", comment: "DashConnect App Connect v2"),
+                ]
+            )
+
+            VStack(alignment: .leading, spacing: 4) {
+                if let warning = originWarning(plan) {
+                    Text(warning)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primaryText)
+                }
+                Text(requestOrigin(plan))
+                    .font(.footnote)
+                    .foregroundColor(.secondaryText)
+                Text(
+                    String(
+                        format: NSLocalizedString(
+                            "Only approve if you just started signing in on %@.",
+                            comment: "DashConnect App Connect v2: the placeholder is the app's website or name"),
+                        plan.brandHost ?? plan.callbackHost ?? resolvedAppLabel)
+                )
+                .font(.footnote)
+                .foregroundColor(.secondaryText)
+            }
+        }
+    }
+
+    /// What one key can do, what it can spend and until when. `administered`:
+    /// the group has administrators who can add their own contracts to it.
+    private func authGrantText(_ grant: AppConnect.AuthGrant, administered: Bool) -> String {
+        let binding = grant.binding
+        let action: String
+        switch binding.kind {
+        case .contractGroup:
+            action = String(
+                format: grant.securityLevel == .critical
+                    ? NSLocalizedString(
+                        "Act as you in all of %@'s contracts, including claiming and spending its tokens",
+                        comment: "DashConnect App Connect v2: the placeholder is the app's name")
+                    : NSLocalizedString(
+                        "Act as you in all of %@'s contracts",
+                        comment: "DashConnect App Connect v2: the placeholder is the app's name"),
+                resolvedAppLabel)
+        case .singleContract:
+            action = String(
+                format: NSLocalizedString(
+                    "Act as you in one of %@'s contracts",
+                    comment: "DashConnect App Connect v2: the placeholder is the app's name"),
+                resolvedAppLabel)
+        case .documentType:
+            if binding.id.toBase58String() == AppConnect.dashPayContractId, binding.documentTypeName == "profile" {
+                action = NSLocalizedString("Edit your DashPay profile", comment: "DashConnect App Connect v2")
+            } else {
+                action = String(
+                    format: NSLocalizedString(
+                        "Write \"%@\" documents as you",
+                        comment: "DashConnect App Connect v2: the placeholder is a document type name"),
+                    binding.documentTypeName ?? "")
+            }
+        }
+        let expiry = Self.expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(grant.expiresAt) / 1000))
+        var text: String
+        if let budget = grant.totalBudget {
+            text = String(
+                format: NSLocalizedString(
+                    "%1$@, spending up to %2$@ of your identity's credits until %3$@",
+                    comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
+                action, PlatformCreditsFormatter.dashString(budget), expiry)
+        } else {
+            // The app asked for no budget, and the wallet adds none: the key
+            // can spend the identity's credits without a cap, so the sheet
+            // says so.
+            text = String(
+                format: NSLocalizedString(
+                    "%1$@, with no limit on spending your identity's credits, until %2$@",
+                    comment: "DashConnect App Connect v2: what a key can do, a date"),
+                action, expiry)
+        }
+        // A budget is in credits: Platform checks a token transfer against
+        // the token balance, not against the key's credit budget.
+        if binding.kind == .contractGroup, grant.securityLevel == .critical {
+            text += " " + NSLocalizedString(
+                "The credit limit does not limit how many of your tokens it can move.",
+                comment: "DashConnect App Connect v2")
+        }
+        // Group membership is read when the key signs, not when it is granted.
+        if binding.kind == .contractGroup, administered {
+            text += " " + NSLocalizedString(
+                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
+                comment: "DashConnect App Connect v2")
+        }
+        return text
+    }
+
+    /// The profile's warnings. Nothing in a request proves where it came
+    /// from: an app the wallet does not know is named by the request alone,
+    /// and a known app's request that does not return to its website may
+    /// come from a page that is not the app's. A known app's request that
+    /// returns elsewhere is refused before it gets here.
+    private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
+        guard let brandHost = plan.brandHost else {
+            return NSLocalizedString(
+                "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
+                comment: "DashConnect App Connect v2")
+        }
+        guard plan.callbackHost == nil else { return nil }
+        return String(
+            format: NSLocalizedString(
+                "This request does not return to %@. It may not come from the app's website.",
+                comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
+            brandHost)
+    }
+
+    private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {
+        let requested = Self.ageFormatter.localizedString(
+            for: Date(timeIntervalSince1970: TimeInterval(plan.createdAt) / 1000), relativeTo: Date())
+        guard let host = plan.callbackHost else {
+            return String(
+                format: NSLocalizedString(
+                    "Requested %@",
+                    comment: "DashConnect App Connect v2: the placeholder is a relative time, e.g. 12 seconds ago"),
+                requested)
+        }
+        return String(
+            format: NSLocalizedString(
+                "Requested %1$@ · returns to %2$@",
+                comment: "DashConnect App Connect v2: a relative time (12 seconds ago), then a website (yap.pr)"),
+            requested, host)
+    }
+
+    private static let expiryFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
+    private static let ageFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter
+    }()
 
     private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
