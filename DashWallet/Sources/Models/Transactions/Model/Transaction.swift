@@ -419,6 +419,14 @@ class Transaction: TransactionDataItem, Identifiable {
         return UUID(drainOperationIdBytes: bytes)
     }
 
+    /// The SDK row carries an operation id that is not a 16-byte UUID. Such a
+    /// row is a drain row whose recipient cannot be looked up, so recovery
+    /// refuses it rather than treating it as a lock no drain built.
+    var hasMalformedShieldedDrainOperationId: Bool {
+        guard let bytes = shieldedLockInfo?.operationId, !bytes.isEmpty else { return false }
+        return UUID(drainOperationIdBytes: bytes) == nil
+    }
+
     private lazy var _dashAmount: UInt64 = {
         // A "to Shielded" / "to Platform" transfer's L1 funding tx is an
         // asset lock; surface the real locked amount the SDK recorded

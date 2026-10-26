@@ -300,7 +300,7 @@
 "Search notifications" = "Search notifications";
 
 /* Send confirm sheet: Core drain */
-"Sends your whole Transparent balance" = "Sends your whole Transparent balance";
+"Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
 /* Dash DEX */
 "Stuck" = "Stuck";

@@ -645,7 +645,7 @@
 "Resume transfer" = "Resume transfer";
 
 /* Send confirm sheet: Core drain */
-"Sends your whole Transparent balance" = "Sends your whole Transparent balance";
+"Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";

@@ -1450,7 +1450,7 @@ struct SendConfirmSheet: View {
 
     private var infoTitle: String {
         if isCoreDrain {
-            return NSLocalizedString("Sends your whole Transparent balance", comment: "Send confirm sheet: Core drain")
+            return NSLocalizedString("Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
         }
         switch route {
         case .platformToCore, .shieldedToCore:

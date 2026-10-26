@@ -95,15 +95,31 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         case refuse
     }
 
+    /// What the SDK row says about the drain that built this lock.
+    enum DrainRowIdentity: Equatable {
+        /// No operation id: a lock no drain built.
+        case none
+        case operation(UUID)
+        /// An operation id that is not a UUID: a drain row that cannot be
+        /// matched to any marker.
+        case malformed
+    }
+
     nonisolated static func resumeRecipient(
-        rowOperationId: UUID?,
+        row: DrainRowIdentity,
         marker: CoreShieldedDrainOperation?
     ) -> ResumeRecipient {
-        guard let rowOperationId else { return .ownWallet }
-        guard let marker, marker.id == rowOperationId else { return .refuse }
-        switch marker.recipient {
-        case .ownWallet: return .ownWallet
-        case .external(let raw43): return .external(raw43)
+        switch row {
+        case .none:
+            return .ownWallet
+        case .malformed:
+            return .refuse
+        case .operation(let rowOperationId):
+            guard let marker, marker.id == rowOperationId else { return .refuse }
+            switch marker.recipient {
+            case .ownWallet: return .ownWallet
+            case .external(let raw43): return .external(raw43)
+            }
         }
     }
 
@@ -134,14 +150,20 @@ final class ShieldedRecoveryViewModel: ObservableObject {
     private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
 
     private let outPoint: (txidWire: Data, vout: UInt32)?
-    private let drainOperationId: UUID?
+    private let drainRow: DrainRowIdentity
     private let coordinator = ShieldedTransferCoordinator()
     private var cancellables = Set<AnyCancellable>()
     private var longProofWaitTask: Task<Void, Never>?
 
     init(transaction: Transaction) {
         outPoint = transaction.shieldedOutPoint.map { ($0.txidWire, $0.vout) }
-        drainOperationId = transaction.shieldedDrainOperationId
+        if let id = transaction.shieldedDrainOperationId {
+            drainRow = .operation(id)
+        } else if transaction.hasMalformedShieldedDrainOperationId {
+            drainRow = .malformed
+        } else {
+            drainRow = .none
+        }
 
         coordinator.$phase
             .receive(on: RunLoop.main)
@@ -210,12 +232,12 @@ final class ShieldedRecoveryViewModel: ObservableObject {
             var drainContext: CoreShieldedDrainContext?
             do {
                 var marker: CoreShieldedDrainOperation?
-                if drainOperationId != nil {
+                if case .operation = drainRow {
                     let context = try CoreShieldedDrainService.currentContext()
                     marker = try CoreShieldedDrainService().store.load(context)
                     drainContext = context
                 }
-                switch Self.resumeRecipient(rowOperationId: drainOperationId, marker: marker) {
+                switch Self.resumeRecipient(row: drainRow, marker: marker) {
                 case .ownWallet: recipientRaw43 = nil
                 case .external(let raw43): recipientRaw43 = raw43
                 case .refuse:

@@ -26,23 +26,29 @@ final class CoreShieldedDrainRecipientTests: XCTestCase {
     func testRowWithoutDrainOperationResumesToOwnAddress() {
         // Not a drain row: the generic own-address resume, as before.
         let marker = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: nil, marker: marker), .ownWallet)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: nil, marker: nil), .ownWallet)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .none, marker: marker), .ownWallet)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .none, marker: nil), .ownWallet)
     }
 
     func testDrainRowResumesToItsMarkersRecipient() {
         let id = UUID()
         let own = CoreShieldedDrainOperation(id: id, context: context)
         let external = CoreShieldedDrainOperation(id: id, context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: id, marker: own), .ownWallet)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: id, marker: external), .external(raw43))
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: own), .ownWallet)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: external), .external(raw43))
     }
 
     func testDrainRowWithoutMatchingMarkerIsRefusedNotDefaultedToOwn() {
         let id = UUID()
         let other = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: id, marker: nil), .refuse)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(rowOperationId: id, marker: other), .refuse)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: nil), .refuse)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: other), .refuse)
+    }
+
+    func testMalformedDrainRowIsRefusedEvenWithAMatchingMarker() {
+        let marker = CoreShieldedDrainOperation(id: UUID(), context: context)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .malformed, marker: marker), .refuse)
+        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .malformed, marker: nil), .refuse)
     }
 
     func testOperationIdBytesMapToTheMarkerUUID() {

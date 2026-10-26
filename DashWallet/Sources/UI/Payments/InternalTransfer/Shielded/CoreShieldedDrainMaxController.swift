@@ -202,7 +202,14 @@ final class CoreShieldedDrainMaxController: ObservableObject {
                         comment: "Core drain recovery")
                     self.isLoading = false
                     return
-                case .notSent, nil:
+                case .notSent:
+                    // The SDK never dispatched this id and `status` removed its
+                    // marker: forget it, so the next refresh reads whatever
+                    // marker a later operation may have written.
+                    self.operation = nil
+                    self.isPending = false
+                    self.hasOutpoint = false
+                case nil:
                     self.isPending = false
                     self.hasOutpoint = false
                 }
