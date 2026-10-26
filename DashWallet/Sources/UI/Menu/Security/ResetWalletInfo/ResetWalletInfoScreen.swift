@@ -18,9 +18,9 @@ import DashUIKit
 import SwiftUI
 import UIKit
 
-/// The warning shown before wiping the wallet (More → Security → Reset
-/// wallet). Continue opens the recovery-phrase check in wipe mode; the wipe
-/// itself happens there.
+/// The warning shown before wiping the wallet: More → Security → Reset
+/// Wallet, and removing the last wallet in Wallets. Continue opens the
+/// recovery-phrase check in wipe mode; the wipe itself happens there.
 struct ResetWalletInfoScreen: View {
     let onContinue: () -> Void
     let onCancel: () -> Void
@@ -35,6 +35,7 @@ struct ResetWalletInfoScreen: View {
                     Text(NSLocalizedString("Wipe Wallet", comment: ""))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
+                        .accessibilityAddTraits(.isHeader)
                 })
 
             Spacer()
@@ -81,20 +82,28 @@ struct ResetWalletInfoScreen: View {
     }
 }
 
-/// Hosts `ResetWalletInfoScreen` in the Security menu's navigation stack and
+/// Hosts `ResetWalletInfoScreen` in the navigation stack of whichever screen
+/// opened it (the Security menu, or Wallets when removing the last wallet) and
 /// is the delegate of the recovery-phrase screen it pushes, forwarding a
 /// completed wipe to `wipeDelegate`.
 final class ResetWalletInfoHostingController: UIHostingController<ResetWalletInfoScreen>,
     DWRecoverViewControllerDelegate {
 
+    /// Lets the screen's buttons, built before `super.init`, reach the
+    /// controller without a strong reference back to it.
+    private final class ActionTarget {
+        weak var controller: ResetWalletInfoHostingController?
+    }
+
     private weak var wipeDelegate: DWWipeDelegate?
 
     init(wipeDelegate: DWWipeDelegate?) {
+        let target = ActionTarget()
         self.wipeDelegate = wipeDelegate
-        super.init(rootView: ResetWalletInfoScreen(onContinue: {}, onCancel: {}))
-        rootView = ResetWalletInfoScreen(
-            onContinue: { [weak self] in self?.showRecoveryPhraseCheck() },
-            onCancel: { [weak self] in self?.navigationController?.popViewController(animated: true) })
+        super.init(rootView: ResetWalletInfoScreen(
+            onContinue: { target.controller?.showRecoveryPhraseCheck() },
+            onCancel: { target.controller?.navigationController?.popViewController(animated: true) }))
+        target.controller = self
         hidesBottomBarWhenPushed = true
     }
 
