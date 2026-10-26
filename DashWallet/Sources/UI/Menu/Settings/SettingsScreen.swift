@@ -229,10 +229,10 @@ struct SettingsScreen: View {
     private func showCurrencySelector() {
         let view = LocalCurrencyView(
             currencyCode: nil,
-            onSelect: { [weak vc] _ in
+            leadingAction: .back { [weak vc] in
                 vc?.popViewController(animated: true)
             },
-            onBack: { [weak vc] in
+            onSelect: { [weak vc] _ in
                 vc?.popViewController(animated: true)
             }
         )
