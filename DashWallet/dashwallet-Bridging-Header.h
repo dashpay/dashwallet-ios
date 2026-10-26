@@ -135,7 +135,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWAdvancedSecurityViewController.h"
 #import "DWBiometricAuthModel.h"
 #import "DWAdvancedSecurityModel.h"
-#import "DWResetWalletInfoViewController.h"
 #import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"

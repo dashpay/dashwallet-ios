@@ -270,7 +270,7 @@ struct WalletsScreen: View {
 
     /// A wallet whose recovery phrase provably covers every stored wallet
     /// (Keychain ground truth) routes to the full reset flow
-    /// (`DWResetWalletInfoViewController`); a wallet with siblings on this
+    /// (`ResetWalletInfoHostingController`); a wallet with siblings on this
     /// network gets the per-wallet recovery-phrase remove sheet. A sole
     /// rendered wallet that can't route to reset — a distinct wallet is
     /// stored for the other network, or the Keychain couldn't be read — is
@@ -279,8 +279,7 @@ struct WalletsScreen: View {
     /// a wallet to switch to.
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = resetDelegate
+            let controller = ResetWalletInfoHostingController(wipeDelegate: resetDelegate)
             vc.pushViewController(controller, animated: true)
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
@@ -789,7 +788,7 @@ private struct ImportWalletView: View {
 // MARK: - Reset flow delegate
 
 extension WalletsScreen {
-    /// Bridges the last-wallet full reset flow (`DWResetWalletInfoViewController`).
+    /// Bridges the last-wallet full reset flow (`ResetWalletInfoHostingController`).
     /// A completed wipe invalidates the entire main UI: route to the app-level
     /// DWWipeDelegate chain (MainTabbar → root VC), which transitions to
     /// onboarding and drops the whole main stack. Popping back to this screen
