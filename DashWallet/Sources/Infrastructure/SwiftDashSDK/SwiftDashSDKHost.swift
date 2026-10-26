@@ -255,6 +255,48 @@ protocol CoinJoinRecoveryFlagResetting: AnyObject {
 
 extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
 
+/// The app-global "first historical sync after a restore" gate: while it is
+/// armed and `SyncingActivityMonitor` has not reached `.syncDone`, new Core
+/// spends are refused (`WalletSendService.isBlockedByInitialRestoreSync`).
+/// Production is `DWGlobalOptions.isResyncingWallet`; the phrase restore
+/// arms it in `DWRecoverWalletCommand` for every network, keychain recovery
+/// arms it here for one `persistenceScope`, and the monitor clears it at
+/// the first `.syncDone` of the scope that armed it.
+@MainActor
+protocol InitialRestoreSyncGating: AnyObject {
+    func armInitialRestoreSyncGate(scope: String)
+}
+
+extension DWGlobalOptions: InitialRestoreSyncGating {
+    /// The persisted gate: `resyncingWallet` plus `resyncingWalletScopes`.
+    var initialRestoreSyncGate: InitialRestoreSyncGate {
+        get { InitialRestoreSyncGate(isArmed: isResyncingWallet, scopes: resyncingWalletScopes) }
+        set {
+            resyncingWalletScopes = newValue.scopes
+            isResyncingWallet = newValue.isArmed
+        }
+    }
+
+    /// The gate as the current network's send surfaces see it: armed for
+    /// every network, or for the network currently selected. An arm left
+    /// behind by another network's unfinished scan does not block this one.
+    var isResyncingCurrentNetworkWallet: Bool {
+        initialRestoreSyncGate.blocks(scope: WalletEnvironment.network?.persistenceScope)
+    }
+
+    func armInitialRestoreSyncGate(scope: String) {
+        initialRestoreSyncGate = initialRestoreSyncGate.arming(scope: scope)
+    }
+
+    /// `.syncDone` on `scope`. No write while the gate is disarmed, so the
+    /// monitor's per-tick `.syncDone` costs nothing in the common case.
+    func clearInitialRestoreSyncGate(scope: String?) {
+        let gate = initialRestoreSyncGate
+        guard gate.isArmed else { return }
+        initialRestoreSyncGate = gate.clearing(scope: scope)
+    }
+}
+
 extension SwiftDashSDKHost {
     /// What the restore flow and the reset preflight read beside the SDK
     /// runtime. Production reads the keychain, `WalletEnvironment`'s
@@ -265,6 +307,7 @@ extension SwiftDashSDKHost {
         var material: any SwiftDashSDKWalletMaterialReading
         var registry: any SwiftDashSDKActiveWalletRegistry
         var coinJoinRecovery: any CoinJoinRecoveryFlagResetting
+        var restoreSyncGate: any InitialRestoreSyncGating
         var localStoreRoots: () throws -> WalletLocalStoreRoots
 
         @MainActor
@@ -273,6 +316,7 @@ extension SwiftDashSDKHost {
                 material: SwiftDashSDKKeychainWalletMaterial(),
                 registry: WalletEnvironmentActiveWalletRegistry(),
                 coinJoinRecovery: CoinJoinRecovery.shared,
+                restoreSyncGate: DWGlobalOptions.sharedInstance(),
                 localStoreRoots: { try WalletLocalStoreRoots.inDocuments() })
         }
     }
@@ -371,45 +415,41 @@ final class SwiftDashSDKHost {
 
     /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
     ///
-    /// **Testnet stays pinned to 13.** Testnet Drive moved past v12 to v13,
-    /// whose validation set changed the shielded identity-create exit
-    /// denominations (v12/V8 `[0.1, 0.3, 0.5, 1.0]` → v13/V9 `[0.03, 0.1,
-    /// 0.25, 0.5, 1.0]`). Staying at v12 made the client build shielded
-    /// transitions against the old set, so a contested (0.25 DASH) shielded
-    /// username create failed client-side ("denomination 25000000000 is not a
-    /// member …") even though the server requires exactly 0.25. Pinning
-    /// explicitly also avoids a race where the shielded build runs before the
-    /// SDK has ratcheted to the network version. Bump this when the agreed
-    /// testnet protocol moves past v13.
+    /// **Testnet is pinned to the protocol testnet has activated** (14; check
+    /// `current` in an evonode's getStatus before bumping). Below it the
+    /// client builds transitions the network refuses — at 13, every
+    /// `ShieldFromAssetLock` (version 1 only at v14) failed with 10603 and
+    /// left its asset lock unspent. An explicit pin, rather than auto-detect,
+    /// keeps a shielded build from running before the SDK has ratcheted up to
+    /// the network version. A pinned SDK never ratchets
+    /// (`refreshProtocolVersion()` is a no-op while pinned), so the pin has to
+    /// be bumped by hand on the next testnet activation.
     ///
-    /// **Mainnet uses `0` — auto-detect.** The pin above was chosen for
-    /// testnet but applied to every network, which put the client two versions
-    /// ahead of mainnet. Platform v13 (`DRIVE_VERSION_V8`) switches the
-    /// compacted address-balance proof to the two-proof
-    /// `CompactedAddressBalanceProof` bincode envelope, while "nodes and
-    /// clients on v12 and below keep the legacy single GroveDB proof"
-    /// (rs-platform-version `version/v13.rs`). A v13 client therefore decodes
-    /// mainnet's legacy proof as the envelope, consumes the structure and
-    /// trips on the remainder:
+    /// **Mainnet and devnet use `0` — auto-detect.** The SDK seeds at its
+    /// per-network `min_protocol_version` floor (13 on mainnet) and moves up
+    /// only when a proved response carries a newer version, so it follows a
+    /// mainnet activation to any protocol the linked SDK carries without an
+    /// app release. The floor must not sit
+    /// above the network: a client ahead of the network misreads its proofs (a
+    /// v13 pin while mainnet ran v12 failed with "compacted address balance
+    /// proof contains trailing bytes"). Devnet's floor is 14, built from the
+    /// linked SDK's v14, which a devnet cut from another release may not run.
+    /// TODO(protocol-refresh): the app never calls `refreshProtocolVersion()`,
+    /// so until the first proved read an auto-detect SDK builds transitions at
+    /// its floor.
     ///
-    ///     proof: corrupted error: compacted address balance proof contains trailing bytes
+    /// **Regtest** returns `0` only to keep the switch exhaustive;
+    /// `makeRuntime` rejects it before an SDK is built.
     ///
-    /// — observed 20× across three nodes on a mainnet device (2026-07-31),
-    /// with testnet clean, and it retries then gives up, so the Platform
-    /// address balance never populates there.
-    ///
-    /// `0` is what the SDK is designed for: it seeds at the per-network
-    /// `min_protocol_version` floor (mainnet 11, testnet 12) with auto-detect
-    /// on, ratcheting up as the network reports newer versions — "so this
-    /// picks the right wire without a Swift-side network→version map"
-    /// (`SDK.init(network:platformVersion:)`). A hard pin also disables
-    /// `refreshProtocolVersion()`, which is documented as a no-op while
-    /// pinned, so the client could never learn the network's real version.
-    ///
-    /// Devnet/regtest follow mainnet's auto-detect: no shielded-denomination
-    /// contract is pinned for them, and `makeRuntime` rejects regtest anyway.
+    /// The pin only names a version; its rules come from the linked SDK.
+    /// platform v4.2-dev carries a pre-release v14 whose `ShieldFromAssetLock`
+    /// is still version 0. Testnet runs 5.0.0-rc.4; link that release, or a
+    /// later commit with the same `v14.rs`.
     static func platformVersion(for network: Network) -> UInt32 {
-        network == .testnet ? 13 : 0
+        switch network {
+        case .testnet: return 14
+        case .mainnet, .devnet, .regtest: return 0
+        }
     }
 
     // MARK: - Wallet presence
@@ -784,7 +824,8 @@ final class SwiftDashSDKHost {
             // through this branch.
             collaborators.coinJoinRecovery.resetRecoveryFlag(scope: network.persistenceScope)
             do {
-                var recovered = try recoverPersistedWallet(in: rows, network: network)
+                let keychainRecovered = try recoverPersistedWallet(in: rows, network: network)
+                var recovered = keychainRecovered
                 if recovered == nil, network == .devnet {
                     recovered = await provisionDevnet()
                 }
@@ -793,6 +834,18 @@ final class SwiftDashSDKHost {
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
                 try localStoreRecovery(for: network).finish()
+                if keychainRecovered != nil {
+                    // The rows were recreated at the import floor, so the scan
+                    // that follows is a historical one and a Core spend could
+                    // select an input it has not yet seen spent (ios#1227).
+                    // Arm the same gate the phrase restore arms, scoped to this
+                    // network so another network's `.syncDone` cannot lift it
+                    // mid-scan. Armed last, after every step that can throw,
+                    // so a failed start leaves no gate behind. Devnet rows
+                    // provisioned on first entry are not armed (unchanged).
+                    collaborators.restoreSyncGate.armInitialRestoreSyncGate(
+                        scope: network.persistenceScope)
+                }
                 return recovered
             } catch {
                 await rows.shutdown()

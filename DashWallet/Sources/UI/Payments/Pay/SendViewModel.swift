@@ -960,7 +960,7 @@ final class SendViewModel: ObservableObject {
         switch route {
         case .coreToCore, .coreToShielded:
             return WalletSendService.isBlockedByInitialRestoreSync(
-                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
                 isChainSynced: isChainSynced)
         default:
             return false
