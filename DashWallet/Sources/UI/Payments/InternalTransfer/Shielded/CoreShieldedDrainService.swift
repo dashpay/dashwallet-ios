@@ -16,6 +16,58 @@ struct CoreShieldedDrainConfirmation: Equatable {
         let total = l1.partialValue.addingReportingOverflow(poolFeeCredits)
         return l1.overflow || total.overflow ? nil : total.partialValue
     }
+
+    /// The two fees behind `totalFeeCredits`, for both confirm sheets.
+    @MainActor var feeBreakdownText: String {
+        let coreFee = estimatedL1FeeDuffs.map { $0.dashAmount.formattedDashAmount } ?? "—"
+        let poolFee = InternalTransferSummaryFigures.networkFeeFiat(credits: poolFeeCredits) ?? "—"
+        return String(format: NSLocalizedString("Estimated Core fee: %@\nShielded pool fee: %@", comment: "Drain fee breakdown"), coreFee, poolFee)
+    }
+}
+
+/// How both amount screens draw an active Max selection: an estimate, or the
+/// intent while none is known. Digits only — the screens draw the symbol.
+@MainActor
+enum CoreShieldedDrainDisplay {
+    static func dashAmount(estimatedRecipientCredits: UInt64?) -> String {
+        guard let credits = estimatedRecipientCredits else {
+            return NSLocalizedString("Max", comment: "Whole wallet intent")
+        }
+        return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+
+    static func fiatAmount(estimatedRecipientCredits: UInt64?, dashAmount: Decimal, currency: String) -> String {
+        guard estimatedRecipientCredits != nil,
+              let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashAmount, to: currency)
+        else { return "—" }
+        return "≈ " + InternalTransferViewModel.formatTyped(fiat, fractionDigits: 2)
+    }
+}
+
+/// What the app may claim about a drain operation from the SDK's outcome.
+/// Every surface that renders a drain result switches on this, not on the
+/// SDK enum, so one new case here reaches every screen.
+///
+/// TODO(drain-unverified-completion): the SDK records `completed` both from a
+/// proof-backed consumption and from an unauthenticated "asset lock already
+/// consumed" report (dashpay/dashwallet-ios#1230; proof-backed query in
+/// dashpay/platform#5580). Once the SDK exposes that distinction, add a
+/// `completedUnverified` case mapped from it, and render it as "status
+/// unknown" instead of "Transfer complete" in every exhaustive switch.
+enum CoreShieldedDrainVerdict: Equatable, Sendable {
+    case notSent
+    case pending(hasOutpoint: Bool)
+    case completed
+}
+
+extension WalletDrainOutcome {
+    var drainVerdict: CoreShieldedDrainVerdict {
+        switch state {
+        case .notSent: return .notSent
+        case .pending: return .pending(hasOutpoint: outpoint != nil)
+        case .completed: return .completed
+        }
+    }
 }
 
 @MainActor
@@ -78,10 +130,12 @@ struct CoreShieldedDrainService {
         return (operation, outcome)
     }
 
-    func prepare(_ context: CoreShieldedDrainContext) throws -> CoreShieldedDrainOperation {
+    /// The recipient is fixed here, before dispatch: it is the only durable
+    /// record of where this operation's lock must go on a resume.
+    func prepare(_ context: CoreShieldedDrainContext, recipient: CoreShieldedDrainRecipient) throws -> CoreShieldedDrainOperation {
         _ = try manager(for: context)
         guard try store.load(context) == nil else { throw CoreShieldedDrainFileStore.StoreError.pendingOperation }
-        let operation = CoreShieldedDrainOperation(id: UUID(), context: context)
+        let operation = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: recipient)
         try store.save(operation)
         Self.activeOperations.insert(operation.id)
         return operation

@@ -411,6 +411,14 @@ class Transaction: TransactionDataItem, Identifiable {
         return (txHashData, info.vout)
     }
 
+    /// The Core → Shielded Max drain this lock belongs to, when the SDK row
+    /// recorded one. Recovery matches it against the app's durable marker to
+    /// learn the recipient; `nil` for a lock no drain built.
+    var shieldedDrainOperationId: UUID? {
+        guard let bytes = shieldedLockInfo?.operationId else { return nil }
+        return UUID(drainOperationIdBytes: bytes)
+    }
+
     private lazy var _dashAmount: UInt64 = {
         // A "to Shielded" / "to Platform" transfer's L1 funding tx is an
         // asset lock; surface the real locked amount the SDK recorded

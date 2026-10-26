@@ -1,55 +1,81 @@
-"""Compile the production form's recovery methods with controlled SDK responses."""
+"""Compile the production Max controller with controlled SDK responses."""
 
 
-def write_recovery_harness(repository, sources, tests):
-    source = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/InternalTransferViewModel.swift").read_text()
+def write_recovery_harness(repository, sources, tests, sdk_stubs):
+    """Symlink the real controller into the package and stub only its edges.
 
-    def declaration(start):
-        offset = source.index(start)
-        opening = source.index("{", offset)
-        depth, closing = 1, opening + 1
-        while depth:
-            depth += (source[closing] == "{") - (source[closing] == "}")
-            closing += 1
-        return source[offset:closing].replace("private func", "func", 1)
+    The decision logic (status before quote, retained UUID, resume rejection)
+    is the real file, not a copy: `CoreShieldedDrainMaxController.swift` is
+    compiled as-is against a stub `SwiftDashSDK` module and stub service,
+    runner and confirmation types, as in test_wallet_preparation.py.
+    """
+    controller = repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/CoreShieldedDrainMaxController.swift"
+    (sources / controller.name).symlink_to(controller)
 
-    methods = "\n".join(declaration(start) for start in (
-        "    var coreDrainCompletionNotice:",
-        "    var coreDrainActionTitle:",
-        "    @discardableResult\n    func performCoreDrainAction()",
-        "    private func showCoreDrainCompletion()",
-        "    private func refreshCoreDrainPreview()",
-        "    private func clearMaxSelection()",
-    ))
-    # No duplicate implementation of the status/quote decision: those methods
-    # above are extracted verbatim from the app. Only external dependencies and
-    # unrelated form fields are substituted, as in test_wallet_preparation.py.
-    (sources / "RecoveryForm.swift").write_text(r'''
+    (sdk_stubs / "SwiftDashSDK.swift").write_text(r'''
 import Foundation
-struct WalletDrainOutcome {
-    enum State { case pending, completed, notStarted }
-    let state: State
-    let outpoint: Int?
+public struct WalletDrainOutpoint: Sendable, Equatable {
+    public let txidWire: Data
+    public let vout: UInt32
+    public init(txidWire: Data, vout: UInt32) { self.txidWire = txidWire; self.vout = vout }
 }
-struct CoreShieldedDrainConfirmation {
+public struct WalletDrainOutcome: Sendable {
+    public enum State: UInt8, Sendable { case notSent = 0, pending = 1, completed = 2 }
+    public let state: State
+    public let outpoint: WalletDrainOutpoint?
+    public init(state: State, outpoint: WalletDrainOutpoint?) { self.state = state; self.outpoint = outpoint }
+}
+public struct WalletDrainPreview: Sendable, Equatable {
+    public enum Status: UInt8, Sendable { case ready = 0, insufficientFunds = 1, inputLimitMayBeExceeded = 2 }
+    public let candidateInputCount: UInt64
+    public let candidateBalanceDuffs: UInt64
+    public let poolFeeCredits: UInt64
+    public let estimatedL1FeeDuffs: UInt64?
+    public let estimatedRecipientCredits: UInt64?
+    public let status: Status
+    public init(candidateInputCount: UInt64, candidateBalanceDuffs: UInt64, poolFeeCredits: UInt64,
+                estimatedL1FeeDuffs: UInt64?, estimatedRecipientCredits: UInt64?, status: Status) {
+        self.candidateInputCount = candidateInputCount
+        self.candidateBalanceDuffs = candidateBalanceDuffs
+        self.poolFeeCredits = poolFeeCredits
+        self.estimatedL1FeeDuffs = estimatedL1FeeDuffs
+        self.estimatedRecipientCredits = estimatedRecipientCredits
+        self.status = status
+    }
+}
+''')
+
+    (sources / "RecoveryEdges.swift").write_text(r'''
+import Foundation
+import SwiftDashSDK
+enum CoreShieldedDrainVerdict: Equatable, Sendable {
+    case notSent
+    case pending(hasOutpoint: Bool)
+    case completed
+}
+extension WalletDrainOutcome {
+    var drainVerdict: CoreShieldedDrainVerdict {
+        switch state {
+        case .notSent: return .notSent
+        case .pending: return .pending(hasOutpoint: outpoint != nil)
+        case .completed: return .completed
+        }
+    }
+}
+struct CoreShieldedDrainConfirmation: Equatable {
     let context: CoreShieldedDrainContext
     let candidateBalanceDuffs: UInt64
     let estimatedRecipientCredits: UInt64?
     let estimatedL1FeeDuffs: UInt64?
     let poolFeeCredits: UInt64
 }
-struct Quote {
-    enum Status { case insufficientFunds, ready, inputLimitMayBeExceeded }
-    let status: Status = .insufficientFunds
-    let candidateBalanceDuffs: UInt64 = 0
-    let estimatedRecipientCredits: UInt64? = nil
-    let estimatedL1FeeDuffs: UInt64? = nil
-    let poolFeeCredits: UInt64 = 0
-}
 @MainActor struct CoreShieldedDrainService {
     static var context = CoreShieldedDrainContext(walletId: Data([1]), networkScope: "testnet")
     static var recorded: CoreShieldedDrainOperation?
     static var outcome = WalletDrainOutcome(state: .pending, outpoint: nil)
+    static var preview = WalletDrainPreview(
+        candidateInputCount: 0, candidateBalanceDuffs: 0, poolFeeCredits: 0,
+        estimatedL1FeeDuffs: nil, estimatedRecipientCredits: nil, status: .insufficientFunds)
     static var quotes = 0
     static var lookups: [UUID] = []
     static var suspendNextStatus = false
@@ -75,15 +101,10 @@ struct Quote {
         }
         return outcome
     }
-    func operationStatus(_ context: CoreShieldedDrainContext) async throws
-        -> (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)? {
-        guard let operation = Self.recorded else { return nil }
-        return (operation, try await status(for: operation))
-    }
     func manager(for context: CoreShieldedDrainContext) throws -> Self { self }
-    func shieldedWalletDrainPreview(walletId: Data) async throws -> Quote {
+    func shieldedWalletDrainPreview(walletId: Data) async throws -> WalletDrainPreview {
         Self.quotes += 1
-        return Quote()
+        return Self.preview
     }
     enum ServiceError: LocalizedError {
         case contextChanged, unavailable
@@ -102,37 +123,34 @@ struct Quote {
             }
         }
         CoreShieldedDrainService.recorded = nil
-        return WalletDrainOutcome(state: .completed, outpoint: 1)
+        return WalletDrainOutcome(state: .completed, outpoint: WalletDrainOutpoint(txidWire: Data(), vout: 0))
     }
 }
-@MainActor final class RecoveryForm {
-    var isCoreShieldedDrain = true
-    var isCoreDrainLoading = false
-    var coreShieldedDrainConfirmation: CoreShieldedDrainConfirmation?
-    var coreDrainPending = false
-    var coreDrainCompleted = false
-    var coreDrainOperation: CoreShieldedDrainOperation?
-    var coreDrainHasOutpoint = false
-    var coreDrainContext: CoreShieldedDrainContext?
-    var coreDrainTask: Task<Void, Never>?
-    var coreDrainGeneration = UUID()
-    var coreDrainSelection = UUID()
-    var coreDrainResumeSelection: UUID?
-    var isFullShieldedSweep = false
-    var shieldedSweepAmountCredits: UInt64?
-    var isPlatformShieldMaxDerived = false
-    var isPlatformShieldMaxQueued = false
-    var hasPlatformShieldCapacityChangeNotice = false
-    var maxNotice: String?
-    var amountText = "0"
-    var maxAmountDuffs: UInt64?
-    var isApplyingMax = false
-    func applyMaxAmountText(_ amount: UInt64) { amountText = String(amount) }
-    func coreDrainInsufficientFundsMessage() -> String { "Insufficient funds" }
-''' + methods + "\n}\n")
+''')
+
     (tests / "RecoveryFormTests.swift").write_text(r'''
 import XCTest
 @testable import CoreDrainHarness
+/// The owning form, reduced to what the controller asks of it: the amount
+/// field and a whole-Max reset, as `InternalTransferViewModel` and
+/// `SendViewModel` provide them.
+@MainActor final class RecoveryForm {
+    private(set) var controller: CoreShieldedDrainMaxController!
+    var amountText = "0"
+    var contextChanges = 0
+    init() {
+        controller = CoreShieldedDrainMaxController(dependencies: .init(
+            insufficientFundsMessage: { "Insufficient funds" },
+            applyEstimate: { [unowned self] duffs in self.amountText = duffs.map(String.init) ?? "0" },
+            onContextChanged: { [unowned self] in
+                self.contextChanges += 1
+                self.clearMaxSelection()
+                self.amountText = "0"
+            },
+            completionMessage: { "Completed" }))
+    }
+    func clearMaxSelection() { controller.clear() }
+}
 final class RecoveryFormTests: XCTestCase {
     @MainActor private func reset() -> CoreShieldedDrainOperation {
         CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "testnet")
@@ -150,76 +168,79 @@ final class RecoveryFormTests: XCTestCase {
     }
     @MainActor func testCompletedStatusShowsSuccessWithZeroCoreWithoutRequestingNewQuote() async {
         _ = reset()
-        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: 1)
+        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: .init(txidWire: Data(), vout: 0))
         let form = RecoveryForm()
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertNotNil(form.coreDrainCompletionNotice)
-        XCTAssertNil(form.maxNotice)
-        XCTAssertNil(form.coreShieldedDrainConfirmation)
+        let controller = form.controller!
+        controller.select()
+        await controller.task?.value
+        XCTAssertTrue(controller.isCompleted)
+        XCTAssertNotNil(controller.completionNotice)
+        XCTAssertNil(controller.notice)
+        XCTAssertNil(controller.confirmation)
         XCTAssertNil(CoreShieldedDrainService.recorded)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
         // Balance updates cannot silently replace the success with fee errors.
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.coreDrainCompleted)
+        controller.refresh()
+        await controller.task?.value
+        XCTAssertTrue(controller.isCompleted)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
         // Only the explicit separate transfer action may request another quote.
-        form.performCoreDrainAction()
-        await form.coreDrainTask?.value
-        XCTAssertFalse(form.coreDrainCompleted)
+        controller.performAction()
+        await controller.task?.value
+        XCTAssertFalse(controller.isCompleted)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 1)
     }
     @MainActor func testCheckStatusRetainsUUIDEvenWhenAnotherReaderClearsMarker() async {
         let operation = reset()
         CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: nil)
-        let form = RecoveryForm()
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.coreDrainPending)
+        let controller = RecoveryForm().controller!
+        controller.select()
+        await controller.task?.value
+        XCTAssertTrue(controller.isPending)
+        XCTAssertEqual(controller.actionTitle, "Check status")
         CoreShieldedDrainService.recorded = nil
-        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: 1)
-        form.performCoreDrainAction()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.coreDrainCompleted)
+        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: .init(txidWire: Data(), vout: 0))
+        controller.performAction()
+        await controller.task?.value
+        XCTAssertTrue(controller.isCompleted)
         XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
     @MainActor func testBalanceRefreshDuringInitialCompletionRetainsUUIDAfterMarkerRemoval() async {
         let operation = reset()
-        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: 1)
+        CoreShieldedDrainService.outcome = .init(state: .completed, outpoint: .init(txidWire: Data(), vout: 0))
         CoreShieldedDrainService.suspendNextStatus = true
         let markerRemoved = expectation(description: "Status removed marker but has not delivered completion")
         CoreShieldedDrainService.didRemoveMarker = { markerRemoved.fulfill() }
-        let form = RecoveryForm()
-        form.refreshCoreDrainPreview()
-        let initialTask = form.coreDrainTask
+        let controller = RecoveryForm().controller!
+        controller.select()
+        let initialTask = controller.task
         await fulfillment(of: [markerRemoved], timeout: 2)
         XCTAssertNil(CoreShieldedDrainService.recorded)
-        XCTAssertEqual(form.coreDrainOperation?.id, operation.id)
+        XCTAssertEqual(controller.operation?.id, operation.id)
         // This is the balance subscriber's refresh while the initial status
         // task is suspended in the post-completion projection refresh.
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
+        controller.refresh()
+        await controller.task?.value
         CoreShieldedDrainService.statusGate?.resume()
         CoreShieldedDrainService.statusGate = nil
         await initialTask?.value
-        XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertNotNil(form.coreDrainCompletionNotice)
-        XCTAssertNil(form.maxNotice)
+        XCTAssertTrue(controller.isCompleted)
+        XCTAssertNotNil(controller.completionNotice)
+        XCTAssertNil(controller.notice)
         XCTAssertEqual(CoreShieldedDrainService.lookups, [operation.id, operation.id])
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
     @MainActor private func suspendedResume() async -> (RecoveryForm, Task<Void, Never>?) {
         _ = reset()
-        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: 1)
+        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: .init(txidWire: Data(), vout: 0))
         let form = RecoveryForm()
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
+        form.controller.select()
+        await form.controller.task?.value
+        XCTAssertEqual(form.controller.actionTitle, "Resume transfer")
         let started = expectation(description: "Resume awaits authorization/execution")
         InternalTransferRunner.shared.didStartResume = { started.fulfill() }
-        let action = form.performCoreDrainAction()
+        let action = form.controller.performAction()
         XCTAssertNotNil(action)
         await fulfillment(of: [started], timeout: 2)
         return (form, action)
@@ -227,18 +248,18 @@ final class RecoveryFormTests: XCTestCase {
     @MainActor private func completeResume(_ action: Task<Void, Never>?) async {
         InternalTransferRunner.shared.resumeGate?.resume()
         InternalTransferRunner.shared.resumeGate = nil
-        // Join the real form action, including its rejection/completion logic.
+        // Join the real action, including its rejection/completion logic.
         await action?.value
     }
     @MainActor func testResumeCompletionSurvivesOverlappingPendingBalanceRefresh() async {
         let (form, action) = await suspendedResume()
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.coreDrainPending)
+        form.controller.refresh()
+        await form.controller.task?.value
+        XCTAssertTrue(form.controller.isPending)
         await completeResume(action)
-        XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertFalse(form.coreDrainPending)
-        XCTAssertNil(form.maxNotice)
+        XCTAssertTrue(form.controller.isCompleted)
+        XCTAssertFalse(form.controller.isPending)
+        XCTAssertNil(form.controller.notice)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
     }
     @MainActor func testBalanceRefreshDuringResumeKeepsTheFormBusy() async {
@@ -246,79 +267,115 @@ final class RecoveryFormTests: XCTestCase {
         let lookups = CoreShieldedDrainService.lookups
         // A balance change while the runner is still proving the lock: the
         // lock reads as pending, but the form must not offer Resume again.
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        XCTAssertTrue(form.isCoreDrainLoading)
-        XCTAssertNil(form.coreDrainActionTitle)
-        XCTAssertNil(form.performCoreDrainAction())
+        form.controller.refresh()
+        await form.controller.task?.value
+        XCTAssertTrue(form.controller.isLoading)
+        XCTAssertNil(form.controller.actionTitle)
+        XCTAssertNil(form.controller.performAction())
         XCTAssertEqual(CoreShieldedDrainService.lookups, lookups)
         await completeResume(action)
-        XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertFalse(form.isCoreDrainLoading)
-        XCTAssertNil(form.maxNotice)
+        XCTAssertTrue(form.controller.isCompleted)
+        XCTAssertFalse(form.controller.isLoading)
+        XCTAssertNil(form.controller.notice)
     }
     @MainActor func testResumeCompletionIsRejectedAfterReselectingSameOperation() async {
         let (form, action) = await suspendedResume()
         form.clearMaxSelection()
-        form.isCoreShieldedDrain = true
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
+        form.controller.select()
+        await form.controller.task?.value
         await completeResume(action)
-        XCTAssertFalse(form.coreDrainCompleted)
-        XCTAssertTrue(form.coreDrainPending)
+        XCTAssertFalse(form.controller.isCompleted)
+        XCTAssertTrue(form.controller.isPending)
     }
     @MainActor func testResumeCompletionIsRejectedAfterLeavingMax() async {
         let (form, action) = await suspendedResume()
         form.clearMaxSelection()
         await completeResume(action)
-        XCTAssertFalse(form.coreDrainCompleted)
-        XCTAssertFalse(form.isCoreShieldedDrain)
+        XCTAssertFalse(form.controller.isCompleted)
+        XCTAssertFalse(form.controller.isActive)
     }
     @MainActor func testResumeCompletionIsRejectedWhenNetworkChangesBeforeNotification() async {
         let (form, action) = await suspendedResume()
         CoreShieldedDrainService.context = .init(walletId: Data([1]), networkScope: "devnet-b")
         await completeResume(action)
-        XCTAssertFalse(form.coreDrainCompleted)
+        XCTAssertFalse(form.controller.isCompleted)
         // The rejected result still releases the gate: the form re-derives
         // its state and reports the changed context.
-        await form.coreDrainTask?.value
-        XCTAssertFalse(form.isCoreDrainLoading)
-        XCTAssertFalse(form.isCoreShieldedDrain)
-        XCTAssertEqual(form.maxNotice, "Context changed")
+        await form.controller.task?.value
+        XCTAssertFalse(form.controller.isLoading)
+        XCTAssertFalse(form.controller.isActive)
+        XCTAssertEqual(form.contextChanges, 1)
+        XCTAssertEqual(form.amountText, "0")
+        XCTAssertEqual(form.controller.notice, "Context changed")
     }
     @MainActor func testResumeRejectedWhileWalletUnavailableKeepsAnAction() async {
         let (form, action) = await suspendedResume()
         CoreShieldedDrainService.unavailable = true
         await completeResume(action)
-        await form.coreDrainTask?.value
-        XCTAssertFalse(form.coreDrainCompleted)
-        XCTAssertFalse(form.isCoreDrainLoading)
-        XCTAssertNotNil(form.coreDrainActionTitle)
-        XCTAssertEqual(form.maxNotice, "Wallet unavailable")
+        await form.controller.task?.value
+        XCTAssertFalse(form.controller.isCompleted)
+        XCTAssertFalse(form.controller.isLoading)
+        XCTAssertNotNil(form.controller.actionTitle)
+        XCTAssertEqual(form.controller.notice, "Wallet unavailable")
         CoreShieldedDrainService.unavailable = false
         InternalTransferRunner.shared.didStartResume = nil
-        let retry = form.performCoreDrainAction()
+        let retry = form.controller.performAction()
         XCTAssertNotNil(retry)
         await retry?.value
-        XCTAssertTrue(form.coreDrainCompleted)
+        XCTAssertTrue(form.controller.isCompleted)
     }
     @MainActor func testSuccessfulResumeShowsSuccessAfterRunnerClearsMarker() async throws {
         _ = reset()
-        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: 1)
-        let form = RecoveryForm()
-        form.refreshCoreDrainPreview()
-        await form.coreDrainTask?.value
-        let action = form.performCoreDrainAction()
+        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: .init(txidWire: Data(), vout: 0))
+        let controller = RecoveryForm().controller!
+        controller.select()
+        await controller.task?.value
+        let action = controller.performAction()
         await action?.value
-        XCTAssertTrue(form.coreDrainCompleted)
-        XCTAssertNotNil(form.coreDrainCompletionNotice)
-        XCTAssertNil(form.maxNotice)
+        XCTAssertTrue(controller.isCompleted)
+        XCTAssertNotNil(controller.completionNotice)
+        XCTAssertNil(controller.notice)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
+    }
+    @MainActor func testReadyQuoteFillsTheEstimateAndCarriesAConfirmation() async {
+        _ = reset()
+        CoreShieldedDrainService.recorded = nil
+        CoreShieldedDrainService.preview = .init(
+            candidateInputCount: 2, candidateBalanceDuffs: 2_000_000, poolFeeCredits: 9_000,
+            estimatedL1FeeDuffs: 500, estimatedRecipientCredits: 1_999_500_000, status: .ready)
+        let form = RecoveryForm()
+        form.controller.select()
+        await form.controller.task?.value
+        XCTAssertEqual(CoreShieldedDrainService.lookups, [])
+        XCTAssertEqual(CoreShieldedDrainService.quotes, 1)
+        XCTAssertEqual(form.amountText, "1999500")
+        XCTAssertEqual(form.controller.confirmation?.candidateBalanceDuffs, 2_000_000)
+        XCTAssertNotNil(form.controller.estimateNotice)
+        XCTAssertNil(form.controller.actionTitle)
+        // An insufficient-funds quote carries nothing to confirm and names the owner's reason.
+        CoreShieldedDrainService.preview = .init(
+            candidateInputCount: 0, candidateBalanceDuffs: 0, poolFeeCredits: 0,
+            estimatedL1FeeDuffs: nil, estimatedRecipientCredits: nil, status: .insufficientFunds)
+        form.controller.refresh()
+        await form.controller.task?.value
+        XCTAssertNil(form.controller.confirmation)
+        XCTAssertEqual(form.controller.notice, "Insufficient funds")
+        XCTAssertEqual(form.controller.actionTitle, "Try again")
     }
 }
 ''')
 
     source = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift").read_text()
+
+    def declaration(start):
+        offset = source.index(start)
+        opening = source.index("{", offset)
+        depth, closing = 1, opening + 1
+        while depth:
+            depth += (source[closing] == "{") - (source[closing] == "}")
+            closing += 1
+        return source[offset:closing].replace("private func", "func", 1)
+
     deletion = declaration("    static func deleteWalletFromSDK(")
     (sources / "WalletDeletion.swift").write_text(r'''
 import Foundation

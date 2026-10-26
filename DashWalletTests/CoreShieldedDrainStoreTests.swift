@@ -96,6 +96,64 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         }
     }
 
+    // MARK: - Recipient codec
+
+    private var externalRaw43: Data { Data((0..<43).map { UInt8($0) }) }
+
+    /// Written before the recipient existed, by the own-wallet Max alone.
+    private func legacyMarkerJSON(id: UUID) throws -> Data {
+        try JSONSerialization.data(withJSONObject: [
+            "id": id.uuidString,
+            "context": ["walletId": context.walletId.base64EncodedString(), "networkScope": context.networkScope],
+        ])
+    }
+
+    func testMarkerWrittenBeforeRecipientsDecodesAsOwnWallet() throws {
+        let id = UUID()
+        let decoded = try JSONDecoder().decode(CoreShieldedDrainOperation.self, from: legacyMarkerJSON(id: id))
+        XCTAssertEqual(decoded, CoreShieldedDrainOperation(id: id, context: context, recipient: .ownWallet))
+        XCTAssertNil(decoded.recipient.externalRaw43)
+    }
+
+    func testExternalRecipientSurvivesTheStoreRoundTrip() throws {
+        let operation = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: externalRaw43))
+        try store.save(operation)
+        let reopened = try CoreShieldedDrainFileStore(directory: directory).load(context)
+        XCTAssertEqual(reopened, operation)
+        XCTAssertEqual(reopened?.recipient.externalRaw43, externalRaw43)
+        let own = CoreShieldedDrainOperation(id: UUID(), context: context)
+        try store.remove(operation)
+        try store.save(own)
+        XCTAssertEqual(try CoreShieldedDrainFileStore(directory: directory).load(context)?.recipient, .ownWallet)
+    }
+
+    func testExternalRecipientOfTheWrongSizeIsCorruption() throws {
+        let operation = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: externalRaw43))
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(operation)) as! [String: Any]
+        json["recipientRaw43"] = externalRaw43.dropLast().base64EncodedString()
+        let truncated = try JSONSerialization.data(withJSONObject: json)
+        XCTAssertThrowsError(try JSONDecoder().decode(CoreShieldedDrainOperation.self, from: truncated))
+        json.removeValue(forKey: "recipientRaw43")
+        let missing = try JSONSerialization.data(withJSONObject: json)
+        XCTAssertThrowsError(try JSONDecoder().decode(CoreShieldedDrainOperation.self, from: missing))
+    }
+
+    func testSameUUIDWithAnotherRecipientIsAnotherOperation() throws {
+        let id = UUID()
+        let external = CoreShieldedDrainOperation(id: id, context: context, recipient: .external(raw43: externalRaw43))
+        let own = CoreShieldedDrainOperation(id: id, context: context)
+        try store.save(external)
+        XCTAssertThrowsError(try store.save(own))
+        XCTAssertThrowsError(try store.remove(own))
+        XCTAssertEqual(try store.load(context), external)
+    }
+
+    func testOperationIdBytesRoundTrip() {
+        let id = UUID()
+        XCTAssertEqual(UUID(drainOperationIdBytes: withUnsafeBytes(of: id.uuid) { Data($0) }), id)
+        XCTAssertNil(UUID(drainOperationIdBytes: Data(repeating: 0, count: 15)))
+    }
+
     @MainActor
     func testFailedConfiguredDevnetDeletionKeepsItsMarkerAfterExtraScopeSucceeds() throws {
         try checkPartialDevnetDeletion(extraScopeFails: false)

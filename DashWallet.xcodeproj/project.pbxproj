@@ -1018,6 +1018,7 @@
 		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */; };
 		727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */; };
+		7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */; };
 		7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
@@ -1031,6 +1032,7 @@
 		88436E7D9764791AC81AFFB0 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */; };
 		89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */; };
 		B6ADEA9D021B46F0BDE8684D /* CoreShieldedDrainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287764F0D5D949B19AB5CEC2 /* CoreShieldedDrainService.swift */; };
+		7C0DE5A1B2C34D5E6F708193 /* CoreShieldedDrainMaxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708192 /* CoreShieldedDrainMaxController.swift */; };
 		ED36CC828C0E42BF8C5C1375 /* CoreShieldedDrainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EA80D19F644335807F1078 /* CoreShieldedDrainStore.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		8AF94168DE3494EAF0811D77 /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3F6CC617DA824F467AADC /* PaymentURIBuilder.swift */; };
@@ -1067,6 +1069,7 @@
 		9A891339E42C1BE3AED09CBB /* WalletAccountDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6BFD41DDFE194362A163BC7 /* WalletAccountDetailScreen.swift */; };
 		9B40E576972DB41F7EF4D21E /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */; };
 		05F4E88EEF1A4256BAD9E7CE /* CoreShieldedDrainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287764F0D5D949B19AB5CEC2 /* CoreShieldedDrainService.swift */; };
+		7C0DE5A1B2C34D5E6F708194 /* CoreShieldedDrainMaxController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708192 /* CoreShieldedDrainMaxController.swift */; };
 		8F1651BA35F24398B543F53B /* CoreShieldedDrainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03EA80D19F644335807F1078 /* CoreShieldedDrainStore.swift */; };
 		9B54AF317E7728C18646F702 /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */; };
 		9B627F0FCC93D887BAB3E9A9 /* BIP70PaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D58056D713E4B50DAE0F24B /* BIP70PaymentService.swift */; };
@@ -3088,6 +3091,7 @@
 		59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainThreadStallMonitor.swift; sourceTree = "<group>"; };
 		59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
 		287764F0D5D949B19AB5CEC2 /* CoreShieldedDrainService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainService.swift; sourceTree = "<group>"; };
+		7C0DE5A1B2C34D5E6F708192 /* CoreShieldedDrainMaxController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainMaxController.swift; sourceTree = "<group>"; };
 		03EA80D19F644335807F1078 /* CoreShieldedDrainStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainStore.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedActivityHistory.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressActivityStore.swift; sourceTree = "<group>"; };
@@ -3300,6 +3304,7 @@
 		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferNoticeTests.swift; sourceTree = "<group>"; };
 		D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainStoreTests.swift; sourceTree = "<group>"; };
+		7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainRecipientTests.swift; sourceTree = "<group>"; };
 		7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryTapActionTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
@@ -4152,6 +4157,7 @@
 				0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */,
 				59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */,
 				287764F0D5D949B19AB5CEC2 /* CoreShieldedDrainService.swift */,
+				7C0DE5A1B2C34D5E6F708192 /* CoreShieldedDrainMaxController.swift */,
 				03EA80D19F644335807F1078 /* CoreShieldedDrainStore.swift */,
 			);
 			path = Shielded;
@@ -7639,6 +7645,7 @@
 				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */,
 				D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */,
+				7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */,
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
@@ -10877,6 +10884,7 @@
 				2A6B1257A51E609B8025BF3A /* ShieldedTransferCoordinator.swift in Sources */,
 				9B40E576972DB41F7EF4D21E /* ShieldedWithdrawalStore.swift in Sources */,
 				05F4E88EEF1A4256BAD9E7CE /* CoreShieldedDrainService.swift in Sources */,
+				7C0DE5A1B2C34D5E6F708194 /* CoreShieldedDrainMaxController.swift in Sources */,
 				8F1651BA35F24398B543F53B /* CoreShieldedDrainStore.swift in Sources */,
 				06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */,
 				D3DA37D1924A7F5B089FE110 /* StorageExplorerView.swift in Sources */,
@@ -10992,6 +11000,7 @@
 				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */,
 				727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */,
+				7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */,
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
@@ -12002,6 +12011,7 @@
 				17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */,
 				89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */,
 				B6ADEA9D021B46F0BDE8684D /* CoreShieldedDrainService.swift in Sources */,
+				7C0DE5A1B2C34D5E6F708193 /* CoreShieldedDrainMaxController.swift in Sources */,
 				ED36CC828C0E42BF8C5C1375 /* CoreShieldedDrainStore.swift in Sources */,
 				4AC8F492DD74101C71A5EA5E /* PlatformSendExecutor.swift in Sources */,
 				983748715D558F311DF6BFCD /* StorageExplorerView.swift in Sources */,

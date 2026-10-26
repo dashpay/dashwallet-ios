@@ -494,9 +494,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
     /// never the newest asset lock or a timestamp shared with another caller.
-    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation) async {
+    /// `recipient` is written into that marker before dispatch: the SDK does
+    /// not persist it, and every resume reads it back from there.
+    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
+        Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
         let service = CoreShieldedDrainService()
         let env: Environment
         let operation: CoreShieldedDrainOperation
@@ -514,7 +517,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 throw CoreShieldedDrainService.ServiceError.requiresSync
             }
             env = try resolveEnvironment()
-            operation = try service.prepare(confirmation.context)
+            operation = try service.prepare(confirmation.context, recipient: recipient)
         } catch {
             handleFailure(error)
             return
@@ -523,7 +526,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .locking
         let result = await env.manager.shieldedFundFromWalletDrain(
             walletId: env.walletId, operationId: operation.id,
-            recipientRaw43: env.shieldedRecipient)
+            recipientRaw43: recipient.externalRaw43 ?? env.shieldedRecipient)
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
@@ -535,7 +538,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             phase = .submittedUnconfirmed
             return
         }
-        switch result.state {
+        switch result.drainVerdict {
         case .notSent:
             if let error = result.error { handleFailure(error) }
             else { handleFailure(CoreShieldedDrainService.ServiceError.unavailable) }

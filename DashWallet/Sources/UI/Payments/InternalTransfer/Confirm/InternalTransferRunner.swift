@@ -255,13 +255,17 @@ final class InternalTransferRunner: ObservableObject {
                 lookup = try await service.operationStatus(context)
             }
             guard let pending = lookup else { return nil }
-            if pending.outcome.state == .completed {
+            switch pending.outcome.drainVerdict {
+            case .completed:
                 phase = .success
                 notice = .succeeded
                 return pending.outcome
+            case .notSent, .pending(hasOutpoint: false):
+                return nil
+            case .pending(hasOutpoint: true):
+                break
             }
-            guard pending.outcome.state == .pending,
-                  let outpoint = pending.outcome.outpoint else { return nil }
+            guard let outpoint = pending.outcome.outpoint else { return nil }
             do { try await authorizer.authorize() } catch { return nil }
             _ = try service.manager(for: context)
             isCoreDrainRecovery = true
@@ -269,13 +273,17 @@ final class InternalTransferRunner: ObservableObject {
             coordinator.reset()
             phase = .inFlight
             attemptedResume = true
+            // The recipient is the marker's, never re-derived: an external
+            // drain resumed to the wallet's own address would pay the wrong
+            // party, and the SDK does not keep the recipient itself.
             await DWIdentityAuthorizer.preauthorized {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
+                    recipientRaw43: pending.operation.recipient.externalRaw43,
                     expectedDrainContext: context)
             }
             let status = try await service.status(for: pending.operation)
-            if status.state == .completed {
+            if status.drainVerdict == .completed {
                 // A concurrent resume can consume the lock while authorization
                 // is open. The generic resume reports AlreadyConsumed as
                 // unconfirmed; the UUID lookup reads the SDK's drain receipt
@@ -284,7 +292,7 @@ final class InternalTransferRunner: ObservableObject {
                 // (#1230).
                 phase = .success
                 notice = .succeeded
-            } else if status.state == .pending {
+            } else if case .pending = status.drainVerdict {
                 phase = .submittedUnconfirmed
                 notice = .drainPending
             }
