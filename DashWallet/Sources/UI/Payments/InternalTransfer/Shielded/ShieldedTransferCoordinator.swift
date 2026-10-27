@@ -536,6 +536,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 // The drain sweeps whatever is eligible when it builds. For
                 // the wallet's own address any excess is harmless; for a third
                 // party it is money the user never saw on the confirm sheet.
+                // This re-read refuses growth that happened before it; it does
+                // not bind the SDK's own input selection that follows.
+                // TODO(drain-balance-cap): pass the confirmed candidate balance
+                // as a limit the SDK enforces on the inputs it selects, once
+                // the drain accepts one (dashpay/platform#5607).
                 let preview = try await manager.shieldedWalletDrainPreview(walletId: confirmation.context.walletId)
                 _ = try service.manager(for: confirmation.context)
                 guard Self.drainStillMatches(preview, confirmation) else {
