@@ -5162,6 +5162,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Via provizora uzantnomo „%@“ ne povis esti registrita. Vi povas registri alian uzantnomon poste.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@“ nun estas via uzantnomo. Se la voĉdonado aljuĝas al vi „%2$@“, vi estos atingebla per ambaŭ uzantnomoj.";
 

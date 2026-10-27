@@ -70,6 +70,68 @@ extension WalletDrainOutcome {
     }
 }
 
+/// What an asset-lock row says about the Max drain that built it
+/// (`PersistentAssetLock.operationId`).
+enum CoreShieldedDrainRowIdentity: Equatable, Sendable {
+    /// No operation id: a lock no drain built.
+    case none
+    case operation(UUID)
+    /// An operation id that is not a UUID: a drain row no marker can match.
+    case malformed
+
+    init(operationIdBytes bytes: Data?) {
+        guard let bytes, !bytes.isEmpty else { self = .none; return }
+        if let id = UUID(drainOperationIdBytes: bytes) { self = .operation(id) } else { self = .malformed }
+    }
+}
+
+/// The durable marker as one resume attempt found it.
+enum CoreShieldedDrainMarkerLookup: Sendable {
+    case loaded(CoreShieldedDrainOperation?)
+    /// The marker file cannot be a marker for this scope (undecodable, or
+    /// another scope's content). Retrying will not change that.
+    case corrupt
+    /// The wallet or network is not ready, or the read failed in a way a
+    /// retry can fix.
+    case unavailable
+}
+
+/// Where a resume of an existing asset lock must pay. A Max drain's recipient
+/// is recorded only in the app's marker: the SDK pays whatever recipient a
+/// resume passes, so a drain row is resumed to the marker's recipient or not
+/// at all.
+enum CoreShieldedDrainResumeTarget: Equatable, Sendable {
+    /// The wallet's own default Orchard address.
+    case ownWallet
+    case external(Data)
+    /// A drain row whose recipient cannot be established.
+    case refuse
+    /// A drain row whose marker could not be read right now.
+    case retryLater
+
+    static func resolve(row: CoreShieldedDrainRowIdentity, marker: CoreShieldedDrainMarkerLookup) -> Self {
+        switch row {
+        case .none:
+            return .ownWallet
+        case .malformed:
+            return .refuse
+        case .operation(let rowOperationId):
+            switch marker {
+            case .unavailable:
+                return .retryLater
+            case .corrupt:
+                return .refuse
+            case .loaded(let operation):
+                guard let operation, operation.id == rowOperationId else { return .refuse }
+                switch operation.recipient {
+                case .ownWallet: return .ownWallet
+                case .external(let raw43): return .external(raw43)
+                }
+            }
+        }
+    }
+}
+
 @MainActor
 struct CoreShieldedDrainService {
     // Process-wide because separate screens share the same operation file.
@@ -112,6 +174,26 @@ struct CoreShieldedDrainService {
             NotificationCenter.default.post(name: .swiftDashSDKTransactionProjectionDidChange, object: nil)
         }
         return result
+    }
+
+    /// The marker for the current wallet and network, classified for a
+    /// resume: only content that cannot be a marker is `corrupt`.
+    func markerLookup() -> (lookup: CoreShieldedDrainMarkerLookup, context: CoreShieldedDrainContext?) {
+        let context: CoreShieldedDrainContext
+        do {
+            context = try Self.currentContext()
+        } catch {
+            return (.unavailable, nil)
+        }
+        do {
+            return (.loaded(try store.load(context)), context)
+        } catch is DecodingError {
+            return (.corrupt, context)
+        } catch CoreShieldedDrainFileStore.StoreError.contextMismatch {
+            return (.corrupt, context)
+        } catch {
+            return (.unavailable, context)
+        }
     }
 
     func pending(_ context: CoreShieldedDrainContext) async throws -> WalletDrainOutcome? {

@@ -30,8 +30,9 @@ final class CoreShieldedDrainMaxController: ObservableObject {
         /// The wallet or network changed under an active selection: the owner
         /// drops its whole Max selection (which clears this object too).
         let onContextChanged: () -> Void
-        /// Said once a completed operation has been verified for this owner.
-        let completionMessage: () -> String
+        /// Said once a completed operation has been verified, for the
+        /// recipient its marker recorded (`nil` when none was retained).
+        let completionMessage: (CoreShieldedDrainRecipient?) -> String
     }
 
     /// Max is the current intent on this route.
@@ -72,7 +73,7 @@ final class CoreShieldedDrainMaxController: ObservableObject {
     }
 
     var completionNotice: String? {
-        isCompleted ? dependencies.completionMessage() : nil
+        isCompleted ? dependencies.completionMessage(operation?.recipient) : nil
     }
 
     var estimateNotice: String? {

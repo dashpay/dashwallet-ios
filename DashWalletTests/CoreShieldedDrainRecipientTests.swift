@@ -16,39 +16,54 @@ import XCTest
 
 final class CoreShieldedDrainRecipientTests: XCTestCase {
 
-    private typealias Recipient = ShieldedRecoveryViewModel.ResumeRecipient
+    private typealias Target = CoreShieldedDrainResumeTarget
 
     private let context = CoreShieldedDrainContext(walletId: Data(repeating: 7, count: 32), networkScope: "testnet")
     private let raw43 = Data((0..<43).map { UInt8($0) })
 
-    // MARK: - Recovery sheet: which address a History-row resume pays
+    // MARK: - Resume target: whichever surface resumes a lock
 
-    func testRowWithoutDrainOperationResumesToOwnAddress() {
-        // Not a drain row: the generic own-address resume, as before.
+    func testLockNoDrainBuiltResumesToOwnAddressWhateverTheMarker() {
         let marker = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .none, marker: marker), .ownWallet)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .none, marker: nil), .ownWallet)
+        XCTAssertEqual(Target.resolve(row: .none, marker: .loaded(marker)), .ownWallet)
+        XCTAssertEqual(Target.resolve(row: .none, marker: .loaded(nil)), .ownWallet)
+        XCTAssertEqual(Target.resolve(row: .none, marker: .unavailable), .ownWallet)
+        XCTAssertEqual(Target.resolve(row: .none, marker: .corrupt), .ownWallet)
     }
 
-    func testDrainRowResumesToItsMarkersRecipient() {
+    func testDrainLockResumesToItsMarkersRecipient() {
         let id = UUID()
         let own = CoreShieldedDrainOperation(id: id, context: context)
         let external = CoreShieldedDrainOperation(id: id, context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: own), .ownWallet)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: external), .external(raw43))
+        XCTAssertEqual(Target.resolve(row: .operation(id), marker: .loaded(own)), .ownWallet)
+        XCTAssertEqual(Target.resolve(row: .operation(id), marker: .loaded(external)), .external(raw43))
     }
 
-    func testDrainRowWithoutMatchingMarkerIsRefusedNotDefaultedToOwn() {
+    func testDrainLockWithoutItsMarkerIsRefusedNotDefaultedToOwn() {
         let id = UUID()
         let other = CoreShieldedDrainOperation(id: UUID(), context: context, recipient: .external(raw43: raw43))
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: nil), .refuse)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .operation(id), marker: other), .refuse)
+        XCTAssertEqual(Target.resolve(row: .operation(id), marker: .loaded(nil)), .refuse)
+        XCTAssertEqual(Target.resolve(row: .operation(id), marker: .loaded(other)), .refuse)
+        XCTAssertEqual(Target.resolve(row: .operation(id), marker: .corrupt), .refuse)
     }
 
-    func testMalformedDrainRowIsRefusedEvenWithAMatchingMarker() {
+    func testUnreadableMarkerAsksForARetryInsteadOfRefusing() {
+        XCTAssertEqual(Target.resolve(row: .operation(UUID()), marker: .unavailable), .retryLater)
+    }
+
+    func testMalformedDrainRowIsRefusedEvenWithAMarker() {
         let marker = CoreShieldedDrainOperation(id: UUID(), context: context)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .malformed, marker: marker), .refuse)
-        XCTAssertEqual(ShieldedRecoveryViewModel.resumeRecipient(row: .malformed, marker: nil), .refuse)
+        XCTAssertEqual(Target.resolve(row: .malformed, marker: .loaded(marker)), .refuse)
+        XCTAssertEqual(Target.resolve(row: .malformed, marker: .unavailable), .refuse)
+    }
+
+    func testRowIdentityFromStoredOperationIdBytes() {
+        let id = UUID()
+        let bytes = withUnsafeBytes(of: id.uuid) { Data($0) }
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: bytes), .operation(id))
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: nil), .none)
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: Data()), .none)
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: bytes.dropLast()), .malformed)
     }
 
     func testOperationIdBytesMapToTheMarkerUUID() {
@@ -57,6 +72,28 @@ final class CoreShieldedDrainRecipientTests: XCTestCase {
         XCTAssertEqual(UUID(drainOperationIdBytes: bytes), id)
         XCTAssertNil(UUID(drainOperationIdBytes: bytes.dropLast()))
         XCTAssertNil(UUID(drainOperationIdBytes: Data()))
+    }
+
+    // MARK: - Who a new drain pays
+
+    func testDrainPaysTheMarkersRecipient() {
+        let own = Data(repeating: 0xEE, count: 43)
+        XCTAssertEqual(ShieldedTransferCoordinator.drainRecipientRaw43(.external(raw43: raw43), ownAddress: own), raw43)
+        XCTAssertEqual(ShieldedTransferCoordinator.drainRecipientRaw43(.ownWallet, ownAddress: own), own)
+    }
+
+    func testExternalDrainFailsClosedWhenTheBalanceGrewAfterReview() {
+        let confirmed = CoreShieldedDrainConfirmation(
+            context: context, candidateBalanceDuffs: 1_000_000, estimatedRecipientCredits: 990_000_000,
+            estimatedL1FeeDuffs: 500, poolFeeCredits: 9_000_000)
+        func preview(_ balance: UInt64, _ status: WalletDrainPreview.Status = .ready) -> WalletDrainPreview {
+            WalletDrainPreview(candidateInputCount: 2, candidateBalanceDuffs: balance, poolFeeCredits: 9_000_000,
+                               estimatedL1FeeDuffs: 500, estimatedRecipientCredits: nil, status: status)
+        }
+        XCTAssertTrue(ShieldedTransferCoordinator.drainStillMatches(preview(1_000_000), confirmed))
+        XCTAssertTrue(ShieldedTransferCoordinator.drainStillMatches(preview(900_000), confirmed))
+        XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(preview(1_000_001), confirmed))
+        XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(preview(0, .insufficientFunds), confirmed))
     }
 
     // MARK: - Recipient payload

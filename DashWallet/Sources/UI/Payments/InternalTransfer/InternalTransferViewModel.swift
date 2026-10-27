@@ -432,7 +432,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Core → Shielded Max: status, estimate and recovery live in the shared
     /// controller; this form forwards and applies estimates to its amount.
     private(set) lazy var coreDrainMax = CoreShieldedDrainMaxController(dependencies: .init(
-        insufficientFundsMessage: { [weak self] in self?.coreDrainInsufficientFundsMessage() ?? "" },
+        insufficientFundsMessage: { [weak self] in
+            guard let self else { return "" }
+            return Self.coreDrainInsufficientFundsMessage(
+                coreSpendableDuffs: self.coreSpendableDuffs, coreBalanceDuffs: self.coreBalanceDuffs)
+        },
         applyEstimate: { [weak self] duffs in
             guard let self else { return }
             self.isApplyingMax = true
@@ -444,8 +448,12 @@ final class InternalTransferViewModel: ObservableObject {
             self.clearMaxSelection()
             self.amountText = "0"
         },
-        completionMessage: {
-            NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+        completionMessage: { recipient in
+            // An external drain started on Send can be found here too; it did
+            // not land in this wallet's Shielded balance.
+            recipient?.isExternal == false
+                ? NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+                : NSLocalizedString("The pending Max transfer completed.", comment: "Send: Core drain recovery success")
         }))
     private var coreDrainMaxCancellable: AnyCancellable?
 
@@ -483,12 +491,12 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// The drain found nothing to move. With nothing spendable at all, the
     /// precise reason (still confirming, or only mixed coins) is the shared
-    /// Core Max explanation, not the fees.
-    private func coreDrainInsufficientFundsMessage() -> String {
+    /// Core Max explanation, not the fees. Shared by both Max screens.
+    static func coreDrainInsufficientFundsMessage(coreSpendableDuffs: UInt64, coreBalanceDuffs: UInt64) -> String {
         guard coreSpendableDuffs == 0 else {
             return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
         }
-        return Self.coreZeroMaxMessage(
+        return coreZeroMaxMessage(
             totalDuffs: coreBalanceDuffs,
             confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
             excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)

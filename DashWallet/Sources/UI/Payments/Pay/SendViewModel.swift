@@ -105,7 +105,11 @@ final class SendViewModel: ObservableObject {
     /// from the destination at confirm. Status, estimate and recovery are the
     /// shared controller's; this model applies its estimate to the amount.
     private(set) lazy var coreDrainMax = CoreShieldedDrainMaxController(dependencies: .init(
-        insufficientFundsMessage: { [weak self] in self?.coreDrainInsufficientFundsMessage() ?? "" },
+        insufficientFundsMessage: { [weak self] in
+            guard let self else { return "" }
+            return InternalTransferViewModel.coreDrainInsufficientFundsMessage(
+                coreSpendableDuffs: self.coreSpendableDuffs, coreBalanceDuffs: self.coreBalanceDuffs)
+        },
         applyEstimate: { [weak self] duffs in
             guard let self else { return }
             self.isApplyingMax = true
@@ -117,7 +121,7 @@ final class SendViewModel: ObservableObject {
             self.clearShieldedMaxSelection()
             self.amountText = "0"
         },
-        completionMessage: {
+        completionMessage: { _ in
             NSLocalizedString("The pending Max transfer completed.", comment: "Send: Core drain recovery success")
         }))
     private var coreDrainMaxCancellable: AnyCancellable?
@@ -170,18 +174,6 @@ final class SendViewModel: ObservableObject {
         }
         frozenCoreDrainSubmission = CoreDrainSubmission(
             confirmation: confirmation, dashDuffs: dashDuffs, fiatText: fiatAmountString)
-    }
-
-    /// Same explanation as the internal transfer's Max: nothing spendable at
-    /// all is explained by the balance, not by the fees.
-    private func coreDrainInsufficientFundsMessage() -> String {
-        guard coreSpendableDuffs == 0 else {
-            return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
-        }
-        return InternalTransferViewModel.coreZeroMaxMessage(
-            totalDuffs: coreBalanceDuffs,
-            confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
-            excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
     }
     /// Exact duff amount selected by Max. The two-decimal fiat value is only
     /// its display representation and must not be converted back for sending.

@@ -2079,10 +2079,6 @@ final class ShieldedTxLookup {
         /// ENUMERATES locks must filter, or it hands another wallet's outpoints
         /// to the SDK, which rightly answers "not tracked by this wallet".
         let walletId: Data
-        /// `PersistentAssetLock.operationId`: the Core → Shielded Max drain
-        /// that built this lock, as the app's marker UUID bytes. `nil` for
-        /// every other lock.
-        let operationId: Data?
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
@@ -2247,8 +2243,7 @@ final class ShieldedTxLookup {
                     statusRaw: row.statusRaw,
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
-                    walletId: row.walletId,
-                    operationId: row.operationId)
+                    walletId: row.walletId)
                 func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info

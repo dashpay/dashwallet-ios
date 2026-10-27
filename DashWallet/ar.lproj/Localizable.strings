@@ -5162,6 +5162,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "تعذّر تسجيل اسم المستخدم المؤقت «%@». يمكنك تسجيل اسم مستخدم آخر لاحقًا.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "«%1$@» هو اسم المستخدم الخاص بك الآن. وإذا منحك التصويت «%2$@»، فسيمكن الوصول إليك عبر الاسمين معًا.";
 

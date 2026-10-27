@@ -79,54 +79,6 @@ final class ShieldedRecoveryViewModel: ObservableObject {
 
     nonisolated static let longProofWaitThreshold: Duration = .seconds(60)
 
-    /// "Finish now" was refused because the lock's recipient could not be
-    /// established. Shown in place of a resume; the funds stay on the lock.
-    @Published private(set) var refusal: String?
-
-    /// Where a resume must pay. A Max drain's recipient lives only in the
-    /// app's durable marker — the SDK does not keep it and would pay whatever
-    /// address is passed — so a drain row is resumed from its marker or not
-    /// at all. A row no drain built keeps the generic own-address resume.
-    enum ResumeRecipient: Equatable {
-        case ownWallet
-        case external(Data)
-        /// A drain row whose marker is missing or belongs to another
-        /// operation: the recipient is unknown, never defaulted to own.
-        case refuse
-    }
-
-    /// What the SDK row says about the drain that built this lock.
-    enum DrainRowIdentity: Equatable {
-        /// No operation id: a lock no drain built.
-        case none
-        case operation(UUID)
-        /// An operation id that is not a UUID: a drain row that cannot be
-        /// matched to any marker.
-        case malformed
-    }
-
-    nonisolated static func resumeRecipient(
-        row: DrainRowIdentity,
-        marker: CoreShieldedDrainOperation?
-    ) -> ResumeRecipient {
-        switch row {
-        case .none:
-            return .ownWallet
-        case .malformed:
-            return .refuse
-        case .operation(let rowOperationId):
-            guard let marker, marker.id == rowOperationId else { return .refuse }
-            switch marker.recipient {
-            case .ownWallet: return .ownWallet
-            case .external(let raw43): return .external(raw43)
-            }
-        }
-    }
-
-    static let refusalMessage = NSLocalizedString(
-        "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.",
-        comment: "InternalTransfer recovery: drain recipient unknown")
-
     /// What a Finish now tap does, given the coordinator's phase when the tap
     /// is acted on.
     enum TapAction: Equatable {
@@ -150,20 +102,12 @@ final class ShieldedRecoveryViewModel: ObservableObject {
     private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
 
     private let outPoint: (txidWire: Data, vout: UInt32)?
-    private let drainRow: DrainRowIdentity
     private let coordinator = ShieldedTransferCoordinator()
     private var cancellables = Set<AnyCancellable>()
     private var longProofWaitTask: Task<Void, Never>?
 
     init(transaction: Transaction) {
         outPoint = transaction.shieldedOutPoint.map { ($0.txidWire, $0.vout) }
-        if let id = transaction.shieldedDrainOperationId {
-            drainRow = .operation(id)
-        } else if transaction.hasMalformedShieldedDrainOperationId {
-            drainRow = .malformed
-        } else {
-            drainRow = .none
-        }
 
         coordinator.$phase
             .receive(on: RunLoop.main)
@@ -225,33 +169,6 @@ final class ShieldedRecoveryViewModel: ObservableObject {
                 return
             }
 
-            // A drain row is resumed to the recipient its marker recorded,
-            // under the marker's wallet and network. Anything short of an
-            // exact match is a refusal, not a resume to the own address.
-            let recipientRaw43: Data?
-            var drainContext: CoreShieldedDrainContext?
-            do {
-                var marker: CoreShieldedDrainOperation?
-                if case .operation = drainRow {
-                    let context = try CoreShieldedDrainService.currentContext()
-                    marker = try CoreShieldedDrainService().store.load(context)
-                    drainContext = context
-                }
-                switch Self.resumeRecipient(row: drainRow, marker: marker) {
-                case .ownWallet: recipientRaw43 = nil
-                case .external(let raw43): recipientRaw43 = raw43
-                case .refuse:
-                    Self.logger.error("🛡️ SHIELD-TX :: recovery refused — drain marker does not identify the recipient")
-                    refusal = Self.refusalMessage
-                    return
-                }
-            } catch {
-                Self.logger.error("🛡️ SHIELD-TX :: recovery refused — drain marker unreadable \(String(describing: error), privacy: .public)")
-                refusal = Self.refusalMessage
-                return
-            }
-            refusal = nil
-
             // Every other status resumes: broadcast through chain-locked is
             // still pending, `recoveredFromChain` is Core-final with the
             // Platform side unknown, and a missing status means the refresh
@@ -259,9 +176,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
             // report both land on unconfirmed rather than false success.
             await coordinator.resumeAssetLock(
                 outPointTxidWire: outPoint.txidWire,
-                outPointVout: outPoint.vout,
-                recipientRaw43: recipientRaw43,
-                expectedDrainContext: drainContext)
+                outPointVout: outPoint.vout)
 
             // The shield consumed the lock; refresh so the history row flips
             // pending → completed without waiting for the next sync pass.
@@ -344,13 +259,6 @@ struct ShieldedRecoverySheet: View {
 
             if case let .failed(message) = viewModel.phase {
                 Text(message)
-                    .font(.system(size: 13))
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 12)
-            } else if let refusal = viewModel.refusal {
-                Text(refusal)
                     .font(.system(size: 13))
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)

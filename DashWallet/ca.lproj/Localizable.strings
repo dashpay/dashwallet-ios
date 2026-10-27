@@ -5162,6 +5162,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "No s'ha pogut registrar el teu nom d'usuari temporal «%@». Pots registrar un altre nom d'usuari més endavant.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "«%1$@» ja és el teu nom d'usuari. Si la votació t'atorga «%2$@», se't podrà localitzar amb tots dos noms d'usuari.";
 

@@ -5160,6 +5160,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "임시 사용자 이름 ‘%@’ 을(를) 등록하지 못했습니다. 나중에 다른 사용자 이름을 등록할 수 있습니다.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "이제 ‘%1$@’ 이(가) 회원님의 사용자 이름입니다. 투표에서 ‘%2$@’ 을(를) 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
 

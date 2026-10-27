@@ -147,7 +147,7 @@ import XCTest
                 self.clearMaxSelection()
                 self.amountText = "0"
             },
-            completionMessage: { "Completed" }))
+            completionMessage: { _ in "Completed" }))
     }
     func clearMaxSelection() { controller.clear() }
 }
@@ -336,6 +336,23 @@ final class RecoveryFormTests: XCTestCase {
         XCTAssertNotNil(controller.completionNotice)
         XCTAssertNil(controller.notice)
         XCTAssertEqual(CoreShieldedDrainService.quotes, 0)
+    }
+    @MainActor func testNeverSentOperationIsForgottenSoANewerMarkerIsRead() async {
+        let first = reset()
+        CoreShieldedDrainService.outcome = .init(state: .notSent, outpoint: nil)
+        let controller = RecoveryForm().controller!
+        controller.select()
+        await controller.task?.value
+        XCTAssertNil(controller.operation)
+        XCTAssertFalse(controller.isPending)
+        // A later drain wrote a newer marker that is still pending.
+        let second = CoreShieldedDrainOperation(id: UUID(), context: CoreShieldedDrainService.context)
+        CoreShieldedDrainService.recorded = second
+        CoreShieldedDrainService.outcome = .init(state: .pending, outpoint: nil)
+        controller.refresh()
+        await controller.task?.value
+        XCTAssertTrue(controller.isPending)
+        XCTAssertEqual(CoreShieldedDrainService.lookups, [first.id, second.id])
     }
     @MainActor func testReadyQuoteFillsTheEstimateAndCarriesAConfirmation() async {
         _ = reset()

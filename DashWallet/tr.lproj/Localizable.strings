@@ -5160,6 +5160,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Geçici kullanıcı adınız “%@” kaydedilemedi. Daha sonra başka bir kullanıcı adı kaydedebilirsiniz.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” artık kullanıcı adınız. Oylama size “%2$@” adını verirse her iki kullanıcı adıyla da ulaşılabilir olursunuz.";
 

@@ -5160,6 +5160,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Votre nom d'utilisateur temporaire « %@ » n'a pas pu être enregistré. Vous pourrez enregistrer un autre nom d'utilisateur plus tard.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "« %1$@ » est désormais votre nom d'utilisateur. Si le vote vous attribue « %2$@ », vous serez joignable aux deux noms d'utilisateur.";
 

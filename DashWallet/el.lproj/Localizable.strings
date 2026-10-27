@@ -5160,6 +5160,9 @@
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Δεν ήταν δυνατή η καταχώρηση του προσωρινού ονόματος χρήστη «%@». Μπορείτε να καταχωρήσετε άλλο όνομα χρήστη αργότερα.";
 
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
+
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "Το «%1$@» είναι πλέον το όνομα χρήστη σας. Αν η ψηφοφορία σας αποδώσει το «%2$@», θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
 
