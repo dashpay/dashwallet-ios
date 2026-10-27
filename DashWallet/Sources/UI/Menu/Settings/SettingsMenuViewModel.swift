@@ -344,7 +344,7 @@ class SettingsMenuViewModel: ObservableObject {
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {
-            DWLogger.log("SettingsMenuViewModel: sweep failed: \(error)")
+            DWLogger.log("SettingsMenuViewModel: sweep failed: \(WalletSendService.coinJoinSweepLogLine(for: error))")
             // Auth-cancel is an expected no-op (nil message); a real failure
             // surfaces an alert. The row stays visible so the user can retry.
             coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)
