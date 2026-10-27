@@ -114,6 +114,7 @@ struct TransferEndpointPicker: View {
                 ForEach(networks, id: \.self) { network in
                     row(
                         display: display(network: network),
+                        network: network,
                         selected: network == selected,
                         action: { select(network) })
                 }
@@ -156,6 +157,7 @@ struct TransferEndpointPicker: View {
     private func sourceRow(_ source: TransferSource) -> some View {
         row(
             display: display(network: source.balanceNetwork),
+            network: source.balanceNetwork,
             selected: viewModel.transferSource == source,
             action: { viewModel.selectStandaloneSource(source) })
     }
@@ -163,40 +165,120 @@ struct TransferEndpointPicker: View {
     private func destinationRow(_ destination: TransferDestination) -> some View {
         row(
             display: display(network: destination.balanceNetwork),
+            network: destination.balanceNetwork,
             selected: viewModel.destination == destination,
             action: { viewModel.selectStandaloneDestination(destination) })
     }
 
-    /// The design system's `MenuItem`, with the blue tick as its trailing
-    /// accessory.
-    ///
-    /// Name and mark only. No From / To caption — the sheet's own title
-    /// already says which side is being chosen, and repeating it four times
-    /// reads as noise. No radio circle either: the tick is the selection. And
-    /// no balance, which the cards behind the sheet are already showing.
+    /// Selection and help are separate buttons so reading about a balance
+    /// never changes the route or dismisses the picker.
     private func row(
         display: TransferEndpointDisplay,
+        network: ChainNetwork?,
         selected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button {
-            action()
-            onPicked()
-        } label: {
-            DashUIKit.MenuItem(
-                leadingIcon: display.icon,
-                title: display.title,
-                accessory: .selection(isSelected: selected)
-            )
-            .contentShape(Rectangle())
+        HStack(spacing: 0) {
+            Button {
+                action()
+                onPicked()
+            } label: {
+                DashUIKit.MenuItem(
+                    leadingIcon: display.icon,
+                    title: display.title,
+                    accessory: .selection(isSelected: selected)
+                )
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            TransferBalanceHelpButton(title: display.title, network: network)
+                .padding(.trailing, 8)
         }
-        .buttonStyle(.plain)
     }
 
     /// `nil` is the identity row — the one endpoint that is not a balance.
     private func display(network: ChainNetwork?) -> TransferEndpointDisplay {
         guard let network else { return .identity(in: viewModel) }
         return .network(network, in: viewModel)
+    }
+}
+
+/// A compact explanation anchored to its own button, including on iPhone.
+private struct TransferBalanceHelpButton: View {
+    let title: String
+    let network: ChainNetwork?
+
+    @Environment(\.dynamicTypeSize)
+    private var dynamicTypeSize
+    @State private var isPresented = false
+
+    var body: some View {
+        Button {
+            isPresented = true
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.body)
+                .foregroundColor(.dash.blue)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(format: NSLocalizedString(
+            "About %@ balance", comment: "Balance help button; placeholder is the balance name"), title))
+        .popover(isPresented: $isPresented) {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    ScrollView {
+                        helpContent
+                        Button(NSLocalizedString("Got it", comment: "Dismiss balance help")) {
+                            isPresented = false
+                        }
+                        .font(.body)
+                        .padding(20)
+                    }
+                } else {
+                    helpContent
+                        .frame(idealWidth: 280, maxWidth: 300)
+                }
+            }
+            .presentationBackground(Color.dash.primaryBackground)
+            .presentationCompactAdaptation(dynamicTypeSize.isAccessibilitySize ? .sheet : .popover)
+        }
+    }
+
+    private var helpContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.dash.primaryText)
+            Text(explanation)
+                .font(.subheadline)
+                .foregroundColor(.dash.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(20)
+    }
+
+    private var explanation: String {
+        switch network {
+        case .core:
+            return NSLocalizedString(
+                "Your everyday Dash balance. Use it to pay merchants or send to other Dash wallets and exchanges; amounts and addresses are public.",
+                comment: "Brief explanation of Transparent balance and why to fund it")
+        case .platform:
+            return NSLocalizedString(
+                "Dash for payments on Dash Platform. Keep funds here to send to Platform addresses or move into your Shielded or Identity balance.",
+                comment: "Brief explanation of Platform balance and why to fund it")
+        case .shielded:
+            return NSLocalizedString(
+                "Dash held privately, with your balance hidden from public view. Use it for private payments to other shielded addresses.",
+                comment: "Brief explanation of Shielded balance and why to fund it")
+        case nil:
+            return NSLocalizedString(
+                "Credits that power your Dash identity. Add funds here to register usernames and pay for actions in apps that use your identity.",
+                comment: "Brief explanation of Identity balance and why to fund it")
+        }
     }
 }
 
