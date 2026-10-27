@@ -6876,3 +6876,7 @@
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
+
+/* Protocol version advisory */
+"The network uses a newer protocol than this version of the app. Check for available updates." = "Sieć korzysta z nowszego protokołu niż ta wersja aplikacji. Sprawdź dostępność aktualizacji.";
+"Check for available updates" = "Sprawdź dostępność aktualizacji";

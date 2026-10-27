@@ -360,6 +360,9 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
+                        .padding(.horizontal, 16)
+
                     SyncingHeaderView(onFilterTap: {
                         showFilterDialog = true
                     }, onSyncTap: {

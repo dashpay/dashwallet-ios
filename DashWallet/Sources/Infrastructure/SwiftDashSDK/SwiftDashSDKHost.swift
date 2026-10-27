@@ -32,6 +32,7 @@ import Foundation
 import OSLog
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 enum MnemonicFirstWalletCreationError: Error {
     case mnemonicPersistence(Error)
@@ -339,6 +340,10 @@ final class SwiftDashSDKHost {
 
     // MARK: - Owned state
 
+    let protocolCompatibility = WalletProtocolCompatibilityController(
+        foregroundNotification: UIApplication.willEnterForegroundNotification,
+        log: { DWLogger.log($0) })
+
     private(set) var sdk: SDK?
     private(set) var manager: PlatformWalletManager?
     private(set) var wallet: ManagedPlatformWallet?
@@ -413,43 +418,13 @@ final class SwiftDashSDKHost {
 
     // MARK: - Platform protocol version
 
-    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
-    ///
-    /// **Testnet is pinned to the protocol testnet has activated** (14; check
-    /// `current` in an evonode's getStatus before bumping). Below it the
-    /// client builds transitions the network refuses — at 13, every
-    /// `ShieldFromAssetLock` (version 1 only at v14) failed with 10603 and
-    /// left its asset lock unspent. An explicit pin, rather than auto-detect,
-    /// keeps a shielded build from running before the SDK has ratcheted up to
-    /// the network version. A pinned SDK never ratchets
-    /// (`refreshProtocolVersion()` is a no-op while pinned), so the pin has to
-    /// be bumped by hand on the next testnet activation.
-    ///
-    /// **Mainnet and devnet use `0` — auto-detect.** The SDK seeds at its
-    /// per-network `min_protocol_version` floor (13 on mainnet) and moves up
-    /// only when a proved response carries a newer version, so it follows a
-    /// mainnet activation to any protocol the linked SDK carries without an
-    /// app release. The floor must not sit
-    /// above the network: a client ahead of the network misreads its proofs (a
-    /// v13 pin while mainnet ran v12 failed with "compacted address balance
-    /// proof contains trailing bytes"). Devnet's floor is 14, built from the
-    /// linked SDK's v14, which a devnet cut from another release may not run.
-    /// TODO(protocol-refresh): the app never calls `refreshProtocolVersion()`,
-    /// so until the first proved read an auto-detect SDK builds transitions at
-    /// its floor.
-    ///
-    /// **Regtest** returns `0` only to keep the switch exhaustive;
-    /// `makeRuntime` rejects it before an SDK is built.
-    ///
-    /// The pin only names a version; its rules come from the linked SDK.
-    /// platform v4.2-dev carries a pre-release v14 whose `ShieldFromAssetLock`
-    /// is still version 0. Testnet runs 5.0.0-rc.4; link that release, or a
-    /// later commit with the same `v14.rs`.
+    /// Use the SDK's automatic protocol selection on every supported network.
+    /// It starts at the network's minimum version and advances after verified
+    /// responses, up to the SDK's supported maximum. The advisory query runs
+    /// independently; operation preparation does not wait for it.
+    /// Regtest is rejected by `makeRuntime` before an SDK is built.
     static func platformVersion(for network: Network) -> UInt32 {
-        switch network {
-        case .testnet: return 14
-        case .mainnet, .devnet, .regtest: return 0
-        }
+        0
     }
 
     // MARK: - Wallet presence
@@ -1284,6 +1259,7 @@ final class SwiftDashSDKHost {
     /// invariant doesn't hold here.
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        protocolCompatibility.detach()
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
         drainWatch?.cancel()
@@ -2028,6 +2004,9 @@ final class SwiftDashSDKHost {
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
         ContestedUsernameFee.shared.runtimeDidStart()
+        protocolCompatibility.attach(
+            client: SwiftDashSDKProtocolCompatibilityClient(sdk: handles.sdk),
+            network: String(describing: handles.network))
     }
 
     // MARK: - ModelContainer
