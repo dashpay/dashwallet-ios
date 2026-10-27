@@ -2130,6 +2130,13 @@
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
 		21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */; };
 		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
+		104ED77DD2298A025814CF83 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
+		1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */; };
+		3825BD7459C4884DD70D9A90 /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */; };
+		A976B61C558151C1AC300A54 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */; };
+		C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */; };
+		E64A1C72095A9DD989E8379B /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
+		E97F36169DF0F8814359881A /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -4016,6 +4023,10 @@
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
 		4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRowsUITests.swift; sourceTree = "<group>"; };
 		222014736AFDB62525FA244F /* DashPayRecoveryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashPayRecoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityController.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletProtocolCompatibilityController.swift; sourceTree = "<group>"; };
+		4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SwiftDashSDKProtocolCompatibilityClient.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKProtocolCompatibilityClient.swift; sourceTree = "<group>"; };
+		DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityTests.swift; path = DashWalletTests/WalletProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
+		E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolCompatibilityBanner.swift; path = DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -7483,6 +7494,10 @@
 		75D5F3B5191EC270004AB296 = {
 			isa = PBXGroup;
 			children = (
+				465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */,
+				4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */,
+				E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */,
+				DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */,
 				C9D2C9552A320AC100D15901 /* DashPay */,
 				2ADF83FB23632D55008459A7 /* Shared */,
 				75D5F3C7191EC270004AB296 /* DashWallet */,
@@ -10062,6 +10077,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3825BD7459C4884DD70D9A90 /* WalletProtocolCompatibilityController.swift in Sources */,
+				E64A1C72095A9DD989E8379B /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
+				A976B61C558151C1AC300A54 /* ProtocolCompatibilityBanner.swift in Sources */,
 				553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */,
 				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
@@ -10952,6 +10970,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
@@ -11049,6 +11068,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E97F36169DF0F8814359881A /* WalletProtocolCompatibilityController.swift in Sources */,
+				104ED77DD2298A025814CF83 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
+				C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */,
 				7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */,
 				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,

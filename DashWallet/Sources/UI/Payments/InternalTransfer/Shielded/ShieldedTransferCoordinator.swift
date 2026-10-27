@@ -599,6 +599,41 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case coinJoinDrain
     }
 
+    /// Why the transfer must stop after the prompt, before anything is built
+    /// or broadcast, or nil.
+    private func executionRefusal(
+        funding: AssetLockFundingSource,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?,
+        env: Environment
+    ) -> Error? {
+        // After the prompt, so a switch while it was open is caught too; the
+        // sync gate below then reads the pinned wallet's state.
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — the active wallet changed")
+            return CoordinatorError.noWallet
+        }
+
+        // A cancelled task stops here, before anything is built or broadcast.
+        // Reported as a cancel: the caller went away, nothing failed.
+        if Task.isCancelled {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — task cancelled")
+            return CoordinatorError.authCancelled
+        }
+
+        // Re-check at the execution boundary, not only where the surface was
+        // offered. The drain is whole-account and its value is computed
+        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
+        // was open would lock a UTXO set the user never saw. The BIP44 route
+        // carries an explicit amount and its own screens gate on
+        // `isChainSynced`, so this is the drain's check alone.
+        if case .coinJoinDrain = funding,
+           SyncingActivityMonitor.shared.state != .syncDone {
+            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
+            return CoordinatorError.coinJoinDrainRequiresSync
+        }
+        return nil
+    }
+
     /// `recipientRaw43` nil = the wallet's own default Orchard address (the
     /// internal transfer); an external Send passes the recipient's raw
     /// 43-byte payload. The recipient receives exactly `recipientAmountDuffs`:
@@ -613,7 +648,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Funding-parameterized form of `performAssetLock(recipientAmountDuffs:)`
     /// — same stages, polling, and resume semantics for both funding sources
     /// (a stuck lock resumes by outpoint regardless of what funded it).
-    func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
+    /// - Parameter binding: When set, the transfer fails unless this is still
+    ///   the active wallet and network (the CoinJoin move pins the wallet it
+    ///   was authorized for).
+    func performAssetLock(
+        funding: AssetLockFundingSource,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
@@ -657,16 +699,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // Re-check at the execution boundary, not only where the surface was
-        // offered. The drain is whole-account and its value is computed
-        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
-        // was open would lock a UTXO set the user never saw. The BIP44 route
-        // carries an explicit amount and its own screens gate on
-        // `isChainSynced`, so this is the drain's check alone.
-        if case .coinJoinDrain = funding,
-           SyncingActivityMonitor.shared.state != .syncDone {
-            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
-            handleFailure(CoordinatorError.coinJoinDrainRequiresSync)
+        if let refusal = executionRefusal(funding: funding, expecting: binding, env: env) {
+            handleFailure(refusal)
             return
         }
 
@@ -731,7 +765,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil, expectedDrainContext: CoreShieldedDrainContext? = nil) async {
+    /// - Parameter binding: as for `performAssetLock(funding:recipientRaw43:expecting:)`.
+    func resumeAssetLock(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil,
+        expectedDrainContext: CoreShieldedDrainContext? = nil
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
@@ -784,6 +825,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: resume refused — the active wallet changed")
+            handleFailure(CoordinatorError.noWallet)
             return
         }
 
@@ -1598,6 +1645,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
             network: basic.network,
             modelContainer: basic.modelContainer,
             shieldedRecipient: recipient)
+    }
+
+    /// Whether a pinned transfer may still run: `binding` (when set) is both
+    /// the environment resolved for it and the host's active wallet now.
+    private func isStillBound(
+        _ binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?, env: Environment
+    ) -> Bool {
+        guard let binding else { return true }
+        return binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding(walletId: env.walletId, network: env.network)
+            && binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current()
     }
 
     /// Synchronous single-flight gate. Returns `false` when a transfer is
