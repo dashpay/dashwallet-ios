@@ -112,7 +112,7 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         await shared.value
     }
 
-    func testBannerOnlyShowsVerifiedNewerObservationAndDistributionGuidance() async throws {
+    func testBannerOnlyShowsVerifiedNewerObservationAndCommonUpdateLink() async throws {
         let controller = WalletProtocolCompatibilityController(foregroundNotification: foreground)
         let model = ProtocolCompatibilityBannerViewModel(controller: controller)
         XCTAssertNil(model.message)
@@ -128,14 +128,27 @@ final class WalletProtocolCompatibilityTests: XCTestCase {
         client.finish(.success(()))
         await refresh.value
         XCTAssertNotNil(model.message)
-        #if Testflight
-        XCTAssertTrue(model.message!.contains("TestFlight"))
-        XCTAssertNil(model.updateURL)
-        #else
+        XCTAssertFalse(model.message!.contains("TestFlight"))
         XCTAssertEqual(model.updateURL?.absoluteString, "https://apps.apple.com/app/dash-wallet/id1206647026")
-        #endif
         controller.detach()
         XCTAssertNil(model.message)
+    }
+
+    func testSupportedNetworkUpgradeDoesNotShowBanner() async throws {
+        let controller = WalletProtocolCompatibilityController(foregroundNotification: foreground)
+        let model = ProtocolCompatibilityBannerViewModel(controller: controller)
+        for effective in [14, 15] {
+            let observation = try JSONDecoder().decode(ProtocolVersionInfo.self, from: Data("""
+                {"verifiedVersion":15,"effectiveVersion":\(effective),
+                 "maximumSupportedVersion":15,"newerProtocolAvailable":false}
+                """.utf8))
+            let client = Client(info: observation)
+            let task = controller.attach(client: client, network: "testnet")
+            await client.waitForQuery()
+            client.finish(.success(()))
+            await task.value
+            XCTAssertNil(model.message)
+        }
     }
 
     private enum TestError: Error { case offline }

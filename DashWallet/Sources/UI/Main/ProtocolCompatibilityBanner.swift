@@ -14,19 +14,11 @@ final class ProtocolCompatibilityBannerViewModel: ObservableObject {
 
     var message: String? {
         guard snapshot?.newerProtocolAvailable == true else { return nil }
-        #if Testflight
-        return NSLocalizedString("The network uses a newer protocol than this version of the app. Check for updates in TestFlight.", comment: "Protocol version advisory")
-        #else
         return NSLocalizedString("The network uses a newer protocol than this version of the app. Check for available updates.", comment: "Protocol version advisory")
-        #endif
     }
 
     var updateURL: URL? {
-        #if Testflight
-        return nil
-        #else
         return URL(string: "https://apps.apple.com/app/dash-wallet/id1206647026")
-        #endif
     }
 
 }
@@ -47,7 +39,7 @@ struct ProtocolCompatibilityBanner: View {
                         .font(.footnote)
                         .fixedSize(horizontal: false, vertical: true)
                     if let url = model.updateURL {
-                        Button(NSLocalizedString("Check for update", comment: "Protocol version update")) {
+                        Button(NSLocalizedString("Check for available updates", comment: "Protocol version update")) {
                             openURL(url)
                         }
                     }

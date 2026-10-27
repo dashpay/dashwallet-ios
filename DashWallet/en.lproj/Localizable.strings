@@ -6650,3 +6650,7 @@
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
+
+/* Protocol version advisory */
+"The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
+"Check for available updates" = "Check for available updates";
