@@ -19,55 +19,38 @@
 
 import Foundation
 
-/// Funding asset locks we have already asked Platform about and been told are
-/// already spent.
-///
-/// The SDK deliberately does NOT advance such a lock's status: the
-/// already-consumed report arrives as a plain rejection from one DAPI node, not
-/// as a quorum-authenticated proof, and stamping `Consumed` on an unverified
-/// negative would permanently hide a lock that may still be recoverable
-/// (`rs-platform-wallet` records it as "consumption unknown" instead).
-///
-/// That is the right call for the *status*, but it leaves the answer itself
-/// nowhere: the coordinator's phase dies with the sheet, so the next launch
-/// looks exactly like the first — "Completion unknown" and a live retry action
-/// on every restored transfer. A wallet restored with a hundred shielded
-/// transfers then shows a hundred permanently unfinished-looking rows.
-///
-/// This store records the weaker, honest fact — *we asked, and the network said
-/// spent* — without claiming the transfer is proven complete. It is app-owned
-/// and advisory: losing it costs one redundant probe, never money.
-///
-/// Superseded by a proved read of Platform's `SpentAssetLockTransactions` tree,
-/// which would settle consumption authoritatively and let the status advance on
-/// its own. Until that query exists client-side, this is the honest middle.
+/// Wallet-scoped, unverified consumption reports for exact asset-lock outpoints.
+/// Automatic recovery skips these reports; an explicit authenticated user action
+/// can recheck the same lock. A report never proves success or authorizes a new lock.
 final class AssetLockProbeStore {
 
     static let shared = AssetLockProbeStore()
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let lock = NSLock()
-    /// Scoped per wallet (`<legacyKey>_<activeWalletIdHex>`) exactly as
+    /// V1 reports have no output index and cannot safely be migrated to a
+    /// specific outpoint. Leave them unused until wallet cleanup; never turn
+    /// them into a report about every output in their transaction.
+    /// Scoped per wallet (`<storageKey>_<activeWalletIdHex>`) exactly as
     /// `CoinJoinWithdrawalStore` is: an outpoint probed while wallet A was
     /// active says nothing about wallet B. The bare key is the no-active-wallet
     /// fallback.
     private let legacyKey = "assetLockProbe.v1.alreadySpentTxids"
+    private let storageKey = "assetLockProbe.v2.alreadySpentOutpoints"
     private var cacheKey: String?
     private var cache: Set<Data>?
 
-    private init() {}
-
-    private func resolvedKey() -> String {
-        key(forWalletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
     }
 
     /// The storage key for an EXPLICIT wallet. Callers that suspend before
     /// writing must resolve their wallet up front and pass it here: the active
-    /// wallet can change mid-flight, and `resolvedKey()` would then file the
+    /// wallet can change mid-flight, and using the active wallet would then file the
     /// result under whichever wallet happens to be active at write time.
     private func key(forWalletIdHex walletIdHex: String?) -> String {
-        guard let walletIdHex, !walletIdHex.isEmpty else { return legacyKey }
-        return "\(legacyKey)_\(walletIdHex)"
+        guard let walletIdHex, !walletIdHex.isEmpty else { return storageKey }
+        return "\(storageKey)_\(walletIdHex)"
     }
 
     /// Hex id of the wallet a probe should be filed under, captured BEFORE the
@@ -85,30 +68,40 @@ final class AssetLockProbeStore {
         return set
     }
 
-    private func loaded() -> Set<Data> { loaded(key: resolvedKey()) }
+    private func outpointKey(_ txid: Data, vout: UInt32) -> Data {
+        var index = vout.littleEndian
+        return txid + withUnsafeBytes(of: &index) { Data($0) }
+    }
 
-    /// Record that `txid` (WIRE order) was probed and reported already spent.
+    /// Record that `(txid, vout)` (WIRE order) was reported already spent.
     /// Idempotent and thread-safe.
     /// `walletIdHex` is the wallet the probe belongs to, captured before the
     /// network round-trip that produced it — passing it explicitly is what
     /// keeps a wallet switch during that round-trip from filing the result
     /// under the wrong wallet.
-    func record(txid: Data, walletIdHex: String?) {
+    func record(txid: Data, vout: UInt32, walletIdHex: String?) {
+        let outpoint = outpointKey(txid, vout: vout)
         let key = key(forWalletIdHex: walletIdHex)
         lock.lock(); defer { lock.unlock() }
         var set = loaded(key: key)
-        guard !set.contains(txid) else { return }
-        set.insert(txid)
+        guard !set.contains(outpoint) else { return }
+        set.insert(outpoint)
         cacheKey = key
         cache = set
         defaults.set(Array(set), forKey: key)
     }
 
-    /// Whether `txid` (WIRE order, e.g. `Transaction.txHashData`) has already
-    /// been probed and answered "already spent". Thread-safe; cheap.
-    func contains(_ txid: Data) -> Bool {
+    /// Whether this exact outpoint (WIRE-order txid) was reported already spent.
+    /// Thread-safe; cheap. This report is not proof of consumption.
+    func contains(_ txid: Data, vout: UInt32) -> Bool {
+        contains(txid, vout: vout, walletIdHex: Self.currentWalletIdHex())
+    }
+
+    /// Explicit-wallet lookup for work that has already captured its runtime.
+    func contains(_ txid: Data, vout: UInt32, walletIdHex: String?) -> Bool {
+        let key = key(forWalletIdHex: walletIdHex)
         lock.lock(); defer { lock.unlock() }
-        return loaded().contains(txid)
+        return loaded(key: key).contains(outpointKey(txid, vout: vout))
     }
 
     /// Clear a SINGLE wallet's probes (per-wallet Remove flow — the removed
@@ -117,8 +110,9 @@ final class AssetLockProbeStore {
     func clearForWallet(walletIdHex: String) {
         guard !walletIdHex.isEmpty else { return }
         lock.lock(); defer { lock.unlock() }
-        let key = "\(legacyKey)_\(walletIdHex)"
+        let key = "\(storageKey)_\(walletIdHex)"
         defaults.removeObject(forKey: key)
+        defaults.removeObject(forKey: "\(legacyKey)_\(walletIdHex)")
         if cacheKey == key {
             cacheKey = nil
             cache = nil
@@ -131,7 +125,8 @@ final class AssetLockProbeStore {
     func resetForWipe() {
         lock.lock(); defer { lock.unlock() }
         for key in defaults.dictionaryRepresentation().keys
-        where key == legacyKey || key.hasPrefix("\(legacyKey)_") {
+        where key == legacyKey || key.hasPrefix("\(legacyKey)_")
+            || key == storageKey || key.hasPrefix("\(storageKey)_") {
             defaults.removeObject(forKey: key)
         }
         cacheKey = nil

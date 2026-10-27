@@ -539,18 +539,23 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    @Published private(set) var submittedUnconfirmed = false
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
-
     private let authorizer = DWIdentityAuthorizer()
 
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
+        case movedToPlatform(Error)
 
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            case .movedToPlatform(let error):
+                return NSLocalizedString(
+                    "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
+                    comment: "Identity top-up stopped after successful unshield") + " " + error.localizedDescription
             }
         }
     }
@@ -604,6 +609,7 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
         isProcessing = true
+        submittedUnconfirmed = false
         defer {
             isProcessing = false
             stepLabel = nil
@@ -643,6 +649,13 @@ final class IdentityTopUpViewModel: ObservableObject {
                     wallet: wallet,
                     modelContainer: modelContainer)
             }
+        } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed {
+            submittedUnconfirmed = true
+            errorMessage = NSLocalizedString(
+                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+                comment: "Identity transfer result unknown")
+            return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
                 errorMessage = String.localizedStringWithFormat(
@@ -709,10 +722,20 @@ final class IdentityTopUpViewModel: ObservableObject {
             hash: Data(storageBytes.dropFirst()),
             credits: claim)
         let signer = KeychainSigner(modelContainer: modelContainer)
-        let newBalance = try await wallet.topUpFromAddresses(
-            identityId: identityId,
-            inputs: [input],
-            addressSigner: signer)
+        let newBalance: UInt64
+        do {
+            newBalance = try await wallet.topUpFromAddresses(
+                identityId: identityId,
+                inputs: [input],
+                addressSigner: signer)
+        } catch {
+            // An ambiguous second leg may already have credited the identity.
+            // Never suggest another top-up when its result is unknown.
+            if case PlatformWalletError.transactionBroadcastUnconfirmed = error { throw error }
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error { throw error }
+            if error is CancellationError { throw error }
+            throw TopUpError.movedToPlatform(error)
+        }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
     }
@@ -902,7 +925,7 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
+                .disabled(viewModel.isProcessing || viewModel.submittedUnconfirmed || effectiveDuffs == nil)
                 .opacity(effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -924,7 +947,9 @@ struct IdentityTopUpSheet: View {
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(viewModel.isProcessing)
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            viewModel.submittedUnconfirmed
+                ? NSLocalizedString("Confirmation pending", comment: "Identity transfer result unknown")
+                : NSLocalizedString("Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
