@@ -849,11 +849,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return nil
     }
 
-    /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
-    /// into the (wire-order txid, vout) that `shieldedResumeFundFromAssetLock`
-    /// expects. The stored txid is display order (reversed wire); the FFI wants
-    /// 32-byte little-endian wire order, so hex-decode then reverse. `nil` on
-    /// any malformed input.
     /// What the SDK row for this outpoint says about the Max drain that built
     /// it. `nil` when the row cannot be read or is missing: unknown is not
     /// "no drain". Every resume surface found its lock through this store, so
@@ -893,6 +888,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             && preview.candidateBalanceDuffs <= confirmation.candidateBalanceDuffs
     }
 
+    /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
+    /// into the (wire-order txid, vout) that `shieldedResumeFundFromAssetLock`
+    /// expects. The stored txid is display order (reversed wire); the FFI wants
+    /// 32-byte little-endian wire order, so hex-decode then reverse. `nil` on
+    /// any malformed input.
     static func parseOutPoint(_ outPointHex: String) -> (txidWire: Data, vout: UInt32)? {
         guard let colon = outPointHex.firstIndex(of: ":") else { return nil }
         let txidDisplayHex = outPointHex[..<colon]
