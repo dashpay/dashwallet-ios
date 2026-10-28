@@ -150,7 +150,6 @@ class SendAmountModel: BaseAmountModel {
             .sink { [weak self] _ in
                 guard let self else { return }
                 let shown = self.error as? SendAmountError
-                let couldContinue = self.isAllowedToContinue
                 switch Self.walletChangeAction(for: self.error) {
                 case .recheckAmount:
                     let next = self.amountError()
@@ -165,10 +164,11 @@ class SendAmountModel: BaseAmountModel {
                 }
                 // Both re-assigning the error and the validation callback
                 // re-present it on these screens, which drops any progress
-                // indicator and resets Continue mid-build — so neither runs
-                // unless something the screen shows actually changed.
-                guard (self.error as? SendAmountError) != shown || self.isAllowedToContinue != couldContinue
-                else { return }
+                // indicator and resets Continue mid-build — so with the same
+                // error still up neither runs. With no error the callback only
+                // refreshes Continue, as it always has on a ceiling move.
+                let current = self.error as? SendAmountError
+                guard current == nil || current != shown else { return }
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)

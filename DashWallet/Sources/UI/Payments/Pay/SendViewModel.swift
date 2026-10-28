@@ -1335,8 +1335,8 @@ final class SendViewModel: ObservableObject {
     private var coreToCoreGate: (ceilingDuffs: UInt64, feeReserveDuffs: UInt64?) {
         #if DASHPAY
         if contactRecipient != nil {
-            let (max, reserve) = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
-            return (max, reserve)
+            let gate = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
+            return (gate.max, gate.reserve)
         }
         #endif
         return (coreBalanceDuffs, nil)

@@ -66,11 +66,6 @@ final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendabl
         }
     }
 
-    /// False in both directions, so a wallet shortfall here stays "Insufficient
-    /// funds": `TransferAmountViewModel` copies the error only on user actions
-    /// and balance changes, so a "still confirming" note would never clear.
-    override var gatesOnWalletSendPool: Bool { false }
-
     override init() {
         super.init()
 

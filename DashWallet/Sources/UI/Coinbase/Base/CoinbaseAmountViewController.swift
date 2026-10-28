@@ -23,6 +23,13 @@ class CoinbaseAmountModel: SendAmountModel {
     override var currencyExchanger: CurrencyExchanger {
         Coinbase.shared.currencyExchanger
     }
+
+    /// False for every Coinbase screen, so a shortfall there stays
+    /// "Insufficient funds": they gate on Coinbase balances, or (the transfer
+    /// to Coinbase) are hosted by `TransferAmountViewModel`, which copies the
+    /// error only on user actions and balance changes — a "still confirming"
+    /// note there would never clear.
+    override var gatesOnWalletSendPool: Bool { false }
 }
 
 // MARK: - CoinbaseAmountViewController

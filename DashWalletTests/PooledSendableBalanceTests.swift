@@ -408,10 +408,19 @@ final class PooledSendableBalanceTests: XCTestCase {
             2, "the current state, then the pooled figure")
     }
 
-    func testTheVerdictIsReJudgedWhenCoinsConfirmWithoutMovingTheCeiling() {
+    func testTheVerdictIsReJudgedWhenOnlyTheUnconfirmedBucketMoves() {
+        // Coins arriving or leaving the unconfirmed bucket decide between
+        // "Insufficient funds" and "still confirming" with `spendable` put.
         XCTAssertEqual(
             verdictEmissions(from: balance(confirmed: 100_000_000, unconfirmed: 50_000_000),
                              then: [balance(confirmed: 100_000_000)]),
+            2, "the current state, then the unconfirmed change")
+    }
+
+    func testTheVerdictIsReJudgedWhenCoinsConfirm() {
+        XCTAssertEqual(
+            verdictEmissions(from: balance(confirmed: 100_000_000, unconfirmed: 50_000_000),
+                             then: [balance(confirmed: 150_000_000)]),
             2, "the current state, then the confirmation")
     }
 
