@@ -123,28 +123,19 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
-        observeSendableCeiling()
+        observeSendVerdictInputs()
         checkAmountForErrors()
     }
 
-    /// The ceiling can move while this screen is open and the amount is
-    /// untouched — a pooled read landing for the first time, or recovering from
-    /// an outage and replacing the wallet-wide fallback with a much smaller
-    /// transparent balance. `BaseAmountModel`'s balance subscription only
-    /// refreshes `walletBalance`, and the view refreshes its button off
-    /// `$amount`, so nothing revalidates an amount typed before the drop.
-    ///
-    /// Both inputs matter, not just the pooled one: through a persistent pooled
-    /// outage that value stays `nil` and `removeDuplicates` swallows every
-    /// repeat, while `balance` keeps moving the fallback ceiling underneath.
-    /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
-    /// changed, and still ignores updates that leave it where it was.
-    ///
-    /// The verdict can also change with the ceiling where it was: coins
-    /// starting or finishing to confirm decide between "Insufficient funds"
-    /// and "still confirming", and a Max explanation goes stale once Max can
-    /// fill. So this follows every verdict input, not the ceiling alone.
-    private func observeSendableCeiling() {
+    /// The wallet can change under an amount typed earlier: the ceiling moves
+    /// (a pooled read landing, or recovering from an outage and replacing the
+    /// wallet-wide fallback with a much smaller transparent balance), coins
+    /// start or finish confirming, which decides between "Insufficient funds"
+    /// and "still confirming" with the ceiling where it was, and a Max
+    /// explanation goes stale once Max can fill. `BaseAmountModel`'s balance
+    /// subscription only refreshes `walletBalance`, and the view refreshes its
+    /// button off `$amount`, so nothing else revalidates.
+    private func observeSendVerdictInputs() {
         SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .dropFirst()
             .receive(on: RunLoop.main)
@@ -155,7 +146,14 @@ class SendAmountModel: BaseAmountModel {
                     self.error = nil
                     self.checkAmountForErrors()
                 case .refreshMaxExplanation:
-                    self.error = self.maxUnavailableError()
+                    if let stillUnavailable = self.maxUnavailableError() {
+                        self.error = stillUnavailable
+                    } else {
+                        // Max can fill now, but an amount typed before the
+                        // tap is still on screen and needs its own verdict.
+                        self.error = nil
+                        self.checkAmountForErrors()
+                    }
                 case .keep:
                     return
                 }

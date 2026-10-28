@@ -263,27 +263,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         Self.sendableDuffs(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
     }
 
-    /// The ceiling an open amount screen validates against, as a stream.
-    ///
-    /// Derived from BOTH inputs and deduplicated on the RESOLVED value: through
-    /// a pooled outage the pooled figure stays `nil` while the wallet balance
-    /// keeps moving the fallback, so a subscription to the pooled publisher
-    /// alone goes silent exactly when the ceiling is moving. Deduplicating the
-    /// result instead reacts to whichever half changed and stays quiet when
-    /// neither moved the answer.
-    ///
-    /// Takes its inputs as parameters so the wiring is testable without the
-    /// shared instance; `observeSendableCeiling` passes the published ones.
-    static func sendableCeilingPublisher(
-        pooled: AnyPublisher<UInt64?, Never>,
-        walletSpendable: AnyPublisher<UInt64?, Never>
-    ) -> AnyPublisher<UInt64, Never> {
-        Publishers.CombineLatest(pooled, walletSpendable)
-            .map { sendableDuffs(pooled: $0, walletSpendable: $1) }
-            .removeDuplicates()
-            .eraseToAnyPublisher()
-    }
-
     /// The confirmed balance a plain send CANNOT draw on: what
     /// `balance.spendable` counts and the funding pool does not.
     ///
@@ -362,7 +341,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         guard requestedDuffs > ceilingDuffs, pooledSpendableDuffs != nil else { return nil }
         return Self.fundsStillConfirming(
             requested: requestedDuffs,
-            reserve: reserveDuffs,
+            lazyReserve: reserveDuffs,
             sendable: sendableDuffs,
             pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot())
     }
@@ -372,7 +351,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// would not fit even with no reserve is refused without it.
     static func fundsStillConfirming(
         requested: UInt64,
-        reserve: () -> UInt64,
+        lazyReserve reserve: () -> UInt64,
         sendable: UInt64,
         pool: SendPoolConfirmationSnapshot?
     ) -> UInt64? {
@@ -422,21 +401,24 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// follows the pool's UTXO count, which an immature or locked coin moves
     /// while every spendable figure stays put — both show up only as a balance
     /// change. Emits the current state on subscription.
+    ///
+    /// Follows the pooled figure itself, not the ceiling resolved from it: the
+    /// verdict needs that figure to be known at all, and its first arrival can
+    /// leave the ceiling where the wallet-wide fallback had it.
     public var sendVerdictInputsPublisher: AnyPublisher<Void, Never> {
         Self.sendVerdictInputsPublisher(
-            ceiling: Self.sendableCeilingPublisher(
-                pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
-                walletSpendable: $balance.map { $0?.spendable }.eraseToAnyPublisher()),
+            pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
             balance: $balance.eraseToAnyPublisher())
     }
 
     /// `sendVerdictInputsPublisher`'s wiring, taking its inputs as parameters
-    /// so it is testable without the shared instance.
+    /// so it is testable without the shared instance. The ceiling is a
+    /// function of these two, so it needs no stream of its own.
     static func sendVerdictInputsPublisher(
-        ceiling: AnyPublisher<UInt64, Never>,
+        pooled: AnyPublisher<UInt64?, Never>,
         balance: AnyPublisher<WalletBalance?, Never>
     ) -> AnyPublisher<Void, Never> {
-        Publishers.CombineLatest(ceiling, balance.removeDuplicates())
+        Publishers.CombineLatest(pooled.removeDuplicates(), balance.removeDuplicates())
             .map { _ in () }
             .eraseToAnyPublisher()
     }

@@ -338,8 +338,9 @@ final class SendViewModel: ObservableObject {
             .dropFirst()
             .receive(on: RunLoop.main)
             .sink { [weak self] in
-                // Nothing typed, nothing to re-judge: spare the redraw.
-                guard let self, self.dashDuffsUnsigned > 0 else { return }
+                // Nothing typed, nothing to re-judge: spare the redraw — unless
+                // the contact intro is up, which shows the fee-aware spendable.
+                guard let self, self.dashDuffsUnsigned > 0 || self.contactRecipient != nil else { return }
                 self.objectWillChange.send()
             }
             .store(in: &cancellables)
