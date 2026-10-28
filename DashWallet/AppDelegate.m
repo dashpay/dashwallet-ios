@@ -287,9 +287,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
     
     if (![DWURLParser canHandleURL:url]) {
+        // A dashpay:// verb this version does not know (e.g. sign) is a link from
+        // a newer app, not a malformed one.
+        BOOL needsNewerWallet = [DWDashConnectDeepLink isUnsupportedDashpayVerbURL:url];
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
-                                     message:url.absoluteString
+                                     alertControllerWithTitle:needsNewerWallet
+                                         ? NSLocalizedString(@"This link needs a newer version of the wallet.", nil)
+                                         : NSLocalizedString(@"Not a Dash URL", nil)
+                                     message:needsNewerWallet ? nil : url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"OK", nil)
