@@ -61,11 +61,20 @@ struct CoreShieldedDrainOperation: Codable, Equatable, Sendable {
     /// external drain pays, so every other combination of the two keys that
     /// does not spell a complete recipient is corruption, never a default:
     /// a payload without a kind, an `own` kind with a payload, an `external`
-    /// kind without one, or a payload of the wrong size.
+    /// kind without one, or a payload of the wrong size. The encoder never
+    /// writes `null`, so an explicit `null` is a present key with no usable
+    /// value, not the legacy absence.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         context = try container.decode(CoreShieldedDrainContext.self, forKey: .context)
+        for key in [CodingKeys.recipientKind, .recipientRaw43]
+            where try container.contains(key) && container.decodeNil(forKey: key) {
+            throw DecodingError.valueNotFound(
+                String.self,
+                DecodingError.Context(codingPath: container.codingPath + [key],
+                                      debugDescription: "recipient key present with a null value"))
+        }
         let kind = try container.decodeIfPresent(RecipientKind.self, forKey: .recipientKind)
         let raw43 = try container.decodeIfPresent(Data.self, forKey: .recipientRaw43)
         switch (kind, raw43) {

@@ -153,6 +153,14 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         json["recipientKind"] = "someone"
         XCTAssertThrowsError(try JSONDecoder().decode(
             CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
+        // Explicit nulls are present keys without a value, not the legacy absence.
+        json["recipientKind"] = NSNull()
+        json["recipientRaw43"] = NSNull()
+        XCTAssertThrowsError(try JSONDecoder().decode(
+            CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
+        json.removeValue(forKey: "recipientKind")
+        XCTAssertThrowsError(try JSONDecoder().decode(
+            CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
         // The two consistent own-wallet spellings still decode.
         json.removeValue(forKey: "recipientRaw43")
         json["recipientKind"] = "own"
