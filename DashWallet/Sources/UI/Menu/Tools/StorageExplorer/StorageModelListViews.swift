@@ -11,7 +11,7 @@ struct IdentityStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: IdentityStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: IdentityStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.dpnsName ?? record.alias ?? record.identityIdBase58)
                         .font(.body).lineLimit(1)
@@ -20,7 +20,7 @@ struct IdentityStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Identities (\(records.count))")
+        .storageExplorerPage("Identities (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle") } }
     }
 }
@@ -33,14 +33,14 @@ struct DocumentStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DocumentStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DocumentStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayTitle).font(.body).lineLimit(1)
                     Text(record.documentType).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Documents (\(records.count))")
+        .storageExplorerPage("Documents (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "doc.text") } }
     }
 }
@@ -53,14 +53,14 @@ struct DataContractStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DataContractStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DataContractStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
                     Text(record.idBase58).font(.caption).foregroundColor(Color.dash.secondaryText).lineLimit(1).truncationMode(.middle)
                 }
             }
         }
-        .navigationTitle("Data Contracts (\(records.count))")
+        .storageExplorerPage("Data Contracts (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "doc.plaintext") } }
     }
 }
@@ -120,7 +120,7 @@ struct PublicKeyStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: PublicKeyStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: PublicKeyStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Key \(record.keyId)").font(.body)
                     Text("\(record.purpose) / \(record.securityLevel)")
@@ -128,29 +128,22 @@ struct PublicKeyStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Public Keys (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "key") } }
         #if DASHPAY
         // Pull-to-refresh re-fetches every wallet-owned identity from
         // Platform so keys added on another device appear here — the
-        // list spans identities, not just the current user's. The toolbar
-        // button is the same action with a visible affordance.
+        // list spans identities, not just the current user's. The bar's
+        // refresh circle is the same action with a visible affordance.
         .refreshable { await reloadModel.reloadAllLocalIdentities() }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await reloadModel.reloadAllLocalIdentities() }
-                } label: {
-                    if reloadModel.isReloading {
-                        SwiftUI.ProgressView()
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                .disabled(reloadModel.isReloading)
-                .accessibilityLabel(Text("Refresh from Platform"))
+        .storageExplorerPage("Public Keys (\(records.count))") {
+            StorageExplorerRefreshButton(
+                accessibilityLabel: "Refresh from Platform",
+                isRefreshing: reloadModel.isReloading) {
+                Task { await reloadModel.reloadAllLocalIdentities() }
             }
         }
+        #else
+        .storageExplorerPage("Public Keys (\(records.count))")
         #endif
     }
 }
@@ -163,14 +156,14 @@ struct TokenStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: TokenStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: TokenStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
                     Text(record.formattedBaseSupply).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Tokens (\(records.count))")
+        .storageExplorerPage("Tokens (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "circle.hexagongrid") } }
     }
 }
@@ -183,14 +176,14 @@ struct TokenBalanceStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: TokenBalanceStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: TokenBalanceStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.tokenName ?? record.tokenId).font(.body).lineLimit(1)
                     Text(record.displayBalance).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Token Balances (\(records.count))")
+        .storageExplorerPage("Token Balances (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "banknote") } }
     }
 }
@@ -203,14 +196,14 @@ struct TokenHistoryStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: TokenHistoryStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: TokenHistoryStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayTitle).font(.body).lineLimit(1)
                     Text(record.eventTimestamp, style: .date).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Token History (\(records.count))")
+        .storageExplorerPage("Token History (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "clock.arrow.circlepath") } }
     }
 }
@@ -223,14 +216,14 @@ struct DocumentTypeStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DocumentTypeStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DocumentTypeStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
                     Text(record.contractIdBase58).font(.caption).foregroundColor(Color.dash.secondaryText).lineLimit(1).truncationMode(.middle)
                 }
             }
         }
-        .navigationTitle("Document Types (\(records.count))")
+        .storageExplorerPage("Document Types (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "list.bullet.rectangle") } }
     }
 }
@@ -243,14 +236,14 @@ struct IndexStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: IndexStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: IndexStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
                     Text(record.documentTypeName).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Indices (\(records.count))")
+        .storageExplorerPage("Indices (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "tablecells") } }
     }
 }
@@ -263,14 +256,14 @@ struct PropertyStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: PropertyStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: PropertyStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
                     Text(record.type).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .navigationTitle("Properties (\(records.count))")
+        .storageExplorerPage("Properties (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "slider.horizontal.3") } }
     }
 }
@@ -283,11 +276,11 @@ struct KeywordStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: KeywordStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: KeywordStorageDetailView(record: record)) {
                 Text(record.keyword).font(.body)
             }
         }
-        .navigationTitle("Keywords (\(records.count))")
+        .storageExplorerPage("Keywords (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "tag") } }
     }
 }
@@ -300,7 +293,7 @@ struct SyncStateStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: SyncStateStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: SyncStateStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.network.networkName.capitalized)
                         .font(.body)
@@ -313,7 +306,7 @@ struct SyncStateStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Sync State (\(records.count))")
+        .storageExplorerPage("Sync State (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.triangle.2.circlepath") } }
     }
 }
@@ -326,7 +319,7 @@ struct WalletStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: WalletStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: WalletStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name ?? record.walletId.map { String(format: "%02x", $0) }.prefix(16).joined())
                         .font(.body).lineLimit(1)
@@ -335,7 +328,7 @@ struct WalletStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Wallets (\(records.count))")
+        .storageExplorerPage("Wallets (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "wallet.pass") } }
     }
 }
@@ -372,7 +365,7 @@ struct AccountStorageListView: View {
                         Text("No accounts").font(.caption).foregroundColor(Color.dash.secondaryText)
                     } else {
                         ForEach(sorted) { account in
-                            NavigationLink(destination: AccountStorageDetailView(record: account)) {
+                            StorageExplorerLink(destination: AccountStorageDetailView(record: account)) {
                                 accountRow(account)
                             }
                         }
@@ -382,14 +375,14 @@ struct AccountStorageListView: View {
             if !orphanAccounts.isEmpty {
                 Section(header: Text("Unlinked")) {
                     ForEach(orphanAccounts) { account in
-                        NavigationLink(destination: AccountStorageDetailView(record: account)) {
+                        StorageExplorerLink(destination: AccountStorageDetailView(record: account)) {
                             accountRow(account)
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Accounts (\(totalAccountCount))")
+        .storageExplorerPage("Accounts (\(totalAccountCount))")
         .overlay {
             if totalAccountCount == 0 {
                 ContentUnavailableView("No Records", systemImage: "person.2")
@@ -432,7 +425,7 @@ struct TransactionStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: TransactionStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: TransactionStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.txidHex)
                         .font(.system(.caption, design: .monospaced))
@@ -446,7 +439,7 @@ struct TransactionStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Transactions (\(records.count))")
+        .storageExplorerPage("Transactions (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.left.arrow.right.circle") } }
     }
 }
@@ -521,14 +514,14 @@ struct CoreAddressStorageListView: View {
                 let (key, addresses) = pair
                 Section(header: Text(sectionTitle(for: key))) {
                     ForEach(addresses) { record in
-                        NavigationLink(destination: CoreAddressDetailView(record: record)) {
+                        StorageExplorerLink(destination: CoreAddressDetailView(record: record)) {
                             addressRow(record)
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Core Addresses (\(records.count))")
+        .storageExplorerPage("Core Addresses (\(records.count))")
         .overlay {
             if records.isEmpty {
                 ContentUnavailableView(
@@ -634,14 +627,14 @@ struct PlatformAddressStorageListView: View {
                 let (key, addresses) = pair
                 Section(header: Text(sectionTitle(for: key))) {
                     ForEach(addresses) { record in
-                        NavigationLink(destination: PlatformAddressDetailView(record: record)) {
+                        StorageExplorerLink(destination: PlatformAddressDetailView(record: record)) {
                             addressRow(record)
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Platform Addresses (\(records.count))")
+        .storageExplorerPage("Platform Addresses (\(records.count))")
         .overlay {
             if records.isEmpty {
                 ContentUnavailableView(
@@ -697,7 +690,7 @@ struct UtxoStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: UtxoStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: UtxoStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.outpointHex)
                         .font(.system(.caption, design: .monospaced))
@@ -714,7 +707,7 @@ struct UtxoStorageListView: View {
                 }
             }
         }
-        .navigationTitle("UTXOs (\(records.count))")
+        .storageExplorerPage("UTXOs (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "bitcoinsign.circle") } }
     }
 }
@@ -727,7 +720,7 @@ struct WalletManagerMetadataStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: WalletManagerMetadataStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: WalletManagerMetadataStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.network.networkName).font(.body)
                     Text("Height \(record.combinedSyncHeight) · \(record.walletCount) wallets")
@@ -735,7 +728,7 @@ struct WalletManagerMetadataStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Manager Metadata (\(records.count))")
+        .storageExplorerPage("Manager Metadata (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "gearshape.2") } }
     }
 }
@@ -762,7 +755,7 @@ struct DPNSNameStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DPNSNameStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DPNSNameStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\(record.label).\(record.parentDomainName)")
                         .font(.body).lineLimit(1)
@@ -772,7 +765,7 @@ struct DPNSNameStorageListView: View {
                 }
             }
         }
-        .navigationTitle("DPNS Names (\(records.count))")
+        .storageExplorerPage("DPNS Names (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "at") } }
     }
 }
@@ -787,7 +780,7 @@ struct DashpayProfileStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DashpayProfileStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DashpayProfileStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayName ?? "(no display name)")
                         .font(.body).lineLimit(1)
@@ -797,7 +790,7 @@ struct DashpayProfileStorageListView: View {
                 }
             }
         }
-        .navigationTitle("DashPay Profiles (\(records.count))")
+        .storageExplorerPage("DashPay Profiles (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.text.rectangle") } }
     }
 }
@@ -811,7 +804,7 @@ struct DashpayContactProfileStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DashpayContactProfileStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DashpayContactProfileStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayName ?? "(no display name)")
                         .font(.body).lineLimit(1)
@@ -821,7 +814,7 @@ struct DashpayContactProfileStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Contact Profiles (\(records.count))")
+        .storageExplorerPage("Contact Profiles (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle") } }
     }
 }
@@ -861,7 +854,7 @@ struct DashpayContactRequestStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Contact Requests (\(records.count))")
+        .storageExplorerPage("Contact Requests (\(records.count))")
         .overlay {
             if records.isEmpty {
                 ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.plus")
@@ -871,7 +864,7 @@ struct DashpayContactRequestStorageListView: View {
 
     @ViewBuilder
     private func contactRequestLink(_ record: PersistentDashpayContactRequest) -> some View {
-        NavigationLink(destination: DashpayContactRequestStorageDetailView(record: record)) {
+        StorageExplorerLink(destination: DashpayContactRequestStorageDetailView(record: record)) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(shortIdHex(record.contactIdentityId))
                     .font(.system(.body, design: .monospaced))
@@ -892,7 +885,7 @@ struct DashpayPaymentStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DashpayPaymentStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DashpayPaymentStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(record.direction == .sent ? "Sent" : "Received")
@@ -908,7 +901,7 @@ struct DashpayPaymentStorageListView: View {
                 }
             }
         }
-        .navigationTitle("DashPay Payments (\(records.count))")
+        .storageExplorerPage("DashPay Payments (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.left.arrow.right.circle") } }
     }
 }
@@ -921,7 +914,7 @@ struct InvitationStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: InvitationStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: InvitationStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.outPointHex)
                         .font(.system(.caption, design: .monospaced))
@@ -937,7 +930,7 @@ struct InvitationStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Sent Invitations (\(records.count))")
+        .storageExplorerPage("Sent Invitations (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Invitations", systemImage: "paperplane") } }
     }
 }
@@ -950,7 +943,7 @@ struct DashpayIgnoredSenderStorageListView: View {
 
     var body: some View {
         List(records) { record in
-            NavigationLink(destination: DashpayIgnoredSenderStorageDetailView(record: record)) {
+            StorageExplorerLink(destination: DashpayIgnoredSenderStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("ignored sender")
@@ -965,7 +958,7 @@ struct DashpayIgnoredSenderStorageListView: View {
                 }
             }
         }
-        .navigationTitle("Ignored Senders (\(records.count))")
+        .storageExplorerPage("Ignored Senders (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.xmark") } }
     }
 }

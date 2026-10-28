@@ -504,6 +504,7 @@ struct ExternalSendAmountScreen: View {
                         onContinueContact()
                     })
                     .presentationDetents([.medium])
+                    .presentationDragIndicator(.hidden)
             }
         }
         #endif
@@ -1026,11 +1027,17 @@ private struct ConfirmContactSendSheet: View {
     var onSend: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Text(NSLocalizedString("Confirm", comment: "Payment confirmation"))
-                .font(.headline)
-                .padding(.top, 20)
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
+            content
+        }
+    }
 
+    private var content: some View {
+        VStack(spacing: 0) {
             VStack(spacing: 6) {
                 Text(amountText)
                     .font(.largeTitle.weight(.medium))

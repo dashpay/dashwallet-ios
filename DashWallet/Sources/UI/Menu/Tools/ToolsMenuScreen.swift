@@ -252,49 +252,13 @@ struct ToolsMenuScreen: View {
     }
 
     private func showStorageExplorer() {
-        let coordinator = PlatformAddressSyncCoordinator.shared
-        let navController = vc
-        let popRoot: () -> Void = { [weak navController] in
-            _ = navController?.popViewController(animated: true)
-        }
-
-        let hosting: UIHostingController<AnyView>
-        if let container = coordinator.swiftDataContainer {
-            hosting = UIHostingController(
-                rootView: AnyView(
-                    NavigationStack {
-                        StorageExplorerView()
-                            .navigationTitle("Storage Explorer")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(action: popRoot) {
-                                        Image(systemName: "chevron.left")
-                                    }
-                                }
-                            }
-                    }
-                    .modelContainer(container)
-                )
-            )
+        let container = PlatformAddressSyncCoordinator.shared.swiftDataContainer
+        let navigator = StorageExplorerNavigator(navigationController: vc, container: container)
+        if container != nil {
+            navigator.push(StorageExplorerView())
         } else {
-            hosting = UIHostingController(
-                rootView: AnyView(
-                    NavigationStack {
-                        StorageExplorerUnavailableView()
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(action: popRoot) {
-                                        Image(systemName: "chevron.left")
-                                    }
-                                }
-                            }
-                    }
-                )
-            )
+            navigator.push(StorageExplorerUnavailableView())
         }
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
     }
     
     private func showExtendedPublicKeys() {
