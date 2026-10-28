@@ -342,9 +342,10 @@ final class SendViewModel: ObservableObject {
                 guard let self else { return }
                 // Nothing typed, nothing to re-judge: spare the redraw — unless
                 // the contact intro is up, which shows the fee-aware spendable.
-                var showsSpendable = false
                 #if DASHPAY
-                showsSpendable = self.contactRecipient != nil
+                let showsSpendable = self.contactRecipient != nil
+                #else
+                let showsSpendable = false
                 #endif
                 guard self.dashDuffsUnsigned > 0 || showsSpendable else { return }
                 self.objectWillChange.send()
@@ -1161,11 +1162,11 @@ final class SendViewModel: ObservableObject {
             // typed address gates on the whole balance (no fee reserve), so it
             // never needs this.
             if let reserveDuffs = gate.feeReserveDuffs,
-               let confirming = SwiftDashSDKWalletState.shared.fundsStillConfirmingDuffs(
+               case .confirming(let duffs) = SwiftDashSDKWalletState.shared.sendVerdict(
                    requestedDuffs: dashDuffsUnsigned,
                    ceilingDuffs: gate.ceilingDuffs,
                    reserveDuffs: reserveDuffs) {
-                return SendAmountError.fundsStillConfirming(confirming).errorDescription
+                return SendAmountError.fundsStillConfirming(duffs).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
@@ -1184,11 +1185,11 @@ final class SendViewModel: ObservableObject {
             let ceilingDuffs = spendableDuffs > feeDuffs ? spendableDuffs - feeDuffs : 0
             // The asset lock spends only confirmed or InstantSend-locked coins,
             // so here waiting genuinely is the fix.
-            if let confirming = state.fundsStillConfirmingDuffs(
+            if case .confirming(let duffs) = state.sendVerdict(
                 requestedDuffs: dashDuffsUnsigned,
                 ceilingDuffs: ceilingDuffs,
                 reserveDuffs: reserveDuffs &+ feeDuffs) {
-                return SendAmountError.fundsStillConfirming(confirming).errorDescription
+                return SendAmountError.fundsStillConfirming(duffs).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,

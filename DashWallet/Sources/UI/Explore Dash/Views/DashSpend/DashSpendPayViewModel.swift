@@ -468,16 +468,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
         #endif
 
-        let requestedDuffs = requestedDashDuffs
-        let (ceilingDuffs, reserveDuffs) = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
-        guard requestedDuffs <= ceilingDuffs else {
-            // The screen shows the whole balance, the gate counts confirmed
-            // coins only — so right after a receive the shortfall is often
-            // just time, and must not read as "Insufficient funds".
-            error = SendAmountError.walletShortfall(
-                requestedDuffs: requestedDuffs,
-                ceilingDuffs: ceilingDuffs,
-                reserveDuffs: reserveDuffs)
+        let state = SwiftDashSDKWalletState.shared
+        let (ceilingDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
+        // The screen shows the whole balance, the gate counts confirmed coins
+        // only — so right after a receive the shortfall is often just time,
+        // and must not read as "Insufficient funds".
+        if let refusal = SendAmountError(refusing: state.sendVerdict(
+            requestedDuffs: requestedDashDuffs,
+            ceilingDuffs: ceilingDuffs,
+            reserveDuffs: reserveDuffs)) {
+            error = refusal
             return
         }
 

@@ -104,6 +104,15 @@ struct SendPoolConfirmationSnapshot: Equatable, Sendable {
     let unconfirmedDuffs: UInt64
 }
 
+/// An amount gate's answer for a requested amount. See
+/// `SwiftDashSDKWalletState.sendVerdict`.
+enum SendFundsVerdict: Equatable {
+    case fits
+    /// Short now, but it fits once the carried amount (duffs) confirms.
+    case confirming(UInt64)
+    case insufficient
+}
+
 /// The single-flight bookkeeping behind
 /// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
 /// `Task` machinery so the ownership rule can be exercised without a wallet, an
@@ -309,84 +318,71 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         return walletSpendable - pooled
     }
 
-    /// The send-pool funds the amount gates do not count yet, when counting
-    /// them would make `requestedDuffs` affordable; `nil` when the amount
-    /// already fits under `ceilingDuffs`, or would not fit even then.
+    /// The amount gates' verdict on `requestedDuffs`: it fits under
+    /// `ceilingDuffs`, it would fit once the pool's unconfirmed coins confirm,
+    /// or it is short either way.
+    ///
+    /// Those gates are built on `sendableDuffs`, which is capped by
+    /// `WalletBalance.spendable` (confirmed coins only), while the balance on
+    /// screen counts every bucket — so right after a receive an amount the user
+    /// can see is refused. This tells that case apart from a real shortfall so
+    /// it is not reported as "Insufficient funds".
     ///
     /// `ceilingDuffs` is the gate the caller applied and `reserveDuffs` what
     /// the send needs on top of the amount once the coins confirm — the fee
     /// reserve, whether or not the gate itself holds it back (a fee-aware
     /// ceiling does, see `feeAwareMaxSendableAndReserve`; `sendableDuffs`
-    /// does not).
-    /// Those gates are built on `sendableDuffs`, which is capped by
-    /// `WalletBalance.spendable` (confirmed coins only), while the balance on
-    /// screen counts every bucket — so right after a receive an amount the user
-    /// can see is refused. This tells that case apart from a real shortfall so it is not
-    /// reported as "Insufficient funds".
+    /// does not). It is read only when it can change the verdict.
     ///
-    /// The pool is read live, `sendableDuffs` is the cached pooled figure that
-    /// is refreshed asynchronously after each balance event; its re-read fires
+    /// The pool is read live; `sendableDuffs` is the cached pooled figure,
+    /// refreshed asynchronously after each balance event, and its re-read fires
     /// `sendVerdictInputsPublisher`, so a verdict given in between is judged
-    /// again once it lands.
-    ///
-    /// Always `nil` while the pooled figure is unknown: `sendableDuffs` then
-    /// falls back to the wallet-wide balance, CoinJoin included, which the
-    /// pool total cannot be compared with.
-    public func fundsStillConfirmingDuffs(
+    /// again once it lands. Never `confirming` while the pooled figure is
+    /// unknown: `sendableDuffs` then falls back to the wallet-wide balance,
+    /// CoinJoin included, which the pool total cannot be compared with.
+    func sendVerdict(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
         reserveDuffs: @autoclosure () -> UInt64
-    ) -> UInt64? {
-        guard requestedDuffs > ceilingDuffs, pooledSpendableDuffs != nil else { return nil }
-        return Self.fundsStillConfirming(
+    ) -> SendFundsVerdict {
+        guard requestedDuffs > ceilingDuffs else { return .fits }
+        guard pooledSpendableDuffs != nil else { return .insufficient }
+        return Self.judgeShortfall(
             requested: requestedDuffs,
-            lazyReserve: reserveDuffs,
             sendable: sendableDuffs,
-            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot())
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot(),
+            reserve: reserveDuffs)
     }
 
-    /// `fundsStillConfirming` with the reserve read only when it can change
-    /// the answer: it can be a walk over every pooled UTXO, and an amount that
-    /// would not fit even with no reserve is refused without it.
-    static func fundsStillConfirming(
+    /// `sendVerdict` for an amount already above its ceiling, separated from
+    /// the SDK reads.
+    ///
+    /// Only what confirmation can add to `sendable` counts toward the fit: the
+    /// pool's `unconfirmed`, capped by how far the pool total sits above
+    /// `sendable` (a gate that already counts some unconfirmed coins gains no
+    /// more from them). The amount named is the pool's `unconfirmed` — what is
+    /// actually confirming. Nothing is waiting when the pool holds no unconfirmed
+    /// coins — a gap with nothing confirming, such as a pooled figure not
+    /// re-read yet or an account the SDK's pool does not fund from, is not
+    /// something waiting fixes, and would otherwise say "wait" for good.
+    ///
+    /// It is `confirming` when `requested + reserve` fits in `sendable` plus
+    /// what confirmation adds. The reserve can be a walk over every pooled UTXO, so it
+    /// is read only for an amount that fits with none.
+    static func judgeShortfall(
         requested: UInt64,
-        lazyReserve reserve: () -> UInt64,
         sendable: UInt64,
-        pool: SendPoolConfirmationSnapshot?
-    ) -> UInt64? {
-        guard fundsStillConfirming(requested: requested, reserve: 0, sendable: sendable, pool: pool) != nil
-        else { return nil }
-        return fundsStillConfirming(requested: requested, reserve: reserve(), sendable: sendable, pool: pool)
-    }
-
-    /// `fundsStillConfirmingDuffs`'s arithmetic, separated from the SDK reads.
-    /// The caller has already found `requested` above its ceiling.
-    ///
-    /// The fit is `requested + reserve <= confirmed + unconfirmed` over the
-    /// pool. A gate that already counts the unconfirmed coins (a pooled figure
-    /// that includes them) sits at that total, so nothing is reported —
-    /// waiting would change nothing there.
-    ///
-    /// Nothing is reported unless the pool holds unconfirmed coins: a gap
-    /// between the pool and `sendable` with nothing confirming — a pooled
-    /// figure not re-read yet, an account the SDK's pool does not fund from —
-    /// is not something waiting fixes, and would otherwise say "wait" for good.
-    ///
-    /// What is reported is the larger of the pool's `unconfirmed` and the pool
-    /// total minus `sendable`: the second alone understates the wait when
-    /// CoinJoin funds lift the wallet-wide side of `sendable`.
-    static func fundsStillConfirming(
-        requested: UInt64,
-        reserve: UInt64,
-        sendable: UInt64,
-        pool: SendPoolConfirmationSnapshot?
-    ) -> UInt64? {
-        guard let pool, pool.unconfirmedDuffs > 0 else { return nil }
+        pool: SendPoolConfirmationSnapshot?,
+        reserve: () -> UInt64
+    ) -> SendFundsVerdict {
+        guard let pool, pool.unconfirmedDuffs > 0 else { return .insufficient }
         let onceConfirmed = pool.confirmedDuffs &+ pool.unconfirmedDuffs
-        guard onceConfirmed > sendable, reserve < onceConfirmed,
-              requested <= onceConfirmed - reserve
-        else { return nil }
-        return max(pool.unconfirmedDuffs, onceConfirmed - sendable)
+        guard onceConfirmed > sendable else { return .insufficient }
+        let capacity = sendable &+ min(pool.unconfirmedDuffs, onceConfirmed - sendable)
+        guard requested <= capacity else { return .insufficient }
+        let reserveDuffs = reserve()
+        guard reserveDuffs <= capacity - requested else { return .insufficient }
+        return .confirming(pool.unconfirmedDuffs)
     }
 
     /// `feeAwareMaxSendable()` together with the reserve it subtracted, for a
