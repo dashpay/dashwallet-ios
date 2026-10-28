@@ -27,14 +27,19 @@ class LocalCurrencyViewModel: ObservableObject {
     @Published private(set) var filteredItems: [CurrencyItem] = []
     @Published var selectedCurrencyCode: String
 
-    init(allItems: [CurrencyItem], selectedCurrencyCode: String) {
+    /// Whether picking a currency also sets the app-wide fiat currency. The
+    /// amount screens pick a currency for the amount being entered only.
+    private let changesAppCurrency: Bool
+
+    init(allItems: [CurrencyItem], selectedCurrencyCode: String, changesAppCurrency: Bool = true) {
         self.allItems = allItems
         self.selectedCurrencyCode = selectedCurrencyCode
+        self.changesAppCurrency = changesAppCurrency
         self.filteredItems = allItems
         setupSearch()
     }
 
-    convenience init(currencyCode: String? = nil) {
+    convenience init(currencyCode: String? = nil, changesAppCurrency: Bool = true) {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
@@ -47,12 +52,17 @@ class LocalCurrencyViewModel: ObservableObject {
                 priceString: formatter.string(from: price.price)
             )
         }
-        self.init(allItems: items, selectedCurrencyCode: currencyCode ?? App.fiatCurrency)
+        self.init(
+            allItems: items,
+            selectedCurrencyCode: currencyCode ?? App.fiatCurrency,
+            changesAppCurrency: changesAppCurrency)
     }
 
     func select(currencyCode: String) {
         selectedCurrencyCode = currencyCode
-        App.shared.fiatCurrency = currencyCode
+        if changesAppCurrency {
+            App.shared.fiatCurrency = currencyCode
+        }
     }
 
     private func setupSearch() {

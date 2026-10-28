@@ -88,15 +88,13 @@ final class SpecifyAmountViewController: ActionButtonViewController {
     }
 
     private func showCurrencyList() {
-        let currencyController = DWLocalCurrencyViewController(
-            navigationAppearance: .white,
-            presentationMode: .dialog,
-            currencyCode: amountModel.localCurrencyCode
-        )
-        currencyController.isGlobal = false
-        currencyController.delegate = self
-        let navigationController = BaseNavigationController(rootViewController: currencyController)
-        present(navigationController, animated: true)
+        let currencyController = LocalCurrencyModalController(
+            currencyCode: amountModel.localCurrencyCode,
+            changesAppCurrency: false,
+            onSelect: { [weak self] currencyCode in
+                self?.amountModel.setupCurrencyCode(currencyCode)
+            })
+        present(currencyController, animated: true)
     }
 }
 
@@ -104,17 +102,4 @@ extension SpecifyAmountViewController: NavigationBarDisplayable {
     var isBackButtonHidden: Bool { true }
 
     var isNavigationBarHidden: Bool { true }
-}
-
-// MARK: - DWLocalCurrencyViewControllerDelegate
-
-extension SpecifyAmountViewController: DWLocalCurrencyViewControllerDelegate {
-    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        amountModel.setupCurrencyCode(currencyCode)
-        controller.dismiss(animated: true)
-    }
-
-    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
-        controller.dismiss(animated: true)
-    }
 }

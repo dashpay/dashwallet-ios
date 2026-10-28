@@ -239,9 +239,6 @@
 		C0FA5E0000000000000000A3 /* AdvancedModeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */; };
 		C0FA5E0000000000000000B2 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
 		C0FA5E0000000000000000B3 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
-		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
-		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
-		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
 		2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
 		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
@@ -302,7 +299,6 @@
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */; };
 		2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */; };
-		2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */; };
 		2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
 		2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */; };
@@ -1514,7 +1510,6 @@
 		C9D2C6F92A320AA000D15901 /* PointOfUseListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */; };
 		C9D2C6FA2A320AA000D15901 /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C9D2C6FB2A320AA000D15901 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */; };
-		C9D2C6FC2A320AA000D15901 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		C9D2C6FD2A320AA000D15901 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FC2A0CC4A300825057 /* BadgeView.swift */; };
 		C9D2C6FE2A320AA000D15901 /* HomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */; };
 		C9D2C6FF2A320AA000D15901 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F82A0CB08900825057 /* ProgressView.swift */; };
@@ -1558,7 +1553,6 @@
 		C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F62A0CAE1300825057 /* SyncView.swift */; };
 		C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47522F4F2927CB9000EE143E /* SuccessfulOperationStatusViewController.swift */; };
 		C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E94B99296D7F99000FE68E /* CustodialSwapsModel.swift */; };
-		C9D2C72D2A320AA000D15901 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
 		C9D2C72E2A320AA000D15901 /* DWRecoverModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFFD2305763F00C475EB /* DWRecoverModel.m */; };
 		C9D2C72F2A320AA000D15901 /* DWCenteredTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */; };
 		C9D2C7302A320AA000D15901 /* DWOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */; };
@@ -1581,7 +1575,6 @@
 		C9D2C7462A320AA000D15901 /* CBAccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CF46AB2965B65B0067B6EE /* CBAccountManager.swift */; };
 		C9D2C7472A320AA000D15901 /* FailedOperationStatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47522F512927CBEE00EE143E /* FailedOperationStatusViewController.swift */; };
 		C9D2C7482A320AA000D15901 /* UIPanGestureRecognizer+DWProjected.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69C22314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m */; };
-		C9D2C7492A320AA000D15901 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */; };
 		C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3E2230FF4600956D5F /* DWFormSectionModel.m */; };
 		C9D2C74C2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -1795,7 +1788,6 @@
 		C9D2C86F2A320AA000D15901 /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		C9D2C8702A320AA000D15901 /* AmountObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B5290A901200E030C8 /* AmountObject.swift */; };
 		C9D2C8712A320AA000D15901 /* DerivationPathKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615029F158D700002D82 /* DerivationPathKeysViewController.swift */; };
-		C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		C9D2C8762A320AA000D15901 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		C9D2C8792A320AA000D15901 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA829DC09CF001BC549 /* Style.swift */; };
 		C9D2C87A2A320AA000D15901 /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C917024029D462C6008C034D /* PayViewController.swift */; };
@@ -2538,12 +2530,6 @@
 		2A7A7BD52348CB6600451078 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedModeInfoSheet.swift; sourceTree = "<group>"; };
 		C0FA5E0000000000000000B1 /* SettingsAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAlerts.swift; sourceTree = "<group>"; };
-		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
-		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
-		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
-		2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyModel.m; sourceTree = "<group>"; };
-		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
-		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
 		2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectUriTests.swift; path = DashConnect/DashConnectUriTests.swift; sourceTree = "<group>"; };
 		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
 		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
@@ -2682,9 +2668,6 @@
 		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
-		2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyObject.h; sourceTree = "<group>"; };
-		2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCurrencyObject.m; sourceTree = "<group>"; };
-		2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItemPriceProvider.h; sourceTree = "<group>"; };
 		2AB231D02196E25D00A6E7E6 /* DWStartViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWStartViewController.h; sourceTree = "<group>"; };
 		2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWStartViewController.m; sourceTree = "<group>"; };
 		2AB231D32196E27300A6E7E6 /* StartStoryboard.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = StartStoryboard.storyboard; sourceTree = "<group>"; };
@@ -2742,7 +2725,6 @@
 		2ACCD8EC231ECCF000A96B62 /* DWNumberKeyboardInputViewAudioFeedback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNumberKeyboardInputViewAudioFeedback.h; sourceTree = "<group>"; };
 		2ACCD8EE231ECDE000A96B62 /* DWPinField.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPinField.h; sourceTree = "<group>"; };
 		2ACCD8EF231ECDE000A96B62 /* DWPinField.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPinField.m; sourceTree = "<group>"; };
-		2ACD53E6234BADD300650AD3 /* DWCurrencyItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCurrencyItem.h; sourceTree = "<group>"; };
 		2ACD53EC234C9D8E00650AD3 /* UIView+DWRecursiveSubview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWRecursiveSubview.h"; sourceTree = "<group>"; };
 		2ACD53ED234C9D8E00650AD3 /* UIView+DWRecursiveSubview.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWRecursiveSubview.m"; sourceTree = "<group>"; };
 		2AD1CE5E22D8E9D900C99324 /* DWSeedPhraseView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseView.h; sourceTree = "<group>"; };
@@ -5306,14 +5288,6 @@
 				5151CA212F92335E00F0A604 /* LocalCurrencyView.swift */,
 				5151CA222F92335E00F0A604 /* LocalCurrencyViewModel.swift */,
 				2A7A7C17234B764C00451078 /* Cells */,
-				2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */,
-				2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */,
-				2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */,
-				2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */,
-				2AA87CF826E5681100F0CEA6 /* DWCurrencyObject.h */,
-				2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */,
-				2ACD53E6234BADD300650AD3 /* DWCurrencyItem.h */,
-				2AA87CFB26E568A100F0CEA6 /* DWCurrencyItemPriceProvider.h */,
 				5151CE172F9624D000F0A604 /* CurrencyItem.swift */,
 			);
 			path = LocalCurrency;
@@ -5322,8 +5296,6 @@
 		2A7A7C17234B764C00451078 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */,
-				2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */,
 				5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */,
 			);
 			path = Cells;
@@ -10212,7 +10184,6 @@
 				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				A6DB8889C5594B1988BDE0CE /* SwapCoinIconLoader.swift in Sources */,
 				4A36341D70A94778AF408757 /* SwapCoinIconView.swift in Sources */,
-				2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */,
 				752D03B22E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */,
 				C9F451FD2A0CC4A300825057 /* BadgeView.swift in Sources */,
 				756557B52CE84FFA0060348D /* FeeInfo.swift in Sources */,
@@ -10279,7 +10250,6 @@
 				51A57C062FBB5A0000FB4097 /* SwapTransactionFailureView.swift in Sources */,
 				ABA7230759067F4D4EB39AE9 /* SwapTransactionStatusHostingController.swift in Sources */,
 				51A57C092FBB5A0000FB4097 /* SwapTransactionPendingView.swift in Sources */,
-				2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				757422242DF87B5200CB0175 /* TerritoryPickerView.swift in Sources */,
 				757422252DF87B5200CB0175 /* MerchantFiltersView.swift in Sources */,
 				2A74EFFE2305763F00C475EB /* DWRecoverModel.m in Sources */,
@@ -10305,7 +10275,6 @@
 				47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */,
 				47522F522927CBEE00EE143E /* FailedOperationStatusViewController.swift in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
-				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,
 				C94F5E9029D4060A0034FD57 /* ShortcutsView.swift in Sources */,
 				2A9FFE892230FF4700956D5F /* DWFormSectionModel.m in Sources */,
 				0F6EDFCB28C896BD000427E7 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
@@ -10650,7 +10619,6 @@
 				A0795C9369A1402498C00F69 /* DerivationPathKeysView.swift in Sources */,
 				75D6D8E42D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */,
 				75CDD7802C0898E400F433D2 /* Shape.swift in Sources */,
-				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
 				FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */,
 				C9F42FA929DC09CF001BC549 /* Style.swift in Sources */,
 				C917024129D462C6008C034D /* PayViewController.swift in Sources */,
@@ -11236,7 +11204,6 @@
 				C9D2C6F92A320AA000D15901 /* PointOfUseListModel.swift in Sources */,
 				C9D2C6FA2A320AA000D15901 /* NSPredicate+DWFullTextSearch.m in Sources */,
 				C9D2C6FB2A320AA000D15901 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
-				C9D2C6FC2A320AA000D15901 /* DWLocalCurrencyViewController.m in Sources */,
 				C9D2C6FD2A320AA000D15901 /* BadgeView.swift in Sources */,
 				759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */,
 				753F75372DD0D76400D40DFE /* DashSpendPayViewModel.swift in Sources */,
@@ -11306,7 +11273,6 @@
 				C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */,
 				C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */,
 				C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */,
-				C9D2C72D2A320AA000D15901 /* DWLocalCurrencyTableViewCell.m in Sources */,
 				C9D2C72E2A320AA000D15901 /* DWRecoverModel.m in Sources */,
 				C9D2C72F2A320AA000D15901 /* DWCenteredTableView.m in Sources */,
 				C9D2C7302A320AA000D15901 /* DWOnboardingViewController.m in Sources */,
@@ -11362,7 +11328,6 @@
 				C956AF182A5C3306002FAB75 /* DWPressableButton.m in Sources */,
 				C93078492A6AD4FC00906E4B /* UpholdConfirmViewController.swift in Sources */,
 				75CDD7842C0898FA00F433D2 /* Wrapper.swift in Sources */,
-				C9D2C7492A320AA000D15901 /* DWCurrencyObject.m in Sources */,
 				C956AF102A5B592E002FAB75 /* UIView+Dash.swift in Sources */,
 				C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */,
 				C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */,
@@ -11742,7 +11707,6 @@
 				758A8F182C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift in Sources */,
 				C943B58D2A40ED6F00AF23C5 /* DWCreateUsernameViewController.m in Sources */,
 				C943B58E2A40ED6F00AF23C5 /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
-				C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */,
 				C9D2C8762A320AA000D15901 /* DWUpholdMainnetConstants.m in Sources */,
 				C9D2C8792A320AA000D15901 /* Style.swift in Sources */,
 				C9D2C87A2A320AA000D15901 /* PayViewController.swift in Sources */,

@@ -17,27 +17,38 @@
 
 import DashUIKit
 import SwiftUI
-import DashUIKit
+import UIKit
 
 // MARK: - LocalCurrencyView
 
 struct LocalCurrencyView: View {
+    /// The bar's leading control: back when pushed (Settings), close when
+    /// presented modally (amount screens, the Home shortcut). `nil` inside a
+    /// `BottomSheet`, which draws its own chrome: only the title is shown.
+    enum LeadingAction {
+        case back(() -> Void)
+        case close(() -> Void)
+    }
+
     @StateObject private var viewModel: LocalCurrencyViewModel
 
     @State private var scrollViewOffcet: CGFloat = 0
     @State private var fullHeaderSize: CGSize = .zero
 
     var onSelect: (String) -> Void
-    var onBack: (() -> Void)?
+    var leadingAction: LeadingAction?
 
     init(
         currencyCode: String? = nil,
-        onSelect: @escaping (String) -> Void,
-        onBack: (() -> Void)? = nil
+        changesAppCurrency: Bool = true,
+        leadingAction: LeadingAction? = nil,
+        onSelect: @escaping (String) -> Void
     ) {
-        self._viewModel = StateObject(wrappedValue: LocalCurrencyViewModel(currencyCode: currencyCode))
+        self._viewModel = StateObject(wrappedValue: LocalCurrencyViewModel(
+            currencyCode: currencyCode,
+            changesAppCurrency: changesAppCurrency))
         self.onSelect = onSelect
-        self.onBack = onBack
+        self.leadingAction = leadingAction
     }
 
     var body: some View {
@@ -59,7 +70,7 @@ struct LocalCurrencyView: View {
 
             LocalCurrencyTopOverlayView(
                 scrollOffset: scrollViewOffcet,
-                onBack: onBack,
+                leadingAction: leadingAction,
                 searchQuery: $viewModel.searchQuery
             )
             .readingFrame { frame in
@@ -72,6 +83,30 @@ struct LocalCurrencyView: View {
 
     private var background: some View {
         Color.dash.primaryBackground
+    }
+}
+
+// MARK: - Modal presentation
+
+/// `LocalCurrencyView` presented modally (the amount screens, the Home
+/// shortcut): a close circle, and picking a currency hands it to `onSelect`
+/// and dismisses.
+final class LocalCurrencyModalController: UIHostingController<LocalCurrencyView> {
+    init(currencyCode: String?, changesAppCurrency: Bool, onSelect: @escaping (String) -> Void) {
+        super.init(rootView: LocalCurrencyView(leadingAction: .close {}, onSelect: { _ in }))
+        rootView = LocalCurrencyView(
+            currencyCode: currencyCode,
+            changesAppCurrency: changesAppCurrency,
+            leadingAction: .close { [weak self] in self?.dismiss(animated: true) },
+            onSelect: { [weak self] code in
+                onSelect(code)
+                self?.dismiss(animated: true)
+            })
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 
@@ -160,7 +195,7 @@ private struct LocalCurrencyScrollContentView: View {
 
 private struct LocalCurrencyTopOverlayView: View {
     let scrollOffset: CGFloat
-    var onBack: (() -> Void)?
+    let leadingAction: LocalCurrencyView.LeadingAction?
     @Binding var searchQuery: String
 
     var body: some View {
@@ -178,22 +213,26 @@ private struct LocalCurrencyTopOverlayView: View {
         .animation(.easeInOut(duration: 0.2), value: scrollOffset)
     }
 
+    @ViewBuilder
     private var header: some View {
-        HStack(alignment: .center, spacing: 0) {
-            ZStack {
-                if let onBack {
-                    DashUIKit.NavigationBar(leading: {
-                        DashUIKit.NavigationBarElement.back.button(action: onBack)
-                    })
-                }
-
-                // Title
-                Text(NSLocalizedString("Local Currency", comment: "Settings"))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.dash.primaryText)
-            }
+        switch leadingAction {
+        case .back(let action):
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button(action: action) },
+                central: { title })
+        case .close(let action):
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.close.button(action: action) },
+                central: { title })
+        case nil:
+            title
         }
+    }
+
+    private var title: some View {
+        Text(NSLocalizedString("Local Currency", comment: "Settings"))
+            .dashFont(.subheadMedium)
+            .foregroundColor(.dash.primaryText)
     }
 
     @ViewBuilder private var toolbarBackground: some View {
@@ -216,12 +255,12 @@ private struct LocalCurrencyTopOverlayView: View {
 fileprivate extension LocalCurrencyView {
     init(
         viewModel: LocalCurrencyViewModel,
-        onSelect: @escaping (String) -> Void,
-        onBack: (() -> Void)? = nil
+        leadingAction: LeadingAction?,
+        onSelect: @escaping (String) -> Void
     ) {
         self._viewModel = StateObject(wrappedValue: viewModel)
         self.onSelect = onSelect
-        self.onBack = onBack
+        self.leadingAction = leadingAction
     }
 }
 
@@ -280,8 +319,8 @@ fileprivate extension LocalCurrencyViewModel {
             ],
             selectedCode: "USD"
         ),
-        onSelect: { _ in },
-        onBack: {}
+        leadingAction: .back {},
+        onSelect: { _ in }
     )
 }
 #endif
