@@ -153,17 +153,17 @@ final class PooledSendableBalanceTests: XCTestCase {
             100_000_000)
     }
 
-    func testCoinsJustLockedAreStillReportedUntilThePooledFigureCatchesUp() {
-        // The lock has landed in the live pool, the cached pooled figure has
-        // not been re-read: the gate still refuses, and the money is moments
-        // from counting — not "Insufficient funds".
-        XCTAssertEqual(
+    func testAGapWithNothingConfirmingIsNeverCalledAWait() {
+        // The pool holds more than the gate counts, but none of it is
+        // confirming — a pooled figure not re-read yet, or an account the
+        // SDK's pool does not fund from. Waiting changes nothing, so saying
+        // "wait" here would never clear.
+        XCTAssertNil(
             SwiftDashSDKWalletState.fundsStillConfirming(
                 requested: 250_000_000,
                 reserve: 0,
                 sendable: 100_000_000,
-                pool: pool(confirmed: 300_000_000, unconfirmed: 0)),
-            200_000_000)
+                pool: pool(confirmed: 300_000_000, unconfirmed: 0)))
     }
 
     func testCoinJoinFundsDoNotShrinkTheReportedWait() {

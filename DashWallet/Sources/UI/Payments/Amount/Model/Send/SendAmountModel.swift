@@ -155,7 +155,9 @@ class SendAmountModel: BaseAmountModel {
                         self.checkAmountForErrors()
                     }
                 case .keep:
-                    return
+                    // The error stays, but whether Continue is allowed can
+                    // still have moved with the ceiling.
+                    break
                 }
                 self.validationDidChangeHandler?()
             }

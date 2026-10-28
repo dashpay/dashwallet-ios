@@ -332,15 +332,21 @@ final class SendViewModel: ObservableObject {
 
         // `amountValidationMessage` and the fee-aware ceilings read the pooled
         // figure, which lands after the balance event that redraws this screen
-        // — so a "still confirming" note would outlive the confirmation.
-        // Redraw when any of the verdict's inputs moves.
-        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+        // (through `coreBalanceDuffs` above) — so a "still confirming" note
+        // would outlive the confirmation. Redraw when that figure moves.
+        SwiftDashSDKWalletState.shared.$pooledSpendableDuffs
+            .removeDuplicates()
             .dropFirst()
             .receive(on: RunLoop.main)
-            .sink { [weak self] in
+            .sink { [weak self] _ in
+                guard let self else { return }
                 // Nothing typed, nothing to re-judge: spare the redraw — unless
                 // the contact intro is up, which shows the fee-aware spendable.
-                guard let self, self.dashDuffsUnsigned > 0 || self.contactRecipient != nil else { return }
+                var showsSpendable = false
+                #if DASHPAY
+                showsSpendable = self.contactRecipient != nil
+                #endif
+                guard self.dashDuffsUnsigned > 0 || showsSpendable else { return }
                 self.objectWillChange.send()
             }
             .store(in: &cancellables)

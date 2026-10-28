@@ -325,10 +325,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// reported as "Insufficient funds".
     ///
     /// The pool is read live, `sendableDuffs` is the cached pooled figure that
-    /// is refreshed asynchronously after each balance event. For the moment a
-    /// lock or a block has landed and that refresh has not, the coins just
-    /// confirmed are still reported here: the gate is still refusing them, and
-    /// they are moments from counting — that is not a shortfall either.
+    /// is refreshed asynchronously after each balance event; its re-read fires
+    /// `sendVerdictInputsPublisher`, so a verdict given in between is judged
+    /// again once it lands.
     ///
     /// Always `nil` while the pooled figure is unknown: `sendableDuffs` then
     /// falls back to the wallet-wide balance, CoinJoin included, which the
@@ -368,17 +367,21 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// that includes them) sits at that total, so nothing is reported —
     /// waiting would change nothing there.
     ///
+    /// Nothing is reported unless the pool holds unconfirmed coins: a gap
+    /// between the pool and `sendable` with nothing confirming — a pooled
+    /// figure not re-read yet, an account the SDK's pool does not fund from —
+    /// is not something waiting fixes, and would otherwise say "wait" for good.
+    ///
     /// What is reported is the larger of the pool's `unconfirmed` and the pool
     /// total minus `sendable`: the second alone understates the wait when
-    /// CoinJoin funds lift the wallet-wide side of `sendable`, the first alone
-    /// is 0 in the moment after a lock, before the pooled figure is re-read.
+    /// CoinJoin funds lift the wallet-wide side of `sendable`.
     static func fundsStillConfirming(
         requested: UInt64,
         reserve: UInt64,
         sendable: UInt64,
         pool: SendPoolConfirmationSnapshot?
     ) -> UInt64? {
-        guard let pool else { return nil }
+        guard let pool, pool.unconfirmedDuffs > 0 else { return nil }
         let onceConfirmed = pool.confirmedDuffs &+ pool.unconfirmedDuffs
         guard onceConfirmed > sendable, reserve < onceConfirmed,
               requested <= onceConfirmed - reserve
