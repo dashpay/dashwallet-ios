@@ -249,33 +249,16 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(SendAmountError.syncingChain.isFundsVerdict)
     }
 
-    func testTheSameAmountErrorAssignedAgainIsNotPresentedAgain() {
-        // The UIKit amount screens present each handled error, dropping their
-        // progress indicator; a re-check that lands on the same error must not.
-        XCTAssertTrue(BaseAmountModel.isSameAmountError(
-            SendAmountError.fundsStillConfirming(5), SendAmountError.fundsStillConfirming(5)))
-        XCTAssertFalse(BaseAmountModel.isSameAmountError(
-            SendAmountError.fundsStillConfirming(5), SendAmountError.fundsStillConfirming(6)))
-        XCTAssertFalse(BaseAmountModel.isSameAmountError(SendAmountError.insufficientFunds, nil))
-        XCTAssertFalse(BaseAmountModel.isSameAmountError(
-            URLError(.notConnectedToInternet), URLError(.notConnectedToInternet)),
-                       "only amount errors are known to say the same thing twice")
-    }
-
-    func testAWalletChangeReJudgesOnlyWhatTheWalletDecides() {
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: nil), .recheckAmount)
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: SendAmountError.insufficientFunds), .recheckAmount)
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: SendAmountError.fundsStillConfirming(1)),
-                       .recheckAmount)
-        // `checkAmountForErrors` never sets it, so clearing it would leave no
-        // explanation, and keeping it would say "still confirming" after the
-        // coins confirmed.
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: SendAmountError.maxUnavailable("x")),
-                       .refreshMaxExplanation)
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: SendAmountError.syncingChain), .keep,
-                       "the sync monitor owns this one")
-        XCTAssertEqual(SendAmountModel.walletChangeAction(for: URLError(.notConnectedToInternet)), .keep,
-                       "a subclass's own failure is not the wallet's to clear")
+    func testAMovedCeilingReJudgesOnlyAnAmountItCouldHaveDecided() {
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(nil))
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(SendAmountError.insufficientFunds))
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(SendAmountError.fundsStillConfirming(1)))
+        // `checkAmountForErrors` never sets these again, so clearing them on
+        // a wallet update would leave the screen with no explanation at all.
+        XCTAssertFalse(SendAmountModel.ceilingMoveRechecks(SendAmountError.maxUnavailable("x")),
+                       "a Max explanation must survive a ceiling update")
+        XCTAssertFalse(SendAmountModel.ceilingMoveRechecks(URLError(.notConnectedToInternet)),
+                       "a subclass's own failure is not the ceiling's to clear")
     }
 
     // MARK: How Max explains an empty result

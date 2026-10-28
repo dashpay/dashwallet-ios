@@ -148,54 +148,22 @@ class SendAmountModel: BaseAmountModel {
                 walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
-                let shown = self.error as? SendAmountError
-                var next = shown
-                switch Self.walletChangeAction(for: self.error) {
-                case .recheckAmount:
-                    next = self.amountError()
-                case .refreshMaxExplanation:
-                    // Max can fill now: an amount typed before the tap is
-                    // still on screen and needs its own verdict.
-                    next = self.maxUnavailableError() ?? self.amountError()
-                case .keep:
-                    // Not the wallet's error: leave it, and the screen, alone.
-                    return
-                }
-                if next != shown { self.error = next }
-                // The validation callback re-presents an error on these
-                // screens, which drops any progress indicator and resets
-                // Continue mid-build — so with the same error still up it does
-                // not run. With no error it only refreshes Continue, as it
-                // always has on a ceiling move.
-                guard next == nil || next != shown else { return }
+                guard let self, Self.ceilingMoveRechecks(self.error) else { return }
+                self.error = nil
+                self.checkAmountForErrors()
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
     }
 
-    enum WalletChangeAction: Equatable {
-        /// Judge the amount again against the moved wallet state.
-        case recheckAmount
-        /// Max came up empty: say why again, or nothing once Max can fill.
-        case refreshMaxExplanation
-        /// Not the wallet's to decide.
-        case keep
-    }
-
-    /// What a wallet-state change does to the error on screen. The amount is
-    /// re-judged only when there is no error or a funds verdict, the one thing
-    /// the wallet decides; `checkAmountForErrors` never sets a Max
-    /// explanation, so that one is rebuilt rather than cleared; anything else —
-    /// a subclass's own failure such as a Coinbase API error — stays until
-    /// whoever set it clears it.
-    static func walletChangeAction(for error: Error?) -> WalletChangeAction {
-        guard let error else { return .recheckAmount }
-        switch error as? SendAmountError {
-        case .some(let verdict) where verdict.isFundsVerdict: return .recheckAmount
-        case .some(.maxUnavailable): return .refreshMaxExplanation
-        default: return .keep
-        }
+    /// Whether a moved ceiling may re-judge the amount over `error`: only when
+    /// there is none or it is a funds verdict, the one thing the ceiling
+    /// decides. Anything else — a Max explanation that `checkAmountForErrors`
+    /// never sets again, a subclass's own failure such as a Coinbase API
+    /// error — stays until whoever set it clears it.
+    static func ceilingMoveRechecks(_ error: Error?) -> Bool {
+        guard let error else { return true }
+        return (error as? SendAmountError)?.isFundsVerdict == true
     }
 
     /// This model's gate on the amount on screen: `nil` when it fits, else the
@@ -232,50 +200,33 @@ class SendAmountModel: BaseAmountModel {
             // the tap left the amount at 0 with no feedback, so an empty
             // balance, funds that are still confirming, and a balance too
             // small to also cover the fee were indistinguishable from a dead
-            // button.
-            error = maxUnavailableError(maxSendableDuffs: allAvailableFunds)
+            // button. Same three states, same wording, as the internal
+            // transfer's Core Max.
+            let state = SwiftDashSDKWalletState.shared
+            let balance = state.balance
+            error = SendAmountError.maxUnavailable(
+                InternalTransferViewModel.coreZeroMaxMessage(
+                    totalDuffs: balance?.total ?? 0,
+                    confirmedSpendableDuffs: balance?.spendable ?? 0,
+                    // Without this a CoinJoin-only wallet is told its balance
+                    // is too small to cover the fee, which is not why Max is
+                    // empty — the pool simply cannot draw on mixed coins.
+                    excludedFromPoolDuffs: state.excludedFromSendPoolDuffs))
             return
         }
 
         updateCurrentAmountObject(with: allAvailableFunds)
     }
 
-    /// Why Max cannot fill anything right now, or `nil` once it can. Same
-    /// three states, same wording, as the internal transfer's Core Max.
-    /// `maxSendableDuffs` is a Max the caller has just read, so the answer
-    /// agrees with it; otherwise it is read here.
-    private func maxUnavailableError(maxSendableDuffs: UInt64? = nil) -> SendAmountError? {
-        let state = SwiftDashSDKWalletState.shared
-        // An empty ceiling needs no reserve to know Max stays empty; the
-        // reserve is a walk over every pooled UTXO, and this runs on each
-        // balance event while the explanation is up.
-        let maxDuffs = maxSendableDuffs ?? (state.sendableDuffs == 0 ? 0 : state.feeAwareMaxSendable())
-        guard maxDuffs == 0 else { return nil }
-        let balance = state.balance
-        return SendAmountError.maxUnavailable(
-            InternalTransferViewModel.coreZeroMaxMessage(
-                totalDuffs: balance?.total ?? 0,
-                confirmedSpendableDuffs: balance?.spendable ?? 0,
-                // Without this a CoinJoin-only wallet is told its balance
-                // is too small to cover the fee, which is not why Max is
-                // empty — the pool simply cannot draw on mixed coins.
-                excludedFromPoolDuffs: state.excludedFromSendPoolDuffs))
-    }
-
-    /// `final`: the ceiling subscription re-judges through `amountError()`,
-    /// so a subclass gate added here would be skipped on wallet changes.
-    final override func checkAmountForErrors() {
-        error = amountError()
-    }
-
-    /// What `checkAmountForErrors` sets, without setting it.
-    private func amountError() -> SendAmountError? {
+    override func checkAmountForErrors() {
         guard DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet == false ||
             SyncingActivityMonitor.shared.state == .syncDone
         else {
-            return .syncingChain
+            error = SendAmountError.syncingChain
+            return
         }
-        return gateRefusal()
+
+        error = gateRefusal()
     }
 
     internal func auth(completionBlock: @escaping ((Bool) -> Void)) {
