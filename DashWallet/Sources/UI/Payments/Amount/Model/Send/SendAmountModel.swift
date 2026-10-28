@@ -150,25 +150,25 @@ class SendAmountModel: BaseAmountModel {
             .sink { [weak self] _ in
                 guard let self else { return }
                 let shown = self.error as? SendAmountError
+                var next = shown
                 switch Self.walletChangeAction(for: self.error) {
                 case .recheckAmount:
-                    let next = self.amountError()
-                    if next != shown { self.error = next }
+                    next = self.amountError()
                 case .refreshMaxExplanation:
                     // Max can fill now: an amount typed before the tap is
                     // still on screen and needs its own verdict.
-                    let next = self.maxUnavailableError() ?? self.amountError()
-                    if next != shown { self.error = next }
+                    next = self.maxUnavailableError() ?? self.amountError()
                 case .keep:
-                    break
+                    // Not the wallet's error: leave it, and the screen, alone.
+                    return
                 }
-                // Both re-assigning the error and the validation callback
-                // re-present it on these screens, which drops any progress
-                // indicator and resets Continue mid-build — so with the same
-                // error still up neither runs. With no error the callback only
-                // refreshes Continue, as it always has on a ceiling move.
-                let changed = self.error is SendAmountError && (self.error as? SendAmountError) != shown
-                guard self.error == nil || changed else { return }
+                if next != shown { self.error = next }
+                // The validation callback re-presents an error on these
+                // screens, which drops any progress indicator and resets
+                // Continue mid-build — so with the same error still up it does
+                // not run. With no error it only refreshes Continue, as it
+                // always has on a ceiling move.
+                guard next == nil || next != shown else { return }
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)

@@ -57,10 +57,18 @@ class BaseAmountModel: ObservableObject {
     @Published var walletBalance: UInt64 = 0
     @Published var error: Error? {
         didSet {
-            if let error {
+            // The UIKit screens present each handled error, which drops their
+            // progress indicator; the same amount error assigned again by a
+            // re-check has nothing new to say.
+            if let error, !Self.isSameAmountError(error, oldValue) {
                 errorHandler?(error)
             }
         }
+    }
+
+    static func isSameAmountError(_ error: Error, _ previous: Error?) -> Bool {
+        guard let error = error as? SendAmountError else { return false }
+        return error == previous as? SendAmountError
     }
     @Published var currentInputItem: AmountInputItem {
         didSet {

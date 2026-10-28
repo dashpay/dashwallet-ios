@@ -249,6 +249,19 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(SendAmountError.syncingChain.isFundsVerdict)
     }
 
+    func testTheSameAmountErrorAssignedAgainIsNotPresentedAgain() {
+        // The UIKit amount screens present each handled error, dropping their
+        // progress indicator; a re-check that lands on the same error must not.
+        XCTAssertTrue(BaseAmountModel.isSameAmountError(
+            SendAmountError.fundsStillConfirming(5), SendAmountError.fundsStillConfirming(5)))
+        XCTAssertFalse(BaseAmountModel.isSameAmountError(
+            SendAmountError.fundsStillConfirming(5), SendAmountError.fundsStillConfirming(6)))
+        XCTAssertFalse(BaseAmountModel.isSameAmountError(SendAmountError.insufficientFunds, nil))
+        XCTAssertFalse(BaseAmountModel.isSameAmountError(
+            URLError(.notConnectedToInternet), URLError(.notConnectedToInternet)),
+                       "only amount errors are known to say the same thing twice")
+    }
+
     func testAWalletChangeReJudgesOnlyWhatTheWalletDecides() {
         XCTAssertEqual(SendAmountModel.walletChangeAction(for: nil), .recheckAmount)
         XCTAssertEqual(SendAmountModel.walletChangeAction(for: SendAmountError.insufficientFunds), .recheckAmount)

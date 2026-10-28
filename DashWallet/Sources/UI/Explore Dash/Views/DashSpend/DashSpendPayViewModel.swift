@@ -275,7 +275,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // while funds were confirming must be re-checked when they land —
         // otherwise the user waits as told and nothing changes. Only a funds
         // verdict already on screen is re-checked, or the syncing notice one
-        // can turn into when a resync starts (nothing else clears it here):
+        // can turn into when a resync starts, so the end of the sync clears it
+        // without waiting for an edit:
         // `checkAmountForErrors` ends in `error = nil`, which would clear an
         // error it does not own (merchant details that failed to load), and
         // with no error up the balance drop that follows a successful purchase
@@ -457,7 +458,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         guard DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet == false ||
             SyncingActivityMonitor.shared.state == .syncDone
         else {
-            error = SendAmountError.syncingChain
+            // Re-checked on every balance event while it is up, like a refusal.
+            if (error as? SendAmountError) != .syncingChain { error = SendAmountError.syncingChain }
             return
         }
 
