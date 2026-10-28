@@ -272,6 +272,27 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         Self.sendableDuffs(pooled: pooledSpendableDuffs, walletSpendable: balance?.spendable)
     }
 
+    /// The ceiling an open amount screen validates against, as a stream.
+    ///
+    /// Derived from BOTH inputs and deduplicated on the RESOLVED value: through
+    /// a pooled outage the pooled figure stays `nil` while the wallet balance
+    /// keeps moving the fallback, so a subscription to the pooled publisher
+    /// alone goes silent exactly when the ceiling is moving. Deduplicating the
+    /// result instead reacts to whichever half changed and stays quiet when
+    /// neither moved the answer.
+    ///
+    /// Takes its inputs as parameters so the wiring is testable without the
+    /// shared instance; `SendAmountModel.observeSendableCeiling` passes the published ones.
+    static func sendableCeilingPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        walletSpendable: AnyPublisher<UInt64?, Never>
+    ) -> AnyPublisher<UInt64, Never> {
+        Publishers.CombineLatest(pooled, walletSpendable)
+            .map { sendableDuffs(pooled: $0, walletSpendable: $1) }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
     /// The confirmed balance a plain send CANNOT draw on: what
     /// `balance.spendable` counts and the funding pool does not.
     ///

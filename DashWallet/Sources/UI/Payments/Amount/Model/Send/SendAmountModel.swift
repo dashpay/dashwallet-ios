@@ -117,70 +117,59 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
-        observeSendVerdictInputs()
+        observeSendableCeiling()
         checkAmountForErrors()
     }
 
-    /// The wallet can change under an amount typed earlier: the ceiling moves
-    /// (a pooled read landing, or recovering from an outage and replacing the
-    /// wallet-wide fallback with a much smaller transparent balance), coins
-    /// start or finish confirming, which decides between "Insufficient funds"
-    /// and "still confirming" with the ceiling where it was, and a Max
-    /// explanation goes stale once Max can fill. `BaseAmountModel`'s balance
+    /// The ceiling can move while this screen is open and the amount is
+    /// untouched — a pooled read landing for the first time, coins confirming,
+    /// or recovering from an outage and replacing the wallet-wide fallback
+    /// with a much smaller transparent balance. `BaseAmountModel`'s balance
     /// subscription only refreshes `walletBalance`, and the view refreshes its
-    /// button off `$amount`, so nothing else revalidates.
-    private func observeSendVerdictInputs() {
-        var judgedCeiling = SwiftDashSDKWalletState.shared.sendableDuffs
-        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
-            .dropFirst()
+    /// button off `$amount`, so nothing revalidates an amount typed before the
+    /// move.
+    ///
+    /// Both inputs matter, not just the pooled one: through a persistent pooled
+    /// outage that value stays `nil` and `removeDuplicates` swallows every
+    /// repeat, while `balance` keeps moving the fallback ceiling underneath.
+    /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
+    /// changed, and still ignores updates that leave it where it was.
+    ///
+    /// Only a ceiling move re-judges here, not every verdict input: these
+    /// screens present each assigned error (dropping a progress indicator and
+    /// re-enabling Continue), so re-judging on every balance event is a hazard
+    /// of its own. Coins that confirm raise the ceiling, which is what clears
+    /// a "still confirming" note.
+    private func observeSendableCeiling() {
+        let state = SwiftDashSDKWalletState.shared
+        SwiftDashSDKWalletState
+            .sendableCeilingPublisher(
+                pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
+                walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                let ceiling = SwiftDashSDKWalletState.shared.sendableDuffs
-                let ceilingMoved = ceiling != judgedCeiling
-                judgedCeiling = ceiling
                 let shown = self.error as? SendAmountError
                 let next: SendAmountError?
                 switch Self.walletChangeAction(for: self.error) {
                 case .recheckAmount:
-                    // An amount that fit can only stop fitting when the
-                    // ceiling moves.
-                    if shown == nil, !ceilingMoved { return }
                     next = self.amountError()
                 case .refreshMaxExplanation:
                     // Max can fill now: an amount typed before the tap is
                     // still on screen and needs its own verdict.
                     next = self.maxUnavailableError() ?? self.amountError()
                 case .keep:
-                    // The error stays, but whether Continue is allowed can
-                    // still have moved with the ceiling.
-                    guard ceilingMoved else { return }
+                    // The error stays, but whether Continue is allowed has
+                    // moved with the ceiling.
                     self.validationDidChangeHandler?()
                     return
                 }
                 // Re-setting the same error re-presents it, which drops any
-                // progress indicator and re-enables Continue mid-build — on
-                // every balance tick.
-                guard next != shown else { return }
-                self.error = next
+                // progress indicator and re-enables Continue mid-build.
+                if next != shown { self.error = next }
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
-    }
-
-    /// This model's gate on the amount on screen: `nil` when it fits, else the
-    /// refusal to show. The gate itself holds nothing back for the fee, but the
-    /// build will: the verdict keeps the fee reserve, so "wait" is only said
-    /// when the amount can actually be sent once the coins confirm.
-    private func gateRefusal() -> SendAmountError? {
-        guard canShowInsufficientFunds else { return nil }
-        guard gatesOnWalletSendPool else { return .insufficientFunds }
-        let state = SwiftDashSDKWalletState.shared
-        let verdict = state.sendVerdict(
-            requestedDuffs: amount.plainAmount,
-            ceilingDuffs: state.sendableDuffs,
-            reserveDuffs: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
-        return SendAmountError(refusing: verdict) ?? .insufficientFunds
     }
 
     enum WalletChangeAction: Equatable {
@@ -205,6 +194,21 @@ class SendAmountModel: BaseAmountModel {
         case .some(.maxUnavailable): return .refreshMaxExplanation
         default: return .keep
         }
+    }
+
+    /// This model's gate on the amount on screen: `nil` when it fits, else the
+    /// refusal to show. The gate itself holds nothing back for the fee, but the
+    /// build will: the verdict keeps the fee reserve, so "wait" is only said
+    /// when the amount can actually be sent once the coins confirm.
+    private func gateRefusal() -> SendAmountError? {
+        guard canShowInsufficientFunds else { return nil }
+        guard gatesOnWalletSendPool else { return .insufficientFunds }
+        let state = SwiftDashSDKWalletState.shared
+        let verdict = state.sendVerdict(
+            requestedDuffs: amount.plainAmount,
+            ceilingDuffs: state.sendableDuffs,
+            reserveDuffs: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+        return SendAmountError(refusing: verdict) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {
