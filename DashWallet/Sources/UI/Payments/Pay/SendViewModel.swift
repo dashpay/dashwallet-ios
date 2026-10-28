@@ -1182,7 +1182,7 @@ final class SendViewModel: ObservableObject {
             }
             let state = SwiftDashSDKWalletState.shared
             let (spendableDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
-            let ceilingDuffs = spendableDuffs > feeDuffs ? spendableDuffs - feeDuffs : 0
+            let ceilingDuffs = SwiftDashSDKWalletState.feeAwareMax(spendable: spendableDuffs, reserve: feeDuffs)
             // The asset lock spends only confirmed or InstantSend-locked coins,
             // so here waiting genuinely is the fix.
             if case .confirming(let duffs) = state.sendVerdict(

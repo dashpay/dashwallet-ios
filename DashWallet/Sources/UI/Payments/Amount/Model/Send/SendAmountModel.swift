@@ -20,7 +20,7 @@ import Foundation
 
 // MARK: - SendAmountError
 
-enum SendAmountError: Error, ColorizedText, LocalizedError {
+enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     case insufficientFunds
     case syncingChain
     case networkUnavailable
@@ -139,43 +139,33 @@ class SendAmountModel: BaseAmountModel {
                 let ceiling = SwiftDashSDKWalletState.shared.sendableDuffs
                 let ceilingMoved = ceiling != judgedCeiling
                 judgedCeiling = ceiling
+                let shown = self.error as? SendAmountError
+                let next: SendAmountError?
                 switch Self.walletChangeAction(for: self.error) {
                 case .recheckAmount:
-                    if self.error == nil {
-                        // An amount that fit can only stop fitting when the
-                        // ceiling moves.
-                        guard ceilingMoved else { return }
-                    } else if self.fundsVerdictIsUnchanged() {
-                        // Re-setting the same refusal re-presents it and drops
-                        // any progress indicator, on every balance tick.
-                        return
-                    }
-                    self.error = nil
-                    self.checkAmountForErrors()
+                    // An amount that fit can only stop fitting when the
+                    // ceiling moves.
+                    if shown == nil, !ceilingMoved { return }
+                    next = self.amountError()
                 case .refreshMaxExplanation:
-                    if let stillUnavailable = self.maxUnavailableError() {
-                        self.error = stillUnavailable
-                    } else {
-                        // Max can fill now, but an amount typed before the
-                        // tap is still on screen and needs its own verdict.
-                        self.error = nil
-                        self.checkAmountForErrors()
-                    }
+                    // Max can fill now: an amount typed before the tap is
+                    // still on screen and needs its own verdict.
+                    next = self.maxUnavailableError() ?? self.amountError()
                 case .keep:
                     // The error stays, but whether Continue is allowed can
                     // still have moved with the ceiling.
                     guard ceilingMoved else { return }
+                    self.validationDidChangeHandler?()
+                    return
                 }
+                // Re-setting the same error re-presents it, which drops any
+                // progress indicator and re-enables Continue mid-build — on
+                // every balance tick.
+                guard next != shown else { return }
+                self.error = next
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
-    }
-
-    /// Whether the wallet would refuse the amount on screen exactly as the
-    /// funds verdict already shown does.
-    private func fundsVerdictIsUnchanged() -> Bool {
-        guard let shown = error as? SendAmountError, let refusal = gateRefusal() else { return false }
-        return refusal.errorDescription == shown.errorDescription
     }
 
     /// This model's gate on the amount on screen: `nil` when it fits, else the
@@ -237,7 +227,7 @@ class SendAmountModel: BaseAmountModel {
             // balance, funds that are still confirming, and a balance too
             // small to also cover the fee were indistinguishable from a dead
             // button.
-            error = maxUnavailableError()
+            error = maxUnavailableError(maxSendableDuffs: allAvailableFunds)
             return
         }
 
@@ -246,12 +236,15 @@ class SendAmountModel: BaseAmountModel {
 
     /// Why Max cannot fill anything right now, or `nil` once it can. Same
     /// three states, same wording, as the internal transfer's Core Max.
-    private func maxUnavailableError() -> SendAmountError? {
+    /// `maxSendableDuffs` is a Max the caller has just read, so the answer
+    /// agrees with it; otherwise it is read here.
+    private func maxUnavailableError(maxSendableDuffs: UInt64? = nil) -> SendAmountError? {
         let state = SwiftDashSDKWalletState.shared
         // An empty ceiling needs no reserve to know Max stays empty; the
         // reserve is a walk over every pooled UTXO, and this runs on each
         // balance event while the explanation is up.
-        guard state.sendableDuffs == 0 || state.feeAwareMaxSendable() == 0 else { return nil }
+        let maxDuffs = maxSendableDuffs ?? (state.sendableDuffs == 0 ? 0 : state.feeAwareMaxSendable())
+        guard maxDuffs == 0 else { return nil }
         let balance = state.balance
         return SendAmountError.maxUnavailable(
             InternalTransferViewModel.coreZeroMaxMessage(
@@ -264,14 +257,17 @@ class SendAmountModel: BaseAmountModel {
     }
 
     override func checkAmountForErrors() {
+        error = amountError()
+    }
+
+    /// What `checkAmountForErrors` sets, without setting it.
+    private func amountError() -> SendAmountError? {
         guard DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet == false ||
             SyncingActivityMonitor.shared.state == .syncDone
         else {
-            error = SendAmountError.syncingChain
-            return
+            return .syncingChain
         }
-
-        error = gateRefusal()
+        return gateRefusal()
     }
 
     internal func auth(completionBlock: @escaping ((Bool) -> Void)) {
