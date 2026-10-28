@@ -213,6 +213,30 @@ final class PooledSendableBalanceTests: XCTestCase {
                 requested: 250_000_000, reserve: 0, sendable: 100_000_000, pool: nil))
     }
 
+    func testAnAmountThatCannotFitIsRefusedWithoutReadingTheReserve() {
+        // The reserve is a walk over every pooled UTXO on the main thread;
+        // typing past everything the pool holds must not pay for it per key.
+        var reserveReads = 0
+        let verdict = SwiftDashSDKWalletState.fundsStillConfirming(
+            requested: 400_000_000,
+            reserve: { reserveReads += 1; return 1_000 },
+            sendable: 100_000_000,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 100_000_000))
+        XCTAssertNil(verdict)
+        XCTAssertEqual(reserveReads, 0)
+    }
+
+    func testAnAmountThatMayFitStillKeepsTheLazyReserve() {
+        var reserveReads = 0
+        let verdict = SwiftDashSDKWalletState.fundsStillConfirming(
+            requested: 199_999_500,
+            reserve: { reserveReads += 1; return 1_000 },
+            sendable: 100_000_000,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 100_000_000))
+        XCTAssertNil(verdict, "fits only without the reserve, so still insufficient")
+        XCTAssertEqual(reserveReads, 1)
+    }
+
     func testTheConfirmingMessageNamesTheWaitingAmount() {
         let message = SendAmountError.fundsStillConfirming(200_000_000).errorDescription ?? ""
         XCTAssertTrue(message.contains("still confirming"), "got: \(message)")

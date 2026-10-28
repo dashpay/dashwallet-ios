@@ -72,12 +72,12 @@ extension SendAmountError {
     static func walletShortfall(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
-        reserveDuffs: UInt64
+        reserveDuffs: @autoclosure () -> UInt64
     ) -> SendAmountError {
         SwiftDashSDKWalletState.shared.fundsStillConfirmingDuffs(
             requestedDuffs: requestedDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs)
+            reserveDuffs: reserveDuffs())
             .map(SendAmountError.fundsStillConfirming) ?? .insufficientFunds
     }
 
@@ -219,7 +219,10 @@ class SendAmountModel: BaseAmountModel {
     /// three states, same wording, as the internal transfer's Core Max.
     private func maxUnavailableError() -> SendAmountError? {
         let state = SwiftDashSDKWalletState.shared
-        guard state.feeAwareMaxSendable() == 0 else { return nil }
+        // An empty ceiling needs no reserve to know Max stays empty; the
+        // reserve is a walk over every pooled UTXO, and this runs on each
+        // balance event while the explanation is up.
+        guard state.sendableDuffs == 0 || state.feeAwareMaxSendable() == 0 else { return nil }
         let balance = state.balance
         return SendAmountError.maxUnavailable(
             InternalTransferViewModel.coreZeroMaxMessage(

@@ -357,7 +357,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     public func fundsStillConfirmingDuffs(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
-        reserveDuffs: UInt64
+        reserveDuffs: @autoclosure () -> UInt64
     ) -> UInt64? {
         guard requestedDuffs > ceilingDuffs, pooledSpendableDuffs != nil else { return nil }
         return Self.fundsStillConfirming(
@@ -365,6 +365,20 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             reserve: reserveDuffs,
             sendable: sendableDuffs,
             pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot())
+    }
+
+    /// `fundsStillConfirming` with the reserve read only when it can change
+    /// the answer: it can be a walk over every pooled UTXO, and an amount that
+    /// would not fit even with no reserve is refused without it.
+    static func fundsStillConfirming(
+        requested: UInt64,
+        reserve: () -> UInt64,
+        sendable: UInt64,
+        pool: SendPoolConfirmationSnapshot?
+    ) -> UInt64? {
+        guard fundsStillConfirming(requested: requested, reserve: 0, sendable: sendable, pool: pool) != nil
+        else { return nil }
+        return fundsStillConfirming(requested: requested, reserve: reserve(), sendable: sendable, pool: pool)
     }
 
     /// `fundsStillConfirmingDuffs`'s arithmetic, separated from the SDK reads.
