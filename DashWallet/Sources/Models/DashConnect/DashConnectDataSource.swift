@@ -89,6 +89,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case parseFailed
     case approveFailed
     case notDashConnectQrCode
+    case needsNewerWallet
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
     case stateTransitionNotSupported
 
@@ -100,6 +101,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "Approval failed"
         case .notDashConnectQrCode:
             return "This QR code is not a DashConnect QR code."
+        case .needsNewerWallet:
+            return "This link needs a newer version of the wallet."
         case let .unsupportedNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .stateTransitionNotSupported:

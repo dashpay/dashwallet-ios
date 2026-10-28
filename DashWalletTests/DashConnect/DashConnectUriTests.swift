@@ -737,3 +737,262 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(request.age(now: created.addingTimeInterval(-2 * 60 - 1)), .future)
     }
 }
+
+// MARK: - dashpay://connect carrier
+
+extension DashConnectUriTests {
+    /// The DIP's "Request Vector": the devnet request as a `connect` URI, with its return link.
+    private static let connectVectorUri = "dashpay://connect?v=2&n=d&r=AgPoPLkn6F-WrlCpXKO-Icx6N1UTmpQbFdmbAa9P7PDScPiDPHotWKuBbCSukV_iqpRnZYi0Z7oenyskwaPff9t4BVlhcHByAjICAbBZDlkmnGiFrPcdJ9386FGH4syXNsQulYEnzTW-bTjoAAAAC6Q7dAAAAAGi9760AAI6AQKiobSsb-8i6ioaaOgSNkSzV4dfa0EsGBCSgcFG57JxvAAAAAA7msoAAAABove-tAAHcHJvZmlsZQMQppsbT2ZmgUU97Dc0ZnpasgQh-IM8ei1Yq4FsJK6RX-KqlGdliLRnuh6fKyTBo99_23gBBggAAAGhKEJcAA&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
+    private static let connectVectorCallback = "https://yap.pr/connect?r=d77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
+
+    /// The vector's `r`, and the URI with everything else as the DIP writes it.
+    private static var connectVectorR: String {
+        connectVectorUri.components(separatedBy: "&r=")[1].components(separatedBy: "&cb=")[0]
+    }
+
+    private static func connectUri(r: String, query: String = "v=2&n=d") -> String {
+        "dashpay://connect?\(query)&r=\(r)"
+    }
+
+    private func assertConnectInvalid(_ uri: String, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(uri), file: file, line: line) { error in
+            guard case .invalid = error as? AppConnectRequestError else {
+                return XCTFail("expected invalid, got \(error)", file: file, line: line)
+            }
+        }
+    }
+
+    func testTheDipConnectVectorDecodesToTheVectorBody() throws {
+        let parsed = try DashConnectUri.parseConnectRequest(Self.connectVectorUri)
+
+        XCTAssertEqual(DashConnectUri.base64URLDecode(Self.connectVectorR), AppConnectVector.requestBytes)
+        XCTAssertEqual(parsed.request, try AppConnectRequest.decode(AppConnectVector.requestBytes))
+        XCTAssertEqual(parsed.network, .devnet)
+        XCTAssertEqual(parsed.callback?.absoluteString, Self.connectVectorCallback)
+    }
+
+    func testBothCarriersGiveTheSameRequest() throws {
+        let viaDashKey = try DashConnectUri.parseAppConnectRequest(AppConnectVector.requestUri)
+        XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectVectorUri), viaDashKey)
+    }
+
+    func testConnectUriIsRecognisedAndOthersAreNot() {
+        XCTAssertTrue(DashConnectUri.isConnectUri(Self.connectVectorUri))
+        XCTAssertFalse(DashConnectUri.isConnectUri("dashpay://invite?assetlocktx=00"))
+        XCTAssertFalse(DashConnectUri.isConnectUri("dashpay://connection?v=2"))
+        XCTAssertFalse(DashConnectUri.isConnectUri("dashpay:connect?v=2"))
+        XCTAssertFalse(DashConnectUri.isConnectUri(AppConnectVector.requestUri))
+        XCTAssertFalse(DashConnectUri.isConnectUri("https://connect/"))
+        XCTAssertFalse(DashConnectUri.isConnectUri(""))
+    }
+
+    func testSchemeAndHostAreComparedCaseInsensitively() throws {
+        let expected = try DashConnectUri.parseConnectRequest(Self.connectVectorUri)
+        let rest = String(Self.connectVectorUri.dropFirst("dashpay://connect".count))
+        for prefix in ["DASHPAY://CONNECT", "DashPay://Connect", "dashpay://CONNECT", "DASHPAY://connect"] {
+            XCTAssertTrue(DashConnectUri.isConnectUri(prefix + rest), prefix)
+            XCTAssertEqual(try DashConnectUri.parseConnectRequest(prefix + rest), expected, prefix)
+        }
+    }
+
+    func testPathIsEmptyOrASingleSlash() throws {
+        let rest = String(Self.connectVectorUri.dropFirst("dashpay://connect".count))
+        XCTAssertNoThrow(try DashConnectUri.parseConnectRequest("dashpay://connect/" + rest))
+        for path in ["//", "/x", "/connect", "/ "] {
+            assertConnectInvalid("dashpay://connect" + path + rest)
+        }
+    }
+
+    func testUserinfoPortAndFragmentAreRefused() {
+        let rest = String(Self.connectVectorUri.dropFirst("dashpay://connect".count))
+        assertConnectInvalid("dashpay://user@connect" + rest)
+        assertConnectInvalid("dashpay://user:pw@connect" + rest)
+        assertConnectInvalid("dashpay://connect:80" + rest)
+        assertConnectInvalid("dashpay://connect:" + rest)
+        assertConnectInvalid(Self.connectVectorUri + "#frag")
+        assertConnectInvalid(Self.connectVectorUri + "#")
+        assertConnectInvalid(Self.connectVectorUri.replacingOccurrences(of: "&n=d", with: "&n=d#x"))
+        // A userinfo or port is still a connect link, so it is refused here and not shown as another link.
+        XCTAssertTrue(DashConnectUri.isConnectUri("dashpay://user@connect" + rest))
+        XCTAssertTrue(DashConnectUri.isConnectUri("dashpay://connect:80" + rest))
+        XCTAssertFalse(DashConnectUri.isUnsupportedDashpayVerb("dashpay://connect:80" + rest))
+    }
+
+    func testVersionMustBeExactlyTwo() {
+        let r = Self.connectVectorR
+        for query in ["n=d", "v=1&n=d", "v=3&n=d", "v=22&n=d", "v=&n=d", "v=02&n=d"] {
+            XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: query)), query) { error in
+                guard case .unsupported = error as? AppConnectRequestError else {
+                    return XCTFail("expected unsupported, got \(error)")
+                }
+            }
+        }
+        // Form-decoded first, like the other carrier.
+        XCTAssertNoThrow(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "%76=%32&n=d")))
+    }
+
+    func testNetworkMustBeKnown() throws {
+        let r = Self.connectVectorR
+        for query in ["v=2", "v=2&n=", "v=2&n=x", "v=2&n=mt", "v=2&n=D"] {
+            XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: query)), query) { error in
+                XCTAssertEqual(error as? AppConnectRequestError, .invalid("unknown network"), query)
+            }
+        }
+        let networks: [(String, DashConnectNetwork)] = [("m", .mainnet), ("t", .testnet), ("d", .devnet)]
+        for (code, network) in networks {
+            XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=\(code)")).network, network)
+        }
+    }
+
+    func testARepeatedKnownParameterIsInvalidAndUnknownOnesAreIgnored() throws {
+        let uri = Self.connectVectorUri
+        XCTAssertNoThrow(try DashConnectUri.parseConnectRequest(uri + "&x=1&x=2&exp=5"))
+        let cb = "&cb=https%3A%2F%2Fyap.pr%2F"
+        for repeated in ["&v=2", "&n=d", "&r=" + Self.connectVectorR, cb, "&%72=" + Self.connectVectorR] {
+            assertConnectInvalid(uri + repeated)
+        }
+        // Any order is accepted.
+        let reordered = "dashpay://connect?cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62&r=\(Self.connectVectorR)&n=d&v=2"
+        XCTAssertEqual(try DashConnectUri.parseConnectRequest(reordered), try DashConnectUri.parseConnectRequest(uri))
+    }
+
+    func testTheRequestIsRequired() {
+        assertConnectInvalid("dashpay://connect?v=2&n=d")
+        assertConnectInvalid("dashpay://connect?v=2&n=d&r=")
+        assertConnectInvalid("dashpay://connect")
+        assertConnectInvalid("dashpay://connect/")
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest("dashpay://connect?")) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .unsupported("URI version (none)"))
+        }
+    }
+
+    func testTheRequestMustBeCanonicalBase64URL() {
+        let r = Self.connectVectorR
+        XCTAssertEqual(r.count % 4, 2)
+        let pad = String(repeating: "=", count: 2)
+        let cases: [String: String] = [
+            "padding": r + pad,
+            "plus": "+" + String(r.dropFirst()),
+            "plus as space": String(r.dropFirst(2)) + "+A",
+            "slash": "/" + String(r.dropFirst()),
+            "outside the alphabet": "!" + String(r.dropFirst()),
+            "space": String(r.dropFirst()) + " ",
+            "non-ASCII": "\u{e9}" + String(r.dropFirst()),
+            "length 1 mod 4": String(r.dropLast()),
+            "non-zero trailing bits": String(r.dropLast()) + "B",
+        ]
+        for (name, bad) in cases {
+            assertConnectInvalid(Self.connectUri(r: bad))
+            XCTAssertNil(DashConnectUri.base64URLDecode(bad), name)
+        }
+        // The canonical form of the same value decodes.
+        XCTAssertNotNil(DashConnectUri.base64URLDecode(r))
+    }
+
+    func testBase64URLDecoderMatchesRfc4648AndIsStrict() {
+        let text = { (string: String) in DashConnectUri.base64URLDecode(string).map { String(decoding: $0, as: UTF8.self) } }
+        XCTAssertEqual(DashConnectUri.base64URLDecode(""), Data())
+        XCTAssertEqual(text("Zg"), "f")
+        XCTAssertEqual(text("Zm8"), "fo")
+        XCTAssertEqual(text("Zm9v"), "foo")
+        XCTAssertEqual(text("Zm9vYg"), "foob")
+        XCTAssertEqual(text("Zm9vYmE"), "fooba")
+        XCTAssertEqual(text("Zm9vYmFy"), "foobar")
+        // The URL-safe alphabet: `-` is 62 and `_` is 63.
+        XCTAssertEqual(DashConnectUri.base64URLDecode("-_8"), Data([0xfb, 0xff]))
+        XCTAssertEqual(DashConnectUri.base64URLDecode("-_-_"), Data([0xfb, 0xff, 0xbf]))
+
+        for bad in ["Zg==", "Zm8=", "Z", "Zm9vY", "Zh", "Zm9", "Zm9vYh", "Zm+/", "Zm/+", "+_8", "Zm 8", "Zm8\n", "Zm\u{0}8", "Z\u{e9}", "\u{ff21}\u{ff21}"] {
+            XCTAssertNil(DashConnectUri.base64URLDecode(bad), bad)
+        }
+        // Every byte string has exactly one encoding: the decoder agrees with the encoder for a spread of lengths.
+        for length in 0 ... 40 {
+            let data = Data((0 ..< length).map { UInt8(truncatingIfNeeded: $0 &* 37 &+ 11) })
+            let encoded = data.base64EncodedString()
+                .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "=", with: "")
+            XCTAssertEqual(DashConnectUri.base64URLDecode(encoded), data, "length \(length)")
+        }
+    }
+
+    func testTheRequestLimits() throws {
+        // 1,366 characters is 1,024 bytes; the body decoder then refuses a body of zeros.
+        let atTheLimit = String(repeating: "A", count: 1366)
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: atTheLimit))) { error in
+            XCTAssertNotEqual(error as? AppConnectRequestError, .invalid("request is too long"))
+        }
+        for count in [1367, 1368, 2000] {
+            XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: String(repeating: "A", count: count)))) { error in
+                XCTAssertEqual(error as? AppConnectRequestError, .invalid("request is too long"), "\(count)")
+            }
+        }
+        // Too long is reported before the alphabet is looked at.
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: String(repeating: "!", count: 1367)))) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request is too long"))
+        }
+    }
+
+    func testTheWholeUriIsLimitedTo4096BytesBeforeDecoding() throws {
+        let base = Self.connectVectorUri
+        // Exactly 4,096 bytes is read; one more is not.
+        let filler = "&x=" + String(repeating: "a", count: 4096 - base.utf8.count - 3)
+        XCTAssertEqual((base + filler).utf8.count, 4096)
+        XCTAssertNoThrow(try DashConnectUri.parseConnectRequest(base + filler))
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(base + filler + "a")) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("URI is too long"))
+        }
+        // Bytes, not characters, and before anything else is read: a bad `v` is not what is reported.
+        let multibyte = "dashpay://connect?v=9&x=" + String(repeating: "\u{20ac}", count: 1366)
+        XCTAssertGreaterThan(multibyte.utf8.count, 4096)
+        XCTAssertLessThan(multibyte.count, 4096)
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(multibyte)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("URI is too long"))
+        }
+    }
+
+    func testTheReturnLinkKeepsItsRules() throws {
+        let uri = Self.connectUri(r: Self.connectVectorR)
+        XCTAssertNil(try DashConnectUri.parseConnectRequest(uri).callback)
+        for callback in ["http%3A%2F%2Fyap.pr%2F", "https%3A%2F%2Fuser%40yap.pr%2F", "yap.pr%2Fconnect",
+                         "https%3A%2F%2F1.2.3.4%2F", "https%3A%2F%2FYAP.PR%2F"] {
+            assertConnectInvalid(uri + "&cb=" + callback)
+        }
+        XCTAssertEqual(try DashConnectUri.parseConnectRequest(uri + "&cb=https%3A%2F%2Fyap.pr%3A8443%2Fa").callback?.port, 8443)
+    }
+
+    func testUnknownVerbsAreNamedAsNeedingANewerWallet() {
+        for uri in ["dashpay://sign?v=2&n=t&exp=1&st=AAAA", "DASHPAY://SIGN?v=2", "dashpay://sign", "dashpay://future/",
+                    "dashpay://x@sign?v=2"] {
+            XCTAssertTrue(DashConnectUri.isUnsupportedDashpayVerb(uri), uri)
+            XCTAssertFalse(DashConnectUri.isConnectUri(uri), uri)
+        }
+        // Verbs the wallet reads elsewhere, links of another shape, and other schemes.
+        for uri in [Self.connectVectorUri, "dashpay://invite?assetlocktx=00", "DashPay://Invite?x=1", "dashpay://user?id=1",
+                    "dashpay://", "dashpay:sign", "dash://sign", "https://sign/", AppConnectVector.requestUri, "dash-st:abc?n=t&v=1", ""] {
+            XCTAssertFalse(DashConnectUri.isUnsupportedDashpayVerb(uri), uri)
+        }
+    }
+
+    func testDeepLinkRoutingTakesConnectAndLeavesInvitationsAlone() throws {
+        let connect = try XCTUnwrap(URL(string: Self.connectVectorUri))
+        XCTAssertEqual(DashConnectDeepLink.uri(from: connect), Self.connectVectorUri)
+        XCTAssertTrue(DashConnectDeepLink.canHandle(connect))
+        XCTAssertTrue(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "DASHPAY://CONNECT?v=2"))))
+
+        // An invitation is not a connect link, and is not an unknown verb either.
+        for invite in ["dashpay://invite?assetlocktx=00&pk=1", "DashPay://INVITE?x=1"] {
+            let url = try XCTUnwrap(URL(string: invite))
+            XCTAssertNil(DashConnectDeepLink.uri(from: url), invite)
+            XCTAssertFalse(DashConnectDeepLink.canHandle(url), invite)
+            XCTAssertFalse(DashConnectDeepLink.isUnsupportedDashpayVerb(url), invite)
+        }
+        let sign = try XCTUnwrap(URL(string: "dashpay://sign?v=2&n=t"))
+        XCTAssertNil(DashConnectDeepLink.uri(from: sign))
+        XCTAssertTrue(DashConnectDeepLink.isUnsupportedDashpayVerb(sign))
+
+        // The existing carriers are unchanged.
+        XCTAssertEqual(DashConnectDeepLink.uri(from: try XCTUnwrap(URL(string: AppConnectVector.requestUri))), AppConnectVector.requestUri)
+        XCTAssertTrue(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash-st:abc?n=t&v=1"))))
+        XCTAssertFalse(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash:XyZ?amount=1"))))
+    }
+}
