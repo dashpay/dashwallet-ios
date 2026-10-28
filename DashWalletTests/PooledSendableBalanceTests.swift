@@ -228,6 +228,18 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(SendAmountError.syncingChain.isFundsVerdict)
     }
 
+    func testAMovedCeilingReJudgesOnlyAnAmountItCouldHaveDecided() {
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(nil))
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(SendAmountError.insufficientFunds))
+        XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(SendAmountError.fundsStillConfirming(1)))
+        // `checkAmountForErrors` never sets these again, so clearing them on
+        // a wallet update would leave the screen with no explanation at all.
+        XCTAssertFalse(SendAmountModel.ceilingMoveRechecks(SendAmountError.maxUnavailable("x")),
+                       "a Max explanation must survive a ceiling update")
+        XCTAssertFalse(SendAmountModel.ceilingMoveRechecks(URLError(.notConnectedToInternet)),
+                       "a subclass's own failure is not the ceiling's to clear")
+    }
+
     // MARK: How Max explains an empty result
 
     func testAConfirmedCoinJoinOnlyBalanceIsNotBlamedOnTheFee() {
@@ -338,6 +350,48 @@ final class PooledSendableBalanceTests: XCTestCase {
         token.cancel()
     }
 
+    // MARK: - The verdict publisher
+
+    private func verdictInputs(reserve: UInt64) -> SendPoolVerdictInputs {
+        SendPoolVerdictInputs(pool: pool(confirmed: 100_000_000, unconfirmed: 0), feeReserveDuffs: reserve)
+    }
+
+    func testTheVerdictIsReJudgedWhenOnlyTheFeeReserveMoves() {
+        // A pooled UTXO the balance buckets do not show (immature, locked)
+        // moves the reserve while the ceiling and `unconfirmed` stay put; an
+        // amount refused against the old reserve must be judged again.
+        let ceiling = CurrentValueSubject<UInt64, Never>(100_000_000)
+        let unconfirmed = CurrentValueSubject<UInt64?, Never>(0)
+        let pool = CurrentValueSubject<SendPoolVerdictInputs?, Never>(verdictInputs(reserve: 1_500))
+        var emissions = 0
+        let token = SwiftDashSDKWalletState
+            .sendVerdictInputsPublisher(ceiling: ceiling.eraseToAnyPublisher(),
+                                        unconfirmed: unconfirmed.eraseToAnyPublisher(),
+                                        pool: pool.eraseToAnyPublisher())
+            .sink { emissions += 1 }
+
+        pool.send(verdictInputs(reserve: 3_000))
+
+        XCTAssertEqual(emissions, 2, "the current state, then the moved reserve")
+        token.cancel()
+    }
+
+    func testARepeatedPoolReadDoesNotChurnTheVerdict() {
+        let ceiling = CurrentValueSubject<UInt64, Never>(100_000_000)
+        let unconfirmed = CurrentValueSubject<UInt64?, Never>(0)
+        let pool = CurrentValueSubject<SendPoolVerdictInputs?, Never>(verdictInputs(reserve: 1_500))
+        var emissions = 0
+        let token = SwiftDashSDKWalletState
+            .sendVerdictInputsPublisher(ceiling: ceiling.eraseToAnyPublisher(),
+                                        unconfirmed: unconfirmed.eraseToAnyPublisher(),
+                                        pool: pool.eraseToAnyPublisher())
+            .sink { emissions += 1 }
+
+        pool.send(verdictInputs(reserve: 1_500))
+
+        XCTAssertEqual(emissions, 1, "the same pool read again changes no verdict")
+        token.cancel()
+    }
 
     // MARK: Single-flight ownership of the pooled read
 

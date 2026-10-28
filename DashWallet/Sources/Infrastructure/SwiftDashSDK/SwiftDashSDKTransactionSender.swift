@@ -778,28 +778,41 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// no UTXOs) falls back to the flat reserve, i.e. the previous behaviour —
     /// the change never makes Max worse than before, only tighter when it can.
     static func maxSendFeeReserveDuffs() -> UInt64 {
-        let dynamic = readSendPool { manager, walletId, pooled -> UInt64? in
-            let count = pooled.reduce(0) { total, balance in
-                total + manager.accountUtxos(for: walletId, balance: balance).count
-            }
-            guard count > 0 else { return nil }
-            let base = estimatedSignalFee(inputCount: count)
-            return base + base / 2 // +50 % margin — must never under-reserve
-        }
-        return dynamic ?? WalletBalance.sendFeeReserveDuffs
+        readSendPool { manager, walletId, pooled in
+            sendFeeReserveDuffs(manager: manager, walletId: walletId, pooled: pooled)
+        } ?? WalletBalance.sendFeeReserveDuffs
     }
 
-    /// The send pool's `confirmed` and `unconfirmed` sums over the same
-    /// accounts `maxSendFeeReserveDuffs` enumerates, from one read. Immature
-    /// coinbase and locked coins are left out — waiting a few minutes does not
+    /// `maxSendFeeReserveDuffs` over accounts already read; the flat reserve
+    /// when they hold no UTXOs.
+    @MainActor
+    private static func sendFeeReserveDuffs(
+        manager: PlatformWalletManager,
+        walletId: Data,
+        pooled: [PlatformWalletManager.AccountBalance]
+    ) -> UInt64 {
+        let count = pooled.reduce(0) { total, balance in
+            total + manager.accountUtxos(for: walletId, balance: balance).count
+        }
+        guard count > 0 else { return WalletBalance.sendFeeReserveDuffs }
+        let base = estimatedSignalFee(inputCount: count)
+        return base + base / 2 // +50 % margin — must never under-reserve
+    }
+
+    /// What the amount gates' verdict reads from the send pool, from one read
+    /// of its accounts: the `confirmed` and `unconfirmed` sums and the fee
+    /// reserve `maxSendFeeReserveDuffs` would return. Immature coinbase and
+    /// locked coins are left out of the sums — waiting a few minutes does not
     /// free them.
     ///
     /// `nil` when the accounts cannot be enumerated (no wallet/manager yet).
-    static func sendPoolConfirmationSnapshot() -> SendPoolConfirmationSnapshot? {
-        readSendPool { _, _, pooled in
-            SendPoolConfirmationSnapshot(
-                confirmedDuffs: pooled.reduce(0) { $0 + $1.confirmed },
-                unconfirmedDuffs: pooled.reduce(0) { $0 + $1.unconfirmed })
+    static func sendPoolVerdictInputs() -> SendPoolVerdictInputs? {
+        readSendPool { manager, walletId, pooled in
+            SendPoolVerdictInputs(
+                pool: SendPoolConfirmationSnapshot(
+                    confirmedDuffs: pooled.reduce(0) { $0 + $1.confirmed },
+                    unconfirmedDuffs: pooled.reduce(0) { $0 + $1.unconfirmed }),
+                feeReserveDuffs: sendFeeReserveDuffs(manager: manager, walletId: walletId, pooled: pooled))
         }
     }
 

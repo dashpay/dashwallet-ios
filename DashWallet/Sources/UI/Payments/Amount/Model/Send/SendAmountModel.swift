@@ -147,18 +147,19 @@ class SendAmountModel: BaseAmountModel {
                 walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
+                guard let self, Self.ceilingMoveRechecks(self.error) else { return }
                 self.error = nil
                 self.checkAmountForErrors()
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
 
-        // Coins starting or finishing to confirm decide between "Insufficient
-        // funds" and "still confirming" without moving the ceiling. Only a
-        // funds verdict is re-checked: clearing anything else here would drop
-        // a Max explanation that `checkAmountForErrors` never sets again.
-        state.unconfirmedDuffsPublisher
+        // Coins starting or finishing to confirm, and the fee reserve moving
+        // with the pool's UTXOs, decide between "Insufficient funds" and
+        // "still confirming" without moving the ceiling. Only a funds verdict
+        // is re-checked: clearing anything else here would drop a Max
+        // explanation that `checkAmountForErrors` never sets again.
+        state.sendVerdictInputsPublisher
             .dropFirst()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -167,6 +168,16 @@ class SendAmountModel: BaseAmountModel {
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
+    }
+
+    /// Whether a moved ceiling may re-judge the amount over `error`: only when
+    /// there is none or it is a funds verdict, the one thing the ceiling
+    /// decides. Anything else — a Max explanation that `checkAmountForErrors`
+    /// never sets again, a subclass's own failure such as a Coinbase API
+    /// error — stays until whoever set it clears it.
+    static func ceilingMoveRechecks(_ error: Error?) -> Bool {
+        guard let error else { return true }
+        return (error as? SendAmountError)?.isFundsVerdict == true
     }
 
     override func selectAllFunds() {
