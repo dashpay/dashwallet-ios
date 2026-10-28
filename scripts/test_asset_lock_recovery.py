@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     methods = []
     for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
                    "    func retryLastAssetLock(", "    func reset()", "    private func handleSpendError(",
-                   "    private func handlePlatformSpendError("):
+                   "    private func handlePlatformSpendError(", "    private func isStillBound("):
         start = production.index(marker)
         opening = production.index("{", start)
         depth, end = 1, opening + 1
@@ -25,6 +25,12 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
             depth += (production[end] == "{") - (production[end] == "}")
             end += 1
         methods.append(production[start:end])
+    for name in ("CoreShieldedDrainStore.swift",):
+        (source / name).symlink_to(repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded" / name)
+    (source / "DurableFileStorage.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift")
+    service = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/CoreShieldedDrainService.swift").read_text()
+    types = service[service.index("enum CoreShieldedDrainRowIdentity:"):service.index("@MainActor\nstruct CoreShieldedDrainService")]
+    (source / "DrainRecipient.swift").write_text("import Foundation\n" + types)
     harness = (repository / "scripts/fixtures/AssetLockRecoveryHarness.swift").read_text()
     def caller_method(path, marker):
         text = (repository / path).read_text()
@@ -45,6 +51,13 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     harness = harness.replace("// COINJOIN_FINISH", caller_method(
         "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFunds/CoinJoinMoveFundsViewModel.swift",
         "    private func finishFromCoordinatorPhase()"))
+    coinjoin = "DashWallet/Sources/UI/Home/Views/CoinJoinMoveFunds/CoinJoinMoveFundsViewModel.swift"
+    helpers = []
+    for marker in ("    private var committedLock:", "    private var hasCommittedLock:",
+                   "    private func resetCoordinator()", "    nonisolated static func stageAfterAuthCancel(",
+                   "    nonisolated static var unresumedLockStage:"):
+        helpers.append(caller_method(coinjoin, marker).replace("private var", "var", 1))
+    harness = harness.replace("// COINJOIN_HELPERS", "\n".join(helpers))
     harness = harness.replace("// SEND_RETRY", caller_method(
         "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift", "    private func tryAgain()"))
     (source / "Coordinator.swift").write_text(harness)

@@ -39,13 +39,11 @@ final class TestManager {
 
 // Dependency seam for the drain context check added by develop. Recovery
 // tests must explicitly supply an outcome instead of fabricating a manager.
-struct CoreShieldedDrainContext {
-    let walletId: Data
-    let networkScope: String
-}
 @MainActor
 struct CoreShieldedDrainService {
     enum TestError: Error { case contextChanged }
+    static var marker: CoreShieldedDrainMarkerLookup = .unavailable
+    func markerLookup() -> (CoreShieldedDrainMarkerLookup, CoreShieldedDrainContext?) { (Self.marker, nil) }
     static var resolveManager: ((CoreShieldedDrainContext) throws -> TestManager)?
     func manager(for context: CoreShieldedDrainContext) throws -> TestManager {
         guard let resolveManager = Self.resolveManager else { throw TestError.contextChanged }
@@ -63,7 +61,7 @@ extension Notification.Name {
 @MainActor
 final class ShieldedTransferCoordinator {
     enum CoordinatorError: Error {
-        case transferFailed(Error), authCancelled
+        case transferFailed(Error), authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet
         var errorDescription: String? { "Authentication cancelled" }
     }
     enum Phase: Equatable { case idle, proving, broadcasting, success, submittedUnconfirmed, failed(String) }
@@ -72,6 +70,13 @@ final class ShieldedTransferCoordinator {
         let manager: TestManager
         let walletId: Data
         let shieldedRecipient: Data
+        var network: String { "testnet" }
+        var modelContainer: Void { () }
+    }
+    static var rowLookup: (() -> CoreShieldedDrainRowIdentity?)?
+    static func drainRowIdentity(outPointTxidWire: Data, vout: UInt32, walletId: Data, in container: Void) -> CoreShieldedDrainRowIdentity? {
+        guard let rowLookup else { preconditionFailure("Test must configure the asset-lock row") }
+        return rowLookup()
     }
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
     var phase: Phase = .idle
@@ -120,6 +125,28 @@ final class ShieldedTransferCoordinator {
     let coordinator: ShieldedTransferCoordinator
     var newDrainCalls: Int { coordinator.newAssetLockCalls }
     init(_ coordinator: ShieldedTransferCoordinator) { self.coordinator = coordinator }
+    var binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?
+    var unresumedLock: (txidWire: Data, vout: UInt32)?
+    enum Preparation { case authorizing }
+    var preparation: Preparation?
+    var consolidationSent = false
+    static let genericFailureMessage = "test failure"
+    nonisolated static var unresumedLockMessage: String { "Resume the existing lock" }
+    static func log(_ message: String) {}
+    func unobservedConsolidationRefusal() -> String? { preconditionFailure("Unexpected fresh drain") }
+    struct Plan {
+        struct State { let binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding }
+        let state: State?
+        let needsPreparation: Bool
+        let description: String
+    }
+    static func plan(expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?) -> Plan {
+        preconditionFailure("Unexpected fresh drain planning")
+    }
+    func authorizeShieldedMove() async -> Bool { preconditionFailure("Unexpected fresh drain authorization") }
+    func prepareForDrain(needed: Bool, from state: Plan.State) async -> Bool { preconditionFailure("Unexpected fresh drain preparation") }
+    func drainToShielded(expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding) async { preconditionFailure("Unexpected second drain") }
+    // COINJOIN_HELPERS
     // COINJOIN_MOVE
     // COINJOIN_FINISH
     // COINJOIN_RETRY
@@ -128,6 +155,7 @@ final class ShieldedTransferCoordinator {
 @MainActor final class SendRetryHarness {
     enum Route { case coreToShielded, platformToShielded }
     var route: Route = .platformToShielded
+    var isCoreDrain = false
     var destinationRaw43: Data?
     let coordinator: ShieldedTransferCoordinator
     var cancellations = 0
@@ -136,4 +164,13 @@ final class ShieldedTransferCoordinator {
     func onCancel() { cancellations += 1 }
     func confirm() { confirmations += 1 }
     // SEND_RETRY
+}
+
+@MainActor enum SwiftDashSDKTransactionSender {
+    struct CoinJoinWalletBinding: Equatable {
+        let walletId: Data
+        let network: String
+        static var selected: Self?
+        static func current() -> Self? { selected }
+    }
 }

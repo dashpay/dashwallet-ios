@@ -4,6 +4,12 @@ import XCTest
 
 @MainActor
 final class AssetLockRecoveryTests: XCTestCase {
+    override func setUp() async throws {
+        ShieldedTransferCoordinator.rowLookup = { .none as CoreShieldedDrainRowIdentity }
+        CoreShieldedDrainService.marker = .unavailable
+        SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = nil
+    }
+
     func testExplicitSendRetryAuthorizesRecordedProbeAndPreservesUnverifiedOutcome() async {
         await checkExplicitSendRetryWithRecordedProbe(cancelAuthorization: false)
     }
@@ -50,25 +56,34 @@ final class AssetLockRecoveryTests: XCTestCase {
 
         if coinJoin {
             let caller = CoinJoinRetryHarness(coordinator)
+            let binding = SwiftDashSDKTransactionSender.CoinJoinWalletBinding(walletId: wallet, network: "testnet")
+            caller.binding = binding
+            SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = binding
             await caller.retryShielded()
-            XCTAssertEqual(caller.stage, cancelAuthorization ? .choice : .submittedUnconfirmed)
+            XCTAssertEqual(caller.stage, cancelAuthorization ? CoinJoinRetryHarness.unresumedLockStage : .submittedUnconfirmed)
             if fromChoice {
                 coordinator.authorizationError = nil
                 await caller.moveToShielded()
                 XCTAssertEqual(caller.stage, .submittedUnconfirmed)
             }
             XCTAssertEqual(caller.newDrainCalls, 0)
+            if cancelAuthorization && !fromChoice {
+                XCTAssertEqual(caller.committedLock?.txidWire, txid)
+                XCTAssertEqual(caller.committedLock?.vout, 3)
+            }
         } else {
             await coordinator.retryLastAssetLock(recipientRaw43: recipient)
         }
 
         XCTAssertEqual(coordinator.authorizations, fromChoice ? 2 : 1)
-        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
-        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.vout, 3)
+        if !coinJoin {
+            XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
+            XCTAssertEqual(coordinator.lastAssetLockOutPoint?.vout, 3)
+        }
         XCTAssertTrue(AssetLockProbeStore.shared.contains(txid, vout: 3, walletIdHex: walletHex))
         if cancelAuthorization && !fromChoice {
             XCTAssertEqual(manager.calls, 0)
-            XCTAssertEqual(coordinator.phase, .failed("Authentication cancelled"))
+            XCTAssertEqual(coordinator.phase, coinJoin ? .idle : .failed("Authentication cancelled"))
         } else {
             XCTAssertEqual(manager.calls, 1)
             XCTAssertEqual(manager.receivedTxid, txid)
@@ -77,6 +92,42 @@ final class AssetLockRecoveryTests: XCTestCase {
                            [coinJoin ? Data(repeating: 1, count: 43) : recipient])
             XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
         }
+    }
+
+    func testExplicitRetryCannotOverrideDrainMarkerRecipient() async {
+        let wallet = Data(repeating: 0x34, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        let operation = CoreShieldedDrainOperation(
+            id: UUID(), context: .init(walletId: wallet, networkScope: "testnet"),
+            recipient: .external(raw43: Data(repeating: 2, count: 43)))
+        ShieldedTransferCoordinator.rowLookup = { .operation(operation.id) }
+        CoreShieldedDrainService.marker = .loaded(operation)
+        await coordinator.resumeAssetLock(
+            outPointTxidWire: Data(repeating: 3, count: 32), outPointVout: 0,
+            recipientRaw43: Data(repeating: 4, count: 43), retryUnverifiedConsumption: true)
+        XCTAssertEqual(coordinator.authorizations, 0)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(coordinator.phase, .failed("test failure"))
+    }
+
+    func testCoinJoinRetryRefusesChangedWalletWithoutNewDrain() async {
+        let wallet = Data(repeating: 0x35, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .failed("test failure")
+        coordinator.lastAssetLockOutPoint = (Data(repeating: 5, count: 32), 1)
+        let caller = CoinJoinRetryHarness(coordinator)
+        caller.binding = .init(walletId: wallet, network: "testnet")
+        SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = .init(walletId: Data([9]), network: "testnet")
+        await caller.retryShielded()
+        XCTAssertEqual(caller.stage, .failed(message: "test failure", destination: .shielded))
+        XCTAssertNotNil(caller.committedLock)
+        XCTAssertEqual(coordinator.authorizations, 0)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(caller.newDrainCalls, 0)
     }
 
     func testOtherSendFailureRetainsOrdinaryRetry() {
