@@ -356,9 +356,9 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// does not). It is read only when it can change the verdict.
     ///
     /// The pool is read live; `sendableDuffs` is the cached pooled figure,
-    /// refreshed asynchronously after each balance event, and its re-read fires
-    /// `sendVerdictInputsPublisher`, so a verdict given in between is judged
-    /// again once it lands. Never `confirming` while the pooled figure is
+    /// refreshed asynchronously after each balance event. Its re-read fires
+    /// `sendVerdictInputsPublisher`, so a screen that follows it (DashSpend)
+    /// judges a verdict given in between again once it lands. Never `confirming` while the pooled figure is
     /// unknown: `sendableDuffs` then falls back to the wallet-wide balance,
     /// CoinJoin included, which the pool total cannot be compared with.
     func sendVerdict(

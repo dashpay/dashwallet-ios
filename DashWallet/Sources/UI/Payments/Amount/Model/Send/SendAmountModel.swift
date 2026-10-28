@@ -150,23 +150,25 @@ class SendAmountModel: BaseAmountModel {
             .sink { [weak self] _ in
                 guard let self else { return }
                 let shown = self.error as? SendAmountError
-                let next: SendAmountError?
+                let couldContinue = self.isAllowedToContinue
                 switch Self.walletChangeAction(for: self.error) {
                 case .recheckAmount:
-                    next = self.amountError()
+                    let next = self.amountError()
+                    if next != shown { self.error = next }
                 case .refreshMaxExplanation:
                     // Max can fill now: an amount typed before the tap is
                     // still on screen and needs its own verdict.
-                    next = self.maxUnavailableError() ?? self.amountError()
+                    let next = self.maxUnavailableError() ?? self.amountError()
+                    if next != shown { self.error = next }
                 case .keep:
-                    // The error stays, but whether Continue is allowed has
-                    // moved with the ceiling.
-                    self.validationDidChangeHandler?()
-                    return
+                    break
                 }
-                // Re-setting the same error re-presents it, which drops any
-                // progress indicator and re-enables Continue mid-build.
-                if next != shown { self.error = next }
+                // Both re-assigning the error and the validation callback
+                // re-present it on these screens, which drops any progress
+                // indicator and resets Continue mid-build — so neither runs
+                // unless something the screen shows actually changed.
+                guard (self.error as? SendAmountError) != shown || self.isAllowedToContinue != couldContinue
+                else { return }
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
@@ -260,7 +262,9 @@ class SendAmountModel: BaseAmountModel {
                 excludedFromPoolDuffs: state.excludedFromSendPoolDuffs))
     }
 
-    override func checkAmountForErrors() {
+    /// `final`: the ceiling subscription re-judges through `amountError()`,
+    /// so a subclass gate added here would be skipped on wallet changes.
+    final override func checkAmountForErrors() {
         error = amountError()
     }
 
