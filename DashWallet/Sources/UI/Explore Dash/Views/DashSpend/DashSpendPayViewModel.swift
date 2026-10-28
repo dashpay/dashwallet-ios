@@ -274,14 +274,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // Purchase stays disabled while `error` is set, so an amount refused
         // while funds were confirming must be re-checked when they land —
         // otherwise the user waits as told and nothing changes. Only a funds
-        // verdict already on screen is re-checked: `checkAmountForErrors` ends
-        // in `error = nil`, which would clear an error it does not own (merchant
-        // details that failed to load), and with no error up the balance drop
-        // that follows a successful purchase would flag the amount just paid.
+        // verdict already on screen is re-checked, or the syncing notice one
+        // can turn into when a resync starts (nothing else clears it here):
+        // `checkAmountForErrors` ends in `error = nil`, which would clear an
+        // error it does not own (merchant details that failed to load), and
+        // with no error up the balance drop that follows a successful purchase
+        // would flag the amount just paid.
         SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.errorIsFundsVerdict else { return }
+                guard let self, self.errorIsWalletVerdict else { return }
                 self.checkAmountForErrors()
             }
             .store(in: &cancellableBag)
@@ -486,8 +488,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         error = nil
     }
 
-    private var errorIsFundsVerdict: Bool {
-        (error as? SendAmountError)?.isFundsVerdict == true
+    /// A funds verdict, or the syncing notice a re-checked one can become.
+    private var errorIsWalletVerdict: Bool {
+        guard let error = error as? SendAmountError else { return false }
+        return error.isFundsVerdict || error == .syncingChain
     }
 
     private var requestedDashDuffs: UInt64 {

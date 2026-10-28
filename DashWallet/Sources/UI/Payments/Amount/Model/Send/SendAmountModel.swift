@@ -167,8 +167,8 @@ class SendAmountModel: BaseAmountModel {
                 // indicator and resets Continue mid-build — so with the same
                 // error still up neither runs. With no error the callback only
                 // refreshes Continue, as it always has on a ceiling move.
-                let current = self.error as? SendAmountError
-                guard current == nil || current != shown else { return }
+                let changed = self.error is SendAmountError && (self.error as? SendAmountError) != shown
+                guard self.error == nil || changed else { return }
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
