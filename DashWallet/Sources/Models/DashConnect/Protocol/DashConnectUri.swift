@@ -246,18 +246,27 @@ enum DashConnectUri {
     private static let maxConnectUriBytes = 4096
     /// 1,024 bytes of body in unpadded base64url.
     private static let maxConnectBodyCharacters = 1366
+    /// How much of the text after `dashpay://` `dashpayHost` reads.
+    private static let maxAuthorityScalars = 256
 
     /// The lowercased host of a `dashpay://` URI, which names its verb, or nil
     /// for any other string. Scheme and host compare case-insensitively. A
     /// userinfo or port is dropped here so that `dashpay://connect:80` is
     /// still read as `connect` and refused by the parser, not as another
     /// link.
+    ///
+    /// This runs on any string before the connect parser's size limit, so it
+    /// reads at most `maxAuthorityScalars` scalars after the scheme and its
+    /// cost does not grow with the input. A real verb, userinfo and port fit
+    /// well inside that; a longer authority is classified from its first
+    /// scalars, which makes it an unknown verb, not a connect link.
     private static func dashpayHost(of uri: String) -> String? {
         let scalars = uri.unicodeScalars
         let head = Array(scalars.prefix(dashpayUrlPrefix.count))
         guard head.count == dashpayUrlPrefix.count,
               zip(head, dashpayUrlPrefix).allSatisfy({ asciiLowercased($0) == $1 }) else { return nil }
-        let authority = Array(scalars.dropFirst(dashpayUrlPrefix.count).prefix { $0 != "/" && $0 != "?" && $0 != "#" })
+        let authority = Array(scalars.dropFirst(dashpayUrlPrefix.count).prefix(maxAuthorityScalars)
+            .prefix { $0 != "/" && $0 != "?" && $0 != "#" })
         let afterUserinfo = authority.split(separator: "@", omittingEmptySubsequences: false).last ?? []
         let host = afterUserinfo.prefix { $0 != ":" }
         var result = String.UnicodeScalarView()

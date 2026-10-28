@@ -995,4 +995,37 @@ extension DashConnectUriTests {
         XCTAssertTrue(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash-st:abc?n=t&v=1"))))
         XCTAssertFalse(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash:XyZ?amount=1"))))
     }
+
+    func testAnOversizedDashpayUriIsClassifiedFromItsFirstScalars() {
+        let tooLarge = AppConnectRequestError.invalid("URI is too long")
+        let filler = String(repeating: "a", count: 10_000)
+
+        // A port with no delimiter after it: still a connect link, so the parser's own refusal is what the user sees.
+        let connectWithPort = "dashpay://connect:" + String(repeating: "9", count: 10_000)
+        XCTAssertTrue(DashConnectUri.isConnectUri(connectWithPort))
+        XCTAssertFalse(DashConnectUri.isUnsupportedDashpayVerb(connectWithPort))
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(connectWithPort)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, tooLarge)
+        }
+
+        // A long run after the verb makes a different host, and the same under the cap as before it.
+        for uri in ["dashpay://" + filler, "dashpay://connect" + filler, "DASHPAY://SIGN" + filler] {
+            XCTAssertFalse(DashConnectUri.isConnectUri(uri))
+            XCTAssertTrue(DashConnectUri.isUnsupportedDashpayVerb(uri))
+            XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(uri)) { error in
+                XCTAssertEqual(error as? AppConnectRequestError, tooLarge)
+            }
+        }
+
+        // Routing reads the same way for a string far past anything a link carries.
+        let huge = "dashpay://" + String(repeating: "a", count: 5_000_000)
+        XCTAssertFalse(DashConnectUri.isConnectUri(huge))
+        XCTAssertTrue(DashConnectUri.isUnsupportedDashpayVerb(huge))
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(huge)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, tooLarge)
+        }
+
+        // A connect host with a userinfo inside the cap is still read as connect.
+        XCTAssertTrue(DashConnectUri.isConnectUri("dashpay://" + String(repeating: "a", count: 200) + "@connect?v=2"))
+    }
 }
