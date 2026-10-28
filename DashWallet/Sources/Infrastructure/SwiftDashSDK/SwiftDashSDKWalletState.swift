@@ -97,21 +97,11 @@ public struct WalletBalance: Equatable, Sendable {
 }
 
 /// The send pool's `confirmed` and `unconfirmed` sums, taken from one read of
-/// its accounts so the two halves describe the same moment.
+/// its accounts so the two halves describe the same moment. Built by
+/// `SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot()`.
 struct SendPoolConfirmationSnapshot: Equatable, Sendable {
     let confirmedDuffs: UInt64
     let unconfirmedDuffs: UInt64
-}
-
-/// The send-pool figures an amount gate's verdict depends on beyond its
-/// ceiling, from one read of the pool's accounts. Built by
-/// `SwiftDashSDKTransactionSender.sendPoolVerdictInputs()`.
-struct SendPoolVerdictInputs: Equatable, Sendable {
-    let pool: SendPoolConfirmationSnapshot
-    /// What a fee-aware ceiling holds back, as `maxSendFeeReserveDuffs`
-    /// returns it. It moves with the pool's UTXO count, which can change
-    /// while every balance figure stays put.
-    let feeReserveDuffs: UInt64
 }
 
 /// The single-flight bookkeeping behind
@@ -267,18 +257,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// a silent 0 is neither.
     @Published public private(set) var pooledSpendableDuffs: UInt64?
 
-    /// The send pool's confirmation split and fee reserve, re-read with
-    /// `pooledSpendableDuffs` after each balance event and cleared with it.
-    /// `nil` until that read has succeeded once, and whenever the pool cannot
-    /// be enumerated.
-    ///
-    /// Published so an open amount screen re-judges its verdict when the
-    /// reserve moves on its own — a balance event that adds or spends a
-    /// pooled UTXO the balance buckets do not show (immature or locked) —
-    /// and so that verdict reads a cached figure rather than the SDK on every
-    /// keystroke and redraw.
-    @Published private(set) var sendPoolVerdictInputs: SendPoolVerdictInputs?
-
     /// The amount gates and Max should read: the pooled figure when the SDK
     /// has supplied one, else `balance.spendable`.
     public var sendableDuffs: UInt64 {
@@ -357,23 +335,25 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// already fits under `ceilingDuffs`, or would not fit even then.
     ///
     /// `ceilingDuffs` is the gate the caller applied and `reserveDuffs` what
-    /// that gate holds back on top of the amount — 0 for `sendableDuffs`, the
-    /// fee reserve for a fee-aware ceiling (see `feeAwareMaxSendableAndReserve`).
+    /// the send needs on top of the amount once the coins confirm — the fee
+    /// reserve, whether or not the gate itself holds it back (a fee-aware
+    /// ceiling does, see `feeAwareMaxSendableAndReserve`; `sendableDuffs`
+    /// does not).
     /// Those gates are built on `sendableDuffs`, which is capped by
     /// `WalletBalance.spendable` (confirmed coins only), while the balance on
     /// screen counts every bucket — so right after a receive an amount the user
     /// can see is refused. This tells that case apart from a real shortfall so it is not
     /// reported as "Insufficient funds".
     ///
-    /// The pool figures are `sendPoolVerdictInputs`, re-read together with the
-    /// pooled figure after each balance event. For the moment a lock or a
-    /// block has landed and that re-read has not, the coins just confirmed are
-    /// still reported here: the gate is still refusing them, and they are
-    /// moments from counting — that is not a shortfall either.
+    /// The pool is read live, `sendableDuffs` is the cached pooled figure that
+    /// is refreshed asynchronously after each balance event. For the moment a
+    /// lock or a block has landed and that refresh has not, the coins just
+    /// confirmed are still reported here: the gate is still refusing them, and
+    /// they are moments from counting — that is not a shortfall either.
     ///
-    /// Always `nil` while the pooled figure or the pool figures are unknown:
-    /// `sendableDuffs` then falls back to the wallet-wide balance, CoinJoin
-    /// included, which the pool total cannot be compared with.
+    /// Always `nil` while the pooled figure is unknown: `sendableDuffs` then
+    /// falls back to the wallet-wide balance, CoinJoin included, which the
+    /// pool total cannot be compared with.
     public func fundsStillConfirmingDuffs(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
@@ -384,7 +364,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             requested: requestedDuffs,
             reserve: reserveDuffs,
             sendable: sendableDuffs,
-            pool: sendPoolVerdictInputs?.pool)
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot())
     }
 
     /// `fundsStillConfirmingDuffs`'s arithmetic, separated from the SDK reads.
@@ -422,34 +402,29 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     }
 
     /// Fires whenever an amount gate's verdict can change: the sendable
-    /// ceiling moved, coins started or finished confirming — which is what
-    /// decides between "Insufficient funds" and "still confirming" without
-    /// moving the ceiling at all — or the send pool's split or fee reserve
-    /// moved. Emits the current state on subscription.
+    /// ceiling moved, or the wallet balance did. Coins starting or finishing
+    /// to confirm decide between "Insufficient funds" and "still confirming"
+    /// without moving the ceiling at all, and the fee reserve the verdict keeps
+    /// follows the pool's UTXO count, which an immature or locked coin moves
+    /// while every spendable figure stays put — both show up only as a balance
+    /// change. Emits the current state on subscription.
     public var sendVerdictInputsPublisher: AnyPublisher<Void, Never> {
         Self.sendVerdictInputsPublisher(
             ceiling: Self.sendableCeilingPublisher(
                 pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
                 walletSpendable: $balance.map { $0?.spendable }.eraseToAnyPublisher()),
-            unconfirmed: unconfirmedDuffsPublisher,
-            pool: $sendPoolVerdictInputs.eraseToAnyPublisher())
+            balance: $balance.eraseToAnyPublisher())
     }
 
     /// `sendVerdictInputsPublisher`'s wiring, taking its inputs as parameters
     /// so it is testable without the shared instance.
     static func sendVerdictInputsPublisher(
         ceiling: AnyPublisher<UInt64, Never>,
-        unconfirmed: AnyPublisher<UInt64?, Never>,
-        pool: AnyPublisher<SendPoolVerdictInputs?, Never>
+        balance: AnyPublisher<WalletBalance?, Never>
     ) -> AnyPublisher<Void, Never> {
-        Publishers.CombineLatest3(ceiling, unconfirmed, pool.removeDuplicates())
+        Publishers.CombineLatest(ceiling, balance.removeDuplicates())
             .map { _ in () }
             .eraseToAnyPublisher()
-    }
-
-    /// The wallet's `unconfirmed` bucket, deduplicated.
-    private var unconfirmedDuffsPublisher: AnyPublisher<UInt64?, Never> {
-        $balance.map { $0?.unconfirmed }.removeDuplicates().eraseToAnyPublisher()
     }
 
     // MARK: - Obj-C bridge
@@ -709,10 +684,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                         self.pooledSpendableDuffs = duffs
                         Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
                     }
-                    let inputs = SwiftDashSDKTransactionSender.sendPoolVerdictInputs()
-                    if self.sendPoolVerdictInputs != inputs {
-                        self.sendPoolVerdictInputs = inputs
-                    }
                 case .failure(let error):
                     self.markPooledSpendableUnavailable(reason: String(describing: error))
                 }
@@ -754,7 +725,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         guard pooledSpendableDuffs != nil || !hasLoggedPooledSpendableOutage else { return }
         hasLoggedPooledSpendableOutage = true
         pooledSpendableDuffs = nil
-        sendPoolVerdictInputs = nil
         Self.logger.error(
             "💰 WALLET :: pooledSpendableDuffs unavailable, falling back to balance.spendable: \(reason, privacy: .public)")
     }
@@ -791,7 +761,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
             self?.pooledSpendableDuffs = nil
-            self?.sendPoolVerdictInputs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
@@ -812,7 +781,6 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             self?.platformPaymentCredits = 0
             self?.coinJoinBalanceDuffs = 0
             self?.pooledSpendableDuffs = nil
-            self?.sendPoolVerdictInputs = nil
             NotificationCenter.default.post(
                 name: SwiftDashSDKWalletState.balanceDidChangeNotification,
                 object: nil)
