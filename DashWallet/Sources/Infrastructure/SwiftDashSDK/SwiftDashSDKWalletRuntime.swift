@@ -1077,6 +1077,21 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     manager: manager, walletId: wallet.walletId, network: network)
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(
                     for: network, preparationsAtStart: preparationsAtStart)
+            } catch SwiftDashSDKSPVCoordinator.StartError.superseded
+                where SwiftDashSDKSPVCoordinator.shared.wasOvertakenByNetworkSwitch(since: preparationsAtStart) {
+                // A network switch prepared while the Core start awaited the
+                // SDK. The switch's own refresh is queued behind this one and
+                // begins with a reset that stops whatever this start brought
+                // up; a reset here would stop it a second time and surface a
+                // failure the switch immediately overwrites. Same quiet exit
+                // as a switch prepared during the reset above. Only that
+                // overtake takes it: a `superseded` from the devnet guards
+                // (the network key moved with no preparation and no refresh
+                // queued) falls through to the reset below, or the runtime
+                // would stay half-built with nothing left to tear it down.
+                Self.logger.info(
+                    "🧭 RUNTIME :: network switch prepared during the Core start; leaving \(network.rawValue, privacy: .public) to its refresh")
+                return nil
             } catch {
                 Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
                 let failure = self.lifecycleState.preparationFailure ?? WalletPreparationFailure(error: error)

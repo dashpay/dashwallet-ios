@@ -158,6 +158,21 @@ enum SPVChainStoreRebuild {
         finish(walletIds: walletIds, scope: scope, directory: directory)
     }
 
+    /// The same contract for a start that suspends (the SDK's off-main
+    /// `startSpv`). The marker stays pending across the suspension; its
+    /// lock-taking removal runs only after the start returned, never across
+    /// the await.
+    static func finish(
+        walletIds: [Data],
+        scope: String,
+        directory: URL? = nil,
+        afterStarting start: () async throws -> Void
+    ) async rethrows {
+        try await start()
+        guard !walletIds.isEmpty else { return }
+        finish(walletIds: walletIds, scope: scope, directory: directory)
+    }
+
     /// Lower each row's `checkpoint` to `floor`, never raising it, and
     /// `save`. When the save throws the rows are put back, so a later save
     /// on the same context cannot write a checkpoint this call reported as

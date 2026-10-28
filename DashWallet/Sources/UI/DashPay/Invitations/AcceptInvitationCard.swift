@@ -13,7 +13,8 @@ import SwiftUI
 struct AcceptInvitationCard: View {
     @ObservedObject var viewModel: PendingInvitationViewModel
     var isSyncing: Bool
-    var onCreate: (PendingInvitation, InvitationTier) -> Void
+    /// The invitation and what its voucher funds.
+    var onCreate: (PendingInvitation, UInt64) -> Void
 
     private var isCreateEnabled: Bool {
         if case .valid = viewModel.cardState { return !isSyncing }

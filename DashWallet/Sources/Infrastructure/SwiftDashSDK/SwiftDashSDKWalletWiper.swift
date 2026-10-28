@@ -303,6 +303,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
             return false
         }
 
+        // Every wallet's SDK deletion has succeeded, so no recovery UUID can
+        // still be needed. A marker left behind would outlive the wipe; fail
+        // before the app-state commit point so a retry, which finds nothing
+        // left to delete in the SDK, repeats this cleanup.
+        do {
+            try CoreShieldedDrainFileStore().clear()
+        } catch {
+            logger.error(
+                "Core drain marker cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
+            return false
+        }
+
         // The SDK wallet deletion is now known to have succeeded for every
         // network. Clear every global app-owned store only at this commit
         // point, so a failed wipe preserves a coherent wallet,
@@ -946,7 +958,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil,
         keepsWalletOnAnotherScope: Bool = false,
-        scope: String
+        scope: String,
+        drainStore: CoreShieldedDrainFileStore = CoreShieldedDrainFileStore()
     ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
@@ -986,6 +999,19 @@ final class SwiftDashSDKWalletWiper: NSObject {
             CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // The full wipe can continue after another scope's deletion fails.
+            // Clear only this successfully deleted scope, regardless of order.
+            // A failure does not fail the removal: the SDK deletion above has
+            // committed, so a retry finds nothing to delete and never gets
+            // back here. The leftover marker names an operation the SDK no
+            // longer records, and its first status read returns `notSent`,
+            // which removes it. The full wipe clears the whole directory and
+            // fails until that succeeds.
+            do { try drainStore.clear(context: .init(walletId: walletId, networkScope: scope)) }
+            catch {
+                logger.error(
+                    "Core drain marker cleanup failed: \(String(describing: error), privacy: .public)")
+            }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
             // One wallet id covers every devnet scope it has rows in, so
             // only the rebuild pending on the scope whose rows were just

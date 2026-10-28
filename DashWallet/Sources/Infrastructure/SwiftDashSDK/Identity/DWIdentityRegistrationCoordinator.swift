@@ -344,7 +344,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// itself, which Platform takes from the credits it delivers.
     ///
     /// Deliberately below what a new identity keeps after IdentityCreate
-    /// (0.03 / 0.25 DASH minus the create fee): an identity this flow has
+    /// (0.03 DASH, or `ContestedUsernameFee`'s funding figure, minus the
+    /// create fee): an identity this flow has
     /// just funded must never read as short and trigger a second payment.
     static let registrationFeeHeadroomCreditsPerName: UInt64 = 1_000_000_000
 
@@ -354,15 +355,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// check is balance ≥ fund + fee), so it is required up front.
     static func requiredRegistrationCredits(
         username: String,
-        temporaryUsername: String?
+        temporaryUsername: String?,
+        contestFundCredits: UInt64
     ) -> UInt64 {
         requiredRegistrationCredits(
             isContested: DWContestedNameStatusService.isContestedLabel(username),
-            nameCount: temporaryUsername == nil ? 1 : 2)
+            nameCount: temporaryUsername == nil ? 1 : 2,
+            contestFundCredits: contestFundCredits)
     }
 
-    static func requiredRegistrationCredits(isContested: Bool, nameCount: UInt64) -> UInt64 {
-        let fund = isContested ? UsernameMarketplaceService.contestedFundCredits : 0
+    /// `contestFundCredits` is the fund on the running network
+    /// (`ContestedUsernameFee`), stated by the caller so one judgement uses
+    /// one figure throughout.
+    static func requiredRegistrationCredits(
+        isContested: Bool, nameCount: UInt64, contestFundCredits: UInt64
+    ) -> UInt64 {
+        let fund = isContested ? contestFundCredits : 0
         return fund + nameCount * registrationFeeHeadroomCreditsPerName
     }
 
@@ -808,16 +816,29 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         failedAtPhase = nil
         lastErrorMessage = nil
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredIdentityFundingDuffs = isContestedSubmission
-            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        Self.logger.info(
-            "🪪 IDENT-COORD :: contested=\(isContestedSubmission) identityFundingDuffs=\(requiredIdentityFundingDuffs)")
 
         let newController = DWIdentityRegistrationController()
         controller = newController
         wireController(newController)
-        newController.enterPreparingKeys()
+        newController.enterPreparingKeys() // reserves the slot across the awaits below
+        // The fund a contested name's write states as its most, resolved
+        // before the PIN prompt and the payment: a fund that cannot be stated
+        // ends the attempt before anything is asked for or spent. A persisted
+        // lock is already paid, so its identity is recovered first and the
+        // fund is resolved at the name step.
+        let contestFundCredits = recoveryLock == nil
+            ? try await resolveContestFund(isContested: isContestedSubmission, network: network, controller: newController)
+            : nil
+        // What Core or Platform fund a contested name's new identity with:
+        // the pair of that fund, or `ContestedUsernameFee` as known right now.
+        // Within one network that figure only falls, so it is at or below
+        // what the form showed. Shielded does not use it — it spends its own
+        // exit denomination.
+        let requiredIdentityFundingDuffs = (contestFundCredits.map(ContestedUsernameFee.Amounts.init(fundCredits:))
+            ?? ContestedUsernameFee.shared.amounts)
+            .newIdentityFundingDuffs(isContested: isContestedSubmission, fromShielded: false)
+        Self.logger.info(
+            "🪪 IDENT-COORD :: contested=\(isContestedSubmission) identityFundingDuffs=\(requiredIdentityFundingDuffs)")
         // Asset-lock polling only applies to the Core-funded path —
         // the Platform Payment path never writes a `PersistentAssetLock`
         // row, and polling would just keep `assetLockStatus` pegged at
@@ -903,7 +924,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: UInt64(requiredIdentityFundingDuffs)),
+                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
         } catch {
@@ -933,7 +954,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: signer, newController: newController,
-            topUp: topUp)
+            contestFundCredits: contestFundCredits, topUp: topUp)
     }
 
     /// Inputs captured before authorization; helpers never resolve a new wallet.
@@ -1167,6 +1188,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         wireController(newController)
         newController.enterPreparingKeys() // reserves the slot while authentication is open
         defer { DWCurrentUserIdentityInfo.shared.refreshFromSDK() }
+        // Before the PIN prompt and any top-up, as on the create path.
+        let contestFundCredits = try await resolveContestFund(
+            isContested: DWContestedNameStatusService.isContestedLabel(username),
+            network: network, controller: newController)
         do {
             try await authorizer.authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
@@ -1194,7 +1219,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return try await finishUsernameRegistration(
             identityId: identityId, username: username, temporaryUsername: temporaryUsername,
             wallet: wallet, network: network, signer: KeychainSigner(modelContainer: container),
-            newController: newController,
+            newController: newController, contestFundCredits: contestFundCredits,
             topUp: topUpSource.map {
                 IdentityTopUpPlan(source: $0, modelContainer: container, authorizedDuffs: authorizedTopUpDuffs)
             })
@@ -1289,6 +1314,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         wallet: ManagedPlatformWallet, network: Network, signer: KeychainSigner,
         newController: DWIdentityRegistrationController,
         authorize: () async throws -> Void = {},
+        contestFundCredits: UInt64?,
         topUp: IdentityTopUpPlan? = nil
     ) async throws -> Identifier {
         defer { DWCurrentUserIdentityInfo.shared.refreshFromSDK() }
@@ -1296,7 +1322,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             return try await registerNames(
                 identityId: identityId, username: username, temporaryUsername: temporaryUsername,
                 wallet: wallet, network: network, signer: signer, newController: newController,
-                authorize: authorize, topUp: topUp)
+                authorize: authorize, contestFundCredits: contestFundCredits, topUp: topUp)
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch {
@@ -1306,6 +1332,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             failedAtPhase = isTopUpFailure ? .processingPayment : .registrationUsername
             lastErrorMessage = error.localizedDescription
             newController.enterFailed(error.localizedDescription)
+            throw error
+        }
+    }
+
+    /// The most a contested name's write states it pays into its contest
+    /// (`ContestedUsernameFee.contestFundCeilingCredits`); nil for a name
+    /// that joins no contest. A fund that cannot be resolved fails the
+    /// attempt on `controller`.
+    private func resolveContestFund(
+        isContested: Bool, network: Network, controller: DWIdentityRegistrationController
+    ) async throws -> UInt64? {
+        guard isContested else { return nil }
+        do {
+            return try await ContestedUsernameFee.shared.contestFundCeilingCredits(scope: network.persistenceScope)
+        } catch {
+            failedAtPhase = .registrationUsername
+            lastErrorMessage = error.localizedDescription
+            controller.enterFailed(error.localizedDescription)
             throw error
         }
     }
@@ -1327,11 +1371,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// the app — so it fails here, before anything is broadcast.
     private func fundExistingIdentityIfNeeded(
         identityId: Identifier, username: String, temporaryUsername: String?,
-        plan: IdentityTopUpPlan, wallet: ManagedPlatformWallet, network: Network,
+        plan: IdentityTopUpPlan, contestFundCredits: UInt64,
+        wallet: ManagedPlatformWallet, network: Network,
         signer: KeychainSigner, newController: DWIdentityRegistrationController
     ) async throws {
         let requiredCredits = Self.requiredRegistrationCredits(
-            username: username, temporaryUsername: temporaryUsername)
+            username: username, temporaryUsername: temporaryUsername,
+            contestFundCredits: contestFundCredits)
         let heldCredits: UInt64
         do {
             heldCredits = try await wallet.refreshIdentityBalance(identityId: identityId)
@@ -1411,6 +1457,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         wallet: ManagedPlatformWallet, network: Network, signer: KeychainSigner,
         newController: DWIdentityRegistrationController,
         authorize: () async throws -> Void,
+        contestFundCredits: UInt64?,
         topUp: IdentityTopUpPlan?
     ) async throws -> Identifier {
         try validateRegistrationContext(walletId: wallet.walletId, network: network)
@@ -1461,6 +1508,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         username, identityId: identityId, wallet: wallet)
                 },
                 register: {
+                    // Not resolved yet only behind a recovered paid lock; a
+                    // failure here is reported by `finishUsernameRegistration`.
+                    var maxContestFund = contestFundCredits
+                    if maxContestFund == nil, isContestedSubmission {
+                        maxContestFund = try await ContestedUsernameFee.shared
+                            .contestFundCeilingCredits(scope: network.persistenceScope)
+                    }
                     // Only once the lookup says the name is still to be
                     // registered: a retry of a submission that already landed
                     // must not pay for it again.
@@ -1468,11 +1522,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         try await self.fundExistingIdentityIfNeeded(
                             identityId: identityId, username: username,
                             temporaryUsername: temporaryUsername, plan: topUp,
+                            contestFundCredits: maxContestFund ?? 0,
                             wallet: wallet, network: network, signer: signer,
                             newController: newController)
                     }
                     _ = try await wallet.registerDpnsName(
-                        identityId: identityId, name: username, signer: signer)
+                        identityId: identityId, name: username, signer: signer,
+                        maxContestFund: maxContestFund)
                 })
             Self.logger.info("🪪 IDENT-COORD :: DPNS name registered: \(username)")
             // A request for another name is now on Platform: an earlier one's
