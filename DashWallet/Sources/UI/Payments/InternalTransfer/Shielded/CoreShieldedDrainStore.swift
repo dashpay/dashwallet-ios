@@ -56,24 +56,37 @@ struct CoreShieldedDrainOperation: Codable, Equatable, Sendable {
     }
 
     /// Markers written before the recipient existed carry neither key. They
-    /// were only ever written by the own-wallet Max, so absence decodes as
-    /// `.ownWallet`. An external payload of the wrong size is corruption, not
-    /// a default.
+    /// were only ever written by the own-wallet Max, so that exact pair
+    /// decodes as `.ownWallet`. This marker is the only record of where an
+    /// external drain pays, so every other combination of the two keys that
+    /// does not spell a complete recipient is corruption, never a default:
+    /// a payload without a kind, an `own` kind with a payload, an `external`
+    /// kind without one, or a payload of the wrong size.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         context = try container.decode(CoreShieldedDrainContext.self, forKey: .context)
-        switch try container.decodeIfPresent(RecipientKind.self, forKey: .recipientKind) ?? .own {
-        case .own:
+        let kind = try container.decodeIfPresent(RecipientKind.self, forKey: .recipientKind)
+        let raw43 = try container.decodeIfPresent(Data.self, forKey: .recipientRaw43)
+        switch (kind, raw43) {
+        case (nil, nil), (.own, nil):
             recipient = .ownWallet
-        case .external:
-            let raw43 = try container.decode(Data.self, forKey: .recipientRaw43)
+        case (.external, let raw43?):
             guard raw43.count == CoreShieldedDrainRecipient.externalRaw43Count else {
                 throw DecodingError.dataCorruptedError(
                     forKey: .recipientRaw43, in: container,
                     debugDescription: "external recipient must be \(CoreShieldedDrainRecipient.externalRaw43Count) bytes, was \(raw43.count)")
             }
             recipient = .external(raw43: raw43)
+        case (nil, _?), (.own, _?):
+            throw DecodingError.dataCorruptedError(
+                forKey: .recipientRaw43, in: container,
+                debugDescription: "recipient payload without an external kind")
+        case (.external, nil):
+            throw DecodingError.keyNotFound(
+                CodingKeys.recipientRaw43,
+                DecodingError.Context(codingPath: container.codingPath,
+                                      debugDescription: "external recipient without a payload"))
         }
     }
 

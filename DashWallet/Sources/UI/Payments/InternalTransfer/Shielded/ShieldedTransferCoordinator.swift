@@ -797,7 +797,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         var recipientRaw43 = recipientOverride
         var drainContext = expectedDrainContext
         guard let row = Self.drainRowIdentity(
-            outPointTxidWire: outPointTxidWire, vout: outPointVout, in: env.modelContainer)
+            outPointTxidWire: outPointTxidWire, vout: outPointVout,
+            walletId: env.walletId, in: env.modelContainer)
         else {
             handleFailure(CoordinatorError.drainRecipientUnavailable)
             return
@@ -904,15 +905,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// What the SDK row for this outpoint says about the Max drain that built
     /// it. `nil` when the row cannot be read or is missing: unknown is not
     /// "no drain". Every resume surface found its lock through this store, so
-    /// a missing row is never a legitimate own-address resume.
+    /// a missing row is never a legitimate own-address resume. The row must
+    /// belong to the wallet doing the resume: the store holds every wallet's
+    /// locks, and another wallet's row would be read against this wallet's
+    /// marker.
     private static func drainRowIdentity(
         outPointTxidWire: Data,
         vout: UInt32,
+        walletId: Data,
         in modelContainer: ModelContainer
     ) -> CoreShieldedDrainRowIdentity? {
         let outPointHex = outPointTxidWire.reversed().map { String(format: "%02x", $0) }.joined() + ":\(vout)"
         var descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate { row in row.outPointHex == outPointHex })
+            predicate: #Predicate { row in row.outPointHex == outPointHex && row.walletId == walletId })
         descriptor.fetchLimit = 1
         do {
             guard let row = try modelContainer.mainContext.fetch(descriptor).first else {

@@ -138,6 +138,29 @@ final class CoreShieldedDrainStoreTests: XCTestCase {
         XCTAssertThrowsError(try JSONDecoder().decode(CoreShieldedDrainOperation.self, from: missing))
     }
 
+    func testInconsistentRecipientKeysAreCorruptionNotOwnWallet() throws {
+        let id = UUID()
+        var json = try JSONSerialization.jsonObject(with: legacyMarkerJSON(id: id)) as! [String: Any]
+        // A payload with no kind: a partially written or edited external marker.
+        json["recipientRaw43"] = externalRaw43.base64EncodedString()
+        XCTAssertThrowsError(try JSONDecoder().decode(
+            CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
+        // An own kind carrying a payload.
+        json["recipientKind"] = "own"
+        XCTAssertThrowsError(try JSONDecoder().decode(
+            CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
+        // An unknown kind.
+        json["recipientKind"] = "someone"
+        XCTAssertThrowsError(try JSONDecoder().decode(
+            CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)))
+        // The two consistent own-wallet spellings still decode.
+        json.removeValue(forKey: "recipientRaw43")
+        json["recipientKind"] = "own"
+        XCTAssertEqual(
+            try JSONDecoder().decode(CoreShieldedDrainOperation.self, from: JSONSerialization.data(withJSONObject: json)),
+            CoreShieldedDrainOperation(id: id, context: context))
+    }
+
     func testSameUUIDWithAnotherRecipientIsAnotherOperation() throws {
         let id = UUID()
         let external = CoreShieldedDrainOperation(id: id, context: context, recipient: .external(raw43: externalRaw43))
