@@ -116,7 +116,7 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "Internal transfer accepted but not yet confirmed")
         case .drainPending:
             return NSLocalizedString(
-                "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.",
+                "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
                 comment: "A wallet drain has an unresolved outcome")
         case .failed(let reason):
             return reason

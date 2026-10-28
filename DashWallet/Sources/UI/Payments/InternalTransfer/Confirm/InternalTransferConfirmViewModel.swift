@@ -137,10 +137,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     }
 
     var coreDrainFeeDetails: String? {
-        guard let drain = request?.coreShieldedDrain else { return nil }
-        let coreFee = drain.estimatedL1FeeDuffs.map { $0.dashAmount.formattedDashAmount } ?? "—"
-        let poolFee = InternalTransferSummaryFigures.networkFeeFiat(credits: drain.poolFeeCredits) ?? "—"
-        return String(format: NSLocalizedString("Estimated Core fee: %@\nShielded pool fee: %@", comment: "Drain fee breakdown"), coreFee, poolFee)
+        request?.coreShieldedDrain?.feeBreakdownText
     }
 
     var coreDrainExplanation: String? {

@@ -298,6 +298,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case shieldedSweepChanged
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
+        /// A Max drain's lock whose recipient cannot be established.
+        case drainRecipientUnknown
+        /// A Max drain's marker could not be read right now.
+        case drainRecipientUnavailable
+        /// An external Max would now sweep more than the user confirmed.
+        case drainBalanceChanged
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -365,6 +371,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
                     comment: "CoinJoin drain blocked while the chain is syncing")
+            case .drainRecipientUnknown:
+                return NSLocalizedString(
+                    "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.",
+                    comment: "InternalTransfer recovery: drain recipient unknown")
+            case .drainRecipientUnavailable:
+                return NSLocalizedString("Wallet unavailable. Try again.", comment: "Core drain")
+            case .drainBalanceChanged:
+                return NSLocalizedString(
+                    "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.",
+                    comment: "Send: external Max drain, balance grew before confirm")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -494,9 +510,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
     /// never the newest asset lock or a timestamp shared with another caller.
-    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation) async {
+    /// `recipient` is written into that marker before dispatch: the SDK does
+    /// not persist it, and every resume reads it back from there.
+    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
+        Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
         let service = CoreShieldedDrainService()
         let env: Environment
         let operation: CoreShieldedDrainOperation
@@ -509,12 +528,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
             guard try await service.pending(confirmation.context) == nil else {
                 throw CoreShieldedDrainFileStore.StoreError.pendingOperation
             }
-            _ = try service.manager(for: confirmation.context)
+            let manager = try service.manager(for: confirmation.context)
             guard SyncingActivityMonitor.shared.state == .syncDone else {
                 throw CoreShieldedDrainService.ServiceError.requiresSync
             }
+            if recipient.isExternal {
+                // The drain sweeps whatever is eligible when it builds. For
+                // the wallet's own address any excess is harmless; for a third
+                // party it is money the user never saw on the confirm sheet.
+                // This re-read refuses growth that happened before it; it does
+                // not bind the SDK's own input selection that follows.
+                // TODO(drain-balance-cap): pass the confirmed candidate balance
+                // as a limit the SDK enforces on the inputs it selects, once
+                // the drain accepts one (dashpay/platform#5607).
+                let preview = try await manager.shieldedWalletDrainPreview(walletId: confirmation.context.walletId)
+                _ = try service.manager(for: confirmation.context)
+                guard Self.drainStillMatches(preview, confirmation) else {
+                    throw CoordinatorError.drainBalanceChanged
+                }
+            }
             env = try resolveEnvironment()
-            operation = try service.prepare(confirmation.context)
+            operation = try service.prepare(confirmation.context, recipient: recipient)
         } catch {
             handleFailure(error)
             return
@@ -523,7 +557,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .locking
         let result = await env.manager.shieldedFundFromWalletDrain(
             walletId: env.walletId, operationId: operation.id,
-            recipientRaw43: env.shieldedRecipient)
+            recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
@@ -535,7 +569,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             phase = .submittedUnconfirmed
             return
         }
-        switch result.state {
+        switch result.drainVerdict {
         case .notSent:
             if let error = result.error { handleFailure(error) }
             else { handleFailure(CoreShieldedDrainService.ServiceError.unavailable) }
@@ -755,6 +789,44 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        // Every resume of a Max drain's lock is decided here, whichever
+        // surface asked: the SDK pays whatever recipient this call passes and
+        // does not record the drain's own. A drain row pays its marker's
+        // recipient; a caller's explicit recipient must agree with it.
+        // Resolved before the PIN prompt, so a refusal asks for nothing.
+        var recipientRaw43 = recipientOverride
+        var drainContext = expectedDrainContext
+        guard let row = Self.drainRowIdentity(
+            outPointTxidWire: outPointTxidWire, vout: outPointVout,
+            walletId: env.walletId, in: env.modelContainer)
+        else {
+            handleFailure(CoordinatorError.drainRecipientUnavailable)
+            return
+        }
+        Self.logger.info("🛡️ SHIELD-TX :: resume drain row=\(String(describing: row), privacy: .public)")
+        if row != .none {
+            let (lookup, markerContext) = CoreShieldedDrainService().markerLookup()
+            let resolved: Data?
+            switch CoreShieldedDrainResumeTarget.resolve(row: row, marker: lookup) {
+            case .ownWallet: resolved = nil
+            case .external(let raw43): resolved = raw43
+            case .refuse:
+                Self.logger.error("🛡️ SHIELD-TX :: resume refused — drain recipient unknown")
+                handleFailure(CoordinatorError.drainRecipientUnknown)
+                return
+            case .retryLater:
+                handleFailure(CoordinatorError.drainRecipientUnavailable)
+                return
+            }
+            if let recipientOverride, recipientOverride != (resolved ?? env.shieldedRecipient) {
+                Self.logger.error("🛡️ SHIELD-TX :: resume refused — caller recipient disagrees with the drain marker")
+                handleFailure(CoordinatorError.drainRecipientUnknown)
+                return
+            }
+            recipientRaw43 = resolved
+            drainContext = drainContext ?? markerContext
+        }
+
         do {
             try await authorize()
         } catch {
@@ -768,9 +840,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        if let expectedDrainContext {
+        if let drainContext {
             do {
-                _ = try CoreShieldedDrainService().manager(for: expectedDrainContext)
+                _ = try CoreShieldedDrainService().manager(for: drainContext)
             } catch {
                 handleFailure(error)
                 return
@@ -785,7 +857,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let terminalPhase: Phase
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: recipientOverride ?? env.shieldedRecipient,
+                recipientRaw43: recipientRaw43 ?? env.shieldedRecipient,
                 credits: nil)
             try await env.manager.shieldedResumeFundFromAssetLock(
                 walletId: env.walletId,
@@ -828,6 +900,49 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return .submittedUnconfirmed
         }
         return nil
+    }
+
+    /// What the SDK row for this outpoint says about the Max drain that built
+    /// it. `nil` when the row cannot be read or is missing: unknown is not
+    /// "no drain". Every resume surface found its lock through this store, so
+    /// a missing row is never a legitimate own-address resume. The row must
+    /// belong to the wallet doing the resume: the store holds every wallet's
+    /// locks, and another wallet's row would be read against this wallet's
+    /// marker.
+    private static func drainRowIdentity(
+        outPointTxidWire: Data,
+        vout: UInt32,
+        walletId: Data,
+        in modelContainer: ModelContainer
+    ) -> CoreShieldedDrainRowIdentity? {
+        let outPointHex = outPointTxidWire.reversed().map { String(format: "%02x", $0) }.joined() + ":\(vout)"
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate { row in row.outPointHex == outPointHex && row.walletId == walletId })
+        descriptor.fetchLimit = 1
+        do {
+            guard let row = try modelContainer.mainContext.fetch(descriptor).first else {
+                logger.error("🛡️ SHIELD-TX :: asset-lock row missing for resume")
+                return nil
+            }
+            return CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId)
+        } catch {
+            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
+
+    /// The Orchard payload a drain pays: the marker's external recipient, or
+    /// the wallet's own address.
+    nonisolated static func drainRecipientRaw43(_ recipient: CoreShieldedDrainRecipient, ownAddress: Data) -> Data {
+        recipient.externalRaw43 ?? ownAddress
+    }
+
+    /// Whether a fresh preview still describes what the user confirmed: an
+    /// external drain must not sweep a larger candidate balance than the one
+    /// on the confirm sheet.
+    nonisolated static func drainStillMatches(_ preview: WalletDrainPreview, _ confirmation: CoreShieldedDrainConfirmation) -> Bool {
+        preview.status != .insufficientFunds
+            && preview.candidateBalanceDuffs <= confirmation.candidateBalanceDuffs
     }
 
     /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")

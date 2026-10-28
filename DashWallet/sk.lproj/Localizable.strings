@@ -193,7 +193,7 @@
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
 /* Core drain recovery */
-"A previous Max transfer is still pending. Check its status or resume it before starting another." = "A previous Max transfer is still pending. Check its status or resume it before starting another.";
+"A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with." = "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.";
 
 /* Usernames */
 "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "Pre toto meno už prebieha hlasovanie — vaša žiadosť sa k nemu pripojí ako uchádzač. Poplatok za súťaž sa strhne pri odoslaní a nevracia sa, ani keď meno nezískate.";
@@ -319,6 +319,9 @@
 
 /* Core drain confirmation */
 "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded." = "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.";
+
+/* Send confirm sheet: Core drain */
+"All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered." = "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.";
 
 "All nodes at once" = "Všetky uzly naraz";
 
@@ -605,6 +608,9 @@
 /* Read-only drain lookup */
 "Check status" = "Check status";
 
+/* Send confirm sheet: drain outcome pending */
+"Check the Max transfer's status from the pending transaction in History, or by tapping Max again." = "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.";
+
 /* Core drain persistence guard */
 "Check the pending Max transfer before starting another." = "Check the pending Max transfer before starting another.";
 
@@ -620,6 +626,9 @@
 /* Core drain estimate */
 "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
 
+/* A wallet drain has an unresolved outcome */
+"Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it." = "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.";
+
 /* Start a separate transfer */
 "New transfer" = "New transfer";
 
@@ -634,6 +643,9 @@
 
 /* Resume the same asset lock */
 "Resume transfer" = "Resume transfer";
+
+/* Send confirm sheet: Core drain */
+"Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
@@ -2325,17 +2337,20 @@
 /* Dash DEX */
 "Stuck" = "Stuck";
 
+/* Send: Core drain recovery success */
+"The pending Max transfer completed." = "The pending Max transfer completed.";
+
 /* Core drain */
 "The wallet or network changed. Select Max again." = "The wallet or network changed. Select Max again.";
 
 /* Core drain input limit preview */
 "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
 
+/* InternalTransfer recovery: drain recipient unknown */
+"This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe." = "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.";
+
 /* Core drain recovery success */
 "Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
-
-/* A wallet drain has an unresolved outcome */
-"Transfer status is pending. Open Core to Shielded and tap Max to check or resume it." = "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.";
 
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "Hlasovanie končí";
@@ -5146,6 +5161,9 @@
 
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Vaše dočasné používateľské meno „%@“ sa nepodarilo zaregistrovať. Iné používateľské meno si môžete zaregistrovať neskôr.";
+
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
 
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "„%1$@“ je teraz vaše používateľské meno. Ak vám hlasovanie prizná „%2$@“, budete dostupní pod oboma používateľskými menami.";
