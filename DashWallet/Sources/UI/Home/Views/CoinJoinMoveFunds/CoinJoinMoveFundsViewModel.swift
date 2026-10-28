@@ -736,7 +736,8 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
             resetCoordinator()
             // Resume re-authorizes on its own (fresh user action).
             await coordinator.resumeAssetLock(
-                outPointTxidWire: op.txidWire, outPointVout: op.vout, expecting: binding)
+                outPointTxidWire: op.txidWire, outPointVout: op.vout, expecting: binding,
+                retryUnverifiedConsumption: true)
             switch coordinator.phase {
             case .success, .submittedUnconfirmed:
                 unresumedLock = nil

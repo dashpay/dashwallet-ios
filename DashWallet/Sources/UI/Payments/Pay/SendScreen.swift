@@ -1585,14 +1585,10 @@ struct SendConfirmSheet: View {
         // ends in `.submittedUnconfirmed`, never here; a failed one left no
         // marker, so it confirms afresh under a new operation.
         if route == .coreToShielded, !isCoreDrain,
-           let op = coordinator.lastAssetLockOutPoint,
+           coordinator.lastAssetLockOutPoint != nil,
            let destinationRaw43 {
-            coordinator.reset()
             Task {
-                await coordinator.resumeAssetLock(
-                    outPointTxidWire: op.txidWire,
-                    outPointVout: op.vout,
-                    recipientRaw43: destinationRaw43)
+                await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
             }
             return
         }

@@ -538,6 +538,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case shieldedPoolTooSmall(currentNotes: UInt64)
         case noShieldedFallbackAddress
         case shieldedCreateUnconfirmed
+        case platformWriteUnconfirmed
         case missingInvitation
         case alreadyInFlight
         case invalidTemporaryUsername
@@ -620,6 +621,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
                 return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+            case .platformWriteUnconfirmed:
+                return NSLocalizedString(
+                    "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
+                    comment: "DashPay registration or purchase result unknown")
             case .missingInvitation:
                 return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
@@ -1119,13 +1124,24 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Preserve payment/creation failure phases independently of funding dispatch.
+    private func preservingUnconfirmedOutcome(_ error: Error) -> Error {
+        switch error {
+        case PlatformWalletError.transactionBroadcastUnconfirmed:
+            return CoordinatorError.platformWriteUnconfirmed
+        default:
+            return error
+        }
+    }
+
     private func reportIdentityCreationFailure(
         _ error: Error, controller: DWIdentityRegistrationController
     ) -> Error {
+        let error = preservingUnconfirmedOutcome(error)
         if let coordError = error as? CoordinatorError {
-            if case .shieldedCreateUnconfirmed = coordError {
+            switch coordError {
+            case .shieldedCreateUnconfirmed, .platformWriteUnconfirmed:
                 failedAtPhase = .creatingID
-            } else {
+            default:
                 failedAtPhase = .processingPayment
             }
             lastErrorMessage = coordError.localizedDescription
@@ -1555,7 +1571,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // step-2.9 bookmark would report a contest that does not exist.
             withdrawPrematureBookmark(
                 username, isContested: isContestedSubmission, network: network, wallet: wallet)
-            throw CoordinatorError.dpnsRegistration(error)
+            throw CoordinatorError.dpnsRegistration(preservingUnconfirmedOutcome(error))
         }
 
         if !isContestedSubmission || nameState == .owned {
@@ -1953,7 +1969,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
             failedAtPhase = .registrationUsername
-            let coordError = CoordinatorError.purchase(error)
+            let coordError = CoordinatorError.purchase(preservingUnconfirmedOutcome(error))
             lastErrorMessage = coordError.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw coordError
