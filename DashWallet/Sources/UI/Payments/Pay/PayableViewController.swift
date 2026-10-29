@@ -45,6 +45,7 @@ extension PayableViewController where Self: UIViewController {
     /// A scanned or entered address: a Platform or Shielded destination
     /// opens the Send screen, whose route model handles every destination
     /// form; anything else goes to the classic processor.
+    @MainActor
     func dispatchPaymentInput(_ input: DWPaymentInput) {
         if QRScanResultRouter.requiresSendScreen(input) {
             QRScanResultRouter.routePayment(input, from: self)
