@@ -62,29 +62,38 @@ enum QRScanResultRouter {
         }
     }
 
-    /// Present the Send screen prefilled — same chrome as
-    /// `DWBasePayViewController routeScannedBech32Address:`. Only
-    /// address-carrying intents and verified BIP70 confirmations reach here.
-    /// Merchant requests are fetched by the scanner before routing.
+    /// Present the Send screen for a payment scanned in another flow — the
+    /// same chrome and layout as `DWBasePayViewController
+    /// routeScannedBech32Address:`. A verified merchant request goes to the
+    /// classic processor whole (its outputs and acknowledgment metadata are
+    /// the merchant's); anything else fills the form like a scan made on the
+    /// Send screen, amount included, and opens on the From picker. The amount
+    /// rides the shared view model to the amount step, which hands it to the
+    /// classic processor for a Core → Core send.
     private static func routePayment(_ input: DWPaymentInput, from presenter: UIViewController?) {
         guard let presenter else { return }
 
         let controller = SendScreenViewController()
-        if let parsed = input.parsedURI, let address = parsed.address {
-            controller.prefill(address: address, amountDuffs: parsed.amount)
-        } else if input.bip70Confirmation == nil {
-            return
-        }
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.modalPresentationStyle = .fullScreen
-        presenter.topController().present(navigationController, animated: true) {
-            // Keep the verified merchant outputs and acknowledgment metadata
-            // intact. Wait for a visible anchor before presenting confirmation.
-            if input.bip70Confirmation != nil {
+
+        if input.bip70Confirmation != nil {
+            // Wait for a visible anchor before presenting the confirmation.
+            presenter.topController().present(navigationController, animated: true) {
                 controller.processPaymentInput(input)
             }
+            return
         }
+
+        guard SendViewModel.scannedAddress(in: input) != nil else { return }
+        controller.prefill(scannedInput: input)
+        // An address that did not decode keeps the address step: it is the
+        // screen that says so.
+        if controller.hasResolvedDestination {
+            navigationController.setViewControllers([controller, controller.makeSourceStep()], animated: false)
+        }
+        presenter.topController().present(navigationController, animated: true)
     }
 
     #if DASHPAY
