@@ -527,6 +527,7 @@ struct ExternalSendAmountScreen: View {
                     coreShieldedDrain: viewModel.frozenCoreDrainSubmission?.confirmation,
                     contactRecipient: viewModel.contactPaymentRecipient,
                     contactCoreFeeCredits: viewModel.contactCoreFeeCredits,
+                    contactNetworkFeeCredits: viewModel.contactNetworkFeeCredits,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         didCompleteSend = true
@@ -1141,9 +1142,14 @@ struct SendConfirmSheet: View {
     /// the contact's addresses after the user confirms and authorizes.
     var contactRecipient: ContactPaymentRecipient? = nil
     /// The Core fee added on top of a contact payment so the contact receives
-    /// the amount shown (`SendViewModel.contactCoreFeeCredits`). The
-    /// coordinator pays only if the network still charges exactly this.
+    /// at least the amount shown (`SendViewModel.contactCoreFeeCredits`).
     var contactCoreFeeCredits: UInt64 = 0
+    /// A contact payment's network fee, priced by the amount step
+    /// (`SendViewModel.contactNetworkFeeCredits`): the Platform preflight's,
+    /// or the fee of the Shielded notes the withdrawal would spend — either
+    /// an upper bound. Shown, and authorized with the amount; nil refuses the
+    /// payment.
+    var contactNetworkFeeCredits: UInt64? = nil
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -1412,8 +1418,12 @@ struct SendConfirmSheet: View {
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
         if let drain = coreShieldedDrain { return drain.totalFeeCredits }
-        // A contact payment's Core fee is part of what it costs the sender.
-        return routeFeeCredits.map { $0 + contactCoreFeeCredits }
+        // A contact payment states the fee the amount step priced, plus the
+        // Core fee: both are part of what it costs the sender.
+        if contactRecipient != nil, route == .platformToCore || route == .shieldedToCore {
+            return contactNetworkFeeCredits.map { $0 + contactCoreFeeCredits }
+        }
+        return routeFeeCredits
     }
 
     private var routeFeeCredits: UInt64? {
@@ -1643,14 +1653,14 @@ struct SendConfirmSheet: View {
                     feeHeadroomCredits: withdrawalFeeCredits,
                     toCoreAddress: destinationAddress,
                     contactRecipient: contactRecipient,
-                    contactCoreFeeCredits: contactCoreFeeCredits)
+                    contactNetworkFeeCredits: contactNetworkFeeCredits)
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep,
                     toCoreAddress: destinationAddress,
                     contactRecipient: contactRecipient,
-                    contactCoreFeeCredits: contactCoreFeeCredits)
+                    contactNetworkFeeCredits: contactNetworkFeeCredits)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,

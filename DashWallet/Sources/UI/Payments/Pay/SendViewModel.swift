@@ -442,9 +442,17 @@ final class SendViewModel: ObservableObject {
         }
     }
 
-    /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
-    /// Cached rather than computed per keystroke — it reads SwiftData.
+    /// The notes a Shielded → Core withdrawal would select from, for
+    /// `contactNetworkFeeCredits`; nil off that route or while they aren't
+    /// ready. Refreshed with the ceiling.
+    private var shieldedWithdrawalNoteValues: [UInt64]?
+
+    /// Recomputes `shieldedSpendCeilingCredits` (and the withdrawal notes)
+    /// from the current note set. Cached rather than computed per keystroke —
+    /// it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
+        shieldedWithdrawalNoteValues = route == .shieldedToCore
+            ? ShieldedTransferCoordinator.withdrawalNoteValues() : nil
         guard let feeKind = shieldedFeeKind(for: route) else {
             shieldedSpendCeilingCredits = nil
             return
@@ -616,15 +624,34 @@ final class SendViewModel: ObservableObject {
     }
 
     /// The Core fee a contact paid from Platform or Shielded has added on
-    /// top, so the contact receives the amount entered: from protocol 14 the
-    /// network carves it out of the withdrawal. Read from the version the SDK
-    /// has proven (unknown counts as charging it); the coordinator proves the
-    /// network's again before paying and refuses if the fee differs. Zero for
-    /// every other send.
+    /// top (`ShieldedTransferCoordinator.contactCoreFeeCredits`), so the
+    /// contact receives at least the amount entered. Zero for every other send.
     var contactCoreFeeCredits: UInt64 {
         guard paysContact, route == .platformToCore || route == .shieldedToCore else { return 0 }
-        return ShieldedTransferCoordinator.contactCoreFeeCredits(
-            protocolVersion: (try? SwiftDashSDKHost.shared.sdk?.protocolVersionInfo())?.verifiedVersion)
+        return ShieldedTransferCoordinator.contactCoreFeeCredits
+    }
+
+    /// The network fee a contact payment from Platform or Shielded pays on
+    /// top of what it submits: the Platform preflight's, or the fee of the
+    /// notes Rust's selector would spend on this Shielded withdrawal — or,
+    /// while those notes aren't ready, the worst-case fee of a full bundle,
+    /// which the selector never exceeds. Nil when not known; the payment can't
+    /// continue without it, since it is part of what the confirmation states
+    /// and the PIN authorizes.
+    var contactNetworkFeeCredits: UInt64? {
+        guard paysContact else { return nil }
+        switch route {
+        case .platformToCore:
+            return withdrawalPreflight?.canWithdraw == true ? withdrawalPreflight?.estimatedFee : nil
+        case .shieldedToCore:
+            let (submitted, overflow) = creditsPreview.addingReportingOverflow(contactCoreFeeCredits)
+            guard !overflow else { return nil }
+            guard let noteValues = shieldedWithdrawalNoteValues else { return feeReserveCredits }
+            return ShieldedTransferCoordinator.withdrawalFeeCredits(
+                amountCredits: submitted, noteValues: noteValues)
+        default:
+            return nil
+        }
     }
 
     /// The SDK gave up permanently on this contact's DIP-15 payment channel
@@ -682,7 +709,8 @@ final class SendViewModel: ObservableObject {
         do {
             let (txid, _) = try await WalletSendService.shared.sendToContact(
                 contactIdentityId: contact.contactIdentityId,
-                amount: duffs)
+                amount: duffs,
+                recipient: contactPaymentRecipient)
             // Project the freshly recorded Sent entry to SwiftData right away
             // — the entry lives only in Rust memory until a projection runs,
             // and an app kill before one would lose it permanently (the SDK
@@ -1212,7 +1240,14 @@ final class SendViewModel: ObservableObject {
             return Self.feeEstimateUnavailableMessage
         }
 
-        return insufficientBalanceMessage
+        if let message = insufficientBalanceMessage { return message }
+        // A Shielded contact payment can't continue without its fee
+        // (`contactNetworkFeeCredits`); a Platform one waits on the preflight,
+        // which its own messages already cover.
+        if route == .shieldedToCore, contactCoreFeeCredits > 0, contactNetworkFeeCredits == nil {
+            return Self.feeEstimateUnavailableMessage
+        }
+        return nil
     }
 
     /// "You don't have that much" for the ACTIVE route, named after the balance
@@ -1416,6 +1451,7 @@ final class SendViewModel: ObservableObject {
         if hasUnavailableSourceBalance { return false }
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         if isBelowContactWithdrawalMinimum { return false }
+        if contactCoreFeeCredits > 0, contactNetworkFeeCredits == nil { return false }
         switch route {
         case .coreToCore:
             return dashDuffsUnsigned <= coreToCoreSpendableDuffs

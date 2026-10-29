@@ -314,6 +314,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 "Core drain marker cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
             return false
         }
+        // So is the contact-payment journal, including entries of wallets
+        // the inventory no longer lists: left behind, a re-import would
+        // inherit their history and unresolved-payment locks. Cleared only
+        // now, so a failed deletion keeps the locks of wallets that survive.
+        do {
+            try DashPayWithdrawalStore.shared.resetForWipe()
+        } catch {
+            logger.error(
+                "DashPay payment journal cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
+            return false
+        }
 
         // The SDK wallet deletion is now known to have succeeded for every
         // network. Clear every global app-owned store only at this commit
@@ -334,14 +345,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
-        // Logged rather than failing the wipe: past the commit point the
-        // wallets are gone, and the per-wallet deletion already cleared each
-        // one's journal.
-        do {
-            try DashPayWithdrawalStore.shared.resetForWipe()
-        } catch {
-            logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
-        }
         SPVChainResyncMarker.resetForWipe()
         // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
@@ -984,12 +987,33 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("a pending DashPay invitation of the wallet could not be deleted; refusing the removal")
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+        // Its contact-payment journal too: left behind, a re-import of the
+        // same seed would inherit its history and its unresolved-payment
+        // locks. Keyed by wallet, not devnet scope, so it goes only with the
+        // wallet itself. Put back if the deletion below fails, so a wallet
+        // that survives keeps its locks.
+        var removedJournal: [URL: Data] = [:]
+        if !keepsWalletOnAnotherScope {
+            do {
+                removedJournal = try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
+            } catch {
+                logger.error("the DashPay payment journal of the wallet could not be deleted; refusing the removal: \(String(describing: error), privacy: .public)")
+                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+            }
+        }
 #endif
 
         do {
             try deleteWallet(walletId)
         } catch {
             logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
+#if DASHPAY
+            do {
+                try DashPayWithdrawalStore.shared.restore(removedJournal)
+            } catch {
+                logger.error("the DashPay payment journal of the surviving wallet could not be put back: \(String(describing: error), privacy: .public)")
+            }
+#endif
             throw error
         }
 
@@ -1025,17 +1049,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
             // only the rebuild pending on the scope whose rows were just
             // deleted is dropped; the wallet's other scopes keep theirs.
             SPVChainStoreRebuild.finish(walletIds: [walletId], scope: scope)
-            // The payment journal is keyed by wallet, not devnet scope, so it
-            // goes only with the wallet itself. Logged rather than thrown: the
-            // wallet is already deleted, and throwing here would skip the
-            // identity bookkeeping below.
-            if !keepsWalletOnAnotherScope {
-                do {
-                    try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
-                } catch {
-                    logger.error("failed to clear DashPay withdrawal history: \(String(describing: error), privacy: .public)")
-                }
-            }
         }
 
         // Per-wallet identity bookkeeping, not app-state cleanup: it runs on

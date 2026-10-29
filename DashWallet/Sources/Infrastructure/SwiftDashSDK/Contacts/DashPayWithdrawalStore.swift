@@ -141,16 +141,41 @@ final class DashPayWithdrawalStore {
             .contains { $0.status != .submitted && $0.createdAt >= date }
     }
 
-    func clearForWallet(walletId: Data) throws {
+    /// Removes the wallet's journal and returns what it held, so a caller
+    /// whose deletion then fails can put it back with `restore`. All or
+    /// nothing: a file that can't be removed puts back the ones that were.
+    @discardableResult
+    func clearForWallet(walletId: Data) throws -> [URL: Data] {
         lock.lock()
         defer { lock.unlock() }
-        guard FileManager.default.fileExists(atPath: directory.path) else { return }
+        guard FileManager.default.fileExists(atPath: directory.path) else { return [:] }
         let walletHex = Self.hex(walletId)
+        var held: [URL: Data] = [:]
         for file in try FileManager.default.contentsOfDirectory(
             at: directory, includingPropertiesForKeys: nil)
         where file.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init) == walletHex {
-            try FileManager.default.removeItem(at: file)
+            held[file] = try Data(contentsOf: file)
         }
+        var removed: [URL: Data] = [:]
+        do {
+            for (file, data) in held {
+                try FileManager.default.removeItem(at: file)
+                removed[file] = data
+            }
+        } catch {
+            try? write(removed)
+            throw error
+        }
+        notifyChange()
+        return held
+    }
+
+    /// Puts back what `clearForWallet` removed.
+    func restore(_ removed: [URL: Data]) throws {
+        guard !removed.isEmpty else { return }
+        lock.lock()
+        defer { lock.unlock() }
+        try write(removed)
         notifyChange()
     }
 
@@ -161,6 +186,13 @@ final class DashPayWithdrawalStore {
             try FileManager.default.removeItem(at: directory)
         }
         notifyChange()
+    }
+
+    private func write(_ files: [URL: Data]) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        for (file, data) in files {
+            try data.write(to: file, options: .atomic)
+        }
     }
 
     private func fileURL(scope: Scope) -> URL {

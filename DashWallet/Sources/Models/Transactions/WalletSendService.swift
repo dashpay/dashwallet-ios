@@ -590,14 +590,21 @@ final class WalletSendService: NSObject {
     func sendToContact(
         contactIdentityId: Data,
         amount: UInt64,
-        memo: String? = nil
+        memo: String? = nil,
+        recipient captured: ContactPaymentRecipient? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        // Resolved here rather than taken from the caller: the contact profile
-        // pays through this method directly, and the journal of unresolved
-        // withdrawals can only be read for a wallet and identity.
-        let recipient = await MainActor.run {
-            ContactPaymentRecipient.current(contactIdentityId: contactIdentityId, displayName: "")
+        // The wallet, identity and network the contact was chosen from, when
+        // the caller captured them; otherwise the active ones. Either way the
+        // payment is bound to it: the journal of unresolved withdrawals is
+        // checked for it, and it is validated again before and after the PIN.
+        let recipient = try await MainActor.run { () throws -> ContactPaymentRecipient? in
+            guard let captured else {
+                return ContactPaymentRecipient.current(contactIdentityId: contactIdentityId, displayName: "")
+            }
+            guard captured.identityId == contactIdentityId else { return nil }
+            try Self.validateContactRecipient(captured)
+            return captured
         }
         guard let recipient else {
             throw Self.makeError(
