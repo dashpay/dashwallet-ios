@@ -320,6 +320,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// A contact payment's fee was not known, so neither the
         /// confirmation nor the PIN could have covered all it spends.
         case contactPaymentNotPriced
+        /// A Shielded contact payment's notes, priced again, would now be
+        /// charged more than the fee it was confirmed and authorized with.
+        case contactFeeChanged
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         /// A Max drain's lock whose recipient cannot be established.
@@ -392,6 +395,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "The fee for this payment could not be worked out. Go back and try again.",
                     comment: "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation")
+            case .contactFeeChanged:
+                return NSLocalizedString(
+                    "The network fee for this payment changed. Close this confirmation and review it again.",
+                    comment: "DashPay contact payment from Shielded: the notes would now be charged more than the confirmed fee")
             case .platformBalanceChanged:
                 return NSLocalizedString(
                     "Your Platform balance changed. Close this confirmation and tap Max again.",
@@ -522,17 +529,53 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return unspentNoteValues(walletId: wallet.walletId, context: modelContainer.mainContext)
     }
 
-    /// The fee Rust's selector charges a non-sweep withdrawal of
-    /// `amountCredits` from `noteValues` — priced from the notes it would
-    /// actually spend, not a two-action estimate. Nil when they cannot cover
-    /// the amount in one transition.
-    static func withdrawalFeeCredits(amountCredits: UInt64, noteValues: [UInt64]) -> UInt64? {
-        ShieldedSweepPlanner.selection(
+    /// The most a non-sweep withdrawal of `amountCredits` is charged: the fee
+    /// of the notes Rust's selector would spend from `noteValues`, not a
+    /// two-action estimate — or, with no notes ready to price (nil), a full
+    /// bundle's, which the selector never exceeds. Nil when the notes cannot
+    /// cover the amount in one transition, or the fee can't be estimated.
+    static func withdrawalFeeCredits(amountCredits: UInt64, noteValues: [UInt64]?) -> UInt64? {
+        guard let noteValues else { return fullBundleWithdrawalFeeCredits() }
+        return ShieldedSweepPlanner.selection(
             noteValues: noteValues,
             amountCredits: amountCredits,
-            feeForActions: { actions in
-                try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: actions)
-            })?.feeCredits
+            feeForActions: withdrawalFee(actions:))?.feeCredits
+    }
+
+    /// The fee of the largest withdrawal bundle one transition admits.
+    static func fullBundleWithdrawalFeeCredits() -> UInt64? {
+        withdrawalFee(actions: ShieldedActionBudget.maxActionsPerTransition)
+    }
+
+    private static func withdrawalFee(actions: Int) -> UInt64? {
+        try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: actions)
+    }
+
+    /// Prices a Shielded contact payment again from the notes as they are
+    /// now (`contactShieldedFeeRefusal(confirmedFeeCredits:notesReady:liveFeeCredits:)`).
+    private static func contactShieldedFeeRefusal(
+        submittedCredits: UInt64, confirmedFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        let noteValues = withdrawalNoteValues()
+        return contactShieldedFeeRefusal(
+            confirmedFeeCredits: confirmedFeeCredits,
+            notesReady: noteValues != nil,
+            liveFeeCredits: noteValues.flatMap {
+                withdrawalFeeCredits(amountCredits: submittedCredits, noteValues: $0)
+            })
+    }
+
+    /// Why a Shielded contact payment can't go ahead at the fee its
+    /// confirmation showed and the PIN covers. Nil while that fee covers what
+    /// the notes, priced now, would be charged. Notes that aren't ready to
+    /// price refuse it for now: what they will be charged isn't known.
+    nonisolated static func contactShieldedFeeRefusal(
+        confirmedFeeCredits: UInt64?, notesReady: Bool, liveFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        guard let confirmedFeeCredits else { return .contactPaymentNotPriced }
+        guard notesReady else { return .shieldedBalanceUnavailable }
+        guard let liveFeeCredits else { return .contactPaymentNotPriced }
+        return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
     }
 
     /// Largest amount the pool can fund inside ONE transition — the sweep
@@ -1200,6 +1243,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
             if rejectIfAboveSpendCeiling(submittedAmount, feeKind: .withdrawal) { return }
+            if let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                handleFailure(refusal)
+                return
+            }
         } else if sweepAll {
             switch Self.sweepAvailability(feeKind: .withdrawal) {
             case .ready(let plan) where plan.amountCredits == amountCredits:
@@ -1244,6 +1292,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await authorize(contactSpendDuffs: try Self.contactSpendDuffs(
                 contactRecipient, submittedCredits: submittedAmount, networkFeeCredits: contactNetworkFeeCredits))
+            // Notes can reconcile while the PIN is up: priced again before a
+            // reservation uses up one of the contact's addresses.
+            if contactRecipient != nil, let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                throw refusal
+            }
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 // What the contact receives: the Core fee is carved out of
@@ -1255,7 +1309,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
-        if let contactWithdrawal { coreAddress = contactWithdrawal.address }
+        if let contactWithdrawal {
+            // And again after the reservation's await, the last point before
+            // the SDK spends them.
+            // TODO(shielded-withdraw-fee-cap): `shieldedWithdraw` takes no
+            // maximum fee, so notes that change after this check can still be
+            // charged up to a full bundle's fee.
+            if let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
+                return
+            }
+            coreAddress = contactWithdrawal.address
+        }
 
         phase = .proving
 
@@ -1843,16 +1909,46 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// would reserve another address and could pay the contact twice.
     ///
     /// False for a withdrawal that does not pay a contact, and for one the
-    /// error proves never executed (its record is dropped): the caller fails
-    /// it as retryable like any other.
+    /// error proves never executed once its record is dropped: the caller
+    /// fails it as retryable like any other. A record that can't be dropped
+    /// ends on the unknown outcome too.
     private func concludeUncertainContactWithdrawal(_ withdrawal: ContactWithdrawal?, error: Error) -> Bool {
         guard let withdrawal else { return false }
         if Self.provesWithdrawalNotSubmitted(error) {
-            // A leftover record would show as an unknown payment that never left.
-            try? DashPayWithdrawalStore.shared.remove(withdrawal)
+            if dropUnsubmittedContactWithdrawal(withdrawal) { return false }
+        } else {
+            Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal outcome unknown \(String(describing: error), privacy: .public)")
+        }
+        endOnUnknownContactOutcome(withdrawal)
+        return true
+    }
+
+    /// Fails a contact withdrawal refused after its record was written but
+    /// before the SDK was called, as retryable once its record is dropped.
+    private func failUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal, error: Error) {
+        if dropUnsubmittedContactWithdrawal(withdrawal) {
+            handleFailure(error)
+        } else {
+            endOnUnknownContactOutcome(withdrawal)
+        }
+    }
+
+    /// Drops the record of a withdrawal known never to have been submitted:
+    /// left behind it would show as an unknown payment that never left. False
+    /// when it can't be dropped — it then still reads as unknown and locks the
+    /// contact, so a retry would only be refused, and the payment has to end
+    /// on the unknown outcome instead.
+    private func dropUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal) -> Bool {
+        do {
+            try DashPayWithdrawalStore.shared.remove(withdrawal)
+            return true
+        } catch {
+            Self.logger.error("🛡️ SHIELD-TX :: unsubmitted contact withdrawal record could not be dropped \(String(describing: error), privacy: .public)")
             return false
         }
-        Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal outcome unknown \(String(describing: error), privacy: .public)")
+    }
+
+    private func endOnUnknownContactOutcome(_ withdrawal: ContactWithdrawal) {
         // The `.submitting` record already on disk reads as unknown too, so a
         // failure of this write loses nothing.
         try? DashPayWithdrawalStore.shared.update(withdrawal, status: .unconfirmed)
@@ -1864,7 +1960,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         #endif
         contactWithdrawalOutcomeUnknown = true
         phase = .submittedUnconfirmed
-        return true
     }
 
     private func markContactWithdrawalSubmitted(_ withdrawal: ContactWithdrawal?) {

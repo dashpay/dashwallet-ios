@@ -314,8 +314,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 "Core drain marker cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
             return false
         }
-        // So is the contact-payment journal, including entries of wallets
-        // the inventory no longer lists: left behind, a re-import would
+        // The contact-payment journal too, including entries of wallets the
+        // inventory no longer lists: left behind, a re-import would
         // inherit their history and unresolved-payment locks. Cleared only
         // now, so a failed deletion keeps the locks of wallets that survive.
         do {
@@ -836,6 +836,20 @@ final class SwiftDashSDKWalletWiper: NSObject {
             throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
         }
 
+#if DASHPAY
+        // The contact-payment journal is cleared only once the wallet is
+        // gone, so a failed deletion keeps its unresolved-payment locks; a
+        // journal that can't even be read now refuses the removal up front.
+        for walletId in walletIds.values {
+            do {
+                _ = try DashPayWithdrawalStore.shared.files(ofWallet: walletId)
+            } catch {
+                logger.error("the DashPay payment journal could not be read; refusing the removal: \(String(describing: error), privacy: .public)")
+                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+            }
+        }
+#endif
+
         try await SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccounts(
             matching: mnemonic)
 
@@ -949,6 +963,23 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+
+#if DASHPAY
+        // Left behind, a re-import of the same seed would inherit the
+        // journal's history and its unresolved-payment locks, so a journal
+        // that can't be cleared fails the removal rather than reporting it
+        // done. The check above makes that unlikely; when it happens the
+        // wallet is already gone from the SDK, and the entries stay until a
+        // full wipe or the re-imported wallet's removal clears them.
+        for walletId in walletIds.values {
+            do {
+                try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
+            } catch {
+                logger.error("the DashPay payment journal of the removed wallet could not be cleared: \(String(describing: error), privacy: .public)")
+                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+            }
+        }
+#endif
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust
@@ -987,33 +1018,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("a pending DashPay invitation of the wallet could not be deleted; refusing the removal")
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
-        // Its contact-payment journal too: left behind, a re-import of the
-        // same seed would inherit its history and its unresolved-payment
-        // locks. Keyed by wallet, not devnet scope, so it goes only with the
-        // wallet itself. Put back if the deletion below fails, so a wallet
-        // that survives keeps its locks.
-        var removedJournal: [URL: Data] = [:]
-        if !keepsWalletOnAnotherScope {
-            do {
-                removedJournal = try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
-            } catch {
-                logger.error("the DashPay payment journal of the wallet could not be deleted; refusing the removal: \(String(describing: error), privacy: .public)")
-                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
-            }
-        }
 #endif
 
         do {
             try deleteWallet(walletId)
         } catch {
             logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
-#if DASHPAY
-            do {
-                try DashPayWithdrawalStore.shared.restore(removedJournal)
-            } catch {
-                logger.error("the DashPay payment journal of the surviving wallet could not be put back: \(String(describing: error), privacy: .public)")
-            }
-#endif
             throw error
         }
 

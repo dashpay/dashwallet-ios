@@ -141,57 +141,48 @@ final class DashPayWithdrawalStore {
             .contains { $0.status != .submitted && $0.createdAt >= date }
     }
 
-    /// Removes the wallet's journal and returns what it held, so a caller
-    /// whose deletion then fails can put it back with `restore`. All or
-    /// nothing: a file that can't be removed puts back the ones that were.
-    @discardableResult
-    func clearForWallet(walletId: Data) throws -> [URL: Data] {
+    /// The wallet's journal files. Throws when the journal can't be read:
+    /// only a directory that is genuinely absent reads as empty, because
+    /// `fileExists` also answers false when existence can't be determined.
+    /// Wallet removal calls this before deleting anything, so a journal it
+    /// could not clear afterwards refuses the removal instead.
+    func files(ofWallet walletId: Data) throws -> [URL] {
         lock.lock()
         defer { lock.unlock() }
-        guard FileManager.default.fileExists(atPath: directory.path) else { return [:] }
-        let walletHex = Self.hex(walletId)
-        var held: [URL: Data] = [:]
-        for file in try FileManager.default.contentsOfDirectory(
-            at: directory, includingPropertiesForKeys: nil)
-        where file.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init) == walletHex {
-            held[file] = try Data(contentsOf: file)
-        }
-        var removed: [URL: Data] = [:]
-        do {
-            for (file, data) in held {
-                try FileManager.default.removeItem(at: file)
-                removed[file] = data
-            }
-        } catch {
-            try? write(removed)
-            throw error
-        }
-        notifyChange()
-        return held
+        return try walletFiles(walletId)
     }
 
-    /// Puts back what `clearForWallet` removed.
-    func restore(_ removed: [URL: Data]) throws {
-        guard !removed.isEmpty else { return }
+    func clearForWallet(walletId: Data) throws {
         lock.lock()
         defer { lock.unlock() }
-        try write(removed)
+        for file in try walletFiles(walletId) {
+            try FileManager.default.removeItem(at: file)
+        }
         notifyChange()
     }
 
     func resetForWipe() throws {
         lock.lock()
         defer { lock.unlock() }
-        if FileManager.default.fileExists(atPath: directory.path) {
+        do {
             try FileManager.default.removeItem(at: directory)
+        } catch CocoaError.fileNoSuchFile {
+            // Nothing was ever journaled.
         }
         notifyChange()
     }
 
-    private func write(_ files: [URL: Data]) throws {
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        for (file, data) in files {
-            try data.write(to: file, options: .atomic)
+    private func walletFiles(_ walletId: Data) throws -> [URL] {
+        let names: [URL]
+        do {
+            names = try FileManager.default.contentsOfDirectory(
+                at: directory, includingPropertiesForKeys: nil)
+        } catch CocoaError.fileReadNoSuchFile {
+            return []
+        }
+        let walletHex = Self.hex(walletId)
+        return names.filter {
+            $0.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init) == walletHex
         }
     }
 

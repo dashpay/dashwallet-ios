@@ -6723,3 +6723,6 @@
 
 /* DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation */
 "The fee for this payment could not be worked out. Go back and try again." = "The fee for this payment could not be worked out. Go back and try again.";
+
+/* DashPay contact payment from Shielded: the notes would now be charged more than the confirmed fee */
+"The network fee for this payment changed. Close this confirmation and review it again." = "The network fee for this payment changed. Close this confirmation and review it again.";

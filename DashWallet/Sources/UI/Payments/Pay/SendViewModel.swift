@@ -570,15 +570,48 @@ final class SendViewModel: ObservableObject {
             contactIdentityId: contact.contactIdentityId,
             recipient: contactPaymentRecipient)
         destination = .core
-        // Transparent counts by what it can actually send: dust that can't
-        // cover the fee would open the payment on a balance that pays nothing.
+        // Each balance counts by what one contact payment from it can send,
+        // so dust doesn't open the payment on a source that pays nothing.
         let plan = Self.contactSourcePlan(
             validSources: validSources,
-            balanceDuffs: { $0 == .core ? self.coreToCoreSpendableDuffs : self.balanceDuffs(of: $0) })
+            balanceDuffs: { self.contactPayableDuffs(from: $0) })
         contactOffersSourceChoice = plan.offersChoice
         // Not the user's pick, so the From step still reads as a suggestion.
         // The assignment refreshes the route-dependent preflights.
         setSourceWithoutClaimingUserIntent(plan.initialSource)
+    }
+
+    /// What one contact payment from `source` can send, for picking the
+    /// source before its route's preflights have run: Transparent's
+    /// fee-aware spendable amount; for Platform the largest address (a
+    /// payment spends one; its Platform fee is only known once the preflight
+    /// runs) and for Shielded the note-priced ceiling (or the balance less a
+    /// full bundle's fee), each less the Core fee and nothing below the
+    /// withdrawal floor.
+    private func contactPayableDuffs(from source: ChainNetwork) -> UInt64 {
+        switch source {
+        case .core:
+            return coreToCoreSpendableDuffs
+        case .platform:
+            let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
+            return Self.contactPayableDuffs(envelopeCredits: largest)
+        case .shielded:
+            let ceiling = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: .withdrawal)
+                ?? ShieldedTransferCoordinator.fullBundleWithdrawalFeeCredits()
+                .map { shieldedBalance > $0 ? shieldedBalance - $0 : 0 }
+                ?? 0
+            return Self.contactPayableDuffs(envelopeCredits: ceiling)
+        }
+    }
+
+    /// What a contact withdrawal can pay out of `credits` it may spend: less
+    /// the Core fee added on top, and nothing below the withdrawal floor.
+    nonisolated static func contactPayableDuffs(envelopeCredits credits: UInt64) -> UInt64 {
+        let coreFee = ShieldedTransferCoordinator.contactCoreFeeCredits
+        guard credits >= coreFee,
+              credits - coreFee >= ShieldedTransferCoordinator.contactWithdrawalMinimumCredits
+        else { return 0 }
+        return (credits - coreFee) / 1000
     }
 
     /// Which source a contact payment opens on, and whether the From step is
@@ -646,9 +679,8 @@ final class SendViewModel: ObservableObject {
         case .shieldedToCore:
             let (submitted, overflow) = creditsPreview.addingReportingOverflow(contactCoreFeeCredits)
             guard !overflow else { return nil }
-            guard let noteValues = shieldedWithdrawalNoteValues else { return feeReserveCredits }
             return ShieldedTransferCoordinator.withdrawalFeeCredits(
-                amountCredits: submitted, noteValues: noteValues)
+                amountCredits: submitted, noteValues: shieldedWithdrawalNoteValues)
         default:
             return nil
         }

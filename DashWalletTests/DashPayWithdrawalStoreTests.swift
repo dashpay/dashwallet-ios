@@ -110,16 +110,28 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertTrue(try store.entries(scope: other, contactIdentityId: contact).isEmpty)
     }
 
-    /// A wallet whose deletion fails after its journal was cleared gets the
-    /// journal, and with it its unresolved-payment lock, back.
-    func testRestorePutsBackAClearedWalletsJournal() throws {
-        let pending = try begin()
-        try store.update(pending, status: .unconfirmed)
-        let removed = try store.clearForWallet(walletId: scope.walletId)
-        XCTAssertFalse(try store.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
-        try store.restore(removed)
-        let reopened = DashPayWithdrawalStore(directory: directory)
-        XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+    /// A journal whose directory can't be inspected is not mistaken for an
+    /// absent one: clearing it fails, so neither a removal nor a wipe reports
+    /// success while its records survive.
+    func testClearingAJournalThatCannotBeInspectedThrows() throws {
+        let parent = directory!
+        let nested = DashPayWithdrawalStore(directory: parent.appendingPathComponent("journal"))
+        _ = try nested.begin(
+            scope: scope, contactIdentityId: contact, address: "yAddress",
+            amountDuffs: 1_000, source: .shielded)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: parent.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: parent.path)
+        }
+        XCTAssertThrowsError(try nested.files(ofWallet: scope.walletId))
+        XCTAssertThrowsError(try nested.clearForWallet(walletId: scope.walletId))
+        XCTAssertThrowsError(try nested.resetForWipe())
+    }
+
+    func testClearingAnAbsentJournalSucceeds() throws {
+        XCTAssertEqual(try store.files(ofWallet: scope.walletId), [])
+        try store.clearForWallet(walletId: scope.walletId)
+        try store.resetForWipe()
     }
 
     func testNeverSubmittedAttemptCanBeRemovedWithoutDroppingOtherRecords() throws {
@@ -242,6 +254,15 @@ final class ContactPaymentSourceTests: XCTestCase {
             balanceDuffs: { balances[$0] ?? 0 })
     }
 
+    /// A Platform or Shielded balance counts only for what a contact
+    /// withdrawal from it pays: past the Core fee and at the floor.
+    func testWithdrawalSourceCountsOnlyWhatAContactPaymentCanSend() {
+        XCTAssertEqual(SendViewModel.contactPayableDuffs(envelopeCredits: 1_190_000), 1_000)
+        XCTAssertEqual(SendViewModel.contactPayableDuffs(envelopeCredits: 1_189_999), 0)
+        XCTAssertEqual(SendViewModel.contactPayableDuffs(envelopeCredits: 100_000), 0)
+        XCTAssertEqual(SendViewModel.contactPayableDuffs(envelopeCredits: 2_000_190_000), 2_000_000)
+    }
+
     func testOnlyPlatformFundedOpensOnPlatformWithoutChoice() {
         let result = plan([.platform: 2_000_000])
         XCTAssertEqual(result.initialSource, .platform)
@@ -334,6 +355,27 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         XCTAssertThrowsError(
             try ShieldedTransferCoordinator.contactSpendDuffs(
                 recipient, submittedCredits: 2_000_190_000, networkFeeCredits: nil))
+    }
+
+    /// Right before the PIN and again before submission, a Shielded contact
+    /// payment is held to the fee it was confirmed with.
+    func testContactShieldedFeeIsHeldToTheConfirmedFee() {
+        typealias Coordinator = ShieldedTransferCoordinator
+        XCTAssertNil(Coordinator.contactShieldedFeeRefusal(
+            confirmedFeeCredits: 2_000, notesReady: true, liveFeeCredits: 2_000))
+        XCTAssertNil(Coordinator.contactShieldedFeeRefusal(
+            confirmedFeeCredits: 6_000, notesReady: true, liveFeeCredits: 2_000))
+        let refusals: [(UInt64?, Bool, UInt64?, String)] = [
+            (2_000, true, 3_000, "contactFeeChanged"),
+            (2_000, false, nil, "shieldedBalanceUnavailable"),
+            (2_000, true, nil, "contactPaymentNotPriced"),
+            (nil, true, 2_000, "contactPaymentNotPriced"),
+        ]
+        for (confirmed, ready, live, expected) in refusals {
+            let refusal = Coordinator.contactShieldedFeeRefusal(
+                confirmedFeeCredits: confirmed, notesReady: ready, liveFeeCredits: live)
+            XCTAssertEqual(refusal.map { "\($0)" }, expected)
+        }
     }
 
     /// A non-sweep Shielded payment is priced from the notes Rust would select,
