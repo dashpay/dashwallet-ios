@@ -279,28 +279,27 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // (merchant details that failed to load), and with no error up the
         // balance drop that follows a successful purchase would flag the
         // amount just paid. Not during a resync either: the verdict would turn
-        // into the syncing notice, which only the sync-state subscription
-        // below re-checks. Nor while the amount cannot be converted to DASH:
-        // it reads as 0, which fits anything.
+        // into the syncing notice.
         SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.errorIsFundsVerdict, !Self.isResyncingWallet,
-                      self.requestedDashDuffs > 0
-                else { return }
+                guard let self, self.canRecheck(fundsVerdictOnly: true) else { return }
                 self.checkAmountForErrors()
             }
             .store(in: &cancellableBag)
 
-        // The end of a resync clears the syncing notice — however it got there
-        // (a merchant load, a network change, or a funds verdict re-checked
-        // mid-resync) — and lets a funds verdict skipped meanwhile be judged.
+        // The syncing notice (set by an edit, a merchant load or a network
+        // change during a resync) is cleared when the sync is done — also when
+        // it finished while this screen was not subscribed, hence the check on
+        // subscription — and a funds verdict skipped meanwhile is judged.
         NotificationCenter.default.publisher(for: .syncStateChangedNotification)
+            .map { _ in () }
+            .prepend(())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, !Self.isResyncingWallet else { return }
-                let isSyncingNotice = (self.error as? SendAmountError) == .syncingChain
-                guard isSyncingNotice || (self.errorIsFundsVerdict && self.requestedDashDuffs > 0) else { return }
+                guard let self, SyncingActivityMonitor.shared.state == .syncDone,
+                      self.canRecheck(fundsVerdictOnly: false)
+                else { return }
                 self.checkAmountForErrors()
             }
             .store(in: &cancellableBag)
@@ -503,8 +502,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         error = nil
     }
 
-    private var errorIsFundsVerdict: Bool {
-        (error as? SendAmountError)?.isFundsVerdict == true
+    /// Whether a wallet or sync event may re-check the error on screen: a
+    /// funds verdict (or, with `fundsVerdictOnly` false, the syncing notice),
+    /// outside a resync, for an amount that converts to DASH — an unconverted
+    /// one reads as 0, which fits anything.
+    private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
+        guard let shown = error as? SendAmountError,
+              shown.isFundsVerdict || (!fundsVerdictOnly && shown == .syncingChain)
+        else { return false }
+        return !Self.isResyncingWallet && requestedDashDuffs > 0
     }
 
     private static var isResyncingWallet: Bool {
