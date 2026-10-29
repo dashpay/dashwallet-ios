@@ -20,7 +20,7 @@ import Foundation
 
 // MARK: - SendAmountError
 
-enum SendAmountError: Error, ColorizedText, LocalizedError {
+enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     case insufficientFunds
     case syncingChain
     case networkUnavailable
@@ -28,10 +28,20 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     /// funds still confirming, or a balance below the fee reserve). Built by
     /// `InternalTransferViewModel.coreZeroMaxMessage`.
     case maxUnavailable(String)
+    /// The amount is more than the confirmed balance but would fit once the
+    /// carried amount (duffs) confirms. See
+    /// `SwiftDashSDKWalletState.sendVerdict`.
+    case fundsStillConfirming(UInt64)
 
     var errorDescription: String? {
         switch self {
         case .maxUnavailable(let message): return message
+        case .fundsStillConfirming(let duffs):
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount.",
+                    comment: "Send amount fits the balance once incoming funds confirm"),
+                duffs.formattedDashAmountWithoutCurrencySymbol)
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
@@ -47,6 +57,30 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
         // Informational, not a failure the user caused — same weight as the
         // syncing notice rather than the red insufficient-funds text.
         case .maxUnavailable: return .secondaryLabel
+        // The money is there; it only needs time.
+        case .fundsStillConfirming: return .secondaryLabel
+        }
+    }
+}
+
+extension SendAmountError {
+    /// The refusal a wallet gate's verdict names, or `nil` when the amount
+    /// fits: "still confirming" when the coins the gate does not count yet
+    /// would cover it, else "Insufficient funds".
+    init?(refusing verdict: SendFundsVerdict) {
+        switch verdict {
+        case .fits: return nil
+        case .confirming(let duffs): self = .fundsStillConfirming(duffs)
+        case .insufficient: self = .insufficientFunds
+        }
+    }
+
+    /// An affordability verdict — the only kind a wallet-balance change may
+    /// re-check without clearing something it does not own.
+    var isFundsVerdict: Bool {
+        switch self {
+        case .insufficientFunds, .fundsStillConfirming: return true
+        default: return false
         }
     }
 }
@@ -71,6 +105,12 @@ class SendAmountModel: BaseAmountModel {
         return plainAmount > allAvailableFunds
     }
 
+    /// Whether `canShowInsufficientFunds` refuses against the wallet's send
+    /// pool. Only then can a shortfall be the wallet's coins still confirming;
+    /// a subclass that gates on another balance (CrowdNode, Coinbase) returns
+    /// false so its refusals stay "Insufficient funds".
+    var gatesOnWalletSendPool: Bool { true }
+
     private var syncingActivityMonitor: SyncingActivityMonitor { SyncingActivityMonitor.shared }
 
     init() {
@@ -82,17 +122,24 @@ class SendAmountModel: BaseAmountModel {
     }
 
     /// The ceiling can move while this screen is open and the amount is
-    /// untouched — a pooled read landing for the first time, or recovering from
-    /// an outage and replacing the wallet-wide fallback with a much smaller
-    /// transparent balance. `BaseAmountModel`'s balance subscription only
-    /// refreshes `walletBalance`, and the view refreshes its button off
-    /// `$amount`, so nothing revalidates an amount typed before the drop.
+    /// untouched — a pooled read landing for the first time, coins confirming,
+    /// or recovering from an outage and replacing the wallet-wide fallback
+    /// with a much smaller transparent balance. `BaseAmountModel`'s balance
+    /// subscription only refreshes `walletBalance`, and the view refreshes its
+    /// button off `$amount`, so nothing revalidates an amount typed before the
+    /// move.
     ///
     /// Both inputs matter, not just the pooled one: through a persistent pooled
     /// outage that value stays `nil` and `removeDuplicates` swallows every
     /// repeat, while `balance` keeps moving the fallback ceiling underneath.
     /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
     /// changed, and still ignores updates that leave it where it was.
+    ///
+    /// Only a ceiling move re-judges here, not every verdict input: these
+    /// screens present each assigned error (dropping a progress indicator and
+    /// re-enabling Continue), so re-judging on every balance event is a hazard
+    /// of its own. Coins that confirm raise the ceiling, which is what clears
+    /// a "still confirming" note.
     private func observeSendableCeiling() {
         let state = SwiftDashSDKWalletState.shared
         SwiftDashSDKWalletState
@@ -101,12 +148,38 @@ class SendAmountModel: BaseAmountModel {
                 walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
+                guard let self, Self.ceilingMoveRechecks(self.error) else { return }
                 self.error = nil
                 self.checkAmountForErrors()
                 self.validationDidChangeHandler?()
             }
             .store(in: &cancellableBag)
+    }
+
+    /// Whether a moved ceiling may re-judge the amount over `error`: only when
+    /// there is none or it is a funds verdict, the one thing the ceiling
+    /// decides. Anything else — a Max explanation that `checkAmountForErrors`
+    /// never sets again, a subclass's own failure such as a Coinbase API
+    /// error — survives the ceiling move. (A sync-state change still re-checks
+    /// unconditionally, as it did before.)
+    static func ceilingMoveRechecks(_ error: Error?) -> Bool {
+        guard let error else { return true }
+        return (error as? SendAmountError)?.isFundsVerdict == true
+    }
+
+    /// This model's gate on the amount on screen: `nil` when it fits, else the
+    /// refusal to show. The gate itself holds nothing back for the fee, but the
+    /// build will: the verdict keeps the fee reserve, so "wait" is only said
+    /// when the amount can actually be sent once the coins confirm.
+    private func gateRefusal() -> SendAmountError? {
+        guard canShowInsufficientFunds else { return nil }
+        guard gatesOnWalletSendPool else { return .insufficientFunds }
+        let state = SwiftDashSDKWalletState.shared
+        let verdict = state.sendVerdict(
+            requestedDuffs: amount.plainAmount,
+            ceilingDuffs: state.sendableDuffs,
+            reserveDuffs: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+        return SendAmountError(refusing: verdict) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {
@@ -154,12 +227,7 @@ class SendAmountModel: BaseAmountModel {
             return
         }
 
-        guard !canShowInsufficientFunds else {
-            error = SendAmountError.insufficientFunds
-            return
-        }
-
-        error = nil
+        error = gateRefusal()
     }
 
     internal func auth(completionBlock: @escaping ((Bool) -> Void)) {

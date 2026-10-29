@@ -96,6 +96,23 @@ public struct WalletBalance: Equatable, Sendable {
     public var maxSendable: UInt64 { spendable > Self.sendFeeReserveDuffs ? spendable - Self.sendFeeReserveDuffs : 0 }
 }
 
+/// The send pool's `confirmed` and `unconfirmed` sums, taken from one read of
+/// its accounts so the two halves describe the same moment. Built by
+/// `SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot()`.
+struct SendPoolConfirmationSnapshot: Equatable, Sendable {
+    let confirmedDuffs: UInt64
+    let unconfirmedDuffs: UInt64
+}
+
+/// An amount gate's answer for a requested amount. See
+/// `SwiftDashSDKWalletState.sendVerdict`.
+enum SendFundsVerdict: Equatable {
+    case fits
+    /// Short now, but it fits once the carried amount (duffs) confirms.
+    case confirming(UInt64)
+    case insufficient
+}
+
 /// The single-flight bookkeeping behind
 /// `SwiftDashSDKWalletState.refreshPooledSpendableBalance`, separated from the
 /// `Task` machinery so the ownership rule can be exercised without a wallet, an
@@ -184,9 +201,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         // The pooled figure, not `balance.spendable`: Max filling from the
         // wallet-wide balance is the same lie the amount gate told, one tap
         // more convincing.
-        Self.feeAwareMax(
-            spendable: sendableDuffs,
-            reserve: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
+        feeAwareMaxSendableAndReserve().max
     }
 
     /// `feeAwareMaxSendable`'s arithmetic, separated from the SDK reads so the
@@ -267,7 +282,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// neither moved the answer.
     ///
     /// Takes its inputs as parameters so the wiring is testable without the
-    /// shared instance; `observeSendableCeiling` passes the published ones.
+    /// shared instance; `SendAmountModel.observeSendableCeiling` passes the published ones.
     static func sendableCeilingPublisher(
         pooled: AnyPublisher<UInt64?, Never>,
         walletSpendable: AnyPublisher<UInt64?, Never>
@@ -322,6 +337,110 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     static func excludedFromSendPool(pooled: UInt64?, walletSpendable: UInt64?) -> UInt64 {
         guard let pooled, let walletSpendable, walletSpendable > pooled else { return 0 }
         return walletSpendable - pooled
+    }
+
+    /// The amount gates' verdict on `requestedDuffs`: it fits under
+    /// `ceilingDuffs`, it would fit once the pool's unconfirmed coins confirm,
+    /// or it is short either way.
+    ///
+    /// Those gates are built on `sendableDuffs`, which is capped by
+    /// `WalletBalance.spendable` (confirmed coins only), while the balance on
+    /// screen counts every bucket — so right after a receive an amount the user
+    /// can see is refused. This tells that case apart from a real shortfall so
+    /// it is not reported as "Insufficient funds".
+    ///
+    /// `ceilingDuffs` is the gate the caller applied and `reserveDuffs` what
+    /// the send needs on top of the amount once the coins confirm — the fee
+    /// reserve, whether or not the gate itself holds it back (a fee-aware
+    /// ceiling does, see `feeAwareMaxSendableAndReserve`; `sendableDuffs`
+    /// does not). It is read only when it can change the verdict.
+    ///
+    /// The pool is read live; `sendableDuffs` is the cached pooled figure,
+    /// refreshed asynchronously after each balance event. Its re-read fires
+    /// `sendVerdictInputsPublisher`, so a screen that follows it (DashSpend)
+    /// judges a verdict given in between again once it lands. Never `confirming` while the pooled figure is
+    /// unknown: `sendableDuffs` then falls back to the wallet-wide balance,
+    /// CoinJoin included, which the pool total cannot be compared with.
+    func sendVerdict(
+        requestedDuffs: UInt64,
+        ceilingDuffs: UInt64,
+        reserveDuffs: @autoclosure () -> UInt64
+    ) -> SendFundsVerdict {
+        guard requestedDuffs > ceilingDuffs else { return .fits }
+        guard pooledSpendableDuffs != nil else { return .insufficient }
+        return Self.judgeShortfall(
+            requested: requestedDuffs,
+            sendable: sendableDuffs,
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot(),
+            reserve: reserveDuffs)
+    }
+
+    /// `sendVerdict` for an amount already above its ceiling, separated from
+    /// the SDK reads.
+    ///
+    /// Only what confirmation can add to `sendable` counts toward the fit: the
+    /// pool's `unconfirmed`, capped by how far the pool total sits above
+    /// `sendable` (a gate that already counts some unconfirmed coins gains no
+    /// more from them). The amount named is the pool's `unconfirmed` — what is
+    /// actually confirming. Nothing is waiting when the pool holds no unconfirmed
+    /// coins — a gap with nothing confirming, such as a pooled figure not
+    /// re-read yet or an account the SDK's pool does not fund from, is not
+    /// something waiting fixes, and would otherwise say "wait" for good.
+    ///
+    /// It is `confirming` when `requested + reserve` fits in `sendable` plus
+    /// what confirmation adds. The reserve can be a walk over every pooled UTXO, so it
+    /// is read only for an amount that fits with none.
+    static func judgeShortfall(
+        requested: UInt64,
+        sendable: UInt64,
+        pool: SendPoolConfirmationSnapshot?,
+        reserve: () -> UInt64
+    ) -> SendFundsVerdict {
+        guard let pool, pool.unconfirmedDuffs > 0 else { return .insufficient }
+        let onceConfirmed = pool.confirmedDuffs &+ pool.unconfirmedDuffs
+        guard onceConfirmed > sendable else { return .insufficient }
+        let capacity = sendable &+ min(pool.unconfirmedDuffs, onceConfirmed - sendable)
+        guard requested <= capacity else { return .insufficient }
+        let reserveDuffs = reserve()
+        guard reserveDuffs <= capacity - requested else { return .insufficient }
+        return .confirming(pool.unconfirmedDuffs)
+    }
+
+    /// `feeAwareMaxSendable()` together with the reserve it subtracted, for a
+    /// caller that also needs to know what its ceiling held back — one UTXO
+    /// enumeration instead of two.
+    public func feeAwareMaxSendableAndReserve() -> (max: UInt64, reserve: UInt64) {
+        let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
+        return (Self.feeAwareMax(spendable: sendableDuffs, reserve: reserve), reserve)
+    }
+
+    /// Fires whenever an amount gate's verdict can change: the sendable
+    /// ceiling moved, or the wallet balance did. Coins starting or finishing
+    /// to confirm decide between "Insufficient funds" and "still confirming"
+    /// without moving the ceiling at all, and the fee reserve the verdict keeps
+    /// follows the pool's UTXO count, which an immature or locked coin moves
+    /// while every spendable figure stays put — both show up only as a balance
+    /// change. Emits the current state on subscription.
+    ///
+    /// Follows the pooled figure itself, not the ceiling resolved from it: the
+    /// verdict needs that figure to be known at all, and its first arrival can
+    /// leave the ceiling where the wallet-wide fallback had it.
+    public var sendVerdictInputsPublisher: AnyPublisher<Void, Never> {
+        Self.sendVerdictInputsPublisher(
+            pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
+            balance: $balance.eraseToAnyPublisher())
+    }
+
+    /// `sendVerdictInputsPublisher`'s wiring, taking its inputs as parameters
+    /// so it is testable without the shared instance. The ceiling is a
+    /// function of these two, so it needs no stream of its own.
+    static func sendVerdictInputsPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        balance: AnyPublisher<WalletBalance?, Never>
+    ) -> AnyPublisher<Void, Never> {
+        Publishers.CombineLatest(pooled.removeDuplicates(), balance.removeDuplicates())
+            .map { _ in () }
+            .eraseToAnyPublisher()
     }
 
     // MARK: - Obj-C bridge

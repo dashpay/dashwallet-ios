@@ -330,6 +330,28 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
+        // `amountValidationMessage` and the fee-aware ceilings read the pooled
+        // figure, which lands after the balance event that redraws this screen
+        // (through `coreBalanceDuffs` above) — so a "still confirming" note
+        // would outlive the confirmation. Redraw when that figure moves.
+        SwiftDashSDKWalletState.shared.$pooledSpendableDuffs
+            .removeDuplicates()
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                // Nothing typed, nothing to re-judge: spare the redraw — unless
+                // the contact intro is up, which shows the fee-aware spendable.
+                #if DASHPAY
+                let showsSpendable = self.contactRecipient != nil
+                #else
+                let showsSpendable = false
+                #endif
+                guard self.dashDuffsUnsigned > 0 || showsSpendable else { return }
+                self.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+
         // A drain refresh drops the estimate (disabling Continue) and, with a
         // pending marker, queries the SDK, so only a changed balance earns one.
         SwiftDashSDKWalletState.shared.$balance
@@ -1133,10 +1155,23 @@ final class SendViewModel: ObservableObject {
 
         switch route {
         case .coreToCore:
+            let gate = coreToCoreGate
+            // A contact payment is gated on confirmed coins while the From
+            // card shows them all, so right after a receive the shortfall can
+            // be just time — say so rather than "Insufficient balance". A
+            // typed address gates on the whole balance (no fee reserve), so it
+            // never needs this.
+            if let reserveDuffs = gate.feeReserveDuffs,
+               case .confirming(let duffs) = SwiftDashSDKWalletState.shared.sendVerdict(
+                   requestedDuffs: dashDuffsUnsigned,
+                   ceilingDuffs: gate.ceilingDuffs,
+                   reserveDuffs: reserveDuffs) {
+                return SendAmountError.fundsStillConfirming(duffs).errorDescription
+            }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreToCoreSpendableDuffs)
+                spendableDuffs: gate.ceilingDuffs)
 
         case .coreToShielded:
             // The pool fee rides on top of the amount, so the spendable
@@ -1145,12 +1180,21 @@ final class SendViewModel: ObservableObject {
             guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
                 return Self.feeEstimateUnavailableMessage
             }
-            let spendableDuffs = coreSpendableDuffs
+            let state = SwiftDashSDKWalletState.shared
+            let (spendableDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
+            let ceilingDuffs = SwiftDashSDKWalletState.feeAwareMax(spendable: spendableDuffs, reserve: feeDuffs)
+            // The asset lock spends only confirmed or InstantSend-locked coins,
+            // so here waiting genuinely is the fix.
+            if case .confirming(let duffs) = state.sendVerdict(
+                requestedDuffs: dashDuffsUnsigned,
+                ceilingDuffs: ceilingDuffs,
+                reserveDuffs: reserveDuffs &+ feeDuffs) {
+                return SendAmountError.fundsStillConfirming(duffs).errorDescription
+            }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: spendableDuffs > feeDuffs
-                    ? spendableDuffs - feeDuffs : 0)
+                spendableDuffs: ceilingDuffs)
 
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else {
@@ -1284,11 +1328,18 @@ final class SendViewModel: ObservableObject {
     /// documents for its callers and the one Max already fills. The contact
     /// intro shows this figure too, so the balance on screen is one the Send
     /// button accepts.
-    var coreToCoreSpendableDuffs: UInt64 {
+    var coreToCoreSpendableDuffs: UInt64 { coreToCoreGate.ceilingDuffs }
+
+    /// `coreToCoreSpendableDuffs` with the fee reserve it holds back — `nil`
+    /// for the typed-address gate, which holds nothing back.
+    private var coreToCoreGate: (ceilingDuffs: UInt64, feeReserveDuffs: UInt64?) {
         #if DASHPAY
-        if contactRecipient != nil { return coreSpendableDuffs }
+        if contactRecipient != nil {
+            let gate = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
+            return (gate.max, gate.reserve)
+        }
         #endif
-        return coreBalanceDuffs
+        return (coreBalanceDuffs, nil)
     }
 
     var canContinue: Bool {
