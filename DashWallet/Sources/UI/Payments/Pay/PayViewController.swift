@@ -119,7 +119,7 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
         case .scanQR:
             presentPaymentScanner { [weak self] paymentInput in
                 self?.dismiss(animated: true) {
-                    self?.paymentController.performPayment(with: paymentInput)
+                    self?.dispatchPaymentInput(paymentInput)
                 }
             }
         case .pasteboard:
@@ -156,7 +156,7 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
 
 extension PayViewController: EnterAddressViewControllerDelegate {
     func enterAddressViewControllerDidPreparePaymentInput(_ viewController: EnterAddressViewController, input: DWPaymentInput) {
-        processPaymentInput(input)
+        dispatchPaymentInput(input)
     }
 }
 

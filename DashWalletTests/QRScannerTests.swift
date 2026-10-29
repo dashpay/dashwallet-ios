@@ -8,6 +8,7 @@
 //  driven through `didDetectCodes` the way the camera drives it.
 //
 
+import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
@@ -22,6 +23,13 @@ final class QRScannerTests: XCTestCase {
         let network: PaymentNetwork = WalletEnvironment.network == .mainnet ? .mainnet : .testnet
         let script = Data([0x76, 0xa9, 0x14]) + Data((0..<20).map { UInt8($0 &* 11 &+ 5) }) + Data([0x88, 0xac])
         return ScriptAddressCodec.address(forScript: script, network: network)!
+    }()
+
+    /// A DIP-0018 Platform P2PKH address (type byte 0xb0) for the network
+    /// the test host runs on.
+    private static let platformAddress: String = {
+        let payload = Data([0xb0]) + Data((0..<20).map { UInt8($0 &* 13 &+ 1) })
+        return Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet), data: payload)!
     }()
 
     private static let userLink = DashPayUserLink(
@@ -237,6 +245,23 @@ final class QRScannerTests: XCTestCase {
             return XCTFail("the field gets the URL, not a rejection")
         }
         XCTAssertEqual(value, "https://example.com/connect?id=1")
+    }
+
+    /// The Payments screen and Enter Address hand scans to
+    /// `dispatchPaymentInput`, which must send a Platform destination to the
+    /// Send screen and keep a Core address on the classic processor.
+    func testOnlyPlatformDestinationsRequireTheSendScreen() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["dash:\(Self.platformAddress)?amount=1.5"])
+        guard case .payment(let platformInput) = recorder.results.first else {
+            return XCTFail("a Platform destination is a payment")
+        }
+        XCTAssertTrue(QRScanResultRouter.requiresSendScreen(platformInput))
+        XCTAssertEqual(platformInput.parsedURI?.amount, 150_000_000)
+
+        let core = DWPaymentInputBuilder().paymentInput(
+            withParsedURI: ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)"), source: .scanQR)
+        XCTAssertFalse(QRScanResultRouter.requiresSendScreen(core))
     }
 
     func testPaymentScannerPrefersTheDashIntentAmongSeveralCodes() {
