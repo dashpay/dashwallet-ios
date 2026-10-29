@@ -87,7 +87,11 @@ enum QRScanResultRouter {
         navigationController.isNavigationBarHidden = true
         navigationController.modalPresentationStyle = .fullScreen
 
-        if input.bip70Confirmation != nil {
+        // The classic processor also keeps a Core request that names an app
+        // to return to (`sender`): the form keeps only the address and
+        // amount, and the processor is what sends that app its payack.
+        let keepsCallback = input.parsedURI?.callbackScheme != nil && !requiresSendScreen(input)
+        if input.bip70Confirmation != nil || keepsCallback {
             // Wait for a visible anchor before presenting the confirmation.
             presenter.topController().present(navigationController, animated: true) {
                 controller.processPaymentInput(input)
