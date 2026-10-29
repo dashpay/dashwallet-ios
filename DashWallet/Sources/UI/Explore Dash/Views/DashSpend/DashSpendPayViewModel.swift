@@ -283,18 +283,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.canRecheck(fundsVerdictOnly: true) else { return }
+                guard let self, !Self.isResyncingWallet, self.canRecheck(fundsVerdictOnly: true) else { return }
                 self.checkAmountForErrors()
             }
             .store(in: &cancellableBag)
 
         // The syncing notice (set by an edit, a merchant load or a network
-        // change during a resync) is cleared when the sync is done — also when
-        // it finished while this screen was not subscribed, hence the check on
-        // subscription — and a funds verdict skipped meanwhile is judged.
+        // change during a resync) is cleared when the sync is done, and a
+        // funds verdict skipped meanwhile is judged. A sync that finished while
+        // this screen was not subscribed is caught by the check
+        // `startNetworkMonitoring` makes on every subscription.
         NotificationCenter.default.publisher(for: .syncStateChangedNotification)
-            .map { _ in () }
-            .prepend(())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self, SyncingActivityMonitor.shared.state == .syncDone,
@@ -504,13 +503,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     /// Whether a wallet or sync event may re-check the error on screen: a
     /// funds verdict (or, with `fundsVerdictOnly` false, the syncing notice),
-    /// outside a resync, for an amount that converts to DASH — an unconverted
-    /// one reads as 0, which fits anything.
+    /// unless an amount was entered that does not convert to DASH — it reads
+    /// as 0, which fits anything.
     private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
         guard let shown = error as? SendAmountError,
               shown.isFundsVerdict || (!fundsVerdictOnly && shown == .syncingChain)
         else { return false }
-        return !Self.isResyncingWallet && requestedDashDuffs > 0
+        return amount == 0 || requestedDashDuffs > 0
     }
 
     private static var isResyncingWallet: Bool {
