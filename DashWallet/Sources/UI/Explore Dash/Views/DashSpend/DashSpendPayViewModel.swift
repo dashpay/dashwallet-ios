@@ -279,18 +279,28 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // (merchant details that failed to load), and with no error up the
         // balance drop that follows a successful purchase would flag the
         // amount just paid. Not during a resync either: the verdict would turn
-        // into the syncing notice, which this subscription does not re-check —
-        // the sync-state change re-checks it once the resync ends instead. Nor
-        // while the amount cannot be converted to DASH: it reads as 0, which
-        // fits anything.
-        Publishers.Merge(
-            SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher,
-            NotificationCenter.default.publisher(for: .syncStateChangedNotification).map { _ in () })
+        // into the syncing notice, which only the sync-state subscription
+        // below re-checks. Nor while the amount cannot be converted to DASH:
+        // it reads as 0, which fits anything.
+        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self, self.errorIsFundsVerdict, !Self.isResyncingWallet,
                       self.requestedDashDuffs > 0
                 else { return }
+                self.checkAmountForErrors()
+            }
+            .store(in: &cancellableBag)
+
+        // The end of a resync clears the syncing notice — however it got there
+        // (a merchant load, a network change, or a funds verdict re-checked
+        // mid-resync) — and lets a funds verdict skipped meanwhile be judged.
+        NotificationCenter.default.publisher(for: .syncStateChangedNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, !Self.isResyncingWallet else { return }
+                let isSyncingNotice = (self.error as? SendAmountError) == .syncingChain
+                guard isSyncingNotice || (self.errorIsFundsVerdict && self.requestedDashDuffs > 0) else { return }
                 self.checkAmountForErrors()
             }
             .store(in: &cancellableBag)
@@ -498,8 +508,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     private static var isResyncingWallet: Bool {
-        DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet &&
-            SyncingActivityMonitor.shared.state != .syncDone
+        WalletSendService.isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
     }
 
     private var requestedDashDuffs: UInt64 {
