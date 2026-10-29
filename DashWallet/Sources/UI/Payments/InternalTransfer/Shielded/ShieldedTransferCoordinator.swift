@@ -578,6 +578,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// marker's only for a row the SDK tracked before it recorded recipients.
     func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.coreToShieldedDrain)
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
         // As in `performAssetLock`: activity from here on, so a removal cannot
@@ -636,9 +637,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         defer { Self.releaseDrainClaim(operation.id, completed: completed) }
 
         phase = .locking
-        let result = await env.manager.shieldedFundFromWalletDrain(
-            walletId: env.walletId, operationId: operation.id,
-            recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        let result = await proofTiming.measure({
+            await env.manager.shieldedFundFromWalletDrain(
+                walletId: env.walletId, operationId: operation.id,
+                recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        }, succeeded: { $0.drainVerdict != .notSent })
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = .init(txidWire: outpoint.txidWire, vout: outpoint.vout)
         }
