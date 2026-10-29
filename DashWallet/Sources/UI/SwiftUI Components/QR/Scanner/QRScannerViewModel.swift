@@ -217,9 +217,10 @@ final class QRScannerViewModel: ObservableObject {
 
                 if fallBackToEmbeddedAddress {
                     // Fetch failed → drop the request URL and fall back to
-                    // the embedded address, if any.
+                    // the embedded address, if any. Any payable form: a
+                    // Platform or Shielded one goes on to the Send screen.
                     let cleared = parsed.byClearingRequestURL()
-                    if cleared.isAddressValidForCurrentNetwork {
+                    if cleared.isAddressPayableForCurrentNetwork, cleared.address != nil {
                         self.finish(.payment(self.inputBuilder.paymentInput(withParsedURI: cleared, source: .scanQR)))
                     } else {
                         self.showInvalid(

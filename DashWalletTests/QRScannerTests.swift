@@ -264,6 +264,21 @@ final class QRScannerTests: XCTestCase {
         XCTAssertFalse(QRScanResultRouter.requiresSendScreen(core))
     }
 
+    /// A merchant request whose fetch fails falls back to its embedded
+    /// address. For a Platform destination that address is payable but not
+    /// a valid Core address, so the fallback must check payability.
+    func testFailedRequestFallsBackToAPlatformDestination() {
+        let parsed = ParsedPaymentURI.parse(
+            paymentString: "dash:\(Self.platformAddress)?r=https%3A%2F%2Fmerchant.invalid%2Fpr")
+        XCTAssertNotNil(parsed.rURL)
+        let cleared = parsed.byClearingRequestURL()
+        XCTAssertNil(cleared.rURL)
+        XCTAssertFalse(cleared.isAddressValidForCurrentNetwork)
+        XCTAssertTrue(cleared.isAddressPayableForCurrentNetwork)
+        XCTAssertTrue(QRScanResultRouter.requiresSendScreen(
+            DWPaymentInputBuilder().paymentInput(withParsedURI: cleared, source: .scanQR)))
+    }
+
     func testPaymentScannerPrefersTheDashIntentAmongSeveralCodes() {
         let (scanner, recorder) = makeScanner(.payment)
         scanner.didDetectCodes(["hello", "dash:\(Self.address)"])
