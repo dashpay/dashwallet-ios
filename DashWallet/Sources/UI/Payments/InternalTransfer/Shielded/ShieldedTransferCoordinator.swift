@@ -514,6 +514,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// not persist it, and every resume reads it back from there.
     func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.coreToShieldedDrain)
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
         let service = CoreShieldedDrainService()
@@ -555,9 +556,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         phase = .locking
-        let result = await env.manager.shieldedFundFromWalletDrain(
-            walletId: env.walletId, operationId: operation.id,
-            recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        let result = await proofTiming.measure({
+            await env.manager.shieldedFundFromWalletDrain(
+                walletId: env.walletId, operationId: operation.id,
+                recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        }, succeeded: { $0.drainVerdict != .notSent })
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
@@ -662,6 +665,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
     ) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.coreToShielded)
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
 
@@ -723,15 +727,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     // Unreachable: the entry guard derives it for every .bip44.
                     throw CoordinatorError.shieldedPoolFeeUnavailable
                 }
-                try await env.manager.shieldedFundFromAssetLock(
-                    walletId: env.walletId,
-                    fundingAccountIndex: 0,
-                    amountDuffs: lockValueDuffs,
-                    recipients: [recipient])
+                try await proofTiming.measure {
+                    try await env.manager.shieldedFundFromAssetLock(
+                        walletId: env.walletId,
+                        fundingAccountIndex: 0,
+                        amountDuffs: lockValueDuffs,
+                        recipients: [recipient])
+                }
             case .coinJoinDrain:
-                try await env.manager.shieldedFundFromCoinJoinDrain(
-                    walletId: env.walletId,
-                    recipients: [recipient])
+                try await proofTiming.measure {
+                    try await env.manager.shieldedFundFromCoinJoinDrain(
+                        walletId: env.walletId,
+                        recipients: [recipient])
+                }
             }
         } catch {
             stopAssetLockPolling()
@@ -779,6 +787,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         expectedDrainContext: CoreShieldedDrainContext? = nil
     ) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.resumeCoreToShielded)
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
@@ -859,11 +868,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             let recipient = ShieldedFundFromAssetLockRecipient(
                 recipientRaw43: recipientRaw43 ?? env.shieldedRecipient,
                 credits: nil)
-            try await env.manager.shieldedResumeFundFromAssetLock(
-                walletId: env.walletId,
-                outPointTxid: outPointTxidWire,
-                outPointVout: outPointVout,
-                recipients: [recipient])
+            try await proofTiming.measure {
+                try await env.manager.shieldedResumeFundFromAssetLock(
+                    walletId: env.walletId,
+                    outPointTxid: outPointTxidWire,
+                    outPointVout: outPointVout,
+                    recipients: [recipient])
+            }
             terminalPhase = .success
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
@@ -1007,6 +1018,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// identical — the recipient does not change input selection.
     func performShield(amountCredits: UInt64, recipientRaw43: Data? = nil) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.platformToShielded)
         Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits external=\(recipientRaw43 != nil)")
 
         let env: Environment
@@ -1051,21 +1063,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
             network: env.network)
 
         do {
-            if let recipientRaw43 {
-                try await env.manager.shieldedShieldToRecipient(
-                    walletId: env.walletId,
-                    shieldedAccount: 0,
-                    paymentAccount: 0,
-                    recipientRaw43: recipientRaw43,
-                    amount: amountCredits,
-                    addressSigner: signer)
-            } else {
-                try await env.manager.shieldedShield(
-                    walletId: env.walletId,
-                    shieldedAccount: 0,
-                    paymentAccount: 0,
-                    amount: amountCredits,
-                    addressSigner: signer)
+            try await proofTiming.measure {
+                if let recipientRaw43 {
+                    try await env.manager.shieldedShieldToRecipient(
+                        walletId: env.walletId,
+                        shieldedAccount: 0,
+                        paymentAccount: 0,
+                        recipientRaw43: recipientRaw43,
+                        amount: amountCredits,
+                        addressSigner: signer)
+                } else {
+                    try await env.manager.shieldedShield(
+                        walletId: env.walletId,
+                        shieldedAccount: 0,
+                        paymentAccount: 0,
+                        amount: amountCredits,
+                        addressSigner: signer)
+                }
             }
         } catch {
             if case PlatformWalletError.shieldedInsufficientBalance = error {
@@ -1108,6 +1122,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         toCoreAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.shieldedToCore)
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
@@ -1165,15 +1180,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedWithdraw(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority (seedless shielded
-                // bind, platform #4125/#4126); the SDK holds the resolver
-                // alive across the FFI call via withExtendedLifetime.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toCoreAddress: coreAddress,
-                amount: submittedAmount)
+            try await proofTiming.measure {
+                try await env.manager.shieldedWithdraw(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority (seedless shielded
+                    // bind, platform #4125/#4126); the SDK holds the resolver
+                    // alive across the FFI call via withExtendedLifetime.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toCoreAddress: coreAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
@@ -1214,6 +1231,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         toPlatformAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.shieldedToPlatform)
         Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
@@ -1270,13 +1288,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedUnshield(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see above.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toPlatformAddress: platformAddress,
-                amount: submittedAmount)
+            try await proofTiming.measure {
+                try await env.manager.shieldedUnshield(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see above.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toPlatformAddress: platformAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // The transition may already have credited our Platform address.
             // There is no proof height on this ambiguous path, so never invent
@@ -1497,6 +1517,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         recipientRaw43: Data
     ) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.shieldedToShielded)
         Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
 
         let env: BasicEnvironment
@@ -1538,13 +1559,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedTransfer(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see `performWithdraw`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                recipientRaw43: recipientRaw43,
-                amount: submittedAmount)
+            try await proofTiming.measure {
+                try await env.manager.shieldedTransfer(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see `performWithdraw`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: submittedAmount)
+            }
         } catch {
             handleSpendError(error, manager: env.manager)
             return
