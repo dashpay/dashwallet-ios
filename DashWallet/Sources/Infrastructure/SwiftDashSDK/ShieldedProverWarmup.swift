@@ -10,7 +10,7 @@
 //
 //  The SDK seam lives in `ShieldedProverWarmup+SwiftDashSDK.swift`; this file
 //  holds the policy and the warm-up state and has no SDK or UIKit
-//  dependency, so it runs under `scripts/test_shielded_state.py`.
+//  dependency, so its tests run without a live SDK.
 //
 
 import Foundation
@@ -168,6 +168,7 @@ final class ShieldedProverWarmup {
 
 enum ShieldedProofOperation: String {
     case coreToShielded = "core-to-shielded"
+    case coreToShieldedDrain = "core-to-shielded-drain"
     case resumeCoreToShielded = "resume-core-to-shielded"
     case platformToShielded = "platform-to-shielded"
     case shieldedToCore = "shielded-to-core"
@@ -188,8 +189,12 @@ struct ShieldedProofTiming {
     let readyAtConfirm: Bool
 
     /// Runs the SDK call that builds the proof and logs whether it had to wait
-    /// for the proving key. Errors pass through unchanged.
-    func measure<T>(_ call: () async throws -> T) async rethrows -> T {
+    /// for the proving key. Errors pass through unchanged. `succeeded` judges
+    /// calls that report failure in their result instead of throwing.
+    func measure<T>(
+        _ call: () async throws -> T,
+        succeeded isSuccess: (T) -> Bool = { _ in true }
+    ) async rethrows -> T {
         let callStartedAt = warmup.now()
         let readyAtCall = warmup.isReady
         let interval = ShieldedProverWarmup.signposter.beginInterval("ProofCall")
@@ -207,7 +212,7 @@ struct ShieldedProofTiming {
                 + " succeeded=\(succeeded)")
         }
         let value = try await call()
-        succeeded = true
+        succeeded = isSuccess(value)
         return value
     }
 

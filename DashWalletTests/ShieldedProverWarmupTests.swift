@@ -195,6 +195,21 @@ final class ShieldedProverWarmupTests: XCTestCase {
                 + "confirm_to_call_ms=1000 call_ms=3700 succeeded=false")
     }
 
+    func testProofTimingJudgesACallThatReportsFailureInItsResult() async {
+        backend.isReady = true
+        let warmup = makeWarmup()
+        let timing = warmup.beginProofOperation(.coreToShieldedDrain)
+        let value = await timing.measure({ () async -> Bool in
+            clock.advance(milliseconds: 300)
+            return false
+        }, succeeded: { $0 })
+        XCTAssertFalse(value)
+        XCTAssertEqual(lines, [
+            "SHIELDED-PROVER op=core-to-shielded-drain ready_at_confirm=true ready_at_call=true ready_after_call_ms=0 "
+                + "confirm_to_call_ms=0 call_ms=300 succeeded=false",
+        ])
+    }
+
     func testConfirmingWithoutRunningTheCallLogsNothing() {
         backend.isReady = true
         let warmup = makeWarmup()
