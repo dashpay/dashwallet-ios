@@ -38,7 +38,9 @@ struct AddContactScreen: View {
     @FocusState private var isSearchFocused: Bool
 
     @State private var query: String
-    private let scannedLink: DashPayUserLink?
+    /// Cleared once verified: `onAppear` runs again whenever this screen's
+    /// own scanner cover closes, and must not replay the routed link.
+    @State private var scannedLink: DashPayUserLink?
 
     private enum Layout {
         static let searchFieldHeight: CGFloat = 52
@@ -66,7 +68,7 @@ struct AddContactScreen: View {
     /// lands here.
     init(initialQuery: String = "", scannedLink: DashPayUserLink? = nil) {
         _query = State(initialValue: initialQuery)
-        self.scannedLink = scannedLink
+        _scannedLink = State(initialValue: scannedLink)
     }
 
     @State private var results: [DpnsSearchResult] = []
@@ -179,6 +181,7 @@ struct AddContactScreen: View {
                     scheduleSearch()
                 }
                 if let scannedLink {
+                    self.scannedLink = nil
                     verifyScannedLink(scannedLink)
                 }
             }
