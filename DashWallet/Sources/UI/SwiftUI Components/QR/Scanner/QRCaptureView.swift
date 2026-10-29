@@ -70,6 +70,9 @@ struct QRCaptureView: UIViewRepresentable {
         private var captureSession: AVCaptureSession?
         private var metadataOutput: AVCaptureMetadataOutput?
         private let sessionQueue = DispatchQueue(label: "org.dash.wallet.qr-capture")
+        /// Set by `stopSession()`, read only on `sessionQueue`: a setup still
+        /// queued when the scanner is dismissed must not start the camera.
+        private var isStopped = false
 
         init(onQRCodesDetected: @escaping ([String]) -> Void, onCameraUnavailable: @escaping () -> Void) {
             self.onQRCodesDetected = onQRCodesDetected
@@ -118,10 +121,10 @@ struct QRCaptureView: UIViewRepresentable {
             metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
             metadataOutput = nil
 
-            let session = captureSession
-            captureSession = nil
             sessionQueue.async {
-                session?.stopRunning()
+                self.isStopped = true
+                self.captureSession?.stopRunning()
+                self.captureSession = nil
             }
         }
 
@@ -158,7 +161,7 @@ struct QRCaptureView: UIViewRepresentable {
 
         private func configureAndStart(previewLayer: AVCaptureVideoPreviewLayer) {
             sessionQueue.async { [weak self] in
-                guard let self else { return }
+                guard let self, !self.isStopped else { return }
 
                 let session = AVCaptureSession()
 
@@ -205,6 +208,7 @@ struct QRCaptureView: UIViewRepresentable {
                 DispatchQueue.main.async {
                     previewLayer.session = session
                     self.sessionQueue.async {
+                        guard !self.isStopped else { return }
                         session.startRunning()
                     }
                 }
