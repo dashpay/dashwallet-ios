@@ -1,6 +1,7 @@
 import Foundation
+import SwiftDashSDK
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DashPayWithdrawalStoreTests: XCTestCase {
     private var directory: URL!
@@ -115,5 +116,174 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         try store.remove(aborted)
         XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact), [survivor])
         XCTAssertThrowsError(try store.update(aborted, status: .submitted))
+    }
+
+    // MARK: - Restart-proof contact lock
+
+    private var lockWindowStart: Date { Date().addingTimeInterval(-24 * 60 * 60) }
+
+    /// The `.unconfirmed` update after an ambiguous failure is best-effort:
+    /// the `.submitting` record written before submission must lock on its own.
+    func testSubmittingRecordAloneLocksAfterRestart() throws {
+        _ = try begin()
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testUnconfirmedRecordLocks() throws {
+        try store.update(try begin(), status: .unconfirmed)
+        XCTAssertTrue(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testSubmittedRecordDoesNotLock() throws {
+        try store.update(try begin(), status: .submitted)
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    /// A definite non-submission drops its record, so the retry is not locked.
+    func testRemovedRecordDoesNotLock() throws {
+        try store.remove(try begin())
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testUnresolvedRecordOutsideWindowDoesNotLock() throws {
+        _ = try begin()
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60)))
+    }
+
+    func testUnresolvedRecordLocksOnlyItsContact() throws {
+        _ = try begin()
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: Data(repeating: 9, count: 32), since: lockWindowStart))
+    }
+
+    /// Callers treat a throw as locked (fail closed), so it must not read as empty.
+    func testUnreadableJournalThrowsRatherThanReportingNoLock() throws {
+        _ = try begin()
+        let file = try XCTUnwrap(FileManager.default
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).first)
+        try Data("not json".utf8).write(to: file)
+        XCTAssertThrowsError(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testInaccessibleJournalDirectoryThrowsRatherThanReportingNoLock() throws {
+        _ = try begin()
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: directory.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: directory.path)
+        }
+        XCTAssertThrowsError(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    func testMissingJournalReportsNoLock() throws {
+        XCTAssertFalse(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart))
+    }
+
+    // MARK: - Which failures prove a withdrawal never left
+
+    @MainActor
+    func testDefiniteFailuresAllowRetry() {
+        let definite: [Error] = [
+            PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
+            PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+            PlatformWalletError.shieldedNoRecordedAnchor("mid-block"),
+            PlatformWalletError.shieldedBroadcastFailed("rejected"),
+            PlatformWalletError.shieldedInsufficientBalance("short"),
+        ]
+        for error in definite {
+            XCTAssertTrue(ShieldedTransferCoordinator.provesWithdrawalNotSubmitted(error), "\(error)")
+        }
+    }
+
+    @MainActor
+    func testAmbiguousFailuresStayUnknown() {
+        let ambiguous: [Error] = [
+            PlatformWalletError.shieldedSpendUnconfirmed("timeout"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("timeout"),
+            PlatformWalletError.walletOperation("unexpected"),
+            URLError(.timedOut),
+        ]
+        for error in ambiguous {
+            XCTAssertFalse(ShieldedTransferCoordinator.provesWithdrawalNotSubmitted(error), "\(error)")
+        }
+    }
+}
+
+/// Which balance a DashPay contact payment opens on, and when the From step
+/// is offered.
+@MainActor
+final class ContactPaymentSourceTests: XCTestCase {
+    private func plan(
+        hasWalletContext: Bool = true,
+        _ balances: [ChainNetwork: UInt64]
+    ) -> (initialSource: ChainNetwork, offersChoice: Bool) {
+        SendViewModel.contactSourcePlan(
+            validSources: SendViewModel.contactValidSources(hasWalletContext: hasWalletContext),
+            balanceDuffs: { balances[$0] ?? 0 })
+    }
+
+    func testOnlyPlatformFundedOpensOnPlatformWithoutChoice() {
+        let result = plan([.platform: 2_000_000])
+        XCTAssertEqual(result.initialSource, .platform)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    func testOnlyShieldedFundedOpensOnShieldedWithoutChoice() {
+        let result = plan([.shielded: 2_000_000])
+        XCTAssertEqual(result.initialSource, .shielded)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    func testSeveralFundedBalancesOfferChoiceStartingWithTransparent() {
+        let result = plan([.core: 1, .platform: 2_000_000, .shielded: 3_000_000])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertTrue(result.offersChoice)
+    }
+
+    /// The caller passes Transparent's fee-aware spendable amount, which is
+    /// zero for dust: Platform is then the only usable balance.
+    func testUnspendableTransparentDustDefersToPlatform() {
+        let result = plan([.core: 0, .platform: 2_000_000])
+        XCTAssertEqual(result.initialSource, .platform)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    func testNothingFundedFallsBackToTransparent() {
+        let result = plan([:])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertFalse(result.offersChoice)
+    }
+
+    /// Without a wallet context there is nothing to check a reservation
+    /// against, so only the Transparent send is offered.
+    func testMissingWalletContextLeavesOnlyTransparent() {
+        XCTAssertEqual(SendViewModel.contactValidSources(hasWalletContext: false), [.core])
+        let result = plan(hasWalletContext: false, [.platform: 2_000_000, .shielded: 3_000_000])
+        XCTAssertEqual(result.initialSource, .core)
+        XCTAssertFalse(result.offersChoice)
+    }
+}
+
+/// The Total a contact payment from Platform or Shielded confirms.
+final class ContactWithdrawalTotalTests: XCTestCase {
+    func testTotalAddsTheFee() {
+        // 0.02 DASH plus a 0.0001 DASH fee (1e7 credits).
+        XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 2_000_000, feeCredits: 10_000_000), 2_010_000)
+    }
+
+    func testPartialDuffOfFeeRoundsUp() {
+        XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 100, feeCredits: 1_001), 102)
+    }
+
+    func testOverflowIsUnavailable() {
+        XCTAssertNil(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: .max, feeCredits: 1_000))
     }
 }

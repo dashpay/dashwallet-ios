@@ -578,7 +578,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
         /// Current-rate fiat equivalent of `amountDuffs`, formatted for
         /// display (e.g. "$0.35"). Nil only when the amount is zero.
         let fiatString: String?
-        let withdrawalStatus: String?
+        /// Shown under the amount when the payment's outcome is not known.
+        let statusNote: String?
 
         /// Wire-order txid (the byte reverse of the display-order hex
         /// key) — the form `SwiftDashSDKWalletSource.fetch(txid:)` and
@@ -645,7 +646,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 fiatString: row.amountDuffs > 0
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
                     : nil,
-                withdrawalStatus: nil)
+                statusNote: nil)
         }
         if let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) {
             let scope = DashPayWithdrawalStore.Scope(
@@ -665,9 +666,11 @@ final class SwiftDashSDKContactsService: ObservableObject {
                         date: entry.createdAt,
                         fiatString: CurrencyExchanger.shared.fiatAmountString(
                             for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
-                        withdrawalStatus: entry.status == .submitted
-                            ? NSLocalizedString("Withdrawal submitted", comment: "DashPay payment history")
-                            : NSLocalizedString("Withdrawal status unknown", comment: "DashPay payment history"))
+                        // A submitted payment reads like any other sent one;
+                        // only an unresolved outcome needs saying.
+                        statusNote: entry.status == .submitted
+                            ? nil
+                            : NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed"))
                 }
             } catch {
                 Self.logger.error("DashPay withdrawal history could not be read: \(String(describing: error), privacy: .public)")
