@@ -41,7 +41,7 @@ struct QRScannerView: View {
                 HStack {
                     Button(action: { viewModel.cancel() }) {
                         Text(NSLocalizedString("Cancel", comment: ""))
-                            .font(.system(size: 17))
+                            .font(.body)
                             .foregroundColor(.dash.whiteText)
                     }
 
@@ -51,8 +51,11 @@ struct QRScannerView: View {
                         Button(action: { viewModel.torchOn.toggle() }) {
                             Image(systemName: viewModel.torchOn ? "bolt.slash.fill" : "bolt.fill")
                                 .foregroundColor(.dash.whiteText)
-                                .font(.system(size: 20))
+                                .font(.title3)
                         }
+                        .accessibilityLabel(Text(viewModel.torchOn
+                            ? NSLocalizedString("Turn off flashlight", comment: "QR scanner")
+                            : NSLocalizedString("Turn on flashlight", comment: "QR scanner")))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -65,7 +68,7 @@ struct QRScannerView: View {
                     .frame(width: 250, height: 250)
 
                 Text(NSLocalizedString("Scan QR Code", comment: ""))
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundColor(.dash.whiteText)
                     .padding(.top, 24)
 
@@ -166,7 +169,7 @@ struct QRScannerView: View {
                              action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15, weight: .medium))
+                .font(.subheadline.weight(.medium))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(background)
