@@ -303,6 +303,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case shieldedSweepChanged
         case platformBalanceChanged
         case belowWithdrawalMinimum
+        /// The Core fee the network charges a contact withdrawal differs from
+        /// the one the user confirmed.
+        case contactCoreFeeChanged
+        /// The network's protocol version, which sets that fee, can't be read.
+        case protocolVersionUnavailable
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         /// A Max drain's lock whose recipient cannot be established.
@@ -371,6 +376,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return String.localizedStringWithFormat(
                     NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
                     (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            case .contactCoreFeeChanged:
+                return NSLocalizedString(
+                    "The network fee for this payment changed. Close this confirmation and review it again.",
+                    comment: "DashPay contact payment: the Core fee changed after it was confirmed")
+            case .protocolVersionUnavailable:
+                return NSLocalizedString("Network error. Please check your connection and try again.", comment: "DashPay")
             case .platformBalanceChanged:
                 return NSLocalizedString(
                     "Your Platform balance changed. Close this confirmation and tap Max again.",
@@ -1123,7 +1134,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         amountCredits: UInt64,
         sweepAll: Bool = false,
         toCoreAddress destinationOverride: String? = nil,
-        contactRecipient: ContactPaymentRecipient? = nil
+        contactRecipient: ContactPaymentRecipient? = nil,
+        contactCoreFeeCredits: UInt64 = 0
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -1137,7 +1149,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         let submittedAmount: UInt64
-        if sweepAll {
+        if contactRecipient != nil {
+            // A sweep sends whatever the notes hold; a contact is only ever
+            // paid an exact amount (`SendViewModel` never offers it).
+            guard !sweepAll else {
+                handleFailure(CoordinatorError.shieldedSweepChanged)
+                return
+            }
+            do {
+                submittedAmount = try await contactWithdrawalCredits(
+                    recipientCredits: amountCredits, confirmedCoreFeeCredits: contactCoreFeeCredits)
+            } catch {
+                handleFailure(error)
+                return
+            }
+            if rejectIfAboveSpendCeiling(submittedAmount, feeKind: .withdrawal) { return }
+        } else if sweepAll {
             switch Self.sweepAvailability(feeKind: .withdrawal) {
             case .ready(let plan) where plan.amountCredits == amountCredits:
                 submittedAmount = plan.amountCredits
@@ -1177,17 +1204,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
             paysOwnWallet = true
         }
 
-        if contactRecipient != nil, submittedAmount < Self.contactWithdrawalMinimumCredits {
-            handleFailure(CoordinatorError.belowWithdrawalMinimum)
-            return
-        }
-
         let contactWithdrawal: ContactWithdrawal?
         do {
             try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : submittedAmount / 1000)
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
-                amountDuffs: submittedAmount / 1000,
+                // What the contact receives: the Core fee is carved out of
+                // the submitted amount on the network.
+                amountDuffs: amountCredits / 1000,
                 amountIsEstimate: false,
                 source: .shielded)
         } catch {
@@ -1480,7 +1504,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         fullBalance: Bool,
         feeHeadroomCredits: UInt64?,
         toCoreAddress destinationOverride: String? = nil,
-        contactRecipient: ContactPaymentRecipient? = nil
+        contactRecipient: ContactPaymentRecipient? = nil,
+        contactCoreFeeCredits: UInt64 = 0
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
@@ -1503,12 +1528,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             coreAddress = ownAddress
         }
 
-        if contactRecipient != nil, amountCredits < Self.contactWithdrawalMinimumCredits {
-            handleFailure(CoordinatorError.belowWithdrawalMinimum)
-            return
-        }
-
-        let contactWithdrawal: ContactWithdrawal?
         // The AUTO full-balance withdrawal pays whatever the balances are when
         // it runs, so it can't be bounded by the authorized amount: a contact
         // is only ever paid an exact amount (`SendViewModel` never offers it).
@@ -1516,8 +1535,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(CoordinatorError.platformBalanceChanged)
             return
         }
+        let submittedAmount: UInt64
+        if contactRecipient != nil {
+            do {
+                submittedAmount = try await contactWithdrawalCredits(
+                    recipientCredits: amountCredits, confirmedCoreFeeCredits: contactCoreFeeCredits)
+            } catch {
+                handleFailure(error)
+                return
+            }
+        } else {
+            submittedAmount = amountCredits
+        }
+
+        let contactWithdrawal: ContactWithdrawal?
         do {
-            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : amountCredits / 1000)
+            try await authorize(contactSpendDuffs: contactRecipient == nil ? nil : submittedAmount / 1000)
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: amountCredits / 1000,
@@ -1539,7 +1572,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
             } else {
                 try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
-                    amountCredits: amountCredits,
+                    amountCredits: submittedAmount,
                     address: coreAddress,
                     feeHeadroomCredits: feeHeadroomCredits)
             }
@@ -1661,14 +1694,82 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     // MARK: - DashPay contact withdrawals
 
-    /// The smallest contact payment a Platform or Shielded withdrawal can
-    /// carry: the consensus floor (`system_limits.min_withdrawal_amount`,
-    /// 1000 duffs since protocol v12) plus, from v14, the Core fee of the
-    /// asset unlock carved out of it (190 bytes at the 1 duff/byte these
-    /// withdrawals use). Below it Platform rejects the transition, and that
+    /// The smallest amount a contact can be paid from Platform or Shielded:
+    /// the consensus withdrawal floor (`system_limits.min_withdrawal_amount`,
+    /// 1000 duffs since protocol v12). From v14 the floor applies to the
+    /// amount plus the Core fee (`min_withdrawal_amount_with_core_fee`), which
+    /// `contactWithdrawalCredits` adds on top, so the recipient-side floor
+    /// stays 1000 duffs. Below it Platform rejects the transition, and that
     /// rejection is not one `provesWithdrawalNotSubmitted` can tell apart from
     /// an unknown outcome, so it is refused before anything is reserved.
-    nonisolated static let contactWithdrawalMinimumCredits: UInt64 = 1_000_000 + 190_000
+    nonisolated static let contactWithdrawalMinimumCredits: UInt64 = 1_000_000
+
+    /// The Core fee the network carves out of a withdrawal from protocol 14:
+    /// the 190-byte asset unlock at the 1 duff/byte every withdrawal here
+    /// uses (`try_into_asset_unlock_base_transaction_info_v1`). Before 14 it
+    /// came from the Core credit pool instead. An unknown version counts as
+    /// charging it; the coordinator checks the network's before paying.
+    nonisolated static func contactCoreFeeCredits(protocolVersion: UInt32?) -> UInt64 {
+        guard let protocolVersion, protocolVersion < 14 else { return 190_000 }
+        return 0
+    }
+
+    /// The amount a withdrawal must carry for the contact to receive
+    /// `recipientCredits`: the amount plus the Core fee the network carves out
+    /// of it. Read from the network's protocol version right before
+    /// authorizing, and refused unless that fee is the one the user confirmed:
+    /// the contact must receive exactly what the confirmation said. Throws
+    /// before anything is authorized or reserved.
+    private func contactWithdrawalCredits(
+        recipientCredits: UInt64,
+        confirmedCoreFeeCredits: UInt64
+    ) async throws -> UInt64 {
+        guard recipientCredits >= Self.contactWithdrawalMinimumCredits else {
+            throw CoordinatorError.belowWithdrawalMinimum
+        }
+        let coreFee = Self.contactCoreFeeCredits(protocolVersion: try await networkProtocolVersion())
+        guard coreFee == confirmedCoreFeeCredits else {
+            Self.logger.error("🛡️ SHIELD-TX :: contact Core fee \(coreFee) differs from confirmed \(confirmedCoreFeeCredits)")
+            throw CoordinatorError.contactCoreFeeChanged
+        }
+        let (total, overflow) = recipientCredits.addingReportingOverflow(coreFee)
+        guard !overflow else { throw CoordinatorError.contactCoreFeeChanged }
+        return total
+    }
+
+    /// The SDK's protocol-version read blocks its thread on a proven network
+    /// query, so it stays off the cooperative pool.
+    private nonisolated static let protocolVersionReadQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.contact-withdrawal-protocol",
+        qos: .userInitiated)
+
+    /// The network's protocol version, from a proven response only. The
+    /// SDK's refresh does not fail when its query does: it hands back the
+    /// version it already holds, which starts at the network's minimum (13)
+    /// before anything is proven. Only `verifiedVersion` comes from a checked
+    /// proof, so nil there means the version is unknown, and the payment is
+    /// refused rather than priced on a guess.
+    private func networkProtocolVersion() async throws -> UInt32 {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.protocolVersionUnavailable }
+        let refresh: @Sendable () throws -> Void = { [weak sdk] in
+            guard let sdk else { throw CancellationError() }
+            _ = try sdk.refreshProtocolVersion()
+        }
+        do {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                Self.protocolVersionReadQueue.async { continuation.resume(with: Result { try refresh() }) }
+            }
+        } catch {
+            Self.logger.error("🛡️ SHIELD-TX :: protocol version refresh failed \(String(describing: error), privacy: .public)")
+            throw CoordinatorError.protocolVersionUnavailable
+        }
+        // A cached read, no request: what the refresh just proved, if anything.
+        guard let verified = (try? sdk.protocolVersionInfo())?.verifiedVersion else {
+            Self.logger.error("🛡️ SHIELD-TX :: no proven protocol version")
+            throw CoordinatorError.protocolVersionUnavailable
+        }
+        return verified
+    }
 
 
     private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry

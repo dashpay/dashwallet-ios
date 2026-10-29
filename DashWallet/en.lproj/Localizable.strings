@@ -6720,3 +6720,6 @@
 
 /* DashPay contact payment from Platform: single-payment cap */
 "You can send up to %@ to a contact from your Platform balance in one payment." = "You can send up to %@ to a contact from your Platform balance in one payment.";
+
+/* DashPay contact payment: the Core fee changed after it was confirmed */
+"The network fee for this payment changed. Close this confirmation and review it again." = "The network fee for this payment changed. Close this confirmation and review it again.";

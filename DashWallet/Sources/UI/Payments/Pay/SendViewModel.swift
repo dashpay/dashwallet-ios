@@ -189,8 +189,6 @@ final class SendViewModel: ObservableObject {
     /// its display representation and must not be converted back for sending.
     private var maxAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
-    /// Fee of the planned Max sweep — exact, unlike the two-action estimate.
-    private(set) var shieldedSweepFeeCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
@@ -608,12 +606,25 @@ final class SendViewModel: ObservableObject {
         case .core:
             return coreToCoreSpendableDuffs
         case .platform:
-            return partialWithdrawCapCredits / 1000
+            return platformToCoreCapCredits / 1000
         case .shielded:
             // Without the note-priced ceiling, `canContinue` falls back to
             // the balance less the worst-case reserve; so does this.
-            return (shieldedSpendCeilingCredits ?? creditsMinusFeeReserve(shieldedBalance)) / 1000
+            let ceiling = shieldedSpendCeilingCredits ?? creditsMinusFeeReserve(shieldedBalance)
+            return (ceiling > contactCoreFeeCredits ? ceiling - contactCoreFeeCredits : 0) / 1000
         }
+    }
+
+    /// The Core fee a contact paid from Platform or Shielded has added on
+    /// top, so the contact receives the amount entered: from protocol 14 the
+    /// network carves it out of the withdrawal. Read from the version the SDK
+    /// has proven (unknown counts as charging it); the coordinator proves the
+    /// network's again before paying and refuses if the fee differs. Zero for
+    /// every other send.
+    var contactCoreFeeCredits: UInt64 {
+        guard paysContact, route == .platformToCore || route == .shieldedToCore else { return 0 }
+        return ShieldedTransferCoordinator.contactCoreFeeCredits(
+            protocolVersion: (try? SwiftDashSDKHost.shared.sdk?.protocolVersionInfo())?.verifiedVersion)
     }
 
     /// The SDK gave up permanently on this contact's DIP-15 payment channel
@@ -1106,6 +1117,14 @@ final class SendViewModel: ObservableObject {
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
+    /// The most one Platform → Core payment can send with its explicit
+    /// input: `partialWithdrawCapCredits`, less the Core fee a contact has
+    /// added on top.
+    private var platformToCoreCapCredits: UInt64 {
+        let cap = partialWithdrawCapCredits
+        return cap > contactCoreFeeCredits ? cap - contactCoreFeeCredits : 0
+    }
+
     /// A contact paid from Platform or Shielded below the withdrawal floor
     /// (`ShieldedTransferCoordinator.contactWithdrawalMinimumCredits`).
     private var isBelowContactWithdrawalMinimum: Bool {
@@ -1260,7 +1279,8 @@ final class SendViewModel: ObservableObject {
             // spent, so it supersedes the flat reserve — which always charges
             // a full-size bundle and would reject amounts a one- or two-note
             // spend can afford.
-            if let ceiling = shieldedSpendCeilingCredits {
+            if let fullCeiling = shieldedSpendCeilingCredits {
+                let ceiling = fullCeiling > contactCoreFeeCredits ? fullCeiling - contactCoreFeeCredits : 0
                 if creditsPreview > shieldedBalance {
                     // Simply more than the wallet holds: name that, rather than
                     // blaming note fragmentation.
@@ -1280,7 +1300,7 @@ final class SendViewModel: ObservableObject {
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve)
+                feeReserveCredits: reserve + contactCoreFeeCredits)
 
         case .platformToCore:
             // The balance envelope first. A request the balance cannot cover
@@ -1314,10 +1334,10 @@ final class SendViewModel: ObservableObject {
                     balanceName)
             }
             if isFullPlatformWithdrawal { return nil }
-            guard creditsPreview > partialWithdrawCapCredits else { return nil }
+            guard creditsPreview > platformToCoreCapCredits else { return nil }
 
             let formattedCap =
-                "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
+                "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
             if paysContact, let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -1335,7 +1355,7 @@ final class SendViewModel: ObservableObject {
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: platformWithdrawableDuffs ?? partialWithdrawCapCredits / 1000)
+                spendableDuffs: platformWithdrawableDuffs ?? platformToCoreCapCredits / 1000)
         }
     }
 
@@ -1424,15 +1444,16 @@ final class SendViewModel: ObservableObject {
         case .platformToCore:
             guard withdrawalPreflight?.canWithdraw == true else { return false }
             if isFullPlatformWithdrawal { return true }
-            return creditsPreview <= partialWithdrawCapCredits
+            return creditsPreview <= platformToCoreCapCredits
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             if isFullShieldedSweep {
                 return shieldedSweepAmountCredits != nil
             }
             if let ceiling = shieldedSpendCeilingCredits {
-                return creditsPreview <= ceiling
+                return ceiling >= contactCoreFeeCredits && creditsPreview <= ceiling - contactCoreFeeCredits
             }
-            guard let reserve = feeReserveCredits else { return false }
+            guard let feeReserve = feeReserveCredits else { return false }
+            let reserve = feeReserve + contactCoreFeeCredits
             return shieldedBalance >= reserve
                 && creditsPreview <= shieldedBalance - reserve
         }
@@ -1487,8 +1508,24 @@ final class SendViewModel: ObservableObject {
             }
         case .platformToCore:
             sourceDuffs = paysContact
-                ? partialWithdrawCapCredits / 1000
+                ? platformToCoreCapCredits / 1000
                 : platformWithdrawableDuffs ?? 0
+        case .shieldedToCore where paysContact:
+            // A contact is paid an exact amount, never a sweep: the most one
+            // transition can send, less the Core fee added on top.
+            switch ShieldedTransferCoordinator.sweepAvailability(feeKind: .withdrawal) {
+            case .ready(let plan):
+                let fee = contactCoreFeeCredits
+                sourceDuffs = (plan.amountCredits > fee ? plan.amountCredits - fee : 0) / 1000
+            case .waitingForConfirmation(let credits):
+                shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
+                sourceDuffs = 0
+            case .unavailable:
+                shieldedMaxNotice = NSLocalizedString(
+                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
+                    comment: "Shielded Max unavailable")
+                sourceDuffs = 0
+            }
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             // All three spend the pool, so all three plan Max against the real
             // note set. A flat reserve here would price a full-size bundle and
@@ -1500,7 +1537,6 @@ final class SendViewModel: ObservableObject {
                 // under the amount carries errors only.
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
-                shieldedSweepFeeCredits = plan.feeCredits
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
@@ -1547,7 +1583,6 @@ final class SendViewModel: ObservableObject {
         maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
-        shieldedSweepFeeCredits = nil
         shieldedMaxNotice = nil
     }
 

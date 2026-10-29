@@ -283,6 +283,26 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 100, feeCredits: 1_001), 102)
     }
 
+    /// From protocol 14 the asset unlock's Core fee (190 bytes at 1 duff/byte)
+    /// comes out of the withdrawal, so a contact payment adds it on top.
+    func testCoreFeeIsAddedFromProtocol14() {
+        XCTAssertEqual(ShieldedTransferCoordinator.contactCoreFeeCredits(protocolVersion: 13), 0)
+        XCTAssertEqual(ShieldedTransferCoordinator.contactCoreFeeCredits(protocolVersion: 14), 190_000)
+        XCTAssertEqual(ShieldedTransferCoordinator.contactCoreFeeCredits(protocolVersion: 15), 190_000)
+    }
+
+    /// Unknown counts as charging it: the coordinator then refuses a mismatch
+    /// rather than underpaying the contact.
+    func testUnknownProtocolCountsTheCoreFee() {
+        XCTAssertEqual(ShieldedTransferCoordinator.contactCoreFeeCredits(protocolVersion: nil), 190_000)
+    }
+
+    /// The consensus floor is 1000 duffs; from v14 it covers amount plus Core
+    /// fee, which is added on top, so the contact-side floor stays 1000 duffs.
+    func testContactMinimumIsTheConsensusFloor() {
+        XCTAssertEqual(ShieldedTransferCoordinator.contactWithdrawalMinimumCredits, 1_000_000)
+    }
+
     func testOverflowIsUnavailable() {
         XCTAssertNil(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: .max, feeCredits: 1_000))
     }

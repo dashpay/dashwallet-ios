@@ -525,8 +525,8 @@ struct ExternalSendAmountScreen: View {
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
                     coreShieldedDrain: viewModel.frozenCoreDrainSubmission?.confirmation,
-                    shieldedSweepFeeCredits: viewModel.shieldedSweepFeeCredits,
                     contactRecipient: viewModel.contactPaymentRecipient,
+                    contactCoreFeeCredits: viewModel.contactCoreFeeCredits,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         didCompleteSend = true
@@ -1136,12 +1136,14 @@ struct SendConfirmSheet: View {
     /// recipient's address through the SDK wallet drain. `dashDuffs` and
     /// `fiatText` are then its estimate; the figures below come from here.
     var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
-    /// The planned fee of a Shielded Max sweep, when that is what's confirmed.
-    var shieldedSweepFeeCredits: UInt64? = nil
     /// A DashPay contact paid through `.platformToCore` / `.shieldedToCore`.
     /// There is no `destinationAddress` then: the coordinator reserves one of
     /// the contact's addresses after the user confirms and authorizes.
     var contactRecipient: ContactPaymentRecipient? = nil
+    /// The Core fee added on top of a contact payment so the contact receives
+    /// the amount shown (`SendViewModel.contactCoreFeeCredits`). The
+    /// coordinator pays only if the network still charges exactly this.
+    var contactCoreFeeCredits: UInt64 = 0
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -1410,6 +1412,11 @@ struct SendConfirmSheet: View {
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
         if let drain = coreShieldedDrain { return drain.totalFeeCredits }
+        // A contact payment's Core fee is part of what it costs the sender.
+        return routeFeeCredits.map { $0 + contactCoreFeeCredits }
+    }
+
+    private var routeFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -1427,7 +1434,6 @@ struct SendConfirmSheet: View {
             // side reserves on input 0.
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .shieldedToCore:
-            if isFullShieldedSweep, let shieldedSweepFeeCredits { return shieldedSweepFeeCredits }
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: 2)
         case .shieldedToPlatform:
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
@@ -1458,16 +1464,14 @@ struct SendConfirmSheet: View {
             return "≈ " + total.formattedDashAmount
         }
         // A contact paid from Platform or Shielded loses the amount plus the
-        // withdrawal fee from that balance; say so, approximately unless the
-        // fee is a planned sweep's exact one.
+        // withdrawal fee from that balance; the fee is an estimate.
         if contactRecipient != nil, route == .platformToCore || route == .shieldedToCore {
             guard let amountDuffs = UInt64(exactly: dashDuffs),
                   let feeCredits = networkFeeCredits,
                   let totalDuffs = Self.withdrawalDebitDuffs(amountDuffs: amountDuffs, feeCredits: feeCredits),
                   let signedTotal = Int64(exactly: totalDuffs)
             else { return "—" }
-            let isExact = route == .shieldedToCore && isFullShieldedSweep && shieldedSweepFeeCredits != nil
-            return (isExact ? "" : "~ ") + signedTotal.formattedDashAmount
+            return "~ " + signedTotal.formattedDashAmount
         }
         guard route == .coreToShielded else {
             return dashDuffs.formattedDashAmount
@@ -1638,13 +1642,15 @@ struct SendConfirmSheet: View {
                     fullBalance: isFullPlatformWithdrawal,
                     feeHeadroomCredits: withdrawalFeeCredits,
                     toCoreAddress: destinationAddress,
-                    contactRecipient: contactRecipient)
+                    contactRecipient: contactRecipient,
+                    contactCoreFeeCredits: contactCoreFeeCredits)
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep,
                     toCoreAddress: destinationAddress,
-                    contactRecipient: contactRecipient)
+                    contactRecipient: contactRecipient,
+                    contactCoreFeeCredits: contactCoreFeeCredits)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,
