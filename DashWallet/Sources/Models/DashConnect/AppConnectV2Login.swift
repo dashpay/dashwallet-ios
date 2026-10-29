@@ -358,17 +358,110 @@ extension AppConnect {
         )
     }
 
+    /// One encryption key this wallet derives, as the data source holds it:
+    /// the private key is wiped by whoever owns the array it ends up in.
+    typealias DerivedEncryptionKey = (publicKey: Data, privateKey: Data)
+
+    /// DIP "Encryption Keys": every key this wallet can derive for one
+    /// encryption binding of `purpose`. The first is always rotation `0'` at
+    /// `m/9'/coin'/5'/7'/0'/identityId'/contractId'/purpose'/rotation'`, the
+    /// key a login registers when the identity has none for the binding.
+    /// Rotations are registered in order, so the later ones are found by
+    /// deriving `1'`, `2'`, … and stopping at the first whose key is not on
+    /// the identity in any state; that one is wiped, not kept. No more
+    /// rotations are derived than the identity has keys of `purpose`.
+    ///
+    /// On testnet and devnet the key at the path without the rotation level
+    /// comes last: wallets built before the DIP registered keys there, and a
+    /// current key at that path is still sent. Mainnet never had them, so the
+    /// path is not derived there and such a key reads as another wallet's.
+    static func derivableEncryptionKeys(
+        network: Network,
+        purpose: KeyPurpose,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        rotation: (UInt32) throws -> DerivedEncryptionKey,
+        legacy: () throws -> DerivedEncryptionKey
+    ) throws -> [DerivedEncryptionKey] {
+        func isOnIdentity(_ publicKey: Data) -> Bool {
+            currentIdentityPublicKeys.contains { $0.purpose == purpose && $0.data == publicKey }
+        }
+        var keys: [DerivedEncryptionKey] = []
+        var kept = false
+        defer {
+            if !kept { for index in keys.indices { PlatformDashConnectDataSource.zero(&keys[index].privateKey) } }
+        }
+        keys.append(try rotation(0))
+        let maxRotations = max(1, currentIdentityPublicKeys.filter { $0.purpose == purpose }.count)
+        var next: UInt32 = 1
+        while isOnIdentity(keys[keys.count - 1].publicKey), keys.count < maxRotations {
+            var key = try rotation(next)
+            guard isOnIdentity(key.publicKey) else {
+                PlatformDashConnectDataSource.zero(&key.privateKey)
+                break
+            }
+            keys.append(key)
+            next += 1
+        }
+        if derivesLegacyEncryptionPath(network) {
+            keys.append(try legacy())
+        }
+        kept = true
+        return keys
+    }
+
+    /// Whether `network` derives encryption keys at the path without the
+    /// rotation level as well (DIP "Deployment and Compatibility").
+    static func derivesLegacyEncryptionPath(_ network: Network) -> Bool {
+        network == .testnet || network == .devnet
+    }
+
+    /// What a login does with one granted encryption binding.
+    enum EncryptionSlot: Equatable {
+        /// Send the identity's current key, which is `derivedIndex` among
+        /// the keys `derivableEncryptionKeys` returned; register nothing.
+        case send(keyId: UInt32, derivedIndex: Int)
+        /// Register rotation `0'` (the first derivable key) and send it.
+        case register
+        /// Leave the slot out and register nothing.
+        case omit
+    }
+
+    /// The slot a settled `state` comes to, or nil for one that is not
+    /// settled, or a current key that is not among `derivedPublicKeys` as
+    /// the fetched keys show it (a read that is behind).
+    static func encryptionSlot(
+        for state: EncryptionKeyState,
+        derivedPublicKeys: [Data],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> EncryptionSlot? {
+        switch state {
+        case .current(let keyId):
+            guard let key = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == keyId }),
+                  let derivedIndex = derivedPublicKeys.firstIndex(of: key.data) else { return nil }
+            return .send(keyId: keyId, derivedIndex: derivedIndex)
+        case .absent:
+            return .register
+        case .notThisWallets:
+            return .omit
+        case .outOfDate, .absentIfSettled, .notThisWalletsIfSettled, .currentIfSettled:
+            return nil
+        }
+    }
+
     /// What the identity holds for the app's encryption key of one purpose
-    /// (wallet rule 7).
+    /// (wallet rule 7, DIP "Encryption Keys").
     enum EncryptionKeyState: Equatable {
-        /// Its current key is the one this wallet derives: send it again.
+        /// Its current key is one this wallet derives: send it again.
         case current(keyId: UInt32)
-        /// It has none: register the one this wallet derives.
+        /// It has no key for the contract and purpose at all: register
+        /// rotation `0'`.
         case absent
-        /// Its current key is another wallet's, or the one this wallet
-        /// derives was disabled: leave the slot out. Replacing it would be a
-        /// rotation, which orphans what peers encrypted to it; that is an
-        /// explicit user action, never part of a login.
+        /// Its current key is another wallet's, or Platform's current key
+        /// for the contract and purpose is disabled, so none is current:
+        /// leave the slot out.
+        /// Replacing it would be a rotation, which orphans what peers
+        /// encrypted to it; that is an explicit user action, never part of a
+        /// login.
         case notThisWallets
         /// The fetched keys and Platform's current key disagree: one of the
         /// two reads is behind, and nothing can be said until both agree.
@@ -583,22 +676,27 @@ extension AppConnect {
             isDisabled: !(disabledAt == nil || disabledAt is NSNull))
     }
 
-    /// Rotation 0 only: the key at DIP-13 `7'` for (identity, contract,
-    /// purpose). `currentKey` is the key Platform names as current under
-    /// the app's `rule`; this wallet's key is sent only while it is that one
-    /// and live. The fetched keys must show that key as Platform does.
+    /// DIP "Encryption Keys", for one granted binding. `currentKey` is the
+    /// key Platform names as current under the app's `rule`; it is the
+    /// identity's current key only while it is live. `derivedPublicKeys` are
+    /// every key this wallet derives for the binding
+    /// (`derivableEncryptionKeys`). A live current key among them is sent;
+    /// any other live current key is another wallet's and its slot is left
+    /// out (rule 1). A disabled current key means a key for the contract and
+    /// purpose is on the identity and none is current: the slot is left out
+    /// and nothing is registered (rule 2). Only with no current key at all is a
+    /// key registered (rule 3). The fetched keys must show the current key
+    /// as Platform does.
     ///
     /// Every key bound to the app becomes current when it is registered, so
     /// with no current key at all a live key the store places on the app
     /// means Platform's read is behind, and a key it cannot place is
     /// bound elsewhere once a later read agrees. Beside a current key, a
-    /// live key the app may hold was registered before it, or after it with
-    /// Platform's read behind, so the answer waits on a later read. Behind
-    /// a disabled current key that a later read confirms, a key registered
-    /// before it is no longer current, and a new one shadows nothing; under
-    /// `unique`, nothing can be added behind a disabled current key at all.
+    /// key the app may hold was registered before it, or after it with
+    /// Platform's read behind, so under `latest` the answer waits on a later
+    /// read.
     static func encryptionKeyState(
-        derivedPublicKey: Data,
+        derivedPublicKeys: [Data],
         purpose: KeyPurpose,
         contractId: Data,
         rule: CurrentKeyRule,
@@ -620,13 +718,16 @@ extension AppConnect {
                 unplaced = true
             }
         }
-        let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
         guard let currentKey else {
             // Registering a key bound to the app makes it current, so a key
             // the store places on the app with no current key at all, live or
-            // disabled, or this wallet's key in any state (it is derived for
-            // the app's contract), is a read from before it landed.
-            if placedInAnyState || holdsTheDerivedKey { return .outOfDate }
+            // disabled, or one of this wallet's keys in any state (they are
+            // derived for the app's contract), is a read from before it
+            // landed.
+            let holdsADerivedKey = currentIdentityPublicKeys.contains(where: {
+                $0.purpose == purpose && derivedPublicKeys.contains($0.data)
+            })
+            if placedInAnyState || holdsADerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
         guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),
@@ -640,17 +741,19 @@ extension AppConnect {
         let mayBeBehind = rule == .latest && (placedInAnyState || unplaced)
         if !currentKey.isDisabled {
             guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
-                  currentKey.data == derivedPublicKey else {
+                  derivedPublicKeys.contains(currentKey.data) else {
                 return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
             }
             return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
         }
+        // Rule 2: the identity has a key for the contract and purpose, and
+        // none is current. Under `unique` Platform refuses any other; under
+        // `latest` a new key would be a rotation, which is the user's
+        // explicit action and never part of a login. A later live key with
+        // Platform's read behind is the one exception, so under `latest`
+        // the answer waits on a later read.
         if rule == .unique { return .notThisWallets }
-        // Behind a disabled current key, a key of the app's registered
-        // before it is no longer current either, so a new key shadows
-        // nothing; this wallet's own key cannot be added a second time.
-        if holdsTheDerivedKey { return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets }
-        return mayBeBehind ? .absentIfSettled : .absent
+        return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to
