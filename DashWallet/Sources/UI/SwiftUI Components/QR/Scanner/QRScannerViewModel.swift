@@ -146,8 +146,12 @@ final class QRScannerViewModel: ObservableObject {
                     finish(.text(address))
                 } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil {
                     showInvalid(message: invalidQRMessage(for: parsed))
-                } else {
+                } else if parsed.isAddressPayableForCurrentNetwork, parsed.address != nil {
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
+                } else {
+                    // Not payable here (a plain https URL, a Platform
+                    // address): the field validates its own input.
+                    finish(.text(value.trimmingCharacters(in: .whitespacesAndNewlines)))
                 }
             #if DASHPAY
             case .dashPayUser(let link):
