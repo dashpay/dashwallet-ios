@@ -53,7 +53,7 @@ enum QRScanResultRouter {
             // The same entry an opened invitation link takes: store it for
             // this wallet and bring Home, where its card is, forward.
             if InvitationEntry.receive(url, presenter: presenter) {
-                mainTabbar(near: presenter)?.showHomeForInvitation()
+                mainTabbar()?.showHomeForInvitation()
             }
         #endif
 
@@ -88,27 +88,13 @@ enum QRScanResultRouter {
     }
 
     #if DASHPAY
-    private static func mainTabbar(near presenter: UIViewController?) -> MainTabbarController? {
-        var current = presenter
-        while let controller = current {
-            if let tabbar = controller as? MainTabbarController {
-                return tabbar
-            }
-            if let tabbar = controller.tabBarController as? MainTabbarController {
-                return tabbar
-            }
-            current = controller.presentingViewController ?? controller.parent
-        }
-        // SwiftUI sheets can be presented from a detached hierarchy;
-        // fall back to the app's root.
-        var candidate = appRootController
-        while let controller = candidate {
-            if let tabbar = controller as? MainTabbarController {
-                return tabbar
-            }
-            candidate = controller.presentedViewController ?? controller.children.first
-        }
-        return nil
+    /// The app's tab controller, searched down from the window's root
+    /// through children and presentations alike. Walking up from the
+    /// presenter misses it whenever the scan came from a sheet presented
+    /// by a root-level container, and following only the presented branch
+    /// misses it whenever that container is presenting a modal.
+    private static func mainTabbar() -> MainTabbarController? {
+        appRootController?.dw_firstTabBarController() as? MainTabbarController
     }
     #endif
 }
