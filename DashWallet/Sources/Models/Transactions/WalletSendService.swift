@@ -1008,13 +1008,14 @@ private extension WalletSendService {
                 description: "The transaction wasn't sent. You can try again. \(reason)"
             )
         case .staleReservationToken:
-            // The wallet processed enough blocks since signing that the
-            // reserved inputs aged out — a long wait on the confirmation, or a
-            // catch-up after the app was in the background. Refused before
-            // the network, everything released.
+            // Either the reserved inputs aged out while the user confirmed (a
+            // long wait, or a catch-up after the app was in the background),
+            // or another payment to this contact took the reviewed address.
+            // Refused before the network, everything released: a fresh
+            // prepare succeeds.
             return makeError(
                 code: .broadcastRejected,
-                description: "The wallet caught up with new blocks while you were confirming, so the payment wasn't sent. Nothing left your wallet. Please try again."
+                description: "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again."
             )
         default:
             break
