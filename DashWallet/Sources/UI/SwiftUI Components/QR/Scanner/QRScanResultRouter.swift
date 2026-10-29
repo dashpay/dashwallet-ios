@@ -62,6 +62,15 @@ enum QRScanResultRouter {
         }
     }
 
+    /// Whether a payment input has to open the Send screen: a bech32m
+    /// Platform or Shielded destination can't ride the classic payment
+    /// processor. The same rule `DWBasePayViewController
+    /// didScanPaymentInput:` applies to its own scans.
+    static func requiresSendScreen(_ input: DWPaymentInput) -> Bool {
+        guard let parsed = input.parsedURI else { return false }
+        return parsed.requiresSendScreenRouting && parsed.address != nil
+    }
+
     /// Present the Send screen for a payment scanned in another flow — the
     /// same chrome and layout as `DWBasePayViewController
     /// routeScannedBech32Address:`. A verified merchant request goes to the
@@ -70,7 +79,7 @@ enum QRScanResultRouter {
     /// Send screen, amount included, and opens on the From picker. The amount
     /// rides the shared view model to the amount step, which hands it to the
     /// classic processor for a Core → Core send.
-    private static func routePayment(_ input: DWPaymentInput, from presenter: UIViewController?) {
+    static func routePayment(_ input: DWPaymentInput, from presenter: UIViewController?) {
         guard let presenter else { return }
 
         let controller = SendScreenViewController()

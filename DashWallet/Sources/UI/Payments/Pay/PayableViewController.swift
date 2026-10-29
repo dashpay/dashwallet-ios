@@ -41,6 +41,17 @@ extension PayableViewController where Self: UIViewController {
     func processPaymentInput(_ input: DWPaymentInput) {
         paymentController.performPayment(with: input)
     }
+
+    /// A scanned or entered address: a Platform or Shielded destination
+    /// opens the Send screen, whose route model handles every destination
+    /// form; anything else goes to the classic processor.
+    func dispatchPaymentInput(_ input: DWPaymentInput) {
+        if QRScanResultRouter.requiresSendScreen(input) {
+            QRScanResultRouter.routePayment(input, from: self)
+        } else {
+            processPaymentInput(input)
+        }
+    }
     
 #if DASHPAY
     /// Row #18: "Send to a Contact" opens the SwiftUI contacts screen;
