@@ -51,15 +51,15 @@ struct AddMasternodeScreen: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
         .sheet(isPresented: $showScanner) {
+            // The locator field takes private keys as well as IPs and
+            // proTxHashes: the scan comes back raw, never routed elsewhere.
             QRScannerView(
-                mode: .addressInput(expectsDashAddress: false),
+                mode: .rawText,
                 onResult: { result in
                     showScanner = false
                     if case .text(let value) = result {
                         viewModel.query = value
                         Task { await viewModel.search() }
-                    } else {
-                        QRScanResultRouter.route(result)
                     }
                 },
                 onCancel: { showScanner = false })
