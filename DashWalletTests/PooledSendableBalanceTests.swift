@@ -155,7 +155,7 @@ final class PooledSendableBalanceTests: XCTestCase {
     ) -> String? {
         InternalTransferViewModel.coreTransferFundsMessage(
             requestedDuffs: requestedDuffs,
-            cachedSpendableDuffs: 100_000_000,
+            cachedSendableDuffs: 100_000_000,
             l1ReserveDuffs: 1_000_000,
             routeCostDuffs: routeCostDuffs,
             pool: pool)
