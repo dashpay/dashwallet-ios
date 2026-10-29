@@ -291,6 +291,29 @@ final class UnknownContactPaymentOutcomes {
         return contactIdentityIds.contains(contactIdentityId)
     }
 }
+
+/// Contacts a payment is under way to, from just before its lock check until
+/// the payment is either journaled (a withdrawal) or finished (a Transparent
+/// send). Two payment surfaces could each pass the lock check while neither
+/// had written anything yet; every write that takes the lock happens while
+/// the claim is held, so a check made under it stays true.
+final class ContactPaymentClaims {
+    private let lock = NSLock()
+    private var contactIdentityIds: Set<Data> = []
+
+    /// False when a payment to the contact already holds the claim.
+    func claim(contactIdentityId: Data) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return contactIdentityIds.insert(contactIdentityId).inserted
+    }
+
+    func release(contactIdentityId: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        contactIdentityIds.remove(contactIdentityId)
+    }
+}
 #endif
 
 @objc(DWWalletSendService)
@@ -314,6 +337,7 @@ final class WalletSendService: NSObject {
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
     let unknownContactPaymentOutcomes = UnknownContactPaymentOutcomes()
+    let contactPaymentClaims = ContactPaymentClaims()
     #endif
 
     private let sendAuthorizer = SendAuthorizer()
@@ -612,12 +636,19 @@ final class WalletSendService: NSObject {
                 description: "Wallet or DashPay identity is not ready"
             )
         }
+        // Claimed before the lock is checked, and held to the end: nothing is
+        // journaled for a Transparent send.
+        try claimContactPayment(contactIdentityId)
+        defer { contactPaymentClaims.release(contactIdentityId: contactIdentityId) }
         try rejectIfContactPaymentOutcomeUnknown(contactIdentityId, recipient: recipient)
         try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
+        // A payment from another balance may have reached its journal while
+        // the PIN was up, before this claim was taken.
+        try rejectIfContactPaymentOutcomeUnknown(contactIdentityId, recipient: recipient)
 
         // The journal was checked for the context captured above: pay from
         // that same wallet and identity, or not at all.
@@ -704,6 +735,16 @@ final class WalletSendService: NSObject {
         )
     }
 
+    private func claimContactPayment(_ contactIdentityId: Data) throws {
+        guard contactPaymentClaims.claim(contactIdentityId: contactIdentityId) else {
+            throw Self.makeError(
+                code: .dashPayPaymentUnavailable,
+                description: NSLocalizedString(
+                    "A payment to this contact is already in progress.",
+                    comment: "DashPay: a second payment to a contact started while one was still being sent"))
+        }
+    }
+
     /// Throws unless `recipient` still describes the active wallet, DashPay
     /// identity and network.
     @MainActor
@@ -739,10 +780,21 @@ final class WalletSendService: NSObject {
         try await sendAuthorizer.authorizeSend(spendAmount: amountDuffs)
     }
 
+    /// Reserves the contact's address and journals the withdrawal to it via
+    /// `journal`, as one step against any other payment to the contact: the
+    /// lock is checked and the contact claimed before the reservation awaits,
+    /// and the claim is released only once `journal` has written the record
+    /// that locks it from then on.
     @MainActor
-    func reserveContactPaymentAddress(for recipient: ContactPaymentRecipient) async throws -> String {
+    func reserveContactPaymentAddress<Record>(
+        for recipient: ContactPaymentRecipient,
+        journal: (String) throws -> Record
+    ) async throws -> Record {
         // At the boundary rather than on the screen: one opened before the
-        // lock was taken must not be able to start a second payment.
+        // lock was taken must not be able to start a second payment. Claimed
+        // first, so no payment that could take the lock runs in between.
+        try claimContactPayment(recipient.identityId)
+        defer { contactPaymentClaims.release(contactIdentityId: recipient.identityId) }
         try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
         try Self.validateContactRecipient(recipient)
         try Self.ensureOnline()
@@ -760,7 +812,7 @@ final class WalletSendService: NSObject {
             throw Self.contactPaymentError(from: error)
         }
         try Self.validateContactRecipient(recipient)
-        return address
+        return try journal(address)
     }
 #endif
 

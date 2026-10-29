@@ -152,24 +152,70 @@ final class DashPayWithdrawalStore {
         return try walletFiles(walletId)
     }
 
+    /// All or nothing: the wallet's files move into a staging directory that
+    /// still reads as the journal, which is then retired in one rename. A
+    /// failure part way leaves every record counted, here or there.
     func clearForWallet(walletId: Data) throws {
         lock.lock()
         defer { lock.unlock() }
-        for file in try walletFiles(walletId) {
-            try FileManager.default.removeItem(at: file)
+        sweepRetired(in: directory)
+        sweepRetired(in: directory.deletingLastPathComponent())
+        let files = try walletFiles(walletId)
+        let staging = stagingDirectory(walletHex: Self.hex(walletId))
+        if !files.isEmpty {
+            try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        }
+        for file in files {
+            let staged = staging.appendingPathComponent(file.lastPathComponent)
+            // One staged by an earlier attempt is older than the live file.
+            try? FileManager.default.removeItem(at: staged)
+            try FileManager.default.moveItem(at: file, to: staged)
+        }
+        // Also what an earlier attempt staged and never retired.
+        do {
+            try retire(staging, in: directory)
+        } catch CocoaError.fileNoSuchFile {
+            return
         }
         notifyChange()
     }
 
+    /// The same, for the whole journal at once.
     func resetForWipe() throws {
         lock.lock()
         defer { lock.unlock() }
+        let parent = directory.deletingLastPathComponent()
+        sweepRetired(in: parent)
         do {
-            try FileManager.default.removeItem(at: directory)
+            try retire(directory, in: parent)
         } catch CocoaError.fileNoSuchFile {
             // Nothing was ever journaled.
         }
         notifyChange()
+    }
+
+    /// Renames `url` out of the journal — the one step that drops its
+    /// records — then deletes it. A copy the deletion leaves behind is no
+    /// longer read, and the next clear or wipe sweeps it.
+    private func retire(_ url: URL, in parent: URL) throws {
+        let retired = parent.appendingPathComponent(
+            "\(retiredPrefix)\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.moveItem(at: url, to: retired)
+        try? FileManager.default.removeItem(at: retired)
+    }
+
+    private func sweepRetired(in parent: URL) {
+        let leftovers = (try? FileManager.default.contentsOfDirectory(
+            at: parent, includingPropertiesForKeys: nil)) ?? []
+        for leftover in leftovers where leftover.lastPathComponent.hasPrefix(retiredPrefix) {
+            try? FileManager.default.removeItem(at: leftover)
+        }
+    }
+
+    private var retiredPrefix: String { ".\(directory.lastPathComponent)-retired-" }
+
+    private func stagingDirectory(walletHex: String) -> URL {
+        directory.appendingPathComponent(".clearing-\(walletHex)", isDirectory: true)
     }
 
     private func walletFiles(_ walletId: Data) throws -> [URL] {
@@ -191,18 +237,24 @@ final class DashPayWithdrawalStore {
             "\(scope.networkRaw)_\(Self.hex(scope.walletId))_\(Self.hex(scope.ownerIdentityId)).json")
     }
 
+    /// The live file, or else the copy a clear that has not finished staged.
     private func load(scope: Scope) throws -> [Entry] {
-        let data: Data
-        do {
-            data = try Data(contentsOf: fileURL(scope: scope))
-        } catch CocoaError.fileReadNoSuchFile {
-            return []
+        let staged = stagingDirectory(walletHex: Self.hex(scope.walletId))
+            .appendingPathComponent(fileURL(scope: scope).lastPathComponent)
+        for file in [fileURL(scope: scope), staged] {
+            let data: Data
+            do {
+                data = try Data(contentsOf: file)
+            } catch CocoaError.fileReadNoSuchFile {
+                continue
+            }
+            // Anything but a missing file throws: `fileExists` also answers
+            // false when existence can't be determined, and an unreadable
+            // journal must lock contact payments rather than read as empty.
+            // Nor is corrupt history overwritten with an empty one.
+            return try JSONDecoder().decode([Entry].self, from: data)
         }
-        // Anything but a missing file throws: `fileExists` also answers false
-        // when existence can't be determined, and an unreadable journal must
-        // lock contact payments rather than read as empty. Nor is corrupt
-        // history overwritten with an empty one.
-        return try JSONDecoder().decode([Entry].self, from: data)
+        return []
     }
 
     private func save(_ entries: [Entry], scope: Scope) throws {

@@ -320,8 +320,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// A contact payment's fee was not known, so neither the
         /// confirmation nor the PIN could have covered all it spends.
         case contactPaymentNotPriced
-        /// A Shielded contact payment's notes, priced again, would now be
-        /// charged more than the fee it was confirmed and authorized with.
+        /// A contact payment, priced again, would now be charged more than
+        /// the fee it was confirmed and authorized with.
         case contactFeeChanged
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
@@ -398,7 +398,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             case .contactFeeChanged:
                 return NSLocalizedString(
                     "The network fee for this payment changed. Close this confirmation and review it again.",
-                    comment: "DashPay contact payment from Shielded: the notes would now be charged more than the confirmed fee")
+                    comment: "DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee")
             case .platformBalanceChanged:
                 return NSLocalizedString(
                     "Your Platform balance changed. Close this confirmation and tap Max again.",
@@ -575,6 +575,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard let confirmedFeeCredits else { return .contactPaymentNotPriced }
         guard notesReady else { return .shieldedBalanceUnavailable }
         guard let liveFeeCredits else { return .contactPaymentNotPriced }
+        return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
+    }
+
+    /// The same for a Platform contact payment, from a fresh preflight's fee
+    /// (nil when it failed or can't withdraw).
+    nonisolated static func contactPlatformFeeRefusal(
+        confirmedFeeCredits: UInt64?, liveFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        guard let confirmedFeeCredits, let liveFeeCredits else { return .contactPaymentNotPriced }
         return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
     }
 
@@ -1654,6 +1663,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await authorize(contactSpendDuffs: try Self.contactSpendDuffs(
                 contactRecipient, submittedCredits: submittedAmount, networkFeeCredits: contactNetworkFeeCredits))
+            // Preflighted again after the PIN, before a reservation uses up
+            // one of the contact's addresses.
+            // TODO(shielded-withdraw-fee-cap): `withdrawToCore` takes no
+            // maximum fee either.
+            if contactRecipient != nil {
+                let preflight = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
+                if let refusal = Self.contactPlatformFeeRefusal(
+                    confirmedFeeCredits: contactNetworkFeeCredits,
+                    liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
+                    throw refusal
+                }
+            }
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: amountCredits / 1000,
@@ -1866,18 +1887,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ) async throws -> ContactWithdrawal? {
         guard let recipient else { return nil }
         #if DASHPAY
-        let address = try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient)
-        try WalletSendService.validateContactRecipient(recipient)
-        return try DashPayWithdrawalStore.shared.begin(
-            scope: .init(
-                networkRaw: recipient.network.rawValue,
-                walletId: recipient.walletId,
-                ownerIdentityId: recipient.ownerIdentityId),
-            contactIdentityId: recipient.identityId,
-            address: address,
-            amountDuffs: amountDuffs,
-            amountIsEstimate: amountIsEstimate,
-            source: source)
+        return try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient) { address in
+            try DashPayWithdrawalStore.shared.begin(
+                scope: .init(
+                    networkRaw: recipient.network.rawValue,
+                    walletId: recipient.walletId,
+                    ownerIdentityId: recipient.ownerIdentityId),
+                contactIdentityId: recipient.identityId,
+                address: address,
+                amountDuffs: amountDuffs,
+                amountIsEstimate: amountIsEstimate,
+                source: source)
+        }
         #else
         // Only the DashPay target creates a `ContactPaymentRecipient`.
         throw CoordinatorError.noWallet

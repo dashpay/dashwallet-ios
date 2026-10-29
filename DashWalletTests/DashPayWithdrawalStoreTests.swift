@@ -128,6 +128,39 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertThrowsError(try nested.resetForWipe())
     }
 
+    /// A clear interrupted after staging some files leaves their records
+    /// counted, and the next clear retires them with the rest.
+    func testInterruptedClearKeepsLocksUntilTheNextClearRetiresThem() throws {
+        let pending = try begin()
+        try store.update(pending, status: .unconfirmed)
+        let live = try XCTUnwrap(try store.files(ofWallet: scope.walletId).first)
+        let staging = directory.appendingPathComponent(
+            ".clearing-" + scope.walletId.map { String(format: "%02x", $0) }.joined(), isDirectory: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: live, to: staging.appendingPathComponent(live.lastPathComponent))
+
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+        try reopened.clearForWallet(walletId: scope.walletId)
+        XCTAssertFalse(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: staging.path))
+    }
+
+    /// A payment journaled after an interrupted clear lands in the live
+    /// file, which the next clear retires with the staged copy.
+    func testRecordWrittenAfterAnInterruptedClearIsRetiredWithIt() throws {
+        _ = try begin()
+        let live = try XCTUnwrap(try store.files(ofWallet: scope.walletId).first)
+        let staging = directory.appendingPathComponent(
+            ".clearing-" + scope.walletId.map { String(format: "%02x", $0) }.joined(), isDirectory: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: live, to: staging.appendingPathComponent(live.lastPathComponent))
+        _ = try begin()
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).count, 2)
+        try store.clearForWallet(walletId: scope.walletId)
+        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+    }
+
     func testClearingAnAbsentJournalSucceeds() throws {
         XCTAssertEqual(try store.files(ofWallet: scope.walletId), [])
         try store.clearForWallet(walletId: scope.walletId)
@@ -376,6 +409,31 @@ final class ContactWithdrawalTotalTests: XCTestCase {
                 confirmedFeeCredits: confirmed, notesReady: ready, liveFeeCredits: live)
             XCTAssertEqual(refusal.map { "\($0)" }, expected)
         }
+    }
+
+    func testContactPlatformFeeIsHeldToTheConfirmedFee() {
+        typealias Coordinator = ShieldedTransferCoordinator
+        XCTAssertNil(Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: 5_000))
+        XCTAssertEqual(
+            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: 6_000).map { "\($0)" },
+            "contactFeeChanged")
+        XCTAssertEqual(
+            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: nil).map { "\($0)" },
+            "contactPaymentNotPriced")
+        XCTAssertEqual(
+            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: nil, liveFeeCredits: 5_000).map { "\($0)" },
+            "contactPaymentNotPriced")
+    }
+
+    /// Only one payment to a contact at a time, from any balance.
+    func testContactPaymentClaimIsExclusiveUntilReleased() {
+        let claims = ContactPaymentClaims()
+        let contact = Data(repeating: 3, count: 32)
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+        XCTAssertFalse(claims.claim(contactIdentityId: contact))
+        XCTAssertTrue(claims.claim(contactIdentityId: Data(repeating: 4, count: 32)))
+        claims.release(contactIdentityId: contact)
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
     }
 
     /// A non-sweep Shielded payment is priced from the notes Rust would select,

@@ -360,7 +360,10 @@ final class SendViewModel: ObservableObject {
                 // and could starve the preflight of time to resolve.
                 let changed = self.platformCredits != credits
                 self.platformCredits = credits
-                if changed { self.restartShieldPreflightOnBalanceChange() }
+                if changed {
+                    self.restartShieldPreflightOnBalanceChange()
+                    self.restartContactWithdrawalPreflightOnBalanceChange()
+                }
             }
             .store(in: &cancellables)
 
@@ -882,6 +885,17 @@ final class SendViewModel: ObservableObject {
         shieldPreflightTask?.cancel()
         shieldPreflightTask = nil
         refreshShieldPreflight()
+    }
+
+    /// A contact paid from Platform is held to its preflighted fee after the
+    /// PIN (`ShieldedTransferCoordinator.contactPlatformFeeRefusal`), and a
+    /// receipt can raise that fee: re-preflight, so confirming again offers
+    /// the current one instead of being refused the same way.
+    private func restartContactWithdrawalPreflightOnBalanceChange() {
+        guard route == .platformToCore, paysContact else { return }
+        preflightTask?.cancel()
+        preflightTask = nil
+        refreshWithdrawalPreflight()
     }
 
     // MARK: - Clipboard

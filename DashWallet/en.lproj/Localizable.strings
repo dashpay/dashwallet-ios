@@ -6724,5 +6724,8 @@
 /* DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation */
 "The fee for this payment could not be worked out. Go back and try again." = "The fee for this payment could not be worked out. Go back and try again.";
 
-/* DashPay contact payment from Shielded: the notes would now be charged more than the confirmed fee */
+/* DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee */
 "The network fee for this payment changed. Close this confirmation and review it again." = "The network fee for this payment changed. Close this confirmation and review it again.";
+
+/* DashPay: a second payment to a contact started while one was still being sent */
+"A payment to this contact is already in progress." = "A payment to this contact is already in progress.";
