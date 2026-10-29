@@ -870,6 +870,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw error
         }
 
+        // The shielded route proves at the end of this flow. Confirming it
+        // here starts any proving-key build now, so key derivation and the
+        // existing-identity lookup below overlap it.
+        let shieldedProofTiming = currentFundingSource == .shielded
+            ? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
+            : nil
+
         // Step 1: pre-derive identity public keys + persist privates
         // to Keychain. Synchronous on the FFI side; the resolver
         // callback reads the mnemonic via WalletStorage.
@@ -924,7 +931,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
+                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs,
+                                        shieldedProofTiming: shieldedProofTiming),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
         } catch {
@@ -968,6 +976,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let username: String
         let invitationURI: String?
         let requiredIdentityFundingDuffs: UInt64
+        /// Started when the user authorized a shielded-funded create.
+        let shieldedProofTiming: ShieldedProofTiming?
     }
 
     /// Submit only the selected funding route when no paid lock or identity exists.
@@ -1026,7 +1036,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: wallet.walletId,
                 modelContainer: modelContainer,
                 pubkeys: pubkeys,
-                signer: signer)
+                signer: signer,
+                proofTiming: context.shieldedProofTiming
+                    ?? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool))
 
         case .invitation:
             // DIP-13 claim: register the invitee's identity funded
@@ -2937,12 +2949,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         walletId: Data,
         modelContainer: ModelContainer,
         pubkeys: [ManagedPlatformWallet.IdentityPubkey],
-        signer: KeychainSigner
+        signer: KeychainSigner,
+        proofTiming: ShieldedProofTiming
     ) async throws -> Identifier {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw CoordinatorError.noSDK
         }
-        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
 
         let contested = DWContestedNameStatusService.isContestedLabel(username)
         let denomination = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: contested)
