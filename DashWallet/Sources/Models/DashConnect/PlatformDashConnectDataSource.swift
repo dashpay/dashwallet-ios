@@ -1426,6 +1426,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     identityId: context.identityId,
                     leaf: grant.binding.contractId,
                     purpose: grant.connectPurpose,
+                    rotation: 0,
                     network: context.network
                 )
                 return (key.publicKeyData, key.privateKeyData)
