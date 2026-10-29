@@ -977,8 +977,9 @@ private extension WalletSendService {
     /// `broadcastUnknown`, which `broadcastContactPayment` turns into a per-contact lock
     /// and the amount step into a terminal state — the SDK's own error type
     /// matched neither. A definitive rejection becomes `broadcastRejected`, and
-    /// so does a payment held on the confirmation until its reservation aged
-    /// out — refused before the network, so nothing was sent either.
+    /// so does a stale prepared payment — its reservation aged out on the
+    /// confirmation, or another payment to the contact took its address —
+    /// refused before the network, so nothing was sent either.
     ///
     /// A contact's DIP-15 external account is built in the background from the
     /// counterparty's contact request; until it exists the SDK fails the send
