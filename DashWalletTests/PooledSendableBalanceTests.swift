@@ -148,6 +148,46 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertEqual(judge(99_999_700, reserve: 300, sendable: 0, pool: pool), .confirming(100_000_000))
     }
 
+    func testCoreToShieldedRouteWaitsForFundsThatWillCoverThePoolFee() {
+        // The route's fee is in addition to the ordinary L1 reserve. The
+        // amount fits after the receive confirms, but not under today's ceiling.
+        let pool = pool(confirmed: 100_000_000, unconfirmed: 20_000_000)
+        let verdict = judge(
+            110_000_000,
+            reserve: 3_000_000,
+            sendable: 100_000_000,
+            pool: pool)
+        XCTAssertEqual(verdict, .confirming(20_000_000))
+        XCTAssertEqual(
+            SendAmountError(refusing: verdict)?.errorDescription,
+            SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
+
+        XCTAssertEqual(
+            judge(118_000_000, reserve: 3_000_000, sendable: 100_000_000, pool: pool),
+            .insufficient,
+            "waiting cannot cover the amount and the pool fee")
+    }
+
+    func testCoreToPlatformRouteWaitsForFundsThatWillCoverTheFundingReserve() {
+        // Address funding carries its own reserve on top of the ordinary L1
+        // reserve, just like Core → Shielded carries the pool fee.
+        let pool = pool(confirmed: 100_000_000, unconfirmed: 20_000_000)
+        let verdict = judge(
+            110_000_000,
+            reserve: 5_000_000,
+            sendable: 100_000_000,
+            pool: pool)
+        XCTAssertEqual(verdict, .confirming(20_000_000))
+        XCTAssertEqual(
+            SendAmountError(refusing: verdict)?.errorDescription,
+            SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
+
+        XCTAssertEqual(
+            judge(116_000_000, reserve: 5_000_000, sendable: 100_000_000, pool: pool),
+            .insufficient,
+            "waiting cannot cover the amount and the address-funding reserve")
+    }
+
     func testAGapWithNothingConfirmingIsNeverCalledAWait() {
         // The pool holds more than the gate counts, but none of it is
         // confirming — a pooled figure not re-read yet, or an account the
