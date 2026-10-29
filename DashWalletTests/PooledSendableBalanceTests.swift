@@ -163,7 +163,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             l1ReserveDuffs: 1_000_000,
             routeCostDuffs: routeCostDuffs,
             pooledKnown: pooledKnown,
-            pool: pool)
+            pool: { pool })
     }
 
     func testCoreToShieldedRouteReturnsStillConfirmingWhenThePoolFeeFits() {

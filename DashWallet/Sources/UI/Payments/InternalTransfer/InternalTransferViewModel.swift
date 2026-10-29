@@ -1527,7 +1527,7 @@ final class InternalTransferViewModel: ObservableObject {
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
         pooledKnown: Bool,
-        pool: SendPoolConfirmationSnapshot?
+        pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
         let reserve = l1ReserveDuffs.addingReportingOverflow(routeCostDuffs)
         guard !reserve.overflow else {
@@ -1550,7 +1550,7 @@ final class InternalTransferViewModel: ObservableObject {
         let verdict = SwiftDashSDKWalletState.judgeShortfall(
             requested: requestedDuffs,
             sendable: sendableDuffs,
-            pool: pool,
+            pool: pool(),
             reserve: { reserve.partialValue })
         switch verdict {
         case .fits:
@@ -1612,13 +1612,15 @@ final class InternalTransferViewModel: ObservableObject {
                 spendable: coreSpendableDuffs,
                 reserve: feeDuffs)
             let state = SwiftDashSDKWalletState.shared
-            if case .confirming(let duffs) = state.sendVerdict(
+            if let message = Self.coreTransferFundsMessage(
                 requestedDuffs: dashDuffsUnsigned,
-                ceilingDuffs: ceilingDuffs,
-                reserveDuffs: coreL1FeeReserveDuffs &+ feeDuffs) {
-                // The asset lock spends only confirmed or InstantSend-locked
-                // coins, so waiting genuinely is the fix for this shortfall.
-                return SendAmountError.fundsStillConfirming(duffs).errorDescription
+                cachedSpendableDuffs: coreSpendableDuffs,
+                sendableDuffs: state.sendableDuffs,
+                l1ReserveDuffs: coreL1FeeReserveDuffs,
+                routeCostDuffs: feeDuffs,
+                pooledKnown: state.pooledSpendableDuffs != nil,
+                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot) {
+                return message
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
@@ -1638,15 +1640,15 @@ final class InternalTransferViewModel: ObservableObject {
                 spendableDuffs: coreSpendableDuffs,
                 reserveCredits: reserveCredits)
             let state = SwiftDashSDKWalletState.shared
-            if case .confirming(let duffs) = state.sendVerdict(
+            if let message = Self.coreTransferFundsMessage(
                 requestedDuffs: dashDuffsUnsigned,
-                ceilingDuffs: ceilingDuffs,
-                reserveDuffs: coreL1FeeReserveDuffs &+ routeReserveDuffs) {
-                // Asset-lock funding also spends only confirmed or
-                // InstantSend-locked coins, so an amount covered after
-                // confirmation should tell the user to wait rather than
-                // calling it an insufficient balance.
-                return SendAmountError.fundsStillConfirming(duffs).errorDescription
+                cachedSpendableDuffs: coreSpendableDuffs,
+                sendableDuffs: state.sendableDuffs,
+                l1ReserveDuffs: coreL1FeeReserveDuffs,
+                routeCostDuffs: routeReserveDuffs,
+                pooledKnown: state.pooledSpendableDuffs != nil,
+                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot) {
+                return message
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
