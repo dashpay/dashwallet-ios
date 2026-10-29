@@ -514,6 +514,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// not persist it, and every resume reads it back from there.
     func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
+        let proofTiming = ShieldedProverWarmup.shared.beginProofOperation(.coreToShieldedDrain)
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
         let service = CoreShieldedDrainService()
@@ -555,9 +556,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         phase = .locking
-        let result = await env.manager.shieldedFundFromWalletDrain(
-            walletId: env.walletId, operationId: operation.id,
-            recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        let result = await proofTiming.measure({
+            await env.manager.shieldedFundFromWalletDrain(
+                walletId: env.walletId, operationId: operation.id,
+                recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        }, succeeded: { $0.drainVerdict != .notSent })
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
