@@ -15,11 +15,9 @@ import UIKit
 enum QRScannerMode {
     /// Send-flow scanner (home shortcut, send screens, lock screen).
     /// Validates Dash payment intents live, fetches BIP70/73 requests
-    /// inline, and — when routing is allowed — takes contact/invitation
-    /// QR codes straight to their flows instead of rejecting them.
-    /// The lock screen passes `allowsCrossContextRouting: false`: nothing
-    /// may navigate the app while it is still locked.
-    case payment(allowsCrossContextRouting: Bool)
+    /// inline, and takes contact/invitation QR codes straight to their
+    /// flows instead of rejecting them — unless the wallet is locked.
+    case payment
     #if DASHPAY
     /// Add-contact scanner: expects `dashpay://user` links; other
     /// recognizable payloads get a one-tap redirect offer.
@@ -73,8 +71,16 @@ final class QRScannerViewModel: ObservableObject {
     /// Keeps the in-flight coordinator alive until its completion fires.
     private var bip70Coordinator: BIP70InteractiveCoordinator?
 
-    init(mode: QRScannerMode) {
+    /// Read at every decision, not once: the lock can engage while the
+    /// scanner is up (the app backgrounds), and a scanner opened from a
+    /// screen reachable before unlock (lock screen → Scan to Pay → Send →
+    /// Scan QR) is as locked as the lock screen's own.
+    private let isWalletLocked: @MainActor () -> Bool
+
+    /// `isWalletLocked` is for tests; the app reads the real lock state.
+    init(mode: QRScannerMode, isWalletLocked: (@MainActor () -> Bool)? = nil) {
         self.mode = mode
+        self.isWalletLocked = isWalletLocked ?? { QRScanResultRouter.isWalletLocked() }
     }
 
     func cancel() {
@@ -107,8 +113,8 @@ final class QRScannerViewModel: ObservableObject {
         case .rawText:
             finish(.text(value))
 
-        case .payment(let allowsCrossContextRouting):
-            processForPayment(QRPayload.classify(value), allowsCrossContextRouting: allowsCrossContextRouting)
+        case .payment:
+            processForPayment(QRPayload.classify(value))
 
         #if DASHPAY
         case .dashPayUser:
@@ -154,7 +160,7 @@ final class QRScannerViewModel: ObservableObject {
 
     // MARK: Payment mode (port of DWQRScanModel)
 
-    private func processForPayment(_ payload: QRPayload, allowsCrossContextRouting: Bool) {
+    private func processForPayment(_ payload: QRPayload) {
         switch payload {
         case .payment(let parsed):
             if parsed.isValidDashPaymentIntent {
@@ -174,17 +180,9 @@ final class QRScannerViewModel: ObservableObject {
 
         #if DASHPAY
         case .dashPayUser(let link):
-            if allowsCrossContextRouting {
-                finish(.dashPayUser(link))
-            } else {
-                showInvalid(message: nil)
-            }
+            finishLeavingFlow(.dashPayUser(link))
         case .invitation(let url):
-            if allowsCrossContextRouting {
-                finish(.invitation(url))
-            } else {
-                showInvalid(message: nil)
-            }
+            finishLeavingFlow(.invitation(url))
         #endif
 
         case .text(let value):
@@ -275,17 +273,28 @@ final class QRScannerViewModel: ObservableObject {
     }
     #endif
 
+    /// Nothing is offered while the wallet is locked: accepting would take
+    /// the user out of this flow into one the lock is meant to hide.
     private func offer(_ payload: QRPayload, message: String, actionTitle: String) {
+        guard !isWalletLocked() else {
+            showInvalid(message: nil)
+            return
+        }
         status = .offer(payload: payload, message: message, actionTitle: actionTitle)
     }
 
     func acceptOffer() {
         guard case .offer(let payload, _, _) = status else { return }
+        // The lock may have engaged while the offer was on screen.
+        guard !isWalletLocked() else {
+            showInvalid(message: nil)
+            return
+        }
         switch payload {
         case .payment:
             // Use the same BIP70 fetch/verification and address fallback as
             // the payment scanner before handing the result to the router.
-            processForPayment(payload, allowsCrossContextRouting: true)
+            processForPayment(payload)
         #if DASHPAY
         case .dashPayUser(let link):
             finish(.dashPayUser(link))
@@ -303,6 +312,18 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     // MARK: State transitions
+
+    #if DASHPAY
+    /// A payload that belongs to another flow, accepted straight from the
+    /// payment scanner: only while the wallet is unlocked.
+    private func finishLeavingFlow(_ result: QRScanResult) {
+        if isWalletLocked() {
+            showInvalid(message: nil)
+        } else {
+            finish(result)
+        }
+    }
+    #endif
 
     private func finish(_ result: QRScanResult) {
         finished = true

@@ -343,12 +343,6 @@ static CGFloat ActionButtonsHeight(void) {
     [self performScanQRCodeAction];
 }
 
-- (BOOL)allowsScannerCrossContextRouting {
-    // Pre-unlock scanner: a scanned contact/invitation QR must not
-    // navigate the app behind the lock.
-    return NO;
-}
-
 #pragma mark - DWNavigationFullscreenable
 
 - (BOOL)requiresNoNavigationBar {

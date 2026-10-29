@@ -28,7 +28,17 @@ enum QRScanResultRouter {
         UIApplication.shared.delegate?.window??.rootViewController
     }
 
+    /// Whether the wallet is behind its lock screen. Every scanner reads it
+    /// before letting a scan leave its flow, and `route` refuses outright
+    /// while it holds: a screen opened from the lock screen (Scan to Pay →
+    /// Send) has its own scanner, and nothing it scans may navigate the
+    /// app behind the lock.
+    static func isWalletLocked() -> Bool {
+        WalletLifecycleOverlayPresenter.shared.lockScreenVisible
+    }
+
     static func route(_ result: QRScanResult, from presenter: UIViewController?) {
+        guard !isWalletLocked() else { return }
         switch result {
         case .payment(let input):
             routePayment(input, from: presenter)

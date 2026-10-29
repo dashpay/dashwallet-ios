@@ -63,10 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 
-- (BOOL)allowsScannerCrossContextRouting {
-    return YES;
-}
-
 - (void)performScanQRCodeAction {
     if ([self.presentedViewController isKindOfClass:DWQRScannerController.class]) {
         return;
@@ -75,8 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(self.presentedViewController == nil, @"Attempt to present on VC which is already presenting %@",
              self.presentedViewController);
 
-    DWQRScannerController *controller =
-        [DWQRScannerController paymentScannerWithAllowsCrossContextRouting:self.allowsScannerCrossContextRouting];
+    DWQRScannerController *controller = [DWQRScannerController paymentScanner];
     __weak typeof(self) weakSelf = self;
     controller.onPaymentInput = ^(DWPaymentInput *paymentInput) {
         [weakSelf didScanPaymentInput:paymentInput];

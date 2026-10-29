@@ -36,8 +36,8 @@ final class QRScannerController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc static func paymentScanner(allowsCrossContextRouting: Bool) -> QRScannerController {
-        QRScannerController(mode: .payment(allowsCrossContextRouting: allowsCrossContextRouting))
+    @objc static func paymentScanner() -> QRScannerController {
+        QRScannerController(mode: .payment)
     }
 
     /// Form-field scanner: dismisses itself, hands the captured string to
@@ -125,7 +125,7 @@ extension UIViewController {
             return
         }
 
-        let controller = QRScannerController.paymentScanner(allowsCrossContextRouting: true)
+        let controller = QRScannerController.paymentScanner()
         controller.onPaymentInput = onPaymentInput
         controller.onCancel = { [weak self] in
             self?.dismiss(animated: true)
