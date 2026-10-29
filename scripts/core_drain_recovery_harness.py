@@ -416,6 +416,10 @@ typealias CrowdNodeDefaults = UnrelatedPerWalletState
 typealias CoinJoinWithdrawalStore = UnrelatedPerWalletState
 typealias ShieldedWithdrawalStore = UnrelatedPerWalletState
 typealias AssetLockProbeStore = UnrelatedPerWalletState
+final class DashPayWithdrawalStore {
+    static let shared = DashPayWithdrawalStore()
+    func clearForWallet(walletId: Data) throws {}
+}
 enum GeneratedWalletIdentityMarker { static func clear(walletId: Data) {} }
 enum SPVChainStoreRebuild { static func finish(walletIds: [Data], scope: String) {} }
 @MainActor enum SwiftDashSDKWalletWiper {
