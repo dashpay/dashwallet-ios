@@ -66,7 +66,7 @@ enum QRScanResultRouter {
     /// Platform or Shielded destination can't ride the classic payment
     /// processor. The same rule `DWBasePayViewController
     /// didScanPaymentInput:` applies to its own scans.
-    static func requiresSendScreen(_ input: DWPaymentInput) -> Bool {
+    nonisolated static func requiresSendScreen(_ input: DWPaymentInput) -> Bool {
         guard let parsed = input.parsedURI else { return false }
         return parsed.requiresSendScreenRouting && parsed.address != nil
     }
