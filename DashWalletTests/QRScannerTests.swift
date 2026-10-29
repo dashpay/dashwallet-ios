@@ -228,6 +228,17 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(value, Self.address)
     }
 
+    /// A form field that isn't a Dash address field gets text it can't pay
+    /// (an https URL) as is and validates it itself.
+    func testFormScannerPassesAnUnpayableURLThrough() {
+        let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: false))
+        scanner.didDetectCodes(["https://example.com/connect?id=1"])
+        guard case .text(let value) = recorder.results.first else {
+            return XCTFail("the field gets the URL, not a rejection")
+        }
+        XCTAssertEqual(value, "https://example.com/connect?id=1")
+    }
+
     func testPaymentScannerPrefersTheDashIntentAmongSeveralCodes() {
         let (scanner, recorder) = makeScanner(.payment)
         scanner.didDetectCodes(["hello", "dash:\(Self.address)"])
