@@ -229,6 +229,7 @@ struct PinPromptView: View {
                 Text(viewModel.titleMessage)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
+                    .accessibilityIdentifier("pin_enter_title")
 
                 dots
                     .modifier(ShakeEffect(animatableData: CGFloat(viewModel.shakeToken)))

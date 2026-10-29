@@ -66,6 +66,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     setPinView.translatesAutoresizingMaskIntoConstraints = NO;
     setPinView.backgroundColor = [UIColor dw_secondaryBackgroundColor];
     setPinView.titleText = NSLocalizedString(@"Set PIN", nil);
+    setPinView.accessibilityIdentifier = @"pin_set_step";
     setPinView.pinField.delegate = self;
     [self addSubview:setPinView];
     self.setPinView = setPinView;
@@ -73,6 +74,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     DWPinInputStepView *confirmPinView = [[DWPinInputStepView alloc] initWithFrame:CGRectZero];
     confirmPinView.translatesAutoresizingMaskIntoConstraints = NO;
     confirmPinView.titleText = NSLocalizedString(@"Confirm PIN", nil);
+    confirmPinView.accessibilityIdentifier = @"pin_confirm_step";
     confirmPinView.pinField.delegate = self;
     confirmPinView.hidden = YES;
     [self addSubview:confirmPinView];
