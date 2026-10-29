@@ -279,10 +279,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // (merchant details that failed to load), and with no error up the
         // balance drop that follows a successful purchase would flag the
         // amount just paid. Not during a resync either: the verdict would turn
-        // into the syncing notice, which this subscription does not re-check
-        // and nothing re-checks when the sync ends. Nor while the amount
-        // cannot be converted to DASH: it reads as 0, which fits anything.
-        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+        // into the syncing notice, which this subscription does not re-check —
+        // the sync-state change re-checks it once the resync ends instead. Nor
+        // while the amount cannot be converted to DASH: it reads as 0, which
+        // fits anything.
+        Publishers.Merge(
+            SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher,
+            NotificationCenter.default.publisher(for: .syncStateChangedNotification).map { _ in () })
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self, self.errorIsFundsVerdict, !Self.isResyncingWallet,
