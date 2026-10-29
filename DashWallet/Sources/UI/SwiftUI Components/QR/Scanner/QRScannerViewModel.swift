@@ -84,6 +84,9 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     func cancel() {
+        // A BIP70 fetch still in flight must not deliver after Cancel.
+        finished = true
+        bip70Coordinator = nil
         resumeTask?.cancel()
         onCancel?()
     }
