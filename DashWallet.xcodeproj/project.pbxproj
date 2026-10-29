@@ -1127,6 +1127,7 @@
 		AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */; };
 		5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */; };
 		5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */; };
+		3A9C51E0B7D24F6A8E1C0B21 /* QRScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9C51E0B7D24F6A8E1C0B22 /* QRScannerTests.swift */; };
 		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003082CA0F58E00B1B403 /* EnterAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */; };
@@ -3359,6 +3360,7 @@
 		AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapAddressValidatorTests.swift; sourceTree = "<group>"; };
 		5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyFormatTests.swift; sourceTree = "<group>"; };
 		5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyImportTests.swift; sourceTree = "<group>"; };
+		3A9C51E0B7D24F6A8E1C0B22 /* QRScannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerTests.swift; sourceTree = "<group>"; };
 		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
 		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
 		QR51000000000000000000A1 /* QRPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRPayload.swift; sourceTree = "<group>"; };
@@ -7657,6 +7659,7 @@
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
 				5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */,
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
+				3A9C51E0B7D24F6A8E1C0B22 /* QRScannerTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
@@ -11003,6 +11006,7 @@
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
 				5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */,
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
+				3A9C51E0B7D24F6A8E1C0B21 /* QRScannerTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
