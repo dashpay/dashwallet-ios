@@ -197,6 +197,15 @@ final class QRScannerViewModel: ObservableObject {
         }
     }
 
+    /// A merchant request whose fetch failed, with its request URL dropped,
+    /// when the embedded address is one the wallet can pay. Any payable
+    /// form: a Platform or Shielded address goes on to the Send screen.
+    nonisolated static func fallback(afterFailedRequest parsed: ParsedPaymentURI) -> ParsedPaymentURI? {
+        let cleared = parsed.byClearingRequestURL()
+        guard cleared.isAddressPayableForCurrentNetwork, cleared.address != nil else { return nil }
+        return cleared
+    }
+
     private func fetchBIP70(parsed: ParsedPaymentURI, fallBackToEmbeddedAddress: Bool) {
         guard let requestURL = parsed.rURL else { return }
         status = .connecting
@@ -216,11 +225,7 @@ final class QRScannerViewModel: ObservableObject {
                 }
 
                 if fallBackToEmbeddedAddress {
-                    // Fetch failed → drop the request URL and fall back to
-                    // the embedded address, if any. Any payable form: a
-                    // Platform or Shielded one goes on to the Send screen.
-                    let cleared = parsed.byClearingRequestURL()
-                    if cleared.isAddressPayableForCurrentNetwork, cleared.address != nil {
+                    if let cleared = Self.fallback(afterFailedRequest: parsed) {
                         self.finish(.payment(self.inputBuilder.paymentInput(withParsedURI: cleared, source: .scanQR)))
                     } else {
                         self.showInvalid(
