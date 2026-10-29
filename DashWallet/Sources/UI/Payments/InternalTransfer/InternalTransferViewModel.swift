@@ -1516,10 +1516,12 @@ final class InternalTransferViewModel: ObservableObject {
             || (sourceBalanceNetwork == .platform && !platformBalanceState.isAvailable))
     }
 
-    /// Pure route arithmetic for a Core-funded asset-lock message. The raw
-    /// `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`; the
-    /// fee-aware value is used only for the cached route ceiling. This keeps
-    /// the empty-wallet and pooled-read cases testable without a wallet.
+    /// Pure route arithmetic for a Core-funded asset-lock message. These
+    /// routes spend only confirmed or InstantSend-locked coins, so waiting is
+    /// the correct advice when the confirming pool can cover the shortfall.
+    /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`;
+    /// the fee-aware value is used only for the cached route ceiling. This
+    /// keeps the empty-wallet and pooled-read cases testable without a wallet.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         cachedSpendableDuffs: UInt64,
