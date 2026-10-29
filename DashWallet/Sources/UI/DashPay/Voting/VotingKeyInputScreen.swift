@@ -96,7 +96,7 @@ struct VotingKeyInputScreen: View {
         .onAppear { isFieldFocused = true }
         .sheet(isPresented: $showScanner) {
             QRScannerView(
-                mode: .addressInput(expectsDashAddress: false),
+                mode: .rawText,
                 onResult: { result in
                     showScanner = false
                     if case .text(let value) = result {

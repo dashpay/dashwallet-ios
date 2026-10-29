@@ -59,6 +59,7 @@ enum QRScanResult {
     case dashPayUser(DashPayUserLink)
     case invitation(URL)
     #endif
-    /// Raw captured string — only produced by `.addressInput` scanners.
+    /// Raw captured string — only produced by `.addressInput` and
+    /// `.rawText` scanners.
     case text(String)
 }

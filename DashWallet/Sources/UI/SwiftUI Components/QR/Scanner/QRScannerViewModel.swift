@@ -33,6 +33,11 @@ enum QRScannerMode {
     /// is unwrapped to its bare address. Never auto-navigates — a redirect
     /// is only ever offered, since the user is mid-form.
     case addressInput(expectsDashAddress: Bool)
+    /// Secret-bearing field (masternode and voting private keys): the
+    /// scanned string comes back exactly as read. It is never classified,
+    /// offered to another flow, or logged — a private key must not leave
+    /// the field it was scanned for.
+    case rawText
 }
 
 // MARK: - QRScannerViewModel
@@ -98,14 +103,16 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     private func process(_ value: String) {
-        let payload = QRPayload.classify(value)
-
         switch mode {
+        case .rawText:
+            finish(.text(value))
+
         case .payment(let allowsCrossContextRouting):
-            processForPayment(payload, allowsCrossContextRouting: allowsCrossContextRouting)
+            processForPayment(QRPayload.classify(value), allowsCrossContextRouting: allowsCrossContextRouting)
 
         #if DASHPAY
         case .dashPayUser:
+            let payload = QRPayload.classify(value)
             if case .dashPayUser(let link) = payload {
                 finish(.dashPayUser(link))
             } else {
@@ -113,6 +120,7 @@ final class QRScannerViewModel: ObservableObject {
             }
 
         case .invitation:
+            let payload = QRPayload.classify(value)
             if case .invitation(let url) = payload {
                 finish(.invitation(url))
             } else {
@@ -121,7 +129,7 @@ final class QRScannerViewModel: ObservableObject {
         #endif
 
         case .addressInput(let expectsDashAddress):
-            switch payload {
+            switch QRPayload.classify(value) {
             case .payment(let parsed):
                 if expectsDashAddress, parsed.isAddressValidForCurrentNetwork, let address = parsed.address {
                     // The field wants a bare Dash address; unwrap it from
