@@ -501,15 +501,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         error = nil
     }
 
-    /// Whether a wallet or sync event may re-check the error on screen: a
-    /// funds verdict (or, with `fundsVerdictOnly` false, the syncing notice),
-    /// unless an amount was entered that does not convert to DASH — it reads
-    /// as 0, which fits anything.
+    /// Whether a wallet or sync event may re-check the error on screen: the
+    /// syncing notice when `fundsVerdictOnly` is false — re-checked like an
+    /// edit would — or a funds verdict, unless an amount was entered that does
+    /// not convert to DASH: it reads as 0, which would clear the verdict.
     private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
-        guard let shown = error as? SendAmountError,
-              shown.isFundsVerdict || (!fundsVerdictOnly && shown == .syncingChain)
-        else { return false }
-        return amount == 0 || requestedDashDuffs > 0
+        guard let shown = error as? SendAmountError else { return false }
+        if shown == .syncingChain { return !fundsVerdictOnly }
+        return shown.isFundsVerdict && (amount == 0 || requestedDashDuffs > 0)
     }
 
     private static var isResyncingWallet: Bool {

@@ -160,7 +160,8 @@ class SendAmountModel: BaseAmountModel {
     /// there is none or it is a funds verdict, the one thing the ceiling
     /// decides. Anything else — a Max explanation that `checkAmountForErrors`
     /// never sets again, a subclass's own failure such as a Coinbase API
-    /// error — stays until whoever set it clears it.
+    /// error — survives the ceiling move. (A sync-state change still re-checks
+    /// unconditionally, as it did before.)
     static func ceilingMoveRechecks(_ error: Error?) -> Bool {
         guard let error else { return true }
         return (error as? SendAmountError)?.isFundsVerdict == true
