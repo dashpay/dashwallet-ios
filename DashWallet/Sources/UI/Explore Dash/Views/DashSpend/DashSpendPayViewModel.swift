@@ -437,7 +437,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return
         }
         
-        guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
+        guard DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet == false ||
             SyncingActivityMonitor.shared.state == .syncDone
         else {
             error = SendAmountError.syncingChain

@@ -192,6 +192,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Core drain recovery */
+"A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with." = "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.";
+
 /* Usernames */
 "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "هناك تصويت جارٍ بالفعل على هذا الاسم — سينضم طلبك إليه كمتنافس. تُخصم رسوم التنافس عند الإرسال ولا تُعاد، حتى إن لم تفز بالاسم.";
 
@@ -313,6 +316,12 @@
 
 /* No comment provided by engineer. */
 "All" = "الكل";
+
+/* Core drain confirmation */
+"All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded." = "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.";
+
+/* Send confirm sheet: Core drain */
+"All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered." = "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.";
 
 "All nodes at once" = "كل العقد دفعة واحدة";
 
@@ -475,6 +484,9 @@
 /* DashPay */
 "Available after sync finishes" = "متاح بعد انتهاء المزامنة";
 
+/* Core drain insufficient funds */
+"Available funds do not cover the transfer fees." = "Available funds do not cover the transfer fees.";
+
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
 
@@ -592,6 +604,48 @@
 
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+
+/* Read-only drain lookup */
+"Check status" = "Check status";
+
+/* Send confirm sheet: drain outcome pending */
+"Check the Max transfer's status from the pending transaction in History, or by tapping Max again." = "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.";
+
+/* Core drain persistence guard */
+"Check the pending Max transfer before starting another." = "Check the pending Max transfer before starting another.";
+
+/* Core drain preview */
+"Checking available funds and fees…" = "Checking available funds and fees…";
+
+/* Dash DEX / tx history row title */
+"Converting · %@" = "Converting · %@";
+
+/* Drain fee breakdown */
+"Estimated Core fee: %@\nShielded pool fee: %@" = "Estimated Core fee: %@\nShielded pool fee: %@";
+
+/* Core drain estimate */
+"Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
+
+/* A wallet drain has an unresolved outcome */
+"Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it." = "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.";
+
+/* Start a separate transfer */
+"New transfer" = "New transfer";
+
+/* Dash DEX */
+"Not confirmed" = "Not confirmed";
+
+/* Dash DEX / tx history row title */
+"Not converted · %@" = "Not converted · %@";
+
+/* Dash DEX */
+"Refunded" = "Refunded";
+
+/* Resume the same asset lock */
+"Resume transfer" = "Resume transfer";
+
+/* Send confirm sheet: Core drain */
+"Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
 /* InternalTransfer recovery */
 "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open." = "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.";
@@ -2280,6 +2334,24 @@
 
 "Lock the name" = "قفل الاسم";
 
+/* Dash DEX */
+"Stuck" = "Stuck";
+
+/* Send: Core drain recovery success */
+"The pending Max transfer completed." = "The pending Max transfer completed.";
+
+/* Core drain */
+"The wallet or network changed. Select Max again." = "The wallet or network changed. Select Max again.";
+
+/* Core drain input limit preview */
+"This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
+
+/* InternalTransfer recovery: drain recipient unknown */
+"This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe." = "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.";
+
+/* Core drain recovery success */
+"Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
+
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "ينتهي التصويت";
 
@@ -2309,6 +2381,8 @@
 
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "لا توجد أسماء مستخدمين على هذه الهوية بعد. ابحث عن اسم لشرائه أو تسجيله في تبويب «البحث عن الأسماء».";
+
+"Not all of your mixed coins are confirmed yet. Please try again in a few minutes." = "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.";
 
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "الأموال غير كافية في هذا الرصيد: المطلوب %@ DASH، والمتاح %@ DASH.";
@@ -3846,8 +3920,14 @@
 /* No comment provided by engineer. */
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "سيمحو هذا كل المحافظ الـ %ld المخزَّنة على هذا الجهاز. ولا يمكن استعادتها إلا بعبارات الاسترداد الخاصة بها. ولا يمكن التراجع عن حذفها من هذا الجهاز.";
 
+/* Dash DEX */
+"Waiting for the provider" = "Waiting for the provider";
+
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "ما زالت بيانات محافظ من تثبيت سابق مخزَّنة على هذا الجهاز. هل تريد الاستمرار في استخدام هذه المحافظ أم حذف كل بيانات المحافظ والبدء من جديد؟ تأكد من نسخ كل عبارة استرداد احتياطيًا قبل الحذف.";
+
+/* Core drain */
+"Wallet unavailable. Try again." = "Wallet unavailable. Try again.";
 
 /* No comment provided by engineer. */
 "Wallets found on this device" = "المحافظ التي عُثر عليها على هذا الجهاز";
@@ -5083,6 +5163,9 @@
 
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "تعذّر تسجيل اسم المستخدم المؤقت «%@». يمكنك تسجيل اسم مستخدم آخر لاحقًا.";
+
+/* Send: external Max drain, balance grew before confirm */
+"Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again." = "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.";
 
 /* Usernames */
 "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "«%1$@» هو اسم المستخدم الخاص بك الآن. وإذا منحك التصويت «%2$@»، فسيمكن الوصول إليك عبر الاسمين معًا.";
@@ -6542,6 +6625,11 @@
 "Sign in to %@ again?" = "Sign in to %@ again?";
 "Sole Requester" = "Sole Requester";
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
+"Preparing your coins" = "Preparing your coins";
+"Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
+"We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through." = "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.";
+"Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
+"Your mixed coins are locked for the Shielded balance. Please try again to finish moving them." = "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.";
 "Some votes already cast" = "Some votes already cast";
 "Special Purpose Account" = "Special Purpose Account";
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
@@ -6756,3 +6844,63 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* DashPay Invitations */
+"Between 20 and 23 characters" = "Between 20 and 23 characters";
+
+/* DashPay Invitations */
+"Couldn't verify the invitation. Check your connection and try again." = "Couldn't verify the invitation. Check your connection and try again.";
+
+/* DashPay Invitations */
+"Create" = "Create";
+
+/* DashPay Invitations */
+"Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
+
+/* DashPay Invitations */
+"DashPay is currently processing an invite." = "DashPay is currently processing an invite.";
+
+/* DashPay Invitations */
+"Invalid Invitation" = "Invalid Invitation";
+
+/* DashPay Invitations */
+"Invitation Error" = "Invitation Error";
+
+/* DashPay Invitations */
+"Numbers 2-9" = "Numbers 2-9";
+
+/* DashPay Invitations */
+"The invitation couldn't be saved on this device. Open the link again to retry." = "The invitation couldn't be saved on this device. Open the link again to retry.";
+
+/* DashPay Invitations */
+"The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
+
+/* DashPay Invitations */
+"There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are between 20 and 23 characters long and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period." = "There are two types of usernames: contested and non-contested.\n\nNon-contested usernames have at least one number (2-9) or are between 20 and 23 characters long and will be automatically approved.\n\nIf you want to create a contested username which is shorter and without numbers, you need to register with DashPay without an invitation, pay the required fee and wait for approval upon completion of the voting period.";
+
+/* DashPay Invitations */
+"Username already requested" = "Username already requested";
+
+/* DashPay Invitations */
+"Verifying invitation" = "Verifying invitation";
+
+/* DashPay Invitations */
+"Wait until syncing is finished to create a username" = "Wait until syncing is finished to create a username";
+
+/* DashPay Invitations */
+"What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
+
+/* DashPay Invitations */
+"You can only create a non-contested username using this invitation" = "You can only create a non-contested username using this invitation";
+
+/* DashPay Invitations */
+"You cannot claim this invite since you have already requested a Dash username" = "You cannot claim this invite since you have already requested a Dash username";
+
+/* DashPay Invitations */
+"Identity already found" = "Identity already found";
+
+/* DashPay Invitations */
+"You cannot claim this invite since this wallet already has a Dash identity" = "You cannot claim this invite since this wallet already has a Dash identity";
+
+/* DashPay Invitations */
+"This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
