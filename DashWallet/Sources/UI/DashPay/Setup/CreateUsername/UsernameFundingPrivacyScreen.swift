@@ -72,10 +72,13 @@ struct UsernameFundingPrivacyScreen: View {
     #endif
 
     /// Whether the shielded balance can pay for this registration *now* —
-    /// funded, matured and past the pool minimum. Anything less takes the
+    /// funded, matured and past the pool minimum — or the registration
+    /// reuses an identity that needs nothing. Anything less takes the
     /// shield-first variant, whose tip is what explains the wait.
     private var canPayFromShielded: Bool {
-        viewModel.hasReadyShieldedFunding
+        CreateUsernameViewModel.shieldedPays(
+            identityTopUpDuffs: viewModel.identityTopUpDuffs,
+            shieldedReady: viewModel.hasReadyShieldedFunding)
     }
 
     var body: some View {
@@ -261,7 +264,7 @@ struct UsernameFundingPrivacyScreen: View {
         viewModel.shieldedReadiness?.unspentCredits ?? 0
     }
 
-    /// What a private registration for this name costs, in credits: 0.1 DASH
+    /// What a private registration for this name costs, in credits: 0.03 DASH
     /// for a standard name, 0.25 for a contested one.
     private var requiredCredits: UInt64 {
         viewModel.shieldedReadiness?.requiredCredits
@@ -299,6 +302,13 @@ struct UsernameFundingPrivacyScreen: View {
     /// number behind it: the readiness snapshot carries the actual `readyAt`
     /// minute and the actual pool count, so neither has to be vague.
     private var tipMessage: String {
+        // An existing identity is topped up, never funded from Shielded:
+        // the registration's own refusal says what to do instead.
+        if let topUp = CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffs) {
+            return DWIdentityRegistrationCoordinator.CoordinatorError
+                .shieldedTopUpUnavailable(neededDuffs: topUp).errorDescription ?? ""
+        }
+
         switch readinessState {
         case .maturing(let readyAt):
             let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
@@ -309,10 +319,7 @@ struct UsernameFundingPrivacyScreen: View {
         case .poolTooSmall(let current):
             // Shielding more of your own funds does not move this number, so
             // the copy says what the wait is actually on.
-            return String.localizedStringWithFormat(
-                NSLocalizedString("The shared privacy pool holds %@ of the %@ notes a private registration needs. That count comes from everyone's shielded activity, so it grows on its own — try again later.", comment: "Usernames"),
-                Self.noteCount(current),
-                Self.noteCount(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+            return CreateUsernameViewModel.shieldedPoolTooSmallMessage(current: current)
 
         case .needsFunding(let shortfallCredits) where shieldedCredits > 0:
             // The case this screen used to answer with silence: funds were
@@ -322,7 +329,7 @@ struct UsernameFundingPrivacyScreen: View {
                 NSLocalizedString("Your shielded balance holds %@ of the %@ Dash a private registration needs. Add %@ Dash more, then let it rest a few hours.", comment: "Usernames"),
                 Self.dashText(shieldedCredits),
                 Self.dashText(requiredCredits),
-                Self.dashText(shortfallCredits))
+                CreateUsernameViewModel.shieldedShortfallDuffs(shortfallCredits).dashAmount.formattedDashAmountWithoutCurrencySymbol)
 
         default:
             // Nothing shielded yet (or no snapshot at all): name the amount
@@ -333,16 +340,13 @@ struct UsernameFundingPrivacyScreen: View {
         }
     }
 
-    private static func noteCount(_ value: UInt64) -> String {
-        NumberFormatter.localizedString(from: NSNumber(value: value), number: .decimal)
-    }
-
     /// Shielding helps only when funds are what is missing. While they rest,
     /// or while the shared pool is short, the button would send the user off
     /// to do something that changes nothing — so it is offered disabled
     /// rather than acted on and silently wasted.
     private var canShieldFundsNow: Bool {
         guard onShieldFunds != nil else { return false }
+        if CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffs) != nil { return false }
 
         switch readinessState {
         case .maturing, .poolTooSmall:
@@ -422,13 +426,13 @@ struct UsernameFundingPrivacyScreen: View {
 
 /// Some funds are shielded, but not the whole denomination — the state that
 /// used to look identical to having shielded nothing at all.
-#Preview("Partly shielded — 0.01 of 0.1") {
+#Preview("Partly shielded — 0.01 of 0.03") {
     UsernameFundingPrivacyScreen(
         previewViewModel: .makeForPreview(
             balance: "0.29786659",
             hasMinimumRequiredBalance: true,
             shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot(
-                state: .needsFunding(shortfallCredits: 9_000_000_000),
+                state: .needsFunding(shortfallCredits: 2_000_000_000),
                 requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
                 matureCredits: 0,
                 unspentCredits: 1_000_000_000,
