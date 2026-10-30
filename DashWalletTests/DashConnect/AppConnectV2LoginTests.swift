@@ -1238,12 +1238,6 @@ extension AppConnectV2LoginTests {
                 Self.onIdentity(first, disabled: true), Self.onIdentity(second, disabled: true),
             ]),
             .landedAndOff)
-        var grants = [Self.pendingGrant([first, second])]
-        _ = AppConnect.settlePendingV2Registrations(
-            in: &grants, identityId: "identity",
-            currentIdentityPublicKeys: [Self.onIdentity(first), Self.onIdentity(second)],
-            bindings: [Self.stored(first), Self.stored(second)], nowMilliseconds: Self.pendingNow)
-        XCTAssertEqual(grants[0].awaitsRecoveredPublish, true, "its response is still to be published")
     }
 
     func testAnIdHeldByAnotherKeyMeansThePendingUpdateCanNeverLand() {
@@ -1371,22 +1365,6 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(settled.dropped.map(\.key), [pending.key])
         XCTAssertEqual(grants.map(\.key), [old.key])
         XCTAssertEqual(grants[0].keyDisabled, true, "its update turned the replaced grant off")
-    }
-
-    func testAGrantANewerOneOfTheSameConnectionReplacedIsNotTheAppsAnyMore() {
-        let older = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
-        var newer = Self.grant(sessionKeyId: 5, requestHash: "01", connectionId: "c1")
-        newer = AppConnectGrant(
-            identityId: newer.identityId, appContractId: newer.appContractId, documentId: nil, values: newer.values,
-            sessionKeyId: 5, totalBudget: nil, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 2_000),
-            connectionId: "c1")
-        let otherConnection = Self.grant(sessionKeyId: 7, requestHash: "02", connectionId: "c2")
-        XCTAssertTrue(AppConnect.isReplaced(older, in: [older, newer]))
-        XCTAssertFalse(AppConnect.isReplaced(newer, in: [older, newer]))
-        XCTAssertFalse(AppConnect.isReplaced(otherConnection, in: [older, newer, otherConnection]))
-        var pendingNewer = newer
-        pendingNewer.unconfirmedKeyHash160 = "11"
-        XCTAssertFalse(AppConnect.isReplaced(older, in: [older, pendingNewer]), "a newer one that may never land")
     }
 
     func testAPendingV2RecordStillReadsAsUnconfirmedWithoutItsNewField() throws {

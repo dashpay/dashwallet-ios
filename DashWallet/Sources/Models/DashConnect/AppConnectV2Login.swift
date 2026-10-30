@@ -1148,7 +1148,7 @@ extension AppConnect {
 
     /// Settles the v2 records of `identityId` whose update's outcome was not
     /// known, by `pendingV2Outcome`. A landed one becomes a grant like any
-    /// other, and the earlier grants its update retired are marked done; one
+    /// other (its response is not published: its approval stopped waiting), and the earlier grants its update retired are marked done; one
     /// that landed and is off again is dropped with those marked done; one
     /// that cannot land is dropped; the rest stay as they are.
     static func settlePendingV2Registrations(
@@ -1171,7 +1171,6 @@ extension AppConnect {
                 var settled = grant
                 settled.pendingUpdate = nil
                 settled.unconfirmedKeyHash160 = nil
-                settled.awaitsRecoveredPublish = true
                 confirmed.append(settled)
                 retired.formUnion(pending.retiredGrantKeys)
             case .landedAndOff:
@@ -1191,16 +1190,6 @@ extension AppConnect {
         }
         markKeysDisabled(in: &grants) { retired.contains($0.key) && !$0.isUnconfirmed }
         return (confirmed, dropped)
-    }
-
-    /// Whether a newer confirmed grant of the same connection replaced
-    /// `grant`: its response is not for the app any more.
-    static func isReplaced(_ grant: AppConnectGrant, in grants: [AppConnectGrant]) -> Bool {
-        guard let connectionId = grant.connectionId else { return false }
-        return grants.contains {
-            $0.key != grant.key && $0.identityId == grant.identityId && $0.appContractId == grant.appContractId
-                && $0.connectionId == connectionId && !$0.isUnconfirmed && $0.publishedAt > grant.publishedAt
-        }
     }
 
     /// The ids a confirmed record of `identityId` names, and the ids of the

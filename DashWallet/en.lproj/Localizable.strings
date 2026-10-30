@@ -6137,6 +6137,7 @@
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
 "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again." = "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.";
+"An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code." = "An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code.";
 "This identity cannot take another key." = "This identity cannot take another key.";
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
 "This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";

@@ -710,10 +710,6 @@ struct AppConnectGrant: Codable, Equatable {
     /// `unconfirmedKeyHash160`, the primary key's hash, so a build that
     /// does not know this field still reads the record as unconfirmed.
     var pendingUpdate: PendingV2Update? = nil
-    /// App Connect v2: the update was found to have landed after its
-    /// approval stopped waiting, and its response has not been published
-    /// since (`publishRecoveredResponses`).
-    var awaitsRecoveredPublish: Bool? = nil
 
     var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
 
