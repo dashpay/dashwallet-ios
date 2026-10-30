@@ -571,6 +571,7 @@ final class WalletSendService: NSObject {
         // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
         try refuseContactWithUnknownOutcome(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
+        try Self.ensureOnline()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
@@ -612,9 +613,10 @@ final class WalletSendService: NSObject {
     func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> Data {
         let contactIdentityId = prepared.contactIdentityId
         // Another payment to this contact may have ended unknown while this
-        // one waited on the confirmation.
+        // one waited on the confirmation, or the device went offline.
         do {
             try refuseContactWithUnknownOutcome(contactIdentityId)
+            try Self.ensureOnline()
         } catch {
             await abandonContactPayment(prepared)
             throw error
