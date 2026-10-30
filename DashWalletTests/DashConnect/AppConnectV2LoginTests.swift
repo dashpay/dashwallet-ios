@@ -1749,7 +1749,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(calls.dropped, 1, "its row is repaired")
     }
 
-    func testARecordWhoseRowsCannotBeJudgedIsNotDroppedYet() async {
+    func testARecordWhoseRowsCannotBeJudgedIsKept() async {
         let key = Self.addedAuthKey(7, data: 0x07)
         let record = Self.pendingGrant([key])
         let store = MemoryGrantStore()

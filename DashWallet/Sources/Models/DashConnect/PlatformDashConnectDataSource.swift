@@ -2341,13 +2341,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         in stores: Stores,
         bindings knownBindings: [AppConnect.KeyBinding]? = nil
     ) async -> [AppConnectGrant] {
+        guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
+        else { return [] }
         // Unknown when the store cannot be read: no unconfirmed record is
         // confirmed without it, and no row is changed by it.
         let readBindings = knownBindings
             ?? (try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer))
         let bindings = readBindings ?? []
-        guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
-        else { return [] }
         if stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }) {
             let confirmed = updateGrants(in: stores) { grants in
                 AppConnect.confirmRegistrations(
@@ -2363,20 +2363,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // could not land would be dropped with its rows not judged.
         if let readBindings, stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
             let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
-            let settled = updateGrants(in: stores) { grants in
-                AppConnect.settlePendingV2Registrations(
-                    in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
-                    bindings: bindings, nowMilliseconds: nowMilliseconds)
-            }
+            var grants = stores.grants.load()
+            let settled = AppConnect.settlePendingV2Registrations(
+                in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
+                bindings: bindings, nowMilliseconds: nowMilliseconds)
             confirmedV2 = settled.confirmed
             if !settled.confirmed.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: \(settled.confirmed.count, privacy: .public) App Connect update(s) found to have landed")
             }
+            // The rows first: a record is gone from the store only once its
+            // rows are written. A stop in between drops it again next time.
             if !settled.dropped.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: dropping \(settled.dropped.count, privacy: .public) App Connect update(s) that can no longer land")
-                await showRowsAfterDropping(
-                    settled.dropped, grants: stores.grants.load(), bindings: readBindings, in: stores)
+                await showRowsAfterDropping(settled.dropped, grants: grants, bindings: readBindings, in: stores)
             }
+            stores.grants.save(grants)
         }
         let appIds = Self.appIdsWithoutTheirOneQRRow(
             grants: stores.grants.load(), identityId: identityId,
@@ -2410,10 +2411,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// After an update of this wallet to the identity landed (and was noted,
-    /// `noteOwnUpdateLanded`): one more read of the identity, which also
-    /// writes what it shows to the store, and the v2 records of the identity
-    /// waiting for their outcome are settled by it. Returns the v2 grants
+    /// After an update of this wallet to the identity landed: one more read
+    /// of the identity, which also writes what it shows to the store, and
+    /// the v2 records of the identity waiting for their outcome are settled
+    /// by it (by that update only when its submission returned success and
+    /// it was noted, `AppConnect.noteOwnUpdate`). Returns the v2 grants
     /// confirmed and the keys read, or nil when the read failed.
     private func settleAfterOwnUpdate(
         context: Context,
@@ -3331,6 +3333,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                         context: context, signer: signer)
                 } catch {
                     lateDisableFailure = error
+                }
+            }
+        }
+
+        // The user turned the app off: a waiting record of it no longer puts
+        // back the two-QR row it replaced, whose keys this disconnect
+        // disabled too.
+        if asOneQR {
+            updateGrants(in: stores) { grants in
+                for index in grants.indices where isGranted(grants[index]) && grants[index].isPendingV2 {
+                    grants[index].pendingUpdate?.replacesApprovedRow = nil
                 }
             }
         }
