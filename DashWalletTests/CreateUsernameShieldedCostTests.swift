@@ -224,6 +224,36 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
             .dashBalance)
     }
 
+    /// The Join DashPay sheet comes before any name is typed: an existing
+    /// identity already counts there, and one short of a standard name
+    /// cannot be topped up from Shielded.
+    func testJoinSheetKnowsTheExistingIdentityBeforeANameIsTyped() {
+        let ready = ShieldedIdentityFundingReadiness.Snapshot(
+            state: .ready,
+            requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+            matureCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+            unspentCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+            poolNoteCount: nil)
+
+        let funded = CreateUsernameViewModel.makeForPreview(
+            shieldedReadiness: ready, existingIdentityCredits: 100_000_000_000)
+        XCTAssertNil(funded.identityTopUpDuffs)
+        XCTAssertNil(funded.shieldedOnlyFunding)
+        XCTAssertTrue(funded.hasReadyShieldedFunding)
+
+        let short = CreateUsernameViewModel.makeForPreview(
+            shieldedReadiness: ready, existingIdentityCredits: 0)
+        XCTAssertNil(short.shieldedOnlyFunding)
+        XCTAssertFalse(short.hasReadyShieldedFunding)
+
+        let none = CreateUsernameViewModel.makeForPreview(shieldedReadiness: ready)
+        XCTAssertEqual(
+            none.shieldedOnlyFunding,
+            .standardOnly(matureDuffs: ShieldedIdentityFundingReadiness.standardDenominationCredits
+                / ContestedUsernameFee.Amounts.creditsPerDuff))
+        XCTAssertTrue(none.hasReadyShieldedFunding)
+    }
+
     private static func time(_ date: Date) -> String {
         DWDateFormatter.sharedInstance.timeOnly(from: date)
     }

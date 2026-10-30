@@ -408,9 +408,11 @@ class CreateUsernameViewModel: ObservableObject {
     ///
     /// An existing identity is topped up rather than created, and this flow
     /// has no shielded top-up route: Shielded can pay only when the identity
-    /// needs nothing.
+    /// needs nothing. Before a name is judged (the Join DashPay sheet), the
+    /// top-up is the one a standard name needs.
     var hasReadyShieldedFunding: Bool {
-        if Self.shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) != nil { return false }
+        let topUp = identityTopUpDuffs ?? existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+        if Self.shieldedUnpayableTopUp(identityTopUpDuffs: topUp) != nil { return false }
         return shieldedReadiness?.state == .ready
     }
 
@@ -522,7 +524,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// pays for a standard name only while the Dash balance covers one too.
     var shieldedOnlyFunding: ShieldedOnlyFunding? {
         Self.shieldedOnlyFunding(
-            reusesIdentity: identityTopUpDuffs != nil,
+            reusesIdentity: existingIdentityCredits != nil,
             dashBalanceCovers: hasMinimumRequiredCoreBalance,
             shieldedReady: hasReadyShieldedFunding,
             matureCredits: shieldedReadiness?.matureCredits ?? 0)
