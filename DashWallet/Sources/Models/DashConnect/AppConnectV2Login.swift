@@ -857,8 +857,13 @@ extension AppConnect {
     /// Platform goes by block time, so a device clock up to `clockTolerance`
     /// fast does not count a working key as expired. Every v2 auth key has an
     /// expiry; a key with none is not one, and counts as false here.
+    /// `expiresAt` carries the protocol's unsigned timestamp in an `Int64`'s
+    /// bits, so it is compared as unsigned: an expiry past `Int64.max` is far
+    /// in the future, not in the past.
     static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
-        (expiresAt ?? 0) > nowMilliseconds - Int64(clockTolerance * 1000)
+        guard let expiresAt else { return false }
+        let earliest = max(0, nowMilliseconds - Int64(clockTolerance * 1000))
+        return UInt64(bitPattern: expiresAt) > UInt64(earliest)
     }
 
     /// The unattributed profile keys the wallet's store shows as live and
