@@ -6688,3 +6688,17 @@
 /* Protocol version advisory */
 "The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
 "Check for available updates" = "Check for available updates";
+
+/* QR scanner */
+"This QR code is a Dash payment request." = "This QR code is a Dash payment request.";
+"Open Send" = "Open Send";
+"This QR code is a DashPay user." = "This QR code is a DashPay user.";
+"View User" = "View User";
+"This QR code is a DashPay invitation." = "This QR code is a DashPay invitation.";
+"Claim Invitation" = "Claim Invitation";
+"Keep Scanning" = "Keep Scanning";
+"Turn on flashlight" = "Turn on flashlight";
+"Turn off flashlight" = "Turn off flashlight";
+
+/* DashPay Invitations */
+"This isn't an invitation QR code." = "This isn't an invitation QR code.";
