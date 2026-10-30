@@ -869,9 +869,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // prompt: from protocol version 14 the response goes to the App
         // Connect system contract and the wallet registers the key itself;
         // below it that contract does not exist and the two-QR flow runs.
-        // A pinned SDK reports its pin (testnet is pinned to 13 in
-        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet stays on the
-        // two-QR flow until that pin moves.
+        // A pinned SDK reports its pin (testnet is pinned to 14 in
+        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet gets the App
+        // Connect login.
         let protocolVersion: UInt32
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
