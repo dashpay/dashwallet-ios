@@ -662,20 +662,10 @@ final class SendViewModel: ObservableObject {
         contactRefresh = NotificationCenter.default
             .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self, let id = self.contactRecipient?.contactIdentityId else { return }
-                // `contactItem(for:)` also answers with a pending request,
-                // which is not a payable contact.
-                guard let latest = SwiftDashSDKContactsService.shared.contactItem(for: id),
-                      latest.relationship == .established
-                else {
-                    if !self.isContactRecipientGone { self.isContactRecipientGone = true }
-                    return
-                }
-                if self.isContactRecipientGone { self.isContactRecipientGone = false }
-                // Republished on every save and sync; only a change redraws.
-                if self.contactRecipient != latest { self.contactRecipient = latest }
-            }
+            .sink { [weak self] _ in self?.refreshContactRecipient() }
+        // The caller's snapshot may already be stale — the contact removed or
+        // no longer established before any notification reached this step.
+        refreshContactRecipient()
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
@@ -685,6 +675,23 @@ final class SendViewModel: ObservableObject {
         // Not the user's pick: it is the only legal source, and recording it
         // as a pick would let it survive a later destination change.
         setSourceWithoutClaimingUserIntent(.core)
+    }
+
+    /// Re-read the contact from the contacts service: a contact that is gone,
+    /// or no longer established, keeps the amount step from sending.
+    private func refreshContactRecipient() {
+        guard let id = contactRecipient?.contactIdentityId else { return }
+        // `contactItem(for:)` also answers with a pending request,
+        // which is not a payable contact.
+        guard let latest = SwiftDashSDKContactsService.shared.contactItem(for: id),
+              latest.relationship == .established
+        else {
+            if !isContactRecipientGone { isContactRecipientGone = true }
+            return
+        }
+        if isContactRecipientGone { isContactRecipientGone = false }
+        // Republished on every save and sync; only a change redraws.
+        if contactRecipient != latest { contactRecipient = latest }
     }
 
     /// A contact payment can only be funded from the transparent balance.
@@ -793,6 +800,9 @@ final class SendViewModel: ObservableObject {
         // Taking the review spends it: a second call finds nothing to send.
         guard let duffs = updateContactReview({ $0.take() }) else { return nil }
         defer { updateContactReview { $0.finish() } }
+        // The service's snapshot can be newer than the last change
+        // notification this step has handled.
+        refreshContactRecipient()
         // The unknown-outcome and unavailable-contact messages and the sync
         // note explain these on the amount step; the route and a zero amount
         // cannot fail after a review the screen allowed.
