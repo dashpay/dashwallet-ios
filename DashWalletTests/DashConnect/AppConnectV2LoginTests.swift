@@ -1346,6 +1346,9 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             Self.outcome([auth, Self.addedEncryptionKey(8, data: 0x08)], keys: [], now: past), .unknown,
             "an encryption key never expires")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [], now: past), .unknown,
+            "its key is there, the store just cannot place it yet")
     }
 
     func testSettlingConfirmsWhatLandedDropsWhatCannotAndMarksTheGrantsItRetired() {
