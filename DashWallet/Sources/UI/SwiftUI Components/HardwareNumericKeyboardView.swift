@@ -202,8 +202,8 @@ final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
     /// A single hardware Return can arrive twice — once as `insertText("\n")`
     /// and once as `textFieldShouldReturn` — and both land in the same runloop
     /// turn, before SwiftUI can propagate `inProgress` and clear `onReturn`.
-    /// Some action handlers send money outright (`PayContactSheet.pay()`), so
-    /// the two deliveries are collapsed into one.
+    /// Run twice, an action handler would open its review or start its
+    /// transfer twice, so the two deliveries are collapsed into one.
     private func handleReturn() {
         guard inputEnabled, ownsHardwareKeyboard, !isHandlingReturn else { return }
         isHandlingReturn = true

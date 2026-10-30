@@ -105,21 +105,55 @@ struct ContactItem: Identifiable, Equatable {
 
     var id: Data { contactIdentityId }
 
+    /// Where `displayTitle` comes from, in precedence order.
+    private enum DisplayTitleSource {
+        case alias(String)
+        case profileName(String)
+        case username(String)
+        case identityIdPrefix
+    }
+
+    private var displayTitleSource: DisplayTitleSource {
+        if let alias, !alias.isEmpty {
+            return .alias(alias)
+        }
+        if let profileDisplayName, !profileDisplayName.isEmpty {
+            return .profileName(profileDisplayName)
+        }
+        if let username, !username.isEmpty {
+            return .username(username)
+        }
+        return .identityIdPrefix
+    }
+
     /// Title for list rows: owner-set alias first, then profile
     /// display name, then DPNS label, then a truncated identity-id
     /// fallback so a just-synced row with no resolved metadata still
     /// renders something stable.
     var displayTitle: String {
-        if let alias, !alias.isEmpty {
+        switch displayTitleSource {
+        case let .alias(alias):
             return alias
-        }
-        if let profileDisplayName, !profileDisplayName.isEmpty {
-            return profileDisplayName
-        }
-        if let username, !username.isEmpty {
+        case let .profileName(name):
+            return name
+        case let .username(username):
             return username.withoutDashSuffix
+        case .identityIdPrefix:
+            return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
         }
-        return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
+    }
+
+    /// True when `displayTitle` is a name a person chose (the alias or the
+    /// profile display name), false when it is the DPNS label or the
+    /// identity-id fallback. The payment Confirm sheet's To row cuts a name
+    /// at its end and anything else in the middle.
+    var displayTitleIsName: Bool {
+        switch displayTitleSource {
+        case .alias, .profileName:
+            return true
+        case .username, .identityIdPrefix:
+            return false
+        }
     }
 
     /// The identity id as users see it elsewhere — Platform explorers, the
