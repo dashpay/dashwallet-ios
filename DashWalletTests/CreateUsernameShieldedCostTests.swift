@@ -240,11 +240,15 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
         XCTAssertNil(funded.identityTopUpDuffs)
         XCTAssertNil(funded.shieldedOnlyFunding)
         XCTAssertTrue(funded.hasReadyShieldedFunding)
+        XCTAssertEqual(funded.identityTopUpDuffsOrStandard, 0)
 
         let short = CreateUsernameViewModel.makeForPreview(
             shieldedReadiness: ready, existingIdentityCredits: 0)
         XCTAssertNil(short.shieldedOnlyFunding)
         XCTAssertFalse(short.hasReadyShieldedFunding)
+        // The privacy page reads the same figure for its refusal text.
+        XCTAssertNotNil(CreateUsernameViewModel.shieldedUnpayableTopUp(
+            identityTopUpDuffs: short.identityTopUpDuffsOrStandard))
 
         let none = CreateUsernameViewModel.makeForPreview(shieldedReadiness: ready)
         XCTAssertEqual(
@@ -252,6 +256,7 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
             .standardOnly(matureDuffs: ShieldedIdentityFundingReadiness.standardDenominationCredits
                 / ContestedUsernameFee.Amounts.creditsPerDuff))
         XCTAssertTrue(none.hasReadyShieldedFunding)
+        XCTAssertNil(none.identityTopUpDuffsOrStandard)
     }
 
     private static func time(_ date: Date) -> String {

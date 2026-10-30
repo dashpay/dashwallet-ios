@@ -77,7 +77,7 @@ struct UsernameFundingPrivacyScreen: View {
     /// shield-first variant, whose tip is what explains the wait.
     private var canPayFromShielded: Bool {
         CreateUsernameViewModel.shieldedPays(
-            identityTopUpDuffs: viewModel.identityTopUpDuffs,
+            identityTopUpDuffs: viewModel.identityTopUpDuffsOrStandard,
             shieldedReady: viewModel.hasReadyShieldedFunding)
     }
 
@@ -304,7 +304,7 @@ struct UsernameFundingPrivacyScreen: View {
     private var tipMessage: String {
         // An existing identity is topped up, never funded from Shielded:
         // the registration's own refusal says what to do instead.
-        if let topUp = CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffs) {
+        if let topUp = CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffsOrStandard) {
             return DWIdentityRegistrationCoordinator.CoordinatorError
                 .shieldedTopUpUnavailable(neededDuffs: topUp).errorDescription ?? ""
         }
@@ -346,7 +346,7 @@ struct UsernameFundingPrivacyScreen: View {
     /// rather than acted on and silently wasted.
     private var canShieldFundsNow: Bool {
         guard onShieldFunds != nil else { return false }
-        if CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffs) != nil { return false }
+        if CreateUsernameViewModel.shieldedUnpayableTopUp(identityTopUpDuffs: viewModel.identityTopUpDuffsOrStandard) != nil { return false }
 
         switch readinessState {
         case .maturing, .poolTooSmall:
