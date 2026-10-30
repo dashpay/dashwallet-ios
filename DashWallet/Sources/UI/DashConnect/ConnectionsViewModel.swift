@@ -57,6 +57,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// `isProcessingStateTransition`: a `dash-st:` task clears that one when
     /// it finishes, which would lift the guard while a disconnect is still out.
     @Published private(set) var isDisconnecting = false
+    /// The DashPay profile keys on the active identity that no connection
+    /// accounts for; `nil` when there are none or they could not be read.
+    @Published private(set) var sharedProfileAccess: SharedProfileAccess?
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
@@ -112,8 +115,19 @@ final class ConnectionsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.connections = $0.sorted(by: { $0.updatedAt > $1.updatedAt })
+                self?.refreshSharedProfileAccess()
             }
             .store(in: &cancellables)
+    }
+
+    /// Reads the shared profile keys again from the wallet's store.
+    func refreshSharedProfileAccess() {
+        guard !featureUnavailable else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            let access = await self.dataSource.sharedProfileAccess()
+            self.sharedProfileAccess = (access?.keyCount ?? 0) > 0 ? access : nil
+        }
     }
 
     func onQRScanned(_ content: String) {
@@ -394,7 +408,50 @@ final class ConnectionsViewModel: ObservableObject {
                     text: String(
                         format: NSLocalizedString("Could not disconnect: %@", comment: "DashConnect"),
                         error.localizedDescription))
+                return
             }
+            let access = await self.dataSource.sharedProfileAccess()
+            self.sharedProfileAccess = (access?.keyCount ?? 0) > 0 ? access : nil
+            if let access = self.sharedProfileAccess {
+                self.message = ConnectionsScreenMessage(
+                    kind: .success,
+                    text: String(
+                        format: NSLocalizedString(
+                            "Disconnected. DashPay profile keys that no connection accounts for are still active on this identity: %d. They may belong to this app or to another one. You can revoke them under Shared profile access.",
+                            comment: "DashConnect"),
+                        access.keyCount))
+            }
+        }
+    }
+
+    /// Disables every DashPay profile key no connection accounts for, for
+    /// every app that holds one. Same guards as `disconnect`: it signs an
+    /// identity update.
+    func revokeSharedProfileAccess() {
+        guard let access = sharedProfileAccess, !isDisconnecting, !isProcessingStateTransition, !isApproving,
+              !isApprovingPurchase, !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil
+        else { return }
+        isDisconnecting = true
+        Task { [weak self] in
+            guard let self else { return }
+            defer { self.isDisconnecting = false }
+            do {
+                let disabled = try await self.dataSource.revokeSharedProfileAccess(scope: access.scope)
+                self.message = ConnectionsScreenMessage(
+                    kind: .success,
+                    text: disabled > 0
+                        ? String(
+                            format: NSLocalizedString("DashPay profile keys revoked: %d.", comment: "DashConnect"),
+                            disabled)
+                        : NSLocalizedString("No DashPay profile key needed revoking.", comment: "DashConnect"))
+            } catch {
+                self.message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString("Could not revoke shared profile access: %@", comment: "DashConnect"),
+                        error.localizedDescription))
+            }
+            self.refreshSharedProfileAccess()
         }
     }
 

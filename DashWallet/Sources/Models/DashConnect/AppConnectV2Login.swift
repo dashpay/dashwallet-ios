@@ -810,12 +810,10 @@ extension AppConnect {
 
     /// The ids of the keys in `keys` that belong to the app's v2 grants:
     /// bound to a contract the app's owner owns (`appContractIds`, the app's
-    /// own among them), a document type on one, a contract group that owner
-    /// owns (`appGroupIds`), or a foreign document type v2 allows (DashPay
-    /// `profile`). Those are the bindings `ownershipRefusal` lets a request
-    /// have. The last can be another app's when its record is lost too; it
-    /// is disabled all the same, since a key left on rather than off is what
-    /// a disconnect must not do, and that app's next sign-in adds a new one.
+    /// own among them), a document type on one, or a contract group that
+    /// owner owns (`appGroupIds`). A key bound to a foreign document type v2
+    /// allows (DashPay `profile`) is not among them: that bound names no
+    /// app, so with no record it may be any app's (`unattributedProfileKeyIds`).
     static func appsV2KeyIds(
         appContractIds: Set<Data>,
         appGroupIds: Set<Data>,
@@ -824,10 +822,23 @@ extension AppConnect {
         keys.filter { _, bound in
             switch bound {
             case .singleContract(let id): return appContractIds.contains(id)
-            case .documentType(let id, let name):
-                return appContractIds.contains(id) || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+            case .documentType(let id, _): return appContractIds.contains(id)
             case .contractGroup(let id): return appGroupIds.contains(id)
             }
+        }
+        .map(\.keyId)
+        .sorted()
+    }
+
+    /// The ids of the keys in `keys` bound to a foreign document type v2
+    /// allows (DashPay `profile`). Every app can be given such a key and the
+    /// bound does not say which one was, so with no record a disconnect
+    /// leaves it on; only revoking shared profile access turns these off,
+    /// for every app that holds one.
+    static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
+        keys.filter { _, bound in
+            guard case .documentType(let id, let name) = bound else { return false }
+            return allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
         }
         .map(\.keyId)
         .sorted()

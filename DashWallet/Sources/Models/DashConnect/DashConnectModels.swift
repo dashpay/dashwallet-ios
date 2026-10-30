@@ -200,6 +200,16 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
+/// The DashPay profile keys App Connect gave apps on the active identity
+/// that no grant record names. Such a key's bound names no app, so a
+/// disconnect cannot tell whose it is and leaves it on.
+struct SharedProfileAccess: Equatable {
+    let keyCount: Int
+    /// Names the wallet and network the count was read for; a revoke acts
+    /// only while it still names the active one.
+    let scope: String
+}
+
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String

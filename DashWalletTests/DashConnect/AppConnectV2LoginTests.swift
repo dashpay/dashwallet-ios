@@ -411,12 +411,15 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(candidates.groups, [group, otherGroup])
         XCTAssertEqual(
             AppConnect.appsV2KeyIds(appContractIds: [app], appGroupIds: [group], keys: unrecorded),
-            [1, 2, 3, 5])
+            [1, 2, 3])
         // Another contract of the app's owner: a binding the request could
         // have had, so its key goes too.
         XCTAssertEqual(
             AppConnect.appsV2KeyIds(appContractIds: [app, other], appGroupIds: [group], keys: unrecorded),
-            [1, 2, 3, 5, 11])
+            [1, 2, 3, 11])
+        // The DashPay profile key names no app: it is never the app's, only
+        // shared, and the contact-request type v2 does not allow is neither.
+        XCTAssertEqual(AppConnect.unattributedProfileKeyIds(keys: unrecorded), [5])
         // A key the store cannot place is the disconnect's stop, not a guess.
         XCTAssertEqual(
             AppConnect.unrecordedV2Keys(

@@ -28,6 +28,7 @@ struct ConnectionsScreen: View {
     private let vc: UINavigationController
 
     @StateObject private var viewModel: ConnectionsViewModel
+    @State private var isConfirmingSharedProfileRevoke = false
 
     init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
@@ -49,6 +50,12 @@ struct ConnectionsScreen: View {
                     .padding(.bottom, 20)
 
                 content
+
+                if !viewModel.featureUnavailable, let access = viewModel.sharedProfileAccess {
+                    SharedProfileAccessRow(keyCount: access.keyCount) { isConfirmingSharedProfileRevoke = true }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                }
             }
 
             if viewModel.isProcessingStateTransition || viewModel.isDisconnecting {
@@ -66,6 +73,20 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        .confirmationDialog(
+            NSLocalizedString("Revoke shared profile access?", comment: "DashConnect"),
+            isPresented: $isConfirmingSharedProfileRevoke,
+            titleVisibility: .visible
+        ) {
+            Button(NSLocalizedString("Revoke shared profile access", comment: "DashConnect"), role: .destructive) {
+                viewModel.revokeSharedProfileAccess()
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString(
+                "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again.",
+                comment: "DashConnect"))
+        }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text(message.title),
@@ -229,4 +250,34 @@ struct ConnectionsScreen: View {
             featureUnavailable: false
         )
     )
+}
+
+/// The DashPay profile keys on the active identity that no connection
+/// accounts for, and the way to turn them all off. A disconnect leaves them,
+/// since their bound does not say which app was given them.
+private struct SharedProfileAccessRow: View {
+    let keyCount: Int
+    let onRevoke: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(NSLocalizedString("Shared profile access", comment: "DashConnect"))
+                    .dashFont(.subhead)
+                    .foregroundStyle(Color.dash.primaryText)
+                Text(String(
+                    format: NSLocalizedString("DashPay profile keys no connection accounts for: %d", comment: "DashConnect"),
+                    keyCount))
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.tertiaryText)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
+                .dashFont(.subhead)
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
 }

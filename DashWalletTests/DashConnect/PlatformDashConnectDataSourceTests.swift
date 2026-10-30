@@ -1372,6 +1372,42 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
+    /// A disconnect that leaves DashPay profile keys no connection accounts
+    /// for says so, and the screen offers to revoke them; the revoke goes
+    /// with the scope the count was read for and clears the offer.
+    func testADisconnectThatLeavesSharedProfileKeysOffersToRevokeThem() async {
+        let spy = PurchaseApprovalSpy()
+        spy.sharedAccess = SharedProfileAccess(keyCount: 2, scope: "wallet-a t")
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && viewModel.message != nil }
+
+        XCTAssertEqual(viewModel.sharedProfileAccess, SharedProfileAccess(keyCount: 2, scope: "wallet-a t"))
+        XCTAssertEqual(viewModel.message?.text.contains("2"), true)
+
+        viewModel.revokeSharedProfileAccess()
+        await waitUntil { !viewModel.isDisconnecting && viewModel.sharedProfileAccess == nil }
+
+        XCTAssertEqual(spy.revokedScopes, ["wallet-a t"])
+        XCTAssertEqual(viewModel.message?.kind, .success)
+    }
+
+    /// With nothing shared there is nothing to offer, and a revoke asks
+    /// nothing of the data source.
+    func testWithoutSharedProfileKeysNothingIsOffered() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        spy.sharedAccess = SharedProfileAccess(keyCount: 0, scope: "wallet-a t")
+        viewModel.refreshSharedProfileAccess()
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        viewModel.revokeSharedProfileAccess()
+
+        XCTAssertNil(viewModel.sharedProfileAccess)
+        XCTAssertEqual(spy.revokedScopes, [])
+    }
+
     /// With the login unresolved the sheet's action asks again and approves
     /// nothing.
     func testAnUnresolvedLoginIsAskedForAgainInsteadOfApproved() async {
@@ -1660,6 +1696,30 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     func remove(id: String, scope: String?) async {
         XCTFail("remove is not part of the purchase approval flow")
     }
+
+    private var storedSharedAccess: SharedProfileAccess?
+    private var storedRevokedScopes: [String] = []
+
+    /// What `sharedProfileAccess` reports; a revoke clears it.
+    var sharedAccess: SharedProfileAccess? {
+        get { lock.withLock { storedSharedAccess } }
+        set { lock.withLock { storedSharedAccess = newValue } }
+    }
+
+    var revokedScopes: [String] {
+        lock.withLock { storedRevokedScopes }
+    }
+
+    func sharedProfileAccess() async -> SharedProfileAccess? { sharedAccess }
+
+    func revokeSharedProfileAccess(scope: String) async throws -> Int {
+        lock.withLock {
+            storedRevokedScopes.append(scope)
+            let count = storedSharedAccess?.keyCount ?? 0
+            storedSharedAccess = nil
+            return count
+        }
+    }
 }
 
 /// A `DashConnectDataSource` for the login approval: every QR is the sample
@@ -1724,6 +1784,8 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     func remove(id: String, scope: String?) async {}
+    func sharedProfileAccess() async -> SharedProfileAccess? { nil }
+    func revokeSharedProfileAccess(scope: String) async throws -> Int { 0 }
 }
 
 /// The URLs a view model asked to open, in order.
