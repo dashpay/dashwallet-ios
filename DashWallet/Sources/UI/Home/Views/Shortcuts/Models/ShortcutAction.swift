@@ -59,19 +59,57 @@ extension ShortcutActionType {
     /// The raw value of a retired shortcut that saved bars may still hold.
     static let retiredRawValue = 18
 
-    /// A restored bar with each retired slot (`nil`) filled by the first
-    /// candidate the bar doesn't show yet — Spend (the faucet on testnet),
-    /// then `retiredReplacements` — so the bar keeps its size and its other
-    /// buttons without the retired slot adding a duplicate. Takes the actions
-    /// as shown, after any availability fallback, so it compares against what
-    /// the user will see.
-    static func replacingRetired(in slots: [ShortcutActionType?], isTestnet: Bool) -> [ShortcutActionType] {
-        var shown = slots
-        let candidates = [isTestnet ? ShortcutActionType.getTestDash : .spend] + retiredReplacements
-        for index in shown.indices where shown[index] == nil {
-            shown[index] = candidates.first { !shown.contains($0) } ?? candidates[0]
+    /// The bar a saved configuration shows. The saved config itself is never
+    /// rewritten, so an action that is unavailable now comes back once its
+    /// gate passes again. An unknown raw value drops its slot, and so does a
+    /// retired one with no free candidate; a short bar makes the caller fall
+    /// back to the default bar.
+    ///
+    /// Availability fallbacks:
+    /// - the faucet becomes Spend off testnet (no mainnet faucet exists);
+    /// - Switch Wallet becomes Receive while the device has one wallet;
+    /// - Dash DEX becomes Spend unless it is offered (mainnet with SwapKit
+    ///   configured — mirrors `customizableActions` and
+    ///   `ServiceDataProvider.shouldShow`);
+    /// - Nodes becomes Spend (the faucet on testnet) while the active wallet
+    ///   runs no evonodes, e.g. after a wallet switch.
+    ///
+    /// A retired slot is filled last, with the first candidate the bar
+    /// doesn't show yet — Spend (the faucet on testnet), then
+    /// `retiredReplacements` — so it never adds a duplicate of a shown button.
+    static func restoredBar(saved rawValues: [Int],
+                            isTestnet: Bool,
+                            canSwitchWallet: Bool,
+                            hasEvonodes: Bool,
+                            isDashDEXAvailable: Bool) -> [ShortcutActionType] {
+        var shown: [ShortcutActionType] = []
+        var retiredSlots: [Int] = []
+        for rawValue in rawValues {
+            if rawValue == retiredRawValue {
+                retiredSlots.append(shown.count)
+                continue
+            }
+            guard var type = ShortcutActionType(rawValue: rawValue) else { continue }
+            if type == .getTestDash && !isTestnet {
+                type = .spend
+            }
+            if type == .switchWallet && !canSwitchWallet {
+                type = .receive
+            }
+            if type == .dashDEX && !isDashDEXAvailable {
+                type = .spend
+            }
+            if type == .nodes && !hasEvonodes {
+                type = isTestnet ? .getTestDash : .spend
+            }
+            shown.append(type)
         }
-        return shown.compactMap { $0 }
+        let candidates = [isTestnet ? ShortcutActionType.getTestDash : .spend] + retiredReplacements
+        for (offset, slot) in retiredSlots.enumerated() {
+            guard let replacement = candidates.first(where: { !shown.contains($0) }) else { break }
+            shown.insert(replacement, at: slot + offset)
+        }
+        return shown
     }
 
     /// Fallbacks for a retired entry after Spend (the faucet on testnet),

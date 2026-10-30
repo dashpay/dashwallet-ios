@@ -140,7 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
-    // Off the launch path: the cleanup walks every default and starts WebKit.
+    // On the next main run-loop turn, after launch returns: the cleanup
+    // walks every default and may start WebKit.
     dispatch_async(dispatch_get_main_queue(), ^{
         [DWRetiredCrowdNodeDefaults removeAllOnce];
     });

@@ -63,13 +63,49 @@ final class RetiredCrowdNodeDefaults: NSObject {
 
     @MainActor @objc
     static func removeAllOnce() {
-        let isProtectedDataAvailable = UIApplication.shared.isProtectedDataAvailable
-        removeAllOnce(from: .standard, isProtectedDataAvailable: isProtectedDataAvailable)
-        if isProtectedDataAvailable, !UserDefaults.standard.bool(forKey: websiteDataDoneKey) {
-            removeWebsiteData {
-                UserDefaults.standard.set(true, forKey: websiteDataDoneKey)
+        let defaults = UserDefaults.standard
+        removeAllOnce(from: defaults, isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable)
+        guard !defaults.bool(forKey: websiteDataDoneKey) else { return }
+        if UIApplication.shared.applicationState == .active {
+            removeWebsiteDataIfNeeded()
+            return
+        }
+        // At launch the app is not active yet; wait for the first activation.
+        guard activationObserver == nil else { return }
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated {
+                if let observer = activationObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                    activationObserver = nil
+                }
+                removeWebsiteDataIfNeeded()
             }
         }
+    }
+
+    @MainActor private static var activationObserver: NSObjectProtocol?
+
+    @MainActor
+    private static func removeWebsiteDataIfNeeded() {
+        let application = UIApplication.shared
+        let defaults = UserDefaults.standard
+        guard shouldRemoveWebsiteData(defaults: defaults,
+                                      isProtectedDataAvailable: application.isProtectedDataAvailable,
+                                      isActive: application.applicationState == .active) else { return }
+        removeWebsiteData {
+            defaults.set(true, forKey: websiteDataDoneKey)
+        }
+    }
+
+    /// Website data goes only while the app is in the foreground: removing
+    /// it starts WebKit's processes, which a background launch (refresh,
+    /// push) shouldn't pay for, and iOS may suspend it before WebKit reports
+    /// back. Until a removal is reported done, a later launch tries again.
+    static func shouldRemoveWebsiteData(defaults: UserDefaults,
+                                        isProtectedDataAvailable: Bool,
+                                        isActive: Bool) -> Bool {
+        isProtectedDataAvailable && isActive && !defaults.bool(forKey: websiteDataDoneKey)
     }
 
     /// Removes the defaults unless already recorded as done or protected data
@@ -85,10 +121,13 @@ final class RetiredCrowdNodeDefaults: NSObject {
     /// The service's hosts are this domain or its subdomains on every network.
     private static let webDomain = "crowdnode.io"
 
-    /// `crowdnode.io` or a subdomain; a leading dot (cookie domain form) is
-    /// ignored, and a name merely ending in the same letters doesn't match.
+    /// `crowdnode.io` or a subdomain, in any letter case; a leading dot
+    /// (cookie domain form) and a trailing root dot are ignored, and a name
+    /// merely ending in the same letters doesn't match.
     static func isWebDomain(_ host: String) -> Bool {
-        let name = host.hasPrefix(".") ? String(host.dropFirst()) : host
+        var name = host.lowercased()
+        if name.hasPrefix(".") { name.removeFirst() }
+        if name.hasSuffix(".") { name.removeLast() }
         return name == webDomain || name.hasSuffix("." + webDomain)
     }
 

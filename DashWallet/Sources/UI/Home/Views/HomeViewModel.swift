@@ -1634,44 +1634,13 @@ extension HomeViewModel {
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
                 let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
-                // `.some(nil)` marks a retired slot, filled below once every
-                // other slot shows its final action; an unknown value drops.
-                let slots = customShortcuts.compactMap { number -> ShortcutActionType?? in
-                    if number.intValue == ShortcutActionType.retiredRawValue {
-                        return .some(nil)
-                    }
-                    guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
-                    // A faucet shortcut saved on testnet degrades to Spend
-                    // after a switch to mainnet (no mainnet faucet exists);
-                    // the saved config is untouched, so it comes back when
-                    // the user returns to testnet.
-                    if type == .getTestDash && !isTestnet {
-                        type = .spend
-                    }
-                    // A Switch Wallet shortcut degrades to Receive while the
-                    // device is back to a single wallet; the saved config is
-                    // untouched, so it returns when another wallet is added.
-                    if type == .switchWallet && !canSwitchWallet {
-                        type = .receive
-                    }
-                    // Dash DEX is offered only on mainnet with SwapKit configured (mirrors
-                    // ShortcutActionType.customizableActions and ServiceDataProvider.shouldShow);
-                    // a saved DEX shortcut degrades to Spend whenever that gate isn't met. The
-                    // saved config is untouched, so it returns once the gate passes again.
-                    let dashDEXAvailable = WalletEnvironment.isMainnet && SwapKitConstants.isConfigured
-                    if type == .dashDEX && !dashDEXAvailable {
-                        type = .spend
-                    }
-                    // A saved Nodes shortcut degrades to Spend (faucet on
-                    // testnet) while the active wallet runs no evonodes — e.g.
-                    // after a wallet switch; the saved config is untouched, so
-                    // it returns with an evonode wallet.
-                    if type == .nodes && !hasEvonodes {
-                        type = isTestnet ? .getTestDash : .spend
-                    }
-                    return .some(type)
-                }
-                let items = ShortcutActionType.replacingRetired(in: slots, isTestnet: isTestnet)
+                let isDashDEXAvailable = WalletEnvironment.isMainnet && SwapKitConstants.isConfigured
+                let items = ShortcutActionType.restoredBar(
+                    saved: customShortcuts.map(\.intValue),
+                    isTestnet: isTestnet,
+                    canSwitchWallet: canSwitchWallet,
+                    hasEvonodes: hasEvonodes,
+                    isDashDEXAvailable: isDashDEXAvailable)
                     .map { ShortcutAction(type: $0) }
                 if items.count == maxShortcutsCount {
                     self.shortcutItems = items

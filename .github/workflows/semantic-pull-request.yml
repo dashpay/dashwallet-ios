@@ -44,6 +44,7 @@ jobs:
             uphold
             coinbase
             explore-dash
+            crowdnode
             syncing
             testnet
             dashpay
