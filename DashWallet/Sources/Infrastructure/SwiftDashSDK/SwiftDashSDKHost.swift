@@ -600,8 +600,7 @@ final class SwiftDashSDKHost {
     /// the runtime handles don't expose. The instances derive keys locally
     /// (no networking, no persistence); drop them when done.
     ///
-    /// Consumers: the masternode Owner/Voting key deriver and CrowdNode
-    /// message signing. Returns nil when no wallet is bound/running or the
+    /// Consumer: the masternode Owner/Voting key deriver. Returns nil when no wallet is bound/running or the
     /// mnemonic can't be read (logged).
     func derivationWallet() -> (manager: WalletManager, wallet: Wallet, walletId: Data)? {
         guard let hostWalletId = wallet?.walletId, let network = runningNetwork else {

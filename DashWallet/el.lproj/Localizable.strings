@@ -3,12 +3,6 @@
 
 " or " = " ή ";
 
-/* CrowdNode */
-" Privacy Policy " = "Πολιτική απορρήτου";
-
-/* CrowdNode */
-" Terms of Use " = "'Οροι χρήσης";
-
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "Το %1$@ καταχωρήθηκε προς πώληση για %2$@ DASH";
 
@@ -183,9 +177,6 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Ένας κωδικός φράσης για την συσκευή είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
 
-/* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "Ένας Masternode χρειάζεται 1000 Dash ως εγγύηση και κάθε Masternode ανταμείβεται προς το παρόν με περίπου %@ ετησίως.";
-
 /* DashPay Contacts */
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
@@ -226,17 +217,8 @@
 /* DashSpend */
 "Accept terms and\nconditions" = "Αποδοχή των όρων και \nπροϋποθέσεων";
 
-/* CrowdNode */
-"Accept Terms Of Use" = "Αποδοχή των Όρων Χρήσης";
-
 /* DashPay Contacts */
 "Accepting" = "Accepting";
-
-/* CrowdNode */
-"Accepting terms of use…" = "Αποδοχή των όρων χρήσης...";
-
-/* CrowdNode */
-"Account Recovery" = "Ανάκτηση λογαριασμού";
 
 /* Masternode status */
 "Active" = "Ενεργό";
@@ -333,9 +315,6 @@
 /* Shortcut selection empty state */
 "All shortcuts are already in use" = "All shortcuts are already in use";
 
-/* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Όλες οι μεταφορές από και προς το CrowdNode από αυτή τη συσκευή θα πραγματοποιούνται με την παρακάτω διεύθυνση Dash από αυτή τη συσκευή.";
-
 /* ZenLedger */
 "Allow" = "Επιτρέπετε";
 
@@ -387,9 +366,6 @@
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "Παρουσιάστηκε σφάλμα. Παρακαλώ προσπαθήστε ξανά αργότερα.";
 
-/* CrowdNode */
-"and" = "και";
-
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Οποιοδήποτε όνομα χρήστη που έχει αριθμό 2-9 ή είναι μεγαλύτερο από 20 χαρακτήρες ή που έχει παύλα θα εγκριθεί αυτόματα.";
 
@@ -429,9 +405,6 @@
 
 /* Voting */
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "Ως ιδιοκτήτης του κύριου κόμβου μπορείτε να ψηφίσετε για να εγκρίνετε τα ζητούμενα ονόματα χρηστών πριν οι χρήστες μπορέσουν να τα δημιουργήσουν..\nΜπορείτε να μπλοκάρετε τη δημιουργία των ονομάτων χρήστη που θεωρείτε ακατάλληλα.";
-
-/* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Καθώς οι περισσότεροι δεν έχουν ακριβώς 1000 Dash στη διάθεσή τους, η Crowdnode έχει δημιουργήσει μια υπηρεσία όπου, συγκεντρώνοντας καταθέσεις από τα μέλη, θα μπορούν να απολαύσουν τα οφέλη της κατοχής ενός Masternode.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -513,14 +486,8 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Αντίγραφο ασφαλείας";
 
-/* No comment provided by engineer. */
-"Backup Passphrase" = "Backup της φράσης πρόσβασης";
-
 /* A noun. Used as a title. */
 "Backup Wallet" = "Backup πορτοφολιού";
-
-/* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "Δημιουργήστε αντίγραφο ασφαλείας της φράσης πρόσβασης για να δημιουργήσετε έναν λογαριασμό CrowdNode";
 
 /* Back up wallet */
 "Backup your recovery phrase" = "Δημιουργήστε αντίγραφα ασφαλείας της φράσης ανάκτησης";
@@ -531,14 +498,8 @@
 /* Send Screen: to address */
 "Balance" = "Υπόλοιπο";
 
-/* CrowdNode */
+/* Platform address payment detail */
 "Balance after" = "Υπόλοιπο μετά";
-
-/* CrowdNode */
-"Balance On CrowdNode" = "Υπόλοιπο στο CrowdNode";
-
-/* CrowdNode */
-"Balance: " = "Υπόλοιπο:";
 
 /* Balance info sheet */
 "Balances and transfers are not publicly visible" = "Τα υπόλοιπα και οι μεταφορές δεν είναι δημόσια ορατά";
@@ -548,9 +509,6 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Τραπεζικό έμβασμα";
-
-/* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "Γίνετε μέλος ενός Dash Masternode με το CrowdNode";
 
 /* TimeSkew */
 "behind" = "πίσω ";
@@ -801,9 +759,6 @@
 /* Dash DEX */
 "Close and notify me" = "Close and notify me";
 
-/* CrowdNode */
-"Close and notify when it’s done" = "Κλείσιμο και ειδοποίηση όταν τελειώσει";
-
 /* No comment provided by engineer. */
 "Close App" = "Κλείσιμο Εφαρμογής";
 
@@ -865,9 +820,6 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Συνδέθηκε";
-
-/* CrowdNode */
-"Connected Dash address" = "Συνδεδεμένη διεύθυνση Dash";
 
 /* SPV sync */
 "Connected peers" = "Συνδεδεμένοι peers";
@@ -1034,17 +986,11 @@
 /* Usernames */
 "Create a username" = "Δημιουργία όνομα χρήστη";
 
-/* CrowdNode */
-"Create Account" = "Δημιουργία λογαριασμού";
-
 /* Create DashSpend account */
 "Create account" = "Δημιουργία λογαριασμού";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Δημιουργήστε έναν λογαριασμό ή συνδεθείτε στον ήδη υπάρχοντα.";
-
-/* CrowdNode */
-"Create an online CrowdNode account" = "Δημιουργήστε έναν online λογαριασμό στο CrowdNode";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Δημιουργία πρόσκλησης";
@@ -1054,10 +1000,6 @@
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Create Online Account" = "Δημιουργία online λογαριασμού";
 
 /* Wallets */
 "Create Wallet" = "Create Wallet";
@@ -1074,30 +1016,6 @@
 /* Masternodes */
 "Credits" = "Credits";
 
-/* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
-
-/* CrowdNode */
-"CrowdNode benefits" = "Πλεονεκτήματα του CrowdNode";
-
-/* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
-
-/* CrowdNode Portal */
-"CrowdNode Support" = "Υποστήριξη CrowdNode";
-
-/* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "Το CrowdNode χρησιμοποιεί αυτή τη διεύθυνση ως αναγνωριστικό του λογαριασμού σας. Θα χάσετε την πρόσβαση στα χρήματά σας σε αυτό το πορτοφόλι και στο λογαριασμό σας CrowdNode αν χάσετε τη φράση πρόσβασης που σχετίζεται με αυτή τη διεύθυνση.";
-
-/* CrowdNode */
-"CrowdNode withdrawal limits" = "Όρια ανάληψης στην CrowdNode";
-
-/* No comment provided by engineer. */
-"CrowdNode · Account" = "Λογαριασμός · CrowdNode";
-
-/* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
-
 /* No comment provided by engineer. */
 "CSV Export" = "Εξαγωγή CSV";
 
@@ -1106,12 +1024,6 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "Δωροκάρτες CTX";
-
-/* Crowdnode */
-"Current APY = %@" = "Τρέχον APY = %@";
-
-/* CrowdNode */
-"Current APY is %@" = "Το τρέχον APY είναι %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Τρέχουσα τοποθεσία";
@@ -1130,9 +1042,6 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "Διεύθυνση Dash";
-
-/* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Διεύθυνση Dash που έχει οριστεί για το λογαριασμό σας στο CrowdNode στο πορτοφόλι Dash σε αυτή τη συσκευή";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Υπόλοιπο Dash";
@@ -1219,9 +1128,6 @@
 /* AboutDash */
 "DashSync" = "DashSync";
 
-/* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
-
 /* No comment provided by engineer. */
 "Date" = "Ημερομηνία";
 
@@ -1256,22 +1162,6 @@
 
 /* Location Service Status */
 "Denied" = "Απορρίφθηκε";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Deposit" = "Κατάθεση";
-
-/* CrowdNode Portal */
-"Deposit %@ to start earning" = "Καταθέστε %@ για να αρχίσετε να κερδίζετε";
-
-/* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Καταθέστε τουλάχιστον %@ Dash στο Dash Wallet σας για να ολοκληρώσετε μια ανάληψη";
-
-/* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "Καταθέστε τουλάχιστον  %@ για να αρχίσετε να κερδίζετε";
-
-/* CrowdNode */
-"Deposit sent" = "Η κατάθεση απεστάλη";
 
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "Διαδρομή παραγωγής";
@@ -1362,9 +1252,6 @@
 /* SPV diagnostics */
 "Dropping…" = "Απόρριψη…";
 
-/* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Σύμφωνα με τους όρους παροχής υπηρεσιών της CrowdNode οι χρήστες δεν μπορούν να αποσύρουν περισσότερα από:";
-
 /* Geoblock */
 "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Λόγω κανονιστικών περιορισμών, πρέπει να επαληθεύσουμε ότι δεν βρίσκεστε στο Ηνωμένο Βασίλειο. Ελέγχουμε την τοποθεσία σας μόνο όταν εισέρχεστε στις λειτουργίες της Coinbase.";
 
@@ -1373,9 +1260,6 @@
 
 /* Usernames */
 "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Λόγω της διαδικασίας ψηφοφορίας, το Dash Network αποφάσισε να εκχωρήσει το όνομα χρήστη %@ σε κάποιον άλλο. Παρακαλώ προσπαθήστε ξανά ζητώντας άλλο όνομα χρήστη.";
-
-/* CrowdNode */
-"e.g. johndoe@mail.com" = "e.g. johndoe@mail.com";
 
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Κάθε πρόσκληση θα χρηματοδοτείται με αυτό το ποσό, ώστε ο παραλήπτης να μπορεί να δημιουργήσει γρήγορα το όνομα χρήστη του στο δίκτυο Dash.";
@@ -1386,12 +1270,6 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Νωρίτερα";
-
-/* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
-
-/* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "Κάντε εύκολα Stake το Dash και κερδίστε παθητικό εισόδημα με μερικά απλά κλικ.";
 
 /* SPV diagnostics */
 "Edit birth height" = "Επεξεργασία ύψους έναρξης";
@@ -1408,7 +1286,7 @@
 /* Input username textfield placeholder */
 "eg: johndoe" = "πχ: johndoe";
 
-/* CrowdNode */
+/* DashSpend */
 "Email" = "Email";
 
 /* DashPay: confirm button of the Enable DashPay sheet */
@@ -1628,12 +1506,6 @@
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
 
-/* CrowdNode */
-"First deposit should be more than %@" = "Η πρώτη κατάθεση πρέπει να είναι μεγαλύτερη από %@  ";
-
-/* CrowdNode */
-"First minimum deposit" = "Πρώτη ελάχιστη κατάθεση";
-
 /* DashSpend */
 "Fixed amounts" = "Σταθερά ποσά";
 
@@ -1679,12 +1551,6 @@
 /* Dash DEX Portal */
 "From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
 
-/* from CrowdNode */
-"from CrowdNode" = "from CrowdNode";
-
-/* from Dash Wallet */
-"from Dash Wallet" = "από το Dash Wallet";
-
 /* Swap portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
@@ -1724,9 +1590,6 @@
 /* CoinJoin */
 "Funds moved" = "Τα κεφάλαια μεταφέρθηκαν";
 
-/* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Κερδίστε ανταμοιβές από καταθέσεις σε Dash Masternodes με μόλις 0,5 Dash.";
-
 /* Wallets */
 "Generate a new recovery phrase" = "Generate a new recovery phrase";
 
@@ -1742,9 +1605,6 @@
 /* Usernames */
 "Get ready to join DashPay" = "Ετοιμαστείτε να μπείτε στο DashPay";
 
-/* CrowdNode */
-"Get Rewards Instantly" = "Αποκτήστε ανταμοιβές άμεσα";
-
 /* No comment provided by engineer. */
 "Get Started" = "Ξεκινήστε";
 
@@ -1756,9 +1616,6 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "Αποκτήστε το όνομα χρήστη σας";
-
-/* CrowdNode */
-"Getting started with CrowdNode" = "Ξεκινώντας με το CrowdNode";
 
 /* No comment provided by engineer. */
 "Gift card" = "Δωροκάρτα";
@@ -1780,9 +1637,6 @@
 
 /* DashSpend */
 "Gift card · %@" = "Δωροκάρτα · %@";
-
-/* No comment provided by engineer. */
-"Go to CrowdNode website" = "Μεταβείτε στον ιστότοπο του CrowdNode";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Μεταβείτε στην Ιστοσελίδα";
@@ -1821,9 +1675,6 @@
 /* Masternodes */
 "Height %u" = "Ύψος %u";
 
-/* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Αυτή είναι μια διεύθυνση Dash που έχει οριστεί για το λογαριασμό σας CrowdNode στο πορτοφόλι Dash σε αυτή τη συσκευή";
-
 /* DashPay Contacts */
 "Hidden" = "Hidden";
 
@@ -1847,9 +1698,6 @@
 
 /* Shortcut banner */
 "Hold any button above to replace it with the function you need" = "Κρατήστε πατημένο οποιοδήποτε κουμπί παραπάνω για να το αντικαταστήσετε με τη λειτουργία που χρειάζεστε";
-
-/* CrowdNode */
-"How CrowdNode staking works" = "Πώς λειτουργεί το staking στο CrowdNode ";
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "Πώς μπορώ να αποκτήσω Test Dash;";
@@ -1899,9 +1747,6 @@
 /* DashPay FAQ */
 "How private is DashPay?" = "Πόσο ιδιωτικό είναι το DashPay;";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "Πώς να επιβεβαιώσετε τη διεύθυνση API Dash σας";
-
 /* No comment provided by engineer. */
 "How to use your gift card" = "Πώς να χρησιμοποιήσετε την δωροκάρτα σας";
 
@@ -1916,9 +1761,6 @@
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Αποδέχομαι ότι θα χάσω τα νομίσματά μου εάν δεν διαθέτω πλέον τη φράση ανάκτησης";
-
-/* CrowdNode */
-"I agree to CrowdNode" = "Συμφωνώ με το CrowdNode";
 
 /* No comment provided by engineer. */
 "I got it" = "I got it";
@@ -1971,12 +1813,6 @@
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Εάν επιλέξετε να δώσετε δικαιώματα σε μεταγενέστερο χρόνο και δεν βρίσκεστε στο Ηνωμένο Βασίλειο, μπορείτε να χρησιμοποιήσετε το Coinbase";
 
-/* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Εάν ποτέ χάσετε τη φράση πρόσβασης σας, μπορείτε να επαληθεύσετε τον εαυτό σας με άλλα μέσα για να ανακτήσετε την πρόσβαση στα κεφάλαια του CrowdNode σας.";
-
-/* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Εάν χάσετε τη φράση πρόσβασης για αυτό το πορτοφόλι και χάσετε αυτή τη συσκευή ή απεγκαταστήσετε το Dash Wallet, θα χάσετε την πρόσβαση στα χρήματά σας στο CrowdNode και τα χρήματα σε αυτό το πορτοφόλι.";
-
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Εάν εξακολουθείτε να θέλετε να κάνετε εκκαθάριση παρακαλώ εισάγετε: \"%@\"";
 
@@ -2013,14 +1849,8 @@
 /* Maya */
 "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
-/* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "Σε περίπτωση μεγαλύτερων αναλήψεων, το CrowdNode θα καταβάλει τις αναλήψεις εντός δύο εβδομάδων. Αυτό οφείλεται στα πρωτόκολλα ασφαλείας τους και τις περισσότερες φορές θα διεκπεραιώνονται πολύ πιο γρήγορα.";
-
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "Σε περίπτωση που χάσετε τον φράση πρόσβασής σας, θα χάσετε το δικαίωμα στο όνομα χρήστη σας.";
-
-/* CrowdNode Portal */
-"In process…" = "Σε εξέλιξη...";
 
 /* Dash DEX */
 "In progress" = "In progress";
@@ -2040,9 +1870,6 @@
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
-
-/* CrowdNode */
-"Information about your online account" = "Πληροφορίες σχετικά με τον online λογαριασμό σας";
 
 /* Buy Sell Portal */
 "Initializing" = "Έναρξη λειτουργίας";
@@ -2080,9 +1907,6 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "Μετακινήθηκε εσωτερικά στο";
 
-/* CrowdNode */
-"Introducing Staking" = "Εισαγωγή στο Staking";
-
 /* Invalid transaction */
 "Invalid" = "Μη έγκυρο";
 
@@ -2094,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "Μη έγκυρη διεύθυνση Dash!";
-
-/* CrowdNode Online */
-"Invalid Email" = "Μη έγκυρο email";
 
 /* No comment provided by engineer. */
 "Invalid email or password." = "Μη έγκυρο email ή κωδικός πρόσβασης.";
@@ -2164,12 +1985,6 @@
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Αναφέρθηκε ζήτημα";
 
-/* CrowdNode */
-"It can take a minute for your balance to be updated." = "Μπορεί να χρειαστεί ένα λεπτό για να ενημερωθεί το υπόλοιπό σας.";
-
-/* CrowdNode */
-"It can take a minute for your funds to arrive." = "Μπορεί να χρειαστεί ένα λεπτό για να φτάσουν τα χρήματά σας.";
-
 /* Dash DEX */
 "It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
@@ -2196,9 +2011,6 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "Εγγραφείτε τώρα";
-
-/* CrowdNode */
-"Joining the pool" = "Συμμετοχή στην δεξαμενή";
 
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "Διατηρήστε αυτά τα νομίσματα ιδιωτικά. Ισχύουν τέλη δικτύου και ιδιωτικότητας.";
@@ -2255,9 +2067,6 @@
 /* Wallets */
 "Leave the name empty to reset it to the default." = "Leave the name empty to reset it to the default.";
 
-/* CrowdNode */
-"Leaving the pool" = "Αφήνοντας την δεξαμενή";
-
 /* DashPay Contacts: caption under the user's own QR code */
 "Let another Dash Wallet user scan this code to add you as a contact." = "Αφήστε έναν άλλο χρήστη του Dash Wallet να σαρώσει αυτόν τον κωδικό για να σας προσθέσει ως επαφή.";
 
@@ -2281,12 +2090,6 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Συνδέστε το λογαριασμό στην Coinbase";
-
-/* CrowdNode */
-"Link Existing Account" = "Σύνδεση υπάρχοντος λογαριασμού";
-
-/* CrowdNode */
-"Link Existing CrowdNode Account" = "Σύνδεση υφιστάμενου λογαριασμού CrowdNode";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Σύνδεση Uphold Λογαριασμού";
@@ -2418,9 +2221,6 @@
 /* Maya */
 "Log In" = "Log In";
 
-/* CrowdNode WebView */
-"Log in to CrowdNode" = "Συνδεθείτε στο CrowdNode";
-
 /* DashSpend */
 "Log in to your account" = "Συνδεθείτε στο λογαριασμό σας";
 
@@ -2453,9 +2253,6 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
-
-/* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "Φαίνεται ότι αδειάζετε το Dash Πορτοφόλι σας";
 
 /* adjective, security level */
 "Low" = "χαμηλά";
@@ -2555,9 +2352,6 @@
 
 /* adjective, security level */
 "Medium" = "Μέσο";
-
-/* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "Τα μέλη είναι ελεύθερα να φύγουν από την δεξαμενή και τις περισσότερες φορές μπορούν να φύγουν αμέσως.";
 
 /* Dash DEX */
 "Memo / Tag" = "Memo / Tag";
@@ -2765,9 +2559,6 @@
 /* SPV diagnostics */
 "No unconfirmed transactions to drop." = "Δεν υπάρχουν ανεπιβεβαίωτες συναλλαγές για απόρριψη.";
 
-/* CrowdNode */
-"New CrowdNode Account" = "Νέος λογαριασμός CrowdNode";
-
 /* Voting */
 "New to old" = "Νέα σε παλιά";
 
@@ -2972,9 +2763,6 @@
 /* Online */
 "Online" = "Online";
 
-/* CrowdNode Portal */
-"Online Account" = "Online λογαριασμός";
-
 /* Online Merchant */
 "Online Merchant" = "Online έμπορος";
 
@@ -3138,12 +2926,8 @@
 /* DashPay intro: feature body */
 "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "Οι πληρωμές με κάθε επαφή ομαδοποιούνται σε ένα σημείο, με ονόματα και προφίλ αντί για ακατέργαστες συναλλαγές.";
 
-/* CrowdNode */
 /* Masternodes */
 "Payout address" = "Διεύθυνση πληρωμής";
-
-/* CrowdNode */
-"Payout Options" = "Επιλογές πληρωμής";
 
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
@@ -3156,15 +2940,6 @@
 
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
-
-/* CrowdNode */
-"per 24 hours" = "ανά 24 ώρες";
-
-/* CrowdNode */
-"per hour" = "ανά ώρα";
-
-/* CrowdNode */
-"per transaction" = "ανά συναλλαγή";
 
 /* Usernames */
 "Personalise profile" = "Προσαρμόστε το προφίλ";
@@ -3249,20 +3024,11 @@
 /* Uphold */
 "Please go to your Uphold account to verify your identity." = "Παρακαλούμε μεταβείτε στο λογαριασμό σας στην Uphold για να επαληθεύσετε την ταυτότητά σας.";
 
-/* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Λάβετε υπόψη ότι το email δεν αποθηκεύεται από το Dash Wallet και αποστέλλεται μόνο στο Crowdnode";
-
 /* Usernames */
 "Please note that the username can NOT be changed once it is registered." = "Παρακαλείστε να σημειώσετε ότι το όνομα χρήστη ΔΕΝ μπορεί να αλλάξει από τη στιγμή που έχει καταχωρηθεί.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Παρακαλώ σημειώστε ότι δεν θα μπορείτε να το αλλάξετε στο μέλλον.";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Σημειώστε ότι δεν θα μπορείτε να κάνετε ανάληψη των χρημάτων σας από το CrowdNode σε αυτό το πορτοφόλι μέχρι να αυξήσετε το υπόλοιπό σας σε %@ Dash.";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Τοποθετήστε το τηλέφωνό σας κοντά στη συσκευή NFC.";
@@ -3287,9 +3053,6 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "Παρακαλώ περιμένετε";
-
-/* CrowdNode */
-"Please wait before initiating the next withdrawal" = "Παρακαλώ περιμένετε πριν ξεκινήσετε την επόμενη ανάληψη";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Περιμένετε μέχρι να συγχρονιστεί πλήρως το πορτοφόλι πριν εξάγετε το ιστορικό των συναλλαγών σας.";
@@ -3317,9 +3080,6 @@
 
 /* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "Οι τιμές δεν ανακτήθηκαν. Οι Fiat τιμές ενδέχεται να είναι εσφαλμένες.";
-
-/* CrowdNode */
-"Primary Dash address" = "Κύρια διεύθυνση Dash";
 
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
@@ -3356,9 +3116,6 @@
 
 /* Balance info sheet section */
 "Pros" = "Πλεονεκτήματα";
-
-/* CrowdNode Portal */
-"Protect your savings" = "Προστατέψτε τις οικονομίες σας";
 
 /* Usernames */
 "Prove your identity" = "Αποδείξτε την ταυτότητα σας";
@@ -3422,9 +3179,6 @@
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
-
-/* CrowdNode */
-"Read Withdrawal Policy" = "Διαβάστε την Πολιτική απόσυρσης";
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Μόνο για ανάγνωση";
@@ -3538,9 +3292,6 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Λάβετε απευθείας στο Dash Wallet";
 
-/* CrowdNode */
-"Receive your share of rewards daily." = "Λάβετε καθημερινά το μερίδιό σας από τις ανταμοιβές.";
-
 /* Received transaction */
 "Received" = "Ελήφθησαν";
 
@@ -3555,9 +3306,6 @@
 
 /* DashPay payment row — sender's display name */
 "Received from %@" = "Ελήφθη από %@";
-
-/* CrowdNode */
-"Receiving rewards" = "Λήψη ανταμοιβών";
 
 "Records your masternodes as having voted, without taking a side." = "Καταγράφει τα masternodes σας ως να έχουν ψηφίσει, χωρίς να πάρουν θέση.";
 
@@ -4408,9 +4156,6 @@
 /* Dash DEX */
 "Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
 
-/* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Στείλτε %@ Dash από την κύρια διεύθυνση Dash που χρησιμοποιείτε σήμερα για τον λογαριασμό σας στην CrowdNode";
-
 /* Dash DEX */
 "Send %@ to this address" = "Send %@ to this address";
 
@@ -4422,10 +4167,6 @@
 
 /* No comment provided by engineer. */
 "Send Invitation" = "Αποστολή πρόσκλησης";
-
-/* Coinbase
-   CrowdNode */
-"Send Report" = "Αποστολή αναφοράς";
 
 /* No comment provided by engineer. */
 "Send to" = "Εστάλη στο";
@@ -4508,12 +4249,6 @@
 /* No comment provided by engineer. */
 "Sending to" = "Αποστολή σε";
 
-/* CrowdNode */
-"Sending to CrowdNode account" = "Αποστολή σε λογαριασμό CrowdNode";
-
-/* CrowdNode */
-"Sending to Dash Wallet on this device" = "Αποστολή στο Dash Wallet σε αυτή τη συσκευή";
-
 /* Buy Dash */
 "Sending to:" = "Αποστολή σε:";
 
@@ -4568,7 +4303,7 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Εγκατάσταση πορτοφολιού";
 
-/* CrowdNode */
+/* Receive screen */
 "Share" = "Μοιραστείτε";
 
 /* Receive screen */
@@ -4622,23 +4357,11 @@
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Προβολή κλειδιών Masternode";
 
-/* CrowdNode */
-"Show QR" = "Εμφάνιση QR";
-
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Προβολή Φράσης Ανάκτησης";
 
 /* Alert title */
 "Sign in required" = "Απαιτείται είσοδος";
-
-/* CrowdNode */
-"Sign up error" = "Σφάλμα εγγραφής";
-
-/* CrowdNode */
-"Sign up to CrowdNode" = "Εγγραφείτε στο CrowdNode";
-
-/* CrowdNode Portal */
-"Sign up to finish setting up account" = "Εγγραφείτε για να ολοκληρώσετε τη δημιουργία λογαριασμού";
 
 /* ZenLedger */
 "Simplify your crypto taxes" = "Απλοποιήστε τους φόρους των κρυπτονομισμάτων σας";
@@ -4701,9 +4424,6 @@
 
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
-
-/* No comment provided by engineer. */
-"Staking" = "Staking";
 
 /* Usernames */
 "Starts after you add funds" = "Ξεκινά αφού προσθέσετε κεφάλαια";
@@ -4807,9 +4527,6 @@
 /* Explore Dash */
 "Synced" = "Synced";
 
-/* CrowdNode Portal */
-"Synced with current Dash Wallet" = "Συγχρονισμένο με το τρέχον Dash Wallet";
-
 /* No comment provided by engineer. */
 "Syncing" = "Συγχρονισμός";
 
@@ -4898,9 +4615,6 @@
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "Το δίκτυο Dash πρέπει να ψηφίσει για να εγκρίνει ορισμένα ονόματα χρηστών πριν δημιουργηθούν.";
-
-/* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Το δίκτυο Dash διευθύνεται από έναν αριθμό Masternodes, οι οποίοι αποτελούν βασικό μέρος της διεξαγωγής των πληρωμών.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Τα Dash κατατέθηκαν επιτυχώς στο λογαριασμό σας στην Coinbase. Υπήρξε όμως πρόβλημα στη μεταφορά τους στο Dash Wallet σε αυτή τη συσκευή.";
@@ -4997,9 +4711,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
-
-/* CrowdNode */
-"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
 /* Send sheet source/destination mismatch */
 "This address can't be paid from your %@ balance" = "Αυτή η διεύθυνση δεν μπορεί να πληρωθεί από το υπόλοιπο %@";
@@ -5189,17 +4900,11 @@
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Αυτός ο κωδικός PIN θα χρειαστεί να ξεκλειδώσετε την εφαρμογή σας κάθε φορά που την χρησιμοποιείτε.";
 
-/* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "Αυτό το QR περιέχει ήδη την αίτηση πληρωμής για %@";
-
 /* Dash DEX / dex_error_quote_expired */
 "This quote expired. Please go back and try again." = "This quote expired. Please go back and try again.";
 
 /* Wallets */
 "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Αυτό αντιπροσωπεύει την τρέχουσα Ετήσια Ποσοστιαία Απόδοση ενός πλήρους Masternode μείον το τέλος CrowdNode 15%. Δεν αποτελεί εγγυημένο ποσοστό απόδοσης και μπορεί να αυξηθεί ή να μειωθεί ανάλογα με το μέγεθος των δεξαμενών CrowdNode και την τιμή του Dash.";
 
 "This still counts as your masternodes having voted in this contest." = "Αυτό εξακολουθεί να μετρά ως ψήφος των masternodes σας σε αυτή τη διαμάχη.";
 
@@ -5245,12 +4950,6 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "στο Dash Wallet σε αυτή τη συσκευή";
 
-/* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "Για να ξεκινήσετε το staking, δημιουργήστε έναν λογαριασμό στο CrowdNode ή συνδεθείτε σε έναν ήδη υπάρχοντα.";
-
-/* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "στη διεύθυνση Dash που έχει οριστεί για το λογαριασμό σας CrowdNode στο Dash Wallet σε αυτή τη συσκευή";
-
 /* No comment provided by engineer. */
 "Today" = "Σήμερα";
 
@@ -5271,9 +4970,6 @@
 
 /* DashPay Contacts */
 "Transaction" = "Transaction";
-
-/* CrowdNode */
-"Transaction History" = "Ιστορικό συναλλαγών";
 
 /* Balance info sheet */
 "Transaction history isn't available" = "Το ιστορικό συναλλαγών δεν είναι διαθέσιμο";
@@ -5297,9 +4993,6 @@
 
 /* Coinbase */
 "Transfer DASH" = "Transfer DASH";
-
-/* CrowdNode */
-"Transfer Error" = "Σφάλμα μεταφοράς";
 
 /* Coinbase */
 "Transfer Failed" = "Η μεταφορά απέτυχε";
@@ -5555,9 +5248,6 @@
 /* DashPay Invitations */
 "Valid invitation" = "Έγκυρη πρόσκληση";
 
-/* CrowdNode Portal */
-"Validating address…" = "Επικύρωση διεύθυνσης...";
-
 /* No comment provided by engineer. */
 "Validating username failed" = "Η επικύρωση του ονόματος χρήστη απέτυχε";
 
@@ -5566,9 +5256,6 @@
 
 /* Maya */
 "Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
-
-/* CrowdNode Portal */
-"Verification Required" = "Απαιτείται επαλήθευση";
 
 /* Usernames */
 "Verified during registration" = "Επαληθεύτηκε κατά την εγγραφή";
@@ -5581,9 +5268,6 @@
 
 /* No comment provided by engineer. */
 "Verify" = "Επιβεβαίωση";
-
-/* CrowdNode */
-"Verify your API Dash address" = "Επαληθεύστε τη διεύθυνση API Dash";
 
 /* No comment provided by engineer. */
 "Verify your recovery phrase to set a new PIN." = "Επαληθεύστε τη φράση ανάκτησης για να ορίσετε νέο PIN.";
@@ -5599,9 +5283,6 @@
 
 /* adjective, security level */
 "Very High" = "Πολύ Υψηλά";
-
-/* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Πολύ μικρές ποσότητες Dash θα αποστέλλονται από και προς το CrowdNode για να επαληθεύσετε ότι είστε ο ιδιοκτήτης αυτής της διεύθυνσης πορτοφολιού.";
 
 /* No comment provided by engineer. */
 "View All" = "Προβολή Όλων";
@@ -5688,14 +5369,8 @@
 
 "Voting on “%@” has already closed. Refresh to see the result." = "Η ψηφοφορία για το «%@» έχει ήδη κλείσει. Ανανεώστε για να δείτε το αποτέλεσμα.";
 
-/* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
-
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Περιμένετε μέχρι να συγχρονιστεί πλήρως το blockchain, ώστε να μπορέσουμε να επανεξετάσουμε το ιστορικό των συναλλαγών σας.";
-
-/* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Περιμένετε μέχρι να συγχρονιστεί πλήρως το blockchain, ώστε να μπορέσουμε να επανεξετάσουμε το ιστορικό των συναλλαγών σας. Επισκεφθείτε τον ιστότοπο του CrowdNode για να συνδεθείτε ή να εγγραφείτε.";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Περιμένετε μέχρι να συγχρονιστεί το πορτοφόλι για να ολοκληρώσετε τη συναλλαγή";
@@ -5756,23 +5431,11 @@
 /* Dash DEX / dex_error_validation */
 "We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
-/* CrowdNode */
-"We couldn’t create your CrowdNode account." = "Δεν μπορέσαμε να δημιουργήσουμε το λογαριασμό σας στο CrowdNode.";
-
-/* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "Δεν μπορέσαμε να κάνουμε κατάθεση στο λογαριασμό σας στο CrowdNode.";
-
-/* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "Δεν μπορέσαμε να κάνουμε ανάληψη από το λογαριασμό σας στο CrowdNode.";
-
 /* Explore */
 "We have two types of merchants" = "Έχουμε δύο τύπους εμπόρων";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Αναβαθμίσαμε";
-
-/* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "Θα εντοπίσουμε αυτόματα αυτή τη συναλλαγή και θα μεταφέρουμε το ίδιο ποσό στο λογαριασμό σας στο CrowdNode. Μετά από αυτό θα μπορείτε να κάνετε καταθέσεις και αναλήψεις στο Dash Wallet σε αυτή τη συσκευή.";
 
 /* Website */
 "Website" = "Ιστοσελίδα";
@@ -5827,11 +5490,8 @@
 /* Usernames */
 "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Δεν έχετε όνομα χρήστη όσο βρίσκεται σε εξέλιξη η ψηφοφορία. Καταχωρήστε τώρα ένα μη διεκδικούμενο όνομα χρήστη — παραμένει δικό σας και, αν η ψηφοφορία σας αποδώσει το «%@», θα είστε προσβάσιμοι και με τα δύο ονόματα χρήστη.";
 
-/* Crowdnode */
+/* Grouped Transactions */
 "Why do I see all these transactions?" = "Γιατί βλέπω όλες αυτές τις συναλλαγές;";
-
-/* CrowdNode */
-"Why do you need an online account?" = "Γιατί χρειάζεστε online λογαριασμό;";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Γιατί δεν πρέπει να τραβήξω στιγμιότυπο οθόνης;";
@@ -5851,18 +5511,11 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "Μεσώ του Dash blockchain";
 
-/* CrowdNode
-   CrowdNode Portal */
+/* Evonode withdrawal */
 "Withdraw" = "Απόσυρση";
 
-/* CrowdNode */
+/* DashConnect */
 "Withdraw funds" = "Withdraw funds";
-
-/* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "Κάντε ανάληψη χωρίς όρια με έναν online λογαριασμό στον ιστότοπο της CrowdNode.";
-
-/* CrowdNode */
-"Withdrawal requested" = "Ζητήθηκε απόσυρση";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "Αποσύρει ολόκληρο το υπόλοιπο";
@@ -5929,9 +5582,6 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "Μπορείτε να αλλάξετε τον τρόπο και τον χρόνο καταβολής των κερδών της ανταμοιβής σας.";
-
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "Μπορείτε να συνεχίσετε να χρησιμοποιείτε το DashPay για πληρωμές, αλλά δεν μπορείτε να ενημερώσετε το προφίλ σας ή να προσθέσετε περισσότερες επαφές μέχρι να γεμίσετε το credit υπόλοιπο σας.";
 
@@ -5940,9 +5590,6 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "Μπορείτε να πληρώσετε με Dash στο ταμείο.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "Μπορείτε να δείτε λεπτομερείς πληροφορίες σχετικά με τις καταθέσεις, τις αναλήψεις και τα κέρδη ανταμοιβής σας.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "Μπορείτε να καθορίσετε οποιαδήποτε διεύθυνση URL η οποία είναι δημόσια διαθέσιμη στο διαδίκτυο, ώστε να μπορούν να τη δουν άλλοι χρήστες στο δίκτυο Dash.";
@@ -5974,9 +5621,6 @@
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
 
-/* CrowdNode */
-"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
-
 /* Voting */
 "You have already voted for this username %ld times. You can only cast one more vote for this username." = "Έχετε ήδη ψηφίσει για αυτό το όνομα χρήστη %ld φορές. Μπορείτε να δώσετε μόνο μία ακόμη ψήφο για αυτό το όνομα χρήστη.";
 
@@ -5992,23 +5636,14 @@
 /* Voting */
 "You have entered an invalid key" = "Έχετε εισάγει ένα μη έγκυρο κλειδί";
 
-/* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "Δεν έχετε επαρκή χρήματα για να προχωρήσετε.";
-
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
-
-/* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "Πρέπει να δημιουργήσετε αντίγραφο ασφαλείας της φράση πρόσβασης στο Dash Wallet";
 
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "Χρειάζεστε τουλάχιστον %@ Dash για να δημιουργήσετε μια πρόσκληση";
-
-/* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "Χρειάζεστε τουλάχιστον %@ στο Dash Wallet σας";
 
 /* Usernames */
 "You need to have more %@ Dash to create this username" = "Πρέπει να έχετε περισσότερα %@ Dash για να δημιουργήσετε αυτό το όνομα χρήστη";
@@ -6018,12 +5653,6 @@
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "Πρέπει να συνδεθείτε στο DashSpend για να αγοράσετε δωροκάρτες.";
-
-/* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "Πρέπει να περιμένετε 5 λεπτά πριν ξεκινήσετε άλλη ανάληψη.";
-
-/* CrowdNode */
-"You only need %@ to join the pool." = "Χρειάζεστε μόνο %@ για να ενταχθείτε στο pool.";
 
 /* DashSpend confirmation */
 "You pay" = "Πληρώνετε";
@@ -6039,12 +5668,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Στείλατε το αίτημα επαφής στον %@";
-
-/* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "Θα πρέπει να έχετε θετικό υπόλοιπο στο Dash Wallet";
-
-/* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "Θα πρέπει να έχετε τουλάχιστον %@ για να προχωρήσετε στην επαλήθευση του CrowdNode.";
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
@@ -6064,9 +5687,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Θα λάβετε Dash %@ στο Dash Wallet σας σε αυτή τη συσκευή. Λάβετε υπόψη ότι μπορεί να χρειαστούν έως και 2-3 λεπτά για να ολοκληρωθεί η μεταφορά.";
 
-/* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Θα λαμβάνετε αυτόματα αποσπασματικές πληρωμές και θα επανεπενδύονται εξ ορισμού, ωστόσο, είναι επίσης εύκολο να ρυθμίσετε αυτόματες αναλήψεις για να λαμβάνετε επαναλαμβανόμενες πληρωμές.";
-
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
 
@@ -6083,21 +5703,6 @@
 
 /* No comment provided by engineer. */
 "Your credit balance is low" = "Το υπόλοιπο των credits σας είναι χαμηλό";
-
-/* CrowdNode */
-"Your CrowdNode account is creating…" = "Ο λογαριασμός σας στο CrowdNode δημιουργείται...";
-
-/* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "Ο λογαριασμός σας στο CrowdNode έχει ρυθμιστεί και είναι έτοιμος για χρήση!";
-
-/* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Ο λογαριασμός σας στο CrowdNode δημιουργήθηκε χρησιμοποιώντας αυτές τις συναλλαγές.";
-
-/* CrowdNode */
-"Your CrowdNode address has been confirmed." = "Η διεύθυνση του CrowdNode σας έχει επιβεβαιωθεί.";
-
-/* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "Η διεύθυνση CrowdNode έχει επικυρωθεί, αλλά απαιτείται επαλήθευση.";
 
 /* No comment provided by engineer. */
 "Your DASH address" = "Your DASH address";
@@ -6122,9 +5727,6 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
-
-/* CrowdNode */
-"Your deposit to CrowdNode is received." = "Η κατάθεσή σας στο CrowdNode ελήφθη.";
 
 /* TimeSkew */
 "Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Η ώρα της συσκευής σας είναι%1$@ με %2$d δεύτερα. Δεν μπορείτε να χρησιμοποιήσετε το CoinJoin λόγω αυτής της διαφοράς.\n\nΟι ρυθμίσεις ώρας στη συσκευή σας πρέπει να αλλάξουν σε \"Αυτόματη ρύθμιση ώρας\" για να χρησιμοποιήσετε το CoinJoin.";
@@ -6191,9 +5793,6 @@
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
-
-/* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "Η κύρια διεύθυνση Dash που χρησιμοποιείτε επί του παρόντος για τον λογαριασμό σας στο CrowdNode";
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Το ιδιωτικό σας υπόλοιπο. Τα ποσά και οι διευθύνσεις είναι κρυπτογραφημένα στην αλυσίδα, ώστε τα διαθέσιμα και το ιστορικό σας να παραμένουν εμπιστευτικά.";

@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletDidWipe;
 
 - (void)retrySyncing;
-- (void)checkCrowdNodeState;
 
 @end
 

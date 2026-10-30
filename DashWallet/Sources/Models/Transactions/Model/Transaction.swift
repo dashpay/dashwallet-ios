@@ -232,8 +232,8 @@ class Transaction: TransactionDataItem, Identifiable {
         // 3=coinjoin. Promote outgoing→moved when the wallet's net
         // change equals just the fee (self-send) — mirrors DashSync's
         // `received + fee == sent` check so the legacy code path that
-        // still relies on `.moved` (e.g. CrowdNode top-up matcher,
-        // "Internal Transfer" labelling) keeps working uniformly.
+        // still relies on `.moved` (e.g. "Internal Transfer" labelling)
+        // keeps working uniformly.
         switch snapshot.direction {
         case 0: return .received
         case 2: return .moved

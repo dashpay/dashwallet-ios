@@ -30,6 +30,11 @@ final class NotificationLifecycle: NSObject {
     /// The identifier older builds delivered every transaction notification
     /// under; removed on activation so upgraders don't keep a stale banner.
     nonisolated static let legacyTransactionIdentifier = "Now"
+    /// Threads and identifiers of notification kinds the app no longer
+    /// posts. Older builds may have left them in the tray, where a tap has
+    /// nowhere to go, so activation removes them.
+    nonisolated static let retiredThreadIdentifiers = NotificationTopic.retiredRawValues
+    nonisolated static let retiredIdentifiers: Set<String> = ["CrowdNode"]
 
     /// Presentation for notifications whose `userInfo` carries no
     /// `NotificationForegroundBehavior` — anything delivered by an older
@@ -81,12 +86,12 @@ final class NotificationLifecycle: NSObject {
 
     /// Become-active reconciliation: the app now shows the transactions
     /// feed, so the badge and the delivered transaction notifications are
-    /// stale. Other threads (CrowdNode, swap, DashPay, announcements) stay
-    /// in the tray until acted on — but the badge is zeroed for all of
-    /// them, so the store's unseen set is zeroed to match: the dispatcher
-    /// computes every later badge from that set, and an unseen CrowdNode
-    /// record left behind would otherwise resurface in the badge alongside
-    /// the next new event.
+    /// stale, and notifications of retired kinds go with them. Other
+    /// threads (swap, DashPay, announcements) stay in the tray until acted
+    /// on — but the badge is zeroed for all of them, so the store's unseen
+    /// set is zeroed to match: the dispatcher computes every later badge
+    /// from that set, and an unseen record left behind would otherwise
+    /// resurface in the badge alongside the next new event.
     func reconcileAfterBecomingActive() async {
         // One item on the dispatcher's queue, not three steps racing it: a
         // post that has already read its unseen count must either finish
@@ -95,7 +100,9 @@ final class NotificationLifecycle: NSObject {
         await submissions.run { [client, store] in
             client.setBadgeCount(0)
             await Self.clearTray(topic: .transactions,
-                                 extraIdentifiers: [Self.legacyTransactionIdentifier],
+                                 extraThreads: Self.retiredThreadIdentifiers,
+                                 extraIdentifiers: Self.retiredIdentifiers
+                                     .union([Self.legacyTransactionIdentifier]),
                                  client: client,
                                  store: store)
             await store.markAllSeen()
@@ -118,21 +125,27 @@ final class NotificationLifecycle: NSObject {
     }
     #endif
 
-    /// Removes the delivered notifications on `topic`'s thread (plus any
-    /// `extraIdentifiers` regardless of thread — legacy identifiers
-    /// delivered by older builds) and marks the topic seen in the store.
+    /// Removes the delivered notifications on `topic`'s thread (plus those
+    /// on `extraThreads` and any `extraIdentifiers` regardless of thread —
+    /// legacy threads and identifiers delivered by older builds) and marks
+    /// the topic seen in the store.
     ///
     /// Static so it can be called from inside the serial queue's `@Sendable`
     /// closure with the two dependencies it needs, rather than capturing an
     /// `NSObject` subclass.
     private static func clearTray(topic: NotificationTopic,
+                                  extraThreads: Set<String> = [],
                                   extraIdentifiers: Set<String> = [],
                                   client: UserNotificationCenterClient,
                                   store: NotifiedEventStoring) async {
         let thread = topic.rawValue
         let delivered = await client.deliveredNotificationSummaries()
         let identifiers = delivered
-            .filter { $0.threadIdentifier == thread || extraIdentifiers.contains($0.identifier) }
+            .filter {
+                $0.threadIdentifier == thread
+                    || extraThreads.contains($0.threadIdentifier)
+                    || extraIdentifiers.contains($0.identifier)
+            }
             .map(\.identifier)
         if !identifiers.isEmpty {
             client.removeDeliveredNotifications(withIdentifiers: identifiers)
@@ -199,16 +212,11 @@ final class NotificationLifecycle: NSObject {
         }
     }
 
-    /// Tap handling: decode the route and hand it to the router. The legacy
-    /// CrowdNode identifier predates encoded routes and folds into
-    /// `.staking`, keeping the old `AppDelegate` special case working for
-    /// already-delivered notifications.
+    /// Tap handling: decode the route and hand it to the router. A
+    /// notification without a route, or with one this build no longer
+    /// knows, just opens the app.
     func handleNotificationTap(identifier: String, userInfo: [AnyHashable: Any]) {
-        var route = DeepLinkRoute.decode(fromUserInfo: userInfo)
-        if route == nil, identifier == CrowdNode.notificationID {
-            route = .staking
-        }
-        guard let route else { return }
+        guard let route = DeepLinkRoute.decode(fromUserInfo: userInfo) else { return }
         router.open(route)
     }
 }

@@ -72,7 +72,6 @@ class HomeViewModel: ObservableObject {
 
     private let transactionSource: TransactionSource
     private var txByHash: [String: TransactionListDataItem] = [:]
-    private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
@@ -364,14 +363,13 @@ class HomeViewModel: ObservableObject {
     private func clearCachedData() {
         DWLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
 
-        // Dispatch to self.queue to ensure thread-safe access to txByHash, crowdNodeTxSet, coinJoinTxSets
+        // Dispatch to self.queue to ensure thread-safe access to txByHash, coinJoinTxSets
         // These properties are also accessed/modified in reloadTxDataSource() on self.queue
         self.queue.async { [weak self] in
             guard let self = self else { return }
 
             // Clear cached data structures on the same queue they're accessed
             self.txByHash.removeAll()
-            self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets.removeAll()
             self.windowTxs.removeAll()
             self.windowOldestDayStart = 0
@@ -590,8 +588,7 @@ class HomeViewModel: ObservableObject {
         // Read main-actor state BEFORE handing off, never from inside the
         // worker pass. A `DispatchQueue.main.sync` from the queue is a barrier
         // whose cost is main-thread *availability*, not work: at launch the
-        // main thread is busy with tab-bar layout, avatar state and CrowdNode
-        // restore, so a reload that hops mid-pass inherits all of it. Hopping
+        // main thread is busy with tab-bar layout and avatar state, so a reload that hops mid-pass inherits all of it. Hopping
         // once up front, asynchronously, keeps the pass free-running.
         let dispatch = { @MainActor [weak self] in
             guard let self else { return }
@@ -857,7 +854,6 @@ class HomeViewModel: ObservableObject {
         // row that resolves once that day is paged in.
         let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
             coreTransactions: transactions)
-        self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
         self.coinJoinTxSets = [:]
         self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
@@ -881,12 +877,6 @@ class HomeViewModel: ObservableObject {
                 return nil
             }
 
-            // TODO(crowdnode-home-grouping): the "CrowdNode · Account" group
-            // needs decode-based ObservedTransaction matching (the SDK
-            // snapshot here doesn't carry transactionData); ports separately.
-            // Until then CrowdNode txs render as individual rows — the
-            // current behavior (the old DS-backed grouping branch was dead
-            // long before the .ds source case was deleted).
             if wrappedTx.isCoinJoinMixing {
                 // CoinJoin mixing tx — group it into the per-day
                 // "Mixing Transactions" set.
@@ -918,12 +908,6 @@ class HomeViewModel: ObservableObject {
         self.txByHash.removeAll()
         items.forEach { item in
             self.txByHash[item.id] = item
-        }
-
-        if !crowdNodeTxSet.transactionMap.isEmpty {
-            let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
-            items.append(item)
-            self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
         }
 
         for (_, coinJoinTxSet) in self.coinJoinTxSets {
@@ -1147,12 +1131,8 @@ class HomeViewModel: ObservableObject {
             let txItem: TransactionListDataItem = .tx(tx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
-            // TODO(crowdnode-home-grouping): the CrowdNode absorb-into-group
-            // branch that lived here was dead (it was fed by DashSync's
-            // DSTransactionManagerTransactionStatusDidChange, which no longer
-            // fires post-M6) and was removed with the CrowdNode tracking port.
-            // Today this path is fed by the metadata-provider refresh below
-            // (gift-card / custom-icon updates re-rendering an existing row).
+            // Fed by the metadata-provider refresh below (gift-card /
+            // custom-icon updates re-rendering an existing row).
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item
@@ -1654,8 +1634,10 @@ extension HomeViewModel {
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
                 let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
-                let items = customShortcuts.compactMap { number -> ShortcutAction? in
-                    guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                let saved = ShortcutActionType.replacingRetired(in: customShortcuts.map(\.intValue),
+                                                                isTestnet: isTestnet)
+                let items = saved.compactMap { rawValue -> ShortcutAction? in
+                    guard var type = ShortcutActionType(rawValue: rawValue) else { return nil }
                     // A faucet shortcut saved on testnet degrades to Spend
                     // after a switch to mainnet (no mainnet faucet exists);
                     // the saved config is untouched, so it comes back when
@@ -1685,15 +1667,6 @@ extension HomeViewModel {
                         type = isTestnet ? .getTestDash : .spend
                     }
                     return ShortcutAction(type: type)
-                }
-                .filter { action in
-                    // A saved CrowdNode shortcut stays hidden until the user
-                    // has actually signed up.
-                    if action.type == .crowdNode {
-                        let state = CrowdNode.shared.signUpState
-                        return state == .finished || state == .linkedOnline
-                    }
-                    return true
                 }
                 if items.count == maxShortcutsCount {
                     self.shortcutItems = items

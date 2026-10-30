@@ -837,19 +837,6 @@ struct HomeViewContent<Content: View>: View {
         txItem txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            let firstTx = set.transactionMap.values.first
-            DashUIKit.TransactionView(
-                icon: IconName.custom("tx.item.cn.icon").dashIconSource,
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: firstTx?.shortTimeString ?? "",
-                dashAmount: set.amount,
-                amountSign: .none
-            )
-            .onTapGesture { self.selectedTxDataItem = txDataItem }
-            .frame(height: 80)
-
         case .coinjoin(let set):
             let firstTx = set.transactionMap.values.first
             DashUIKit.TransactionView(
@@ -1189,14 +1176,6 @@ struct TransactionDetailsSheet: View {
         from txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
         case .coinjoin(let set):
             GroupedTransactionsScreen(
                 model: set,

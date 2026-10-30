@@ -340,50 +340,10 @@ final class WalletSendService: NSObject {
     func send(
         address: String,
         amount: UInt64,
-        inputSelector: SingleInputAddressSelector? = nil,
-        adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
-        // Also covers the selected-input path below, whose `buildAndSignFromAddress`
-        // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
-        if let inputSelector {
-            Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
-            do {
-                let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
-                    fromAddress: inputSelector.address,
-                    to: address,
-                    amount: amount,
-                    adjustAmountDownwards: adjustAmountDownwards
-                )
-                // buildAndSignFromAddress broadcasts internally; txHash is
-                // display order — reverse to the wire-order registry key.
-                let txidWire = Data(txHash.reversed())
-                recentSends.record(
-                    txidWire: txidWire, address: address, amount: amount, fee: fee)
-                return txidWire
-            } catch SwiftDashSDKTransactionSender.SendError.insufficientSelectedFunds(let selected, let amount, let fee) {
-                throw Self.makeError(
-                    code: .insufficientSelectedFunds,
-                    description: "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastRejected,
-                    description: BroadcastOutcomeCopy.rejected,
-                    diagnostic: reason
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastUnknown,
-                    description: BroadcastOutcomeCopy.unknown,
-                    diagnostic: reason
-                )
-            }
-        }
-
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
@@ -902,7 +862,6 @@ private extension WalletSendService {
     enum ErrorCode: Int {
         case authenticationCancelled = 1
         case authenticationFailed = 2
-        case insufficientSelectedFunds = 3
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
@@ -968,12 +927,10 @@ private extension WalletSendService {
 
     /// The two broadcast outcomes a user can be shown, in one place.
     ///
-    /// Every send route ends in one of these, and there is more than one route
-    /// — the prepared standard send and the selected-input / sweep path, which
-    /// broadcasts inside `buildAndSignFromAddress` and never reaches
-    /// `PreparedStandardSend.broadcast()`. They used to build the strings
-    /// independently and drifted apart, so one route kept showing unlocalized
-    /// English with the SDK's internal reason appended.
+    /// Every send route ends in one of these, and there is more than one
+    /// route, so the strings live here rather than in each route: built
+    /// independently, they drift apart, and one route ends up showing
+    /// unlocalized English with the SDK's internal reason appended.
     enum BroadcastOutcomeCopy {
         /// Nothing reached the network, so the money is provably still here —
         /// say that, because "wasn't sent" alone reads as a loss.

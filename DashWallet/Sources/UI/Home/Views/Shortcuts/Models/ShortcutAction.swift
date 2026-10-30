@@ -38,27 +38,55 @@ enum ShortcutActionType: Int {
     case send
     case atm
     case sendToContact
-    case crowdNode
-    case coinbase
-    case uphold
-    case topper
-    // Appended last: raw values persist in DWGlobalOptions.shortcuts,
-    // so inserting mid-enum would silently remap saved configurations.
-    case getTestDash
-    case switchWallet
-    case dashDEX
+    // Raw values persist in DWGlobalOptions.shortcuts, so every case below
+    // is pinned. 18 is retired and must never be reused: saved bars may
+    // still hold it, and `HomeViewModel` maps it to a live action on load.
+    case coinbase = 19
+    case uphold = 20
+    case topper = 21
+    // Appended last: inserting mid-enum would silently remap saved
+    // configurations.
+    case getTestDash = 22
+    case switchWallet = 23
+    case dashDEX = 24
     /// Evonode owners: epoch day + blocks proposed this epoch, opens the
     /// masternode list. Opt-in only — offered in the customization picker
     /// while the wallet has active evonodes, never placed by default.
-    case nodes
+    case nodes = 25
+}
+
+extension ShortcutActionType {
+    /// The raw value of a retired shortcut that saved bars may still hold.
+    static let retiredRawValue = 18
+
+    /// A saved bar with each retired entry replaced by the first action of
+    /// `retiredReplacements` the bar doesn't hold yet, so the bar keeps its
+    /// size and its other buttons without gaining a duplicate.
+    static func replacingRetired(in rawValues: [Int], isTestnet: Bool) -> [Int] {
+        var result = rawValues
+        for index in result.indices where result[index] == retiredRawValue {
+            let candidates = [isTestnet ? ShortcutActionType.getTestDash : .spend] + retiredReplacements
+            if let replacement = candidates.first(where: { !result.contains($0.rawValue) }) {
+                result[index] = replacement.rawValue
+            }
+        }
+        return result
+    }
+
+    /// Fallbacks for a retired entry after Spend (the faucet on testnet),
+    /// all offered on every network.
+    private static let retiredReplacements: [ShortcutActionType] = [
+        .explore, .receive, .send, .scanToPay, .payToAddress, .buySellDash, .atm,
+    ]
 }
 
 extension ShortcutActionType {
     /// The features available for shortcut bar customization. Computed
-    /// (not stored) because three entries follow runtime state: CrowdNode
-    /// appears only once the user is signed up, the faucet only while the
-    /// wallet is on testnet, and Switch Wallet only while the current
-    /// network has more than one wallet to switch among.
+    /// (not stored) because entries follow runtime state: Dash DEX appears
+    /// only on a configured mainnet, the faucet only while the wallet is on
+    /// testnet, Switch Wallet only while the current network has more than
+    /// one wallet to switch among, and Nodes only while the wallet runs
+    /// evonodes.
     @MainActor
     static var customizableActions: [ShortcutActionType] {
         var actions: [ShortcutActionType] = [
@@ -70,10 +98,6 @@ extension ShortcutActionType {
         // the SwapKit API key is configured. Mirrors the gated Buy & Sell portal card.
         if WalletEnvironment.isMainnet && SwapKitConstants.isConfigured {
             actions.append(.dashDEX)
-        }
-        let state = CrowdNode.shared.signUpState
-        if state == .finished || state == .linkedOnline {
-            actions.append(.crowdNode)
         }
         if WalletEnvironment.isTestnet {
             actions.insert(.getTestDash, at: 0)
@@ -123,8 +147,6 @@ extension ShortcutActionType {
             return "shortcut-bar-atm"
         case .sendToContact:
             return "shortcut-bar-send-contact"
-        case .crowdNode:
-            return "shortcut-bar-crowdnode"
         case .coinbase:
             return "shortcut-bar-coinbase"
         case .uphold:
@@ -192,8 +214,6 @@ extension ShortcutActionType {
             return NSLocalizedString("ATM", comment: "Translate it as short as possible! (24 symbols max)")
         case .sendToContact:
             return NSLocalizedString("Send to Contact", comment: "Translate it as short as possible! (24 symbols max)")
-        case .crowdNode:
-            return NSLocalizedString("CrowdNode", comment: "Translate it as short as possible! (24 symbols max)")
         case .coinbase:
             return NSLocalizedString("Coinbase", comment: "Translate it as short as possible! (24 symbols max)")
         case .uphold:

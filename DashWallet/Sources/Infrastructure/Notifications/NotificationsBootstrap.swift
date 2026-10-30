@@ -33,8 +33,6 @@ final class NotificationsBootstrap: NSObject {
     let lifecycle: NotificationLifecycle
     /// Posts a notification per newly persisted incoming transaction.
     let transactionProducer: TransactionNotificationProducer
-    /// Posts CrowdNode result/error messages (injected into `CrowdNode`).
-    let crowdNodeProducer: CrowdNodeNotificationProducer
     /// Posts a notification per swap order reaching a terminal state.
     let swapProducer: SwapNotificationProducer
     /// Schedules the 30-day "you still have funds" reminder on backgrounding.
@@ -121,7 +119,6 @@ final class NotificationsBootstrap: NSObject {
                 }
             })
         self.backgroundGrace = BackgroundGraceHold(permissions: permissionCoordinator)
-        self.crowdNodeProducer = CrowdNodeNotificationProducer(dispatcher: dispatcher, store: store)
         // Foreground terminal-swap banners are suppressed only while the
         // live swap-status screen is on screen (it marks itself visible on
         // `SwapTrackingService`).
@@ -156,9 +153,7 @@ final class NotificationsBootstrap: NSObject {
         // one rescan of every producer with a persisted source right after
         // the user grants posts them. Each producer's freshness window
         // bounds what can retroactively fire — only events at most 10
-        // minutes old are admitted; older drops stay dropped. CrowdNode
-        // results are one-shot and intentionally not recovered
-        // (`CrowdNodeNotificationProducer`).
+        // minutes old are admitted; older drops stay dropped.
         let swapProducer = self.swapProducer
         permissionCoordinator.onAuthorizationGranted = { [weak transactionProducer, weak swapProducer] in
             if let transactionProducer {
@@ -174,13 +169,9 @@ final class NotificationsBootstrap: NSObject {
             #endif
         }
 
-        // `CrowdNode.shared` is created before this graph exists (in
-        // `didFinishLaunching`), so its posting seam is injected statically
-        // instead of adding another global.
-        CrowdNode.notificationProducer = crowdNodeProducer
-
         #if DASHPAY
-        // Same static-injection shape for the contacts service: its
+        // The contacts service exists before this graph, so its seam is
+        // injected statically instead of adding another global: its
         // `markNotificationsViewed` (every bell-screen exit) must also
         // clear the tray's dashpay thread and the store's dashpay
         // seen-state, without the pre-existing singleton depending on

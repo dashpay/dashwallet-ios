@@ -1288,9 +1288,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             target: network)
     }
 
-    /// Internal (was private): reused by CrowdNode's TransactionObserver row
-    /// scanner to render decoded addresses for the active network — reuse, not
-    /// a copy, per the repo's no-copy-then-adapt guardrail.
+    /// Internal, not private: reused by `TransactionObserver`'s row scanner
+    /// to render decoded addresses for the active network — reuse, not a
+    /// copy, per the repo's no-copy-then-adapt guardrail.
     func resolveCurrentNetwork() -> Result<Network, RuntimeError> {
         steps.resolveCurrentNetwork()
     }

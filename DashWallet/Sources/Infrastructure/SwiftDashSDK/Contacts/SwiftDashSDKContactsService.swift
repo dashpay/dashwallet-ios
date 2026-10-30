@@ -295,8 +295,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Notifications read-state (bell badge)
 
-    /// Injected by `NotificationsBootstrap` — the same static-injection
-    /// seam shape as `CrowdNode.notificationProducer`, because this
+    /// Injected by `NotificationsBootstrap` as a static seam, because this
     /// singleton is created before the notifications graph exists and must
     /// not depend on the module directly. Fired by every
     /// `markNotificationsViewed`, so the notifications module can clear

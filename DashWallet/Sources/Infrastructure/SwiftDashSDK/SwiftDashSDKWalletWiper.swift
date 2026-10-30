@@ -326,7 +326,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
             App.shared.cleanUp()
             DWGlobalOptions.sharedInstance().restoreToDefaults()
             DWAppGroupOptions.sharedInstance().restoreToDefaults()
-            CrowdNode.shared.resetForWipe()
         }
 
         // These stores use UserDefaults + locks and are safe on this queue.
@@ -986,8 +985,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
 
         // Clear this wallet's per-wallet app-side state that lives outside the
-        // SDK/SwiftData/Keychain teardown above: CrowdNode account state and the
-        // CoinJoin withdrawal tag set are UserDefaults, keyed by walletId hex.
+        // SDK/SwiftData/Keychain teardown above: the CoinJoin and shielded
+        // withdrawal tag sets are UserDefaults, keyed by walletId hex.
         // Done here (not in the UI) so BOTH the per-wallet Remove flow and the
         // full wipe's per-wallet loop clear them — one shared deletion primitive
         // (guardrail #1). Hex must match `WalletEnvironment.activeWalletIdHex`
@@ -996,7 +995,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
             clearAppState(walletId)
         } else {
             let walletIdHex = walletId.map { String(format: "%02x", $0) }.joined()
-            CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
             CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
             // The full wipe can continue after another scope's deletion fails.
