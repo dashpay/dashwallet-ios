@@ -6223,6 +6223,12 @@
 "Revoke shared profile access" = "Revoke shared profile access";
 "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again." = "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again.";
 "Shared profile access" = "Shared profile access";
+"Keep" = "Keep";
+"Keep shared profile access" = "Keep shared profile access";
+"Keep these keys?" = "Keep these keys?";
+"Keep them only if you recognize every one, for example from an app you connected on another device. This device stops counting them and cannot revoke them afterwards." = "Keep them only if you recognize every one, for example from an app you connected on another device. This device stops counting them and cannot revoke them afterwards.";
+"Could not keep these keys: %@" = "Could not keep these keys: %@";
+"The keys changed. Check them and try again." = "The keys changed. Check them and try again.";
 "Keys not linked to a connection that can update your DashPay profile: %d" = "Keys not linked to a connection that can update your DashPay profile: %d";
 "Keys that can update your DashPay profile could not be checked" = "Keys that can update your DashPay profile could not be checked";
 "Revoke" = "Revoke";

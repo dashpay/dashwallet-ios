@@ -865,12 +865,24 @@ extension AppConnect {
             .filter(unexpired.contains)
     }
 
+    /// Whether the store shows a live, unexpired v2-shaped key that no record
+    /// names and whose bound this build cannot read: it may be a shared
+    /// profile key, so neither the count nor a revoke can be trusted.
+    static func hasUnplacedStoredKey(recordedKeyIds: Set<UInt32>, bindings: [KeyBinding], nowMilliseconds: Int64) -> Bool {
+        bindings.contains {
+            $0.isV2AuthKeyShaped && $0.hasUnreadableBound && !$0.isDisabled
+                && isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) && !recordedKeyIds.contains($0.keyId)
+        }
+    }
+
     /// The keys revoking shared profile access disables, from a fresh view of
     /// the identity: live, not yet expired, bound to an allowlisted foreign
-    /// document type, and named by no confirmed record (`recordedKeyIds`).
+    /// document type, and not in `recordedKeyIds` (the keys confirmed records
+    /// name, and those the user kept).
     /// `nil` when the view cannot be trusted: a live v2-shaped key no record
-    /// names has no readable stored bound, so it may be one of them; or the
-    /// store holds one of them that the view lacks, so the node is behind.
+    /// names, in the view or in the store, has no readable stored bound, so
+    /// it may be one of them; or the store holds one of them that the view
+    /// lacks, so the node is behind.
     static func sharedProfileKeyIdsToDisable(
         recordedKeyIds: Set<UInt32>,
         bindings: [KeyBinding],
@@ -884,7 +896,13 @@ extension AppConnect {
                 && !bindings.contains { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
         }
         let fetchedKeyIds = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
-        guard !hasUnplacedKey, storedSharedProfileKeyIds(
+        // The store's own copy counts too: a fetched view that lacks such a
+        // key does not show it is off. One the view shows off is.
+        let offInView = Set(currentIdentityPublicKeys.filter { $0.disabledAt != nil }.map { UInt32(bitPattern: $0.keyId) })
+        guard !hasUnplacedKey,
+              !hasUnplacedStoredKey(
+                  recordedKeyIds: recordedKeyIds.union(offInView), bindings: bindings, nowMilliseconds: nowMilliseconds),
+              storedSharedProfileKeyIds(
             recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds
         ).allSatisfy(fetchedKeyIds.contains) else { return nil }
         let unexpired = Set(currentIdentityPublicKeys
