@@ -1019,6 +1019,52 @@ extension AppConnect {
         }
     }
 
+    /// What an update of this wallet to an identity did, by what Platform
+    /// never undoes: the keys it added (a key is never removed) and the ids
+    /// it disabled (a key is never enabled again). A view that shows all of
+    /// it is at that update or past it.
+    struct OwnUpdate: Codable, Equatable {
+        struct AddedKey: Codable, Equatable {
+            let keyId: UInt32
+            let data: Data
+        }
+
+        var addedKeys: [AddedKey]
+        var disabledKeyIds: [UInt32]
+
+        init(added: [ManagedPlatformWallet.IdentityPubkey] = [], disabledKeyIds: [UInt32] = []) {
+            addedKeys = added.map { AddedKey(keyId: $0.keyId, data: $0.pubkeyBytes) }
+            self.disabledKeyIds = disabledKeyIds
+        }
+
+        func isShown(in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
+            addedKeys.allSatisfy { added in keys.contains {
+                UInt32(bitPattern: $0.keyId) == added.keyId && $0.data == added.data
+            } } && showsDisabled(disabledKeyIds, in: keys)
+        }
+    }
+
+    /// Whether `keys` shows every one of `keyIds`, disabled.
+    static func showsDisabled(_ keyIds: [UInt32], in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
+        keyIds.allSatisfy { id in keys.contains { UInt32(bitPattern: $0.keyId) == id && $0.disabledAt != nil } }
+    }
+
+    /// Notes on every v2 record of `identityId` still waiting for its update
+    /// (except `exceptKey`'s, the update's own) that `update` landed after
+    /// it was submitted. An earlier note stays: it settles the same way.
+    static func noteOwnUpdate(
+        _ update: OwnUpdate,
+        in grants: inout [AppConnectGrant],
+        identityId: String,
+        exceptKey: String? = nil
+    ) {
+        for index in grants.indices
+        where grants[index].identityId == identityId && grants[index].key != exceptKey
+            && grants[index].pendingUpdate != nil && grants[index].pendingUpdate?.outlivedBy == nil {
+            grants[index].pendingUpdate?.outlivedBy = update
+        }
+    }
+
     /// What a view of the identity tells of a v2 update whose outcome was
     /// not known.
     enum PendingV2Outcome: Equatable {
@@ -1043,11 +1089,12 @@ extension AppConnect {
     /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
     ///   another id: it can never land. HASH160 auth keys are not unique,
     ///   so their data elsewhere says nothing.
-    /// - `afterOwnUpdate`: `keys` reflects an update of this wallet to the
-    ///   identity that landed after `pending` was recorded. Platform takes an
-    ///   update only at one above the identity's revision, and that update
-    ///   took one above whatever the wallet's copy held, so `pending` cannot
-    ///   land after it: none of its ids there means it never will.
+    /// - An update of this wallet that landed after it was submitted
+    ///   (`outlivedBy`) and that `keys` shows: Platform takes an update only
+    ///   at one above the identity's revision, and that update took one
+    ///   above whatever the wallet's copy held, so `pending` cannot land
+    ///   after it. A view that shows that update and none of its ids means
+    ///   it never will. No revision is read: what the update did is.
     /// - Every added key is an auth key past its expiry (with
     ///   `clockTolerance`): if it lands, nothing can sign with it. An
     ///   encryption key has no expiry, so this never ends one that adds it.
@@ -1058,8 +1105,7 @@ extension AppConnect {
         of pending: AppConnectGrant.PendingV2Update,
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding],
-        nowMilliseconds: Int64,
-        afterOwnUpdate: Bool = false
+        nowMilliseconds: Int64
     ) -> PendingV2Outcome {
         var allLanded = true
         var anyPresent = false
@@ -1085,7 +1131,7 @@ extension AppConnect {
             }
         }
         if takenElsewhere { return .cannotLand }
-        if afterOwnUpdate && !anyPresent { return .cannotLand }
+        if !anyPresent, pending.outlivedBy?.isShown(in: keys) == true { return .cannotLand }
         let allExpired = pending.addedKeys.allSatisfy { expected in
             expected.purpose == .authentication
                 && expected.expiresAt.map { !isUnexpired(Int64(clamping: $0), nowMilliseconds: nowMilliseconds) } == true
@@ -1102,8 +1148,7 @@ extension AppConnect {
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding],
-        nowMilliseconds: Int64,
-        afterOwnUpdate: Bool = false
+        nowMilliseconds: Int64
     ) -> (confirmed: [AppConnectGrant], dropped: [AppConnectGrant]) {
         var confirmed: [AppConnectGrant] = []
         var dropped: [AppConnectGrant] = []
@@ -1112,7 +1157,7 @@ extension AppConnect {
             guard let pending = grant.pendingUpdate else { continue }
             switch pendingV2Outcome(
                 of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings,
-                nowMilliseconds: nowMilliseconds, afterOwnUpdate: afterOwnUpdate
+                nowMilliseconds: nowMilliseconds
             ) {
             case .landed:
                 var settled = grant

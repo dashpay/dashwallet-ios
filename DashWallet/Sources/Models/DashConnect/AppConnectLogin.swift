@@ -204,8 +204,6 @@ enum AppConnect {
         return (0 ... UInt32.max).first { !taken.contains($0) }
     }
 
-    /// The key an app is given: it can only sign for the contract the request
-    /// named, spend up to `totalBudget`, and stops working at `expiresAt`.
     /// The ids the v2 records of `identityId` that wait for their update
     /// add keys under: a new key under one of them would make that update,
     /// or itself, be refused.
@@ -213,6 +211,8 @@ enum AppConnect {
         Set(grants.filter { $0.identityId == identityId }.flatMap { $0.pendingUpdate?.addedKeys.map(\.keyId) ?? [] })
     }
 
+    /// The key an app is given: it can only sign for the contract the request
+    /// named, spend up to `totalBudget`, and stops working at `expiresAt`.
     static func sessionIdentityPubkey(
         keyId: UInt32,
         publicKeyHash160: Data,
@@ -719,6 +719,10 @@ struct AppConnectGrant: Codable, Equatable {
         var disabledKeyIds: [UInt32]
         /// The records of those grants (`key`) that are done once it lands.
         var retiredGrantKeys: [String]
+        /// An update of this wallet to the identity that landed after this
+        /// one was submitted (`AppConnect.noteOwnUpdate`): this one cannot
+        /// land after it.
+        var outlivedBy: AppConnect.OwnUpdate? = nil
     }
 
     /// What makes two records the same grant: one session key given for one

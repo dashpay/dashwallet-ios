@@ -1206,11 +1206,12 @@ extension AppConnectV2LoginTests {
         keys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [AppConnect.KeyBinding]? = nil,
         now: Int64 = pendingNow,
-        afterOwnUpdate: Bool = false
+        outlivedBy: AppConnect.OwnUpdate? = nil
     ) -> AppConnect.PendingV2Outcome {
-        AppConnect.pendingV2Outcome(
-            of: pendingUpdate(added), currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored),
-            nowMilliseconds: now, afterOwnUpdate: afterOwnUpdate)
+        var pending = pendingUpdate(added)
+        pending.outlivedBy = outlivedBy
+        return AppConnect.pendingV2Outcome(
+            of: pending, currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored), nowMilliseconds: now)
     }
 
     func testAPendingUpdateLandedOnlyWhenEveryKeyIsThereAsItWasAdded() {
@@ -1259,15 +1260,43 @@ extension AppConnectV2LoginTests {
             "a HASH160 payload is not unique, so it says nothing")
     }
 
-    func testAnUpdateOfOursThatLandedLaterSettlesAPendingOne() {
+    func testAnUpdateOfOursThatLandedLaterSettlesAPendingOneOnceAViewShowsIt() {
         let auth = Self.addedAuthKey(7, data: 0x07)
         let master = Self.key(0, level: .master)
-        XCTAssertEqual(Self.outcome([auth], keys: [master], afterOwnUpdate: true), .cannotLand)
-        XCTAssertEqual(Self.outcome([auth], keys: [master]), .unknown)
-        XCTAssertEqual(Self.outcome([auth], keys: [master, Self.onIdentity(auth)], afterOwnUpdate: true), .landed)
+        let later = AppConnect.OwnUpdate(disabledKeyIds: [3])
+        let showsLater = Self.key(3, disabled: true)
+        XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater], outlivedBy: later), .cannotLand)
         XCTAssertEqual(
-            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [], afterOwnUpdate: true), .unknown,
+            Self.outcome([auth], keys: [master, Self.key(3)], outlivedBy: later), .unknown,
+            "a view that does not show the later update is behind it")
+        XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater]), .unknown, "without one it may still land")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(auth)], outlivedBy: later), .landed)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [showsLater, Self.onIdentity(auth)], bindings: [], outlivedBy: later), .unknown,
             "its key is there; the store just cannot place it")
+        let added = Self.addedAuthKey(9, data: 0x09)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, Self.onIdentity(added)],
+                         outlivedBy: AppConnect.OwnUpdate(added: [added])),
+            .cannotLand, "a later update that added a key is shown by that key")
+    }
+
+    func testAnUpdateOfOursIsNotedOnEveryRecordWaitingButItsOwn() {
+        let own = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], requestHash: "a1")
+        let earlier = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a2")
+        var noted = Self.pendingGrant([Self.addedAuthKey(11, data: 0x0B)], requestHash: "a3")
+        let first = AppConnect.OwnUpdate(disabledKeyIds: [1])
+        noted.pendingUpdate?.outlivedBy = first
+        let other = Self.pendingGrant([Self.addedAuthKey(13, data: 0x0D)], identityId: "other", requestHash: "a4")
+        var grants = [own, earlier, noted, other, Self.grant(sessionKeyId: 3)]
+        let update = AppConnect.OwnUpdate(disabledKeyIds: [2])
+        AppConnect.noteOwnUpdate(update, in: &grants, identityId: "identity", exceptKey: own.key)
+        XCTAssertNil(grants[0].pendingUpdate?.outlivedBy, "an update does not outlive itself")
+        XCTAssertEqual(grants[1].pendingUpdate?.outlivedBy, update)
+        XCTAssertEqual(grants[2].pendingUpdate?.outlivedBy, first, "an earlier note settles the same way")
+        XCTAssertNil(grants[3].pendingUpdate?.outlivedBy, "another identity's update")
+        XCTAssertNil(grants[4].pendingUpdate)
     }
 
     func testAPendingUpdateOfExpiredAuthKeysOnlyIsDropped() {
