@@ -545,14 +545,22 @@ final class WalletSendService: NSObject {
         /// Amount plus fee: what leaves the wallet.
         let total: UInt64
         fileprivate let wallet: ManagedPlatformWallet
+        /// The DashPay identity that signed it.
+        fileprivate let senderIdentityId: Data
         fileprivate let payment: PreparedDashPayPayment
 
-        fileprivate init(contactIdentityId: Data, wallet: ManagedPlatformWallet, payment: PreparedDashPayPayment) {
+        fileprivate init(
+            contactIdentityId: Data,
+            wallet: ManagedPlatformWallet,
+            senderIdentityId: Data,
+            payment: PreparedDashPayPayment
+        ) {
             self.contactIdentityId = contactIdentityId
             self.amount = payment.amountDuffs
             self.fee = payment.feeDuffs
             self.total = payment.totalDuffs
             self.wallet = wallet
+            self.senderIdentityId = senderIdentityId
             self.payment = payment
         }
     }
@@ -602,7 +610,11 @@ final class WalletSendService: NSObject {
             throw Self.contactPaymentError(from: error)
         }
         Self.logger.info("💸 TXSEND :: pay-to-contact prepared, fee \(payment.feeDuffs, privacy: .public) duffs")
-        return PreparedContactPayment(contactIdentityId: contactIdentityId, wallet: context.wallet, payment: payment)
+        return PreparedContactPayment(
+            contactIdentityId: contactIdentityId,
+            wallet: context.wallet,
+            senderIdentityId: context.ourId,
+            payment: payment)
     }
 
     /// DashPay pay-to-contact, second half: broadcasts the payment the user
@@ -612,11 +624,13 @@ final class WalletSendService: NSObject {
     @discardableResult
     func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> Data {
         let contactIdentityId = prepared.contactIdentityId
-        // Another payment to this contact may have ended unknown while this
-        // one waited on the confirmation, or the device went offline.
+        // While this one waited on the confirmation, another payment to this
+        // contact may have ended unknown, the device may have gone offline,
+        // or another wallet or DashPay identity may have become active.
         do {
             try refuseContactWithUnknownOutcome(contactIdentityId)
             try Self.ensureOnline()
+            try await refuseIfSenderChanged(prepared)
         } catch {
             await abandonContactPayment(prepared)
             throw error
@@ -651,6 +665,32 @@ final class WalletSendService: NSObject {
             try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
         } catch {
             Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// A prepared payment is sent only from the wallet and identity that are
+    /// still active: the user may have switched while the review was open.
+    ///
+    /// The active wallet id moves first on a switch, while the host still
+    /// publishes the old wallet until its teardown ends — so both are
+    /// compared. A missing identity is not a different one: the snapshot is
+    /// briefly nil while it rebuilds, and a wallet without the identity
+    /// already fails the wallet comparison.
+    private func refuseIfSenderChanged(_ prepared: PreparedContactPayment) async throws {
+        let mismatch: String? = await MainActor.run {
+            let activeWalletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
+            guard SwiftDashSDKHost.shared.wallet === prepared.wallet,
+                  activeWalletId == prepared.wallet.walletId
+            else { return "wallet" }
+            if let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+               identityId != prepared.senderIdentityId {
+                return "identity"
+            }
+            return nil
+        }
+        if let mismatch {
+            Self.logger.info("💸 TXSEND :: pay-to-contact refused — the active \(mismatch, privacy: .public) changed since prepare")
+            throw Self.makeError(code: .broadcastRejected, description: BroadcastOutcomeCopy.contactPaymentChanged)
         }
     }
 
@@ -1016,12 +1056,7 @@ private extension WalletSendService {
             // or another payment to this contact took the reviewed address.
             // Refused before the network, everything released: a fresh
             // prepare succeeds.
-            return makeError(
-                code: .broadcastRejected,
-                description: NSLocalizedString(
-                    "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
-                    comment: "Send to contact: the prepared payment went stale before broadcast")
-            )
+            return makeError(code: .broadcastRejected, description: BroadcastOutcomeCopy.contactPaymentChanged)
         default:
             break
         }
@@ -1053,6 +1088,15 @@ private extension WalletSendService {
             NSLocalizedString(
                 "The transaction wasn't sent, so nothing left your wallet. You can try again.",
                 comment: "Send failed before any bytes reached the network")
+        }
+
+        /// A prepared contact payment refused before the network: it went
+        /// stale, or the wallet or identity that signed it is no longer the
+        /// active one. Everything it reserved is released.
+        static var contactPaymentChanged: String {
+            NSLocalizedString(
+                "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
+                comment: "Send to contact: the prepared payment went stale before broadcast")
         }
 
         /// The transaction went out and no acceptance signal came back.
