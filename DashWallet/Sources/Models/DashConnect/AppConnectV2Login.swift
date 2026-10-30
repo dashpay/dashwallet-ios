@@ -844,10 +844,11 @@ extension AppConnect {
         .sorted()
     }
 
-    /// Whether a key with this expiry may still work at `nowMilliseconds`.
+    /// Whether a v2 key with this expiry may still work at `nowMilliseconds`.
     /// A key that expired stays live on Platform but can no longer sign.
     /// Platform goes by block time, so a device clock up to `clockTolerance`
-    /// fast does not count a working key as expired.
+    /// fast does not count a working key as expired. Every v2 auth key has an
+    /// expiry; a key with none is not one, and counts as false here.
     static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
         (expiresAt ?? 0) > nowMilliseconds - Int64(clockTolerance * 1000)
     }

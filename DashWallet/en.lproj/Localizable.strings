@@ -6112,8 +6112,8 @@
 "Act as you in this app without asking each time" = "Act as you in this app without asking each time";
 "App contract" = "App contract";
 "Could not disconnect: %@" = "Could not disconnect: %@";
-"Disconnected. DashPay profile keys that no connection accounts for are still active on this identity: %d. They may belong to this app or to another one. You can revoke them under Shared profile access." = "Disconnected. DashPay profile keys that no connection accounts for are still active on this identity: %d. They may belong to this app or to another one. You can revoke them under Shared profile access.";
-"Disconnected. Whether DashPay profile keys that no connection accounts for are still active on this identity could not be checked." = "Disconnected. Whether DashPay profile keys that no connection accounts for are still active on this identity could not be checked.";
+"Disconnected. Keys not linked to any connection can still update your DashPay profile: %d. They may belong to this app or another one. You can revoke them under Shared profile access." = "Disconnected. Keys not linked to any connection can still update your DashPay profile: %d. They may belong to this app or another one. You can revoke them under Shared profile access.";
+"Disconnected. This wallet could not check whether keys not linked to any connection can still update your DashPay profile." = "Disconnected. This wallet could not check whether keys not linked to any connection can still update your DashPay profile.";
 "DashPay profile keys revoked: %d." = "DashPay profile keys revoked: %d.";
 "No DashPay profile key needed revoking." = "No DashPay profile key needed revoking.";
 "Could not revoke shared profile access: %@" = "Could not revoke shared profile access: %@";
@@ -6122,9 +6122,10 @@
 "Revoke shared profile access" = "Revoke shared profile access";
 "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again." = "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again.";
 "Shared profile access" = "Shared profile access";
-"DashPay profile keys no connection accounts for: %d" = "DashPay profile keys no connection accounts for: %d";
-"DashPay profile keys could not be checked" = "DashPay profile keys could not be checked";
+"Keys not linked to a connection that can update your DashPay profile: %d" = "Keys not linked to a connection that can update your DashPay profile: %d";
+"Keys that can update your DashPay profile could not be checked" = "Keys that can update your DashPay profile could not be checked";
 "Revoke" = "Revoke";
+"DashPay profile access could not be checked. Open Connections again and retry." = "DashPay profile access could not be checked. Open Connections again and retry.";
 "Help" = "Help";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
 "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";

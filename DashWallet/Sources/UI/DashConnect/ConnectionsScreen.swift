@@ -51,10 +51,11 @@ struct ConnectionsScreen: View {
 
                 content
 
-                if !viewModel.featureUnavailable, let access = viewModel.sharedProfileAccess {
+                if viewModel.showsSharedProfileAccess {
                     SharedProfileAccessRow(
-                        keyCount: access.keyCount,
-                        onRevoke: access.identityId == nil ? nil : { isConfirmingSharedProfileRevoke = true })
+                        keyCount: viewModel.sharedProfileAccess?.keyCount,
+                        onRevoke: viewModel.canRevokeSharedProfileAccess ? { isConfirmingSharedProfileRevoke = true } : nil)
+                        .modifier(MenuViewModifier())
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
                 }
@@ -273,18 +274,20 @@ private struct SharedProfileAccessRow: View {
                     .foregroundStyle(Color.dash.primaryText)
                 Text(keyCount.map {
                     String(
-                        format: NSLocalizedString("DashPay profile keys no connection accounts for: %d", comment: "DashConnect"),
+                        format: NSLocalizedString("Keys not linked to a connection that can update your DashPay profile: %d", comment: "DashConnect"),
                         $0)
-                } ?? NSLocalizedString("DashPay profile keys could not be checked", comment: "DashConnect"))
+                } ?? NSLocalizedString("Keys that can update your DashPay profile could not be checked", comment: "DashConnect"))
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.tertiaryText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
 
             if let onRevoke {
                 Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
                     .dashFont(.subhead)
                     .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel(Text(NSLocalizedString("Revoke shared profile access", comment: "DashConnect")))
             }
         }
         .padding(.horizontal, 14)

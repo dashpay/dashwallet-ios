@@ -1425,7 +1425,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
 
         XCTAssertNotNil(viewModel.sharedProfileAccess)
         XCTAssertNil(viewModel.sharedProfileAccess?.keyCount)
-        XCTAssertEqual(viewModel.message?.text.contains("could not be checked"), true)
+        XCTAssertEqual(viewModel.message?.text.contains("could not check"), true)
     }
 
     /// An access whose identity could not be read revokes nothing.
