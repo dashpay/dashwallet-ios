@@ -723,6 +723,10 @@ struct AppConnectGrant: Codable, Equatable {
         /// one was submitted (`AppConnect.noteOwnUpdate`): this one cannot
         /// land after it.
         var outlivedBy: AppConnect.OwnUpdate? = nil
+        /// The app's row was a two-QR `.approved` one before this approval
+        /// showed it as confirming: it goes back to that if the update never
+        /// lands.
+        var replacesApprovedRow: Bool? = nil
     }
 
     /// What makes two records the same grant: one session key given for one

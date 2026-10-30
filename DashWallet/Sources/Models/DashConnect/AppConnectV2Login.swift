@@ -1070,7 +1070,10 @@ extension AppConnect {
     enum PendingV2Outcome: Equatable {
         /// Every key it adds is on the identity, live, as it was added.
         case landed
-        /// It can never land, or what it added is off again.
+        /// It landed, and what it added is off again: its keys were turned
+        /// off since.
+        case landedAndOff
+        /// It can never land.
         case cannotLand
         /// It may still land, or the view cannot tell.
         case unknown
@@ -1084,8 +1087,8 @@ extension AppConnect {
     /// - A key under one of its ids with other data: Platform refuses an
     ///   update that adds an id the identity has, and never removes a key,
     ///   so it can never land. The same data under the id, disabled: it
-    ///   landed and is off again. The same data, live, with other limits or
-    ///   another readable bound: the id is another key's.
+    ///   landed and is off again (`landedAndOff`). The same data, live, with
+    ///   other limits or another readable bound: the id is another key's.
     /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
     ///   another id: it can never land. HASH160 auth keys are not unique,
     ///   so their data elsewhere says nothing.
@@ -1116,7 +1119,7 @@ extension AppConnect {
             }
             anyPresent = true
             guard key.data == expected.data else { return .cannotLand }
-            guard key.disabledAt == nil else { return .cannotLand }
+            guard key.disabledAt == nil else { return .landedAndOff }
             let binding = bindings.first { $0.keyId == expected.keyId && $0.data == key.data }
             if isAddedKey(key, added: expected.identityPubkey, binding: binding) { continue }
             allLanded = false
@@ -1142,6 +1145,7 @@ extension AppConnect {
     /// Settles the v2 records of `identityId` whose update's outcome was not
     /// known, by `pendingV2Outcome`. A landed one becomes a grant like any
     /// other, and the earlier grants its update retired are marked done; one
+    /// that landed and is off again is dropped with those marked done; one
     /// that cannot land is dropped; the rest stay as they are.
     static func settlePendingV2Registrations(
         in grants: inout [AppConnectGrant],
@@ -1165,6 +1169,9 @@ extension AppConnect {
                 settled.unconfirmedKeyHash160 = nil
                 confirmed.append(settled)
                 retired.formUnion(pending.retiredGrantKeys)
+            case .landedAndOff:
+                dropped.append(grant)
+                retired.formUnion(pending.retiredGrantKeys)
             case .cannotLand:
                 dropped.append(grant)
             case .unknown:
@@ -1179,6 +1186,16 @@ extension AppConnect {
         }
         markKeysDisabled(in: &grants) { retired.contains($0.key) && !$0.isUnconfirmed }
         return (confirmed, dropped)
+    }
+
+    /// Whether a newer confirmed grant of the same connection replaced
+    /// `grant`: its response is not for the app any more.
+    static func isReplaced(_ grant: AppConnectGrant, in grants: [AppConnectGrant]) -> Bool {
+        guard let connectionId = grant.connectionId else { return false }
+        return grants.contains {
+            $0.key != grant.key && $0.identityId == grant.identityId && $0.appContractId == grant.appContractId
+                && $0.connectionId == connectionId && !$0.isUnconfirmed && $0.publishedAt > grant.publishedAt
+        }
     }
 
     /// The ids a confirmed record of `identityId` names, and the ids of the

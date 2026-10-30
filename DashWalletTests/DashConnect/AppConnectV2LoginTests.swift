@@ -1233,7 +1233,7 @@ extension AppConnectV2LoginTests {
             Self.outcome([auth], keys: [Self.onIdentity(auth, data: Data(repeating: 0xEE, count: 20))]), .cannotLand,
             "Platform refuses an update that adds an id the identity has")
         XCTAssertEqual(
-            Self.outcome([auth], keys: [Self.onIdentity(auth, disabled: true)]), .cannotLand,
+            Self.outcome([auth], keys: [Self.onIdentity(auth, disabled: true)]), .landedAndOff,
             "it landed and is off again")
         XCTAssertEqual(
             Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(1))]), .cannotLand,
@@ -1338,6 +1338,36 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(grants[0].keyDisabled, true, "the grant its update replaced is done")
         XCTAssertTrue(grants[2].isPendingV2)
         XCTAssertTrue(grants[3].isPendingV2, "another identity's record waits for a view of that identity")
+    }
+
+    func testAPendingUpdateThatLandedAndIsOffAgainIsDroppedWithWhatItRetired() {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let pending = Self.pendingGrant([key], requestHash: "a1", retiring: [old.key])
+        var grants = [old, pending]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3, disabled: true)],
+            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+        XCTAssertEqual(settled.dropped.map(\.key), [pending.key])
+        XCTAssertEqual(grants.map(\.key), [old.key])
+        XCTAssertEqual(grants[0].keyDisabled, true, "its update turned the replaced grant off")
+    }
+
+    func testAGrantANewerOneOfTheSameConnectionReplacedIsNotTheAppsAnyMore() {
+        let older = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var newer = Self.grant(sessionKeyId: 5, requestHash: "01", connectionId: "c1")
+        newer = AppConnectGrant(
+            identityId: newer.identityId, appContractId: newer.appContractId, documentId: nil, values: newer.values,
+            sessionKeyId: 5, totalBudget: nil, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 2_000),
+            connectionId: "c1")
+        let otherConnection = Self.grant(sessionKeyId: 7, requestHash: "02", connectionId: "c2")
+        XCTAssertTrue(AppConnect.isReplaced(older, in: [older, newer]))
+        XCTAssertFalse(AppConnect.isReplaced(newer, in: [older, newer]))
+        XCTAssertFalse(AppConnect.isReplaced(otherConnection, in: [older, newer, otherConnection]))
+        var pendingNewer = newer
+        pendingNewer.unconfirmedKeyHash160 = "11"
+        XCTAssertFalse(AppConnect.isReplaced(older, in: [older, pendingNewer]), "a newer one that may never land")
     }
 
     func testAPendingV2RecordStillReadsAsUnconfirmedWithoutItsNewField() throws {
@@ -1467,6 +1497,10 @@ extension AppConnectV2LoginTests {
                   rows: [row(.confirming)]).map(\.status),
             [.active], "a live key bound to the app")
         XCTAssertEqual(after([], rows: [row(.active)]).map(\.status), [.active], "only a confirming row is touched")
+        let restored = PlatformDashConnectDataSource.rowsAfterDropping(
+            appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
+        XCTAssertEqual(restored.map(\.status), [.approved], "the two-QR row it replaced comes back")
+        XCTAssertEqual(restored.map(\.loginKind), [.twoQR])
     }
 }
 
@@ -1544,6 +1578,29 @@ extension AppConnectV2LoginTests {
         XCTAssertNil(grant.pendingUpdate)
         XCTAssertEqual(store.grants.first { $0.key == record.key }, grant)
         XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
+    }
+
+    func testAnUpdateKnownToHaveLandedIsNotedOnTheOtherRecordsWaiting() async throws {
+        let waiting = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a9")
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let succeeded = MemoryGrantStore([waiting])
+        _ = try await Self.register(Self.pendingGrant([key]), add: [key], disable: [3], store: succeeded, calls: Calls())
+        XCTAssertEqual(
+            succeeded.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
+            AppConnect.OwnUpdate(added: [key], disabledKeyIds: [3]))
+
+        let landedAnyway = MemoryGrantStore([waiting])
+        _ = try await Self.register(
+            Self.pendingGrant([key]), add: [key], store: landedAnyway, calls: Calls(), submit: { throw UpdateFailed() },
+            views: [([Self.onIdentity(key)], [Self.stored(key)])])
+        XCTAssertNotNil(landedAnyway.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy)
+
+        let unknown = MemoryGrantStore([waiting])
+        _ = try? await Self.register(
+            Self.pendingGrant([key]), add: [key], store: unknown, calls: Calls(), submit: { throw UpdateFailed() })
+        XCTAssertNil(
+            unknown.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
+            "an update whose outcome is not known proves nothing")
     }
 
     func testARenewalThatCannotTurnOffEveryReplacedKeySubmitsNothing() async {
