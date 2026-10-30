@@ -127,6 +127,15 @@ final class RetiredCrowdNodeDefaults: NSObject {
         }
     }
 
+    /// One wallet's keys, for the wiper's per-wallet deletion; the bare
+    /// and other wallets' keys stay for the activation cleanup.
+    static func removePerWalletKeys(forWalletIdHex walletIdHex: String,
+                                    from defaults: UserDefaults = .standard) {
+        for key in perWalletKeys {
+            defaults.removeObject(forKey: "\(key)_\(walletIdHex)")
+        }
+    }
+
     static func removeAll(from defaults: UserDefaults) {
         for key in globalKeys + perWalletKeys {
             defaults.removeObject(forKey: key)

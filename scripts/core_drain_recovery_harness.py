@@ -411,6 +411,7 @@ final class UnrelatedPerWalletState {
     static let shared = UnrelatedPerWalletState()
     func clearForWallet(walletIdHex: String) {}
 }
+enum RetiredCrowdNodeDefaults { static func removePerWalletKeys(forWalletIdHex: String) {} }
 typealias CoinJoinWithdrawalStore = UnrelatedPerWalletState
 typealias ShieldedWithdrawalStore = UnrelatedPerWalletState
 typealias AssetLockProbeStore = UnrelatedPerWalletState

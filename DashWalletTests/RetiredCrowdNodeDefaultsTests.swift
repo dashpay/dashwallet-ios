@@ -49,6 +49,24 @@ final class RetiredCrowdNodeDefaultsTests: XCTestCase {
         }
     }
 
+    /// The wiper's per-wallet deletion removes that wallet's keys only.
+    func testRemovesOneWalletsPerWalletKeys() {
+        let removed = RetiredCrowdNodeDefaults.perWalletKeys.map { "\($0)_aa01" }
+        let kept = RetiredCrowdNodeDefaults.perWalletKeys.map { "\($0)_bb02" }
+        for key in removed + kept {
+            defaults.set(1, forKey: key)
+        }
+
+        RetiredCrowdNodeDefaults.removePerWalletKeys(forWalletIdHex: "aa01", from: defaults)
+
+        for key in removed {
+            XCTAssertNil(defaults.object(forKey: key), key)
+        }
+        for key in kept {
+            XCTAssertNotNil(defaults.object(forKey: key), key)
+        }
+    }
+
     /// The online-state key starts with a Cyrillic "с": a Latin spelling
     /// would match nothing a real install wrote.
     func testRemovesTheCyrillicPrefixedKey() {
