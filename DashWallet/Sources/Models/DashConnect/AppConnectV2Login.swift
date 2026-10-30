@@ -966,6 +966,220 @@ extension AppConnect {
         return binding.bound == storedBound(of: bounds)
     }
 
+    // MARK: A v2 update whose outcome is not known
+
+    /// A key an App Connect v2 update adds, as it adds it: what
+    /// `isAddedKey` compares, kept with the grant while the update's outcome
+    /// is not known. Nothing in it is secret.
+    struct ExpectedKey: Codable, Equatable {
+        let keyId: UInt32
+        let keyType: KeyType
+        let purpose: KeyPurpose
+        let securityLevel: SecurityLevel
+        let data: Data
+        let readOnly: Bool
+        let totalBudget: UInt64?
+        let expiresAt: UInt64?
+        let bound: StoredBound?
+
+        init(_ key: ManagedPlatformWallet.IdentityPubkey) {
+            keyId = key.keyId
+            keyType = key.keyType
+            purpose = key.purpose
+            securityLevel = key.securityLevel
+            data = key.pubkeyBytes
+            readOnly = key.readOnly
+            totalBudget = key.totalBudget
+            expiresAt = key.expiresAt
+            bound = key.contractBounds.map(AppConnect.storedBound(of:))
+        }
+
+        /// The key as the update submits it.
+        var identityPubkey: ManagedPlatformWallet.IdentityPubkey {
+            ManagedPlatformWallet.IdentityPubkey(
+                keyId: keyId,
+                keyType: keyType,
+                purpose: purpose,
+                securityLevel: securityLevel,
+                pubkeyBytes: data,
+                readOnly: readOnly,
+                contractBounds: bound.map(AppConnect.contractBounds(of:)),
+                totalBudget: totalBudget,
+                expiresAt: expiresAt
+            )
+        }
+    }
+
+    /// The bound a key is registered with, from its stored form.
+    static func contractBounds(of bound: StoredBound) -> ManagedPlatformWallet.ContractBounds {
+        switch bound {
+        case .singleContract(let id): return .singleContract(id: id)
+        case .documentType(let id, let name): return .singleContractDocumentType(id: id, documentTypeName: name)
+        case .contractGroup(let id): return .contractGroup(id: id)
+        }
+    }
+
+    /// What a view of the identity tells of a v2 update whose outcome was
+    /// not known.
+    enum PendingV2Outcome: Equatable {
+        /// Every key it adds is on the identity, live, as it was added.
+        case landed
+        /// It can never land, or what it added is off again.
+        case cannotLand
+        /// It may still land, or the view cannot tell.
+        case unknown
+    }
+
+    /// The outcome of `pending` by what `keys` (a fresh view of the
+    /// identity) and `bindings` (the store's bounds) show. No revision is
+    /// guessed: the SDK does not say which revision it signed.
+    ///
+    /// - Every added key there as it was added: it landed.
+    /// - A key under one of its ids with other data: Platform refuses an
+    ///   update that adds an id the identity has, and never removes a key,
+    ///   so it can never land. The same data under the id, disabled: it
+    ///   landed and is off again. The same data, live, with other limits or
+    ///   another readable bound: the id is another key's.
+    /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
+    ///   another id: it can never land. HASH160 auth keys are not unique,
+    ///   so their data elsewhere says nothing.
+    /// - `afterOwnUpdate`: `keys` reflects an update of this wallet to the
+    ///   identity that landed after `pending` was recorded. Platform takes an
+    ///   update only at one above the identity's revision, and that update
+    ///   took one above whatever the wallet's copy held, so `pending` cannot
+    ///   land after it: none of its ids there means it never will.
+    /// - Every added key is an auth key past its expiry (with
+    ///   `clockTolerance`): if it lands, nothing can sign with it. An
+    ///   encryption key has no expiry, so this never ends one that adds it.
+    ///
+    /// A key under an expected id with the expected data and no readable
+    /// bound in the store is unknown: the store may not have loaded it yet.
+    static func pendingV2Outcome(
+        of pending: AppConnectGrant.PendingV2Update,
+        currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding],
+        nowMilliseconds: Int64,
+        afterOwnUpdate: Bool = false
+    ) -> PendingV2Outcome {
+        var allLanded = true
+        var anyPresent = false
+        for expected in pending.addedKeys {
+            guard let key = keys.first(where: { UInt32(bitPattern: $0.keyId) == expected.keyId }) else {
+                allLanded = false
+                continue
+            }
+            anyPresent = true
+            guard key.data == expected.data else { return .cannotLand }
+            guard key.disabledAt == nil else { return .cannotLand }
+            let binding = bindings.first { $0.keyId == expected.keyId && $0.data == key.data }
+            if isAddedKey(key, added: expected.identityPubkey, binding: binding) { continue }
+            allLanded = false
+            if expected.bound != nil, binding == nil || binding?.hasUnreadableBound == true { continue }
+            return .cannotLand
+        }
+        if allLanded { return .landed }
+        let takenElsewhere = pending.addedKeys.contains { expected in
+            expected.keyType == .ecdsaSecp256k1 && keys.contains {
+                $0.keyType == .ecdsaSecp256k1 && $0.data == expected.data
+                    && UInt32(bitPattern: $0.keyId) != expected.keyId
+            }
+        }
+        if takenElsewhere { return .cannotLand }
+        if afterOwnUpdate && !anyPresent { return .cannotLand }
+        let allExpired = pending.addedKeys.allSatisfy { expected in
+            expected.purpose == .authentication
+                && expected.expiresAt.map { !isUnexpired(Int64(clamping: $0), nowMilliseconds: nowMilliseconds) } == true
+        }
+        return allExpired ? .cannotLand : .unknown
+    }
+
+    /// Settles the v2 records of `identityId` whose update's outcome was not
+    /// known, by `pendingV2Outcome`. A landed one becomes a grant like any
+    /// other, and the earlier grants its update retired are marked done; one
+    /// that cannot land is dropped; the rest stay as they are.
+    static func settlePendingV2Registrations(
+        in grants: inout [AppConnectGrant],
+        identityId: String,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding],
+        nowMilliseconds: Int64,
+        afterOwnUpdate: Bool = false
+    ) -> (confirmed: [AppConnectGrant], dropped: [AppConnectGrant]) {
+        var confirmed: [AppConnectGrant] = []
+        var dropped: [AppConnectGrant] = []
+        var retired: Set<String> = []
+        for grant in grants where grant.identityId == identityId {
+            guard let pending = grant.pendingUpdate else { continue }
+            switch pendingV2Outcome(
+                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings,
+                nowMilliseconds: nowMilliseconds, afterOwnUpdate: afterOwnUpdate
+            ) {
+            case .landed:
+                var settled = grant
+                settled.pendingUpdate = nil
+                settled.unconfirmedKeyHash160 = nil
+                confirmed.append(settled)
+                retired.formUnion(pending.retiredGrantKeys)
+            case .cannotLand:
+                dropped.append(grant)
+            case .unknown:
+                break
+            }
+        }
+        let droppedKeys = Set(dropped.map(\.key))
+        grants.removeAll { droppedKeys.contains($0.key) }
+        for settled in confirmed {
+            guard let index = grants.firstIndex(where: { $0.key == settled.key }) else { continue }
+            grants[index] = settled
+        }
+        markKeysDisabled(in: &grants) { retired.contains($0.key) && !$0.isUnconfirmed }
+        return (confirmed, dropped)
+    }
+
+    /// The ids a confirmed record of `identityId` names, and the ids of the
+    /// keys a v2 record waiting for its update adds that the store shows
+    /// there as added (same data and bound): those are that grant's, not
+    /// another app's. An unconfirmed record's id is otherwise not taken: it
+    /// may belong to another key by now.
+    static func recordedKeyIds(
+        of identityId: String,
+        grants: [AppConnectGrant],
+        bindings: [KeyBinding]
+    ) -> Set<UInt32> {
+        var ids = Set(grants.filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
+        for grant in grants where grant.identityId == identityId {
+            for expected in grant.pendingUpdate?.addedKeys ?? [] where bindings.contains(where: {
+                $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound
+                    && $0.bound == expected.bound
+            }) {
+                ids.insert(expected.keyId)
+            }
+        }
+        return ids
+    }
+
+    /// For a request whose earlier update's outcome is not known, the ids
+    /// that update gave the keys this approval derives: each auth key
+    /// (`authKeyHash160s`, in request order) and each encryption key it
+    /// registers (`registeredEncryptionKeys`, in slot order) under the id it
+    /// was added with, so the retry submits the same keys and at most one of
+    /// the two updates can land. Nil when they are not the same keys.
+    static func keyIdsForRetry(
+        of pending: AppConnectGrant.PendingV2Update,
+        authKeyHash160s: [Data],
+        registeredEncryptionKeys: [Data]
+    ) -> (auth: [UInt32], encryption: [UInt32])? {
+        func id(of data: Data, purpose: (KeyPurpose) -> Bool) -> UInt32? {
+            pending.addedKeys.first { $0.data == data && purpose($0.purpose) }?.keyId
+        }
+        let auth = authKeyHash160s.compactMap { id(of: $0) { $0 == .authentication } }
+        let encryption = registeredEncryptionKeys.compactMap { id(of: $0) { $0 != .authentication } }
+        guard auth.count == authKeyHash160s.count, encryption.count == registeredEncryptionKeys.count,
+              Set(auth + encryption) == Set(pending.addedKeys.map(\.keyId)),
+              auth.count + encryption.count == pending.addedKeys.count else { return nil }
+        return (auth, encryption)
+    }
+
     /// A live auth key a login could have granted: HASH160 and never MASTER,
     /// so a damaged record cannot get the identity's own keys disabled.
     static func isLiveGrantedKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {

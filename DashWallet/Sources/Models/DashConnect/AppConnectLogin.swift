@@ -159,12 +159,15 @@ enum AppConnect {
 
     /// `count` ids that no key of the identity has, for one update that
     /// adds `count` keys: above the highest id while they fit, then the
-    /// lowest gaps. Nil when the identity cannot take that many.
+    /// lowest gaps. Nil when the identity cannot take that many. `reserved`
+    /// ids count as taken: an update that may still land adds keys under
+    /// them (`reservedKeyIds`).
     static func freeKeyIds(
         count: Int,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        reserved: Set<UInt32> = []
     ) -> [UInt32]? {
-        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }).union(reserved)
         let highest = taken.max()
         var ids: [UInt32] = []
         var next = highest.map { $0 == .max ? nil : $0 + 1 } ?? 0
@@ -187,11 +190,13 @@ enum AppConnect {
     /// keys included. Platform only refuses an id the identity already has,
     /// so when the highest is the last id a key can have (a key an app
     /// registered can be given it) the lowest id no key has is taken
-    /// instead. `nil` only when every id is taken.
+    /// instead. `nil` only when every id is taken. `reserved` ids count as
+    /// taken (`reservedKeyIds`).
     static func nextKeyId(
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        reserved: Set<UInt32> = []
     ) -> UInt32? {
-        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }).union(reserved)
         let highest = taken.max() ?? 0
         guard highest == .max else { return highest + 1 }
         // The identity holds far fewer keys than there are ids, so this
@@ -201,6 +206,13 @@ enum AppConnect {
 
     /// The key an app is given: it can only sign for the contract the request
     /// named, spend up to `totalBudget`, and stops working at `expiresAt`.
+    /// The ids the v2 records of `identityId` that wait for their update
+    /// add keys under: a new key under one of them would make that update,
+    /// or itself, be refused.
+    static func reservedKeyIds(grants: [AppConnectGrant], identityId: String) -> Set<UInt32> {
+        Set(grants.filter { $0.identityId == identityId }.flatMap { $0.pendingUpdate?.addedKeys.map(\.keyId) ?? [] })
+    }
+
     static func sessionIdentityPubkey(
         keyId: UInt32,
         publicKeyHash160: Data,
@@ -252,7 +264,7 @@ enum AppConnect {
     }
 
     /// A key's contract bound, as the wallet's store records it.
-    enum StoredBound: Equatable {
+    enum StoredBound: Equatable, Codable {
         case singleContract(Data)
         case documentType(contractId: Data, name: String)
         case contractGroup(Data)
@@ -448,10 +460,11 @@ enum AppConnect {
         }
     }
 
-    /// Confirms the unconfirmed records of `identityId` whose key the
+    /// Confirms the unconfirmed one-QR records of `identityId` whose key the
     /// identity now holds, and returns them. A record whose key is not there
     /// stays as it is: the update may still land, and nothing is taken from
-    /// a view that may be behind.
+    /// a view that may be behind. An App Connect v2 record waiting for its
+    /// update is settled by `settlePendingV2Registrations`.
     static func confirmRegistrations(
         in grants: inout [AppConnectGrant],
         identityId: String,
@@ -461,6 +474,7 @@ enum AppConnect {
         var confirmed: [AppConnectGrant] = []
         for index in grants.indices
         where grants[index].identityId == identityId && grants[index].isUnconfirmed
+            && !grants[index].isPendingV2
             && holdsRecordedKey(
                 grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings) {
             grants[index].unconfirmedKeyHash160 = nil
@@ -684,8 +698,28 @@ struct AppConnectGrant: Codable, Equatable {
     /// land.
     /// `nil` on a record from a build that did not note it.
     var submittedRevision: UInt64? = nil
+    /// App Connect v2: the update that registers this grant's keys, from
+    /// just before it is submitted until its outcome is known
+    /// (`AppConnect.pendingV2Outcome`). Set together with
+    /// `unconfirmedKeyHash160`, the primary key's hash, so a build that
+    /// does not know this field still reads the record as unconfirmed.
+    var pendingUpdate: PendingV2Update? = nil
 
     var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
+
+    /// An App Connect v2 grant whose update may or may not have landed.
+    var isPendingV2: Bool { pendingUpdate != nil }
+
+    /// What an App Connect v2 update was submitted with, kept with the
+    /// grant until its outcome is known.
+    struct PendingV2Update: Codable, Equatable {
+        /// Every key the update adds, as it adds it.
+        var addedKeys: [AppConnect.ExpectedKey]
+        /// The keys of the connection's earlier grants it disables.
+        var disabledKeyIds: [UInt32]
+        /// The records of those grants (`key`) that are done once it lands.
+        var retiredGrantKeys: [String]
+    }
 
     /// What makes two records the same grant: one session key given for one
     /// request. Records are matched on this, never on whole-value equality —
