@@ -3,12 +3,6 @@
 
 " or " = " 또는 ";
 
-/* CrowdNode */
-" Privacy Policy " = "개인정보 보호정책";
-
-/* CrowdNode */
-" Terms of Use " = "이용약관";
-
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ 을(를) %2$@ DASH에 등록했습니다";
 
@@ -183,9 +177,6 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "지갑을 보호하기 위해 비밀번호가 필요합니다. 설정에서 비밀번호를 활성화해주세요.";
 
-/* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "마스터노드는 1000 대시의 보증이 필요하며 각 마스터노드는 현재 연간 약 %@ 의 보상을 받습니다.";
-
 /* DashPay Contacts */
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
@@ -226,17 +217,8 @@
 /* DashSpend */
 "Accept terms and\nconditions" = "이용 약관\n동의";
 
-/* CrowdNode */
-"Accept Terms Of Use" = "이용약관 수락하기";
-
 /* DashPay Contacts */
 "Accepting" = "Accepting";
-
-/* CrowdNode */
-"Accepting terms of use…" = "이용 약관에 동의하는 중...";
-
-/* CrowdNode */
-"Account Recovery" = "계정 복구";
 
 /* Masternode status */
 "Active" = "활성";
@@ -333,9 +315,6 @@
 /* Shortcut selection empty state */
 "All shortcuts are already in use" = "All shortcuts are already in use";
 
-/* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "이 기기의 크라우드노드에서/로부터 발생하는 모든 거래는 이 기기의 아래 대시 주소로 이루어집니다.";
-
 /* ZenLedger */
 "Allow" = "허용";
 
@@ -387,9 +366,6 @@
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "알 수 없는 오류가 발생했습니다. 나중에 다시 시도하십시오.";
 
-/* CrowdNode */
-"and" = "또한";
-
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "2-9사이의 숫자가 포함되고, 20글자 이상이거나 하이픈 기호를 포함한 사용자 이름은 자동으로 승인됩니다";
 
@@ -429,9 +405,6 @@
 
 /* Voting */
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "마스터노드 소유자는 사용자가 사용자 이름을 생성하기 이전에 이를 위한 요청에 대해 투표할 수 있습니다.\n부적절하다고 느껴지는 사용자이름의 생성은 차단할 수 있습니다.";
-
-/* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "대부분의 사람들이 당장 1000대시를 지니고 있지 않은 만큼, 크라우드노드는 구성원들의 보증금을 모아 마스터노드 소유의 장점을 누릴 수 있도록 하는 서비스를 개설하였습니다.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -513,14 +486,8 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "백업";
 
-/* No comment provided by engineer. */
-"Backup Passphrase" = "암호 문구 백업하기";
-
 /* A noun. Used as a title. */
 "Backup Wallet" = "지갑 백업";
-
-/* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "크라우드노드 계정을 생성하려면 암호 문구를 백업하세요";
 
 /* Back up wallet */
 "Backup your recovery phrase" = "복구 문구를 백업하세요";
@@ -531,14 +498,8 @@
 /* Send Screen: to address */
 "Balance" = "잔액";
 
-/* CrowdNode */
+/* Platform address payment detail */
 "Balance after" = "이후 잔액";
-
-/* CrowdNode */
-"Balance On CrowdNode" = "크라우드노드 잔고";
-
-/* CrowdNode */
-"Balance: " = "잔고:";
 
 /* Balance info sheet */
 "Balances and transfers are not publicly visible" = "잔액과 전송은 공개되지 않습니다";
@@ -548,9 +509,6 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "은행 송금";
-
-/* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "크라우드노드를 통해 대시 마스터노드의 일원이 되세요";
 
 /* TimeSkew */
 "behind" = "뒤";
@@ -801,9 +759,6 @@
 /* Dash DEX */
 "Close and notify me" = "Close and notify me";
 
-/* CrowdNode */
-"Close and notify when it’s done" = "완료되면 종료하고 알림받기";
-
 /* No comment provided by engineer. */
 "Close App" = "앱 닫기";
 
@@ -865,9 +820,6 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "연결됨";
-
-/* CrowdNode */
-"Connected Dash address" = "연결된 대시 주소";
 
 /* SPV sync */
 "Connected peers" = "연결된 피어";
@@ -1034,17 +986,11 @@
 /* Usernames */
 "Create a username" = "사용자이름 생성하기";
 
-/* CrowdNode */
-"Create Account" = "계정 생성하기";
-
 /* Create DashSpend account */
 "Create account" = "계정 생성하기";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "계정을 생성하거나 기존 계정에 로그인하세요";
-
-/* CrowdNode */
-"Create an online CrowdNode account" = "온라인 크라우드노드 계정 생성하기";
 
 /* No comment provided by engineer. */
 "Create invitation" = "초대 생성하기";
@@ -1054,10 +1000,6 @@
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Create Online Account" = "온라인 계정 생성하기";
 
 /* Wallets */
 "Create Wallet" = "Create Wallet";
@@ -1074,30 +1016,6 @@
 /* Masternodes */
 "Credits" = "크레딧";
 
-/* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
-
-/* CrowdNode */
-"CrowdNode benefits" = "크라우드노드의 이점";
-
-/* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
-
-/* CrowdNode Portal */
-"CrowdNode Support" = "크라우드노드 지원";
-
-/* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "크라우드노가 이 주소를 당신의 계정 ID로 사용합니다. 이 주소에 연결된 암호 문구를 잃게되는 경우, 이 지갑 안의 자금 및 크라우드노드 계정에 대한 액세스를 잃게 됩니다. ";
-
-/* CrowdNode */
-"CrowdNode withdrawal limits" = "크라우드노드 출금 한도";
-
-/* No comment provided by engineer. */
-"CrowdNode · Account" = "크라우드노드 · 계정";
-
-/* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "크라우드노드 ➝ 대시지갑";
-
 /* No comment provided by engineer. */
 "CSV Export" = "CSV 내보내기";
 
@@ -1106,12 +1024,6 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "CTX 기프트 카드";
-
-/* Crowdnode */
-"Current APY = %@" = "현재 APY = %@";
-
-/* CrowdNode */
-"Current APY is %@" = "현재 APY는 %@ 입니다";
 
 /* Explore Dash: Filters */
 "Current location" = "현재 위치";
@@ -1130,9 +1042,6 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "대시 주소";
-
-/* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소";
 
 /* No comment provided by engineer. */
 "Dash balance" = "대시 잔고";
@@ -1219,9 +1128,6 @@
 /* AboutDash */
 "DashSync" = "DashSync";
 
-/* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "대시지갑 ➝ 크라우드노드";
-
 /* No comment provided by engineer. */
 "Date" = "날짜";
 
@@ -1256,22 +1162,6 @@
 
 /* Location Service Status */
 "Denied" = "거절됨";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Deposit" = "입금";
-
-/* CrowdNode Portal */
-"Deposit %@ to start earning" = "%@를 입금하고 소득 얻기를 시작하세요 ";
-
-/* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "당신의 대시 지갑에 최소 금액 %@ 를 입금하여 출금을 완료합니다";
-
-/* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "소득 얻기를 시작하려면 최소 %@ 를 입금해야 합니다";
-
-/* CrowdNode */
-"Deposit sent" = "입금 완료";
 
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "파생 경로";
@@ -1362,9 +1252,6 @@
 /* SPV diagnostics */
 "Dropping…" = "버리는 중…";
 
-/* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "크라우드노드의 서비스 이용 약관에 따라, 사용자들은 다음의 금액 이상을 출금할 수 없습니다:";
-
 /* Geoblock */
 "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "규제적 제약으로 인하여, 귀하가 영국에 있지 않음을 확인해야 합니다. 코인베이스 기능 시작시 위치 확인이 필요합니다.";
 
@@ -1373,9 +1260,6 @@
 
 /* Usernames */
 "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "투표 과정을 통해, 대시 네트워크는 사용자 이름 '%@'을 다른 사용자에게 할당하기로 결정하였습니다. 다른 사용자 이름으로 다시 시도해주십시오.";
-
-/* CrowdNode */
-"e.g. johndoe@mail.com" = "예시 johndoe@mail.com";
 
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "각 초대는 이 금액을 통해 지원되며, 이로써 받는 이가 재빨리 대시 네트워크에 사용자 이름을 생성할 수 있습니다";
@@ -1386,12 +1270,6 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "이전";
-
-/* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
-
-/* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "간단한 클릭만으로 대시를 손쉽게 스테이킹하고 소극적 소득을 얻으세요.";
 
 /* SPV diagnostics */
 "Edit birth height" = "시작 블록 높이 편집";
@@ -1408,7 +1286,7 @@
 /* Input username textfield placeholder */
 "eg: johndoe" = "예시: 홍길동";
 
-/* CrowdNode */
+/* DashSpend */
 "Email" = "이메일";
 
 /* DashPay: confirm button of the Enable DashPay sheet */
@@ -1628,12 +1506,6 @@
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
 
-/* CrowdNode */
-"First deposit should be more than %@" = "첫 입금은 %@ 이상이어야 합니다";
-
-/* CrowdNode */
-"First minimum deposit" = "첫 번째 최소 입금";
-
 /* DashSpend */
 "Fixed amounts" = "고정된 금액";
 
@@ -1679,12 +1551,6 @@
 /* Dash DEX Portal */
 "From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
 
-/* from CrowdNode */
-"from CrowdNode" = "크라우드노드에서";
-
-/* from Dash Wallet */
-"from Dash Wallet" = "대시 지갑에서";
-
 /* Swap portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
@@ -1724,9 +1590,6 @@
 /* CoinJoin */
 "Funds moved" = "자금 이동 완료";
 
-/* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "대시 마스터노드에 최소 보증금 0.5대시로 리워드를 받아보세요.";
-
 /* Wallets */
 "Generate a new recovery phrase" = "Generate a new recovery phrase";
 
@@ -1742,9 +1605,6 @@
 /* Usernames */
 "Get ready to join DashPay" = "DashPay에 참여할 준비를 하세요";
 
-/* CrowdNode */
-"Get Rewards Instantly" = "지금 리워드 받기";
-
 /* No comment provided by engineer. */
 "Get Started" = "시작하기";
 
@@ -1756,9 +1616,6 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "사용자 이름을 설정하세요";
-
-/* CrowdNode */
-"Getting started with CrowdNode" = "크라우드노드 시작하기";
 
 /* No comment provided by engineer. */
 "Gift card" = "기프트 카드";
@@ -1780,9 +1637,6 @@
 
 /* DashSpend */
 "Gift card · %@" = "기프트 카드 · %@";
-
-/* No comment provided by engineer. */
-"Go to CrowdNode website" = "크라우드노드 웹사이트 방문하기";
 
 /* No comment provided by engineer. */
 "Go to Website" = "웹사이트로 가기";
@@ -1821,9 +1675,6 @@
 /* Masternodes */
 "Height %u" = "블록 높이 %u";
 
-/* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "다음은 이 기기의 대시 지갑 내 크라우드노드 계정에 지정된 대시 주소입니다";
-
 /* DashPay Contacts */
 "Hidden" = "Hidden";
 
@@ -1847,9 +1698,6 @@
 
 /* Shortcut banner */
 "Hold any button above to replace it with the function you need" = "위의 버튼을 길게 눌러 필요한 기능으로 변경하세요";
-
-/* CrowdNode */
-"How CrowdNode staking works" = "크라우드노드 스테이킹이 이루어지는 방식";
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "테스트 대시는 어떻게 얻나요?";
@@ -1899,9 +1747,6 @@
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay의 프라이버시 수준은 어느 정도인가요?";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "당신의 API 대시 주소를 확인하는 방법";
-
 /* No comment provided by engineer. */
 "How to use your gift card" = "기프트 카드 사용 방법";
 
@@ -1916,9 +1761,6 @@
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "복구 문구를 보유하고 있지 않은 경우 코인을 분실하는 것에 동의합니다.";
-
-/* CrowdNode */
-"I agree to CrowdNode" = "크라우드노드에 동의합니다";
 
 /* No comment provided by engineer. */
 "I got it" = "I got it";
@@ -1971,12 +1813,6 @@
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "나중에 허락하기를 선택하고 영국에 위치하지 않으면, 코인베이스를 사용할 수 있습니다";
 
-/* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "암호 문구를 잃어버리게 되면 크라우드노드 자금에 다시 액세스하기 위해 다른 방법으로 본인 인증을 해야 합니다.";
-
-/* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "이 지갑의 암호 문구를 잃어버리고 기기를 잃는 경우 혹은 대시 지갑을 삭제하는 경우에는 크라우드노드의 자금 및 이 지갑 내 자금에 대한 액세스를 잃게 됩니다.";
-
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "그래도 삭제하려면 다음과 같이 입력하십시오: \"%@\"";
 
@@ -2013,14 +1849,8 @@
 /* Maya */
 "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
-/* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "출금 금액이 큰 경우 크라우드노드는 2주 이내에 출금 금액을 지불합니다. 이는 보안 프로토콜로 인한 것으로, 대부분의 경우 이보다 훨씬 빠르게 처리됩니다.";
-
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "복구 문구를 잃어버리는 경우 요청된 사용자이름에 대한 권리 역시 잃게 됩니다.";
-
-/* CrowdNode Portal */
-"In process…" = "처리중...";
 
 /* Dash DEX */
 "In progress" = "In progress";
@@ -2040,9 +1870,6 @@
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
-
-/* CrowdNode */
-"Information about your online account" = "당신의 온라인 계정에 대한 정보";
 
 /* Buy Sell Portal */
 "Initializing" = "초기값 설정";
@@ -2080,9 +1907,6 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "다음에 내부적으로 이동";
 
-/* CrowdNode */
-"Introducing Staking" = "스테이킹 소개";
-
 /* Invalid transaction */
 "Invalid" = "유효하지 않음";
 
@@ -2094,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "유효하지 않은 대시 주소";
-
-/* CrowdNode Online */
-"Invalid Email" = "유효하지 않은 이메일";
 
 /* No comment provided by engineer. */
 "Invalid email or password." = "이메일 혹은 비밀번호가 유효하지 않습니다.";
@@ -2164,12 +1985,6 @@
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS 대시 지갑: %@ 이슈 보고됨";
 
-/* CrowdNode */
-"It can take a minute for your balance to be updated." = "잔고가 업데이트되는 데에는 잠시 시간이 소요될 수 있습니다.";
-
-/* CrowdNode */
-"It can take a minute for your funds to arrive." = "당신의 자금이 도착하는 데에는 잠시 시간이 소요될 수 있습니다.";
-
 /* Dash DEX */
 "It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
@@ -2196,9 +2011,6 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "지금 가입하세요";
-
-/* CrowdNode */
-"Joining the pool" = "풀 가입하기";
 
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "이 코인을 비공개로 유지합니다. 네트워크 및 프라이버시 수수료가 적용됩니다.";
@@ -2255,9 +2067,6 @@
 /* Wallets */
 "Leave the name empty to reset it to the default." = "Leave the name empty to reset it to the default.";
 
-/* CrowdNode */
-"Leaving the pool" = "풀 떠나기";
-
 /* DashPay Contacts: caption under the user's own QR code */
 "Let another Dash Wallet user scan this code to add you as a contact." = "다른 Dash Wallet 사용자가 이 코드를 스캔하면 회원님을 연락처로 추가할 수 있습니다.";
 
@@ -2281,12 +2090,6 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "코인베이스 계정 연결하기";
-
-/* CrowdNode */
-"Link Existing Account" = "기존 계정 연결";
-
-/* CrowdNode */
-"Link Existing CrowdNode Account" = "기존의 크라우드노드 계정 연결";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "업홀드 계정 연결";
@@ -2418,9 +2221,6 @@
 /* Maya */
 "Log In" = "Log In";
 
-/* CrowdNode WebView */
-"Log in to CrowdNode" = "크라우드노드에 로그인";
-
 /* DashSpend */
 "Log in to your account" = "당신의 계정에 로그인하세요";
 
@@ -2453,9 +2253,6 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
-
-/* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "대시 지갑을 비우고 있는 것 같군요";
 
 /* adjective, security level */
 "Low" = "낮음";
@@ -2555,9 +2352,6 @@
 
 /* adjective, security level */
 "Medium" = "중간";
-
-/* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "멤버들은 풀을 자유롭게 떠날 수 있으며, 즉시 떠날 수도 있습니다.";
 
 /* Dash DEX */
 "Memo / Tag" = "Memo / Tag";
@@ -2765,9 +2559,6 @@
 /* SPV diagnostics */
 "No unconfirmed transactions to drop." = "버릴 미확인 트랜잭션이 없습니다.";
 
-/* CrowdNode */
-"New CrowdNode Account" = "새로운 크라우드노드 계정";
-
 /* Voting */
 "New to old" = "현재부터 과거";
 
@@ -2972,9 +2763,6 @@
 /* Online */
 "Online" = "온라인";
 
-/* CrowdNode Portal */
-"Online Account" = "온라인 계정";
-
 /* Online Merchant */
 "Online Merchant" = "온라인 판매자";
 
@@ -3138,12 +2926,8 @@
 /* DashPay intro: feature body */
 "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "연락처별 결제가 한곳에 묶여, 원시 거래 대신 이름과 프로필로 표시됩니다.";
 
-/* CrowdNode */
 /* Masternodes */
 "Payout address" = "지급 주소";
-
-/* CrowdNode */
-"Payout Options" = "지불 옵션";
 
 /* Coinbase/Payment Methods */
 "PayPal" = "페이팔";
@@ -3156,15 +2940,6 @@
 
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
-
-/* CrowdNode */
-"per 24 hours" = "24시간당";
-
-/* CrowdNode */
-"per hour" = "시간당";
-
-/* CrowdNode */
-"per transaction" = "거래당";
 
 /* Usernames */
 "Personalise profile" = "개인화된 프로필";
@@ -3249,20 +3024,11 @@
 /* Uphold */
 "Please go to your Uphold account to verify your identity." = "업홀드 계정으로 가서 본인 확인 절차를 진행해주십시오.";
 
-/* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "이 이메일은 대시 지갑에 의해 저장되지 않으며 크라우드노드로만 보내진다는 점에 주의하십시오";
-
 /* Usernames */
 "Please note that the username can NOT be changed once it is registered." = "사용자 이름의 등록이 완료되면 변경할 수 없다는 점에 유의하세요.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "이후에 다시 변경할 수 없음에 주의하세요";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "당신의 잔고를 %@ 대시로 올리지 않으면 크라우드노드에서 이 지갑으로 자금을 출금할 수 없다는 점에 주의하세요.";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "휴대 전화를 NFC 기기 가까이에 두십시오.";
@@ -3287,9 +3053,6 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "기다려주십시오";
-
-/* CrowdNode */
-"Please wait before initiating the next withdrawal" = "다음 출금을 요청하기 전 기다려 주십시오";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "당신의 거래 내역을 내보내기 전 지갑이 완전히 동기화될 때까지 기다려주세요";
@@ -3317,9 +3080,6 @@
 
 /* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "가격을 불러오지 않았습니다. 금액이 정확하지 않을 수 있습니다.";
-
-/* CrowdNode */
-"Primary Dash address" = "주요 대시 주소";
 
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
@@ -3356,9 +3116,6 @@
 
 /* Balance info sheet section */
 "Pros" = "장점";
-
-/* CrowdNode Portal */
-"Protect your savings" = "계좌 보호하기";
 
 /* Usernames */
 "Prove your identity" = "당신의 신원을 증명하세요";
@@ -3422,9 +3179,6 @@
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
-
-/* CrowdNode */
-"Read Withdrawal Policy" = "출금 약관 읽어보기";
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "읽기 전용";
@@ -3538,9 +3292,6 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "대시 지갑으로 직접 받기";
 
-/* CrowdNode */
-"Receive your share of rewards daily." = "매일 당신의 리워드를 받아보세요.";
-
 /* Received transaction */
 "Received" = "받음";
 
@@ -3555,9 +3306,6 @@
 
 /* DashPay payment row — sender's display name */
 "Received from %@" = "%@ 님에게서 받음";
-
-/* CrowdNode */
-"Receiving rewards" = "보상 받기";
 
 "Records your masternodes as having voted, without taking a side." = "어느 편도 들지 않고, 회원님의 마스터노드가 투표한 것으로 기록합니다.";
 
@@ -4408,9 +4156,6 @@
 /* Dash DEX */
 "Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
 
-/* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "현재 당신의 크라우드노드 계정에 사용하고 있는 주요 대시 주소에서 %@ 를 송금합니다";
-
 /* Dash DEX */
 "Send %@ to this address" = "Send %@ to this address";
 
@@ -4422,10 +4167,6 @@
 
 /* No comment provided by engineer. */
 "Send Invitation" = "초대 전송하기";
-
-/* Coinbase
-   CrowdNode */
-"Send Report" = "보고 전송하기";
 
 /* No comment provided by engineer. */
 "Send to" = "다음에 전송합니다";
@@ -4508,12 +4249,6 @@
 /* No comment provided by engineer. */
 "Sending to" = "받는 사람";
 
-/* CrowdNode */
-"Sending to CrowdNode account" = "크라우드노드 계정에 보내는 중";
-
-/* CrowdNode */
-"Sending to Dash Wallet on this device" = "이 기기의 대시 지갑에 보내는 중";
-
 /* Buy Dash */
 "Sending to:" = "다음으로 보내기:";
 
@@ -4568,7 +4303,7 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "지갑 설정하기";
 
-/* CrowdNode */
+/* Receive screen */
 "Share" = "공유하기";
 
 /* Receive screen */
@@ -4622,23 +4357,11 @@
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "마스터노드 키 확인하기";
 
-/* CrowdNode */
-"Show QR" = "QR 코드 보기";
-
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "복원 문구 확인하기";
 
 /* Alert title */
 "Sign in required" = "가입이 필요합니다";
-
-/* CrowdNode */
-"Sign up error" = "가입 오류";
-
-/* CrowdNode */
-"Sign up to CrowdNode" = "크라우드노드 가입하기";
-
-/* CrowdNode Portal */
-"Sign up to finish setting up account" = "가입하여 계정 설정을 완료하세요";
 
 /* ZenLedger */
 "Simplify your crypto taxes" = "당신의 암호화폐 세금을 간소화하세요";
@@ -4701,9 +4424,6 @@
 
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
-
-/* No comment provided by engineer. */
-"Staking" = "스테이킹";
 
 /* Usernames */
 "Starts after you add funds" = "자금을 추가하면 시작됩니다";
@@ -4807,9 +4527,6 @@
 /* Explore Dash */
 "Synced" = "Synced";
 
-/* CrowdNode Portal */
-"Synced with current Dash Wallet" = "현재 대시 지갑과 동기화됨";
-
 /* No comment provided by engineer. */
 "Syncing" = "동기화 중";
 
@@ -4898,9 +4615,6 @@
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "일부 사용자 이름이 생성되기 전, 대시 네트워크가 투표를 통해 승인해야 합니다.";
-
-/* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "대시 네트워크는 지불이 이루어지는 데 중요한 역할을 하는 다수의 마스터노드에 의해 운영됩니다.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "대시가 당신의 코인베이스 계정에 성공적으로 입금되었습니다. 그러나 이 기기의 대시 지갑으로 옮기는 데에 문제가 발생했습니다.";
@@ -4997,9 +4711,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
-
-/* CrowdNode */
-"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
 /* Send sheet source/destination mismatch */
 "This address can't be paid from your %@ balance" = "이 주소는 %@ 잔액으로 결제할 수 없습니다";
@@ -5189,17 +4900,11 @@
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "당신이 어플을 언락하실 때마다 이 PIN이 필요합니다.";
 
-/* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "이 QR은 이미 %@ 에 대한 지불 요청을 포함합니다";
-
 /* Dash DEX / dex_error_quote_expired */
 "This quote expired. Please go back and try again." = "This quote expired. Please go back and try again.";
 
 /* Wallets */
 "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "이것은 전체 마스터노드의 현재 연간 수익률에서 15% 크라우드노드 수수료를 뺀 값을 나타냅니다. 이는 보장된 수익률은 아니며, 크라우드노드 풀의 크기와 대시 가격에 따라 증가하거나 감소할 수 있습니다.";
 
 "This still counts as your masternodes having voted in this contest." = "이 경우에도 회원님의 마스터노드가 이 경합에서 투표한 것으로 처리됩니다.";
 
@@ -5245,12 +4950,6 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "이 기기의 대시 지갑으로";
 
-/* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "스테이킹을 시작하려면 크라우드노드에 계정을 만들거나 기존 계정에 연결하세요.";
-
-/* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "이 기기의 대시 지갑 내 크라우드노드 계정에 지정한 대시 주소로 송금합니다.";
-
 /* No comment provided by engineer. */
 "Today" = "오늘";
 
@@ -5271,9 +4970,6 @@
 
 /* DashPay Contacts */
 "Transaction" = "Transaction";
-
-/* CrowdNode */
-"Transaction History" = "거래 내역";
 
 /* Balance info sheet */
 "Transaction history isn't available" = "거래 내역을 사용할 수 없습니다";
@@ -5297,9 +4993,6 @@
 
 /* Coinbase */
 "Transfer DASH" = "Transfer DASH";
-
-/* CrowdNode */
-"Transfer Error" = "송금 오류";
 
 /* Coinbase */
 "Transfer Failed" = "송금에 실패하였습니다";
@@ -5555,9 +5248,6 @@
 /* DashPay Invitations */
 "Valid invitation" = "유효한 초대장";
 
-/* CrowdNode Portal */
-"Validating address…" = "주소 확인중...";
-
 /* No comment provided by engineer. */
 "Validating username failed" = "사용자 이름 인증 실패";
 
@@ -5566,9 +5256,6 @@
 
 /* Maya */
 "Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
-
-/* CrowdNode Portal */
-"Verification Required" = "인증이 필요함";
 
 /* Usernames */
 "Verified during registration" = "등록 시 확인됨";
@@ -5581,9 +5268,6 @@
 
 /* No comment provided by engineer. */
 "Verify" = "인증하기";
-
-/* CrowdNode */
-"Verify your API Dash address" = "API 대시 주소 인증하기";
 
 /* No comment provided by engineer. */
 "Verify your recovery phrase to set a new PIN." = "새 PIN을 설정하려면 복원 문구를 확인하세요.";
@@ -5599,9 +5283,6 @@
 
 /* adjective, security level */
 "Very High" = "매우 높음";
-
-/* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "이 지갑의 소유 여부를 검증하기 위해 아주 적은 금액의 대시가 크라우드노드에/로부터 전송됩니다.";
 
 /* No comment provided by engineer. */
 "View All" = "전체 보기";
@@ -5688,14 +5369,8 @@
 
 "Voting on “%@” has already closed. Refresh to see the result." = "“%@”에 대한 투표가 이미 마감되었습니다. 새로 고쳐 결과를 확인하세요.";
 
-/* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
-
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "블록체인이 완전히 동기화될 때까지 기다리셔야 거래 내역을 확인할 수 있습니다.";
-
-/* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "우리가 당신의 거래 내역을 리뷰할 수 있도록 체인이 완전히 동기화될 때까지 기다려 주세요. 크라우드노드 웹사이트에 방문하셔서 로그인하거나 가입하세요.";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "거래를 완료하기 위해서는 지갑의 동기화가 끝날 때까지 기다려 주십시오";
@@ -5756,23 +5431,11 @@
 /* Dash DEX / dex_error_validation */
 "We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
-/* CrowdNode */
-"We couldn’t create your CrowdNode account." = "당신의 크라우드노드 계정을 생성하지 못했습니다.";
-
-/* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "당신의 크라우드노드 계정에 입금하지 못했습니다.";
-
-/* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "당신의 크라우드노드 계정에서 출금하지 못했습니다.";
-
 /* Explore */
 "We have two types of merchants" = "두 가지 유형의 판매자가 있습니다.";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "다음을 업그레이드 하였습니다";
-
-/* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "이와 같은 거래는 자동으로 감지되어, 동일한 금액이 당신의 크라우드노드 계정으로 송금됩니다. 이후부터 이 기기의 대시 지갑에서 입금 및 출금을 할 수 있게 됩니다.";
 
 /* Website */
 "Website" = "웹사이트";
@@ -5827,11 +5490,8 @@
 /* Usernames */
 "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "투표가 진행되는 동안에는 사용자 이름이 없습니다. 지금 경쟁이 없는 사용자 이름을 등록하세요 — 계속 회원님의 것이며, 투표에서 ‘%@’ 을(를) 얻으면 두 사용자 이름 모두로 연락받을 수 있습니다.";
 
-/* Crowdnode */
+/* Grouped Transactions */
 "Why do I see all these transactions?" = "왜 모든 거래 내역을 보게 되나요?";
-
-/* CrowdNode */
-"Why do you need an online account?" = "왜 온라인 계정이 필요한가요?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "왜 스크린샷을 찍으면 안되나요?";
@@ -5851,18 +5511,11 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "대시 블록체인을 통해";
 
-/* CrowdNode
-   CrowdNode Portal */
+/* Evonode withdrawal */
 "Withdraw" = "출금";
 
-/* CrowdNode */
+/* DashConnect */
 "Withdraw funds" = "Withdraw funds";
-
-/* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "제한 없이 출금하려면 크라우드노드 웹사이트의 온라인 계정을 활용하십시오.";
-
-/* CrowdNode */
-"Withdrawal requested" = "출금이 요청됨";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "전체 잔액을 출금합니다";
@@ -5929,9 +5582,6 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "당신의 리워드 수익을 어떻게 / 언제 받을 것인지 변경할 수 있습니다.";
-
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "계속해서 지불을 위해 대시페이를 사용할 수 있지만, 크레딧 잔고를 충전하기 전까지는 프로필을 업데이트하거나 더 많은 연락처를 추가할 수 없습니다";
 
@@ -5940,9 +5590,6 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "점원에게 대시로 지불할 수 있습니다.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "입금, 출금 및 리워드 수익에 대한 자세한 정보를 확인할 수 있습니다.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "인터넷에서 공개적으로 이용 가능한 모든 URL을 지정함으로써, 대시 네트워크 상에서 다른 사용자들이 이를 볼 수 있습니다.";
@@ -5974,9 +5621,6 @@
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
 
-/* CrowdNode */
-"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
-
 /* Voting */
 "You have already voted for this username %ld times. You can only cast one more vote for this username." = "이 사용자 이름에 대해 이미 %ld회 투표하였습니다. 이 사용자 이름에 대해 한 번의 투표만이 남았습니다.";
 
@@ -5992,23 +5636,14 @@
 /* Voting */
 "You have entered an invalid key" = "유효하지 않은 키를 입력하셨습니다";
 
-/* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "계속하기 위한 자금이 부족합니다";
-
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
-
-/* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "대시 지갑에 암호 문구를 백업해야 합니다";
 
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "초대장을 생성하기 위해서는 최소 %@ 대시가 필요합니다";
-
-/* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "당신의 대시 지갑에 최소 %@ 가 필요합니다";
 
 /* Usernames */
 "You need to have more %@ Dash to create this username" = "이 사용자 이름을 생성하기 위해서는 %@ 대시가 더 필요합니다.";
@@ -6018,12 +5653,6 @@
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "기프트 카드를 구매하기 위해서는 DashSpend에 로그인해야 합니다.";
-
-/* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "다음 출금을 요청하시기 전 5분을 대기하여야 합니다";
-
-/* CrowdNode */
-"You only need %@ to join the pool." = "%@만 있으면 풀에 가입할 수 있습니다.";
 
 /* DashSpend confirmation */
 "You pay" = "금액";
@@ -6039,12 +5668,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "%@ 님에게 연락처 요청을 보냈습니다";
-
-/* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "대시 지갑에 잔고가 있어야 합니다.";
-
-/* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "크라우드노드 인증을 계속하기 위해서는 최소 %@가 필요합니다.";
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
@@ -6064,9 +5687,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "이 기기의 대시 지갑에 %@ 대시를 받게 됩니다. 거래를 완료하는 데에는 2-3분 가량 소요될 수 있다는 점에 주의 해주십시오.";
 
-/* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "당신은 분할된 지불금을 자동적으로 받게 되며, 이 금액은 디폴트로 다시 투자됩니다. 그러나, 쉬운 설정을 통해 지속적으로 이 수익금을 받아 자동 출금할 수도 있습니다.";
-
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
 
@@ -6083,21 +5703,6 @@
 
 /* No comment provided by engineer. */
 "Your credit balance is low" = "당신의 크레딧 잔고가 적습니다";
-
-/* CrowdNode */
-"Your CrowdNode account is creating…" = "당신의 크라우드노드 계정을 생성하는 중입니다...";
-
-/* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "크라우드노드 계정 설정이 완료되어 지금 사용할 수 있습니다!";
-
-/* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "당신의 크라우드노드 계정은 이들 거래를 사용해 생성되었습니다.";
-
-/* CrowdNode */
-"Your CrowdNode address has been confirmed." = "당신의 크라우드노드 주소가 확인되었습니다.";
-
-/* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "당신의 크라우드노드 주소가 확인되었으나, 인증이 필요합니다.";
 
 /* No comment provided by engineer. */
 "Your DASH address" = "Your DASH address";
@@ -6122,9 +5727,6 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";
-
-/* CrowdNode */
-"Your deposit to CrowdNode is received." = "크라우드노드 입금이 완료되었습니다.";
 
 /* TimeSkew */
 "Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "당신의 기기에 설정된 시간이 %2$d 초 차이로 %1$@ 입니다. 이 차이로 인하여 코인조인을 사용할 수 없습니다.\n\n기기의 설정을 \"자동으로 시간 설정\"으로 변경하여 코인조인을 사용하세요.";
@@ -6191,9 +5793,6 @@
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
-
-/* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "당신이 현재 크라우드노드 계정을 위해 사용하고 있는 주요 대시 주소";
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "비공개 잔액입니다. 금액과 주소가 온체인에서 암호화되어 보유액과 내역이 비밀로 유지됩니다.";

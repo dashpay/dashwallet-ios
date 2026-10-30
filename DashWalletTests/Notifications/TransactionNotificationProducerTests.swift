@@ -28,8 +28,6 @@ final class TransactionNotificationProducerTests: XCTestCase {
     /// to it.
     private static let referenceNow = Date(timeIntervalSince1970: 1_756_000_000)
 
-    private static let crowdNodeDepositAmount = ApiCode.depositReceived.rawValue + CrowdNode.apiOffset
-
     private var client: FakeUserNotificationCenterClient!
     private var store: InMemoryNotifiedEventStore!
     private var preferences: FakeNotificationPreferenceStore!
@@ -106,13 +104,10 @@ final class TransactionNotificationProducerTests: XCTestCase {
             txid: txid,
             txidHexDisplay: String(repeating: String(format: "%02x", txidByte), count: 32),
             outputs: [],
-            inputAddresses: [],
             timestamp: hasTimestamp ? timestamp : nil,
             blockHeight: blockHeight ?? (minedAge == nil ? 0 : 1),
             minedAt: minedAge.map { Self.referenceNow.addingTimeInterval(-$0) },
-            ownOutputsAmount: netAmount > 0 ? UInt64(netAmount) : 0,
             ownOutputAddresses: [],
-            isChainAccepted: true,
             context: 1,
             wrapped: wrapped)
     }
@@ -140,19 +135,19 @@ final class TransactionNotificationProducerTests: XCTestCase {
                        .transactionDetail(txid: Data(repeating: 0xab, count: 32)))
     }
 
-    func testCrowdNodeDepositAmountClassifiesToCrowdNodeKeepingTxIdentity() async {
-        rows = [makeRow(txidByte: 0xcd, netAmount: Int64(Self.crowdNodeDepositAmount))]
+    /// No amount gets a topic of its own: 20_008 duffs, an amount a staking
+    /// service uses as a signal, is an ordinary received payment.
+    func testSignalSizedAmountIsAnOrdinaryTransaction() async {
+        rows = [makeRow(txidByte: 0xcd, netAmount: 20_008)]
 
         await producer.scanAndNotify()
 
         XCTAssertEqual(client.addedRequests.count, 1)
         let request = client.addedRequests[0]
-        // Classification changes copy and route only — identity is the txid.
         XCTAssertEqual(request.identifier, expectedId(txidByte: 0xcd))
-        XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.crowdnode.rawValue)
-        XCTAssertEqual(request.content.body,
-                       NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode"))
-        XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo), .staking)
+        XCTAssertEqual(request.content.threadIdentifier, NotificationTopic.transactions.rawValue)
+        XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: request.content.userInfo),
+                       .transactionDetail(txid: Data(repeating: 0xcd, count: 32)))
     }
 
     func testMovedAndSentRowsNeverPost() async {
@@ -405,13 +400,13 @@ final class TransactionNotificationProducerTests: XCTestCase {
         XCTAssertEqual(watchBodies.count, 1)
     }
 
-    func testForegroundStillPostsCrowdNodeDeposit() async {
+    func testForegroundDropsSignalSizedAmountLikeAnyPayment() async {
         appState.isApplicationActive = true
-        rows = [makeRow(netAmount: Int64(Self.crowdNodeDepositAmount))]
+        rows = [makeRow(netAmount: 20_008)]
 
         await producer.scanAndNotify()
 
-        XCTAssertEqual(client.addedRequests.count, 1)
+        XCTAssertTrue(client.addedRequests.isEmpty)
     }
 
     // MARK: Watch bridge

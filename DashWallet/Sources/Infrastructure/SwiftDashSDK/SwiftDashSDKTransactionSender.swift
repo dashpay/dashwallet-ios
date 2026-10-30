@@ -17,8 +17,8 @@
 //  payment-output broadcast path stamps `alreadyAuthorized` so it doesn't
 //  re-prompt.
 //
-//  The selected-input (CrowdNode) and CoinJoin-sweep paths below broadcast
-//  inline — post-auth programmatic flows with no confirmation UI.
+//  The CoinJoin-sweep path below broadcasts inline — a post-auth
+//  programmatic flow with no confirmation UI.
 //
 //  This file intentionally does NOT import DashSync.
 //
@@ -67,14 +67,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// (`DashpayExternalAccount`) is a contact's watch-only coins and is NOT
     /// pooled — the local seed cannot sign them.
     private static let dashpayReceivingTypeTag: UInt8 = 12
-    /// Signal sends spend from the primary BIP44 account.
+    /// The primary BIP44 account, the one Core sends fund from.
     private static let bip44AccountIndex: UInt32 = 0
-    /// How long to wait for a just-broadcast funding output to appear in the
-    /// SDK's UTXO set (the local mempool apply is async relative to
-    /// `broadcastTransaction` returning).
-    private static let selectedInputUtxoTimeout: TimeInterval = 30
-    /// Poll interval for the UTXO wait above.
-    private static let selectedInputPollInterval: TimeInterval = 0.5
 
     // MARK: - Build & Sign
 
@@ -610,152 +604,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
     }
 
-    // MARK: - Selected-input send (CrowdNode signal txs)
-
-    /// Build, sign, and broadcast a transaction funded ONLY from UTXOs sitting
-    /// on `fromAddress`, with change returned to `fromAddress`.
-    ///
-    /// SwiftDashSDK replacement for the retired DashSync
-    /// `LegacySelectedInputSendExecutor`. CrowdNode identifies the user by the
-    /// address its signal transactions originate from, so both the inputs and
-    /// the change must stay on the account address, and the destination output
-    /// must carry the exact signal amount (`apiOffset + ApiCode`).
-    ///
-    /// Semantic delta vs legacy: the legacy path spent ALL outputs of specific
-    /// candidate transactions matching the address; this path spends from the
-    /// address's current UTXO pool. Same sender address, change back to it —
-    /// the CrowdNode-visible semantics hold.
-    ///
-    /// Freshness: signup/deposit spend a just-broadcast top-up output. The SDK
-    /// applies its own broadcasts to the local mempool asynchronously (0-conf
-    /// outputs are spendable once applied), so the UTXO set is polled until
-    /// the required funds appear or `selectedInputUtxoTimeout` elapses.
-    ///
-    /// - Parameters:
-    ///   - fromAddress: The address whose UTXOs fund the send and receive the change.
-    ///   - address: Destination Dash address (Base58Check).
-    ///   - amount: Amount to send in duffs — passed through untouched unless
-    ///     `adjustAmountDownwards` fires.
-    ///   - adjustAmountDownwards: Mirror of the legacy executor's single retry:
-    ///     when the address balance can't cover `amount + fee`, send
-    ///     `amount − fee` instead (used by the confirmation-forward).
-    /// - Returns: Tuple of (serialized signed tx bytes, exact fee in duffs, 32-byte txHash).
-    static func buildAndSignFromAddress(
-        fromAddress: String,
-        to address: String,
-        amount: UInt64,
-        adjustAmountDownwards: Bool
-    ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: selected-input send — amount=\(amount, privacy: .public) adjust=\(adjustAmountDownwards, privacy: .public)")
-
-        // Resolve the sender address to its P2PKH/P2SH script for byte-exact
-        // UTXO matching (`AccountUtxo` carries scriptPubkey, not an address).
-        // The resolver keeps this file free of DashSync imports.
-        let network: PaymentNetwork
-        do {
-            network = try PaymentNetworkResolver.current()
-        } catch {
-            throw SendError.walletNotReady("unsupported network for selected-input send")
-        }
-        guard let script = ScriptAddressCodec.scriptPubKey(forAddress: fromAddress, network: network) else {
-            throw SendError.invalidInput("cannot derive scriptPubKey for the funding address")
-        }
-
-        // Wait for the address's UTXOs to cover the send (tolerates the async
-        // mempool apply of a just-broadcast top-up). For adjust-downwards sends
-        // any funds at all are workable — the amount shrinks to fit.
-        let minimumTotal = adjustAmountDownwards ? 1 : amount + estimatedSignalFee(inputCount: 1)
-        let utxos = try await waitForAddressUtxos(script: script, minimumTotal: minimumTotal)
-
-        // Deterministic legacy-parity pre-adjust: same size-based estimate as
-        // `chain.fee(forTxSize:)` at the relay-minimum rate, single-shot
-        // adjustment exactly like the legacy executor's one retry. `.all`
-        // drain is deliberately avoided — it would over-send whenever the
-        // address balance exceeds the signal amount.
-        let selected = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-        let feeEstimate = estimatedSignalFee(inputCount: utxos.count)
-        let adjusted = amount + feeEstimate > selected
-        if adjusted, !(adjustAmountDownwards && amount > feeEstimate) {
-            throw SendError.insufficientSelectedFunds(selected: selected, amount: amount, fee: feeEstimate)
-        }
-        let sendAmount = adjusted ? amount - feeEstimate : amount
-
-        let (txData, exactFee): (Data, UInt64) = try await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else {
-                throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
-            }
-            let core = try wallet.coreWallet()
-            let builder = try CoreTransactionBuilder(network: network)
-            try builder.addInputs(
-                wallet: wallet, accountType: .bip44,
-                accountIndex: Self.bip44AccountIndex, utxos: utxos)
-            try builder.addOutput(address: address, amountDuffs: sendAmount)
-            // Required with `addInputs` (funding selection is what normally
-            // routes change) — and the change MUST return to the sender address
-            // so CrowdNode keeps recognizing the account.
-            try builder.setChangeAddress(fromAddress)
-            try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
-            let tx = try builder.finalizeAtomic(
-                wallet: wallet, accountType: .bip44, accountIndex: Self.bip44AccountIndex)
-            // Serialize BEFORE broadcast — broadcasting consumes the handle.
-            let data = try tx.serializedData()
-            let fee = tx.fee
-            let outcome = try core.broadcastTransactionWithOutcome(tx)
-            _ = try Self.requireAccepted(outcome)
-            return (data, fee)
-        }
-
-        let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(exactFee, privacy: .public) adjusted=\(adjusted, privacy: .public) inputs=\(utxos.count, privacy: .public)")
-        return (txData, exactFee, txHash)
-    }
-
-    /// The BIP44 account-0 UTXOs sitting on `script`, unlocked only.
-    /// Byte-exact scriptPubkey compare — no per-UTXO address decoding.
-    @MainActor
-    private static func addressUtxos(script: Data) throws -> [PlatformWalletManager.AccountUtxo] {
-        let host = SwiftDashSDKHost.shared
-        guard let wallet = host.wallet, let manager = host.manager else {
-            throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
-        }
-        // BIP44 account-0 balance descriptor (mirrors the sweep's CoinJoin
-        // descriptor resolution above).
-        guard let bip44 = manager.accountBalances(for: wallet.walletId).first(where: {
-            $0.typeTag == Self.bip44TypeTag
-                && $0.standardTag == Self.bip44StandardTag
-                && $0.index == Self.bip44AccountIndex
-        }) else {
-            return []
-        }
-        return manager.accountUtxos(for: wallet.walletId, balance: bip44)
-            .filter { !$0.isLocked && $0.scriptPubkey == script }
-    }
-
-    /// Poll `addressUtxos` until their sum covers `minimumTotal` or the
-    /// timeout elapses; returns the last snapshot either way (the caller
-    /// decides insufficiency). Sleeps off-main between polls.
-    private static func waitForAddressUtxos(
-        script: Data, minimumTotal: UInt64
-    ) async throws -> [PlatformWalletManager.AccountUtxo] {
-        let deadline = Date().addingTimeInterval(selectedInputUtxoTimeout)
-        var polls = 0
-        while true {
-            polls += 1
-            let utxos = try await MainActor.run { try addressUtxos(script: script) }
-            let total = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-            if total >= minimumTotal || Date() >= deadline {
-                logger.info("💸 TXSEND :: selected-input UTXO wait — polls=\(polls, privacy: .public) utxos=\(utxos.count, privacy: .public) total=\(total, privacy: .public) needed=\(minimumTotal, privacy: .public)")
-                return utxos
-            }
-            try await Task.sleep(nanoseconds: UInt64(selectedInputPollInterval * 1_000_000_000))
-        }
-    }
-
-    /// Size-based fee estimate for a signal send at the relay-minimum
+    /// Size-based fee estimate for a P2PKH send at the relay-minimum
     /// 1 duff/byte: base 10 + 148/input + 34 × 2 outputs (dest + change).
     /// Mirrors the legacy `chain.fee(forTxSize: tx.size + TX_OUTPUT_SIZE)`.
-    private static func estimatedSignalFee(inputCount: Int) -> UInt64 {
+    private static func estimatedFee(inputCount: Int) -> UInt64 {
         UInt64(10 + inputCount * 148 + 2 * 34)
     }
 
@@ -765,7 +617,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// The flat `WalletBalance.sendFeeReserveDuffs` (100_000 duffs) is a large
     /// worst-case over-estimate — a typical send costs ~1–2k duffs, so Max used
     /// to leave ~0.001 DASH behind as change. Here the reserve is the same
-    /// size model as `estimatedSignalFee` (1 duff/byte over the enumerated
+    /// size model as `estimatedFee` (1 duff/byte over the enumerated
     /// inputs) plus a **+50 % safety margin** so it can never *under*-reserve —
     /// an under-estimate would make the Max send fail to build.
     ///
@@ -803,7 +655,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 total + manager.accountUtxos(for: walletId, balance: balance).count
             }
             guard count > 0 else { return nil }
-            let base = estimatedSignalFee(inputCount: count)
+            let base = estimatedFee(inputCount: count)
             return base + base / 2 // +50 % margin — must never under-reserve
         }
 
@@ -982,7 +834,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case invalidInput(String)
         case invalidSwapMemo(String)
         case walletNotReady(String)
-        case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
         case transactionRejected(txid: String, reason: String)
         case transactionStatusUnknown(txid: String, reason: String)
 
@@ -994,8 +845,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 return reason
             case .walletNotReady(let reason):
                 return "Wallet not ready: \(reason)"
-            case .insufficientSelectedFunds(let selected, let amount, let fee):
-                return "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
             case .transactionRejected(_, let reason):
                 return "The transaction wasn't sent. You can try again. \(reason)"
             case .transactionStatusUnknown(_, let reason):

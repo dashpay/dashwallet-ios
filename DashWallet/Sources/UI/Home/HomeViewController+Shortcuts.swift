@@ -64,8 +64,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             showAtmList()
         case .sendToContact:
             showSendToContact()
-        case .crowdNode:
-            showCrowdNode()
         case .coinbase:
             showCoinbase()
         case .uphold:
@@ -316,20 +314,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         let controller = UIHostingController(rootView: ContactsScreen())
         present(controller, animated: true)
         #endif
-    }
-
-    private func showCrowdNode() {
-        if SyncingActivityMonitor.shared.state == .syncDone {
-            let controller = CrowdNodeModelObjcWrapper.getRootVC()
-            let navigationController = BaseNavigationController(rootViewController: controller)
-            present(navigationController, animated: true, completion: nil)
-        } else {
-            let title = NSLocalizedString("The chain is syncing…", comment: "")
-            let message = NSLocalizedString("Wait until the chain is fully synced before using CrowdNode.", comment: "")
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default))
-            present(alert, animated: true)
-        }
     }
 
     private func showCoinbase() {

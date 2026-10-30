@@ -3,12 +3,6 @@
 
 " or " = " oder ";
 
-/* CrowdNode */
-" Privacy Policy " = "Datenschutzerklärung";
-
-/* CrowdNode */
-" Terms of Use " = "AGB";
-
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ für %2$@ DASH eingestellt";
 
@@ -183,9 +177,6 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Ein Gerätecode wird benötigt um Ihr Wallet zu schützen. Stellen Sie in Ihren Einstellungen Ihren Code ein um fortzufahren.";
 
-/* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "Ein Masternode benötigt 1000 Dash als Einlage und jeder Masternode erhält derzeit rund %@ pro Jahr.";
-
 /* DashPay Contacts */
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
@@ -226,17 +217,8 @@
 /* DashSpend */
 "Accept terms and\nconditions" = "AGB akzeptieren";
 
-/* CrowdNode */
-"Accept Terms Of Use" = "AGB akzeptieren";
-
 /* DashPay Contacts */
 "Accepting" = "Accepting";
-
-/* CrowdNode */
-"Accepting terms of use…" = "AGB akzeptieren ...";
-
-/* CrowdNode */
-"Account Recovery" = "Kontowiederherstellung";
 
 /* Masternode status */
 "Active" = "Aktiv";
@@ -333,9 +315,6 @@
 /* Shortcut selection empty state */
 "All shortcuts are already in use" = "All shortcuts are already in use";
 
-/* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Alle Transfers von und zu Crowdnode auf diesem Gerät werden über die unten stehende Dash Adresse abgewickelt.";
-
 /* ZenLedger */
 "Allow" = "Erlauben";
 
@@ -387,9 +366,6 @@
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es zu einem späteren Zeitpunkt erneut.";
 
-/* CrowdNode */
-"and" = "und";
-
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Jeder Nutzername, der die Nummern 2-9 beinhaltet, länger als 20 Zeichen ist oder einen Bindestrich beinhaltet, wird automatisch genehmigt.";
 
@@ -429,9 +405,6 @@
 
 /* Voting */
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "Als Masternode-Besitzer kannst du über die Genehmigung beantragter Nutzernamen abstimmen, bevor die Nutzer diese überhaupt erstellen können.\nDu kannst die Erstellung von gewissen Nutzernamen blockieren, die du für unangemessen hältst,";
-
-/* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Da die meisten nicht genau 1000 Dash zur Hand haben, hat CrowdNode einen Service entwickelt der Einlagen von Mitgliedern zusammenlegt, damit diese die Vorteile, die durch das Besitzen eines Masternodes entstehen, nutzen können.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -513,14 +486,8 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Backup";
 
-/* No comment provided by engineer. */
-"Backup Passphrase" = "Passphrase sichern";
-
 /* A noun. Used as a title. */
 "Backup Wallet" = "Wallet-Backup";
-
-/* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "Sichere deine Passphrase um ein Crowdnode Konto zu erstellen";
 
 /* Back up wallet */
 "Backup your recovery phrase" = "Wiederherstellungsphrase sichern";
@@ -531,14 +498,8 @@
 /* Send Screen: to address */
 "Balance" = "Guthaben";
 
-/* CrowdNode */
+/* Platform address payment detail */
 "Balance after" = "Guthaben danach";
-
-/* CrowdNode */
-"Balance On CrowdNode" = "CrowdNode Guthaben";
-
-/* CrowdNode */
-"Balance: " = "Guthaben:";
 
 /* Balance info sheet */
 "Balances and transfers are not publicly visible" = "Guthaben und Transfers sind nicht öffentlich sichtbar";
@@ -548,9 +509,6 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "Banküberweisung";
-
-/* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "Werde Teil eines Dash Masternodes mit CrowdNode";
 
 /* TimeSkew */
 "behind" = "zurück";
@@ -801,9 +759,6 @@
 /* Dash DEX */
 "Close and notify me" = "Close and notify me";
 
-/* CrowdNode */
-"Close and notify when it’s done" = "Schließen und benachrichtigen, wenn abgeschlossen";
-
 /* No comment provided by engineer. */
 "Close App" = "App schließen";
 
@@ -865,9 +820,6 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "Verbunden";
-
-/* CrowdNode */
-"Connected Dash address" = "Dash Adresse verknüpfen";
 
 /* SPV sync */
 "Connected peers" = "Verbundene Peers";
@@ -1034,17 +986,11 @@
 /* Usernames */
 "Create a username" = "Nutzernamen erstellen.";
 
-/* CrowdNode */
-"Create Account" = "Konto erstellen";
-
 /* Create DashSpend account */
 "Create account" = "Konto erstellen";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Erstelle ein Konto oder logge dich mit einem bereits existierenden ein";
-
-/* CrowdNode */
-"Create an online CrowdNode account" = "Einen neues CrowdNode online Konto erstellen";
 
 /* No comment provided by engineer. */
 "Create invitation" = "Erstelle eine Einladung";
@@ -1054,10 +1000,6 @@
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Create Online Account" = "Online Konto erstellen";
 
 /* Wallets */
 "Create Wallet" = "Create Wallet";
@@ -1074,30 +1016,6 @@
 /* Masternodes */
 "Credits" = "Credits";
 
-/* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
-
-/* CrowdNode */
-"CrowdNode benefits" = "CrowdNode Leistungen";
-
-/* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
-
-/* CrowdNode Portal */
-"CrowdNode Support" = "CrowdNode Support";
-
-/* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "Crowdnode nutzt die Adresse als deine Konto ID. Wenn du die zugehörige Passphrase zu der Adresse verlierst, wirst du auch keinen Zugriff auf dein Guthaben und dein Crowdnode Konto mehr besitzen.";
-
-/* CrowdNode */
-"CrowdNode withdrawal limits" = "CrowdNode Auszahlungslimits";
-
-/* No comment provided by engineer. */
-"CrowdNode · Account" = "CrowdNode · Konto";
-
-/* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
-
 /* No comment provided by engineer. */
 "CSV Export" = "CSV Export";
 
@@ -1106,12 +1024,6 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "CTX Geschenkkarte";
-
-/* Crowdnode */
-"Current APY = %@" = "Derzeitige APY = %@";
-
-/* CrowdNode */
-"Current APY is %@" = "Derzeitige APY ist %@.";
 
 /* Explore Dash: Filters */
 "Current location" = "Aktueller Standort";
@@ -1130,9 +1042,6 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "Dash-Adresse";
-
-/* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "Dash Adresse, die für dein CrowdNode Konto in der Dash Wallet auf diesem Gerät bestimmt ist.";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Dash-Guthaben";
@@ -1219,9 +1128,6 @@
 /* AboutDash */
 "DashSync" = "DashSync";
 
-/* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
-
 /* No comment provided by engineer. */
 "Date" = "Datum";
 
@@ -1256,22 +1162,6 @@
 
 /* Location Service Status */
 "Denied" = "Abgelehnt";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Deposit" = "Einzahlung";
-
-/* CrowdNode Portal */
-"Deposit %@ to start earning" = "%@ einzahlen um Erträge zu erhalten.";
-
-/* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "Zahle mindestens %@ Dash auf deine Dash Wallet ein um die Auszahlung abzuschließen";
-
-/* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "Zahle mindestens %@ ein um Erträge zu erhalten.";
-
-/* CrowdNode */
-"Deposit sent" = "Einzahlung versendet";
 
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "Ableitungspfad";
@@ -1362,9 +1252,6 @@
 /* SPV diagnostics */
 "Dropping…" = "Wird verworfen…";
 
-/* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "Aufgrund der CrowdNode AGB können Nutzer nicht mehr als diesen Betrag abheben:";
-
 /* Geoblock */
 "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Aufgrund von regulatorischen Beschränkungen müssen wir feststellen, dass du dich nicht im Vereinigten Königreich aufhältst. Dein Standort wird lediglich überprüft, wenn du die Coinbase-Funktoin nutzt.";
 
@@ -1373,9 +1260,6 @@
 
 /* Usernames */
 "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Aufgrund des Voting-Prozesses hat das Dash Netzwerk entschieden, den Nutzernamen '%@' an jemand anderen zu vergeben. Bitte versuche es erneut, aber mit einem anderen Nutzernamen.";
-
-/* CrowdNode */
-"e.g. johndoe@mail.com" = "z.B. maxmustermann@mail.com";
 
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "Jede Einladung wird mit diesem Betrag versehen damit der Empfänger schnell einen eigenen Nutzernamen im Dash-Netzwerk beanspruchen kann";
@@ -1386,12 +1270,6 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Früher";
-
-/* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
-
-/* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "Dash staken und passives Einkommen generieren.";
 
 /* SPV diagnostics */
 "Edit birth height" = "Starthöhe bearbeiten";
@@ -1408,7 +1286,7 @@
 /* Input username textfield placeholder */
 "eg: johndoe" = "zB: maxmuster";
 
-/* CrowdNode */
+/* DashSpend */
 "Email" = "E-Mail";
 
 /* DashPay: confirm button of the Enable DashPay sheet */
@@ -1628,12 +1506,6 @@
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
 
-/* CrowdNode */
-"First deposit should be more than %@" = "Die erste Einzahlung sollte größer als %@ sein.";
-
-/* CrowdNode */
-"First minimum deposit" = "Erste Mindesteinlage";
-
 /* DashSpend */
 "Fixed amounts" = "Festgesetzte Beträge";
 
@@ -1679,12 +1551,6 @@
 /* Dash DEX Portal */
 "From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
 
-/* from CrowdNode */
-"from CrowdNode" = "von CrowdNode";
-
-/* from Dash Wallet */
-"from Dash Wallet" = "von Dash Wallet";
-
 /* Swap portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
@@ -1724,9 +1590,6 @@
 /* CoinJoin */
 "Funds moved" = "Mittel verschoben";
 
-/* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Erhalte Erträge für Einzahlungen in Dash Masternodes bereits ab 0.5 Dash.";
-
 /* Wallets */
 "Generate a new recovery phrase" = "Generate a new recovery phrase";
 
@@ -1742,9 +1605,6 @@
 /* Usernames */
 "Get ready to join DashPay" = "Mach dich bereit, DashPay beizutreten";
 
-/* CrowdNode */
-"Get Rewards Instantly" = "Rewards direkt erhalten";
-
 /* No comment provided by engineer. */
 "Get Started" = "Beginnen";
 
@@ -1756,9 +1616,6 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "Erhalte deinen Nutzernamen";
-
-/* CrowdNode */
-"Getting started with CrowdNode" = "Mit CrowdNode loslegen";
 
 /* No comment provided by engineer. */
 "Gift card" = "Gutscheinkarte";
@@ -1780,9 +1637,6 @@
 
 /* DashSpend */
 "Gift card · %@" = "Geschenkkarte · %@";
-
-/* No comment provided by engineer. */
-"Go to CrowdNode website" = "Gehe zur CrowdNode Webseite";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Webseite besuchen";
@@ -1821,9 +1675,6 @@
 /* Masternodes */
 "Height %u" = "Höhe %u";
 
-/* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Hier ist die Dash Adresse, die für dein CrowdNode Konto in der Dash Wallet auf diesem Gerät bestimmt ist.";
-
 /* DashPay Contacts */
 "Hidden" = "Hidden";
 
@@ -1847,9 +1698,6 @@
 
 /* Shortcut banner */
 "Hold any button above to replace it with the function you need" = "Halte eine beliebige Taste oben gedrückt, um sie durch die gewünschte Funktion zu ersetzen";
-
-/* CrowdNode */
-"How CrowdNode staking works" = "Wie CrowdNode Staking funktioniert";
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "Wie bekomme ich Test Dash?";
@@ -1899,9 +1747,6 @@
 /* DashPay FAQ */
 "How private is DashPay?" = "Wie privat ist DashPay?";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "Wie du deine API Dash Adresse bestätigst";
-
 /* No comment provided by engineer. */
 "How to use your gift card" = "Wie man deine Geschenkkarte verwendet";
 
@@ -1916,9 +1761,6 @@
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "Ich akzeptiere, dass ich meine Coins verlieren werden, wenn ich die Wiederherstellungsphrase verlieren sollte";
-
-/* CrowdNode */
-"I agree to CrowdNode" = "Ich stimme CrowdNode zu.";
 
 /* No comment provided by engineer. */
 "I got it" = "I got it";
@@ -1971,12 +1813,6 @@
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Wenn du die Erlaubnis später erteilen willst und dich nicht im Vereinigten Königreich aufhältst, kannst du Coinbase nutzen.";
 
-/* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "Solltest du deine Passphrase verlieren, kannst du dich auf andere Weise verifizieren um den Zugriff auf dein CrowdNode-Guthaben wieder zu erlangen.";
-
-/* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "Wenn du die Passphrase für diese Wallet verlierst und das Gerät verloren geht oder die Dash Wallet deinstalliert wird, wirst du auch den Zugang zu Crowdnode und all dein Guthaben verlieren.";
-
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "Wenn Sie es immer noch entleeren möchten, geben Sie es bitte ein: \"%@\"";
 
@@ -2013,14 +1849,8 @@
 /* Maya */
 "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
-/* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "Im Falle von größeren Auszahlungen führt CrowdNode diese innerhalb von 2 Wochen aus. Dies ist auf deren Sicherheitsprotokoll zurückzuführen und wird in den meisten Fällen viel schneller bearbeitet.";
-
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "Solltest du keinen Zugriff mehr auf deine Passphrase besitzen, verlierst du auch das Recht auf deinen gewählten Nutzernamen.";
-
-/* CrowdNode Portal */
-"In process…" = "In Bearbeitung";
 
 /* Dash DEX */
 "In progress" = "In progress";
@@ -2040,9 +1870,6 @@
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
-
-/* CrowdNode */
-"Information about your online account" = "Informationen über dein Online Konto";
 
 /* Buy Sell Portal */
 "Initializing" = "Initialisierung";
@@ -2080,9 +1907,6 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "Intern verschoben nach";
 
-/* CrowdNode */
-"Introducing Staking" = "Einführung in das Staking";
-
 /* Invalid transaction */
 "Invalid" = "Ungültig";
 
@@ -2094,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "Ungültige Dash Adresse";
-
-/* CrowdNode Online */
-"Invalid Email" = "Ungültige E-Mail";
 
 /* No comment provided by engineer. */
 "Invalid email or password." = "Ungültige E-Mail oder ungültiges Passwort.";
@@ -2164,12 +1985,6 @@
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ gemeldete Probleme";
 
-/* CrowdNode */
-"It can take a minute for your balance to be updated." = "Es kann eine Minute dauern, bis dein Guthaben aktualisiert wird.";
-
-/* CrowdNode */
-"It can take a minute for your funds to arrive." = "Es kann eine Minute dauern, bis du dein Guthaben erhältst.";
-
 /* Dash DEX */
 "It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
@@ -2196,9 +2011,6 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "Trete jetzt bei";
-
-/* CrowdNode */
-"Joining the pool" = "Eintritt in den Pool";
 
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "Diese Coins privat halten. Es fallen Netzwerk- und Privatsphäre-Gebühren an.";
@@ -2255,9 +2067,6 @@
 /* Wallets */
 "Leave the name empty to reset it to the default." = "Leave the name empty to reset it to the default.";
 
-/* CrowdNode */
-"Leaving the pool" = "Pool verlassen";
-
 /* DashPay Contacts: caption under the user's own QR code */
 "Let another Dash Wallet user scan this code to add you as a contact." = "Lass einen anderen Dash-Wallet-Nutzer diesen Code scannen, um dich als Kontakt hinzuzufügen.";
 
@@ -2281,12 +2090,6 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "Coinbase Konto verknüpfen";
-
-/* CrowdNode */
-"Link Existing Account" = "Bestehendes Konto verbinden";
-
-/* CrowdNode */
-"Link Existing CrowdNode Account" = "Bestehendes CrowdNode-Konto verbinden";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Uphold-Konto verknüpfen";
@@ -2418,9 +2221,6 @@
 /* Maya */
 "Log In" = "Log In";
 
-/* CrowdNode WebView */
-"Log in to CrowdNode" = "Bei CrowdNode anmelden";
-
 /* DashSpend */
 "Log in to your account" = "In dein Konto einloggen";
 
@@ -2453,9 +2253,6 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
-
-/* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "Es scheint als würdest du deine Dash Wallet leeren";
 
 /* adjective, security level */
 "Low" = "Niedrig";
@@ -2555,9 +2352,6 @@
 
 /* adjective, security level */
 "Medium" = "Mittel";
-
-/* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "Den Mitgliedern steht es frei, den Pool zu verlassen, und sie können es in den meisten Fällen sofort vollziehen.";
 
 /* Dash DEX */
 "Memo / Tag" = "Memo / Tag";
@@ -2765,9 +2559,6 @@
 /* SPV diagnostics */
 "No unconfirmed transactions to drop." = "Keine unbestätigten Transaktionen zum Verwerfen.";
 
-/* CrowdNode */
-"New CrowdNode Account" = "Neues Crowdnode Konto";
-
 /* Voting */
 "New to old" = "Neu nach alt";
 
@@ -2972,9 +2763,6 @@
 /* Online */
 "Online" = "Online";
 
-/* CrowdNode Portal */
-"Online Account" = "Online Konto";
-
 /* Online Merchant */
 "Online Merchant" = "Online Händler";
 
@@ -3138,12 +2926,8 @@
 /* DashPay intro: feature body */
 "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "Zahlungen mit jedem Kontakt sind an einem Ort gebündelt, mit Namen und Profilen statt roher Transaktionen.";
 
-/* CrowdNode */
 /* Masternodes */
 "Payout address" = "Auszahlungsadresse";
-
-/* CrowdNode */
-"Payout Options" = "Auszahlungsoptionen";
 
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
@@ -3156,15 +2940,6 @@
 
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
-
-/* CrowdNode */
-"per 24 hours" = "pro 24 Stunden";
-
-/* CrowdNode */
-"per hour" = "pro Stunde";
-
-/* CrowdNode */
-"per transaction" = "pro Transaktion";
 
 /* Usernames */
 "Personalise profile" = "Profil personalisieren";
@@ -3249,20 +3024,11 @@
 /* Uphold */
 "Please go to your Uphold account to verify your identity." = "Bitte rufe dein Uphold-Konto auf, um deine Identität zu verifizieren.";
 
-/* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "Bitte beachte, dass diese E-Mail nicht in der Dash Wallet gespeichert wird sondern nur an CrowdNode gesendet wird";
-
 /* Usernames */
 "Please note that the username can NOT be changed once it is registered." = "Bitte beachte, dass der Nutzername nach der Registrierung NICHT mehr geändert werden kann.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Bitte beachte, dass du dies in der Zukunft nicht mehr ändern kannst";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Bitte beachte, dass du dein Guthaben nicht von CrowdNode abheben kannst solange dies niedriger als %@ Dash ist.";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Bitte halte dein Telefon nahe an das NFC-Gerät.";
@@ -3287,9 +3053,6 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "Bitte warten";
-
-/* CrowdNode */
-"Please wait before initiating the next withdrawal" = "Warte bitte, bis du die nächste Auszahlung startest.";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "Bitte warte, bis die Wallet vollständig synchronisiert ist, bevor du deinen Transaktionsverlauf exportierst.";
@@ -3317,9 +3080,6 @@
 
 /* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "Die Preise konnten nicht abgerufen werden.  Es ist möglich, dass die Fiat-Werte nicht korrekt sind.";
-
-/* CrowdNode */
-"Primary Dash address" = "Primäre Dash Adresse";
 
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
@@ -3356,9 +3116,6 @@
 
 /* Balance info sheet section */
 "Pros" = "Vorteile";
-
-/* CrowdNode Portal */
-"Protect your savings" = "Sichere deine Sparanlagen";
 
 /* Usernames */
 "Prove your identity" = "Deine Identität nachweisen";
@@ -3422,9 +3179,6 @@
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
-
-/* CrowdNode */
-"Read Withdrawal Policy" = "Lese die Auszahlungsrichtlinie";
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Schreibgeschützt";
@@ -3538,9 +3292,6 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Direkt in der Dash Wallet erhalten";
 
-/* CrowdNode */
-"Receive your share of rewards daily." = "Erhalte täglich den Anteil deiner Rewards.";
-
 /* Received transaction */
 "Received" = "Empfangen";
 
@@ -3555,9 +3306,6 @@
 
 /* DashPay payment row — sender's display name */
 "Received from %@" = "Erhalten von %@";
-
-/* CrowdNode */
-"Receiving rewards" = "Rewards erhalten";
 
 "Records your masternodes as having voted, without taking a side." = "Erfasst deine Masternodes als abgestimmt, ohne Partei zu ergreifen.";
 
@@ -4408,9 +4156,6 @@
 /* Dash DEX */
 "Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
 
-/* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Sende %@ Dash von deiner primären Dash Adresse, die du derzeit für dein CrowdNode Konto nutzt.";
-
 /* Dash DEX */
 "Send %@ to this address" = "Send %@ to this address";
 
@@ -4422,10 +4167,6 @@
 
 /* No comment provided by engineer. */
 "Send Invitation" = "Einladung senden";
-
-/* Coinbase
-   CrowdNode */
-"Send Report" = "Bericht senden";
 
 /* No comment provided by engineer. */
 "Send to" = "Senden an";
@@ -4508,12 +4249,6 @@
 /* No comment provided by engineer. */
 "Sending to" = "Senden an";
 
-/* CrowdNode */
-"Sending to CrowdNode account" = "Sendet zu deinem CrowdNode Konto";
-
-/* CrowdNode */
-"Sending to Dash Wallet on this device" = "Sendet zu der Dash Wallet auf deinem Gerät";
-
 /* Buy Dash */
 "Sending to:" = "Senden an:";
 
@@ -4568,7 +4303,7 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Wallet erstellen";
 
-/* CrowdNode */
+/* Receive screen */
 "Share" = "Teilen";
 
 /* Receive screen */
@@ -4622,23 +4357,11 @@
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "Masternode-Schlüssel anzeigen";
 
-/* CrowdNode */
-"Show QR" = "QR Code anzeigen";
-
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Wiederherstellungsphrase anzeigen";
 
 /* Alert title */
 "Sign in required" = "Anmeldung erforderlich";
-
-/* CrowdNode */
-"Sign up error" = "Anmeldefehler";
-
-/* CrowdNode */
-"Sign up to CrowdNode" = "Bei CrowdNode registrieren";
-
-/* CrowdNode Portal */
-"Sign up to finish setting up account" = "Anmelden, um die Einrichtung des Kontos abzuschließen";
 
 /* ZenLedger */
 "Simplify your crypto taxes" = "Vereinfache deine Krypto-Steuern";
@@ -4701,9 +4424,6 @@
 
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
-
-/* No comment provided by engineer. */
-"Staking" = "Staking";
 
 /* Usernames */
 "Starts after you add funds" = "Beginnt, nachdem du Mittel hinzugefügt hast";
@@ -4807,9 +4527,6 @@
 /* Explore Dash */
 "Synced" = "Synced";
 
-/* CrowdNode Portal */
-"Synced with current Dash Wallet" = "Mit aktueller Dash Wallet synchronisiert";
-
 /* No comment provided by engineer. */
 "Syncing" = "Synchronisiere";
 
@@ -4898,9 +4615,6 @@
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "Das Dash-Netzwerk muss gewisse Nutzernamen bestätigen, bevor diese erstellt werden";
-
-/* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Das Dash Netzwerk wird durch eine Reihe von Masternodes gesteuert, die eine wesentliche Rolle bei der Erleichterung von Zahlungen spielen.";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Die Dash wurden deinem Coinbase Konto erfolgreich  gutgeschrieben. Aber es entstand ein Problem bei dem Transfer auf die Dash Wallet dieses Gerätes.";
@@ -4997,9 +4711,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
-
-/* CrowdNode */
-"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
 /* Send sheet source/destination mismatch */
 "This address can't be paid from your %@ balance" = "Diese Adresse kann nicht aus deinem %@-Guthaben bezahlt werden";
@@ -5189,17 +4900,11 @@
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "Die PIN muss bei jedem Verwenden der App zum Entsperren eingegeben werden.";
 
-/* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "Dieser QR Code enthält die Zahlungsaufforderung für %@.";
-
 /* Dash DEX / dex_error_quote_expired */
 "This quote expired. Please go back and try again." = "This quote expired. Please go back and try again.";
 
 /* Wallets */
 "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Dies ist die aktuelle jährliche prozentuale Rendite eines ganzen Masternodes abzüglich 15% CrowdNode-Gebühren. Es handelt sich nicht um eine garantierte Rendite, die je nach Größe des CrowdNode Pools und Höhe des Dash Preises nach oben oder unten gehen kann.";
 
 "This still counts as your masternodes having voted in this contest." = "Dies zählt weiterhin als Abstimmung deiner Masternodes in diesem Wettbewerb.";
 
@@ -5245,12 +4950,6 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "zur Dash Wallet auf diesem Gerät";
 
-/* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "Um mit dem Staking zu beginnen, erstelle ein Konto bei CrowdNode oder verbinde ein bereits bestehendes.";
-
-/* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "zu der vorgesehenen Dash Adresse für dein CrowdNode Konto in der Dash Wallet dieses Gerätes";
-
 /* No comment provided by engineer. */
 "Today" = "Heute";
 
@@ -5271,9 +4970,6 @@
 
 /* DashPay Contacts */
 "Transaction" = "Transaction";
-
-/* CrowdNode */
-"Transaction History" = "Transaktionshistorie";
 
 /* Balance info sheet */
 "Transaction history isn't available" = "Transaktionsverlauf ist nicht verfügbar";
@@ -5297,9 +4993,6 @@
 
 /* Coinbase */
 "Transfer DASH" = "Transfer DASH";
-
-/* CrowdNode */
-"Transfer Error" = "Übertragungsfehler";
 
 /* Coinbase */
 "Transfer Failed" = "Übertragung fehlgeschlagen";
@@ -5555,9 +5248,6 @@
 /* DashPay Invitations */
 "Valid invitation" = "Gültige Einladung";
 
-/* CrowdNode Portal */
-"Validating address…" = "Adresse validieren...";
-
 /* No comment provided by engineer. */
 "Validating username failed" = "Validierung des Benutzernamens fehlgeschlagen";
 
@@ -5566,9 +5256,6 @@
 
 /* Maya */
 "Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
-
-/* CrowdNode Portal */
-"Verification Required" = "Verifizierung notwendig";
 
 /* Usernames */
 "Verified during registration" = "Bei der Registrierung überprüft";
@@ -5581,9 +5268,6 @@
 
 /* No comment provided by engineer. */
 "Verify" = "Verifizieren";
-
-/* CrowdNode */
-"Verify your API Dash address" = "API Dash Adresse verifizieren";
 
 /* No comment provided by engineer. */
 "Verify your recovery phrase to set a new PIN." = "Verifiziere deine Wiederherstellungs-Wortfolge, um eine neue PIN festzulegen.";
@@ -5599,9 +5283,6 @@
 
 /* adjective, security level */
 "Very High" = "Sehr hoch";
-
-/* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Es werden nun kleine Dash Beträge nach und von Crowdnode gesendet um dich als Besitzer deiner Adresse zu verifizieren.";
 
 /* No comment provided by engineer. */
 "View All" = "Alle anzeigen";
@@ -5688,14 +5369,8 @@
 
 "Voting on “%@” has already closed. Refresh to see the result." = "Die Abstimmung über „%@“ ist bereits geschlossen. Aktualisiere, um das Ergebnis zu sehen.";
 
-/* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
-
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Warte bis die Blockchain komplett synchronisiert ist, damit wir deine Transaktionshistorie überprüfen können.";
-
-/* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "Warte bis die Chain voll synchronisiert ist, damit du eine Transaktionshistorie begutachten kannst. Besuche die Crowdnode Webseite um dich anzumelden oder zu registrieren.";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Warte, bis die Wallet synchronisiert ist, um die Transaktion abzuschließen.";
@@ -5756,23 +5431,11 @@
 /* Dash DEX / dex_error_validation */
 "We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
-/* CrowdNode */
-"We couldn’t create your CrowdNode account." = "Wir konnten dein CrowdNode Konto nicht erstellen.";
-
-/* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "Wir konnten keine Einzahlung auf dein CrowdNode Konto durchführen.";
-
-/* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "Wir konnten keine Auszahlung von deinem CrowdNode Konto durchführen.";
-
 /* Explore */
 "We have two types of merchants" = "Wir haben 2 Arten von Händlern";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "Wir haben ein Upgrade durchgeführt";
-
-/* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "Wir werden diese Transaktion automatisch erkennen und den gleichen Betrag deinem CrowdNode Konto gutschreiben. Danach wirst du Einzahlungen und Auszahlung in deine Dash Wallet auf diesem Gerät vornehmen können.";
 
 /* Website */
 "Website" = "Webseite";
@@ -5827,11 +5490,8 @@
 /* Usernames */
 "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "Solange die Abstimmung läuft, hast du keinen Nutzernamen. Registriere jetzt einen nicht umkämpften Nutzernamen — er bleibt dir erhalten, und wenn die Abstimmung dir „%@“ zuspricht, bist du unter beiden Nutzernamen erreichbar.";
 
-/* Crowdnode */
+/* Grouped Transactions */
 "Why do I see all these transactions?" = "Warum sehe ich all diese Transaktionen?";
-
-/* CrowdNode */
-"Why do you need an online account?" = "Warum benötigst du ein online Konto?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "Warum sollte ich keinen Screenshot machen?";
@@ -5851,18 +5511,11 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "mit der Dash-Blockchain";
 
-/* CrowdNode
-   CrowdNode Portal */
+/* Evonode withdrawal */
 "Withdraw" = "Auszahlen";
 
-/* CrowdNode */
+/* DashConnect */
 "Withdraw funds" = "Withdraw funds";
-
-/* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "Abheben ohne Grenzen mit einem Online Konto auf der CrowdNode Website.";
-
-/* CrowdNode */
-"Withdrawal requested" = "Auszahlen beantragt";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "Zahlt das gesamte Guthaben aus";
@@ -5929,9 +5582,6 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "Du kannst ändern, wann und wie die Auszahlungen deiner Rewards vorgenommen werden.";
-
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "Du kannst DashPay weiterhin für Zahlungen nutzen, aber es ist nicht möglich dein Profil zu updaten oder weitere Kontakt hinzuzufügen, sofern du dein Credit-Guthaben nicht aufgeladen hast";
 
@@ -5940,9 +5590,6 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "Du kannst mit Dash an der Kasse bezahlen.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "Du kannst detaillierte Informationen über deine Einzahlungen, Auszahlungen und Erträge sehen.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "Damit andere Nutzer es im Dash Network sehen können, kannst du jede URL eintragen, die öffentlich im Internet zugänglich ist.";
@@ -5974,9 +5621,6 @@
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
 
-/* CrowdNode */
-"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
-
 /* Voting */
 "You have already voted for this username %ld times. You can only cast one more vote for this username." = "Du hast für diesen Nutzernamen %ld Mal abgestimmt. Du kannst nur noch ein Vote für diesen Nutzernamen abgeben.";
 
@@ -5992,23 +5636,14 @@
 /* Voting */
 "You have entered an invalid key" = "Du hast einen ungültigen Schlüssel eingegeben.";
 
-/* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "Du hast nicht genügend Guthaben, um fortzufahren.";
-
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
-
-/* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "Du musst die Passphrase in deiner Dash Wallet sichern";
 
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "Du benötigst mindestens %@ Dash um eine Einladung zu erstellen";
-
-/* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "Du benötigst mindestens %@ in deiner Dash Wallet.";
 
 /* Usernames */
 "You need to have more %@ Dash to create this username" = "Du benötigst mehr als %@ Dash, um diesen Nutzernamen erstellen zu können";
@@ -6018,12 +5653,6 @@
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "Du musst dich bei DashSpend anmelden, um eine Geschenkkarte kaufen zu können.";
-
-/* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "Du musst 5 Minuten warten, bevor du die nächste Auszahlung beginnen kannst.";
-
-/* CrowdNode */
-"You only need %@ to join the pool." = "Du brauchst lediglich %@ um dem Pool beizutreten.";
 
 /* DashSpend confirmation */
 "You pay" = "Du bezahlst";
@@ -6039,12 +5668,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "Du hast die Kontaktanfrage an %@ gesendet";
-
-/* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "Du solltest einen positiven Saldo in deiner Dash Wallet haben";
-
-/* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "Du solltest mindestens %@ Dash besitzen um mit der CrowdNode Verifizierung fortzufahren.";
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
@@ -6064,9 +5687,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Du erhältst %@ Dash auf deiner Dash Wallet auf diesem Gerät. Bitte beachte, dass es bis zu 2 bis 3 Minuten dauern kann, bis eine Übertragung abgeschlossen ist.";
 
-/* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "Du erhältst automatisch Teilzahlungen, die standardmäßig reinvestiert werden. Du kannst jedoch auch automatische Entnahme einrichten, um wiederkehrende Auszahlungen zu erhalten.";
-
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
 
@@ -6083,21 +5703,6 @@
 
 /* No comment provided by engineer. */
 "Your credit balance is low" = "Dein Credit-Guthaben ist niedrig";
-
-/* CrowdNode */
-"Your CrowdNode account is creating…" = "Dein CrowdNode Konto wird erstellt...";
-
-/* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "Dein CrowdNode Konto ist fertig und zur Nutzung bereit!";
-
-/* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "Dein CrowdNode Konto wurde mit diesen Transaktionen erstellt.";
-
-/* CrowdNode */
-"Your CrowdNode address has been confirmed." = "Deine CrowdNode Adresse wurde bestätigt.";
-
-/* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "Deine CrowdNode Adresse wurde validiert, aber Verifizierung ist notwendig.";
 
 /* No comment provided by engineer. */
 "Your DASH address" = "Your DASH address";
@@ -6122,9 +5727,6 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Dein DashPay-Benutzername kann jetzt verwendet werden";
-
-/* CrowdNode */
-"Your deposit to CrowdNode is received." = "Deine Einzahlung auf CrowdNode wurde erhalten.";
 
 /* TimeSkew */
 "Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Deine Gerätezeit ist %1$@ zu %2$d Sekunden.u kannst CoinJoin aufgrund dieses Unterschiedes nicht nutzen.\n\nDie Zeiteinstellungen auf deinem Gerät muss auf „Zeit automatisch einstellen“ geändert werden, um CoinJoin nutzen zu können.";
@@ -6191,9 +5793,6 @@
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
-
-/* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "Deine primäre Dash Adresse, die du derzeit für dein CrowdNode Konto nutzt";
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Dein privates Guthaben. Beträge und Adressen sind on-chain verschlüsselt, sodass deine Bestände und dein Verlauf vertraulich bleiben.";

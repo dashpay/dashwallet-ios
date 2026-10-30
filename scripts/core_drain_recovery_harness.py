@@ -409,10 +409,9 @@ enum SwiftDashSDKWalletDeletionError: Error { case managerUnavailable }
 }
 final class UnrelatedPerWalletState {
     static let shared = UnrelatedPerWalletState()
-    func clearPerWalletKeys(forWalletIdHex: String) {}
     func clearForWallet(walletIdHex: String) {}
 }
-typealias CrowdNodeDefaults = UnrelatedPerWalletState
+enum RetiredCrowdNodeDefaults { static func removePerWalletKeys(forWalletIdHex: String) {} }
 typealias CoinJoinWithdrawalStore = UnrelatedPerWalletState
 typealias ShieldedWithdrawalStore = UnrelatedPerWalletState
 typealias AssetLockProbeStore = UnrelatedPerWalletState

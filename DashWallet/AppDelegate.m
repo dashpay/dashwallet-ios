@@ -140,7 +140,6 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
-    [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)
@@ -226,6 +225,11 @@ NS_ASSUME_NONNULL_BEGIN
     // Badge reset and delivered-notification clearing live in
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
     // UIApplicationDidBecomeActiveNotification itself.
+
+    // Retired CrowdNode data: retried on every activation until done. It
+    // touches only UserDefaults and WebKit storage, so it is safe while the
+    // migration runs; once done it costs two flag reads.
+    [DWRetiredCrowdNodeDefaults removeAllOnce];
 
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging

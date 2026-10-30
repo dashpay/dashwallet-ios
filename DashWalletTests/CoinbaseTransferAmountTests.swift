@@ -12,51 +12,6 @@ import XCTest
 @MainActor
 final class CoinbaseTransferAmountTests: XCTestCase {
 
-    func testNoCrowdNodeBalanceDoesNotRequireWarning() {
-        XCTAssertFalse(
-            TransferAmountViewModel.requiresLeftoverWarning(
-                crowdNodeBalance: 0,
-                transferAmount: UInt64.max,
-                minimumLeftover: 30_000,
-                maxSendable: 0))
-    }
-
-    func testAmountExactlyAtLeftoverThresholdDoesNotRequireWarning() {
-        XCTAssertFalse(
-            TransferAmountViewModel.requiresLeftoverWarning(
-                crowdNodeBalance: 1,
-                transferAmount: 70_000,
-                minimumLeftover: 30_000,
-                maxSendable: 100_000))
-    }
-
-    func testAmountAboveLeftoverThresholdRequiresWarning() {
-        XCTAssertTrue(
-            TransferAmountViewModel.requiresLeftoverWarning(
-                crowdNodeBalance: 1,
-                transferAmount: 70_001,
-                minimumLeftover: 30_000,
-                maxSendable: 100_000))
-    }
-
-    func testMaxSendableBelowMinimumLeftoverRequiresWarning() {
-        XCTAssertTrue(
-            TransferAmountViewModel.requiresLeftoverWarning(
-                crowdNodeBalance: 1,
-                transferAmount: 0,
-                minimumLeftover: 30_000,
-                maxSendable: 29_999))
-    }
-
-    func testLargeTransferAmountDoesNotOverflow() {
-        XCTAssertTrue(
-            TransferAmountViewModel.requiresLeftoverWarning(
-                crowdNodeBalance: 1,
-                transferAmount: UInt64.max,
-                minimumLeftover: 1,
-                maxSendable: UInt64.max))
-    }
-
     func testSyntheticSDKBalanceRefreshesDisplayedBalanceAndValidation() async {
         let walletState = SwiftDashSDKWalletState.shared
         walletState.clearAllState()

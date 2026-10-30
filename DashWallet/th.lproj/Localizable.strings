@@ -3,12 +3,6 @@
 
 " or " = " หรือ ";
 
-/* CrowdNode */
-" Privacy Policy " = "นโยบายความเป็นส่วนตัว";
-
-/* CrowdNode */
-" Terms of Use " = "ข้อกำหนดการใช้งาน";
-
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "ประกาศขาย %1$@ ในราคา %2$@ DASH แล้ว";
 
@@ -183,9 +177,6 @@
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "รหัสผ่านอุปกรณ์นั้นจำเป็นในการปกป้องกระเป๋าสตางค์ของคุณ ไปที่การตั้งค่าและเปิดรหัสผ่านเพื่อดำเนินการต่อ";
 
-/* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "Masternode ต้องการ 1000 Dash เป็นหลักประกัน และแต่ละ Masternode จะได้รับรางวัลโดยประมาณ %@ ต่อปี";
-
 /* DashPay Contacts */
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
@@ -226,17 +217,8 @@
 /* DashSpend */
 "Accept terms and\nconditions" = "Accept terms and\nconditions";
 
-/* CrowdNode */
-"Accept Terms Of Use" = "ยอมรับข้อกำหนดการใช้งาน";
-
 /* DashPay Contacts */
 "Accepting" = "Accepting";
-
-/* CrowdNode */
-"Accepting terms of use…" = "ยอมรับข้อกำหนดการใช้งาน ...";
-
-/* CrowdNode */
-"Account Recovery" = "การกู้คืนบัญชี";
 
 /* Masternode status */
 "Active" = "ใช้งานอยู่";
@@ -333,9 +315,6 @@
 /* Shortcut selection empty state */
 "All shortcuts are already in use" = "All shortcuts are already in use";
 
-/* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "การถ่ายโอนทั้งหมดไปและกลับจาก CrowdNode จากอุปกรณ์นี้จะดำเนินการด้วยที่อยู่ DASH ด้านล่างจากอุปกรณ์นี้";
-
 /* ZenLedger */
 "Allow" = "อนุญาติ";
 
@@ -387,9 +366,6 @@
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "An unknown error occurred. Please try again later.";
 
-/* CrowdNode */
-"and" = "และ";
-
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
 
@@ -429,9 +405,6 @@
 
 /* Voting */
 "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.\nYou can block the creation of the usernames that you feel inappropriate.";
-
-/* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "เนื่องจากคนส่วนใหญ่ไม่มี 1000 Dash อยู่ในมืออย่างแน่นอน Crowdnode จึงได้ให้บริการโดยรวบรวมเงินฝากจากสมาชิก พวกเขาสามารถบรรลุผลประโยชน์ของการเป็นเจ้าของ Masternode";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -513,14 +486,8 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "การสำรองข้อมูล";
 
-/* No comment provided by engineer. */
-"Backup Passphrase" = "สำรองวลีรหัสผ่าน";
-
 /* A noun. Used as a title. */
 "Backup Wallet" = "Wallet สำรอง";
-
-/* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "สำรองข้อมูลรหัสผ่านของคุณเพื่อสร้างบัญชี CrowdNode";
 
 /* Back up wallet */
 "Backup your recovery phrase" = "สำรองวลีการกู้คืนของคุณ";
@@ -531,14 +498,8 @@
 /* Send Screen: to address */
 "Balance" = "ยอดคงเหลือ";
 
-/* CrowdNode */
+/* Platform address payment detail */
 "Balance after" = "ยอดคงเหลือหลังจากนี้";
-
-/* CrowdNode */
-"Balance On CrowdNode" = "ยอดคงเหลือบน CrowdNode";
-
-/* CrowdNode */
-"Balance: " = "ยอดคงเหลือ: ";
 
 /* Balance info sheet */
 "Balances and transfers are not publicly visible" = "ยอดคงเหลือและการโอนไม่ปรากฏต่อสาธารณะ";
@@ -548,9 +509,6 @@
 
 /* Coinbase/Payment Methods */
 "Bank Wire" = "การโอนเงินผ่านทางธนาคาร ";
-
-/* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "เป็นส่วนหนึ่งของ Dash มาสเตอร์โหนด กับ CrowdNode";
 
 /* TimeSkew */
 "behind" = "behind";
@@ -801,9 +759,6 @@
 /* Dash DEX */
 "Close and notify me" = "Close and notify me";
 
-/* CrowdNode */
-"Close and notify when it’s done" = "ปิดและแจ้งเมื่อเสร็จแล้ว";
-
 /* No comment provided by engineer. */
 "Close App" = "ปิดแอพพลิเคชั่น";
 
@@ -865,9 +820,6 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Connected" = "เชื่อมต่อแล้ว";
-
-/* CrowdNode */
-"Connected Dash address" = "ที่อยู่ Dash ที่เชื่อมต่อ";
 
 /* SPV sync */
 "Connected peers" = "พีร์ที่เชื่อมต่ออยู่";
@@ -1034,17 +986,11 @@
 /* Usernames */
 "Create a username" = "กำหนดชื่อผู้ใช้";
 
-/* CrowdNode */
-"Create Account" = "สร้างบัญชี";
-
 /* Create DashSpend account */
 "Create account" = "Create account";
 
 /* DashSpend account title */
 "Create an account or log into an existing one" = "Create an account or log into an existing one";
-
-/* CrowdNode */
-"Create an online CrowdNode account" = "สร้างบัญชี CrowdNode ออนไลน์";
 
 /* No comment provided by engineer. */
 "Create invitation" = "สร้างคำเชิญ";
@@ -1054,10 +1000,6 @@
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Create Online Account" = "สร้างบัญชีออนไลน์";
 
 /* Wallets */
 "Create Wallet" = "Create Wallet";
@@ -1074,30 +1016,6 @@
 /* Masternodes */
 "Credits" = "เครดิต";
 
-/* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
-
-/* CrowdNode */
-"CrowdNode benefits" = "ผลประโยชน์ของ CrowdNode";
-
-/* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
-
-/* CrowdNode Portal */
-"CrowdNode Support" = "ฝ่ายสนับสนุน CrowdNode ";
-
-/* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "CrowdNode ใช้ที่อยู่นี้เป็นรหัสบัญชีของคุณ คุณจะสูญเสียการเข้าถึงเงินทุนของคุณภายในกระเป๋าเงินนี้และบัญชี CrowdNode ของคุณหากคุณสูญเสียวลีรหัสผ่านที่เกี่ยวข้องกับที่อยู่นี้";
-
-/* CrowdNode */
-"CrowdNode withdrawal limits" = "ข้อจำกัดการถอน CrowdNode ";
-
-/* No comment provided by engineer. */
-"CrowdNode · Account" = "CrowdNode · Account";
-
-/* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "CrowdNode ➝ DashWallet";
-
 /* No comment provided by engineer. */
 "CSV Export" = "ส่งออก CSV ";
 
@@ -1106,12 +1024,6 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "CTX gift cards";
-
-/* Crowdnode */
-"Current APY = %@" = "APY ปัจจุบัน = %@";
-
-/* CrowdNode */
-"Current APY is %@" = "APY ปัจจุบัน คือ %@";
 
 /* Explore Dash: Filters */
 "Current location" = "สถานที่ปัจจุบัน";
@@ -1130,9 +1042,6 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "ที่อยู่ Dash";
-
-/* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "ที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* No comment provided by engineer. */
 "Dash balance" = "ยอดคงเหลือ Dash";
@@ -1219,9 +1128,6 @@
 /* AboutDash */
 "DashSync" = "DashSync";
 
-/* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
-
 /* No comment provided by engineer. */
 "Date" = "วันที่";
 
@@ -1256,22 +1162,6 @@
 
 /* Location Service Status */
 "Denied" = "ปฏิเสธแล้ว";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Deposit" = "เงินฝาก";
-
-/* CrowdNode Portal */
-"Deposit %@ to start earning" = "ฝาก %@ เพื่อเริ่มรับรายได้";
-
-/* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "ฝากอย่างน้อย %@ Dash บนกระเป๋า Dash ของคุณเพื่อการถอน";
-
-/* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "ฝากอย่างน้อย %@ เพื่อเริ่มรับรายได้";
-
-/* CrowdNode */
-"Deposit sent" = "ส่งเงินฝากแล้ว";
 
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "เส้นทางการอนุพันธ์";
@@ -1362,9 +1252,6 @@
 /* SPV diagnostics */
 "Dropping…" = "กำลังทิ้ง…";
 
-/* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "เนื่องจากเงื่อนไขการใช้บริการของ CrowdNode สามารถถอนได้ไม่เกิน:";
-
 /* Geoblock */
 "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.";
 
@@ -1373,9 +1260,6 @@
 
 /* Usernames */
 "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username." = "Due to the voting process, the Dash Network has decided to assign the username '%@' to someone else. Please try again by requesting another username.";
-
-/* CrowdNode */
-"e.g. johndoe@mail.com" = "ตัวอย่างเช่น johndoe@mail.com";
 
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "คำเชิญแต่ละครั้งจะได้รับเงินทุนด้วยจำนวนเงินนี้เพื่อให้ผู้รับสามารถสร้างชื่อผู้ใช้ของพวกเขาได้อย่างรวดเร็วบนเครือข่าย Dash";
@@ -1386,12 +1270,6 @@
 
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "ก่อน";
-
-/* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
-
-/* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = " Stake Dash ได้อย่างง่ายดายและได้รับรายได้แบบ passive income ด้วยการคลิกง่ายๆ";
 
 /* SPV diagnostics */
 "Edit birth height" = "แก้ไขความสูงเริ่มต้น";
@@ -1408,7 +1286,7 @@
 /* Input username textfield placeholder */
 "eg: johndoe" = "ตัวอย่างเช่น: johndoe";
 
-/* CrowdNode */
+/* DashSpend */
 "Email" = "อีเมล";
 
 /* DashPay: confirm button of the Enable DashPay sheet */
@@ -1628,12 +1506,6 @@
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
 
-/* CrowdNode */
-"First deposit should be more than %@" = "เงินฝากครั้งแรกควรมากกว่า %@";
-
-/* CrowdNode */
-"First minimum deposit" = "ฝากขั้นต่ำครั้งแรก";
-
 /* DashSpend */
 "Fixed amounts" = "Fixed amounts";
 
@@ -1679,12 +1551,6 @@
 /* Dash DEX Portal */
 "From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
 
-/* from CrowdNode */
-"from CrowdNode" = "จาก CrowdNode";
-
-/* from Dash Wallet */
-"from Dash Wallet" = "จากกระเป๋าเงิน Dash ";
-
 /* Swap portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
@@ -1724,9 +1590,6 @@
 /* CoinJoin */
 "Funds moved" = "ย้ายเงินแล้ว";
 
-/* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "รับรางวัลจากเงินฝากใน Dash มาสเตอร์โหนดที่มีเพียง 0.5 Dash";
-
 /* Wallets */
 "Generate a new recovery phrase" = "Generate a new recovery phrase";
 
@@ -1742,9 +1605,6 @@
 /* Usernames */
 "Get ready to join DashPay" = "เตรียมพร้อมเข้าร่วม DashPay";
 
-/* CrowdNode */
-"Get Rewards Instantly" = "รับรางวัลทันที";
-
 /* No comment provided by engineer. */
 "Get Started" = "เริ่มต้น";
 
@@ -1756,9 +1616,6 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "รับชื่อผู้ใช้ของคุณ";
-
-/* CrowdNode */
-"Getting started with CrowdNode" = "เริ่มต้นใช้งาน CrowdNode";
 
 /* No comment provided by engineer. */
 "Gift card" = "บัตรของขวัญ";
@@ -1780,9 +1637,6 @@
 
 /* DashSpend */
 "Gift card · %@" = "Gift card · %@";
-
-/* No comment provided by engineer. */
-"Go to CrowdNode website" = "ไปที่เว็บไซต์ CrowdNode";
 
 /* No comment provided by engineer. */
 "Go to Website" = "ไปยังเว็บไซต์";
@@ -1821,9 +1675,6 @@
 /* Masternodes */
 "Height %u" = "ความสูง %u";
 
-/* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "นี่คือที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
-
 /* DashPay Contacts */
 "Hidden" = "Hidden";
 
@@ -1847,9 +1698,6 @@
 
 /* Shortcut banner */
 "Hold any button above to replace it with the function you need" = "Hold any button above to replace it with the function you need";
-
-/* CrowdNode */
-"How CrowdNode staking works" = "การ staking CrowdNode ทำงานอย่างไร";
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "ฉันจะรับ Test Dash ได้อย่างไร?";
@@ -1899,9 +1747,6 @@
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay เป็นส่วนตัวแค่ไหน";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "วิธียืนยันที่อยู่ API Dash ของคุณ";
-
 /* No comment provided by engineer. */
 "How to use your gift card" = "How to use your gift card";
 
@@ -1916,9 +1761,6 @@
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "ฉันยอมรับที่ฉันจะสูญเสียเหรียญของฉันถ้าฉันไม่มีวลีกู้คืน";
-
-/* CrowdNode */
-"I agree to CrowdNode" = "ฉันเห็นด้วยกับ CrowdNode";
 
 /* No comment provided by engineer. */
 "I got it" = "I got it";
@@ -1971,12 +1813,6 @@
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase";
 
-/* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "หากคุณสูญเสียวลีรหัสผ่านคุณสามารถยืยยันตัวตนด้วยวิธีอื่นเพื่อให้สามารถเข้าถึงเงินทุน CrowdNode ของคุณได้";
-
-/* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "หากคุณสูญเสียวลีรหัสผ่านสำหรับกระเป๋าเงินนี้และสูญเสียอุปกรณ์นี้หรือถอนการติดตั้งกระเป๋าเงิน Dash คุณจะสูญเสียการเข้าถึงเงินทุนของคุณใน CrowdNode และเงินทุนภายในกระเป๋าเงินนี้";
-
 /* No comment provided by engineer. */
 "If you still would like to wipe it please input: \"%@\"" = "ถ้าคุณยังต้องการกำจัด กรุณาใส่: \"%@\"";
 
@@ -2013,14 +1849,8 @@
 /* Maya */
 "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
-/* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "ในกรณีที่มีการถอนเงินจำนวนมาก CrowdNode จะจ่ายเงินถอนออกภายในสองสัปดาห์ นี่เป็นเพราะโปรโตคอลความปลอดภัยและส่วนใหญ่มักจะได้รับการจัดการเร็วกว่ามาก";
-
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username." = "ในกรณีที่คุณทำรหัสผ่านหาย คุณจะสูญเสียสิทธิ์ในการใช้ชื่อผู้ใช้ที่คุณร้องขอ";
-
-/* CrowdNode Portal */
-"In process…" = "อยู่ในระหว่างการดำเนินงาน…";
 
 /* Dash DEX */
 "In progress" = "In progress";
@@ -2040,9 +1870,6 @@
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
-
-/* CrowdNode */
-"Information about your online account" = "ข้อมูลเกี่ยวกับบัญชีออนไลน์ของคุณ";
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
@@ -2080,9 +1907,6 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "ย้ายไปภายในแล้ว";
 
-/* CrowdNode */
-"Introducing Staking" = "แนะนำ Staking";
-
 /* Invalid transaction */
 "Invalid" = "ไม่ถูกต้อง";
 
@@ -2094,9 +1918,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "ที่อยู่ Dash ไม่ถูกต้อง";
-
-/* CrowdNode Online */
-"Invalid Email" = "อีเมลไม่ถูกต้อง";
 
 /* No comment provided by engineer. */
 "Invalid email or password." = "Invalid email or password.";
@@ -2164,12 +1985,6 @@
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
 
-/* CrowdNode */
-"It can take a minute for your balance to be updated." = "อาจใช้เวลาสักครู่เพื่ออัปเดตยอดคงเหลือของคุณ";
-
-/* CrowdNode */
-"It can take a minute for your funds to arrive." = "อาจใช้เวลาสักครู่เพื่อให้เงินทุนของคุณมาถึง";
-
 /* Dash DEX */
 "It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
@@ -2196,9 +2011,6 @@
 
 /* No comment provided by engineer. */
 "Join Now" = "เข้าร่วมตอนนี้";
-
-/* CrowdNode */
-"Joining the pool" = "เข้าร่วม pool";
 
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "เก็บเหรียญเหล่านี้ไว้เป็นส่วนตัว มีค่าธรรมเนียมเครือข่ายและค่าธรรมเนียมความเป็นส่วนตัว";
@@ -2255,9 +2067,6 @@
 /* Wallets */
 "Leave the name empty to reset it to the default." = "Leave the name empty to reset it to the default.";
 
-/* CrowdNode */
-"Leaving the pool" = "ออกจาก pool";
-
 /* DashPay Contacts: caption under the user's own QR code */
 "Let another Dash Wallet user scan this code to add you as a contact." = "ให้ผู้ใช้ Dash Wallet คนอื่นสแกนโค้ดนี้เพื่อเพิ่มคุณเป็นผู้ติดต่อ";
 
@@ -2281,12 +2090,6 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "เชื่อมต่อบัญชี Coinbase ของคุณ ";
-
-/* CrowdNode */
-"Link Existing Account" = "ลิงก์บัญชีที่มีอยู่";
-
-/* CrowdNode */
-"Link Existing CrowdNode Account" = "ลิงก์บัญชี CrowdNode ที่มีอยู่";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "เชื่อมบัญชี Uphold";
@@ -2418,9 +2221,6 @@
 /* Maya */
 "Log In" = "Log In";
 
-/* CrowdNode WebView */
-"Log in to CrowdNode" = "ลงชื่อเข้าใช้ CrowdNode";
-
 /* DashSpend */
 "Log in to your account" = "Log in to your account";
 
@@ -2453,9 +2253,6 @@
 
 /* Maya */
 "Long press to paste" = "Long press to paste";
-
-/* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "ดูเหมือนว่าคุณกำลังล้างกระเป๋าเงินของคุณ";
 
 /* adjective, security level */
 "Low" = "ต่ำ";
@@ -2555,9 +2352,6 @@
 
 /* adjective, security level */
 "Medium" = "ปานกลาง";
-
-/* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "สมาชิกมีอิสระที่จะออกจาก pool และมักจะออกไปทันที";
 
 /* Dash DEX */
 "Memo / Tag" = "Memo / Tag";
@@ -2765,9 +2559,6 @@
 /* SPV diagnostics */
 "No unconfirmed transactions to drop." = "ไม่มีธุรกรรมที่ยังไม่ยืนยันให้ทิ้ง";
 
-/* CrowdNode */
-"New CrowdNode Account" = "บัญชี CrowdNode ใหม่";
-
 /* Voting */
 "New to old" = "ใหม่ไปเก่า";
 
@@ -2972,9 +2763,6 @@
 /* Online */
 "Online" = "ออนไลน์";
 
-/* CrowdNode Portal */
-"Online Account" = "บัญชีออนไลน์";
-
 /* Online Merchant */
 "Online Merchant" = "ร้านค้าออนไลน์";
 
@@ -3138,12 +2926,8 @@
 /* DashPay intro: feature body */
 "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "การชำระเงินกับผู้ติดต่อแต่ละรายจะถูกจัดรวมไว้ที่เดียว พร้อมชื่อและโปรไฟล์แทนธุรกรรมดิบ";
 
-/* CrowdNode */
 /* Masternodes */
 "Payout address" = "ที่อยู่รับเงิน";
-
-/* CrowdNode */
-"Payout Options" = "ตัวเลือกการจ่ายเงิน";
 
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
@@ -3156,15 +2940,6 @@
 
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
-
-/* CrowdNode */
-"per 24 hours" = "ต่อ 24 ชั่วโมง";
-
-/* CrowdNode */
-"per hour" = "ต่อชั่วโมง";
-
-/* CrowdNode */
-"per transaction" = "ต่อธุรกรรม";
 
 /* Usernames */
 "Personalise profile" = "ปรับแต่งโปรไฟล์";
@@ -3249,20 +3024,11 @@
 /* Uphold */
 "Please go to your Uphold account to verify your identity." = "โปรดไปที่บัญชี Uphold ของคุณเพื่อยืนยันตัวตนของคุณ";
 
-/* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "โปรดทราบว่าอีเมลที่ไม่ได้รับการบันทึกโดยกระเป๋าเงิน Dash และจะถูกส่งไปยัง CrowdNode เท่านั้น";
-
 /* Usernames */
 "Please note that the username can NOT be changed once it is registered." = "Please note that the username can NOT be changed once it is registered.";
 
 /* Usernames */
 "Please note that you will not be able to change it in future" = "Please note that you will not be able to change it in future";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "โปรดทราบว่าคุณจะไม่สามารถถอนเงินจาก CowdNode ไปยังกระเป๋าเงินนี้ได้จนกว่าคุณจะเพิ่มยอดคงเหลือเป็น%@ Dash.";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "โปรดวางมือถือของคุณใกล้กับอุปกรณ์ NFC";
@@ -3287,9 +3053,6 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "กรุณารอสักครู่";
-
-/* CrowdNode */
-"Please wait before initiating the next withdrawal" = "Please wait before initiating the next withdrawal";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "โปรดรอจนกว่ากระเป๋าเงินจะถูกซิงค์อย่างเต็มที่ก่อนที่จะส่งออกประวัติการทำธุรกรรมของคุณ";
@@ -3317,9 +3080,6 @@
 
 /* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "Prices weren't retrieved. Fiat values may be incorrect.";
-
-/* CrowdNode */
-"Primary Dash address" = "ที่อยู่ Dash หลัก";
 
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
@@ -3356,9 +3116,6 @@
 
 /* Balance info sheet section */
 "Pros" = "ข้อดี";
-
-/* CrowdNode Portal */
-"Protect your savings" = "ปกป้องเงินทุนของคุณ";
 
 /* Usernames */
 "Prove your identity" = "Prove your identity";
@@ -3422,9 +3179,6 @@
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
-
-/* CrowdNode */
-"Read Withdrawal Policy" = "โปรดอ่านนโยบายการถอนเงิน";
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "อ่านอย่างเดียว";
@@ -3538,9 +3292,6 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "รับโดยตรงไปยังกระเป๋าเงิน Dash";
 
-/* CrowdNode */
-"Receive your share of rewards daily." = "รับส่วนแบ่งของรางวัลทุกวัน";
-
 /* Received transaction */
 "Received" = "ได้รับ";
 
@@ -3555,9 +3306,6 @@
 
 /* DashPay payment row — sender's display name */
 "Received from %@" = "ได้รับจาก %@";
-
-/* CrowdNode */
-"Receiving rewards" = "การรับรีวอร์ด";
 
 "Records your masternodes as having voted, without taking a side." = "บันทึกว่ามาสเตอร์โหนดของคุณได้โหวตแล้ว โดยไม่เข้าข้างฝ่ายใด";
 
@@ -4408,9 +4156,6 @@
 /* Dash DEX */
 "Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
 
-/* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "ส่ง %@ จากที่อยู่หลักของ Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";
-
 /* Dash DEX */
 "Send %@ to this address" = "Send %@ to this address";
 
@@ -4422,10 +4167,6 @@
 
 /* No comment provided by engineer. */
 "Send Invitation" = "ส่งคำเชิญ";
-
-/* Coinbase
-   CrowdNode */
-"Send Report" = "ส่งรายงาน";
 
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
@@ -4508,12 +4249,6 @@
 /* No comment provided by engineer. */
 "Sending to" = "กำลังส่งไปยัง";
 
-/* CrowdNode */
-"Sending to CrowdNode account" = "ส่งไปยังบัญชี CrowdNode";
-
-/* CrowdNode */
-"Sending to Dash Wallet on this device" = "ส่งไปยังกระเป๋าเงิน Dash บนอุปกรณ์นี้";
-
 /* Buy Dash */
 "Sending to:" = "ส่งไปที่:";
 
@@ -4568,7 +4303,7 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "ตั้งค่า wallet";
 
-/* CrowdNode */
+/* Receive screen */
 "Share" = "แชร์";
 
 /* Receive screen */
@@ -4622,23 +4357,11 @@
 /* No comment provided by engineer. */
 "Show Masternode Keys" = "แสดง masternode keys";
 
-/* CrowdNode */
-"Show QR" = "แสดง QR";
-
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "แสดงวลีกู้คืน";
 
 /* Alert title */
 "Sign in required" = "Sign in required";
-
-/* CrowdNode */
-"Sign up error" = "การลงทะเบียนผิดพลาด";
-
-/* CrowdNode */
-"Sign up to CrowdNode" = "ลงทะเบียนกับ CrowdNode";
-
-/* CrowdNode Portal */
-"Sign up to finish setting up account" = "ลงทะเบียนเพื่อเสร็จสิ้นการตั้งค่าบัญชี";
 
 /* ZenLedger */
 "Simplify your crypto taxes" = "Simplify your crypto taxes";
@@ -4701,9 +4424,6 @@
 
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
-
-/* No comment provided by engineer. */
-"Staking" = "Staking";
 
 /* Usernames */
 "Starts after you add funds" = "เริ่มหลังจากคุณเติมเงิน";
@@ -4807,9 +4527,6 @@
 /* Explore Dash */
 "Synced" = "Synced";
 
-/* CrowdNode Portal */
-"Synced with current Dash Wallet" = "ซิงค์กับกระเป๋าเงิน Dash ปัจจุบัน";
-
 /* No comment provided by engineer. */
 "Syncing" = "กำลังซิงค์";
 
@@ -4898,9 +4615,6 @@
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
-
-/* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash Network ขับเคลื่อนโดย Masternodes จำนวนหนึ่งซึ่งเป็นส่วนสำคัญในการอำนวยความสะดวกในการชำระเงิน";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Dash ถูกฝากเข้าบัญชี Coinbase ของคุณเรียบร้อยแล้ว แต่มีปัญหาในการโอนไปยังกระเป๋าเงิน Dash ของคุณบนอุปกรณ์นี้";
@@ -4997,9 +4711,6 @@
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
-
-/* CrowdNode */
-"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
 /* Send sheet source/destination mismatch */
 "This address can't be paid from your %@ balance" = "จ่ายไปยังที่อยู่นี้จากยอดคงเหลือ %@ ของคุณไม่ได้";
@@ -5189,17 +4900,11 @@
 /* No comment provided by engineer. */
 "This PIN will be required to unlock your app every time when you use it." = "ต้องใช้ PIN นี้เพื่อปลดล็อคแอพของคุณทุกครั้งที่ใช้";
 
-/* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "QR นี้มีคำขอชำระเงินแล้ว %@";
-
 /* Dash DEX / dex_error_quote_expired */
 "This quote expired. Please go back and try again." = "This quote expired. Please go back and try again.";
 
 /* Wallets */
 "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "สิ่งนี้แสดงถึงอัตราผลตอบแทนร้อยละต่อปีปัจจุบันของมาสเตอรืโหนด เต็มน้อยกว่าค่าธรรมเนียม CrowdNode 15% แต่มันไม่ได้เป็นอัตราผลตอบแทนที่รับประกันได้และอาจเพิ่มขึ้นหรือลงตามขนาดของกลุ่ม CrowdNode และราคา Dash";
 
 "This still counts as your masternodes having voted in this contest." = "กรณีนี้ยังนับว่ามาสเตอร์โหนดของคุณได้โหวตในการชิงชื่อครั้งนี้แล้ว";
 
@@ -5245,12 +4950,6 @@
 /* Coinbase */
 "to Dash Wallet on this device" = "เพื่อกระเป๋า Dash บนอุปกรณ์นี้";
 
-/* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "ในการเริ่มการ stakingให้สร้างบัญชีบน CrowdNode หรือเชื่อมต่อกับบัญชีที่มีอยู่";
-
-/* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "ไปยังที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
-
 /* No comment provided by engineer. */
 "Today" = "วันนี้";
 
@@ -5271,9 +4970,6 @@
 
 /* DashPay Contacts */
 "Transaction" = "Transaction";
-
-/* CrowdNode */
-"Transaction History" = "ประวัติการทำรายการ";
 
 /* Balance info sheet */
 "Transaction history isn't available" = "ไม่มีประวัติธุรกรรมให้ใช้งาน";
@@ -5297,9 +4993,6 @@
 
 /* Coinbase */
 "Transfer DASH" = "Transfer DASH";
-
-/* CrowdNode */
-"Transfer Error" = "การโอนผิดพลาด";
 
 /* Coinbase */
 "Transfer Failed" = "การโอนไม่สำเร็จ";
@@ -5555,9 +5248,6 @@
 /* DashPay Invitations */
 "Valid invitation" = "คำเชิญถูกต้อง";
 
-/* CrowdNode Portal */
-"Validating address…" = "ตรวจสอบที่อยู่...";
-
 /* No comment provided by engineer. */
 "Validating username failed" = "ตรวจสอบชื่อผู้ใช้ล้มเหลว";
 
@@ -5566,9 +5256,6 @@
 
 /* Maya */
 "Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
-
-/* CrowdNode Portal */
-"Verification Required" = "จำเป็นต้องมีการตรวจสอบ";
 
 /* Usernames */
 "Verified during registration" = "ยืนยันแล้วระหว่างการลงทะเบียน";
@@ -5581,9 +5268,6 @@
 
 /* No comment provided by engineer. */
 "Verify" = "ตรวจสอบ";
-
-/* CrowdNode */
-"Verify your API Dash address" = "ตรวจสอบที่อยู่ API Dash ของคุณ";
 
 /* No comment provided by engineer. */
 "Verify your recovery phrase to set a new PIN." = "ยืนยันวลีกู้คืนของคุณเพื่อตั้ง PIN ใหม่";
@@ -5599,9 +5283,6 @@
 
 /* adjective, security level */
 "Very High" = "สูงมาก";
-
-/* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Dash จำนวนน้อยมากจะถูกส่งไปและกลับจาก CrowdNode เพื่อตรวจสอบว่าคุณเป็นเจ้าของที่อยู่กระเป๋าเงินนี้";
 
 /* No comment provided by engineer. */
 "View All" = "ดูทั้งหมด";
@@ -5688,14 +5369,8 @@
 
 "Voting on “%@” has already closed. Refresh to see the result." = "การโหวต “%@” ปิดไปแล้ว รีเฟรชเพื่อดูผล";
 
-/* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
-
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Wait until the chain is fully synced, so we can review your transaction history.";
-
-/* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "รอจนกว่าบล็อกเชนจะถูกซิงค์อย่างเต็มที่ดังนั้นเราสามารถตรวจสอบประวัติการทำธุรกรรมของคุณ เยี่ยมชมเว็บไซต์ CrowdNode เพื่อเข้าสู่ระบบหรือลงทะเบียน";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "รอจนกว่ากระเป๋าเงินจะถูกซิงค์เพื่อทำธุรกรรมให้เสร็จสมบูรณ์";
@@ -5756,23 +5431,11 @@
 /* Dash DEX / dex_error_validation */
 "We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
-/* CrowdNode */
-"We couldn’t create your CrowdNode account." = "เราไม่สามารถสร้างบัญชี CrowdNode ของคุณได้";
-
-/* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "เราไม่สามารถฝากเงินไปยังบัญชี CrowdNode ของคุณได้";
-
-/* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "เราไม่สามารถถอนตัวจากบัญชี CrowdNode ของคุณได้";
-
 /* Explore */
 "We have two types of merchants" = "We have two types of merchants";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "อัพเกรด";
-
-/* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "เราจะตรวจสอบการทำธุรกรรมนี้โดยอัตโนมัติและโอนจำนวนเท่ากันไปยังบัญชี CrowdNode ของคุณ หลังจากนั้นคุณจะสามารถฝากเงินและการถอนในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
 /* Website */
 "Website" = "เว็บไซต์";
@@ -5827,11 +5490,8 @@
 /* Usernames */
 "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "ระหว่างที่การโหวตดำเนินอยู่ คุณยังไม่มีชื่อผู้ใช้ ลงทะเบียนชื่อผู้ใช้ที่ไม่มีการแข่งขันตอนนี้ — ชื่อนั้นจะเป็นของคุณ และหากการโหวตมอบ “%@” ให้คุณ ผู้อื่นจะติดต่อคุณได้ทั้งสองชื่อผู้ใช้";
 
-/* Crowdnode */
+/* Grouped Transactions */
 "Why do I see all these transactions?" = "ทำไมฉันถึงเห็นธุรกรรมเหล่านี้ทั้งหมด?";
-
-/* CrowdNode */
-"Why do you need an online account?" = "ทำไมคุณถึงต้องการบัญชีออนไลน์?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "ทำไมฉันจึงไม่ควรใช้การบันทึกภาพหน้าจอ";
@@ -5851,18 +5511,11 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "กับ Dash Blockchain";
 
-/* CrowdNode
-   CrowdNode Portal */
+/* Evonode withdrawal */
 "Withdraw" = "ถอนเงิน";
 
-/* CrowdNode */
+/* DashConnect */
 "Withdraw funds" = "Withdraw funds";
-
-/* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "ถอนโดยไม่จำกัดด้วยบัญชีออนไลน์บนเว็บไซต์ CrowdNode";
-
-/* CrowdNode */
-"Withdrawal requested" = "ขอถอนเงิน";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "ถอนยอดคงเหลือทั้งหมด";
@@ -5929,9 +5582,6 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "คุณสามารถเปลี่ยนวิธีการที่คุณได้รับจากรายได้จากรางวัลของคุณ";
-
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance";
 
@@ -5940,9 +5590,6 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "คุณสามารถดูข้อมูลโดยละเอียดเกี่ยวกับเงินฝากการถอนและรางวัลของคุณ";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "คุณสามารถระบุ URL ใด ๆ ที่เปิดเผยต่อสาธารณะบนอินเทอร์เน็ตเพื่อให้ผู้ใช้รายอื่นสามารถดูได้ในเครือข่าย Dash";
@@ -5974,9 +5621,6 @@
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
 
-/* CrowdNode */
-"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
-
 /* Voting */
 "You have already voted for this username %ld times. You can only cast one more vote for this username." = "You have already voted for this username %ld times. You can only cast one more vote for this username.";
 
@@ -5992,23 +5636,14 @@
 /* Voting */
 "You have entered an invalid key" = "คุณป้อนรหัสที่ไม่ถูกต้อง";
 
-/* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "คุณมีเงินไม่เพียงพอที่จะดำเนินการต่อ";
-
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
-
-/* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "คุณต้องสำรองข้อมูลรหัสผ่านของคุณในกระเป๋าเงิน Dash";
 
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "คุณต้องการอย่างน้อย %@ Dash เพื่อสร้างคำเชิญ";
-
-/* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "คุณต้องมีอย่างน้อย %@ บนกระเป๋า Dash ของคุณ";
 
 /* Usernames */
 "You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
@@ -6018,12 +5653,6 @@
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "You need to sign in to DashSpend to purchase gift cards.";
-
-/* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "You need to wait 5 minutes before initiating another withdrawal";
-
-/* CrowdNode */
-"You only need %@ to join the pool." = "คุณต้องใช้เพียงแค่ %@ เพื่อเข้าร่วมใน pool";
 
 /* DashSpend confirmation */
 "You pay" = "You pay";
@@ -6039,12 +5668,6 @@
 
 /* No comment provided by engineer. */
 "You sent the contact request to %@" = "คุณส่งคำขอการติดต่อไปยัง %@ แล้ว";
-
-/* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "คุณควรมียอดเงินคงเหลือบนกระเป๋าเงิน Dash มากกว่านี้";
-
-/* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "คุณต้องมีอย่างน้อย %@ เพื่อดำเนินการตรวจสอบ CrowdNode";
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
@@ -6064,9 +5687,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "คุณจะได้รับ %@ Dash บนกระเป๋าของคุณบนอุปกรณ์นี้ โปรดทราบว่าอาจใช้เวลาสูงสุด 2-3 นาทีในการโอน";
 
-/* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "คุณจะได้รับการชำระเงินแบบเศษส่วนโดยอัตโนมัติและโดยค่าเริ่มต้นจะถูกนำกลับมาลงทุนใหม่อย่างไรก็ตามมันเป็นเรื่องง่ายที่จะตั้งค่าการถอนอัตโนมัติเพื่อรับการจ่ายเงินที่เกิดขึ้นซ้ำ";
-
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
 
@@ -6083,21 +5703,6 @@
 
 /* No comment provided by engineer. */
 "Your credit balance is low" = "Your credit balance is low";
-
-/* CrowdNode */
-"Your CrowdNode account is creating…" = "บัญชี CrowdNode ของคุณกำลังสร้าง ...";
-
-/* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "บัญชี CrowdNode ของคุณถูกตั้งค่าและพร้อมใช้งาน!";
-
-/* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "บัญชี CrowdNode ของคุณถูกสร้างขึ้นโดยใช้ธุรกรรมเหล่านี้";
-
-/* CrowdNode */
-"Your CrowdNode address has been confirmed." = "ที่อยู่ CrowdNode ของคุณได้รับการยืนยันแล้ว";
-
-/* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "ที่อยู่ CrowdNode ของคุณได้รับการตรวจสอบแล้ว แต่ยังจำเป็นต้องมีการตรวจสอบ";
 
 /* No comment provided by engineer. */
 "Your DASH address" = "Your DASH address";
@@ -6122,9 +5727,6 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = " ชื่อผู้ใช้ DashPay ของคุณคือพร้อมใช้งาน";
-
-/* CrowdNode */
-"Your deposit to CrowdNode is received." = "ได้รับเงินฝากของคุณไปยัง CrowdNode";
 
 /* TimeSkew */
 "Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "Your device time is %1$@ by %2$d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.";
@@ -6191,9 +5793,6 @@
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
-
-/* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "ที่อยู่หลัก Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "ยอดคงเหลือส่วนตัวของคุณ จำนวนเงินและที่อยู่ถูกเข้ารหัสบนเชน สินทรัพย์และประวัติของคุณจึงเป็นความลับ";

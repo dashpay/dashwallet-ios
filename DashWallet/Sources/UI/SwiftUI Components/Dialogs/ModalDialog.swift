@@ -96,8 +96,6 @@ struct ModalDialog: View {
                     .padding(.top, 1)
             }
             
-            // TODO: content for limits (crowdnode)
-            
             if let text = smallButtonText {
                 DashButton(
                     text: text,
