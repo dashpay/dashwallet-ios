@@ -513,10 +513,13 @@ struct ExternalSendAmountScreen: View {
                     contact: contact,
                     amountText: duffs.formattedDashAmount,
                     fiatText: viewModel.contactReviewFiatText ?? "",
+                    // The contact can be removed, or its channel break, while
+                    // the review is open — or only seem to, for a moment
+                    // during a sync. Send waits rather than the review closing.
+                    unavailableMessage: viewModel.contactUnavailableMessage,
                     onCancel: { showContactConfirm = false },
                     onSend: {
-                        viewModel.confirmContactReview()
-                        showContactConfirm = false
+                        if viewModel.confirmContactReview() { showContactConfirm = false }
                     })
                     .presentationDetents([.medium])
             }
@@ -1043,6 +1046,8 @@ private struct ConfirmContactSendSheet: View {
     let contact: ContactItem
     let amountText: String
     let fiatText: String
+    /// Why Send is disabled; nil when the contact can be paid.
+    let unavailableMessage: String?
     var onCancel: () -> Void
     var onSend: () -> Void
 
@@ -1077,6 +1082,12 @@ private struct ConfirmContactSendSheet: View {
 
             Spacer(minLength: 20)
 
+            if let unavailableMessage {
+                TransferAmountValidationNote(message: unavailableMessage)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+            }
+
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Cancel", comment: ""),
@@ -1086,6 +1097,7 @@ private struct ConfirmContactSendSheet: View {
                     action: onCancel)
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Send", comment: ""),
+                    isEnabled: unavailableMessage == nil,
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,

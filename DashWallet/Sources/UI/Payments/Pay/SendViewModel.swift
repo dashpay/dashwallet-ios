@@ -82,6 +82,18 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var contactSendError: String?
     /// Keeps `contactRecipient` current; see `setContactRecipient`.
     private var contactRefresh: AnyCancellable?
+    /// Where the step reads a contact's current state.
+    private var contactLookup: @MainActor (Data) -> ContactItem? = {
+        SwiftDashSDKContactsService.shared.contactItem(for: $0)
+    }
+
+    /// A contact send step that reads contacts from `contactLookup` instead
+    /// of the contacts service.
+    convenience init(contactLookup: @escaping @MainActor (Data) -> ContactItem?) {
+        self.init()
+        self.contactLookup = contactLookup
+    }
+
     /// The contact is not among the active wallet's established contacts any
     /// more — removed, or the active wallet has no such contact. Cleared when
     /// an established snapshot of it comes back: a sync can briefly publish an
@@ -681,7 +693,7 @@ final class SendViewModel: ObservableObject {
     /// or no longer established, keeps the amount step from sending.
     private func refreshContactRecipient() {
         guard let id = contactRecipient?.contactIdentityId else { return }
-        guard let latest = Self.establishedContact(SwiftDashSDKContactsService.shared.contactItem(for: id))
+        guard let latest = Self.establishedContact(contactLookup(id))
         else {
             if !isContactRecipientGone { isContactRecipientGone = true }
             return
@@ -765,8 +777,26 @@ final class SendViewModel: ObservableObject {
     /// The review's Send. From here the step counts as sending: the review is
     /// still closing, and the spend that asks for the PIN only starts once it
     /// has (`sendToContact`, called by the host).
-    func confirmContactReview() {
+    ///
+    /// - Returns: whether the review was confirmed. The contact can go away
+    ///   while the review is open; the review's Send is disabled then, and a
+    ///   tap that raced it confirms nothing.
+    @discardableResult
+    func confirmContactReview() -> Bool {
+        // The service's snapshot can be newer than the last change
+        // notification this step has handled.
+        refreshContactRecipient()
+        guard !isContactPaymentUnavailable else { return false }
         updateContactReview { $0.confirm() }
+        return isSendingToContact
+    }
+
+    /// Why this contact cannot be paid right now, or nil. Shown on the amount
+    /// step and in the open review, which disables its Send meanwhile.
+    var contactUnavailableMessage: String? {
+        if isContactRecipientGone { return Self.contactGoneMessage }
+        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        return nil
     }
 
     /// The review closed without Send.
@@ -1288,8 +1318,7 @@ final class SendViewModel: ObservableObject {
         #if DASHPAY
         // Independent of the amount: a contact that is gone, or a channel that
         // can never carry a payment.
-        if isContactRecipientGone { return Self.contactGoneMessage }
-        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        if let contactUnavailableMessage { return contactUnavailableMessage }
         // Ahead of `contactSendError`, and NOT cleared when the amount
         // changes: an unknown outcome disables this screen for good, so the
         // reason has to outlive the next keystroke or the button reads as

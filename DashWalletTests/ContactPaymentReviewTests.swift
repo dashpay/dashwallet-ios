@@ -112,5 +112,36 @@ final class ContactPaymentReviewTests: XCTestCase {
         XCTAssertNil(SendViewModel.establishedContact(.fixture(relationship: .incoming, createdAt: date)))
         XCTAssertNil(SendViewModel.establishedContact(.fixture(relationship: .outgoing, createdAt: date)))
     }
+
+    @MainActor
+    func testAContactAlreadyGoneOpensTheStepUnavailable() {
+        let viewModel = SendViewModel(contactLookup: { _ in nil })
+
+        viewModel.setContactRecipient(.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0)))
+
+        XCTAssertTrue(viewModel.isContactPaymentUnavailable)
+        XCTAssertEqual(viewModel.contactUnavailableMessage, SendViewModel.contactGoneMessage)
+    }
+
+    @MainActor
+    func testAContactNoLongerEstablishedOpensTheStepUnavailable() {
+        let date = Date(timeIntervalSince1970: 0)
+        let viewModel = SendViewModel(contactLookup: { _ in .fixture(relationship: .incoming, createdAt: date) })
+
+        viewModel.setContactRecipient(.fixture(relationship: .established, createdAt: date))
+
+        XCTAssertTrue(viewModel.isContactPaymentUnavailable)
+    }
+
+    @MainActor
+    func testAnEstablishedContactLeavesTheStepAvailable() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let viewModel = SendViewModel(contactLookup: { _ in contact })
+
+        viewModel.setContactRecipient(contact)
+
+        XCTAssertFalse(viewModel.isContactPaymentUnavailable)
+        XCTAssertNil(viewModel.contactUnavailableMessage)
+    }
     #endif
 }
