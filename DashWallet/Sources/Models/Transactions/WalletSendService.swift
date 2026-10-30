@@ -1016,7 +1016,9 @@ private extension WalletSendService {
             // prepare succeeds.
             return makeError(
                 code: .broadcastRejected,
-                description: "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again."
+                description: NSLocalizedString(
+                    "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
+                    comment: "Send to contact: the prepared payment went stale before broadcast")
             )
         default:
             break
