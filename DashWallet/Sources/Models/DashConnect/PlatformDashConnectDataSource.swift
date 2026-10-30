@@ -609,7 +609,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             context = try await requireContext()
         } catch {
-            let existingConnection = await shownRow(id: fallback.appContractId)
+            let shown = await shownRow(id: fallback.appContractId)
+            let existingConnection = shown?.status == .confirming ? nil : shown
             return ConnectionRequest(
                 loginRequest: loginRequest,
                 appLabel: fallback.appLabel,
@@ -1101,7 +1102,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores)
+            modelContainer: context.modelContainer, in: stores, publishing: (context, signer))
         func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
                 && grant.values.appEphemeralPubKeyHash == requestHash
@@ -1368,6 +1369,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         updateGrants(in: stores) { grants in
             guard let index = grants.firstIndex(where: { $0.key == grant.key }) else { return }
             grants[index].documentId = documentId.toBase58String()
+            grants[index].awaitsRecoveredPublish = nil
             grants[index].values = publishedValues
         }
     }
@@ -1704,6 +1706,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         defer { for index in signingKeys.indices { Self.zero(&signingKeys[index].privateKey) } }
         if let pending = pendingRetry?.pendingUpdate {
             guard reused.isEmpty else { throw DashConnectPlatformError.identityKeysOutOfDate }
+            // The earlier update replaced what the connection held then. If
+            // that changed since (a replaced key is off, or another grant of
+            // the connection turned up), sending it again would be refused
+            // or leave a key on; its outcome has to settle first.
+            let current = AppConnect.supersededKeyIds(
+                grants: superseded, identityId: identityId, appId: appId, connectionId: connectionId,
+                keeping: reused, currentIdentityPublicKeys: currentPublicKeys)
+            guard Set(current) == Set(pending.disabledKeyIds) else {
+                Self.logger.error("🔗 DASHCONNECT :: an earlier approval of this request may still land, and the connection changed since")
+                throw DashConnectPlatformError.registrationPending
+            }
             let registered = encryptionSlots.indices.filter { encryptionSlots[$0].keyId == nil }
             func encryptionKey(_ slot: Int) -> AppConnect.DerivedEncryptionKey {
                 encryptionKeys[encryptionSlots[slot].keyIndex][encryptionSlots[slot].derivedIndex]
@@ -1811,7 +1824,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 retiredGrantKeys: retiredGrantKeys.sorted(),
                 outlivedBy: nil,
                 replacesApprovedRow: previousRow?.status == .approved
-                    || pendingRetry?.pendingUpdate?.replacesApprovedRow == true)
+                    || (previousRow?.status == .confirming && stores.grants.load().contains {
+                        $0.appContractId == appId && $0.pendingUpdate?.replacesApprovedRow == true
+                    }))
         }
         let grant = try await Self.registerAppConnectV2Grant(
             record,
@@ -2377,24 +2392,37 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         if let publishing {
-            await publishRecoveredResponses(
-                confirmedV2.filter { !except($0) }, context: publishing.context, signer: publishing.signer)
+            await publishRecoveredResponses(context: publishing.context, signer: publishing.signer, except: except)
         }
         return confirmedV2
     }
 
-    /// Publishes the responses of `grants`, v2 grants found to have landed
-    /// after their approval stopped waiting, while their records still have
-    /// none and no newer grant of the same connection replaced them. Best
-    /// effort: a failure is logged, and the app asks again. Other responses
-    /// are left alone: the app may have answered a newer request since.
-    private func publishRecoveredResponses(_ grants: [AppConnectGrant], context: Context, signer: KeychainSigner) async {
+    /// Publishes the responses of this identity's v2 grants found to have
+    /// landed after their approval stopped waiting (`awaitsRecoveredPublish`),
+    /// but those `except` names, while no newer grant of the same connection
+    /// replaced them. Best effort: a failure is logged and tried again by the
+    /// next call. Other responses are left alone: the app may have answered
+    /// a newer request since.
+    private func publishRecoveredResponses(
+        context: Context,
+        signer: KeychainSigner,
+        except: (AppConnectGrant) -> Bool = { _ in false }
+    ) async {
         guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else { return }
-        for recovered in grants {
+        let identityId = context.identityId.toBase58String()
+        let recovered = context.stores.grants.load()
+            .filter { $0.identityId == identityId && $0.awaitsRecoveredPublish == true && !except($0) }
+        for candidate in recovered {
             let all = context.stores.grants.load()
-            guard let grant = all.first(where: { $0.key == recovered.key }), !grant.isUnconfirmed,
+            guard let grant = all.first(where: { $0.key == candidate.key }), !grant.isUnconfirmed,
                   grant.keyDisabled != true, !AppConnect.isReplaced(grant, in: all),
-                  let requestHash = AppConnect.data(fromHex: grant.values.appEphemeralPubKeyHash) else { continue }
+                  let requestHash = AppConnect.data(fromHex: grant.values.appEphemeralPubKeyHash) else {
+                updateGrants(in: context.stores) { grants in
+                    guard let index = grants.firstIndex(where: { $0.key == candidate.key }) else { return }
+                    grants[index].awaitsRecoveredPublish = nil
+                }
+                continue
+            }
             do {
                 try await publishAppConnectResponse(
                     grant: grant, appEphemeralPubKeyHash: requestHash, responseContractId: responseContractId,

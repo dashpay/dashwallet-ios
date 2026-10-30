@@ -1083,11 +1083,11 @@ extension AppConnect {
     /// identity) and `bindings` (the store's bounds) show. No revision is
     /// guessed: the SDK does not say which revision it signed.
     ///
-    /// - Every added key there as it was added: it landed.
+    /// - Every added key there as it was added, or turned off since: it
+    ///   landed (`landedAndOff` when every one of them is off).
     /// - A key under one of its ids with other data: Platform refuses an
     ///   update that adds an id the identity has, and never removes a key,
-    ///   so it can never land. The same data under the id, disabled: it
-    ///   landed and is off again (`landedAndOff`). The same data, live, with
+    ///   so it can never land. The same data, live, with
     ///   other limits or another readable bound: the id is another key's.
     /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
     ///   another id: it can never land. HASH160 auth keys are not unique,
@@ -1112,6 +1112,7 @@ extension AppConnect {
     ) -> PendingV2Outcome {
         var allLanded = true
         var anyPresent = false
+        var offCount = 0
         for expected in pending.addedKeys {
             guard let key = keys.first(where: { UInt32(bitPattern: $0.keyId) == expected.keyId }) else {
                 allLanded = false
@@ -1119,14 +1120,17 @@ extension AppConnect {
             }
             anyPresent = true
             guard key.data == expected.data else { return .cannotLand }
-            guard key.disabledAt == nil else { return .landedAndOff }
+            guard key.disabledAt == nil else {
+                offCount += 1
+                continue
+            }
             let binding = bindings.first { $0.keyId == expected.keyId && $0.data == key.data }
             if isAddedKey(key, added: expected.identityPubkey, binding: binding) { continue }
             allLanded = false
             if expected.bound != nil, binding == nil || binding?.hasUnreadableBound == true { continue }
             return .cannotLand
         }
-        if allLanded { return .landed }
+        if allLanded { return offCount == pending.addedKeys.count ? .landedAndOff : .landed }
         let takenElsewhere = pending.addedKeys.contains { expected in
             expected.keyType == .ecdsaSecp256k1 && keys.contains {
                 $0.keyType == .ecdsaSecp256k1 && $0.data == expected.data
@@ -1167,6 +1171,7 @@ extension AppConnect {
                 var settled = grant
                 settled.pendingUpdate = nil
                 settled.unconfirmedKeyHash160 = nil
+                settled.awaitsRecoveredPublish = true
                 confirmed.append(settled)
                 retired.formUnion(pending.retiredGrantKeys)
             case .landedAndOff:

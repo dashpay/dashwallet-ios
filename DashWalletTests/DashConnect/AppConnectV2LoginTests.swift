@@ -1227,6 +1227,25 @@ extension AppConnectV2LoginTests {
             "a view that shows part of one update is behind")
     }
 
+    func testAPendingUpdateWithSomeKeysOffAgainLandedAndKeepsItsRecord() {
+        let first = Self.addedAuthKey(7, data: 0x07)
+        let second = Self.addedAuthKey(8, data: 0x08)
+        XCTAssertEqual(
+            Self.outcome([first, second], keys: [Self.onIdentity(first), Self.onIdentity(second, disabled: true)]),
+            .landed, "a live key of it still needs its record")
+        XCTAssertEqual(
+            Self.outcome([first, second], keys: [
+                Self.onIdentity(first, disabled: true), Self.onIdentity(second, disabled: true),
+            ]),
+            .landedAndOff)
+        var grants = [Self.pendingGrant([first, second])]
+        _ = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(first), Self.onIdentity(second)],
+            bindings: [Self.stored(first), Self.stored(second)], nowMilliseconds: Self.pendingNow)
+        XCTAssertEqual(grants[0].awaitsRecoveredPublish, true, "its response is still to be published")
+    }
+
     func testAnIdHeldByAnotherKeyMeansThePendingUpdateCanNeverLand() {
         let auth = Self.addedAuthKey(7, data: 0x07)
         XCTAssertEqual(
