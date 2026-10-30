@@ -207,9 +207,10 @@ struct SharedProfileAccess: Equatable {
     /// `nil` when the wallet's store could not be read: unknown, not none.
     let keyCount: Int?
     /// The wallet and network, and the identity, the count was read for; a
-    /// revoke acts only while they are still the active ones.
+    /// revoke acts only while they are still the active ones. `identityId`
+    /// is nil when the count could not be read.
     let scope: String
-    let identityId: String
+    let identityId: String?
 }
 
 /// A pending request derived from a scanned login QR code.

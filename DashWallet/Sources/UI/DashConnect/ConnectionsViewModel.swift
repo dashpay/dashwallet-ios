@@ -119,8 +119,14 @@ final class ConnectionsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.connections = $0.sorted(by: { $0.updatedAt > $1.updatedAt })
-                self?.refreshSharedProfileAccess()
             }
+            .store(in: &cancellables)
+        // The rows change when an app is approved, confirmed or removed,
+        // which is when the shared profile keys can change too.
+        self.dataSource.connections
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.refreshSharedProfileAccess() }
             .store(in: &cancellables)
     }
 
@@ -451,7 +457,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// identity update.
     func revokeSharedProfileAccess() {
         guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
+            // The user confirmed a destructive action; say why nothing ran.
+            message = ConnectionsScreenMessage(
+                kind: .error,
+                text: NSLocalizedString(
+                    "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
+            return
+        }
         guard let access = sharedProfileAccess else {
             // A read finished while the confirmation was up and found none.
             message = ConnectionsScreenMessage(

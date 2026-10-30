@@ -844,6 +844,12 @@ extension AppConnect {
         .sorted()
     }
 
+    /// Whether a key with this expiry still works at `nowMilliseconds`. A
+    /// key that expired stays live on Platform but can no longer sign.
+    static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
+        (expiresAt ?? 0) > nowMilliseconds
+    }
+
     /// The unattributed profile keys the wallet's store shows as live and
     /// not yet expired: what the Connections screen counts.
     static func storedSharedProfileKeyIds(
@@ -851,7 +857,7 @@ extension AppConnect {
         bindings: [KeyBinding],
         nowMilliseconds: Int64
     ) -> [UInt32] {
-        let unexpired = Set(bindings.filter { ($0.expiresAt ?? 0) > nowMilliseconds }.map(\.keyId))
+        let unexpired = Set(bindings.filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map(\.keyId))
         return unattributedProfileKeyIds(keys: unrecordedV2Keys(recordedKeyIds: recordedKeyIds, bindings: bindings))
             .filter(unexpired.contains)
     }
@@ -870,7 +876,8 @@ extension AppConnect {
     ) -> [UInt32]? {
         let hasUnplacedKey = currentIdentityPublicKeys.contains { key in
             let keyId = UInt32(bitPattern: key.keyId)
-            return isLiveAppConnectAuthKey(key) && key.expiresAt != nil && !recordedKeyIds.contains(keyId)
+            return isLiveAppConnectAuthKey(key) && isUnexpired(key.expiresAt, nowMilliseconds: nowMilliseconds)
+                && !recordedKeyIds.contains(keyId)
                 && !bindings.contains { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
         }
         let fetchedKeyIds = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
@@ -878,7 +885,7 @@ extension AppConnect {
             recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds
         ).allSatisfy(fetchedKeyIds.contains) else { return nil }
         let unexpired = Set(currentIdentityPublicKeys
-            .filter { ($0.expiresAt ?? 0) > nowMilliseconds }.map { UInt32(bitPattern: $0.keyId) })
+            .filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map { UInt32(bitPattern: $0.keyId) })
         return unattributedProfileKeyIds(keys: unrecordedV2Keys(
             recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys))
             .filter(unexpired.contains)

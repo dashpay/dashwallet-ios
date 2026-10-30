@@ -2329,15 +2329,26 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     func sharedProfileAccess() async -> SharedProfileAccess? {
-        guard let stores = await showActiveWalletRows(),
-              let context = try? await requireContext(pinnedTo: stores) else { return nil }
+        guard let stores = await showActiveWalletRows() else { return nil }
+        let context: Context
+        do {
+            context = try await requireContext(pinnedTo: stores)
+        } catch DashConnectPlatformError.noIdentity {
+            return nil
+        } catch {
+            // The wallet is there but could not be read: unknown, not none.
+            return SharedProfileAccess(keyCount: nil, scope: stores.scope, identityId: nil)
+        }
         let identityId = context.identityId.toBase58String()
+        // Every record of the identity counts here, unconfirmed ones too: a
+        // registration whose key has landed is only confirmed by a fresh
+        // read, which the revoke makes.
+        let named = Set(stores.grants.load().filter { $0.identityId == identityId }.flatMap(\.keyIds))
         let keyCount = (try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer))
             .map { bindings in
                 AppConnect.storedSharedProfileKeyIds(
-                    recordedKeyIds: Self.recordedKeyIds(of: identityId, in: stores),
-                    bindings: bindings,
-                    nowMilliseconds: Self.nowMilliseconds(now())).count
+                    recordedKeyIds: named, bindings: bindings,
+                    nowMilliseconds: Int64(AppConnect.milliseconds(now()))).count
             }
         return SharedProfileAccess(keyCount: keyCount, scope: stores.scope, identityId: identityId)
     }
@@ -2360,7 +2371,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.noWallet
         }
         var context = try await requireContext(pinnedTo: stores)
-        guard access.scope == stores.scope, access.identityId == context.identityId.toBase58String() else {
+        // A count that could not be read names no identity; the revoke then
+        // acts on the active one, from its own fresh read.
+        guard access.scope == stores.scope,
+              access.identityId.map({ $0 == context.identityId.toBase58String() }) ?? true else {
             throw DashConnectPlatformError.walletChanged
         }
         try await authorize()
@@ -2376,7 +2390,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             recordedKeyIds: Self.recordedKeyIds(of: identityId, in: stores),
             bindings: try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer),
             currentIdentityPublicKeys: currentPublicKeys,
-            nowMilliseconds: Self.nowMilliseconds(now())
+            nowMilliseconds: Int64(AppConnect.milliseconds(now()))
         ) else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
@@ -2393,10 +2407,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// unconfirmed record's id may belong to another key by now.
     private static func recordedKeyIds(of identityId: String, in stores: Stores) -> Set<UInt32> {
         Set(stores.grants.load().filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
-    }
-
-    private static func nowMilliseconds(_ date: Date) -> Int64 {
-        Int64((date.timeIntervalSince1970 * 1000).rounded())
     }
 
     private func disconnectInTurn(id: String, scope: String?) async throws {
@@ -2791,6 +2801,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // attempt picks up what is still live.
             try await disableKeys(keyIds, context: context, signer: signer)
             Self.logger.info("🔗 DASHCONNECT :: app key(s) disabled")
+            // The reload writes the disabled keys to the store the shared
+            // profile count is read from. The keys are off either way.
+            if mayStillLand.isEmpty {
+                _ = try? await refreshedIdentityPublicKeys(context: context)
+            }
             // Each registration that might still land names a revision above
             // `revision`, the one below it the identity was already at. The
             // update that just landed took one above the identity's revision

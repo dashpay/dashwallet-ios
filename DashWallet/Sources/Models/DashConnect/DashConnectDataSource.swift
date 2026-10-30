@@ -57,7 +57,8 @@ protocol DashConnectDataSource {
     /// The live DashPay profile keys of the active identity that no grant
     /// record names, from the wallet's store: keys App Connect gave some app
     /// that a disconnect leaves on, because the bound does not say which app
-    /// it was. `nil` when there is no active wallet or identity.
+    /// it was. `nil` when there is no active wallet or identity; a `nil`
+    /// `keyCount` when the wallet could not be read.
     func sharedProfileAccess() async -> SharedProfileAccess?
     /// Disables those keys, for every app that holds one, after the PIN
     /// prompt and a fresh read of the identity, while `access` still names

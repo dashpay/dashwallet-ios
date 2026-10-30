@@ -73,6 +73,8 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        // Another identity may have become active while the screen was away.
+        .onAppear { viewModel.refreshSharedProfileAccess() }
         .confirmationDialog(
             NSLocalizedString("Revoke shared profile access?", comment: "DashConnect"),
             isPresented: $isConfirmingSharedProfileRevoke,
