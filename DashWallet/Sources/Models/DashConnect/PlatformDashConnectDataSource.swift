@@ -869,9 +869,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // prompt: from protocol version 14 the response goes to the App
         // Connect system contract and the wallet registers the key itself;
         // below it that contract does not exist and the two-QR flow runs.
-        // A pinned SDK reports its pin (testnet is pinned to 13 in
-        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet stays on the
-        // two-QR flow until that pin moves.
+        // A pinned SDK reports its pin (testnet is pinned to 14 in
+        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet gets the App
+        // Connect login.
         let protocolVersion: UInt32
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
@@ -1400,10 +1400,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // buffers leave the closure, so the arrays below own the private keys
         // and the deferred wipe reaches the real bytes.
         var authKeys: [(publicKeyHash160: Data, privateKey: Data)] = []
-        var encryptionKeys: [(publicKey: Data, privateKey: Data)] = []
+        // Per encryption grant, every key this wallet derives for it
+        // (`AppConnect.derivableEncryptionKeys`): rotation 0' first.
+        var encryptionKeys: [[AppConnect.DerivedEncryptionKey]] = []
         defer {
             for index in authKeys.indices { Self.zero(&authKeys[index].privateKey) }
-            for index in encryptionKeys.indices { Self.zero(&encryptionKeys[index].privateKey) }
+            for grant in encryptionKeys.indices {
+                for index in encryptionKeys[grant].indices { Self.zero(&encryptionKeys[grant][index].privateKey) }
+            }
         }
         for grant in plan.auth {
             let leaf = AppConnect.authKeyLeaf(
@@ -1418,18 +1422,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return (key.publicKeyData, key.privateKeyData)
             }
             authKeys.append((try KeyExchangeCrypto.hash160(publicKey), privateKey))
-        }
-        for grant in plan.encryption {
-            encryptionKeys.append(try await MainActor.run {
-                let key = try context.wallet.deriveConnectKey(
-                    subFeature: .appEncryption,
-                    identityId: context.identityId,
-                    leaf: grant.binding.contractId,
-                    purpose: grant.connectPurpose,
-                    network: context.network
-                )
-                return (key.publicKeyData, key.privateKeyData)
-            })
         }
 
         let signer = KeychainSigner(modelContainer: context.modelContainer)
@@ -1455,6 +1447,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         defer { firstCurrentKeysRead.cancel() }
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+        // Which rotations to derive depends on the keys the identity has.
+        for grant in plan.encryption {
+            encryptionKeys.append(try await MainActor.run {
+                try Self.derivableEncryptionKeys(
+                    for: grant, wallet: context.wallet, identityId: context.identityId,
+                    network: context.network, currentIdentityPublicKeys: currentPublicKeys)
+            })
+        }
 
         // An auth key already on the identity at a binding's derived payload
         // is this request answered before: the payload comes from the
@@ -1494,9 +1494,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
 
-        // Wallet rule 7: re-send the identity's key for the app when this
-        // wallet made it, register it when there is none, leave it out when
-        // another wallet made it. Which key is current is Platform's to say:
+        // Wallet rule 7 (DIP "Encryption Keys"): re-send the identity's
+        // current key for the app when this wallet derives it, at any
+        // rotation or (testnet and devnet) the path without one; register
+        // rotation 0' only when the identity has no key for the app at all;
+        // leave the slot out otherwise. Which key is current is Platform's to say:
         // the app's verifier checks the slot against the same proved read.
         // An answer this build cannot read reads the same on every try.
         func isUnreadableAnswer(_ error: Error) -> Bool {
@@ -1542,7 +1544,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     throw DashConnectPlatformError.approvalOutOfDate
                 }
                 return AppConnect.encryptionKeyState(
-                    derivedPublicKey: encryptionKeys[index].publicKey,
+                    derivedPublicKeys: encryptionKeys[index].map(\.publicKey),
                     purpose: grant.keyPurpose,
                     contractId: grant.binding.contractId,
                     rule: rule,
@@ -1569,18 +1571,32 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch {
             throw failedRead(error)
         }
-        var encryptionSlots: [(keyIndex: Int, keyId: UInt32?)] = []
+        // `keyIndex` is the grant, `derivedIndex` the key among its
+        // derivable keys that the slot sends.
+        var encryptionSlots: [(keyIndex: Int, derivedIndex: Int, keyId: UInt32?)] = []
         for (index, state) in keyStates.enumerated() {
-            switch state {
-            case .current(let keyId):
-                encryptionSlots.append((index, keyId))
-            case .absent:
-                encryptionSlots.append((index, nil))
-            case .notThisWallets:
-                Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's; slot left out")
-            case .outOfDate, .absentIfSettled, .notThisWalletsIfSettled, .currentIfSettled:
+            switch AppConnect.encryptionSlot(
+                for: state,
+                derivedPublicKeys: encryptionKeys[index].map(\.publicKey),
+                currentIdentityPublicKeys: currentPublicKeys
+            ) {
+            case .send(let keyId, let derivedIndex):
+                encryptionSlots.append((index, derivedIndex, keyId))
+            case .register:
+                encryptionSlots.append((index, 0, nil))
+            case .omit:
+                Self.logger.info("🔗 DASHCONNECT :: the app's encryption key on this identity is not this wallet's, or none is live; slot left out")
+            case nil:
                 Self.logger.error("🔗 DASHCONNECT :: the identity's keys and Platform's current encryption key disagree")
                 throw DashConnectPlatformError.appConnectKeysOutOfDate
+            }
+        }
+        // The keys no slot carries are wiped now, not after the update and
+        // the publish.
+        for grant in encryptionKeys.indices {
+            let sent = encryptionSlots.first { $0.keyIndex == grant }?.derivedIndex
+            for index in encryptionKeys[grant].indices where index != sent {
+                Self.zero(&encryptionKeys[grant][index].privateKey)
             }
         }
 
@@ -1637,10 +1653,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         for slot in encryptionSlots.indices where encryptionSlots[slot].keyId == nil {
             guard let keyId = freeKeyIds.next() else { throw DashConnectPlatformError.noFreeKeyId }
-            let keyIndex = encryptionSlots[slot].keyIndex
+            let key = encryptionKeys[encryptionSlots[slot].keyIndex][encryptionSlots[slot].derivedIndex]
             add.append(AppConnect.encryptionIdentityPubkey(
-                plan.encryption[keyIndex], keyId: keyId, publicKey: encryptionKeys[keyIndex].publicKey))
-            signingKeys.append((encryptionKeys[keyIndex].publicKey, encryptionKeys[keyIndex].privateKey))
+                plan.encryption[encryptionSlots[slot].keyIndex], keyId: keyId, publicKey: key.publicKey))
+            signingKeys.append((key.publicKey, key.privateKey))
             encryptionSlots[slot].keyId = keyId
         }
         defer { for index in signingKeys.indices { Self.zero(&signingKeys[index].privateKey) } }
@@ -1690,7 +1706,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         // Slots: the auth keys in request order, then the encryption keys
         // that are sent.
-        var slots = authKeys.map(\.privateKey) + encryptionSlots.map { encryptionKeys[$0.keyIndex].privateKey }
+        var slots = authKeys.map(\.privateKey) + encryptionSlots.map { encryptionKeys[$0.keyIndex][$0.derivedIndex].privateKey }
         defer { for index in slots.indices { Self.zero(&slots[index]) } }
         var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
         defer { Self.zero(&walletEphemeralPrivateKey) }
@@ -3748,6 +3764,48 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw CocoaError(.coderInvalidValue)
         }
         return string
+    }
+
+    /// Every key this wallet derives for one encryption grant
+    /// (`AppConnect.derivableEncryptionKeys`): rotations at the DIP-13 path
+    /// with the rotation level, and on testnet and devnet the path without
+    /// it. `storage` is the SDK's default outside tests.
+    @MainActor
+    static func derivableEncryptionKeys(
+        for grant: AppConnect.EncryptionGrant,
+        wallet: ManagedPlatformWallet,
+        identityId: Data,
+        network: Network,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        storage: WalletStorage = WalletStorage()
+    ) throws -> [AppConnect.DerivedEncryptionKey] {
+        try AppConnect.derivableEncryptionKeys(
+            network: network,
+            purpose: grant.keyPurpose,
+            currentIdentityPublicKeys: currentIdentityPublicKeys,
+            rotation: { rotation in
+                let key = try wallet.deriveConnectKey(
+                    subFeature: .appEncryption,
+                    identityId: identityId,
+                    leaf: grant.binding.contractId,
+                    purpose: grant.connectPurpose,
+                    rotation: rotation,
+                    network: network,
+                    storage: storage
+                )
+                return (key.publicKeyData, key.privateKeyData)
+            },
+            legacy: {
+                let key = try wallet.deriveLegacyAppEncryptionKey(
+                    identityId: identityId,
+                    contractId: grant.binding.contractId,
+                    purpose: grant.connectPurpose,
+                    network: network,
+                    storage: storage
+                )
+                return (key.publicKeyData, key.privateKeyData)
+            }
+        )
     }
 
     static func zero(_ data: inout Data) {

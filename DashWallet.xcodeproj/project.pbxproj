@@ -1181,6 +1181,7 @@
 		AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */; };
 		AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */; };
 		AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */; };
+		AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */; };
 		AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */; };
 		AA22BB33CC44DD55EE66FF78 /* BuyReceiveFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */; };
 		AA29B7041CF55787428E1A04 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
@@ -3366,6 +3367,7 @@
 		AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectDataSourceTests.swift; path = DashConnect/DashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectStoreTests.swift; path = DashConnect/DashConnectStoreTests.swift; sourceTree = "<group>"; };
 		AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectV2LoginTests.swift; path = DashConnect/AppConnectV2LoginTests.swift; sourceTree = "<group>"; };
+		AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectEncryptionRotationTests.swift; path = DashConnect/AppConnectEncryptionRotationTests.swift; sourceTree = "<group>"; };
 		AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlatformDashConnectDataSourceTests.swift; path = DashConnect/PlatformDashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -7575,6 +7577,7 @@
 				AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */,
 				AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */,
 				AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */,
+				AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */,
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
@@ -10908,6 +10911,7 @@
 				AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */,
 				AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */,
 				AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */,
+				AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */,
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
