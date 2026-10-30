@@ -2553,6 +2553,37 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(store.load(), [grant])
     }
 
+    /// A count read for one wallet does not revoke in another: the revoke is
+    /// refused before the PIN prompt, and nothing else is touched.
+    func testARevokeCountedForAnotherWalletIsRefused() async {
+        let active = ActiveWallet("wallet-a")
+        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [Self.twoQRRow(status: .active)])
+        let scopeA = Self.shownRows(dataSource)[0].scope!
+        active.idHex = "wallet-b"
+        let other = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .approved)
+        connections.save([other])
+
+        await Self.expectWalletChanged {
+            _ = try await dataSource.revokeSharedProfileAccess(
+                SharedProfileAccess(keyCount: 1, scope: scopeA, identityId: "identity-a"))
+        }
+        XCTAssertEqual(connections.load(), [other])
+    }
+
+    /// With a wallet whose identity cannot be read (no SDK yet, as at launch)
+    /// the count is unknown and names no identity, so nothing can be revoked
+    /// from it.
+    func testACountWithoutAReadableIdentityIsUnknown() async {
+        let active = ActiveWallet("wallet-a")
+        let (dataSource, _) = makeScopedDataSource(active: active)
+
+        let access = await dataSource.sharedProfileAccess()
+
+        XCTAssertNotNil(access)
+        XCTAssertNil(access?.keyCount)
+        XCTAssertNil(access?.identityId)
+    }
+
     func testDisconnectOfARowFromAnotherWalletIsRefusedAndTheListMovesToTheActiveWallet() async {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)

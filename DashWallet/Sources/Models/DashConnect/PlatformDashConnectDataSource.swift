@@ -2367,8 +2367,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
         }
+        guard access.scope == stores.scope else {
+            throw DashConnectPlatformError.walletChanged
+        }
         var context = try await requireContext(pinnedTo: stores)
-        guard access.scope == stores.scope, access.identityId == context.identityId.toBase58String() else {
+        guard access.identityId == context.identityId.toBase58String() else {
             throw DashConnectPlatformError.walletChanged
         }
         try await authorize()
