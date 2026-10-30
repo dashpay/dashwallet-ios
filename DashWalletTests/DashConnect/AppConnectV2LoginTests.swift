@@ -1441,6 +1441,11 @@ extension AppConnectV2LoginTests {
             AppConnect.recordedKeyIds(of: "identity", grants: grants, bindings: [otherKey]), [3],
             "another key under the id is not the grant's")
         XCTAssertEqual(AppConnect.recordedKeyIds(of: "identity", grants: grants, bindings: []), [3])
+        var withReused = Self.pendingGrant([Self.addedAuthKey(8, data: 0x08)], requestHash: "a6")
+        withReused.additionalKeyIds = [5]
+        XCTAssertTrue(
+            AppConnect.recordedKeyIds(of: "identity", grants: [withReused], bindings: []).contains(5),
+            "an auth key the record sends again was there when it was recorded")
     }
 
     func testARetrySubmitsTheSameKeysUnderTheSameIds() throws {
@@ -1534,6 +1539,11 @@ extension AppConnectV2LoginTests {
             appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
         XCTAssertEqual(restored.map(\.status), [.approved], "the two-QR row it replaced comes back")
         XCTAssertEqual(restored.map(\.loginKind), [.twoQR])
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 5, data: Data([5]), singleContractId: nil, bound: .documentType(contractId: Self.appId, name: "post"),
+                isV2AuthKeyShaped: true)], rows: [row(.confirming)]).map(\.status),
+            [.active], "a v2 key bound to a document type of the app")
         let twoQRKeyLive = PlatformDashConnectDataSource.rowsAfterDropping(
             appIds: [app], restoringApproved: [app], grants: [],
             bindings: [AppConnect.KeyBinding(keyId: 3, data: Data([3]), singleContractId: Self.appId)],
@@ -1618,7 +1628,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
     }
 
-    func testAnUpdateKnownToHaveLandedIsNotedOnTheOtherRecordsWaiting() async throws {
+    func testOnlyAnUpdateThatReturnedSuccessIsNotedOnTheOtherRecordsWaiting() async throws {
         let waiting = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a9")
         let key = Self.addedAuthKey(7, data: 0x07)
         let succeeded = MemoryGrantStore([waiting])
@@ -1631,7 +1641,9 @@ extension AppConnectV2LoginTests {
         _ = try await Self.register(
             Self.pendingGrant([key]), add: [key], store: landedAnyway, calls: Calls(), submit: { throw UpdateFailed() },
             views: [([Self.onIdentity(key)], [Self.stored(key)])])
-        XCTAssertNotNil(landedAnyway.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy)
+        XCTAssertNil(
+            landedAnyway.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
+            "keys found after a failure may be an earlier submission's")
 
         let unknown = MemoryGrantStore([waiting])
         _ = try? await Self.register(

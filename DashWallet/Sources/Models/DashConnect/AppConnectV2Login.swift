@@ -1216,9 +1216,10 @@ extension AppConnect {
 
     /// The ids a confirmed record of `identityId` names, and the ids of the
     /// keys a v2 record waiting for its update adds that the store shows
-    /// there as added (same data and bound): those are that grant's, not
-    /// another app's. An unconfirmed record's id is otherwise not taken: it
-    /// may belong to another key by now.
+    /// there as added (same data and bound), and the auth keys such a record
+    /// sends again: those are that grant's, not another app's. An
+    /// unconfirmed record's id is otherwise not taken: it may belong to
+    /// another key by now.
     static func recordedKeyIds(
         of identityId: String,
         grants: [AppConnectGrant],
@@ -1226,6 +1227,11 @@ extension AppConnect {
     ) -> Set<UInt32> {
         var ids = Set(grants.filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
         for grant in grants where grant.identityId == identityId {
+            // Its auth keys the update does not add were on the identity
+            // when it was recorded: sent again, they are the grant's.
+            if let pending = grant.pendingUpdate {
+                ids.formUnion(Set(grant.keyIds).subtracting(pending.addedKeys.map(\.keyId)))
+            }
             for expected in grant.pendingUpdate?.addedKeys ?? [] where bindings.contains(where: {
                 $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound
                     && $0.bound == expected.bound
