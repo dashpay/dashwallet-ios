@@ -2378,6 +2378,25 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 throw DashConnectPlatformError.walletChanged
             }
             guard let keyIds = access.keyIds else { throw DashConnectPlatformError.identityKeysOutOfDate }
+            // The shared keys the store tells apart now, or a refusal: read
+            // before the PIN prompt, so an unknown state asks for nothing,
+            // and again after it, since the store can change meanwhile.
+            func sharedNow() throws -> (recorded: Set<UInt32>, bindings: [AppConnect.KeyBinding], nowMilliseconds: Int64) {
+                let recorded = accountedKeyIds(of: identityId, in: stores)
+                let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
+                let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+                guard Self.canTellSharedProfileKeys(
+                    identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores,
+                    nowMilliseconds: nowMilliseconds)
+                else { throw DashConnectPlatformError.identityKeysOutOfDate }
+                return (recorded, bindings, nowMilliseconds)
+            }
+            let before = try sharedNow()
+            // None of the shown keys is still shared: nothing to keep, and no
+            // reason to ask for the PIN.
+            guard keyIds.contains(where: Set(AppConnect.storedSharedProfileKeyIds(
+                recordedKeyIds: before.recorded, bindings: before.bindings, nowMilliseconds: before.nowMilliseconds
+            )).contains) else { return }
             // It takes keys off what a revoke can reach, so it asks as a
             // revoke does.
             try await authorize()
@@ -2385,12 +2404,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // Only keys the store still counts as shared now: an id that is
             // no longer one must not be exempted from the checks the kept
             // ids skip.
-            let recorded = accountedKeyIds(of: identityId, in: stores)
-            let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
-            let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-            guard Self.canTellSharedProfileKeys(
-                identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores, nowMilliseconds: nowMilliseconds)
-            else { throw DashConnectPlatformError.identityKeysOutOfDate }
+            let (recorded, bindings, nowMilliseconds) = try sharedNow()
             let shared = Set(AppConnect.storedSharedProfileKeyIds(
                 recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds))
             let key = Self.keptSharedProfileKeysKey(scope: stores.scope, identityId: identityId)

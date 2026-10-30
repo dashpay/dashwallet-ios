@@ -64,9 +64,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// Each read of `sharedProfileAccess` takes the next number; only the
     /// latest one started is shown, so a slow older read cannot overwrite it.
     private var sharedProfileAccessGeneration = 0
-    /// Whether the latest shown read found the active identity with no such
-    /// key, as opposed to no readable wallet or identity.
-    private var sharedProfileAccessFoundNone = false
+    /// The latest shown read as the data source gave it, a count of none
+    /// included, so an empty result keeps the scope and identity it is for.
+    private var lastSharedProfileRead: SharedProfileAccess?
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
@@ -152,7 +152,7 @@ final class ConnectionsViewModel: ObservableObject {
         let access = read?.keyCount == 0 ? nil : read
         if generation == sharedProfileAccessGeneration {
             sharedProfileAccess = access
-            sharedProfileAccessFoundNone = read?.keyCount == 0
+            lastSharedProfileRead = read
         }
         return access
     }
@@ -485,13 +485,14 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
         guard let access = sharedProfileAccess else {
-            // A read finished while the confirmation was up. Only one that
-            // read the identity and found none says so.
-            message = sharedProfileAccessFoundNone
+            // A read finished while the confirmation was up and shows none.
+            // Only one for the confirmed wallet and identity says so; another
+            // one's says nothing about the keys confirmed.
+            message = readNone(for: shown)
                 ? ConnectionsScreenMessage(
                     kind: .success,
                     text: NSLocalizedString("No DashPay profile key needed revoking.", comment: "DashConnect"))
-                : Self.sharedProfileAccessUncheckedMessage
+                : Self.sharedProfileAccessChangedMessage
             return
         }
         guard canActOnSharedProfileAccess else {
@@ -541,7 +542,8 @@ final class ConnectionsViewModel: ObservableObject {
         // Only the keys the user was shown: a read that finished while the
         // confirmation was up may count others, or none.
         guard let access = sharedProfileAccess else {
-            if !sharedProfileAccessFoundNone { message = Self.sharedProfileAccessUncheckedMessage }
+            // None left for the identity shown: nothing to keep.
+            if !readNone(for: shown) { message = Self.sharedProfileAccessChangedMessage }
             return
         }
         guard canActOnSharedProfileAccess else {
@@ -569,6 +571,13 @@ final class ConnectionsViewModel: ObservableObject {
             }
             await self.readSharedProfileAccess()
         }
+    }
+
+    /// Whether the latest read found no shared key for the wallet, network
+    /// and identity `shown` was read for.
+    private func readNone(for shown: SharedProfileAccess?) -> Bool {
+        guard let shown, let read = lastSharedProfileRead, read.keyCount == 0 else { return false }
+        return read.scope == shown.scope && read.identityId == shown.identityId
     }
 
     private static var busyMessage: ConnectionsScreenMessage {
