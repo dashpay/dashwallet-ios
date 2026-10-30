@@ -101,4 +101,16 @@ final class ContactPaymentReviewTests: XCTestCase {
         XCTAssertFalse(review.isSending)
         XCTAssertNil(review.take())
     }
+
+    #if DASHPAY
+    func testOnlyAnEstablishedContactCanBePaid() {
+        let date = Date(timeIntervalSince1970: 0)
+        let established = ContactItem.fixture(relationship: .established, createdAt: date)
+
+        XCTAssertEqual(SendViewModel.establishedContact(established), established)
+        XCTAssertNil(SendViewModel.establishedContact(nil), "a removed contact")
+        XCTAssertNil(SendViewModel.establishedContact(.fixture(relationship: .incoming, createdAt: date)))
+        XCTAssertNil(SendViewModel.establishedContact(.fixture(relationship: .outgoing, createdAt: date)))
+    }
+    #endif
 }

@@ -681,10 +681,7 @@ final class SendViewModel: ObservableObject {
     /// or no longer established, keeps the amount step from sending.
     private func refreshContactRecipient() {
         guard let id = contactRecipient?.contactIdentityId else { return }
-        // `contactItem(for:)` also answers with a pending request,
-        // which is not a payable contact.
-        guard let latest = SwiftDashSDKContactsService.shared.contactItem(for: id),
-              latest.relationship == .established
+        guard let latest = Self.establishedContact(SwiftDashSDKContactsService.shared.contactItem(for: id))
         else {
             if !isContactRecipientGone { isContactRecipientGone = true }
             return
@@ -692,6 +689,15 @@ final class SendViewModel: ObservableObject {
         if isContactRecipientGone { isContactRecipientGone = false }
         // Republished on every save and sync; only a change redraws.
         if contactRecipient != latest { contactRecipient = latest }
+    }
+
+    /// The contact if it is still established, or nil. `contactItem(for:)`
+    /// also answers with a pending request, which is not a contact to pay.
+    /// A broken payment channel is a separate check
+    /// (`isContactPaymentUnavailable`), with its own message.
+    nonisolated static func establishedContact(_ latest: ContactItem?) -> ContactItem? {
+        guard let latest, latest.relationship == .established else { return nil }
+        return latest
     }
 
     /// A contact payment can only be funded from the transparent balance.
