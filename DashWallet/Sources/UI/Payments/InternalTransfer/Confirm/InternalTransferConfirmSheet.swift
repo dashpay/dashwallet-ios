@@ -52,6 +52,7 @@ struct InternalTransferConfirmSheet: View {
         isFullPlatformWithdrawal: Bool = false,
         isFullShieldedSweep: Bool = false,
         platformShieldAmountWasMax: Bool = false,
+        coreShieldedDrain: CoreShieldedDrainConfirmation? = nil,
         identityTopUp: IdentityTopUpTransfer? = nil,
         identityWithdrawal: IdentityWithdrawalTransfer? = nil,
         onCancel: @escaping () -> Void,
@@ -72,7 +73,8 @@ struct InternalTransferConfirmSheet: View {
             withdrawalFeeCredits: withdrawalFeeCredits,
             isFullPlatformWithdrawal: isFullPlatformWithdrawal,
             isFullShieldedSweep: isFullShieldedSweep,
-            platformShieldAmountWasMax: platformShieldAmountWasMax))
+            platformShieldAmountWasMax: platformShieldAmountWasMax,
+            coreShieldedDrain: coreShieldedDrain))
         self.onCancel = onCancel
         self.onSubmitted = onSubmitted
         self.onPlatformShieldCapacityChanged = onPlatformShieldCapacityChanged
@@ -103,6 +105,12 @@ struct InternalTransferConfirmSheet: View {
                         .padding(.top, 14)
 
                     TransferSummaryCard(summary: viewModel.summary)
+                    if let feeDetails = viewModel.coreDrainFeeDetails {
+                        Text(feeDetails).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    if let explanation = viewModel.coreDrainExplanation {
+                        Text(explanation).font(.footnote).foregroundStyle(.secondary)
+                    }
 
                     privacyTip
                 }

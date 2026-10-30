@@ -453,6 +453,24 @@ struct ExternalSendAmountScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 6)
 
+                    if let completion = viewModel.coreDrainCompletionNotice {
+                        Text(completion)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    if let estimateNotice = viewModel.coreDrainEstimateNotice {
+                        Text(estimateNotice)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+                    }
+                    if let action = viewModel.coreDrainActionTitle {
+                        Button(action) { viewModel.performCoreDrainAction() }
+                            .disabled(viewModel.isCoreDrainLoading)
+                    }
+
                     if let message = viewModel.amountValidationMessage {
                         TransferAmountValidationNote(message: message)
                             .padding(.horizontal, 20)
@@ -514,12 +532,13 @@ struct ExternalSendAmountScreen: View {
                     route: route,
                     destinationAddress: viewModel.trimmedAddress,
                     destinationRaw43: shieldedRecipientRaw43,
-                    dashDuffs: viewModel.dashDuffs,
+                    dashDuffs: viewModel.frozenCoreDrainSubmission?.dashDuffs ?? viewModel.dashDuffs,
                     creditsAmount: viewModel.creditsPreview,
-                    fiatText: viewModel.fiatAmountString,
+                    fiatText: viewModel.frozenCoreDrainSubmission?.fiatText ?? viewModel.fiatAmountString,
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    coreShieldedDrain: viewModel.frozenCoreDrainSubmission?.confirmation,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         didCompleteSend = true
@@ -567,7 +586,7 @@ struct ExternalSendAmountScreen: View {
                 ? NSLocalizedString("Send", comment: "")
                 : NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: isContactSendInFlight,
+            inProgress: isContactSendInFlight || viewModel.isCoreDrainLoading,
             actionHandler: continueAction
         )
     }
@@ -589,6 +608,9 @@ struct ExternalSendAmountScreen: View {
         if route == .coreToCore {
             onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
         } else {
+            // Frozen before the sheet is asked for, never read from view
+            // state: see `frozenCoreDrainSubmission`.
+            viewModel.freezeCoreDrainSubmission()
             showConfirm = true
         }
     }
@@ -657,6 +679,7 @@ struct ExternalSendAmountScreen: View {
     }
 
     private var dashAmountText: String {
+        if let amount = viewModel.coreDrainDashDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             return keypadBinding.wrappedValue
@@ -669,6 +692,7 @@ struct ExternalSendAmountScreen: View {
     }
 
     private var fiatAmountText: String {
+        if let amount = viewModel.coreDrainFiatDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             guard viewModel.parsedDashAmount > 0,
@@ -1106,10 +1130,19 @@ struct SendConfirmSheet: View {
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
     var isFullShieldedSweep: Bool = false
+    /// `.coreToShielded` Max: the whole eligible Core balance drains into the
+    /// recipient's address through the SDK wallet drain. `dashDuffs` and
+    /// `fiatText` are then its estimate; the figures below come from here.
+    var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+
+    private var isCoreDrain: Bool { coreShieldedDrain != nil }
+
+    /// An estimate is marked as one wherever the figure is drawn.
+    private var displayedFiatText: String { isCoreDrain ? "≈ " + fiatText : fiatText }
 
     var body: some View {
         DashUIKit.BottomSheet(
@@ -1125,12 +1158,18 @@ struct SendConfirmSheet: View {
             case .success:
                 successBody
             case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                ShieldedSubmittedUnconfirmedView(
+                    onDone: onCompleted,
+                    detail: isCoreDrain ? Self.drainPendingDetail : nil)
             default:
                 detailsBody
             }
         }
     }
+
+    private static let drainPendingDetail = NSLocalizedString(
+        "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.",
+        comment: "Send confirm sheet: drain outcome pending")
 
     /// The close button has to do what the visible button of the current phase
     /// does. In the terminal phases that is `onCompleted`, which also unwinds
@@ -1159,14 +1198,21 @@ struct SendConfirmSheet: View {
 
     private var detailsBody: some View {
         VStack(spacing: 0) {
-            DashAmount(
-                amount: dashDuffs,
-                font: .largeTitle,
-                dashSymbolFactor: 0.7,
-                showDirection: false)
-                .padding(.top, 14)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if isCoreDrain {
+                    Text("≈")
+                        .font(.largeTitle)
+                        .foregroundColor(.dash.primaryText)
+                }
+                DashAmount(
+                    amount: dashDuffs,
+                    font: .largeTitle,
+                    dashSymbolFactor: 0.7,
+                    showDirection: false)
+            }
+            .padding(.top, 14)
 
-            Text(fiatText)
+            Text(displayedFiatText)
                 .font(.subheadline)
                 .foregroundColor(.dash.secondaryText)
                 .padding(.top, 6)
@@ -1231,7 +1277,7 @@ struct SendConfirmSheet: View {
             PaymentSuccessHeader(
                 title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
                 amountDuffs: dashDuffs,
-                fiatText: fiatText)
+                fiatText: displayedFiatText)
 
             Spacer(minLength: 12)
 
@@ -1269,6 +1315,14 @@ struct SendConfirmSheet: View {
             summaryRow(
                 label: NSLocalizedString("Network fee", comment: ""),
                 value: networkFeeString)
+            if let breakdown = coreShieldedDrain?.feeBreakdownText {
+                Text(breakdown)
+                    .font(.footnote)
+                    .foregroundColor(.dash.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 10)
+            }
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
@@ -1318,6 +1372,7 @@ struct SendConfirmSheet: View {
     /// Flat fee estimate (credits) for the active route — same estimators as
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
+        if let drain = coreShieldedDrain { return drain.totalFeeCredits }
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -1358,6 +1413,12 @@ struct SendConfirmSheet: View {
     /// unavailable — `canContinue` fails closed before that can be confirmed,
     /// but the row must never show the un-inflated number.
     private var totalString: String {
+        if let drain = coreShieldedDrain {
+            // The whole candidate balance leaves the wallet; nothing comes
+            // back as change. The SDK settles the exact figure at confirm.
+            guard let total = Int64(exactly: drain.candidateBalanceDuffs) else { return "—" }
+            return "≈ " + total.formattedDashAmount
+        }
         guard route == .coreToShielded else {
             return dashDuffs.formattedDashAmount
         }
@@ -1409,6 +1470,9 @@ struct SendConfirmSheet: View {
     }
 
     private var infoTitle: String {
+        if isCoreDrain {
+            return NSLocalizedString("Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
+        }
         switch route {
         case .platformToCore, .shieldedToCore:
             return NSLocalizedString("Processing time", comment: "")
@@ -1418,6 +1482,11 @@ struct SendConfirmSheet: View {
     }
 
     private var infoBody: String {
+        if isCoreDrain {
+            return NSLocalizedString(
+                "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
+                comment: "Send confirm sheet: Core drain")
+        }
         switch route {
         case .shieldedToCore:
             return NSLocalizedString(
@@ -1444,6 +1513,12 @@ struct SendConfirmSheet: View {
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
+        // The wallet drain is one opaque SDK call that locks, proves and
+        // broadcasts; the coordinator reports it as a single stage.
+        if isCoreDrain {
+            steps.append(.init(label: NSLocalizedString("Sending", comment: "Send confirm sheet: drain in progress"), phase: .locking))
+            return steps
+        }
         // Only the asset-lock route has the on-chain locking stage.
         if route == .coreToShielded {
             steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
@@ -1468,6 +1543,11 @@ struct SendConfirmSheet: View {
             case .coreToShielded:
                 guard let destinationRaw43 else {
                     coordinator.reset()
+                    return
+                }
+                if let drain = coreShieldedDrain {
+                    await coordinator.performWalletDrain(
+                        drain, recipient: .external(raw43: destinationRaw43))
                     return
                 }
                 await coordinator.performAssetLock(
@@ -1522,8 +1602,10 @@ struct SendConfirmSheet: View {
         // If the just-failed Core → Shielded attempt already committed its
         // asset lock, RESUME that exact outpoint with the same recipient
         // instead of building a second lock (which strands the first) —
-        // mirrors the internal transfer's retry.
-        if route == .coreToShielded,
+        // mirrors the internal transfer's retry. A drain that reached a lock
+        // ends in `.submittedUnconfirmed`, never here; a failed one left no
+        // marker, so it confirms afresh under a new operation.
+        if route == .coreToShielded, !isCoreDrain,
            let op = coordinator.lastAssetLockOutPoint,
            let destinationRaw43 {
             coordinator.reset()
