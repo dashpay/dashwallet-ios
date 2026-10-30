@@ -204,11 +204,17 @@ enum AppConnect {
         return (0 ... UInt32.max).first { !taken.contains($0) }
     }
 
-    /// The ids the v2 records of `identityId` that wait for their update
-    /// add keys under: a new key under one of them would make that update,
-    /// or itself, be refused.
+    /// The ids the unconfirmed records of `identityId` whose update may
+    /// still land add keys under: every key of a v2 record waiting for its
+    /// update, and the session key of a one-QR registration that notes its
+    /// revision. A new key under one of them would make that update, or
+    /// itself, be refused. A caller retrying one of them leaves its own
+    /// record out of `grants`.
     static func reservedKeyIds(grants: [AppConnectGrant], identityId: String) -> Set<UInt32> {
-        Set(grants.filter { $0.identityId == identityId }.flatMap { $0.pendingUpdate?.addedKeys.map(\.keyId) ?? [] })
+        Set(grants.filter { $0.identityId == identityId && $0.isUnconfirmed }.flatMap { grant -> [UInt32] in
+            if let pending = grant.pendingUpdate { return pending.addedKeys.map(\.keyId) }
+            return grant.submittedRevision == nil ? [] : [grant.sessionKeyId]
+        })
     }
 
     /// The key an app is given: it can only sign for the contract the request

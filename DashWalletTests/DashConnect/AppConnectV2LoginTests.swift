@@ -1390,6 +1390,14 @@ extension AppConnectV2LoginTests {
             Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], identityId: "other"),
             Self.grant(sessionKeyId: 6),
         ]
+        var oneQR = Self.grant(sessionKeyId: 12, requestHash: "b1")
+        oneQR.unconfirmedKeyHash160 = "12"
+        oneQR.submittedRevision = 3
+        var oneQRWithoutRevision = Self.grant(sessionKeyId: 14, requestHash: "b2")
+        oneQRWithoutRevision.unconfirmedKeyHash160 = "14"
+        XCTAssertEqual(
+            AppConnect.reservedKeyIds(grants: grants + [oneQR, oneQRWithoutRevision], identityId: "identity"),
+            [4, 5, 12], "a one-QR registration that may still land holds its id too")
         let reserved = AppConnect.reservedKeyIds(grants: grants, identityId: "identity")
         XCTAssertEqual(reserved, [4, 5])
         let keys = [Self.key(0, level: .master), Self.key(1), Self.key(2), Self.key(3)]
@@ -1601,6 +1609,17 @@ extension AppConnectV2LoginTests {
         XCTAssertNil(
             unknown.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
             "an update whose outcome is not known proves nothing")
+    }
+
+    func testARenewalThatReusesItsKeysStillRetiresTheGrantsItReplaced() async throws {
+        var earlier = Self.grant(sessionKeyId: 7, requestHash: "aa", connectionId: "c1")
+        earlier.documentId = "doc"
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let store = MemoryGrantStore([old, earlier])
+        let calls = Calls()
+        _ = try await Self.register(earlier, add: [], disable: [], retiring: [old.key], store: store, calls: calls)
+        XCTAssertEqual(calls.submitted, 0, "nothing to send")
+        XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
     }
 
     func testARenewalThatCannotTurnOffEveryReplacedKeySubmitsNothing() async {
