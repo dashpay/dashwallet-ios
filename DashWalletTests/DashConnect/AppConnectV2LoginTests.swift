@@ -1521,9 +1521,14 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.confirming)]).map(\.status), [.active])
         XCTAssertEqual(
-            after([], bindings: [AppConnect.KeyBinding(keyId: 3, data: Data([3]), singleContractId: Self.appId)],
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 3, data: Data([3]), singleContractId: Self.appId, isV2AuthKeyShaped: true)],
                   rows: [row(.confirming)]).map(\.status),
-            [.active], "a live key bound to the app")
+            [.active], "a live auth key bound to the app")
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(keyId: 4, data: Data([4]), singleContractId: Self.appId)],
+                  rows: [row(.confirming)]).map(\.status),
+            [], "the app's encryption key connects nothing by itself")
         XCTAssertEqual(after([], rows: [row(.active)]).map(\.status), [.active], "only a confirming row is touched")
         let restored = PlatformDashConnectDataSource.rowsAfterDropping(
             appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
