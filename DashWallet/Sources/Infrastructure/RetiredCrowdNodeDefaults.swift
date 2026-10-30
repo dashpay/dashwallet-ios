@@ -24,13 +24,13 @@ import WebKit
 ///
 /// Runs once, recorded by a done flag. Before the first unlock after a reboot
 /// UserDefaults can read back empty, and a flag written then would skip the
-/// keys for good, so a launch without protected data leaves the work to the
-/// next one.
+/// keys for good, so an activation without protected data leaves the work to
+/// the next one.
 @objc(DWRetiredCrowdNodeDefaults)
 final class RetiredCrowdNodeDefaults: NSObject {
     static let doneKey = "retiredCrowdNodeDefaultsRemoved"
     /// Set only once WebKit reports the removal done, so an app killed
-    /// mid-removal tries again on a later launch.
+    /// mid-removal tries again on a later activation.
     static let websiteDataDoneKey = "retiredCrowdNodeWebsiteDataRemoved"
 
     /// Keys stored as written, not per wallet. The names are copied byte for
@@ -61,47 +61,26 @@ final class RetiredCrowdNodeDefaults: NSObject {
         "crowdNodeFruitlessRestoreTxCountKey",
     ]
 
+    /// Called on every activation; each part retries until it is recorded
+    /// as done.
     @MainActor @objc
     static func removeAllOnce() {
-        let defaults = UserDefaults.standard
-        removeAllOnce(from: defaults, isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable)
-        guard !defaults.bool(forKey: websiteDataDoneKey) else { return }
-        if UIApplication.shared.applicationState == .active {
-            removeWebsiteDataIfNeeded()
-            return
-        }
-        // At launch the app is not active yet; wait for the first activation.
-        guard activationObserver == nil else { return }
-        activationObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated {
-                if let observer = activationObserver {
-                    NotificationCenter.default.removeObserver(observer)
-                    activationObserver = nil
-                }
-                removeWebsiteDataIfNeeded()
-            }
-        }
-    }
-
-    @MainActor private static var activationObserver: NSObjectProtocol?
-
-    @MainActor
-    private static func removeWebsiteDataIfNeeded() {
         let application = UIApplication.shared
         let defaults = UserDefaults.standard
-        guard shouldRemoveWebsiteData(defaults: defaults,
-                                      isProtectedDataAvailable: application.isProtectedDataAvailable,
-                                      isActive: application.applicationState == .active) else { return }
-        removeWebsiteData {
-            defaults.set(true, forKey: websiteDataDoneKey)
+        removeAllOnce(from: defaults, isProtectedDataAvailable: application.isProtectedDataAvailable)
+        if shouldRemoveWebsiteData(defaults: defaults,
+                                   isProtectedDataAvailable: application.isProtectedDataAvailable,
+                                   isActive: application.applicationState == .active) {
+            removeWebsiteData {
+                defaults.set(true, forKey: websiteDataDoneKey)
+            }
         }
     }
 
     /// Website data goes only while the app is in the foreground: removing
     /// it starts WebKit's processes, which a background launch (refresh,
     /// push) shouldn't pay for, and iOS may suspend it before WebKit reports
-    /// back. Until a removal is reported done, a later launch tries again.
+    /// back. Until a removal is reported done, a later activation tries again.
     static func shouldRemoveWebsiteData(defaults: UserDefaults,
                                         isProtectedDataAvailable: Bool,
                                         isActive: Bool) -> Bool {

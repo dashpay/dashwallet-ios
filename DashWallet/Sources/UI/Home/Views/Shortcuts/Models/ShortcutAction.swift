@@ -40,7 +40,7 @@ enum ShortcutActionType: Int {
     case sendToContact
     // Raw values persist in DWGlobalOptions.shortcuts, so every case below
     // is pinned. 18 is retired and must never be reused: saved bars may
-    // still hold it, and `HomeViewModel` maps it to a live action on load.
+    // still hold it, and `restoredBar` maps it to a live action on load.
     case coinbase = 19
     case uphold = 20
     case topper = 21
@@ -61,9 +61,8 @@ extension ShortcutActionType {
 
     /// The bar a saved configuration shows. The saved config itself is never
     /// rewritten, so an action that is unavailable now comes back once its
-    /// gate passes again. An unknown raw value drops its slot, and so does a
-    /// retired one with no free candidate; a short bar makes the caller fall
-    /// back to the default bar.
+    /// gate passes again. An unknown raw value drops its slot; a short bar
+    /// makes the caller fall back to the default bar.
     ///
     /// Availability fallbacks:
     /// - the faucet becomes Spend off testnet (no mainnet faucet exists);
@@ -77,6 +76,8 @@ extension ShortcutActionType {
     /// A retired slot is filled last, with the first candidate the bar
     /// doesn't show yet — Spend (the faucet on testnet), then
     /// `retiredReplacements` — so it never adds a duplicate of a shown button.
+    /// The fallbacks above don't check for duplicates. With a four-slot bar
+    /// the eight candidates can't run out; if they ever did, the slot drops.
     static func restoredBar(saved rawValues: [Int],
                             isTestnet: Bool,
                             canSwitchWallet: Bool,
