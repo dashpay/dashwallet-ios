@@ -53,8 +53,9 @@ struct ConnectionStatusBadge: View {
         }
     }
 
-    /// Green only once the connection is live; the only other state is
-    /// `approved`, which reads as neutral blue while it waits for the next scan.
+    /// Green only once the connection is live; `approved` (waiting for the
+    /// next scan) and `confirming` (waiting for the network) read as neutral
+    /// blue.
     private var dotColor: Color {
         status == .active ? Color.dash.green : Color.dash.blue
     }
@@ -65,6 +66,8 @@ struct ConnectionStatusBadge: View {
             return NSLocalizedString("Approved", comment: "DashConnect")
         case .active:
             return NSLocalizedString("Active", comment: "DashConnect")
+        case .confirming:
+            return NSLocalizedString("Confirming", comment: "DashConnect")
         }
     }
 }

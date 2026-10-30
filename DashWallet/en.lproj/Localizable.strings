@@ -1192,6 +1192,7 @@
 /* SPV diagnostics */
 
 "Confirmed" = "Confirmed";
+"Confirming" = "Confirming";
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.";
 
 /* ZenLedger */

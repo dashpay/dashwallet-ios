@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "已确认";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "确认后将保存起始区块高度 %u，并在下次启动应用时清除该网络的链数据，重新下载并从该高度重新扫描过滤器。当前会话仍沿用旧的扫描下限——退出并重新打开应用即可开始。";
 

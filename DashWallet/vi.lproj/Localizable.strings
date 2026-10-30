@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "Đã xác nhận";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Việc xác nhận sẽ lưu độ cao khởi đầu %u và xoá dữ liệu chuỗi của mạng này ở lần mở ứng dụng sau, tải lại rồi quét lại các bộ lọc từ độ cao đó. Phiên đang chạy vẫn giữ mức sàn quét cũ — hãy thoát và mở lại ứng dụng để bắt đầu.";
 

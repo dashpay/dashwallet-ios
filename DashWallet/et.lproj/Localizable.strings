@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "Kinnitatud";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Kinnitamine salvestab alguskõrguse %u ja kustutab selle võrgu ahela andmed rakenduse järgmisel käivitamisel, laadib need uuesti alla ning skannib filtrid sellest kõrgusest uuesti läbi. Käimasolev seanss säilitab oma vana skannimispiiri — alustamiseks sulge rakendus ja ava see uuesti.";
 

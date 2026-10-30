@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "Potvrđena";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Potvrda čuva početnu visinu %u i briše podatke lanca ove mreže pri sledećem pokretanju aplikacije, ponovo ih preuzima i skenira filtere od te visine. Aktuelna sesija zadržava stari prag skeniranja — zatvorite i ponovo otvorite aplikaciju da biste počeli.";
 
