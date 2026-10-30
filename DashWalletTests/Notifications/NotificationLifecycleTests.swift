@@ -118,6 +118,14 @@ final class NotificationLifecycleTests: XCTestCase {
         XCTAssertEqual(client.removedDeliveredIdentifiers, [["tx.ab", "crowdnode.result", "CrowdNode"]])
     }
 
+    /// Older builds scheduled the legacy identifiers with a one-second
+    /// trigger; one still pending at activation is cancelled before it lands.
+    func testReconcileCancelsPendingLegacyRequests() async {
+        await lifecycle.reconcileAfterBecomingActive()
+
+        XCTAssertEqual(client.removedPendingIdentifiers, [["CrowdNode", "Now"]])
+    }
+
     func testReconcileRemovesNothingWhenNoTransactionNotificationsDelivered() async {
         client.deliveredSummaries = [
             DeliveredNotificationSummary(identifier: "swap.1", threadIdentifier: NotificationTopic.swap.rawValue),

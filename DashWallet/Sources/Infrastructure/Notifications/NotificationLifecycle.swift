@@ -35,6 +35,11 @@ final class NotificationLifecycle: NSObject {
     /// tray, where a tap has nowhere to go, so activation removes them along
     /// with the threads of `NotificationTopic.retiredRawValues`.
     nonisolated static let retiredIdentifiers: Set<String> = ["CrowdNode"]
+    /// Older builds scheduled the legacy identifiers with a one-second
+    /// trigger, so one may still be pending at activation and would land
+    /// after the tray was cleared. Sorted for a stable call.
+    nonisolated static let legacyPendingIdentifiers: [String] =
+        retiredIdentifiers.union([legacyTransactionIdentifier]).sorted()
 
     /// Presentation for notifications whose `userInfo` carries no
     /// `NotificationForegroundBehavior` — anything delivered by an older
@@ -86,7 +91,8 @@ final class NotificationLifecycle: NSObject {
 
     /// Become-active reconciliation: the app now shows the transactions
     /// feed, so the badge and the delivered transaction notifications are
-    /// stale, and notifications of retired kinds go with them. Other
+    /// stale, and notifications of retired kinds go with them, delivered or
+    /// still pending. Other
     /// threads (swap, DashPay, announcements) stay in the tray until acted
     /// on — but the badge is zeroed for all of them, so the store's unseen
     /// set is zeroed to match: the dispatcher computes every later badge
@@ -99,6 +105,7 @@ final class NotificationLifecycle: NSObject {
         // could submit a stale badge onto a tray this had just emptied.
         await submissions.run { [client, store] in
             client.setBadgeCount(0)
+            client.removePendingNotificationRequests(withIdentifiers: Self.legacyPendingIdentifiers)
             await Self.clearTray(topic: .transactions,
                                  extraThreads: NotificationTopic.retiredRawValues,
                                  extraIdentifiers: Self.retiredIdentifiers
