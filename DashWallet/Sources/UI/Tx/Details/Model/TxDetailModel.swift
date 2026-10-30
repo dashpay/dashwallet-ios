@@ -93,8 +93,15 @@ class TxDetailModel: NSObject {
     /// contact payment. Drives the header avatar and the contact row that
     /// stands in for the counterparty's raw address.
     lazy var contactParty: ContactParty? = swapOrderPlaceholder == nil
-        ? ContactParty(payment: transaction.dashPayPayment)
+        ? ContactParty(payment: transaction.dashPayPayment ?? recentContactPayment)
         : nil
+
+    /// A just-sent contact payment's contact, from the recent-sends registry:
+    /// the payment projection may not list the transaction yet when the
+    /// success screen opens. Only for a transaction that reads as sent —
+    /// without the projection a persisted row can read as received, and the
+    /// header would then contradict a "Sent to" contact row.
+    private var recentContactPayment: DashPayPaymentTxLookup.PaymentInfo?
 
     /// Display model for the contact on the other end of a DashPay payment.
     struct ContactParty: Hashable {
@@ -147,6 +154,10 @@ class TxDetailModel: NSObject {
     @objc(initWithTxidWire:)
     convenience init(txidWire: Data) {
         self.init(transaction: Self.resolve(txidWire: txidWire))
+        if transaction.direction == .sent {
+            recentContactPayment = WalletSendService.shared.recentSends
+                .entry(forTxidWire: txidWire)?.contactPayment
+        }
     }
 
     private static func resolve(txidWire: Data) -> Transaction {
@@ -470,7 +481,9 @@ extension TxDetailModel {
 extension TxDetailModel {
     /// Contact attribution comes from the SDK's DashPay payment history
     /// (`DashPayPaymentTxLookup`), which records the counterparty identity
-    /// and the true direction at send/sync time.
+    /// and the true direction at send/sync time — or, on a success screen
+    /// opened before that history lists the payment, from the recent-sends
+    /// registry (see `contactParty`).
     var hasSourceUser: Bool {
         contactParty?.isOutgoing == false
     }

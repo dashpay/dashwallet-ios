@@ -116,4 +116,21 @@ final class ContactPaymentReviewTests: XCTestCase {
         XCTAssertFalse(review.isSending)
         XCTAssertNil(review.take())
     }
+
+    func testTheSuccessScreenNamesTheContactBeforeTheProjectionListsThePayment() {
+        let txid = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let contactId = Data(repeating: 0xab, count: 32)
+        WalletSendService.shared.recentSends.record(
+            txidWire: txid, address: nil, amount: 1_000, fee: 226,
+            contactPayment: .init(
+                amountDuffs: 1_000, isOutgoing: true, counterpartyIdentityId: contactId,
+                counterpartyName: "Alice", counterpartyAlias: nil,
+                counterpartyAvatarURL: nil, counterpartyUsername: "alice"))
+
+        let party = TxDetailModel(txidWire: txid).contactParty
+
+        XCTAssertEqual(party?.identityId, contactId)
+        XCTAssertEqual(party?.name, "Alice")
+        XCTAssertEqual(party?.isOutgoing, true)
+    }
 }

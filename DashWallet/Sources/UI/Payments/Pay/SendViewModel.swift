@@ -928,7 +928,7 @@ final class SendViewModel: ObservableObject {
         contactBalanceMissDuffs = nil
 
         do {
-            let txid = try await WalletSendService.shared.broadcastContactPayment(prepared)
+            let txid = try await WalletSendService.shared.broadcastContactPayment(prepared, contact: contactRecipient)
             // Project the freshly recorded Sent entry to SwiftData right away
             // — the entry lives only in Rust memory until a projection runs,
             // and an app kill before one would lose it permanently (the SDK

@@ -185,8 +185,8 @@ final class PreparedStandardSend: NSObject {
 }
 
 /// In-memory record of just-broadcast sends, keyed by wire-order txid.
-/// Written at every broadcast-success point (standard, selected-input and
-/// BIP70 sends); read by the send-success screen (`TxDetailModel`) as the
+/// Written at every broadcast-success point (standard, selected-input, BIP70
+/// and DashPay contact sends); read by the send-success screen (`TxDetailModel`) as the
 /// fallback while the Rust persister hasn't written the `PersistentTransaction`
 /// row yet. Display-only data — never persisted, never fed back into the SDK.
 final class RecentSendsRegistry {
@@ -197,6 +197,9 @@ final class RecentSendsRegistry {
         /// Broadcast time — the honest "date" for a success screen shown
         /// before the row exists.
         let date: Date
+        /// The DashPay contact a contact payment went to, for the success
+        /// screen's contact row until the payment projection lists it.
+        let contactPayment: DashPayPaymentTxLookup.PaymentInfo?
     }
 
     private let lock = NSLock()
@@ -208,7 +211,13 @@ final class RecentSendsRegistry {
 
     /// - Parameter txidWire: wire-order txid (`Transaction.txHashData` byte
     ///   order). Broadcast callers hold display-order hashes — reverse first.
-    func record(txidWire: Data, address: String?, amount: UInt64, fee: UInt64) {
+    func record(
+        txidWire: Data,
+        address: String?,
+        amount: UInt64,
+        fee: UInt64,
+        contactPayment: DashPayPaymentTxLookup.PaymentInfo? = nil
+    ) {
         lock.lock()
         defer { lock.unlock() }
         if entries[txidWire] == nil {
@@ -217,7 +226,8 @@ final class RecentSendsRegistry {
                 entries.removeValue(forKey: insertionOrder.removeFirst())
             }
         }
-        entries[txidWire] = Entry(address: address, amount: amount, fee: fee, date: Date())
+        entries[txidWire] = Entry(
+            address: address, amount: amount, fee: fee, date: Date(), contactPayment: contactPayment)
     }
 
     func entry(forTxidWire txid: Data) -> Entry? {
@@ -620,9 +630,11 @@ final class WalletSendService: NSObject {
     /// DashPay pay-to-contact, second half: broadcasts the payment the user
     /// confirmed. No PIN here — `prepareContactPayment` asked for it.
     ///
+    /// - Parameter contact: the contact as the review showed it, which names
+    ///   the payment on the success screen.
     /// - Returns: the 32-byte transaction id, wire order.
     @discardableResult
-    func broadcastContactPayment(_ prepared: PreparedContactPayment) async throws -> Data {
+    func broadcastContactPayment(_ prepared: PreparedContactPayment, contact: ContactItem?) async throws -> Data {
         let contactIdentityId = prepared.contactIdentityId
         // While this one waited on the confirmation, another payment to this
         // contact may have ended unknown, the device may have gone offline,
@@ -653,8 +665,29 @@ final class WalletSendService: NSObject {
         // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
         // registry's key convention. No address: the DIP-15 receive address is
         // derived inside Rust and never crosses the FFI boundary.
-        recentSends.record(txidWire: txid, address: nil, amount: prepared.amount, fee: feeDuffs)
+        recentSends.record(
+            txidWire: txid, address: nil, amount: prepared.amount, fee: feeDuffs,
+            contactPayment: contact.flatMap {
+                $0.contactIdentityId == prepared.contactIdentityId ? Self.sentContactPayment(prepared, to: $0) : nil
+            })
         return txid
+    }
+
+    /// The contact-payment record the projection writes for a sent payment,
+    /// built from the contact as the review showed it.
+    private static func sentContactPayment(
+        _ prepared: PreparedContactPayment,
+        to contact: ContactItem
+    ) -> DashPayPaymentTxLookup.PaymentInfo {
+        func nonEmpty(_ value: String?) -> String? { value?.isEmpty == false ? value : nil }
+        return DashPayPaymentTxLookup.PaymentInfo(
+            amountDuffs: prepared.amount,
+            isOutgoing: true,
+            counterpartyIdentityId: prepared.contactIdentityId,
+            counterpartyName: nonEmpty(contact.profileDisplayName),
+            counterpartyAlias: nonEmpty(contact.alias),
+            counterpartyAvatarURL: nonEmpty(contact.avatarURL),
+            counterpartyUsername: nonEmpty(contact.username?.withoutDashSuffix))
     }
 
     /// Drop a prepared contact payment the user did not send: Rust releases
