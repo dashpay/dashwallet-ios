@@ -781,6 +781,14 @@ extension AppConnect {
             .sorted()
     }
 
+    /// Whether one identity update can turn off all of `keyIds`. A login
+    /// that replaces a connection's keys turns them all off in its own
+    /// update or is refused: leaving some on would report a replacement
+    /// that did not happen. A disconnect takes them in batches.
+    static func fitsOneUpdate(disabling keyIds: [UInt32]) -> Bool {
+        keyIds.count <= maxKeysDisabledPerUpdate
+    }
+
     /// The contracts and contract groups that v2-shaped keys no record names
     /// are bound to (`unrecordedV2Keys`), other than `appContractId`, the
     /// allowlisted foreign document types and Platform's system contracts

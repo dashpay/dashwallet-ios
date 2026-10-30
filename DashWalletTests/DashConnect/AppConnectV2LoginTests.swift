@@ -1027,6 +1027,12 @@ final class AppConnectV2LoginTests: XCTestCase {
             [3], "a damaged record never gets the identity's own keys disabled")
     }
 
+    func testARenewalTurnsOffEveryReplacedKeyInOneUpdateOrNone() {
+        let max = UInt32(AppConnect.maxKeysDisabledPerUpdate)
+        XCTAssertTrue(AppConnect.fitsOneUpdate(disabling: Array(1 ... max)))
+        XCTAssertFalse(AppConnect.fitsOneUpdate(disabling: Array(1 ... max + 1)))
+    }
+
     // MARK: - Disconnect and the grant record
 
     func testADisconnectDisablesEveryAuthKeyOfAV2Grant() {

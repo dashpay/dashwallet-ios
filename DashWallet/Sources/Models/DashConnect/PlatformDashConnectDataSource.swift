@@ -84,6 +84,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case loginUnresolved
     case grantNotRecorded
     case noFreeKeyId
+    case tooManyKeysToReplace
     case otherIdentitiesNotChecked
     case registrationPending
     case appConnectEncryptionKeyChanged
@@ -182,6 +183,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString("The active wallet or identity changed. Try again.", comment: "DashConnect")
         case .noFreeKeyId:
             return NSLocalizedString("This identity cannot take another key.", comment: "DashConnect")
+        case .tooManyKeysToReplace:
+            return NSLocalizedString(
+                "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.",
+                comment: "DashConnect")
         case .approvalOutOfDate:
             return NSLocalizedString(
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
@@ -1624,14 +1629,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: superseded).isEmpty else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
-        let disable = Array(AppConnect.supersededKeyIds(
+        let disable = AppConnect.supersededKeyIds(
             grants: superseded,
             identityId: identityId,
             appId: appId,
             connectionId: connectionId,
             keeping: reused,
             currentIdentityPublicKeys: currentPublicKeys
-        ).prefix(AppConnect.maxKeysDisabledPerUpdate))
+        )
+        guard AppConnect.fitsOneUpdate(disabling: disable) else {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: \(disable.count, privacy: .public) superseded keys do not fit one update; not renewing")
+            throw DashConnectPlatformError.tooManyKeysToReplace
+        }
         // The grants whose every key is off once the update lands.
         let liveAfterUpdate = Set(currentPublicKeys.filter(AppConnect.isLiveGrantedKey)
             .map { UInt32(bitPattern: $0.keyId) }).subtracting(disable)
