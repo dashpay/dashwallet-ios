@@ -476,6 +476,20 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
             [1, 2])
+        // Expiries past Int64.max arrive as negative bit patterns and are far
+        // in the future: counted, revoked, and still blocking when unplaced.
+        for far in [Int64.max, Int64(bitPattern: UInt64(Int64.max) + 1), -1] {
+            XCTAssertTrue(AppConnect.isUnexpired(far, nowMilliseconds: now))
+            XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)],
+                currentIdentityPublicKeys: [key(1, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertTrue(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: [], bindings: [binding(2, nil, expiresAt: far, unreadable: true)], nowMilliseconds: now))
+        }
+        XCTAssertFalse(AppConnect.isUnexpired(nil, nowMilliseconds: now))
+        XCTAssertFalse(AppConnect.isUnexpired(0, nowMilliseconds: now))
         // An hour of a fast device clock does not expire a working key.
         XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
             recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: now - 1_000)], nowMilliseconds: now), [1])
