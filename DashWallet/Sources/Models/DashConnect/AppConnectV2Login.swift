@@ -1165,7 +1165,8 @@ extension AppConnect {
             expected.purpose == .authentication
                 && expected.expiresAt.map { !isUnexpired(Int64(clamping: $0), nowMilliseconds: nowMilliseconds) } == true
         }
-        return allExpired ? .cannotLand : .unknown
+        // Its keys there, unplaced, may be a landed update still to settle.
+        return allExpired && !anyPresent ? .cannotLand : .unknown
     }
 
     /// Settles the v2 records of `identityId` whose update's outcome was not

@@ -1825,7 +1825,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 addedKeys: add.map(AppConnect.ExpectedKey.init),
                 disabledKeyIds: disable,
                 retiredGrantKeys: retiredGrantKeys.sorted(),
-                outlivedBy: pendingRetry?.pendingUpdate?.outlivedBy,
+                // The submission about to be sent is built past any update
+                // noted on the earlier one, and can land after it.
+                outlivedBy: nil,
                 replacesApprovedRow: previousRow?.status == .approved
                     || (previousRow?.status == .confirming && stores.grants.load().contains {
                         $0.appContractId == appId && $0.pendingUpdate?.replacesApprovedRow == true
