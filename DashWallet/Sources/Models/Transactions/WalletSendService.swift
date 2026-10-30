@@ -557,12 +557,15 @@ final class WalletSendService: NSObject {
         fileprivate let wallet: ManagedPlatformWallet
         /// The DashPay identity that signed it.
         fileprivate let senderIdentityId: Data
+        /// The network selected when it was signed.
+        fileprivate let network: WalletEnvironment.NetworkKind
         fileprivate let payment: PreparedDashPayPayment
 
         fileprivate init(
             contactIdentityId: Data,
             wallet: ManagedPlatformWallet,
             senderIdentityId: Data,
+            network: WalletEnvironment.NetworkKind,
             payment: PreparedDashPayPayment
         ) {
             self.contactIdentityId = contactIdentityId
@@ -571,6 +574,7 @@ final class WalletSendService: NSObject {
             self.total = payment.totalDuffs
             self.wallet = wallet
             self.senderIdentityId = senderIdentityId
+            self.network = network
             self.payment = payment
         }
     }
@@ -595,13 +599,18 @@ final class WalletSendService: NSObject {
         // authorize a contact payment of any size.
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
-                return nil
+        let context: (wallet: ManagedPlatformWallet, ourId: Data, network: WalletEnvironment.NetworkKind)? =
+            await MainActor.run {
+                let network = WalletEnvironment.networkKind
+                // Mid-switch the host still publishes the old wallet: signing
+                // with it would only be refused at Send.
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      WalletEnvironment.activeWalletId(for: network) == wallet.walletId,
+                      let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
+                    return nil
+                }
+                return (wallet, ourId, network)
             }
-            return (wallet, ourId)
-        }
         guard let context else {
             throw Self.makeError(
                 code: .dashPayPaymentUnavailable,
@@ -624,6 +633,7 @@ final class WalletSendService: NSObject {
             contactIdentityId: contactIdentityId,
             wallet: context.wallet,
             senderIdentityId: context.ourId,
+            network: context.network,
             payment: payment)
     }
 
@@ -704,25 +714,27 @@ final class WalletSendService: NSObject {
     /// A prepared payment is sent only from the wallet and identity that are
     /// still active: the user may have switched while the review was open.
     ///
-    /// The active wallet id moves first on a switch, while the host still
-    /// publishes the old wallet until its teardown ends — so both are
-    /// compared. A missing identity is not a different one: the snapshot is
-    /// briefly nil while it rebuilds, and a wallet without the identity
-    /// already fails the wallet comparison.
+    /// The selected network and the active wallet id move first on a switch,
+    /// while the host still publishes the old wallet until its teardown ends —
+    /// so the network, the wallet id and the wallet handle are all compared;
+    /// a wallet id alone can repeat across networks. The identity is read
+    /// fresh rather than from the cached snapshot, and one that cannot be
+    /// read refuses too: the user prepares again.
     private func refuseIfSenderChanged(_ prepared: PreparedContactPayment) async throws {
         let mismatch: String? = await MainActor.run {
-            let activeWalletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
+            let network = WalletEnvironment.networkKind
+            guard network == prepared.network else { return "network changed" }
             guard SwiftDashSDKHost.shared.wallet === prepared.wallet,
-                  activeWalletId == prepared.wallet.walletId
-            else { return "wallet" }
-            if let identityId = DWCurrentUserIdentityInfo.shared.identityId,
-               identityId != prepared.senderIdentityId {
-                return "identity"
+                  WalletEnvironment.activeWalletId(for: network) == prepared.wallet.walletId
+            else { return "wallet changed" }
+            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId else {
+                return "identity unreadable"
             }
+            guard identityId == prepared.senderIdentityId else { return "identity changed" }
             return nil
         }
         if let mismatch {
-            Self.logger.info("💸 TXSEND :: pay-to-contact refused — the active \(mismatch, privacy: .public) changed since prepare")
+            Self.logger.info("💸 TXSEND :: pay-to-contact refused — sender check failed: \(mismatch, privacy: .public)")
             throw Self.makeError(code: .broadcastRejected, description: BroadcastOutcomeCopy.contactPaymentChanged)
         }
     }
