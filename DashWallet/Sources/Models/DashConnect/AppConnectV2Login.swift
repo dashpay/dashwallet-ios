@@ -1102,7 +1102,7 @@ extension AppConnect {
     /// guessed: the SDK does not say which revision it signed.
     ///
     /// - Every added key there as it was added, or turned off since: it
-    ///   landed (`landedAndOff` when every one of them is off).
+    ///   landed (`landedAndOff` when every auth key of it is off).
     /// - A key under one of its ids with other data: Platform refuses an
     ///   update that adds an id the identity has, and never removes a key,
     ///   so it can never land. The same data, live, with
@@ -1130,7 +1130,7 @@ extension AppConnect {
     ) -> PendingV2Outcome {
         var allLanded = true
         var anyPresent = false
-        var offCount = 0
+        var offAuthCount = 0
         for expected in pending.addedKeys {
             guard let key = keys.first(where: { UInt32(bitPattern: $0.keyId) == expected.keyId }) else {
                 allLanded = false
@@ -1139,7 +1139,7 @@ extension AppConnect {
             anyPresent = true
             guard key.data == expected.data else { return .cannotLand }
             guard key.disabledAt == nil else {
-                offCount += 1
+                if expected.purpose == .authentication { offAuthCount += 1 }
                 continue
             }
             let binding = bindings.first { $0.keyId == expected.keyId && $0.data == key.data }
@@ -1148,7 +1148,11 @@ extension AppConnect {
             if expected.bound != nil, binding == nil || binding?.hasUnreadableBound == true { continue }
             return .cannotLand
         }
-        if allLanded { return offCount == pending.addedKeys.count ? .landedAndOff : .landed }
+        // Nothing here turns an encryption key off (it is the identity's,
+        // shared by every device), so the update is done once its auth keys
+        // are.
+        let authCount = pending.addedKeys.filter { $0.purpose == .authentication }.count
+        if allLanded { return authCount > 0 && offAuthCount == authCount ? .landedAndOff : .landed }
         let takenElsewhere = pending.addedKeys.contains { expected in
             expected.keyType == .ecdsaSecp256k1 && keys.contains {
                 $0.keyType == .ecdsaSecp256k1 && $0.data == expected.data

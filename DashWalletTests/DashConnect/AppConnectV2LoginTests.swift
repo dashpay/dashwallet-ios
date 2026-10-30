@@ -1257,6 +1257,10 @@ extension AppConnectV2LoginTests {
                 Self.onIdentity(first, disabled: true), Self.onIdentity(second, disabled: true),
             ]),
             .landedAndOff)
+        let encryption = Self.addedEncryptionKey(9, data: 0x09)
+        XCTAssertEqual(
+            Self.outcome([first, encryption], keys: [Self.onIdentity(first, disabled: true), Self.onIdentity(encryption)]),
+            .landedAndOff, "the identity's encryption key is never turned off here")
     }
 
     func testAnIdHeldByAnotherKeyMeansThePendingUpdateCanNeverLand() {

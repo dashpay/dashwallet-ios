@@ -693,9 +693,10 @@ struct AppConnectGrant: Codable, Equatable {
     /// The hex hash160 of the session key, set from just before its
     /// registration is submitted until the key is seen on the identity.
     /// While set, the key may be there or not: an update can land without
-    /// confirming. Such a record has no row and no response; it is kept so
+    /// confirming. A one-QR record has no row and no response; it is kept so
     /// the key, if it lands, is found and confirmed, until a disconnect
-    /// finds that the update can no longer land.
+    /// finds that the update can no longer land. A v2 record
+    /// (`pendingUpdate`) has a confirming row and no response.
     var unconfirmedKeyHash160: String? = nil
     /// The identity revision the registration's update was submitted with,
     /// set with `unconfirmedKeyHash160`. Platform takes an identity update
