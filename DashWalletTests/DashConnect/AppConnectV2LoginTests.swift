@@ -485,6 +485,25 @@ final class AppConnectV2LoginTests: XCTestCase {
             currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
         XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
             recordedKeyIds: [], bindings: [], currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // A live v2 key the store cannot place counts even when the fetched
+        // view lacks it.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Not when that stored key is off, expired, or named by a record.
+        let placedOrOff: [(AppConnect.KeyBinding, Set<UInt32>)] = [
+            (binding(2, nil, unreadable: true).disabled(), []),
+            (binding(2, nil, expiresAt: 92_800_000, unreadable: true), []),
+            (binding(2, nil, unreadable: true), [2]),
+        ]
+        for (stored, recorded) in placedOrOff {
+            XCTAssertFalse(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: recorded, bindings: [stored], nowMilliseconds: now))
+        }
+        // One the fetched view shows off does not.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1), key(2, disabled: true)], nowMilliseconds: now), [1])
         // A stored profile key the fetched view lacks: the node is behind.
         XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
             recordedKeyIds: [], bindings: [binding(1, profile), binding(2, profile)],
@@ -1714,5 +1733,13 @@ extension AppConnectV2LoginTests {
             views: [([Self.key(3, disabled: true)], [])])
         XCTAssertEqual(grant, earlier, "its values are the ones on Platform")
         XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
+    }
+}
+
+private extension AppConnect.KeyBinding {
+    func disabled() -> AppConnect.KeyBinding {
+        var binding = self
+        binding.isDisabled = true
+        return binding
     }
 }

@@ -29,6 +29,11 @@ struct ConnectionsScreen: View {
 
     @StateObject private var viewModel: ConnectionsViewModel
     @State private var isConfirmingSharedProfileRevoke = false
+    @State private var isConfirmingSharedProfileKeep = false
+    /// The access the revoke confirmation was opened for.
+    @State private var sharedProfileAccessToRevoke: SharedProfileAccess?
+    /// The access the keep confirmation was opened for.
+    @State private var sharedProfileAccessToKeep: SharedProfileAccess?
 
     init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
@@ -51,10 +56,10 @@ struct ConnectionsScreen: View {
 
                 content
 
-                if viewModel.showsSharedProfileAccess {
-                    SharedProfileAccessRow(
-                        keyCount: viewModel.sharedProfileAccess?.keyCount,
-                        onRevoke: viewModel.canRevokeSharedProfileAccess ? { isConfirmingSharedProfileRevoke = true } : nil)
+                // With connections the row is in their card, so it scrolls
+                // with them; without, it stands on its own.
+                if viewModel.connections.isEmpty, let row = sharedProfileAccessRow {
+                    row
                         .modifier(MenuViewModifier())
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
@@ -84,12 +89,26 @@ struct ConnectionsScreen: View {
             titleVisibility: .visible
         ) {
             Button(NSLocalizedString("Revoke shared profile access", comment: "DashConnect"), role: .destructive) {
-                viewModel.revokeSharedProfileAccess()
+                viewModel.revokeSharedProfileAccess(sharedProfileAccessToRevoke)
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
             Text(NSLocalizedString(
                 "Every app that uses one of these keys, on this or another device, loses access to your DashPay profile and has to ask again.",
+                comment: "DashConnect"))
+        }
+        .confirmationDialog(
+            NSLocalizedString("Keep these keys?", comment: "DashConnect"),
+            isPresented: $isConfirmingSharedProfileKeep,
+            titleVisibility: .visible
+        ) {
+            Button(NSLocalizedString("Keep", comment: "DashConnect")) {
+                if let access = sharedProfileAccessToKeep { viewModel.keepSharedProfileAccess(access) }
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString(
+                "Keep them only if you recognize every one, for example from an app you connected on another device. This device stops counting them and cannot revoke them afterwards.",
                 comment: "DashConnect"))
         }
         .alert(item: messageBinding) { message in
@@ -115,6 +134,21 @@ struct ConnectionsScreen: View {
 
     // MARK: - States
 
+    /// The shared profile keys row, while there is something to show.
+    private var sharedProfileAccessRow: SharedProfileAccessRow? {
+        guard viewModel.showsSharedProfileAccess else { return nil }
+        return SharedProfileAccessRow(
+            keyCount: viewModel.sharedProfileAccess?.keyCount,
+            onRevoke: viewModel.canActOnSharedProfileAccess ? {
+                sharedProfileAccessToRevoke = viewModel.sharedProfileAccess
+                isConfirmingSharedProfileRevoke = true
+            } : nil,
+            onKeep: viewModel.canActOnSharedProfileAccess ? {
+                sharedProfileAccessToKeep = viewModel.sharedProfileAccess
+                isConfirmingSharedProfileKeep = true
+            } : nil)
+    }
+
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
             ConnectionsUnavailableState()
@@ -125,7 +159,8 @@ struct ConnectionsScreen: View {
                 connections: viewModel.connections,
                 onScanQR: showScanner,
                 onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect
+                onDisconnect: viewModel.disconnect,
+                footer: sharedProfileAccessRow.map { AnyView($0) }
             )
             .padding(.horizontal, 20)
         }
@@ -263,8 +298,10 @@ struct ConnectionsScreen: View {
 private struct SharedProfileAccessRow: View {
     /// `nil` when the store could not be read.
     let keyCount: Int?
-    /// `nil` when the identity could not be read: nothing to revoke on.
+    /// `nil` when the identity or the count could not be read: nothing to
+    /// revoke or keep.
     let onRevoke: (() -> Void)?
+    let onKeep: (() -> Void)?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -283,6 +320,12 @@ private struct SharedProfileAccessRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .combine)
 
+            if let onKeep {
+                Button(NSLocalizedString("Keep", comment: "DashConnect"), action: onKeep)
+                    .dashFont(.subhead)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel(Text(NSLocalizedString("Keep shared profile access", comment: "DashConnect")))
+            }
             if let onRevoke {
                 Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
                     .dashFont(.subhead)

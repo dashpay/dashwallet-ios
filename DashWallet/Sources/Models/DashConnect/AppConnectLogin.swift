@@ -820,6 +820,10 @@ protocol AppConnectResponseStore {
     /// Whether `save` keeps anything. A login must not register a key the
     /// store cannot record: its response could not be found again.
     var canPersist: Bool { get }
+    /// Whether the store holds a row `load` leaves out because it cannot be
+    /// read, and that may be a record of `identityId`: one naming another
+    /// identity is not.
+    func hasUnreadableRows(identityId: String) -> Bool
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
     /// This store fixed to one wallet, and to the network scope it has now,
@@ -829,6 +833,7 @@ protocol AppConnectResponseStore {
 
 extension AppConnectResponseStore {
     var canPersist: Bool { true }
+    func hasUnreadableRows(identityId: String) -> Bool { false }
 }
 
 /// Wallet- and network-scoped, like `UserDefaultsDashConnectStore`, whose
@@ -901,6 +906,14 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     /// False as well while the stored value is not a list of rows: `save`
     /// leaves such a value alone, so nothing new would be kept.
     var canPersist: Bool { storageKey != nil && !readRows().isNotRowList }
+
+    func hasUnreadableRows(identityId: String) -> Bool {
+        let rows = readRows()
+        return rows.isNotRowList || rows.unreadable.contains {
+            guard let named = ($0 as? [String: Any])?["identityId"] as? String else { return true }
+            return named == identityId
+        }
+    }
 
     func load() -> [AppConnectGrant] {
         readRows().grants
