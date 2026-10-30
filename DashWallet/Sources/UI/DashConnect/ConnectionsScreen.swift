@@ -54,14 +54,10 @@ struct ConnectionsScreen: View {
 
                 content
 
-                if viewModel.showsSharedProfileAccess {
-                    SharedProfileAccessRow(
-                        keyCount: viewModel.sharedProfileAccess?.keyCount,
-                        onRevoke: viewModel.canActOnSharedProfileAccess ? { isConfirmingSharedProfileRevoke = true } : nil,
-                        onKeep: viewModel.canActOnSharedProfileAccess ? {
-                            sharedProfileAccessToKeep = viewModel.sharedProfileAccess
-                            isConfirmingSharedProfileKeep = true
-                        } : nil)
+                // With connections the row is in their card, so it scrolls
+                // with them; without, it stands on its own.
+                if viewModel.connections.isEmpty, let row = sharedProfileAccessRow {
+                    row
                         .modifier(MenuViewModifier())
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
@@ -136,6 +132,18 @@ struct ConnectionsScreen: View {
 
     // MARK: - States
 
+    /// The shared profile keys row, while there is something to show.
+    private var sharedProfileAccessRow: SharedProfileAccessRow? {
+        guard viewModel.showsSharedProfileAccess else { return nil }
+        return SharedProfileAccessRow(
+            keyCount: viewModel.sharedProfileAccess?.keyCount,
+            onRevoke: viewModel.canActOnSharedProfileAccess ? { isConfirmingSharedProfileRevoke = true } : nil,
+            onKeep: viewModel.canActOnSharedProfileAccess ? {
+                sharedProfileAccessToKeep = viewModel.sharedProfileAccess
+                isConfirmingSharedProfileKeep = true
+            } : nil)
+    }
+
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
             ConnectionsUnavailableState()
@@ -146,7 +154,8 @@ struct ConnectionsScreen: View {
                 connections: viewModel.connections,
                 onScanQR: showScanner,
                 onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect
+                onDisconnect: viewModel.disconnect,
+                footer: sharedProfileAccessRow.map { AnyView($0) }
             )
             .padding(.horizontal, 20)
         }
