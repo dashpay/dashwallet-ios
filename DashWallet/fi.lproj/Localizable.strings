@@ -261,6 +261,8 @@
 
 /* Usernames */
 "Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "Lisää %@ Dash suojattuun saldoosi ja anna sen levätä muutaman tunnin, jotta voit rekisteröityä ilman että käyttäjätunnuksesi yhdistyy muihin varoihisi.";
+"Add %@ Dash to your Shielded balance to create this username" = "Add %@ Dash to your Shielded balance to create this username";
+"Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance" = "Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
@@ -6008,12 +6010,10 @@
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "You need at least %@ Dash to create an invitation";
+"You need at least %@ Dash to create this username" = "You need at least %@ Dash to create this username";
 
 /* CrowdNode */
 "You need at least %@ on your Dash Wallet" = "You need at least %@ on your Dash Wallet";
-
-/* Usernames */
-"You need to have more %@ Dash to create this username" = "You need to have more %@ Dash to create this username";
 
 /* Usernames */
 "You need to have more than %@ Dash to create a username" = "You need to have more than %@ Dash to create a username";
@@ -6757,6 +6757,7 @@
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
 "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered." = "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered.";
 "You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash available (network fee reserved).\nSome usernames cost up to %2$@ Dash.";
+"You have %@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %2$@ Dash.";
 "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered." = "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered.";
 "You need a DashPay identity before you can move credits out of it." = "You need a DashPay identity before you can move credits out of it.";
 "You need a DashPay identity before you can top up its balance." = "You need a DashPay identity before you can top up its balance.";
@@ -6782,6 +6783,8 @@
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";
 "Your private keys" = "Your private keys";
+"Your recently shielded Dash can be used for this username at %@" = "Your recently shielded Dash can be used for this username at %@";
+"Your recently shielded Dash can be used for this username tomorrow at %@" = "Your recently shielded Dash can be used for this username tomorrow at %@";
 "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted." = "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted.";
 "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." = "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.";
 "Your Shielded balance changed. Close this confirmation and tap Max again." = "Your Shielded balance changed. Close this confirmation and tap Max again.";

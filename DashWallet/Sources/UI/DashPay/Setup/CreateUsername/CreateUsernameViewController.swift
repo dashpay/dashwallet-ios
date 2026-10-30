@@ -851,12 +851,20 @@ struct CreateUsernameView: View {
             text: NSLocalizedString("Numbers 2-9", comment: "DashPay Invitations"),
             rule: viewModel.nonContestedRule)
 
-        add(
-            id: "cost",
-            text: String.localizedStringWithFormat(
-                NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"),
-                viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
-            rule: viewModel.uiState.costRule)
+        if viewModel.uiState.costRule == .invalid, let blocker = viewModel.shieldedCostBlocker {
+            // Shielded is short of time or of notes, not of a price the
+            // user can read off this line; say which. Waiting is not a
+            // mistake, so only a real shortfall wears the red cross.
+            let (text, state) = blocker.criterion()
+            items.append(DashUIKit.Criterion(id: "cost", text: text, state: state))
+        } else {
+            add(
+                id: "cost",
+                text: String.localizedStringWithFormat(
+                    NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
+                    viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
+                rule: viewModel.uiState.costRule)
+        }
 
         add(
             id: "availability",
@@ -1880,3 +1888,37 @@ private struct InstantUsernameForm: View {
     }
 }
 
+
+extension CreateUsernameViewModel.ShieldedCostBlocker {
+    /// The cost row's text and mark. The maturity window is at most a few
+    /// hours, so a resting note is ready today or tomorrow.
+    func criterion(
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> (text: String, state: DashUIKit.CriterionState) {
+        switch self {
+        case .resting(let readyAt):
+            let time = DWDateFormatter.sharedInstance.timeOnly(from: readyAt)
+            let format = calendar.isDate(readyAt, inSameDayAs: now) || readyAt < now
+                ? NSLocalizedString("Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
+                : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
+            return (String.localizedStringWithFormat(format, time), .pending)
+
+        case .short(let shortfallDuffs, let dashBalanceCovers):
+            let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+            let format = dashBalanceCovers
+                ? NSLocalizedString("Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance", comment: "Usernames")
+                : NSLocalizedString("Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            return (String.localizedStringWithFormat(format, amount), .failed)
+
+        case .poolTooSmall(let current):
+            return (CreateUsernameViewModel.shieldedPoolTooSmallMessage(current: current), .pending)
+
+        case .cannotTopUp(let topUpDuffs):
+            // The words the registration refuses with, so the row and the
+            // refusal point the same way.
+            let error = DWIdentityRegistrationCoordinator.CoordinatorError.shieldedTopUpUnavailable(neededDuffs: topUpDuffs)
+            return (error.errorDescription ?? "", .failed)
+        }
+    }
+}
