@@ -256,7 +256,8 @@ struct ConnectionsScreen: View {
 /// accounts for, and the way to turn them all off. A disconnect leaves them,
 /// since their bound does not say which app was given them.
 private struct SharedProfileAccessRow: View {
-    let keyCount: Int
+    /// `nil` when the store could not be read.
+    let keyCount: Int?
     let onRevoke: () -> Void
 
     var body: some View {
@@ -265,9 +266,11 @@ private struct SharedProfileAccessRow: View {
                 Text(NSLocalizedString("Shared profile access", comment: "DashConnect"))
                     .dashFont(.subhead)
                     .foregroundStyle(Color.dash.primaryText)
-                Text(String(
-                    format: NSLocalizedString("DashPay profile keys no connection accounts for: %d", comment: "DashConnect"),
-                    keyCount))
+                Text(keyCount.map {
+                    String(
+                        format: NSLocalizedString("DashPay profile keys no connection accounts for: %d", comment: "DashConnect"),
+                        $0)
+                } ?? NSLocalizedString("DashPay profile keys could not be checked", comment: "DashConnect"))
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.tertiaryText)
             }

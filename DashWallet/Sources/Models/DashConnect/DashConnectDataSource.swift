@@ -57,13 +57,12 @@ protocol DashConnectDataSource {
     /// The live DashPay profile keys of the active identity that no grant
     /// record names, from the wallet's store: keys App Connect gave some app
     /// that a disconnect leaves on, because the bound does not say which app
-    /// it was. `nil` when the store cannot be read.
+    /// it was. `nil` when there is no active wallet or identity.
     func sharedProfileAccess() async -> SharedProfileAccess?
     /// Disables those keys, for every app that holds one, after the PIN
-    /// prompt and a fresh read of the identity, while `scope` (from
-    /// `sharedProfileAccess`) still names the active wallet. Returns how many
-    /// were disabled.
-    func revokeSharedProfileAccess(scope: String) async throws -> Int
+    /// prompt and a fresh read of the identity, while `access` still names
+    /// the active wallet and identity. Returns how many were disabled.
+    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -294,7 +293,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     /// The mock grants no keys, so it holds no shared profile key.
     func sharedProfileAccess() async -> SharedProfileAccess? { nil }
 
-    func revokeSharedProfileAccess(scope: String) async throws -> Int { 0 }
+    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int { 0 }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {

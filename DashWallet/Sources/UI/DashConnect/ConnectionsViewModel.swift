@@ -58,8 +58,12 @@ final class ConnectionsViewModel: ObservableObject {
     /// it finishes, which would lift the guard while a disconnect is still out.
     @Published private(set) var isDisconnecting = false
     /// The DashPay profile keys on the active identity that no connection
-    /// accounts for; `nil` when there are none or they could not be read.
+    /// accounts for: `nil` when there are none or no identity is active, a
+    /// `nil` `keyCount` when the store could not be read.
     @Published private(set) var sharedProfileAccess: SharedProfileAccess?
+    /// Each read of `sharedProfileAccess` takes the next number; only the
+    /// latest one started is shown, so a slow older read cannot overwrite it.
+    private var sharedProfileAccessGeneration = 0
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
@@ -123,11 +127,21 @@ final class ConnectionsViewModel: ObservableObject {
     /// Reads the shared profile keys again from the wallet's store.
     func refreshSharedProfileAccess() {
         guard !featureUnavailable else { return }
-        Task { [weak self] in
-            guard let self else { return }
-            let access = await self.dataSource.sharedProfileAccess()
-            self.sharedProfileAccess = (access?.keyCount ?? 0) > 0 ? access : nil
+        Task { [weak self] in await self?.readSharedProfileAccess() }
+    }
+
+    /// Reads the shared profile keys and shows them, unless a later read
+    /// started meanwhile. Returns what this read found.
+    @discardableResult
+    private func readSharedProfileAccess() async -> SharedProfileAccess? {
+        sharedProfileAccessGeneration += 1
+        let generation = sharedProfileAccessGeneration
+        let read = await dataSource.sharedProfileAccess()
+        let access = read?.keyCount == 0 ? nil : read
+        if generation == sharedProfileAccessGeneration {
+            sharedProfileAccess = access
         }
+        return access
     }
 
     func onQRScanned(_ content: String) {
@@ -410,16 +424,24 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription))
                 return
             }
-            let access = await self.dataSource.sharedProfileAccess()
-            self.sharedProfileAccess = (access?.keyCount ?? 0) > 0 ? access : nil
-            if let access = self.sharedProfileAccess {
+            let access = await self.readSharedProfileAccess()
+            // Only a one-QR login gives an app a DashPay profile key, so only
+            // its disconnect can leave one behind.
+            guard connection.loginKind == .oneQR, let access else { return }
+            if let keyCount = access.keyCount {
                 self.message = ConnectionsScreenMessage(
                     kind: .success,
                     text: String(
                         format: NSLocalizedString(
                             "Disconnected. DashPay profile keys that no connection accounts for are still active on this identity: %d. They may belong to this app or to another one. You can revoke them under Shared profile access.",
                             comment: "DashConnect"),
-                        access.keyCount))
+                        keyCount))
+            } else {
+                self.message = ConnectionsScreenMessage(
+                    kind: .success,
+                    text: NSLocalizedString(
+                        "Disconnected. Whether DashPay profile keys that no connection accounts for are still active on this identity could not be checked.",
+                        comment: "DashConnect"))
             }
         }
     }
@@ -428,15 +450,21 @@ final class ConnectionsViewModel: ObservableObject {
     /// every app that holds one. Same guards as `disconnect`: it signs an
     /// identity update.
     func revokeSharedProfileAccess() {
-        guard let access = sharedProfileAccess, !isDisconnecting, !isProcessingStateTransition, !isApproving,
-              !isApprovingPurchase, !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil
-        else { return }
+        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        guard let access = sharedProfileAccess else {
+            // A read finished while the confirmation was up and found none.
+            message = ConnectionsScreenMessage(
+                kind: .success,
+                text: NSLocalizedString("No DashPay profile key needed revoking.", comment: "DashConnect"))
+            return
+        }
         isDisconnecting = true
         Task { [weak self] in
             guard let self else { return }
             defer { self.isDisconnecting = false }
             do {
-                let disabled = try await self.dataSource.revokeSharedProfileAccess(scope: access.scope)
+                let disabled = try await self.dataSource.revokeSharedProfileAccess(access)
                 self.message = ConnectionsScreenMessage(
                     kind: .success,
                     text: disabled > 0
@@ -451,7 +479,7 @@ final class ConnectionsViewModel: ObservableObject {
                         format: NSLocalizedString("Could not revoke shared profile access: %@", comment: "DashConnect"),
                         error.localizedDescription))
             }
-            self.refreshSharedProfileAccess()
+            await self.readSharedProfileAccess()
         }
     }
 

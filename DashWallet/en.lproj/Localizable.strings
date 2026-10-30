@@ -6122,6 +6122,8 @@
 "Shared profile access" = "Shared profile access";
 "DashPay profile keys no connection accounts for: %d" = "DashPay profile keys no connection accounts for: %d";
 "Revoke" = "Revoke";
+"Disconnected. Whether DashPay profile keys that no connection accounts for are still active on this identity could not be checked." = "Disconnected. Whether DashPay profile keys that no connection accounts for are still active on this identity could not be checked.";
+"DashPay profile keys could not be checked" = "DashPay profile keys could not be checked";
 "Help" = "Help";
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
 "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";

@@ -365,8 +365,8 @@ final class AppConnectV2LoginTests: XCTestCase {
     }
 
     /// A disconnect finds the app's v2 keys that no record names: bound to
-    /// its contract, a document type on it, a group its owner owns, or the
-    /// allowlisted DashPay profile; with an expiry; HIGH or CRITICAL.
+    /// its contract, a document type on it, or a group its owner owns; with
+    /// an expiry; HIGH or CRITICAL. The allowlisted DashPay profile is shared.
     func testADisconnectFindsTheAppsV2KeysThatNoRecordNames() {
         let app = Data(repeating: 0xA1, count: 32)
         let group = Data(repeating: 0xB2, count: 32)
@@ -439,6 +439,57 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: [], currentIdentityPublicKeys: [key(3, level: .critical)]),
             [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
+    }
+
+    /// Revoking shared profile access takes the live, unexpired DashPay
+    /// profile keys no confirmed record names, and refuses a view of the
+    /// identity it cannot trust.
+    func testRevokingSharedProfileAccessTakesOnlyUnattributedLiveProfileKeys() {
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        let app = Data(repeating: 0xA1, count: 32)
+        let now: Int64 = 5_000
+        func key(_ id: Int32, expiresAt: Int64? = 9_000, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
+                totalBudget: nil, expiresAt: expiresAt)
+        }
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, expiresAt: Int64? = 9_000,
+                     unreadable: Bool = false) -> AppConnect.KeyBinding {
+            var binding = AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
+                                                hasUnreadableBound: unreadable, bound: bound)
+            binding.isV2AuthKeyShaped = true
+            binding.expiresAt = expiresAt
+            return binding
+        }
+        let profile = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
+        let keys = [key(1), key(2), key(3, expiresAt: 4_000), key(4), key(5)]
+        let bindings = [
+            binding(1, profile), binding(2, profile), binding(3, profile, expiresAt: 4_000),
+            binding(4, .singleContract(app)), binding(5, profile),
+        ]
+
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [5], bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [1, 2], "not the expired one, the app's own, or the recorded one")
+        XCTAssertEqual(
+            AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
+            [1, 2])
+        // A live v2 key the store cannot place may be a profile key.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [], currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // A stored profile key the fetched view lacks: the node is behind.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, profile)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Disabled on Platform: nothing to do.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile)],
+            currentIdentityPublicKeys: [key(1, disabled: true)], nowMilliseconds: now), [])
     }
 
     /// A v2 grant's CRITICAL group key is disabled under its recorded id,

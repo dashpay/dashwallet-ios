@@ -204,10 +204,12 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
 /// that no grant record names. Such a key's bound names no app, so a
 /// disconnect cannot tell whose it is and leaves it on.
 struct SharedProfileAccess: Equatable {
-    let keyCount: Int
-    /// Names the wallet and network the count was read for; a revoke acts
-    /// only while it still names the active one.
+    /// `nil` when the wallet's store could not be read: unknown, not none.
+    let keyCount: Int?
+    /// The wallet and network, and the identity, the count was read for; a
+    /// revoke acts only while they are still the active ones.
     let scope: String
+    let identityId: String
 }
 
 /// A pending request derived from a scanned login QR code.

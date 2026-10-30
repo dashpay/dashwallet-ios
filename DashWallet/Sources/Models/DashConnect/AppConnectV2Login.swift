@@ -844,6 +844,46 @@ extension AppConnect {
         .sorted()
     }
 
+    /// The unattributed profile keys the wallet's store shows as live and
+    /// not yet expired: what the Connections screen counts.
+    static func storedSharedProfileKeyIds(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        nowMilliseconds: Int64
+    ) -> [UInt32] {
+        let unexpired = Set(bindings.filter { ($0.expiresAt ?? 0) > nowMilliseconds }.map(\.keyId))
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(recordedKeyIds: recordedKeyIds, bindings: bindings))
+            .filter(unexpired.contains)
+    }
+
+    /// The keys revoking shared profile access disables, from a fresh view of
+    /// the identity: live, not yet expired, bound to an allowlisted foreign
+    /// document type, and named by no confirmed record (`recordedKeyIds`).
+    /// `nil` when the view cannot be trusted: a live v2-shaped key no record
+    /// names has no readable stored bound, so it may be one of them; or the
+    /// store holds one of them that the view lacks, so the node is behind.
+    static func sharedProfileKeyIdsToDisable(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        nowMilliseconds: Int64
+    ) -> [UInt32]? {
+        let hasUnplacedKey = currentIdentityPublicKeys.contains { key in
+            let keyId = UInt32(bitPattern: key.keyId)
+            return isLiveAppConnectAuthKey(key) && key.expiresAt != nil && !recordedKeyIds.contains(keyId)
+                && !bindings.contains { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
+        }
+        let fetchedKeyIds = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        guard !hasUnplacedKey, storedSharedProfileKeyIds(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds
+        ).allSatisfy(fetchedKeyIds.contains) else { return nil }
+        let unexpired = Set(currentIdentityPublicKeys
+            .filter { ($0.expiresAt ?? 0) > nowMilliseconds }.map { UInt32(bitPattern: $0.keyId) })
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys))
+            .filter(unexpired.contains)
+    }
+
     /// The live v2-shaped keys on the identity that no grant record of it
     /// names, as a reinstall or a lost record leaves them: HASH160
     /// authentication keys at HIGH or CRITICAL with an expiry (every v2

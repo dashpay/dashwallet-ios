@@ -246,6 +246,9 @@ enum AppConnect {
         /// The stored key has the shape of an App Connect v2 auth key:
         /// HASH160 authentication at HIGH or CRITICAL, with an expiry.
         var isV2AuthKeyShaped = false
+        /// When the stored key stops working, in milliseconds since 1970;
+        /// nil for a key with no expiry.
+        var expiresAt: Int64? = nil
     }
 
     /// A key's contract bound, as the wallet's store records it.
