@@ -23,8 +23,8 @@ public struct JoinDashPayScreen: View {
     /// Continue was tapped. The sheet that hosts this screen owns what comes
     /// next — `JoinDashPayInfoDialog` turns it into its voting-info page.
     var action: () -> Void
-    /// Non-nil renders the "Have an invitation?" entry — the
-    /// install-then-paste redeem path for invited users (DIP-13).
+    /// Non-nil renders the "Scan invitation QR" entry — the scan path into
+    /// the Home invitation card for invited users (DIP-13).
     var onClaimInvitation: (() -> Void)? = nil
 
     init(action: @escaping () -> Void, onClaimInvitation: (() -> Void)? = nil) {
@@ -113,9 +113,9 @@ public struct JoinDashPayScreen: View {
                         action: action
                     )
 
-                    // The redeem screen takes both a pasted link and a scan,
-                    // and it funds the registration itself — so it stays
-                    // tappable while the button above is greyed out.
+                    // A scanned invitation funds the registration itself, so
+                    // this stays tappable while the button above is greyed
+                    // out.
                     if let onClaimInvitation {
                         DashUIKit.DashButton(
                             text: NSLocalizedString("Scan invitation QR", comment: ""),
@@ -160,8 +160,9 @@ public struct JoinDashPayScreen: View {
     /// - Below the minimum, it names the minimum — same predicate as the
     ///   button, so a line saying the balance is short can never sit over a
     ///   button offering to spend it.
-    /// - Above the minimum but below what a contested name costs, it names
-    ///   that ceiling. The user picks the name on the NEXT screen, and by then
+    /// - Above the minimum but below what a contested name costs from the
+    ///   Dash or Platform balance, it names the most a username can cost from
+    ///   any source. The user picks the name on the NEXT screen, and by then
     ///   a short balance reads as the name being refused rather than as a
     ///   price they were never told.
     private var balanceNote: String? {
@@ -191,7 +192,7 @@ public struct JoinDashPayScreen: View {
 
 #if DEBUG
 
-/// Enough for a contested name (0.25 DASH, `DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME`):
+/// Enough for a contested name from the Dash balance (`ContestedUsernameFee`):
 /// no info line at all, Continue enabled. This is the state the redesign's
 /// "has enough balance" sheet starts from.
 #Preview("Enough for a contested name") {
