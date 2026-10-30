@@ -365,8 +365,8 @@ final class AppConnectV2LoginTests: XCTestCase {
     }
 
     /// A disconnect finds the app's v2 keys that no record names: bound to
-    /// its contract, a document type on it, a group its owner owns, or the
-    /// allowlisted DashPay profile; with an expiry; HIGH or CRITICAL.
+    /// its contract, a document type on it, or a group its owner owns; with
+    /// an expiry; HIGH or CRITICAL. The allowlisted DashPay profile is shared.
     func testADisconnectFindsTheAppsV2KeysThatNoRecordNames() {
         let app = Data(repeating: 0xA1, count: 32)
         let group = Data(repeating: 0xB2, count: 32)
@@ -411,12 +411,15 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(candidates.groups, [group, otherGroup])
         XCTAssertEqual(
             AppConnect.appsV2KeyIds(appContractIds: [app], appGroupIds: [group], keys: unrecorded),
-            [1, 2, 3, 5])
+            [1, 2, 3])
         // Another contract of the app's owner: a binding the request could
         // have had, so its key goes too.
         XCTAssertEqual(
             AppConnect.appsV2KeyIds(appContractIds: [app, other], appGroupIds: [group], keys: unrecorded),
-            [1, 2, 3, 5, 11])
+            [1, 2, 3, 11])
+        // The DashPay profile key names no app: it is never the app's, only
+        // shared, and the contact-request type v2 does not allow is neither.
+        XCTAssertEqual(AppConnect.unattributedProfileKeyIds(keys: unrecorded), [5])
         // A key the store cannot place is the disconnect's stop, not a guess.
         XCTAssertEqual(
             AppConnect.unrecordedV2Keys(
@@ -436,6 +439,93 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: [], currentIdentityPublicKeys: [key(3, level: .critical)]),
             [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
+    }
+
+    /// Revoking shared profile access takes the live, unexpired DashPay
+    /// profile keys no confirmed record names, and refuses a view of the
+    /// identity it cannot trust.
+    func testRevokingSharedProfileAccessTakesOnlyUnattributedLiveProfileKeys() {
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        let app = Data(repeating: 0xA1, count: 32)
+        let now: Int64 = 100_000_000
+        func key(_ id: Int32, expiresAt: Int64? = 200_000_000, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
+                totalBudget: nil, expiresAt: expiresAt)
+        }
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, expiresAt: Int64? = 200_000_000,
+                     unreadable: Bool = false) -> AppConnect.KeyBinding {
+            var binding = AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
+                                                hasUnreadableBound: unreadable, bound: bound)
+            binding.isV2AuthKeyShaped = true
+            binding.expiresAt = expiresAt
+            return binding
+        }
+        let profile = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
+        let keys = [key(1), key(2), key(3, expiresAt: 92_800_000), key(4), key(5)]
+        let bindings = [
+            binding(1, profile), binding(2, profile), binding(3, profile, expiresAt: 92_800_000),
+            binding(4, .singleContract(app)), binding(5, profile),
+        ]
+
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [5], bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [1, 2], "not the expired one, the app's own, or the recorded one")
+        XCTAssertEqual(
+            AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
+            [1, 2])
+        // Expiries past Int64.max arrive as negative bit patterns and are far
+        // in the future: counted, revoked, and still blocking when unplaced.
+        for far in [Int64.max, Int64(bitPattern: UInt64(Int64.max) + 1), -1] {
+            XCTAssertTrue(AppConnect.isUnexpired(far, nowMilliseconds: now))
+            XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)],
+                currentIdentityPublicKeys: [key(1, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertTrue(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: [], bindings: [binding(2, nil, expiresAt: far, unreadable: true)], nowMilliseconds: now))
+        }
+        XCTAssertFalse(AppConnect.isUnexpired(nil, nowMilliseconds: now))
+        XCTAssertFalse(AppConnect.isUnexpired(0, nowMilliseconds: now))
+        // An hour of a fast device clock does not expire a working key.
+        XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+            recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: now - 1_000)], nowMilliseconds: now), [1])
+        // A live v2 key the store cannot place may be a profile key.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [], currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // A live v2 key the store cannot place counts even when the fetched
+        // view lacks it.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Not when that stored key is off, expired, or named by a record.
+        let placedOrOff: [(AppConnect.KeyBinding, Set<UInt32>)] = [
+            (binding(2, nil, unreadable: true).disabled(), []),
+            (binding(2, nil, expiresAt: 92_800_000, unreadable: true), []),
+            (binding(2, nil, unreadable: true), [2]),
+        ]
+        for (stored, recorded) in placedOrOff {
+            XCTAssertFalse(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: recorded, bindings: [stored], nowMilliseconds: now))
+        }
+        // One the fetched view shows off does not.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1), key(2, disabled: true)], nowMilliseconds: now), [1])
+        // A stored profile key the fetched view lacks: the node is behind.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, profile)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Disabled on Platform: nothing to do.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile)],
+            currentIdentityPublicKeys: [key(1, disabled: true)], nowMilliseconds: now), [])
     }
 
     /// A v2 grant's CRITICAL group key is disabled under its recorded id,
@@ -1060,5 +1150,13 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertTrue(AppConnect.Login.twoQR.isApprovable)
         XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
         XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
+    }
+}
+
+private extension AppConnect.KeyBinding {
+    func disabled() -> AppConnect.KeyBinding {
+        var binding = self
+        binding.isDisabled = true
+        return binding
     }
 }

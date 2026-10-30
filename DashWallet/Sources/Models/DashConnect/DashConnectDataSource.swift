@@ -54,6 +54,20 @@ protocol DashConnectDataSource {
     /// on.
     func disconnect(id: String, scope: String?) async throws
     func remove(id: String, scope: String?) async
+    /// The live DashPay profile keys of the active identity that no grant
+    /// record names and the user did not keep, from the wallet's store: keys
+    /// App Connect gave some app that a disconnect leaves on, because the
+    /// bound does not say which app it was. `nil` when there is no active
+    /// wallet or identity; `nil` `keyIds` when they could not be told.
+    func sharedProfileAccess() async -> SharedProfileAccess?
+    /// Disables those keys, for every app that holds one, after the PIN
+    /// prompt and a fresh read of the identity, while `access` still names
+    /// the active wallet and identity. Returns how many were disabled.
+    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int
+    /// Records on this device, after the PIN prompt, that the user
+    /// recognizes the keys `access` counted that are still shared: they are
+    /// no longer counted or revoked from here. Nothing changes on Platform.
+    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -279,6 +293,16 @@ final class MockDashConnectDataSource: DashConnectDataSource {
 
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
+    }
+
+    /// The mock grants no keys, so it holds no shared profile key.
+    func sharedProfileAccess() async -> SharedProfileAccess? { nil }
+
+    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int { 0 }
+
+    /// The mock never reports keys to keep.
+    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {
+        throw DashConnectMockError.approveFailed
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

@@ -810,12 +810,10 @@ extension AppConnect {
 
     /// The ids of the keys in `keys` that belong to the app's v2 grants:
     /// bound to a contract the app's owner owns (`appContractIds`, the app's
-    /// own among them), a document type on one, a contract group that owner
-    /// owns (`appGroupIds`), or a foreign document type v2 allows (DashPay
-    /// `profile`). Those are the bindings `ownershipRefusal` lets a request
-    /// have. The last can be another app's when its record is lost too; it
-    /// is disabled all the same, since a key left on rather than off is what
-    /// a disconnect must not do, and that app's next sign-in adds a new one.
+    /// own among them), a document type on one, or a contract group that
+    /// owner owns (`appGroupIds`). A key bound to a foreign document type v2
+    /// allows (DashPay `profile`) is not among them: that bound names no
+    /// app, so with no record it may be any app's (`unattributedProfileKeyIds`).
     static func appsV2KeyIds(
         appContractIds: Set<Data>,
         appGroupIds: Set<Data>,
@@ -824,13 +822,99 @@ extension AppConnect {
         keys.filter { _, bound in
             switch bound {
             case .singleContract(let id): return appContractIds.contains(id)
-            case .documentType(let id, let name):
-                return appContractIds.contains(id) || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+            case .documentType(let id, _): return appContractIds.contains(id)
             case .contractGroup(let id): return appGroupIds.contains(id)
             }
         }
         .map(\.keyId)
         .sorted()
+    }
+
+    /// The ids of the keys in `keys` bound to a foreign document type v2
+    /// allows (DashPay `profile`). Every app can be given such a key and the
+    /// bound does not say which one was, so with no record a disconnect
+    /// leaves it on; only revoking shared profile access turns these off,
+    /// for every app that holds one.
+    static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
+        keys.filter { _, bound in
+            guard case .documentType(let id, let name) = bound else { return false }
+            return allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+        }
+        .map(\.keyId)
+        .sorted()
+    }
+
+    /// Whether a v2 key with this expiry may still work at `nowMilliseconds`.
+    /// A key that expired stays live on Platform but can no longer sign.
+    /// Platform goes by block time, so a device clock up to `clockTolerance`
+    /// fast does not count a working key as expired. Every v2 auth key has an
+    /// expiry; a key with none is not one, and counts as false here.
+    /// `expiresAt` carries the protocol's unsigned timestamp in an `Int64`'s
+    /// bits, so it is compared as unsigned: an expiry past `Int64.max` is far
+    /// in the future, not in the past.
+    static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
+        guard let expiresAt else { return false }
+        let earliest = max(0, nowMilliseconds - Int64(clockTolerance * 1000))
+        return UInt64(bitPattern: expiresAt) > UInt64(earliest)
+    }
+
+    /// The unattributed profile keys the wallet's store shows as live and
+    /// not yet expired: what the Connections screen counts.
+    static func storedSharedProfileKeyIds(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        nowMilliseconds: Int64
+    ) -> [UInt32] {
+        let unexpired = Set(bindings.filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map(\.keyId))
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(recordedKeyIds: recordedKeyIds, bindings: bindings))
+            .filter(unexpired.contains)
+    }
+
+    /// Whether the store shows a live, unexpired v2-shaped key that no record
+    /// names and whose bound this build cannot read: it may be a shared
+    /// profile key, so neither the count nor a revoke can be trusted.
+    static func hasUnplacedStoredKey(recordedKeyIds: Set<UInt32>, bindings: [KeyBinding], nowMilliseconds: Int64) -> Bool {
+        bindings.contains {
+            $0.isV2AuthKeyShaped && $0.hasUnreadableBound && !$0.isDisabled
+                && isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) && !recordedKeyIds.contains($0.keyId)
+        }
+    }
+
+    /// The keys revoking shared profile access disables, from a fresh view of
+    /// the identity: live, not yet expired, bound to an allowlisted foreign
+    /// document type, and not in `recordedKeyIds` (the keys confirmed records
+    /// name, and those the user kept).
+    /// `nil` when the view cannot be trusted: a live v2-shaped key no record
+    /// names, in the view or in the store, has no readable stored bound, so
+    /// it may be one of them; or the store holds one of them that the view
+    /// lacks, so the node is behind.
+    static func sharedProfileKeyIdsToDisable(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        nowMilliseconds: Int64
+    ) -> [UInt32]? {
+        let hasUnplacedKey = currentIdentityPublicKeys.contains { key in
+            let keyId = UInt32(bitPattern: key.keyId)
+            return isLiveAppConnectAuthKey(key) && isUnexpired(key.expiresAt, nowMilliseconds: nowMilliseconds)
+                && !recordedKeyIds.contains(keyId)
+                && !bindings.contains { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
+        }
+        let fetchedKeyIds = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        // The store's own copy counts too: a fetched view that lacks such a
+        // key does not show it is off. One the view shows off is.
+        let offInView = Set(currentIdentityPublicKeys.filter { $0.disabledAt != nil }.map { UInt32(bitPattern: $0.keyId) })
+        guard !hasUnplacedKey,
+              !hasUnplacedStoredKey(
+                  recordedKeyIds: recordedKeyIds.union(offInView), bindings: bindings, nowMilliseconds: nowMilliseconds),
+              storedSharedProfileKeyIds(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds
+        ).allSatisfy(fetchedKeyIds.contains) else { return nil }
+        let unexpired = Set(currentIdentityPublicKeys
+            .filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map { UInt32(bitPattern: $0.keyId) })
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys))
+            .filter(unexpired.contains)
     }
 
     /// The live v2-shaped keys on the identity that no grant record of it
