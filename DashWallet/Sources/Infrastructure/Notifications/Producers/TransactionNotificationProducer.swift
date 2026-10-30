@@ -282,7 +282,6 @@ final class TransactionNotificationProducer {
             DWLogger.log("TransactionNotificationProducer: window not exhausted; the catch-up boundary must stay put")
         }
 
-        // `consume` leaves an id that was already posted untouched.
         if appState.isApplicationActive {
             await consumeShownRows()
         }

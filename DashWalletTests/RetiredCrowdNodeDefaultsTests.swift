@@ -105,6 +105,15 @@ final class RetiredCrowdNodeDefaultsTests: XCTestCase {
         XCTAssertFalse(defaults.bool(forKey: RetiredCrowdNodeDefaults.doneKey))
     }
 
+    func testWebDomainMatchesTheServiceAndItsSubdomainsOnly() {
+        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("crowdnode.io"))
+        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain(".crowdnode.io"))
+        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("app.crowdnode.io"))
+        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("test.crowdnode.io"))
+        XCTAssertFalse(RetiredCrowdNodeDefaults.isWebDomain("mycrowdnode.io"))
+        XCTAssertFalse(RetiredCrowdNodeDefaults.isWebDomain("crowdnode.io.example.com"))
+    }
+
     func testSecondRunIsHarmless() {
         defaults.set(1, forKey: "crowdNodeInfoShownKey")
 

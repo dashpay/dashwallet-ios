@@ -29,19 +29,24 @@ final class ShortcutActionTypeTests: XCTestCase {
         XCTAssertNil(ShortcutActionType(rawValue: ShortcutActionType.retiredRawValue))
     }
 
-    func testRetiredEntryBecomesSpendOrFaucet() {
-        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [12, 15, 13, 18], isTestnet: false), [12, 15, 13, 14])
-        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [12, 15, 13, 18], isTestnet: true), [12, 15, 13, 22])
+    func testRetiredSlotBecomesSpendOrFaucet() {
+        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [.receive, .send, .explore, nil], isTestnet: false),
+                       [.receive, .send, .explore, .spend])
+        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [.receive, .send, .explore, nil], isTestnet: true),
+                       [.receive, .send, .explore, .getTestDash])
     }
 
-    func testRetiredEntryNeverDuplicatesAButtonOnTheBar() {
-        // Spend and Explore are taken, so the retired slot gets Receive.
-        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [14, 18, 13, 15], isTestnet: false), [14, 12, 13, 15])
-        // Faucet taken on testnet: the next free fallback.
-        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [22, 13, 12, 18], isTestnet: true), [22, 13, 12, 15])
+    /// Compared against the actions as shown: a slot that already fell back
+    /// to Spend counts, so the retired slot takes the next free candidate.
+    func testRetiredSlotNeverDuplicatesAShownButton() {
+        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [.spend, nil, .explore, .send], isTestnet: false),
+                       [.spend, .receive, .explore, .send])
+        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [.getTestDash, .explore, .receive, nil], isTestnet: true),
+                       [.getTestDash, .explore, .receive, .send])
     }
 
-    func testBarWithoutRetiredEntryIsUnchanged() {
-        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [12, 15, 19, 999], isTestnet: false), [12, 15, 19, 999])
+    func testBarWithoutRetiredSlotIsUnchanged() {
+        XCTAssertEqual(ShortcutActionType.replacingRetired(in: [.receive, .send, .coinbase, .nodes], isTestnet: false),
+                       [.receive, .send, .coinbase, .nodes])
     }
 }

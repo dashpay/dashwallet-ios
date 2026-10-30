@@ -29,6 +29,9 @@ import WebKit
 @objc(DWRetiredCrowdNodeDefaults)
 final class RetiredCrowdNodeDefaults: NSObject {
     static let doneKey = "retiredCrowdNodeDefaultsRemoved"
+    /// Set only once WebKit reports the removal done, so an app killed
+    /// mid-removal tries again on a later launch.
+    static let websiteDataDoneKey = "retiredCrowdNodeWebsiteDataRemoved"
 
     /// Keys stored as written, not per wallet. The names are copied byte for
     /// byte: the online-state key starts with a Cyrillic "с" (U+0441), and
@@ -60,10 +63,12 @@ final class RetiredCrowdNodeDefaults: NSObject {
 
     @MainActor @objc
     static func removeAllOnce() {
-        let didRun = removeAllOnce(from: .standard,
-                                   isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable)
-        if didRun {
-            removeWebsiteData()
+        let isProtectedDataAvailable = UIApplication.shared.isProtectedDataAvailable
+        removeAllOnce(from: .standard, isProtectedDataAvailable: isProtectedDataAvailable)
+        if isProtectedDataAvailable, !UserDefaults.standard.bool(forKey: websiteDataDoneKey) {
+            removeWebsiteData {
+                UserDefaults.standard.set(true, forKey: websiteDataDoneKey)
+            }
         }
     }
 
@@ -77,20 +82,30 @@ final class RetiredCrowdNodeDefaults: NSObject {
         return true
     }
 
-    /// The service's hosts end in this domain on every network.
+    /// The service's hosts are this domain or its subdomains on every network.
     private static let webDomain = "crowdnode.io"
 
+    /// `crowdnode.io` or a subdomain; a leading dot (cookie domain form) is
+    /// ignored, and a name merely ending in the same letters doesn't match.
+    static func isWebDomain(_ host: String) -> Bool {
+        let name = host.hasPrefix(".") ? String(host.dropFirst()) : host
+        return name == webDomain || name.hasSuffix("." + webDomain)
+    }
+
     @MainActor
-    private static func removeWebsiteData() {
+    private static func removeWebsiteData(completion: @escaping () -> Void) {
         let cookies = HTTPCookieStorage.shared
-        for cookie in cookies.cookies ?? [] where cookie.domain.hasSuffix(webDomain) {
+        for cookie in cookies.cookies ?? [] where isWebDomain(cookie.domain) {
             cookies.deleteCookie(cookie)
         }
         let store = WKWebsiteDataStore.default()
         store.fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            let retired = records.filter { $0.displayName.hasSuffix(webDomain) }
-            guard !retired.isEmpty else { return }
-            store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), for: retired) { }
+            let retired = records.filter { isWebDomain($0.displayName) }
+            guard !retired.isEmpty else {
+                completion()
+                return
+            }
+            store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), for: retired, completionHandler: completion)
         }
     }
 

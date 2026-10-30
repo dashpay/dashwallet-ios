@@ -1634,10 +1634,13 @@ extension HomeViewModel {
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
                 let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
-                let saved = ShortcutActionType.replacingRetired(in: customShortcuts.map(\.intValue),
-                                                                isTestnet: isTestnet)
-                let items = saved.compactMap { rawValue -> ShortcutAction? in
-                    guard var type = ShortcutActionType(rawValue: rawValue) else { return nil }
+                // `.some(nil)` marks a retired slot, filled below once every
+                // other slot shows its final action; an unknown value drops.
+                let slots = customShortcuts.compactMap { number -> ShortcutActionType?? in
+                    if number.intValue == ShortcutActionType.retiredRawValue {
+                        return .some(nil)
+                    }
+                    guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
                     // A faucet shortcut saved on testnet degrades to Spend
                     // after a switch to mainnet (no mainnet faucet exists);
                     // the saved config is untouched, so it comes back when
@@ -1666,8 +1669,10 @@ extension HomeViewModel {
                     if type == .nodes && !hasEvonodes {
                         type = isTestnet ? .getTestDash : .spend
                     }
-                    return ShortcutAction(type: type)
+                    return .some(type)
                 }
+                let items = ShortcutActionType.replacingRetired(in: slots, isTestnet: isTestnet)
+                    .map { ShortcutAction(type: $0) }
                 if items.count == maxShortcutsCount {
                     self.shortcutItems = items
                 } else {

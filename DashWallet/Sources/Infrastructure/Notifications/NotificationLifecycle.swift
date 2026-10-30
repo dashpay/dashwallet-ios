@@ -30,10 +30,10 @@ final class NotificationLifecycle: NSObject {
     /// The identifier older builds delivered every transaction notification
     /// under; removed on activation so upgraders don't keep a stale banner.
     nonisolated static let legacyTransactionIdentifier = "Now"
-    /// Threads and identifiers of notification kinds the app no longer
-    /// posts. Older builds may have left them in the tray, where a tap has
-    /// nowhere to go, so activation removes them.
-    nonisolated static let retiredThreadIdentifiers = NotificationTopic.retiredRawValues
+    /// Identifiers of notification kinds the app no longer posts, delivered
+    /// before they carried a thread. Older builds may have left them in the
+    /// tray, where a tap has nowhere to go, so activation removes them along
+    /// with the threads of `NotificationTopic.retiredRawValues`.
     nonisolated static let retiredIdentifiers: Set<String> = ["CrowdNode"]
 
     /// Presentation for notifications whose `userInfo` carries no
@@ -100,7 +100,7 @@ final class NotificationLifecycle: NSObject {
         await submissions.run { [client, store] in
             client.setBadgeCount(0)
             await Self.clearTray(topic: .transactions,
-                                 extraThreads: Self.retiredThreadIdentifiers,
+                                 extraThreads: NotificationTopic.retiredRawValues,
                                  extraIdentifiers: Self.retiredIdentifiers
                                      .union([Self.legacyTransactionIdentifier]),
                                  client: client,

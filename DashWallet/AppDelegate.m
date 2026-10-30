@@ -140,7 +140,10 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
-    [DWRetiredCrowdNodeDefaults removeAllOnce];
+    // Off the launch path: the cleanup walks every default and starts WebKit.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [DWRetiredCrowdNodeDefaults removeAllOnce];
+    });
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)

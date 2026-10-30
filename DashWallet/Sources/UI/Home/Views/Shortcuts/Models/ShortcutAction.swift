@@ -59,18 +59,19 @@ extension ShortcutActionType {
     /// The raw value of a retired shortcut that saved bars may still hold.
     static let retiredRawValue = 18
 
-    /// A saved bar with each retired entry replaced by the first action of
-    /// `retiredReplacements` the bar doesn't hold yet, so the bar keeps its
-    /// size and its other buttons without gaining a duplicate.
-    static func replacingRetired(in rawValues: [Int], isTestnet: Bool) -> [Int] {
-        var result = rawValues
-        for index in result.indices where result[index] == retiredRawValue {
-            let candidates = [isTestnet ? ShortcutActionType.getTestDash : .spend] + retiredReplacements
-            if let replacement = candidates.first(where: { !result.contains($0.rawValue) }) {
-                result[index] = replacement.rawValue
-            }
+    /// A restored bar with each retired slot (`nil`) filled by the first
+    /// candidate the bar doesn't show yet — Spend (the faucet on testnet),
+    /// then `retiredReplacements` — so the bar keeps its size and its other
+    /// buttons without the retired slot adding a duplicate. Takes the actions
+    /// as shown, after any availability fallback, so it compares against what
+    /// the user will see.
+    static func replacingRetired(in slots: [ShortcutActionType?], isTestnet: Bool) -> [ShortcutActionType] {
+        var shown = slots
+        let candidates = [isTestnet ? ShortcutActionType.getTestDash : .spend] + retiredReplacements
+        for index in shown.indices where shown[index] == nil {
+            shown[index] = candidates.first { !shown.contains($0) } ?? candidates[0]
         }
-        return result
+        return shown.compactMap { $0 }
     }
 
     /// Fallbacks for a retired entry after Spend (the faucet on testnet),
