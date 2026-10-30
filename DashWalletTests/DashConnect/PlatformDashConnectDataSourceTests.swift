@@ -1538,6 +1538,65 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.message?.kind, .error)
     }
 
+    /// A confirmed revoke whose access a later read replaced with none, of
+    /// another wallet, is not reported as nothing to revoke.
+    func testARevokeWhoseAccessWasReadAsNoneElsewhereIsNotReportedAsDone() async {
+        let spy = PurchaseApprovalSpy()
+        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
+        spy.sharedAccess = shown
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess != nil }
+        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-b t", identityId: "identity-b")
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess == nil }
+
+        viewModel.revokeSharedProfileAccess(shown)
+
+        XCTAssertEqual(spy.revoked, [])
+        XCTAssertEqual(viewModel.message?.kind, .error)
+    }
+
+    /// A read of the confirmed identity that finds none left is reported as
+    /// such; keeping then has nothing to do, and says nothing.
+    func testNoneLeftForTheConfirmedIdentityIsReportedAsNone() async {
+        let spy = PurchaseApprovalSpy()
+        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
+        spy.sharedAccess = shown
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess != nil }
+        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-a t", identityId: "identity-a")
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess == nil }
+
+        viewModel.keepSharedProfileAccess(shown)
+        XCTAssertNil(viewModel.message)
+        viewModel.revokeSharedProfileAccess(shown)
+
+        XCTAssertEqual(spy.revoked, [])
+        XCTAssertEqual(spy.kept, [])
+        XCTAssertEqual(viewModel.message?.kind, .success)
+    }
+
+    /// Keeping an access a later read of another wallet replaced is refused.
+    func testAKeepWhoseAccessWasReadAsNoneElsewhereIsRefused() async {
+        let spy = PurchaseApprovalSpy()
+        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
+        spy.sharedAccess = shown
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess != nil }
+        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-b t", identityId: "identity-b")
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess == nil }
+
+        viewModel.keepSharedProfileAccess(shown)
+
+        XCTAssertEqual(spy.kept, [])
+        XCTAssertEqual(viewModel.message?.kind, .error)
+    }
+
     /// Keeping goes with the access shown and reads the count again.
     func testKeepingSharedProfileAccessHidesTheKeysShown() async {
         let spy = PurchaseApprovalSpy()
