@@ -1551,7 +1551,23 @@ extension AppConnectV2LoginTests {
             after([], bindings: [AppConnect.KeyBinding(keyId: 4, data: Data([4]), singleContractId: Self.appId)],
                   rows: [row(.confirming)]).map(\.status),
             [], "the app's encryption key connects nothing by itself")
-        XCTAssertEqual(after([], rows: [row(.active)]).map(\.status), [.active], "only a confirming row is touched")
+        XCTAssertEqual(
+            after([], rows: [row(.active)]).map(\.status), [],
+            "an active one-QR row the waiting record kept goes once nothing holds the app")
+        XCTAssertEqual(
+            after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.active)]).map(\.status), [.active])
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 3, data: Data([3]), singleContractId: Self.appId, isSessionKeyShaped: true)],
+                  rows: [row(.active)]).map(\.status),
+            [.active], "a live session key of the app with no record")
+        let twoQR = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .active,
+                                   updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .twoQR)
+        XCTAssertEqual(after([], rows: [twoQR]).map(\.status), [.active], "a two-QR row is not the record's")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterDropping(
+                appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.active)]).map(\.status),
+            [], "only a confirming row goes back to the row it replaced")
         let restored = PlatformDashConnectDataSource.rowsAfterDropping(
             appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
         XCTAssertEqual(restored.map(\.status), [.approved], "the two-QR row it replaced comes back")
@@ -1607,7 +1623,8 @@ extension AppConnectV2LoginTests {
         store: MemoryGrantStore,
         calls: Calls,
         submit: @escaping () throws -> Void = {},
-        views: [View?] = []
+        views: [View?] = [],
+        rowsJudged: Bool = true
     ) async throws -> AppConnectGrant {
         var remaining = views
         return try await PlatformDashConnectDataSource.registerAppConnectV2Grant(
@@ -1620,7 +1637,10 @@ extension AppConnectV2LoginTests {
                 return remaining.isEmpty ? nil : remaining.removeFirst()
             },
             pause: { calls.pauses.append($0) },
-            onDropped: { calls.dropped += 1 })
+            onDropped: { _ in
+                calls.dropped += 1
+                return rowsJudged
+            })
     }
 
     func testAV2GrantIsRecordedAndShownBeforeItsUpdateIsSubmitted() async throws {
@@ -1727,6 +1747,23 @@ extension AppConnectV2LoginTests {
         }
         XCTAssertEqual(store.grants, [])
         XCTAssertEqual(calls.dropped, 1, "its row is repaired")
+    }
+
+    func testARecordWhoseRowsCannotBeJudgedIsNotDroppedYet() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let record = Self.pendingGrant([key])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                record, add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key, data: Data(repeating: 0xEE, count: 20))], [])], rowsJudged: false)
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants, [record], "the next settle drops it, with its rows judged")
+        XCTAssertEqual(calls.dropped, 1)
     }
 
     func testAFailedUpdateWhoseOutcomeIsUnknownKeepsItsRecord() async {

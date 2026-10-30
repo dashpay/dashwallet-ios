@@ -1869,11 +1869,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return (keys, bindings)
             },
             pause: { _ in try? await Task.sleep(nanoseconds: 3_000_000_000) },
-            onDropped: {
-                await showRowsAfterDropping(
-                    [record],
-                    bindings: try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer),
-                    in: stores)
+            onDropped: { remaining in
+                guard let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)
+                else { return false }
+                await showRowsAfterDropping([record], grants: remaining, bindings: bindings, in: stores)
+                return true
             }
         )
 
@@ -1933,7 +1933,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// submission's. A failure may still have landed:
     /// up to three reads (`reread`, `pause` before the second and third)
     /// settle it by `AppConnect.pendingV2Outcome`. Landed confirms as on
-    /// success; cannot land drops the record, runs `onDropped` and rethrows;
+    /// success; cannot land runs `onDropped` with the records without this
+    /// one, drops it when that wrote the rows, and rethrows;
     /// unknown keeps the record and rethrows. A record that adds nothing is
     /// confirmed from the start and only waits for its disables.
     ///
@@ -1950,7 +1951,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         submit: () async throws -> Void,
         reread: () async -> (keys: [ManagedIdentity.IdentityPublicKeyInfo], bindings: [AppConnect.KeyBinding])?,
         pause: (Int) async -> Void,
-        onDropped: () async -> Void
+        onDropped: ([AppConnectGrant]) async -> Bool
     ) async throws -> AppConnectGrant {
         guard AppConnect.fitsOneUpdate(disabling: disable) else {
             logger.error("🔗 DASHCONNECT :: \(disable.count, privacy: .public) superseded keys do not fit one update; not renewing")
@@ -2026,8 +2027,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     logger.info("🔗 DASHCONNECT :: the identity update \(what, privacy: .public); its record is dropped")
                     var all = didLand ? landed(noting: false) : grants.load()
                     all.removeAll { $0.key == record.key }
-                    grants.save(all)
-                    await onDropped()
+                    // Dropped only once its rows can be judged; otherwise the
+                    // next settle drops it.
+                    if await onDropped(all) { grants.save(all) }
                     throw error
                 case .unknown:
                     continue
@@ -2329,8 +2331,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// and its row shown; its response is not published: its approval
     /// stopped waiting, and the app asks again. One that cannot land is
     /// dropped, and its row with it when nothing else holds it
-    /// (`showRowsAfterDropping`); so is a confirming row whose record went
-    /// while its rows could not be judged. Returns the v2 grants confirmed.
+    /// (`showRowsAfterDropping`). Nothing is settled while the store's
+    /// bindings cannot be read. Returns the v2 grants confirmed.
     @discardableResult
     private func confirmRegistrations(
         identityId: String,
@@ -2344,15 +2346,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let readBindings = knownBindings
             ?? (try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer))
         let bindings = readBindings ?? []
-        // A confirming row whose record is gone (dropped while the rows could
-        // not be judged) is judged now.
-        // A record the store cannot read, of any identity, may be that row's.
-        let waitingAppIds = Set(stores.grants.load().filter(\.isPendingV2).map(\.appContractId))
-        let orphaned = Set(rows(in: stores)
-            .filter { $0.status == .confirming && !waitingAppIds.contains($0.id) }.map(\.id))
-        if !orphaned.isEmpty, !stores.grants.hasAnyUnreadableRows {
-            await showRowsAfterDropping(appIds: orphaned, restoringApproved: [], bindings: readBindings, in: stores)
-        }
         guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
         else { return [] }
         if stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }) {
@@ -2366,7 +2359,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         var confirmedV2: [AppConnectGrant] = []
-        if stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
+        // Without the store's bindings a v2 record is not settled: one that
+        // could not land would be dropped with its rows not judged.
+        if let readBindings, stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
             let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
             let settled = updateGrants(in: stores) { grants in
                 AppConnect.settlePendingV2Registrations(
@@ -2379,7 +2374,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             if !settled.dropped.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: dropping \(settled.dropped.count, privacy: .public) App Connect update(s) that can no longer land")
-                await showRowsAfterDropping(settled.dropped, bindings: readBindings, in: stores)
+                await showRowsAfterDropping(
+                    settled.dropped, grants: stores.grants.load(), bindings: readBindings, in: stores)
             }
         }
         let appIds = Self.appIdsWithoutTheirOneQRRow(
@@ -2397,36 +2393,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Writes the rows of the apps whose v2 records in `dropped` were
-    /// dropped (`rowsAfterDropping`).
+    /// dropped (`rowsAfterDropping`), judged by `grants` (the records left)
+    /// and `bindings`, the store's keys of the identity those records were
+    /// of.
     private func showRowsAfterDropping(
         _ dropped: [AppConnectGrant],
-        bindings: [AppConnect.KeyBinding]?,
+        grants: [AppConnectGrant],
+        bindings: [AppConnect.KeyBinding],
         in stores: Stores
     ) async {
-        await showRowsAfterDropping(
-            appIds: Set(dropped.map(\.appContractId)),
-            restoringApproved: Set(dropped.filter { $0.pendingUpdate?.replacesApprovedRow == true }.map(\.appContractId)),
-            bindings: bindings,
-            in: stores)
-    }
-
-    /// With the store's bindings unknown (`nil`) no row is changed: a live
-    /// key bound to the app could not be ruled out, and a confirming row can
-    /// still be disconnected. The next settle judges such a row again.
-    private func showRowsAfterDropping(
-        appIds: Set<String>,
-        restoringApproved: Set<String>,
-        bindings: [AppConnect.KeyBinding]?,
-        in stores: Stores
-    ) async {
-        guard let bindings else {
-            Self.logger.error("🔗 DASHCONNECT :: the key store could not be read; rows of dropped App Connect updates stay")
-            return
-        }
-        let grants = stores.grants.load()
+        let appIds = Set(dropped.map(\.appContractId))
+        let restoring = Set(dropped.filter { $0.pendingUpdate?.replacesApprovedRow == true }.map(\.appContractId))
         await updateRows(in: stores) { rows in
             Self.rowsAfterDropping(
-                appIds: appIds, restoringApproved: restoringApproved, grants: grants, bindings: bindings, rows: rows)
+                appIds: appIds, restoringApproved: restoring, grants: grants, bindings: bindings, rows: rows)
         }
     }
 
@@ -2447,9 +2427,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// `rows` once the v2 records of `appIds` that were waiting for their
-    /// update are dropped: a row still `.confirming` stays while another
-    /// such record of the app does; becomes active while a confirmed grant
-    /// of the app remains; goes back to the two-QR `.approved` row it
+    /// update are dropped: a `.confirming` row, or an active one-QR row the
+    /// waiting record kept, stays while another such record of the app
+    /// does; is active while a confirmed grant of the app remains; goes back to the two-QR `.approved` row it
     /// replaced (`restoringApproved`); becomes active while a live auth key
     /// the store shows bound to the app remains; and goes otherwise. Any other
     /// row is left as it is.
@@ -2461,7 +2441,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         rows: [DAppConnection]
     ) -> [DAppConnection] {
         rows.compactMap { row in
-            guard appIds.contains(row.id), row.status == .confirming else { return row }
+            // An active one-QR row the waiting record kept is judged too: the
+            // keys behind it may have gone off meanwhile.
+            let isConfirming = row.status == .confirming
+            guard appIds.contains(row.id),
+                  isConfirming || (row.status == .active && row.loginKind == .oneQR) else { return row }
             let appGrants = grants.filter { $0.appContractId == row.id }
             if appGrants.contains(where: \.isPendingV2) { return row }
             if appGrants.contains(where: { !$0.isUnconfirmed && $0.keyDisabled != true }) {
@@ -2469,7 +2453,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             // Before any key bound to the app: the two-QR login's keys are
             // bound to it too, and the row it replaced is theirs.
-            if restoringApproved.contains(row.id) {
+            if isConfirming, restoringApproved.contains(row.id) {
                 return row.withStatus(.approved, loginKind: .twoQR, at: row.updatedAt)
             }
             // An auth key: the app's encryption key stays on after a

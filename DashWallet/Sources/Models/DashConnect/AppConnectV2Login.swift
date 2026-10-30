@@ -1168,7 +1168,7 @@ extension AppConnect {
         if !anyPresent, pending.outlivedBy?.isShown(in: keys) == true { return .cannotLand }
         let allExpired = pending.addedKeys.allSatisfy { expected in
             expected.purpose == .authentication
-                && expected.expiresAt.map { !isUnexpired(Int64(clamping: $0), nowMilliseconds: nowMilliseconds) } == true
+                && expected.expiresAt.map { !isUnexpired(Int64(bitPattern: $0), nowMilliseconds: nowMilliseconds) } == true
         }
         // Its keys there, unplaced, may be a landed update still to settle.
         return allExpired && !anyPresent ? .cannotLand : .unknown
