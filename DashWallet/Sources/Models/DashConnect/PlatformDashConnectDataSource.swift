@@ -2348,8 +2348,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let identityId = context.identityId.toBase58String()
         let recorded = accountedKeyIds(of: identityId, in: stores)
         let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
-        guard let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer),
-              !AppConnect.hasUnplacedStoredKey(recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds)
+        var stored = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+        // An identity always has keys: none stored means not loaded yet, and
+        // one load writes them.
+        if stored?.isEmpty == true, (try? await refreshedIdentityPublicKeys(context: context)) != nil {
+            stored = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+        }
+        guard let bindings = stored,
+              Self.canTellSharedProfileKeys(
+                  identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores, nowMilliseconds: nowMilliseconds)
         else {
             return SharedProfileAccess(keyIds: nil, scope: stores.scope, identityId: identityId)
         }
@@ -2381,7 +2388,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let recorded = accountedKeyIds(of: identityId, in: stores)
             let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
             let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-            guard !AppConnect.hasUnplacedStoredKey(recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds)
+            guard Self.canTellSharedProfileKeys(
+                identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores, nowMilliseconds: nowMilliseconds)
             else { throw DashConnectPlatformError.identityKeysOutOfDate }
             let shared = Set(AppConnect.storedSharedProfileKeyIds(
                 recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds))
@@ -2398,6 +2406,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func accountedKeyIds(of identityId: String, in stores: Stores) -> Set<UInt32> {
         Self.recordedKeyIds(of: identityId, in: stores)
             .union(keptSharedProfileKeyIds(scope: stores.scope, identityId: identityId))
+    }
+
+    /// Whether the wallet's records can tell the shared profile keys apart:
+    /// not while the identity's keys are not loaded (an identity always has
+    /// some, so none stored means not loaded), a grant record cannot be read
+    /// (it may name one of them), or a stored key cannot be placed
+    /// (`AppConnect.hasUnplacedStoredKey`).
+    private static func canTellSharedProfileKeys(
+        identityId: String,
+        recordedKeyIds: Set<UInt32>,
+        bindings: [AppConnect.KeyBinding],
+        stores: Stores,
+        nowMilliseconds: Int64
+    ) -> Bool {
+        !bindings.isEmpty && !stores.grants.hasUnreadableRows(identityId: identityId)
+            && !AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds)
     }
 
     /// The shared profile keys the user kept for this identity in this scope.
@@ -2436,8 +2461,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard access.identityId == context.identityId.toBase58String() else {
             throw DashConnectPlatformError.walletChanged
         }
-        // A count that was never established is not a go-ahead.
-        guard access.keyCount != nil else { throw DashConnectPlatformError.identityKeysOutOfDate }
+        // A count that was never established is not a go-ahead, nor is one a
+        // grant record the store cannot read may contradict.
+        guard let shownKeyIds = access.keyIds, let accessIdentityId = access.identityId,
+              !stores.grants.hasUnreadableRows(identityId: accessIdentityId) else {
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
         try await authorize()
         context = try await contextAfterAuthorization(matching: context)
         let identityId = context.identityId.toBase58String()
@@ -2447,14 +2476,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
             modelContainer: context.modelContainer, in: stores)
-        guard let keyIds = AppConnect.sharedProfileKeyIdsToDisable(
+        let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+        guard !bindings.isEmpty, !stores.grants.hasUnreadableRows(identityId: identityId) else {
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
+        guard let unattributed = AppConnect.sharedProfileKeyIdsToDisable(
             recordedKeyIds: accountedKeyIds(of: identityId, in: stores),
-            bindings: try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer),
+            bindings: bindings,
             currentIdentityPublicKeys: currentPublicKeys,
             nowMilliseconds: Int64(AppConnect.milliseconds(now()))
         ) else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
+        // Only keys the user was shown: one that turned up since is counted
+        // and offered next time, not turned off unseen.
+        let shown = Set(shownKeyIds)
+        let keyIds = unattributed.filter(shown.contains)
         guard !keyIds.isEmpty else { return 0 }
         Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) shared profile key(s)")
         try await disableKeys(keyIds, context: context, signer: KeychainSigner(modelContainer: context.modelContainer))

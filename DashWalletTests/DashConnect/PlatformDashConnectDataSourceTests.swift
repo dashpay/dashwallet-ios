@@ -1390,7 +1390,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
 
         viewModel.message = nil
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
         await waitUntil { !viewModel.isDisconnecting && viewModel.message != nil }
 
         XCTAssertEqual(spy.revoked, [access])
@@ -1436,7 +1436,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.refreshSharedProfileAccess()
         await waitUntil { viewModel.sharedProfileAccess != nil }
 
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
 
         XCTAssertEqual(spy.revoked, [])
         XCTAssertFalse(viewModel.isDisconnecting)
@@ -1457,7 +1457,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { viewModel.sharedProfileAccess == nil }
 
         XCTAssertNil(viewModel.sharedProfileAccess)
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
         XCTAssertEqual(spy.revoked, [])
     }
 
@@ -1471,10 +1471,10 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { viewModel.sharedProfileAccess != nil }
         let reads = spy.sharedAccessReads
 
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
         XCTAssertTrue(viewModel.isDisconnecting)
         // A second tap while the first is still out must not start another.
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
         await waitUntil { !viewModel.isDisconnecting }
 
         XCTAssertEqual(spy.revoked.count, 1)
@@ -1493,7 +1493,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { viewModel.sharedProfileAccess != nil }
 
         XCTAssertFalse(viewModel.canActOnSharedProfileAccess)
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
         viewModel.keepSharedProfileAccess(try! XCTUnwrap(viewModel.sharedProfileAccess))
 
         XCTAssertEqual(spy.revoked, [])
@@ -1513,7 +1513,26 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.refreshSharedProfileAccess()
         await waitUntil { viewModel.sharedProfileAccess == nil }
 
-        viewModel.revokeSharedProfileAccess()
+        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
+
+        XCTAssertEqual(spy.revoked, [])
+        XCTAssertEqual(viewModel.message?.kind, .error)
+    }
+
+    /// A revoke goes only with the access its confirmation was opened for:
+    /// one read meanwhile, of another wallet or identity, is not revoked.
+    func testARevokeIsPinnedToTheAccessItWasConfirmedFor() async {
+        let spy = PurchaseApprovalSpy()
+        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
+        spy.sharedAccess = shown
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess != nil }
+        spy.sharedAccess = SharedProfileAccess(keyIds: [9], scope: "wallet-b t", identityId: "identity-b")
+        viewModel.refreshSharedProfileAccess()
+        await waitUntil { viewModel.sharedProfileAccess?.scope == "wallet-b t" }
+
+        viewModel.revokeSharedProfileAccess(shown)
 
         XCTAssertEqual(spy.revoked, [])
         XCTAssertEqual(viewModel.message?.kind, .error)
@@ -2511,6 +2530,7 @@ final class AppConnectLoginTests: XCTestCase {
         let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
 
         XCTAssertEqual(store.load().map(\.sessionKeyId), [6])
+        XCTAssertTrue(store.hasUnreadableRows(identityId: "identity"), "a record load leaves out may name a key")
         store.save(store.load() + [Self.grant(sessionKeyId: 7)])
         XCTAssertEqual(store.load().map(\.sessionKeyId), [6, 7])
 
@@ -2524,6 +2544,15 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertNotNil(defaults.data(forKey: "scope.app-connect-responses.v1"))
     }
 
+    func testAnUnreadableRowOfAnotherIdentityLeavesThisOneReadable() {
+        let stored = #"[{"identityId":"other","somethingNewer":true}]"#
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        XCTAssertFalse(store.hasUnreadableRows(identityId: "identity"))
+        XCTAssertTrue(store.hasUnreadableRows(identityId: "other"))
+    }
+
     func testAStoredValueThatIsNotARowListIsNeverReplaced() {
         let suiteName = "AppConnectResponseStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -2532,10 +2561,12 @@ final class AppConnectLoginTests: XCTestCase {
         let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
 
         XCTAssertTrue(store.canPersist)
+        XCTAssertFalse(store.hasUnreadableRows(identityId: "identity"))
         for stored in [Data(#"{"rows":[]}"#.utf8), Data([0xFF, 0x00])] {
             defaults.set(stored, forKey: key)
             // Nothing new would be kept, so a login must not start.
             XCTAssertFalse(store.canPersist)
+            XCTAssertTrue(store.hasUnreadableRows(identityId: "identity"))
             XCTAssertEqual(store.load().count, 0)
             store.save([Self.grant(sessionKeyId: 7)])
             XCTAssertEqual(defaults.data(forKey: key), stored)

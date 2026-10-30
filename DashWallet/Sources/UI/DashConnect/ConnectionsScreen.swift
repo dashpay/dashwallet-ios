@@ -30,6 +30,8 @@ struct ConnectionsScreen: View {
     @StateObject private var viewModel: ConnectionsViewModel
     @State private var isConfirmingSharedProfileRevoke = false
     @State private var isConfirmingSharedProfileKeep = false
+    /// The access the revoke confirmation was opened for.
+    @State private var sharedProfileAccessToRevoke: SharedProfileAccess?
     /// The access the keep confirmation was opened for.
     @State private var sharedProfileAccessToKeep: SharedProfileAccess?
 
@@ -87,7 +89,7 @@ struct ConnectionsScreen: View {
             titleVisibility: .visible
         ) {
             Button(NSLocalizedString("Revoke shared profile access", comment: "DashConnect"), role: .destructive) {
-                viewModel.revokeSharedProfileAccess()
+                viewModel.revokeSharedProfileAccess(sharedProfileAccessToRevoke)
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
@@ -137,7 +139,10 @@ struct ConnectionsScreen: View {
         guard viewModel.showsSharedProfileAccess else { return nil }
         return SharedProfileAccessRow(
             keyCount: viewModel.sharedProfileAccess?.keyCount,
-            onRevoke: viewModel.canActOnSharedProfileAccess ? { isConfirmingSharedProfileRevoke = true } : nil,
+            onRevoke: viewModel.canActOnSharedProfileAccess ? {
+                sharedProfileAccessToRevoke = viewModel.sharedProfileAccess
+                isConfirmingSharedProfileRevoke = true
+            } : nil,
             onKeep: viewModel.canActOnSharedProfileAccess ? {
                 sharedProfileAccessToKeep = viewModel.sharedProfileAccess
                 isConfirmingSharedProfileKeep = true

@@ -478,7 +478,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// Disables every DashPay profile key no connection accounts for and the
     /// user did not keep, for every app that holds one. Same guards as `disconnect`: it signs an
     /// identity update.
-    func revokeSharedProfileAccess() {
+    func revokeSharedProfileAccess(_ shown: SharedProfileAccess?) {
         guard canSignIdentityUpdate else {
             // The user confirmed a destructive action; say why nothing ran.
             message = Self.busyMessage
@@ -498,6 +498,12 @@ final class ConnectionsViewModel: ObservableObject {
             // A read finished while the confirmation was up and could not
             // read the identity or the count: unknown, not none.
             message = Self.sharedProfileAccessUncheckedMessage
+            return
+        }
+        // Only the access the user confirmed: a read that finished while the
+        // confirmation was up may be another wallet's or identity's.
+        guard access == shown else {
+            message = Self.sharedProfileAccessChangedMessage
             return
         }
         isDisconnecting = true
@@ -543,9 +549,7 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
         guard access == shown else {
-            message = ConnectionsScreenMessage(
-                kind: .error,
-                text: NSLocalizedString("The keys changed. Check them and try again.", comment: "DashConnect"))
+            message = Self.sharedProfileAccessChangedMessage
             return
         }
         // Shares the revoke's busy flag: a revoke confirmed meanwhile would
@@ -572,6 +576,12 @@ final class ConnectionsViewModel: ObservableObject {
             kind: .error,
             text: NSLocalizedString(
                 "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
+    }
+
+    private static var sharedProfileAccessChangedMessage: ConnectionsScreenMessage {
+        ConnectionsScreenMessage(
+            kind: .error,
+            text: NSLocalizedString("The keys changed. Check them and try again.", comment: "DashConnect"))
     }
 
     private static var sharedProfileAccessUncheckedMessage: ConnectionsScreenMessage {
