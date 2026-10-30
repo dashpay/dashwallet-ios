@@ -447,14 +447,14 @@ final class AppConnectV2LoginTests: XCTestCase {
     func testRevokingSharedProfileAccessTakesOnlyUnattributedLiveProfileKeys() {
         let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
         let app = Data(repeating: 0xA1, count: 32)
-        let now: Int64 = 5_000
-        func key(_ id: Int32, expiresAt: Int64? = 9_000, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+        let now: Int64 = 100_000_000
+        func key(_ id: Int32, expiresAt: Int64? = 200_000_000, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
             ManagedIdentity.IdentityPublicKeyInfo(
                 keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
                 disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
                 totalBudget: nil, expiresAt: expiresAt)
         }
-        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, expiresAt: Int64? = 9_000,
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, expiresAt: Int64? = 200_000_000,
                      unreadable: Bool = false) -> AppConnect.KeyBinding {
             var binding = AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
                                                 hasUnreadableBound: unreadable, bound: bound)
@@ -463,9 +463,9 @@ final class AppConnectV2LoginTests: XCTestCase {
             return binding
         }
         let profile = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
-        let keys = [key(1), key(2), key(3, expiresAt: 4_000), key(4), key(5)]
+        let keys = [key(1), key(2), key(3, expiresAt: 92_800_000), key(4), key(5)]
         let bindings = [
-            binding(1, profile), binding(2, profile), binding(3, profile, expiresAt: 4_000),
+            binding(1, profile), binding(2, profile), binding(3, profile, expiresAt: 92_800_000),
             binding(4, .singleContract(app)), binding(5, profile),
         ]
 
@@ -476,6 +476,9 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
             [1, 2])
+        // An hour of a fast device clock does not expire a working key.
+        XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+            recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: now - 1_000)], nowMilliseconds: now), [1])
         // A live v2 key the store cannot place may be a profile key.
         XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
             recordedKeyIds: [], bindings: [binding(1, nil, unreadable: true)],

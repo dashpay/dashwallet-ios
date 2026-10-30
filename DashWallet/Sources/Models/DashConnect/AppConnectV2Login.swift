@@ -844,10 +844,12 @@ extension AppConnect {
         .sorted()
     }
 
-    /// Whether a key with this expiry still works at `nowMilliseconds`. A
-    /// key that expired stays live on Platform but can no longer sign.
+    /// Whether a key with this expiry may still work at `nowMilliseconds`.
+    /// A key that expired stays live on Platform but can no longer sign.
+    /// Platform goes by block time, so a device clock up to `clockTolerance`
+    /// fast does not count a working key as expired.
     static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
-        (expiresAt ?? 0) > nowMilliseconds
+        (expiresAt ?? 0) > nowMilliseconds - Int64(clockTolerance * 1000)
     }
 
     /// The unattributed profile keys the wallet's store shows as live and

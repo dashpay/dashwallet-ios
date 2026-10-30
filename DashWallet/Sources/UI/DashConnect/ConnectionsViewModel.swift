@@ -123,7 +123,10 @@ final class ConnectionsViewModel: ObservableObject {
             .store(in: &cancellables)
         // The rows change when an app is approved, confirmed or removed,
         // which is when the shared profile keys can change too.
+        // The screen reads them when it appears; the current value the
+        // publisher replays is skipped.
         self.dataSource.connections
+            .dropFirst()
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.refreshSharedProfileAccess() }
@@ -414,8 +417,7 @@ final class ConnectionsViewModel: ObservableObject {
         // takes seconds. It must not overlap anything else that signs one or
         // touches the same records: a second tap, an approval on screen or in
         // flight, a request still resolving, a `dash-st:` in progress.
-        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        guard canSignIdentityUpdate else { return }
         isDisconnecting = true
         Task { [weak self] in
             guard let self else { return }
@@ -452,12 +454,19 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
+    /// Whether nothing else that signs an identity update or touches the same
+    /// records is going on: a disconnect or revoke, an approval on screen or
+    /// in flight, a request still resolving, a `dash-st:` in progress.
+    private var canSignIdentityUpdate: Bool {
+        !isDisconnecting && !isProcessingStateTransition && !isApproving && !isApprovingPurchase
+            && !isResolvingRequest && pendingRequest == nil && pendingTokenPurchase == nil
+    }
+
     /// Disables every DashPay profile key no connection accounts for, for
     /// every app that holds one. Same guards as `disconnect`: it signs an
     /// identity update.
     func revokeSharedProfileAccess() {
-        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
+        guard canSignIdentityUpdate else {
             // The user confirmed a destructive action; say why nothing ran.
             message = ConnectionsScreenMessage(
                 kind: .error,
@@ -465,7 +474,7 @@ final class ConnectionsViewModel: ObservableObject {
                     "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
             return
         }
-        guard let access = sharedProfileAccess else {
+        guard let access = sharedProfileAccess, access.identityId != nil else {
             // A read finished while the confirmation was up and found none.
             message = ConnectionsScreenMessage(
                 kind: .success,

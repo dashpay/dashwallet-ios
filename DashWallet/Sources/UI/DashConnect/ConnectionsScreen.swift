@@ -52,7 +52,9 @@ struct ConnectionsScreen: View {
                 content
 
                 if !viewModel.featureUnavailable, let access = viewModel.sharedProfileAccess {
-                    SharedProfileAccessRow(keyCount: access.keyCount) { isConfirmingSharedProfileRevoke = true }
+                    SharedProfileAccessRow(
+                        keyCount: access.keyCount,
+                        onRevoke: access.identityId == nil ? nil : { isConfirmingSharedProfileRevoke = true })
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
                 }
@@ -260,7 +262,8 @@ struct ConnectionsScreen: View {
 private struct SharedProfileAccessRow: View {
     /// `nil` when the store could not be read.
     let keyCount: Int?
-    let onRevoke: () -> Void
+    /// `nil` when the identity could not be read: nothing to revoke on.
+    let onRevoke: (() -> Void)?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -278,9 +281,11 @@ private struct SharedProfileAccessRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
-                .dashFont(.subhead)
-                .frame(minWidth: 44, minHeight: 44)
+            if let onRevoke {
+                Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
+                    .dashFont(.subhead)
+                    .frame(minWidth: 44, minHeight: 44)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

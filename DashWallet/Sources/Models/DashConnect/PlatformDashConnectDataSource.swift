@@ -2336,18 +2336,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch DashConnectPlatformError.noIdentity {
             return nil
         } catch {
-            // The wallet is there but could not be read: unknown, not none.
+            // The wallet is there but its identity could not be read: unknown,
+            // not none, and nothing to revoke on.
             return SharedProfileAccess(keyCount: nil, scope: stores.scope, identityId: nil)
         }
         let identityId = context.identityId.toBase58String()
-        // Every record of the identity counts here, unconfirmed ones too: a
-        // registration whose key has landed is only confirmed by a fresh
-        // read, which the revoke makes.
-        let named = Set(stores.grants.load().filter { $0.identityId == identityId }.flatMap(\.keyIds))
         let keyCount = (try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer))
             .map { bindings in
                 AppConnect.storedSharedProfileKeyIds(
-                    recordedKeyIds: named, bindings: bindings,
+                    recordedKeyIds: Self.recordedKeyIds(of: identityId, in: stores), bindings: bindings,
                     nowMilliseconds: Int64(AppConnect.milliseconds(now()))).count
             }
         return SharedProfileAccess(keyCount: keyCount, scope: stores.scope, identityId: identityId)
@@ -2371,10 +2368,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.noWallet
         }
         var context = try await requireContext(pinnedTo: stores)
-        // A count that could not be read names no identity; the revoke then
-        // acts on the active one, from its own fresh read.
-        guard access.scope == stores.scope,
-              access.identityId.map({ $0 == context.identityId.toBase58String() }) ?? true else {
+        guard access.scope == stores.scope, access.identityId == context.identityId.toBase58String() else {
             throw DashConnectPlatformError.walletChanged
         }
         try await authorize()
