@@ -2010,7 +2010,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     return confirm()
                 case .landedAndOff, .cannotLand:
                     let didLand = outcome == .landedAndOff
-                    logger.info("🔗 DASHCONNECT :: \(didLand ? "the identity update landed, and its keys are off already" : "the identity update can no longer land", privacy: .public); its record is dropped")
+                    let what = didLand ? "landed, and its keys are off already" : "can no longer land"
+                    logger.info("🔗 DASHCONNECT :: the identity update \(what, privacy: .public); its record is dropped")
                     var all = didLand ? landed() : grants.load()
                     all.removeAll { $0.key == record.key }
                     grants.save(all)
@@ -2333,11 +2334,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let bindings = readBindings ?? []
         // A confirming row whose record is gone (dropped while the rows could
         // not be judged) is judged now.
-        let orphaned = Set(rows(in: stores).filter { row in
-            row.status == .confirming
-                && !stores.grants.load().contains { $0.appContractId == row.id && $0.isPendingV2 }
-        }.map(\.id))
-        if !orphaned.isEmpty {
+        // A record the store cannot read may be that row's.
+        let waitingAppIds = Set(stores.grants.load().filter(\.isPendingV2).map(\.appContractId))
+        let orphaned = Set(rows(in: stores)
+            .filter { $0.status == .confirming && !waitingAppIds.contains($0.id) }.map(\.id))
+        if !orphaned.isEmpty, !stores.grants.hasUnreadableRows(identityId: identityId) {
             await showRowsAfterDropping(appIds: orphaned, restoringApproved: [], bindings: readBindings, in: stores)
         }
         guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
@@ -2435,10 +2436,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// `rows` once the v2 records of `appIds` that were waiting for their
     /// update are dropped: a row still `.confirming` stays while another
-    /// such record of the app does, becomes active when a confirmed grant of
-    /// the app or a live key the store shows bound to it remains, goes back
-    /// to the two-QR `.approved` row it replaced (`restoringApproved`), and
-    /// goes otherwise. Any other row is left as it is.
+    /// such record of the app does; becomes active while a confirmed grant
+    /// of the app remains; goes back to the two-QR `.approved` row it
+    /// replaced (`restoringApproved`); becomes active while a live key the
+    /// store shows bound to the app remains; and goes otherwise. Any other
+    /// row is left as it is.
     static func rowsAfterDropping(
         appIds: Set<String>,
         restoringApproved: Set<String> = [],
@@ -2450,12 +2452,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             guard appIds.contains(row.id), row.status == .confirming else { return row }
             let appGrants = grants.filter { $0.appContractId == row.id }
             if appGrants.contains(where: \.isPendingV2) { return row }
-            let appContract = Data.identifier(fromBase58: row.id)
-            let holdsKey = appGrants.contains { !$0.isUnconfirmed && $0.keyDisabled != true }
-                || bindings.contains { !$0.isDisabled && appContract != nil && $0.singleContractId == appContract }
-            if holdsKey { return row.withStatus(.active, loginKind: .oneQR, at: row.updatedAt) }
-            guard restoringApproved.contains(row.id) else { return nil }
-            return row.withStatus(.approved, loginKind: .twoQR, at: row.updatedAt)
+            if appGrants.contains(where: { !$0.isUnconfirmed && $0.keyDisabled != true }) {
+                return row.withStatus(.active, loginKind: .oneQR, at: row.updatedAt)
+            }
+            // Before any key bound to the app: the two-QR login's keys are
+            // bound to it too, and the row it replaced is theirs.
+            if restoringApproved.contains(row.id) {
+                return row.withStatus(.approved, loginKind: .twoQR, at: row.updatedAt)
+            }
+            let appContract = decodeIdentifier(row.id)
+            guard bindings.contains(where: { !$0.isDisabled && appContract != nil && $0.singleContractId == appContract })
+            else { return nil }
+            return row.withStatus(.active, loginKind: .oneQR, at: row.updatedAt)
         }
     }
 

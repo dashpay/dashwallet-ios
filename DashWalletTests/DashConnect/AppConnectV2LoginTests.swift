@@ -1529,6 +1529,11 @@ extension AppConnectV2LoginTests {
             appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
         XCTAssertEqual(restored.map(\.status), [.approved], "the two-QR row it replaced comes back")
         XCTAssertEqual(restored.map(\.loginKind), [.twoQR])
+        let twoQRKeyLive = PlatformDashConnectDataSource.rowsAfterDropping(
+            appIds: [app], restoringApproved: [app], grants: [],
+            bindings: [AppConnect.KeyBinding(keyId: 3, data: Data([3]), singleContractId: Self.appId)],
+            rows: [row(.confirming)])
+        XCTAssertEqual(twoQRKeyLive.map(\.status), [.approved], "the two-QR login's live key is that row's")
     }
 }
 
