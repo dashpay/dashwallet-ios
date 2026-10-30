@@ -1783,9 +1783,11 @@ class CreateUsernameViewModel: ObservableObject {
         // "user has enough to register" without caring about source, Platform
         // included in either mode. The contested-cost caption below counts
         // Platform only where the entry offers it (advanced mode).
-        // Judged at what Core or Platform pay for a contested name; the
+        // Judged at what Core or Platform pay for a contested name: the
+        // existing identity's top-up, or a new identity's funding. The
         // caption it gates names the dearest route (`recommendedBalance`).
-        let contestedCost = newIdentityFundingDuffs(isContested: true, source: .core)
+        let contestedCost = existingIdentityTopUpDuffs(isContested: true, nameCount: 1)
+            ?? newIdentityFundingDuffs(isContested: true, source: .core)
         hasRecommendedBalance = balance >= contestedCost
             || offersPlatform(covering: contestedCost)
     }
