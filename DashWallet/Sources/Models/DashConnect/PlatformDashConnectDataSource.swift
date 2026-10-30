@@ -938,6 +938,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             pending.unconfirmedKeyHash160 = sessionKeyHash160.toHexString()
             // The update is built at one above the revision the wallet holds
             // for the identity, read again from Platform above.
+            // TODO(app-connect-broadcast-outcome): the SDK builds the update
+            // from its own cached identity, and a reload between this read and
+            // the update can move it, so the update may land at another
+            // revision than the one recorded here. A disconnect can then take
+            // a registration that landed for one that never will. Settling the
+            // outcome from the signed transition (dashpay/platform broadcast
+            // outbox) closes it.
             let revisionBefore = try context.wallet.managedIdentity(identityId: context.identityId).getRevision()
             pending.submittedRevision = revisionBefore == .max ? nil : revisionBefore + 1
             // A confirmed record for this request means its key is on the
