@@ -144,12 +144,16 @@ struct DiagnosticLogExporter {
 
         let selectedAppLogs = selectAppLogs(appLogFiles)
 
-        guard !selectedSessions.isEmpty || !selectedAppLogs.isEmpty else {
+        guard hasContentToExport(
+            sessionCount: selectedSessions.count,
+            appLogCount: selectedAppLogs.count,
+            assetLocks: assetLocks
+        ) else {
             throw DiagnosticLogExportError.noLogsFound
         }
 
         // Archive stamp: the newest included SDK session, or the
-        // export moment when only app logs exist.
+        // export moment when no SDK session is included.
         let stamp: String
         if let first = selectedSessions.first {
             stamp = first.url.lastPathComponent
@@ -206,6 +210,21 @@ struct DiagnosticLogExporter {
         }
         try zipDirectory(at: staging, to: zipURL)
         return zipURL
+    }
+
+    /// Whether an export has anything to carry. Tracked asset locks count on
+    /// their own: `summary.txt` reports them even when no log file exists,
+    /// and the support email attaches app logs loose, never inside the zip,
+    /// so that caller would otherwise lose the section whenever no SDK
+    /// session is on disk. An empty or unavailable lock list adds nothing a
+    /// support reader can use, so it does not make a log-less export worth
+    /// writing.
+    static func hasContentToExport(
+        sessionCount: Int,
+        appLogCount: Int,
+        assetLocks: [AssetLockDiagnosticRecord]?
+    ) -> Bool {
+        sessionCount > 0 || appLogCount > 0 || !(assetLocks ?? []).isEmpty
     }
 
     /// Main-actor entry point: captures the context that must be read on

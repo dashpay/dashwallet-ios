@@ -87,9 +87,10 @@ extension UIViewController {
         // Zip the recent SwiftDashSDK log sessions off the main actor
         // first (blocking file I/O), then compose. App logs stay as
         // loose attachments — the support workflow already expects
-        // them — while the SDK sessions ride along as one zip. A
-        // failed/empty SDK export (e.g. first launch after the update
-        // that enabled file logging) just omits the zip.
+        // them — while the SDK sessions ride along as one zip. With no
+        // SDK session on disk (e.g. first launch after the update that
+        // enabled file logging) the zip still carries `summary.txt` when
+        // asset locks are tracked; a failed or empty export omits it.
         let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
         let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"

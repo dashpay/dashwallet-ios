@@ -66,18 +66,26 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
             if let reason = platformError.failureReason {
                 detail += " reason=\(reason)"
             }
-            return AssetLockFailureRecord(errorCase: caseName(of: platformError), detail: detail, recordedAt: date)
+            return AssetLockFailureRecord(
+                errorCase: caseName(of: platformError) ?? String(describing: type(of: platformError)),
+                detail: detail,
+                recordedAt: date)
         }
         let typeName = String(describing: type(of: error))
-        let errorCase = "\(typeName).\(caseName(of: error))"
+        let errorCase = caseName(of: error).map { "\(typeName).\($0)" } ?? typeName
         let detail = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         return AssetLockFailureRecord(errorCase: errorCase, detail: detail, recordedAt: date)
     }
 
     /// The enum case label without its payload. A payload-less case has no
-    /// mirror child, so its description is already the bare name.
-    private static func caseName(of error: Error) -> String {
-        if let label = Mirror(reflecting: error).children.first?.label {
+    /// mirror child, so its description is already the bare name. `nil` for
+    /// an error that is not an enum: a struct's first child is a stored
+    /// property (`URLError._nsError`), and an `NSError`'s description is its
+    /// whole `Error Domain=… UserInfo={…}` dump, neither of which names a case.
+    private static func caseName(of error: Error) -> String? {
+        let mirror = Mirror(reflecting: error)
+        guard mirror.displayStyle == .enum else { return nil }
+        if let label = mirror.children.first?.label {
             return label
         }
         return String(describing: error)

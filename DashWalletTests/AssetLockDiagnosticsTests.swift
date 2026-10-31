@@ -209,6 +209,29 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         XCTAssertEqual(bare.detail, "Network unreachable")
     }
 
+    /// A Swift struct error: its first mirror child is the stored property
+    /// `code`, which is not a case name.
+    private struct SampleStructError: LocalizedError {
+        let code: Int
+        var errorDescription: String? { "sample failure \(code)" }
+    }
+
+    func testNonEnumErrorsAreNamedByTheirTypeAlone() {
+        let structError = AssetLockFailureRecord.describe(SampleStructError(code: 7))
+        XCTAssertEqual(structError.errorCase, "SampleStructError")
+        XCTAssertEqual(structError.detail, "sample failure 7")
+
+        // An NSError's description is its whole domain/userInfo dump; it
+        // belongs in the detail, never in the searchable case.
+        let nsError = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorNotConnectedToInternet,
+            userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."])
+        let record = AssetLockFailureRecord.describe(nsError)
+        XCTAssertEqual(record.errorCase, "NSError")
+        XCTAssertEqual(record.detail, "The Internet connection appears to be offline.")
+    }
+
     // MARK: failure store
 
     func testOutPointKeyMatchesThePersistentAssetLockForm() {
@@ -271,6 +294,46 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         store.resetForWipe()
         XCTAssertTrue(store.allFailures().isEmpty)
         XCTAssertTrue(AssetLockFailureStore(defaults: defaults).allFailures().isEmpty)
+    }
+
+    // MARK: export content rule
+
+    func testTrackedLocksAloneMakeAnExportWorthWriting() {
+        // The support email attaches app logs loose, so with no SDK session
+        // on disk the summary is the only thing its zip can carry.
+        XCTAssertTrue(DiagnosticLogExporter.hasContentToExport(
+            sessionCount: 0, appLogCount: 0, assetLocks: [record()]))
+        XCTAssertTrue(DiagnosticLogExporter.hasContentToExport(
+            sessionCount: 1, appLogCount: 0, assetLocks: nil))
+        XCTAssertTrue(DiagnosticLogExporter.hasContentToExport(
+            sessionCount: 0, appLogCount: 1, assetLocks: []))
+    }
+
+    func testNoLogsAndNoLocksIsStillNothingToExport() {
+        XCTAssertFalse(DiagnosticLogExporter.hasContentToExport(
+            sessionCount: 0, appLogCount: 0, assetLocks: []))
+        XCTAssertFalse(DiagnosticLogExporter.hasContentToExport(
+            sessionCount: 0, appLogCount: 0, assetLocks: nil))
+    }
+
+    // MARK: coordinator resume
+
+    func testRefusalBeforeTheResumeCallIsRecordedAsTheLocksLastFailure() async {
+        // A random outpoint has no SDK row, so whatever the test host's wallet
+        // state, the resume stops before the PIN prompt: no manager/wallet, or
+        // no drain-row identity for the lock.
+        let store = AssetLockFailureStore(defaults: defaults)
+        let coordinator = ShieldedTransferCoordinator(failureStore: store)
+        let txid = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+
+        await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 7)
+
+        guard case .failed = coordinator.phase, let reported = coordinator.lastFailure else {
+            return XCTFail("expected a refused resume, got \(coordinator.phase)")
+        }
+        let recorded = store.failure(txidWire: txid, vout: 7)
+        XCTAssertNotNil(recorded, "a refusal on the direct resume path left no last failure")
+        XCTAssertEqual(recorded?.errorCase, AssetLockFailureRecord.describe(reported).errorCase)
     }
 
     // MARK: retry log line
