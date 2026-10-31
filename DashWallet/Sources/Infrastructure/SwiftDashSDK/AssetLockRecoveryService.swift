@@ -41,7 +41,10 @@ struct AssetLockRecoveryService {
         case notReady
         case noIdentity
         case unsupportedRoute
-        case failed(String)
+        /// A coordinator route's terminal failure: the text it showed, and
+        /// the typed error behind it (`coordinator.lastFailure`) so the log
+        /// and the failure store can name the case.
+        case failed(String, underlying: Error? = nil)
 
         var errorDescription: String? {
             switch self {
@@ -51,7 +54,7 @@ struct AssetLockRecoveryService {
                 return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
                 return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
-            case .failed(let message):
+            case .failed(let message, _):
                 return message
             }
         }
@@ -206,6 +209,8 @@ struct AssetLockRecoveryService {
         let txidWire: Data
         let vout: UInt32
         let fundingTypeRaw: Int
+        /// Status when the pass picked the lock up, for the outcome log line.
+        let statusRaw: Int
     }
 
     /// What a bulk pass ended up doing.
@@ -312,7 +317,8 @@ struct AssetLockRecoveryService {
             return PendingRecovery(
                 txidWire: txidWire,
                 vout: entry.info.vout,
-                fundingTypeRaw: entry.info.fundingTypeRaw)
+                fundingTypeRaw: entry.info.fundingTypeRaw,
+                statusRaw: entry.info.statusRaw)
         }
     }
 
@@ -366,8 +372,7 @@ struct AssetLockRecoveryService {
         DWLogger.log("LOCK-RETRY bulk start count=\(pending.count)")
 
         for (index, item) in pending.enumerated() {
-            let txidDisplay = String(Data(item.txidWire.reversed())
-                .map { String(format: "%02x", $0) }.joined().prefix(16))
+            let event = "bulk \(index + 1)/\(pending.count)"
             do {
                 let result = try await retry(
                     fundingTypeRaw: item.fundingTypeRaw,
@@ -384,7 +389,13 @@ struct AssetLockRecoveryService {
                 case .submittedAwaitingSync: step = .awaitingSync
                 }
                 Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
-                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… -> \(result)")
+                AssetLockRetryLog.logOutcome(
+                    "outcome=\(result)",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 Self.apply(.cancelled, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 DWLogger.log("LOCK-RETRY bulk cancelled at \(index + 1)/\(pending.count)")
@@ -394,9 +405,15 @@ struct AssetLockRecoveryService {
                     ?? error.localizedDescription
                 let stop = Self.apply(.failed(message), to: &outcome, consecutiveFailures: &consecutiveFailures)
                 // File logger, not just OSLog: a bulk pass that fails is
-                // exactly what a diagnostic export needs to carry.
-                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… FAILED: \(message)")
-                Self.logger.error("🔁 LOCK-RETRY :: bulk item failed: \(String(describing: error), privacy: .public)")
+                // exactly what a diagnostic export needs to carry, with the
+                // typed error case so a consensus refusal is searchable.
+                AssetLockRetryLog.logFailure(
+                    error,
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
 
                 if stop {
                     DWLogger.log("LOCK-RETRY bulk stopped after \(consecutiveFailures) consecutive failures")
@@ -496,6 +513,6 @@ struct AssetLockRecoveryService {
            case .authCancelled = failure {
             throw DWIdentityAuthorizer.AuthError.cancelled
         }
-        throw RecoveryError.failed(message)
+        throw RecoveryError.failed(message, underlying: coordinator.lastFailure)
     }
 }

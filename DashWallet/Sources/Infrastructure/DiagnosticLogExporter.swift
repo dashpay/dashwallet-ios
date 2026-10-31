@@ -14,7 +14,10 @@
 //     current one.
 //   - The app's own CocoaLumberjack files (`DWLogger`) under
 //     `app-logs/`, newest-first up to a byte cap.
-//   - A `summary.txt` of build/device context.
+//   - A `summary.txt` of build/device context, plus every tracked
+//     asset lock that is not consumed (ticket 32104: a stuck lock's
+//     txid, input count and last Platform error were nowhere in five
+//     exports).
 //
 //  Nothing is uploaded — callers hand the returned zip to a share
 //  sheet or mail composer and the user decides where it goes.
@@ -27,7 +30,28 @@
 //
 
 import Foundation
+import SwiftData
 import SwiftDashSDK
+
+/// One tracked asset lock as `summary.txt` reports it. A plain value so the
+/// section's formatting is a pure function: captured on the main actor from
+/// the SDK's `PersistentAssetLock` rows, formatted off it.
+struct AssetLockDiagnosticRecord: Equatable, Sendable {
+    /// Display-order hex, the form a block explorer shows.
+    let txidDisplayHex: String
+    let vout: UInt32
+    let fundingTypeRaw: Int
+    let statusRaw: Int
+    let amountDuffs: Int64
+    let createdAt: Date
+    let updatedAt: Date
+    /// Consensus-encoded transaction when the row carries it; empty after a
+    /// restore that only rebuilt the outpoint.
+    let transactionBytes: Data
+    let lastFailure: AssetLockFailureRecord?
+
+    var outPointKey: String { "\(txidDisplayHex):\(vout)" }
+}
 
 enum DiagnosticLogExportError: LocalizedError {
     case noLogsFound
@@ -79,11 +103,15 @@ struct DiagnosticLogExporter {
     ///   - appLogFiles: `DWLogger.sharedInstance().logFiles()`,
     ///     captured by the caller (the shared logger is main-thread
     ///     app infrastructure).
+    ///   - assetLocks: `captureAssetLocks()`, captured by the caller on
+    ///     the main actor (SwiftData main context). `nil` is printed as
+    ///     "unavailable", never as "no locks".
     static func export(
         network: String,
         appVersion: String,
         currentSession: URL?,
-        appLogFiles: [URL]
+        appLogFiles: [URL],
+        assetLocks: [AssetLockDiagnosticRecord]?
     ) throws -> URL {
         let fm = FileManager.default
 
@@ -163,7 +191,8 @@ struct DiagnosticLogExporter {
             currentIsKnown: current != nil,
             totalSessionsOnDevice: onDisk.count,
             appLogCount: selectedAppLogs.count,
-            totalAppLogsOnDevice: appLogFiles.count
+            totalAppLogsOnDevice: appLogFiles.count,
+            assetLocks: assetLocks
         )
         try summary.write(
             to: staging.appendingPathComponent("summary.txt"),
@@ -195,6 +224,7 @@ struct DiagnosticLogExporter {
         // rollback or a stale future-dated directory.
         let currentSession = LoggingPreferences.currentSessionDirectory
         let appLogFiles = DWLogger.sharedInstance().logFiles()
+        let assetLocks = captureAssetLocks()
 
         return await Task.detached(priority: .userInitiated) {
             Result {
@@ -202,10 +232,110 @@ struct DiagnosticLogExporter {
                     network: network,
                     appVersion: appVersion,
                     currentSession: currentSession,
-                    appLogFiles: appLogFiles
+                    appLogFiles: appLogFiles,
+                    assetLocks: assetLocks
                 )
             }
         }.value
+    }
+
+    /// Every asset lock the active wallet tracks whose status is not
+    /// `Consumed`, joined with the app-side record of its last retry failure.
+    /// Reads the SwiftData main context, so main actor only. `nil` when no
+    /// wallet is running or the fetch fails — the summary then says so
+    /// rather than claiming there are no locks.
+    @MainActor
+    static func captureAssetLocks() -> [AssetLockDiagnosticRecord]? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let container = SwiftDashSDKHost.shared.modelContainer
+        else { return nil }
+        let descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: PersistentAssetLock.predicate(walletId: walletId),
+            sortBy: [SortDescriptor(\.createdAt)])
+        guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+        let failures = AssetLockFailureStore.shared.allFailures()
+        return rows.compactMap { row in
+            guard row.statusRaw != consumedAssetLockStatus else { return nil }
+            let parts = row.outPointHex.split(separator: ":", maxSplits: 1)
+            let txidDisplayHex = parts.first.map(String.init) ?? row.outPointHex
+            let vout = parts.count == 2 ? UInt32(parts[1]) ?? 0 : 0
+            return AssetLockDiagnosticRecord(
+                txidDisplayHex: txidDisplayHex,
+                vout: vout,
+                fundingTypeRaw: row.fundingTypeRaw,
+                statusRaw: row.statusRaw,
+                amountDuffs: row.amountDuffs,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+                transactionBytes: row.transactionBytes,
+                lastFailure: failures[row.outPointHex])
+        }
+    }
+
+    /// `AssetLockStatus::Consumed` as it crosses the FFI — the one terminal
+    /// success, and the only status the section leaves out.
+    static let consumedAssetLockStatus = Int(ManagedAssetLockManager.AssetLockStatus.consumed.rawValue)
+
+    /// The asset-lock section of `summary.txt`, one block per lock. Pure:
+    /// `nil` records means the capture could not run (no wallet, fetch
+    /// failed) and is reported as such, never as "no locks".
+    static func assetLockSection(_ records: [AssetLockDiagnosticRecord]?) -> [String] {
+        let iso = ISO8601DateFormatter()
+        var lines = ["Asset locks tracked by the active wallet (status other than Consumed):"]
+        guard let records else {
+            lines.append("  unavailable (no wallet running, or the asset-lock store could not be read)")
+            return lines
+        }
+        guard !records.isEmpty else {
+            lines.append("  none")
+            return lines
+        }
+        for record in records {
+            lines.append(
+                "  \(record.outPointKey)  "
+                    + "type=\(record.fundingTypeRaw) (\(fundingTypeName(record.fundingTypeRaw)))  "
+                    + "status=\(record.statusRaw) (\(assetLockStatusName(record.statusRaw)))  "
+                    + "amount=\(record.amountDuffs) duffs")
+            lines.append(
+                "      created=\(iso.string(from: record.createdAt)) "
+                    + "updated=\(iso.string(from: record.updatedAt))")
+            if record.transactionBytes.isEmpty {
+                lines.append("      inputs=? size=? (transaction bytes not stored locally)")
+            } else if let parsed = try? ParsedRawTransaction(data: record.transactionBytes) {
+                lines.append(
+                    "      inputs=\(parsed.inputs.count) outputs=\(parsed.outputs.count) "
+                        + "size=\(record.transactionBytes.count) bytes")
+            } else {
+                lines.append(
+                    "      inputs=? size=\(record.transactionBytes.count) bytes "
+                        + "(stored transaction bytes did not parse)")
+            }
+            if let failure = record.lastFailure {
+                lines.append(
+                    "      last failure (\(iso.string(from: failure.recordedAt))): "
+                        + failure.logDescription)
+            } else {
+                lines.append("      last failure: none recorded")
+            }
+        }
+        return lines
+    }
+
+    /// `AssetLockFundingType` discriminant → SDK case name; raw values the
+    /// linked SDK does not know stay numeric rather than being guessed.
+    static func fundingTypeName(_ raw: Int) -> String {
+        guard raw >= 0, let value = UInt32(exactly: raw),
+              let type = ManagedAssetLockManager.FundingType(rawValue: value)
+        else { return "unknown" }
+        return String(describing: type)
+    }
+
+    /// `AssetLockStatus` discriminant → SDK case name.
+    static func assetLockStatusName(_ raw: Int) -> String {
+        guard raw >= 0, let value = UInt32(exactly: raw),
+              let status = ManagedAssetLockManager.AssetLockStatus(rawValue: value)
+        else { return "unknown" }
+        return String(describing: status)
     }
 
     /// Pure SDK-session selection policy, split out for unit testing.
@@ -321,7 +451,8 @@ struct DiagnosticLogExporter {
         currentIsKnown: Bool,
         totalSessionsOnDevice: Int,
         appLogCount: Int,
-        totalAppLogsOnDevice: Int
+        totalAppLogsOnDevice: Int,
+        assetLocks: [AssetLockDiagnosticRecord]?
     ) -> String {
         let iso = ISO8601DateFormatter()
         let sizeFormatter = ByteCountFormatter()
@@ -374,6 +505,8 @@ struct DiagnosticLogExporter {
                 + "\(sizeFormatter.string(fromByteCount: Int64(maxSDKSessionBytes))) raw) and "
                 + "\(appLogCount) of \(totalAppLogsOnDevice) app log file(s) under app-logs/ "
                 + "(limit: \(sizeFormatter.string(fromByteCount: Int64(maxAppLogBytes)))).")
+        lines.append("")
+        lines.append(contentsOf: assetLockSection(assetLocks))
         return lines.joined(separator: "\n") + "\n"
     }
 }

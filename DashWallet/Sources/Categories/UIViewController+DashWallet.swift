@@ -95,6 +95,7 @@ extension UIViewController {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
         let appVersion = "\(short) (\(build))"
         let currentSession = LoggingPreferences.currentSessionDirectory
+        let assetLocks = DiagnosticLogExporter.captureAssetLocks()
 
         Task { [weak self] in
             let sdkLogsZip = await Task.detached(priority: .userInitiated) { () -> URL? in
@@ -102,7 +103,8 @@ extension UIViewController {
                     network: network,
                     appVersion: appVersion,
                     currentSession: currentSession,
-                    appLogFiles: [])
+                    appLogFiles: [],
+                    assetLocks: assetLocks)
             }.value
             self?.presentSupportEmailController(sdkLogsZip: sdkLogsZip)
         }

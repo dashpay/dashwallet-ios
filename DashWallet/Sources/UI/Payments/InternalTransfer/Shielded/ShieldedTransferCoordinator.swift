@@ -780,6 +780,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
+        // Read before the resume moves it, for the outcome line below.
+        let statusBeforeRaw = ShieldedTxLookup.shared
+            .info(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
 
         let env: Environment
         do {
@@ -865,11 +868,48 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipients: [recipient])
             terminalPhase = .success
+            AssetLockRetryLog.logOutcome(
+                "outcome=completed",
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw)
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
+                // `shieldedSpendUnconfirmed` was accepted by relay, so it is
+                // not a failure of this lock and is not stored as one.
+                if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                    AssetLockRetryLog.logOutcome(
+                        "outcome=submittedUnconfirmed",
+                        prefix: AssetLockRetryLog.shieldPrefix,
+                        event: "resume",
+                        txidWire: outPointTxidWire,
+                        vout: outPointVout,
+                        fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                        statusBeforeRaw: statusBeforeRaw)
+                } else {
+                    AssetLockRetryLog.logFailure(
+                        error,
+                        prefix: AssetLockRetryLog.shieldPrefix,
+                        event: "resume",
+                        txidWire: outPointTxidWire,
+                        vout: outPointVout,
+                        fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                        statusBeforeRaw: statusBeforeRaw)
+                }
                 handleSpendError(error, manager: env.manager)
                 return
             }
+            AssetLockRetryLog.logOutcome(
+                "outcome=alreadyConsumed",
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw)
             // A DAPI endpoint reported this exact outpoint as consumed, but
             // rejection responses are not quorum-authenticated. Rust retains
             // the ChainLock proof and records nonterminal consumption-unknown
@@ -1407,12 +1447,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // The lock is already on-chain; only the funding ST remains.
         phase = .broadcasting
 
+        let statusBeforeRaw = ShieldedTxLookup.shared
+            .platformFundingInfo(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
         do {
             try await PlatformAddressSyncCoordinator.shared.resumeFundFromCore(
                 outPointTxid: outPointTxidWire,
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
+            AssetLockRetryLog.logFailure(
+                error,
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume core→platform",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.addressAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw)
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
