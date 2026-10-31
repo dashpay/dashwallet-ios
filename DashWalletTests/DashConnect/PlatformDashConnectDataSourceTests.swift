@@ -1736,6 +1736,18 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         lock.withLock { storedApprovedConsents }
     }
 
+    private var storedRecordedAccess: AppConnect.GrantedAccess?
+
+    /// What an earlier approval of the request recorded, as the store reads it.
+    var recordedAccess: AppConnect.GrantedAccess? {
+        get { lock.withLock { storedRecordedAccess } }
+        set { lock.withLock { storedRecordedAccess = newValue } }
+    }
+
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? {
+        recordedAccess
+    }
+
     var connections: AnyPublisher<[DAppConnection], Never> {
         Just([DAppConnection]()).eraseToAnyPublisher()
     }
@@ -3691,14 +3703,11 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         request.login = .appConnect(plan)
         var unresolved = request
         unresolved.login = .unresolved
-        let recordedPlan = AppConnect.withRecordedTerms(
-            plan,
-            access: AppConnect.GrantedAccess(plan: AppConnect.applying(
-                AppConnect.ConnectionTerms(fundingLimit: Self.dash / 10, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
-                to: plan, now: Self.now)!))
-        var recorded = request
-        recorded.login = .appConnect(recordedPlan)
-        let spy = LoginApprovalSpy(shown: [request, unresolved, request, recorded])
+        let access = AppConnect.GrantedAccess(plan: AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 10, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
+            to: plan, now: Self.now)!)
+        let recordedPlan = AppConnect.withRecordedTerms(plan, access: access, now: Self.now)
+        let spy = LoginApprovalSpy(shown: [request, unresolved, request])
         spy.approveFailures = [DashConnectPlatformError.loginUnresolved, DashConnectPlatformError.grantNotRecorded]
         let viewModel = ConnectionsViewModel(
             dataSource: spy, featureUnavailable: false, openURL: { _ in }, canPayKeyRegistration: { true },
@@ -3716,8 +3725,9 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         await waitUntil { viewModel.pendingRequest?.login.grantPlan != nil }
         XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 10, "what the user chose is kept")
 
-        // A failure after the grant was recorded: the sheet is read again
-        // and shows the recorded terms, which stay.
+        // A failure after the grant was recorded: the store's record fixes
+        // the terms, read without the network.
+        spy.recordedAccess = access
         viewModel.approvePendingRequest()
         await waitUntil { viewModel.approvalTermsLocked }
         XCTAssertTrue(viewModel.approvalTermsLocked, "an approval that may have landed fixes the terms")
@@ -3731,19 +3741,19 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         let expiry = AppConnect.expiry(days: 30, from: Self.now)
         let applied = AppConnect.applying(
             AppConnect.ConnectionTerms(fundingLimit: Self.dash / 2, expiresAt: expiry), to: plan, now: Self.now)!
-        let recorded = AppConnect.withRecordedTerms(plan, access: AppConnect.GrantedAccess(plan: applied))
+        let recorded = AppConnect.withRecordedTerms(plan, access: AppConnect.GrantedAccess(plan: applied), now: Self.now)
         XCTAssertTrue(recorded.hasRecordedTerms)
         XCTAssertEqual(recorded.auth.map(\.totalBudget), applied.auth.map(\.totalBudget))
         XCTAssertEqual(AppConnect.terms(of: recorded), AppConnect.ConnectionTerms(fundingLimit: Self.dash / 2, expiresAt: expiry))
         let other = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash)])
         XCTAssertFalse(
-            AppConnect.withRecordedTerms(other, access: AppConnect.GrantedAccess(plan: applied)).hasRecordedTerms,
+            AppConnect.withRecordedTerms(other, access: AppConnect.GrantedAccess(plan: applied), now: Self.now).hasRecordedTerms,
             "another set of keys")
-        XCTAssertFalse(AppConnect.withRecordedTerms(plan, access: nil).hasRecordedTerms)
+        XCTAssertFalse(AppConnect.withRecordedTerms(plan, access: nil, now: Self.now).hasRecordedTerms)
     }
 
     func testTheDefaultExpiryIsTheEarliestTheAppAsked() {
-        let soon = AppConnect.expiry(days: 1, from: Self.now)
+        let soon = AppConnect.expiry(days: 2, from: Self.now)
         let late = AppConnect.expiry(days: 300, from: Self.now)
         let plan = Self.plan([
             Self.binding(.contractGroup, id: Self.group, budget: Self.dash, expiresAt: soon),
@@ -3754,7 +3764,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
 
     func testABalanceRefusalOffersATopUp() {
         struct Refused: Error, CustomStringConvertible {
-            var description: String { "IdentityInsufficientBalanceError: identity has 0 credits" }
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
         }
         XCTAssertTrue(AppConnect.isInsufficientBalance(Refused()))
         XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.noIdentity))

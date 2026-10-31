@@ -747,14 +747,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // An earlier approval of this request recorded its terms before it
             // submitted; its update may have landed, so they are the ones a
             // retry sends.
-            let identityId = context.identityId.toBase58String()
-            let appId = plan.appId.toBase58String()
-            let requestHash = plan.appEphemeralPubKeyHash.toHexString()
-            let recorded = context.stores.grants.load().first {
-                $0.identityId == identityId && $0.appContractId == appId
-                    && $0.values.appEphemeralPubKeyHash == requestHash && $0.grantedAccess != nil
-            }
-            plan = AppConnect.withRecordedTerms(plan, access: recorded?.grantedAccess)
+            plan = AppConnect.withRecordedTerms(
+                plan, access: Self.recordedGrantedAccess(plan: plan, context: context), now: now())
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)
@@ -762,6 +756,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: App Connect request not checked — \(error.localizedDescription, privacy: .public)")
             return (.unresolved, error.localizedDescription)
         }
+    }
+
+    /// What an earlier approval of `plan`'s request recorded it would grant,
+    /// as the approval would retry it: a record still waiting for its update
+    /// first, then one whose keys were not turned off.
+    private static func recordedGrantedAccess(plan: AppConnect.GrantPlan, context: Context) -> AppConnect.GrantedAccess? {
+        let identityId = context.identityId.toBase58String()
+        let appId = plan.appId.toBase58String()
+        let requestHash = plan.appEphemeralPubKeyHash.toHexString()
+        let records = context.stores.grants.load().filter {
+            $0.identityId == identityId && $0.appContractId == appId
+                && $0.values.appEphemeralPubKeyHash == requestHash && $0.grantedAccess != nil && $0.keyDisabled != true
+        }
+        return (records.first(where: \.isPendingV2) ?? records.first)?.grantedAccess
+    }
+
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? {
+        guard let appConnect = loginRequest.appConnect,
+              let context = try? await requireContext(),
+              let requestHash = try? KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey) else { return nil }
+        let identityId = context.identityId.toBase58String()
+        let appId = loginRequest.contractId.toBase58String()
+        let records = context.stores.grants.load().filter {
+            $0.identityId == identityId && $0.appContractId == appId
+                && $0.values.appEphemeralPubKeyHash == requestHash.toHexString() && $0.grantedAccess != nil
+                && $0.keyDisabled != true
+        }
+        return (records.first(where: \.isPendingV2) ?? records.first)?.grantedAccess
     }
 
     /// The ids among `contractIds` and `groupIds` of the contracts and the

@@ -186,7 +186,10 @@ final class ConnectionsViewModel: ObservableObject {
                 termsRequestHash = plan.appEphemeralPubKeyHash
                 approvalTerms = AppConnect.terms(of: plan)
                 approvalTermsLocked = true
-            } else if let plan = pendingRequest?.login.grantPlan, plan.appEphemeralPubKeyHash != termsRequestHash {
+            } else if let plan = pendingRequest?.login.grantPlan,
+                      plan.appEphemeralPubKeyHash != termsRequestHash || approvalTermsLocked {
+                // Another request, or the same one no longer carrying the
+                // terms that fixed it (the record went): its defaults.
                 termsRequestHash = plan.appEphemeralPubKeyHash
                 approvalTerms = AppConnect.defaultTerms(for: plan, now: now())
                 approvalTermsLocked = false
@@ -716,17 +719,20 @@ final class ConnectionsViewModel: ObservableObject {
                 // A grant recorded before the update was submitted fixes the
                 // terms of a retry: the sheet is read again so it shows them.
                 let platformError = error as? DashConnectPlatformError
-                if platformError != .authorizationCancelled, platformError != .authorizationFailed {
-                    let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
-                    if rebuilt.login.grantPlan?.hasRecordedTerms == true { self.pendingRequest = rebuilt }
+                if platformError != .authorizationCancelled, platformError != .authorizationFailed,
+                   let access = await dataSource.recordedGrantedAccess(for: pendingLoginRequest),
+                   var current = self.pendingRequest, let plan = current.login.grantPlan {
+                    let recorded = AppConnect.withRecordedTerms(plan, access: access, now: now())
+                    if recorded.hasRecordedTerms {
+                        current.login = .appConnect(recorded)
+                        self.pendingRequest = current
+                    }
                 }
                 // Platform refused the update for the identity's balance.
                 self.approveNeedsTopUp = needsTopUp
             }
         }
     }
-
-
 
     /// Builds the pending request again, for a sheet that could not tell
     /// which login it would run. Approves nothing.

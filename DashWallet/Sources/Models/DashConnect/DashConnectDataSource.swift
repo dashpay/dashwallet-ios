@@ -75,6 +75,9 @@ protocol DashConnectDataSource {
     /// its keys are past their expiry on Platform but still on, from a fresh
     /// read of the identity. `nil` when the identity could not be read.
     func connectionExpiries() async -> [String: ConnectionExpiry]?
+    /// What an earlier approval of `loginRequest` recorded it would grant,
+    /// read from this device's store; `nil` when there is none.
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess?
 }
 
 extension DashConnectDataSource {
@@ -82,6 +85,7 @@ extension DashConnectDataSource {
     func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
     func connectionExpiries() async -> [String: ConnectionExpiry]? { nil }
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may

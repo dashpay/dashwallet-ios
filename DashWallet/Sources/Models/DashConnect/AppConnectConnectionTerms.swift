@@ -59,13 +59,13 @@ extension AppConnect {
     /// at a year, or the default lifetime), so no key lives longer than the
     /// app asked unless the user chooses so.
     static func defaultTerms(for plan: GrantPlan, now: Date) -> ConnectionTerms {
-        let requested = plan.auth.reduce(UInt64(0)) { total, grant in
-            let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
-            return overflow ? .max : sum
-        }
+        let requested = totalBudget(of: plan)
+        // A very short ask could pass while the user reads the sheet: the
+        // default is at least a day.
+        let earliest = plan.auth.map(\.expiresAt).min() ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime))
         return ConnectionTerms(
             fundingLimit: requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits),
-            expiresAt: plan.auth.map(\.expiresAt).min() ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime)))
+            expiresAt: max(earliest, expiry(days: 1, from: now)))
     }
 
     /// Whether `credits` is a funding limit the user may set: above zero and
@@ -185,7 +185,9 @@ extension AppConnect {
     /// (`GrantedAccess`, written before its update was submitted), when they
     /// name its keys one for one. That update may have landed, and a retry
     /// has to send the same keys with the same terms.
-    static func withRecordedTerms(_ plan: GrantPlan, access: GrantedAccess?) -> GrantPlan {
+    /// Recorded terms that are no longer in bounds at `now` (an expiry gone
+    /// by, a key with no budget) are not taken: the plan comes back as it was.
+    static func withRecordedTerms(_ plan: GrantPlan, access: GrantedAccess?, now: Date) -> GrantPlan {
         guard let access, !access.isUnreadable, !access.isSessionKeyLogin, access.keys.count == plan.auth.count,
               zip(access.keys, plan.auth).allSatisfy({ $0.bound == $1.storedBound }) else { return plan }
         var recorded = plan
@@ -193,27 +195,34 @@ extension AppConnect {
             AuthGrant(bindingIndex: grant.bindingIndex, binding: grant.binding, totalBudget: key.totalBudget,
                       expiresAt: key.expiresAt)
         }
+        guard hasValidTerms(recorded, now: now) else { return plan }
         recorded.hasRecordedTerms = true
         return recorded
+    }
+
+    /// The sum of every key's budget, saturating.
+    static func totalBudget(of plan: GrantPlan) -> UInt64 {
+        plan.auth.reduce(UInt64(0)) { total, grant in
+            let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
+            return overflow ? .max : sum
+        }
     }
 
     /// The terms a plan's keys carry, read back: their total budget and their
     /// latest expiry.
     static func terms(of plan: GrantPlan) -> ConnectionTerms? {
         guard let expiresAt = plan.expiresAt else { return nil }
-        let total = plan.auth.reduce(UInt64(0)) { total, grant in
-            let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
-            return overflow ? .max : sum
-        }
-        return ConnectionTerms(fundingLimit: total, expiresAt: expiresAt)
+        return ConnectionTerms(fundingLimit: totalBudget(of: plan), expiresAt: expiresAt)
     }
 
     /// Whether Platform refused an identity update because the identity's
-    /// balance cannot pay for it: the wallet's typed error, or the consensus
-    /// error's name.
+    /// balance cannot pay for it. The identity update reports the broadcast
+    /// failure as text ("Failed to broadcast identity update: … Insufficient
+    /// identity <id> balance …"), so the text is matched; the typed
+    /// `insufficientIdentityCredits` is matched for when it carries one.
     static func isInsufficientBalance(_ error: Error) -> Bool {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError { return true }
         let text = "\(error) \(error.localizedDescription)".lowercased()
-        return text.contains("identityinsufficientbalance") || text.contains("insufficientidentitycredits")
+        return text.contains("insufficient identity") || text.contains("identityinsufficientbalance")
     }
 }
