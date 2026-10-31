@@ -2129,11 +2129,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     throw error
                 case .landedAndOff, .cannotLand:
                     let didLand = outcome == .landedAndOff
-                    // A record that holds a live auth key (one it sends
-                    // again, or one it added) stays waiting: it keeps the
-                    // app's row and lets a disconnect turn that key off.
-                    guard AppConnect.liveAuthKeyIds(heldBy: record, in: view.keys, bindings: view.bindings).isEmpty else {
-                        logger.info("🔗 DASHCONNECT :: the identity update will not complete, and its record holds a live key; it stays")
+                    // A record that may still hold an auth key (one it sends
+                    // again, or one it added, by the store or by this view)
+                    // stays waiting: it keeps the app's row and lets a
+                    // disconnect turn that key off.
+                    guard AppConnect.heldKeyIds(heldBy: record, in: view.keys, bindings: view.bindings).isEmpty else {
+                        logger.info("🔗 DASHCONNECT :: the identity update will not complete, and its record may hold a live key; it stays")
                         if didLand { grants.save(landed(noting: false, retiring: disabled)) }
                         throw error
                     }
@@ -3537,8 +3538,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // the row, once what was turned off above is marked.
         if let lateDisableFailure { throw lateDisableFailure }
         // A record of the app still waiting for its update keeps the row
-        // while it holds a live key, or while the identity could not be read
-        // again. One that holds none lets the row go and stays recorded: a
+        // while it may hold a live key, while the read after the update
+        // lacks a key the store gives it (`showsWaitingKeys`), or while the
+        // identity could not be read again. One that holds none lets the row go and stays recorded: a
         // disconnect only disables, which witnesses nothing
         // (`AppConnect.OwnUpdate`), and an update that never left the device
         // reads the same as one on its way. If it lands after all, a later
@@ -3550,10 +3552,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // record adds that it cannot place may be the record's too.
             guard let keysAfterUpdate,
                   let bindingsAfter = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer),
+                  AppConnect.showsWaitingKeys(stillWaiting, in: keysAfterUpdate, bindings: bindingsAfter),
                   stillWaiting.allSatisfy({
-                      AppConnect.liveAuthKeyIds(heldBy: $0, in: keysAfterUpdate, bindings: bindingsAfter).isEmpty
-                  }),
-                  !AppConnect.hasUnplacedPendingKey(stillWaiting, currentIdentityPublicKeys: keysAfterUpdate, bindings: bindingsAfter)
+                      AppConnect.heldKeyIds(heldBy: $0, in: keysAfterUpdate, bindings: bindingsAfter).isEmpty
+                  })
             else {
                 Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
                 throw DashConnectPlatformError.registrationPending
