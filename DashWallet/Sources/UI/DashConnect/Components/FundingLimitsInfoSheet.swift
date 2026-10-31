@@ -25,9 +25,13 @@ import SwiftUI
 struct FundingLimitsInfoSheet: View {
     let onClose: () -> Void
 
+    /// The text's natural height: the scroll view takes no more than this,
+    /// so the sheet sizes to its content (`selfSizingSheet`) and scrolls only
+    /// when the text is taller than the sheet can be.
+    @State private var textHeight: CGFloat = 0
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Scrolls at large text sizes, so "Got it" stays in reach.
             ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("What are identity funding limits?", comment: "DashConnect connection sheet"))
@@ -48,7 +52,10 @@ struct FundingLimitsInfoSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 40)
             .padding(.top, 40)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { textHeight = $0 }
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: textHeight)
 
             DashUIKit.DashButton(
                 text: NSLocalizedString("Got it", comment: "DashConnect"),

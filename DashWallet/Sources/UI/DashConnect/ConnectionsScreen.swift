@@ -230,7 +230,9 @@ struct ConnectionsScreen: View {
         .presentationDragIndicator(.visible)
         .sheet(isPresented: $showsFundingLimitsInfo) {
             FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
-                .presentationDetents([.medium, .large])
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
                 .presentationDragIndicator(.visible)
         }
     }
