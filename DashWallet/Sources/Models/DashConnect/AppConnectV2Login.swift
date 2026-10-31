@@ -1166,16 +1166,14 @@ extension AppConnect {
         }
     }
 
-    /// What an update of this wallet to an identity did: the keys it added
-    /// and the ids it disabled. Only an added key witnesses the update: a
-    /// key is never removed and its id never taken again, while Platform
-    /// takes a disable of a key that is already off, so a view taken after
-    /// an earlier disable of the same id would show a disable-only update
-    /// too. An update that added nothing is not noted (`noteOwnUpdate`), and
-    /// one that did is shown by a view that shows all of it.
-    /// TODO(dashconnect-disable-witness): a disconnect only disables, so it
-    /// never settles a waiting record; the SDK's handle to the signed
-    /// transition (dashpay/platform#5690) would.
+    /// What an update of this wallet to an identity did, as an earlier build
+    /// noted it on a waiting record (`PendingV2Update.outlivedBy`). It is
+    /// only decoded, never used to settle: a later own update is no proof
+    /// that a waiting one cannot land, because the SDK's copy of the
+    /// identity can be reloaded while an update is on its way.
+    /// TODO(dashconnect-update-outcome): a waiting record settles only on
+    /// what the identity shows of its own keys; the SDK's handle to the
+    /// signed transition (dashpay/platform#5690) would settle the rest.
     struct OwnUpdate: Codable, Equatable {
         struct AddedKey: Codable, Equatable {
             let keyId: UInt32
@@ -1189,38 +1187,11 @@ extension AppConnect {
             addedKeys = added.map { AddedKey(keyId: $0.keyId, data: $0.pubkeyBytes) }
             self.disabledKeyIds = disabledKeyIds
         }
-
-        func isShown(in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
-            !addedKeys.isEmpty && addedKeys.allSatisfy { added in keys.contains {
-                UInt32(bitPattern: $0.keyId) == added.keyId && $0.data == added.data
-            } } && showsDisabled(disabledKeyIds, in: keys)
-        }
     }
 
     /// Whether `keys` shows every one of `keyIds`, disabled.
     static func showsDisabled(_ keyIds: [UInt32], in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
         keyIds.allSatisfy { id in keys.contains { UInt32(bitPattern: $0.keyId) == id && $0.disabledAt != nil } }
-    }
-
-    /// Notes on every v2 record of `identityId` still waiting for its update
-    /// (except `exceptKey`'s, the update's own) that `update` landed after
-    /// it was submitted. An earlier note stays: it settles the same way.
-    static func noteOwnUpdate(
-        _ update: OwnUpdate,
-        in grants: inout [AppConnectGrant],
-        identityId: String,
-        exceptKey: String? = nil
-    ) {
-        // One that only disables witnesses nothing (`OwnUpdate`).
-        guard !update.addedKeys.isEmpty else { return }
-        for index in grants.indices
-        where grants[index].identityId == identityId && grants[index].key != exceptKey
-            && grants[index].pendingUpdate != nil
-            // A note an earlier build made of an update that added nothing
-            // witnesses nothing either, and gives way.
-            && grants[index].pendingUpdate?.outlivedBy?.addedKeys.isEmpty != false {
-            grants[index].pendingUpdate?.outlivedBy = update
-        }
     }
 
     /// What a view of the identity tells of a v2 update whose outcome was
@@ -1254,12 +1225,10 @@ extension AppConnect {
     /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
     ///   another id: it can never land. HASH160 auth keys are not unique,
     ///   so their data elsewhere says nothing.
-    /// - An update of this wallet that landed after it was submitted
-    ///   (`outlivedBy`) and that `keys` shows: Platform takes an update only
-    ///   at one above the identity's revision, and that update took one
-    ///   above whatever the wallet's copy held, so `pending` cannot land
-    ///   after it. A view that shows that update and none of its ids means
-    ///   it never will. No revision is read: what the update did is.
+    ///
+    /// A later update of this wallet is no evidence: the SDK's copy of the
+    /// identity can be reloaded while an update is on its way, so a waiting
+    /// one may still land after it.
     ///
     /// Expiry ends nothing: Platform judges it by block time, which a view
     /// does not carry, and the device's clock is not that.
@@ -1303,7 +1272,6 @@ extension AppConnect {
             }
         }
         if takenElsewhere { return .cannotLand }
-        if !anyPresent, pending.outlivedBy?.isShown(in: keys) == true { return .cannotLand }
         // Its keys there, unplaced, may be a landed update still to settle.
         return .unknown
     }

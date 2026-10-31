@@ -743,9 +743,8 @@ struct AppConnectGrant: Codable, Equatable {
         var disabledKeyIds: [UInt32]
         /// The records of those grants (`key`) that are done once it lands.
         var retiredGrantKeys: [String]
-        /// An update of this wallet to the identity that landed after this
-        /// one was submitted (`AppConnect.noteOwnUpdate`): this one cannot
-        /// land after it.
+        /// What an earlier build noted of a later update of this wallet. Read
+        /// back, never used: it proves nothing about this one (`OwnUpdate`).
         var outlivedBy: AppConnect.OwnUpdate? = nil
         /// The app's row was a two-QR `.approved` one before this approval
         /// showed it as confirming: it goes back to that if the update never
