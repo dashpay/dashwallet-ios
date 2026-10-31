@@ -833,9 +833,9 @@ extension AppConnect {
 
     /// The ids of the keys in `keys` bound to a foreign document type v2
     /// allows (DashPay `profile`). Every app can be given such a key and the
-    /// bound does not say which one was, so with no record every disconnect
-    /// on the identity turns these off, for every app that holds one
-    /// (`sharedProfileKeyIdsToDisable`).
+    /// bound does not say which one was, so with no record a disconnect on
+    /// the identity that ends there turns these off with the app's keys,
+    /// for every app that holds one (`sharedProfileKeyIdsToDisable`).
     static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
         keys.filter { _, bound in
             guard case .documentType(let id, let name) = bound else { return false }

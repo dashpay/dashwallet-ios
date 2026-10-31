@@ -1373,23 +1373,29 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
     }
 
     /// A disconnect that also turned off DashPay profile keys no
-    /// connection accounted for says how many; one that turned off none says
-    /// nothing.
-    func testADisconnectThatTurnedOffProfileKeysSaysHowMany() async {
+    /// connection accounted for says how many; one that could not tell them
+    /// apart says so; one that turned off none says nothing.
+    func testADisconnectSaysWhatItDidWithTheProfileKeys() async {
         let spy = PurchaseApprovalSpy()
-        spy.profileKeysOff = 2
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysTurnedOff: 2)
         viewModel.disconnect(Self.connection)
-        await waitUntil { !viewModel.isDisconnecting }
-
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
         XCTAssertEqual(viewModel.message?.kind, .success)
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
 
-        spy.profileKeysOff = 0
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysUnchecked: true)
         viewModel.message = nil
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
+        XCTAssertEqual(viewModel.message?.kind, .success)
+        XCTAssertEqual(viewModel.message?.text.contains("could not be checked"), true)
+
+        spy.disconnectResult = DashConnectDisconnectResult()
+        viewModel.message = nil
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 3 }
         XCTAssertNil(viewModel.message)
     }
 
@@ -1669,22 +1675,22 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    private var storedProfileKeysOff = 0
+    private var storedDisconnectResult = DashConnectDisconnectResult()
 
-    /// How many DashPay profile keys a successful disconnect reports.
-    var profileKeysOff: Int {
-        get { lock.withLock { storedProfileKeysOff } }
-        set { lock.withLock { storedProfileKeysOff = newValue } }
+    /// What a successful disconnect reports about the profile keys.
+    var disconnectResult: DashConnectDisconnectResult {
+        get { lock.withLock { storedDisconnectResult } }
+        set { lock.withLock { storedDisconnectResult = newValue } }
     }
 
-    func disconnect(id: String, scope: String?) async throws -> Int {
-        let (failure, count) = lock.withLock { () -> (Error?, Int) in
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+        let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            return (storedDisconnectFailure, storedProfileKeysOff)
+            return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
-        return count
+        return result
     }
 
     func remove(id: String, scope: String?) async {
@@ -1749,7 +1755,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?) async throws -> Int {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         throw PurchaseSpyError.unsupported
     }
 
@@ -3106,9 +3112,31 @@ final class AppConnectLoginTests: XCTestCase {
             activeWalletIdHex: { active.idHex },
             networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
-            operationGate: operationGate
+            operationGate: operationGate,
+            defaults: defaults
         )
         return (dataSource, connections)
+    }
+
+    /// What an earlier build noted about kept shared profile keys is removed
+    /// once, when the data source starts; nothing else in the defaults is
+    /// touched, and a later start scans nothing.
+    func testKeptSharedProfileKeysAreRemovedWhenTheDataSourceStarts() {
+        defaults.set([4, 7], forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a")
+        defaults.set([9], forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b")
+        defaults.set("x", forKey: "DashConnect.other")
+
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a"))
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b"))
+        XCTAssertEqual(defaults.string(forKey: "DashConnect.other"), "x")
+        XCTAssertTrue(defaults.bool(forKey: PlatformDashConnectDataSource.keptSharedProfileKeysRemovedKey))
+
+        defaults.set([5], forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c")
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+        XCTAssertNotNil(
+            defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c"), "it runs once")
     }
 
     private static func twoQRRow(
