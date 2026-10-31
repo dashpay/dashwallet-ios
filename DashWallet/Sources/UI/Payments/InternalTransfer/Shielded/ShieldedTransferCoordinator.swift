@@ -1323,7 +1323,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // the SDK spends them.
             // TODO(shielded-withdraw-fee-cap): `shieldedWithdraw` takes no
             // maximum fee, so notes that change after this check can still be
-            // charged up to a full bundle's fee.
+            // charged up to a full bundle's fee (dashpay/platform#5698).
             if let refusal = Self.contactShieldedFeeRefusal(
                 submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
                 failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
@@ -1666,7 +1666,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // Preflighted again after the PIN, before a reservation uses up
             // one of the contact's addresses.
             // TODO(shielded-withdraw-fee-cap): `withdrawToCore` takes no
-            // maximum fee either.
+            // maximum fee either (dashpay/platform#5698).
             if contactRecipient != nil {
                 let preflight = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
                 if let refusal = Self.contactPlatformFeeRefusal(
