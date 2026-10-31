@@ -141,6 +141,23 @@ enum ShieldedSweepPlanner {
         maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
         feeForActions: (Int) -> UInt64?
     ) -> ShieldedSweepCandidate? {
+        guard let selected = selection(
+            noteValues: noteValues, amountCredits: amountCredits,
+            maxActions: maxActions, feeForActions: feeForActions),
+              selected.inputCredits == amountCredits + selected.feeCredits
+        else { return nil }
+        return selected
+    }
+
+    /// Rust's iterative largest-first selection for `amountCredits`: the
+    /// notes it would spend and the fee it would charge for them, change
+    /// allowed. Nil when no selection within `maxActions` covers the amount.
+    static func selection(
+        noteValues: [UInt64],
+        amountCredits: UInt64,
+        maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
         let values = noteValues.sorted(by: >)
         guard let initialFee = feeForActions(2) else { return nil }
         var feeEstimate = initialFee
@@ -165,9 +182,6 @@ enum ShieldedSweepPlanner {
             let exactRequired = amountCredits.addingReportingOverflow(exactFee)
             guard !exactRequired.overflow else { return nil }
             if accumulated >= exactRequired.partialValue {
-                guard accumulated == exactRequired.partialValue else {
-                    return nil
-                }
                 return ShieldedSweepCandidate(
                     amountCredits: amountCredits,
                     inputCredits: accumulated,
@@ -222,6 +236,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     @Published private(set) var phase: Phase = .idle
+
+    /// True when `.submittedUnconfirmed` came from a DashPay contact
+    /// withdrawal whose outcome could not be established, rather than from a
+    /// shielded spend the relay accepted. Cleared on `reset()`.
+    @Published private(set) var contactWithdrawalOutcomeUnknown = false
 
     /// The typed error behind the current `.failed(_)` phase. `Phase`
     /// carries only display text (that's what the confirm sheets render), so
@@ -296,6 +315,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
+        case platformBalanceChanged
+        case belowWithdrawalMinimum
+        /// A contact payment's fee was not known, so neither the
+        /// confirmation nor the PIN could have covered all it spends.
+        case contactPaymentNotPriced
+        /// A contact payment, priced again, would now be charged more than
+        /// the fee it was confirmed and authorized with.
+        case contactFeeChanged
+        /// A Shielded contact payment above what one withdrawal may carry.
+        case contactAboveShieldedWithdrawalMaximum
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         /// A Max drain's lock whose recipient cannot be established.
@@ -360,6 +389,24 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
+            case .belowWithdrawalMinimum:
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                    (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            case .contactPaymentNotPriced:
+                return NSLocalizedString(
+                    "The fee for this payment could not be worked out. Go back and try again.",
+                    comment: "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation")
+            case .contactAboveShieldedWithdrawalMaximum:
+                return ShieldedTransferCoordinator.contactShieldedMaximumMessage
+            case .contactFeeChanged:
+                return NSLocalizedString(
+                    "The network fee for this payment changed. Close this confirmation and review it again.",
+                    comment: "DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee")
+            case .platformBalanceChanged:
+                return NSLocalizedString(
+                    "Your Platform balance changed. Close this confirmation and tap Max again.",
+                    comment: "Full-balance Platform payment: the balance grew after it was authorized")
             case .shieldedAmountExceedsBundle(let ceiling):
                 let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
@@ -417,12 +464,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
         }
 
-        let noteDescriptor = FetchDescriptor<PersistentShieldedNote>(
-            predicate: PersistentShieldedNote.unspentPredicate(walletId: walletId))
-        let noteValues = ((try? context.fetch(noteDescriptor)) ?? [])
-            .filter { $0.accountIndex == 0 }
-            .map(\.value)
-            .sorted(by: >)
+        let noteValues = unspentNoteValues(walletId: walletId, context: context).sorted(by: >)
 
         guard !noteValues.isEmpty else { return .unavailable }
 
@@ -470,6 +512,83 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 inputCredits: exact.inputCredits,
                 remainingCredits: allCredits - exact.inputCredits,
                 followUpCredits: followUpCredits))
+    }
+
+    /// Account-0 unspent note values, as the Rust selector sees them.
+    private static func unspentNoteValues(walletId: Data, context: ModelContext) -> [UInt64] {
+        ((try? context.fetch(FetchDescriptor<PersistentShieldedNote>(
+            predicate: PersistentShieldedNote.unspentPredicate(walletId: walletId)))) ?? [])
+            .filter { $0.accountIndex == 0 }
+            .map(\.value)
+    }
+
+    /// The persisted notes a withdrawal would select from, or nil while
+    /// they don't describe the published balance (`sweepAvailability` is not
+    /// `.ready`). Read once and price amounts with `withdrawalFeeCredits`.
+    static func withdrawalNoteValues() -> [UInt64]? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              case .ready = sweepAvailability(feeKind: .withdrawal)
+        else { return nil }
+        return unspentNoteValues(walletId: wallet.walletId, context: modelContainer.mainContext)
+    }
+
+    /// The most a non-sweep withdrawal of `amountCredits` is charged: the fee
+    /// of the notes Rust's selector would spend from `noteValues`, not a
+    /// two-action estimate — or, with no notes ready to price (nil), a full
+    /// bundle's, which the selector never exceeds. Nil when the notes cannot
+    /// cover the amount in one transition, or the fee can't be estimated.
+    static func withdrawalFeeCredits(amountCredits: UInt64, noteValues: [UInt64]?) -> UInt64? {
+        guard let noteValues else { return fullBundleWithdrawalFeeCredits() }
+        return ShieldedSweepPlanner.selection(
+            noteValues: noteValues,
+            amountCredits: amountCredits,
+            feeForActions: withdrawalFee(actions:))?.feeCredits
+    }
+
+    /// The fee of the largest withdrawal bundle one transition admits.
+    static func fullBundleWithdrawalFeeCredits() -> UInt64? {
+        withdrawalFee(actions: ShieldedActionBudget.maxActionsPerTransition)
+    }
+
+    private static func withdrawalFee(actions: Int) -> UInt64? {
+        try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .withdrawal, numActions: actions)
+    }
+
+    /// Prices a Shielded contact payment again from the notes as they are
+    /// now (`contactShieldedFeeRefusal(confirmedFeeCredits:notesReady:liveFeeCredits:)`).
+    private static func contactShieldedFeeRefusal(
+        submittedCredits: UInt64, confirmedFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        let noteValues = withdrawalNoteValues()
+        return contactShieldedFeeRefusal(
+            confirmedFeeCredits: confirmedFeeCredits,
+            notesReady: noteValues != nil,
+            liveFeeCredits: noteValues.flatMap {
+                withdrawalFeeCredits(amountCredits: submittedCredits, noteValues: $0)
+            })
+    }
+
+    /// Why a Shielded contact payment can't go ahead at the fee its
+    /// confirmation showed and the PIN covers. Nil while that fee covers what
+    /// the notes, priced now, would be charged. Notes that aren't ready to
+    /// price refuse it for now: what they will be charged isn't known.
+    nonisolated static func contactShieldedFeeRefusal(
+        confirmedFeeCredits: UInt64?, notesReady: Bool, liveFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        guard let confirmedFeeCredits else { return .contactPaymentNotPriced }
+        guard notesReady else { return .shieldedBalanceUnavailable }
+        guard let liveFeeCredits else { return .contactPaymentNotPriced }
+        return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
+    }
+
+    /// The same for a Platform contact payment, from a fresh preflight's fee
+    /// (nil when it failed or can't withdraw).
+    nonisolated static func contactPlatformFeeRefusal(
+        confirmedFeeCredits: UInt64?, liveFeeCredits: UInt64?
+    ) -> CoordinatorError? {
+        guard let confirmedFeeCredits, let liveFeeCredits else { return .contactPaymentNotPriced }
+        return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
     }
 
     /// Largest amount the pool can fund inside ONE transition — the sweep
@@ -1102,10 +1221,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// transfer); an external Send passes the recipient's address. The
     /// withdrawal-store tag (which classifies the incoming L1 tx as
     /// "Shielded received") only applies to the own-wallet payout.
+    /// `contactRecipient` pays a DashPay contact instead: a fresh address of
+    /// theirs is reserved once the user has authorized the payment.
     func performWithdraw(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil,
+        contactNetworkFeeCredits: UInt64? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -1118,8 +1241,34 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        guard beginContactPayment(contactRecipient) else { return }
+        defer { endContactPayment(contactRecipient) }
+
         let submittedAmount: UInt64
-        if sweepAll {
+        if contactRecipient != nil {
+            // A sweep sends whatever the notes hold; a contact is only ever
+            // paid an exact amount (`SendViewModel` never offers it).
+            guard !sweepAll else {
+                handleFailure(CoordinatorError.shieldedSweepChanged)
+                return
+            }
+            do {
+                submittedAmount = try Self.contactWithdrawalCredits(recipientCredits: amountCredits)
+            } catch {
+                handleFailure(error)
+                return
+            }
+            guard submittedAmount <= Self.shieldedWithdrawalMaximumCredits else {
+                handleFailure(CoordinatorError.contactAboveShieldedWithdrawalMaximum)
+                return
+            }
+            if rejectIfAboveSpendCeiling(submittedAmount, feeKind: .withdrawal) { return }
+            if let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                handleFailure(refusal)
+                return
+            }
+        } else if sweepAll {
             switch Self.sweepAvailability(feeKind: .withdrawal) {
             case .ready(let plan) where plan.amountCredits == amountCredits:
                 submittedAmount = plan.amountCredits
@@ -1140,9 +1289,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // the phase — same ordering as `resolveEnvironment()`. The reader is
         // main-actor-safe and we're already on @MainActor, so call it
         // directly (no GCD hop).
-        let coreAddress: String
+        var coreAddress: String
         let paysOwnWallet: Bool
-        if let destinationOverride, !destinationOverride.isEmpty {
+        if contactRecipient != nil {
+            // Reserved after authorization, below.
+            coreAddress = ""
+            paysOwnWallet = false
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
             paysOwnWallet = false
         } else {
@@ -1155,11 +1308,39 @@ final class ShieldedTransferCoordinator: ObservableObject {
             paysOwnWallet = true
         }
 
+        let contactWithdrawal: ContactWithdrawal?
         do {
-            try await authorize()
+            try await authorize(contactSpendDuffs: try Self.contactSpendDuffs(
+                contactRecipient, submittedCredits: submittedAmount, networkFeeCredits: contactNetworkFeeCredits))
+            // Notes can reconcile while the PIN is up: priced again before a
+            // reservation uses up one of the contact's addresses.
+            if contactRecipient != nil, let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                throw refusal
+            }
+            contactWithdrawal = try await reserveContactWithdrawal(
+                contactRecipient,
+                // What the contact receives: the Core fee is carved out of
+                // the submitted amount on the network.
+                amountDuffs: amountCredits / 1000,
+                amountIsEstimate: false,
+                source: .shielded)
         } catch {
             handleFailure(error)
             return
+        }
+        if let contactWithdrawal {
+            // And again after the reservation's await, the last point before
+            // the SDK spends them.
+            // TODO(shielded-withdraw-fee-cap): `shieldedWithdraw` takes no
+            // maximum fee, so notes that change after this check can still be
+            // charged up to a full bundle's fee (dashpay/platform#5698).
+            if let refusal = Self.contactShieldedFeeRefusal(
+                submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+                failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
+                return
+            }
+            coreAddress = contactWithdrawal.address
         }
 
         phase = .proving
@@ -1175,6 +1356,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toCoreAddress: coreAddress,
                 amount: submittedAmount)
         } catch {
+            if concludeUncertainContactWithdrawal(contactWithdrawal, error: error) {
+                scheduleShieldedResync(manager: env.manager)
+                return
+            }
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
             // the destination so the incoming tx classifies as a shielded
@@ -1192,6 +1377,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         if paysOwnWallet {
             ShieldedWithdrawalStore.shared.record(address: coreAddress)
         }
+        markContactWithdrawalSubmitted(contactWithdrawal)
 
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route completed")
         phase = .broadcasting
@@ -1434,20 +1620,29 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// `toCoreAddress` nil = the wallet's own receive address (the internal
     /// transfer); an external Send passes the recipient's L1 address.
+    /// `contactRecipient` pays a DashPay contact instead, as in
+    /// `performWithdraw`.
     func performPlatformWithdraw(
         amountCredits: UInt64,
         fullBalance: Bool,
         feeHeadroomCredits: UInt64?,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        contactRecipient: ContactPaymentRecipient? = nil,
+        contactNetworkFeeCredits: UInt64? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
+        guard beginContactPayment(contactRecipient) else { return }
+        defer { endContactPayment(contactRecipient) }
 
         // Destination Core (BIP44, Base58Check) address — for the internal
         // transfer, the wallet's own receive address (same resolution as the
         // shielded withdraw route).
-        let coreAddress: String
-        if let destinationOverride, !destinationOverride.isEmpty {
+        var coreAddress: String
+        if contactRecipient != nil {
+            // Reserved after authorization, below.
+            coreAddress = ""
+        } else if let destinationOverride, !destinationOverride.isEmpty {
             coreAddress = destinationOverride
         } else {
             guard let ownAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
@@ -1458,11 +1653,83 @@ final class ShieldedTransferCoordinator: ObservableObject {
             coreAddress = ownAddress
         }
 
+        // The AUTO full-balance withdrawal pays whatever the balances are when
+        // it runs, so it can't be bounded by the authorized amount: a contact
+        // is only ever paid an exact amount (`SendViewModel` never offers it).
+        if contactRecipient != nil, fullBalance {
+            handleFailure(CoordinatorError.platformBalanceChanged)
+            return
+        }
+        let submittedAmount: UInt64
+        if contactRecipient != nil {
+            do {
+                submittedAmount = try Self.contactWithdrawalCredits(recipientCredits: amountCredits)
+            } catch {
+                handleFailure(error)
+                return
+            }
+        } else {
+            submittedAmount = amountCredits
+        }
+
+        let contactWithdrawal: ContactWithdrawal?
         do {
-            try await authorize()
+            try await authorize(contactSpendDuffs: try Self.contactSpendDuffs(
+                contactRecipient, submittedCredits: submittedAmount, networkFeeCredits: contactNetworkFeeCredits))
+            // Preflighted again after the PIN, before a reservation uses up
+            // one of the contact's addresses.
+            // TODO(shielded-withdraw-fee-cap): `withdrawToCore` takes no
+            // maximum fee either (dashpay/platform#5698).
+            if contactRecipient != nil {
+                let preflight = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
+                if let refusal = Self.contactPlatformFeeRefusal(
+                    confirmedFeeCredits: contactNetworkFeeCredits,
+                    liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
+                    throw refusal
+                }
+            }
+            contactWithdrawal = try await reserveContactWithdrawal(
+                contactRecipient,
+                amountDuffs: amountCredits / 1000,
+                // A full-balance withdrawal pays out the balance less a fee
+                // only known once Platform charges it: the amount is the
+                // preflighted estimate.
+                amountIsEstimate: fullBalance,
+                source: .platform)
         } catch {
             handleFailure(error)
             return
+        }
+        if let contactWithdrawal {
+            // And again after the reservation's await, the last point before
+            // the SDK withdraws. A refusal here has used up the address.
+            // TODO(shielded-withdraw-fee-cap): dashpay/platform#5698.
+            let preflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
+            do {
+                preflight = try await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
+            } catch {
+                Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal preflight failed after reservation \(String(describing: error), privacy: .public)")
+                preflight = nil
+            }
+            if let refusal = Self.contactPlatformFeeRefusal(
+                confirmedFeeCredits: contactNetworkFeeCredits,
+                liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
+                failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
+                return
+            }
+            // `withdrawToCore` spends from whichever wallet is active, so the
+            // one the address was reserved and journaled for must still be.
+            #if DASHPAY
+            if let contactRecipient {
+                do {
+                    try WalletSendService.validateContactRecipient(contactRecipient)
+                } catch {
+                    failUnsubmittedContactWithdrawal(contactWithdrawal, error: error)
+                    return
+                }
+            }
+            #endif
+            coreAddress = contactWithdrawal.address
         }
 
         phase = .broadcasting
@@ -1472,15 +1739,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 try await PlatformAddressSyncCoordinator.shared.withdrawAllToCore(address: coreAddress)
             } else {
                 try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
-                    amountCredits: amountCredits,
+                    amountCredits: submittedAmount,
                     address: coreAddress,
                     feeHeadroomCredits: feeHeadroomCredits)
             }
         } catch {
+            if concludeUncertainContactWithdrawal(contactWithdrawal, error: error) {
+                schedulePlatformResync()
+                return
+            }
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
 
+        markContactWithdrawalSubmitted(contactWithdrawal)
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw completed")
         phase = .success
         schedulePlatformResync()
@@ -1587,6 +1859,226 @@ final class ShieldedTransferCoordinator: ObservableObject {
         schedulePlatformResync()
     }
 
+    // MARK: - DashPay contact withdrawals
+
+    /// The smallest amount a contact can be paid from Platform or Shielded:
+    /// the consensus withdrawal floor (`system_limits.min_withdrawal_amount`,
+    /// 1000 duffs since protocol v12). From v14 the floor applies to the
+    /// amount plus the Core fee (`min_withdrawal_amount_with_core_fee`), which
+    /// `contactWithdrawalCredits` adds on top, so the recipient-side floor
+    /// stays 1000 duffs. Below it Platform rejects the transition, and that
+    /// rejection is not one `provesWithdrawalNotSubmitted` can tell apart from
+    /// an unknown outcome, so it is refused before anything is reserved.
+    nonisolated static let contactWithdrawalMinimumCredits: UInt64 = 1_000_000
+
+    /// The Core fee added on top of every contact withdrawal: the 190-byte
+    /// asset unlock at the 1 duff/byte every withdrawal here uses. From
+    /// protocol 14 the network carves it out of the withdrawal
+    /// (`try_into_asset_unlock_base_transaction_info_v1`), so adding it pays
+    /// the contact exactly the amount entered. It is added on every version
+    /// rather than by the version in force: the conversion runs when Platform
+    /// builds the asset unlock, not when the payment is submitted, so a
+    /// payment submitted before 14 can still be converted after it activates.
+    /// Before 14 the contact receives these 190 duffs as well — never less
+    /// than the amount entered.
+    nonisolated static let contactCoreFeeCredits: UInt64 = 190_000
+
+    /// The most one Shielded withdrawal may carry, Core fee included: the
+    /// protocol's `max_withdrawal_amount` (500 DASH), which
+    /// `ShieldedWithdrawalTransition` checks against the amount it reserves.
+    /// Platform address withdrawals have no such limit.
+    nonisolated static let shieldedWithdrawalMaximumCredits: UInt64 = 50_000_000_000_000
+
+    nonisolated static var contactShieldedMaximumMessage: String {
+        String.localizedStringWithFormat(
+            NSLocalizedString(
+                "You can send up to %@ to a contact from your Shielded balance in one payment.",
+                comment: "DashPay contact payment from Shielded: the protocol's single-withdrawal maximum"),
+            "\((contactShieldedMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+    }
+
+    /// The most a contact can be paid from Shielded in one payment: the
+    /// withdrawal maximum less the Core fee added on top.
+    nonisolated static var contactShieldedMaximumCredits: UInt64 {
+        shieldedWithdrawalMaximumCredits - contactCoreFeeCredits
+    }
+
+    /// The amount a withdrawal carries for the contact to receive
+    /// `recipientCredits`: the amount plus `contactCoreFeeCredits`. Throws
+    /// for an amount below the floor, before anything is authorized or
+    /// reserved.
+    nonisolated static func contactWithdrawalCredits(recipientCredits: UInt64) throws -> UInt64 {
+        guard recipientCredits >= contactWithdrawalMinimumCredits else {
+            throw CoordinatorError.belowWithdrawalMinimum
+        }
+        let (total, overflow) = recipientCredits.addingReportingOverflow(contactCoreFeeCredits)
+        guard !overflow else { throw CoordinatorError.contactPaymentNotPriced }
+        return total
+    }
+
+    /// What a contact payment authorizes against the spending limit: all it
+    /// takes from the funding balance — the submitted amount and the network
+    /// fee the confirmation showed. Nil for every other withdrawal, which
+    /// keeps the identity gate. Throws for a contact payment whose fee is
+    /// unknown rather than authorizing less than it spends.
+    nonisolated static func contactSpendDuffs(
+        _ recipient: ContactPaymentRecipient?,
+        submittedCredits: UInt64,
+        networkFeeCredits: UInt64?
+    ) throws -> UInt64? {
+        guard recipient != nil else { return nil }
+        guard let networkFeeCredits else { throw CoordinatorError.contactPaymentNotPriced }
+        let (total, overflow) = submittedCredits.addingReportingOverflow(networkFeeCredits)
+        // Rounded up: a partial duff of fee is still spent.
+        let credits = overflow ? UInt64.max : total
+        return credits / 1000 + (credits % 1000 == 0 ? 0 : 1)
+    }
+
+    private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
+
+    /// Claims the contact for the whole payment, before its first await
+    /// (`WalletSendService.beginContactPayment`), so no other payment to it,
+    /// from any balance, runs alongside. True with no contact to pay; false
+    /// after failing the transfer.
+    private func beginContactPayment(_ recipient: ContactPaymentRecipient?) -> Bool {
+        guard let recipient else { return true }
+        #if DASHPAY
+        do {
+            try WalletSendService.shared.beginContactPayment(recipient)
+            return true
+        } catch {
+            handleFailure(error)
+            return false
+        }
+        #else
+        handleFailure(CoordinatorError.noWallet)
+        return false
+        #endif
+    }
+
+    private func endContactPayment(_ recipient: ContactPaymentRecipient?) {
+        #if DASHPAY
+        if let recipient { WalletSendService.shared.endContactPayment(recipient) }
+        #endif
+    }
+
+    /// Reserve a fresh address of the contact's and record the withdrawal to
+    /// it. Call after `authorize()` and right before submitting: the SDK marks
+    /// the address used, and the record — the only trace the sender keeps,
+    /// since the SDK returns no Core transaction — must exist before anything
+    /// is sent, so a failed write stops the payment. Nil for every withdrawal
+    /// that does not pay a contact.
+    private func reserveContactWithdrawal(
+        _ recipient: ContactPaymentRecipient?,
+        amountDuffs: UInt64,
+        amountIsEstimate: Bool,
+        source: DashPayWithdrawalStore.Source
+    ) async throws -> ContactWithdrawal? {
+        guard let recipient else { return nil }
+        #if DASHPAY
+        return try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient) { address in
+            try DashPayWithdrawalStore.shared.begin(
+                scope: .init(
+                    networkRaw: recipient.network.rawValue,
+                    walletId: recipient.walletId,
+                    ownerIdentityId: recipient.ownerIdentityId),
+                contactIdentityId: recipient.identityId,
+                address: address,
+                amountDuffs: amountDuffs,
+                amountIsEstimate: amountIsEstimate,
+                source: source)
+        }
+        #else
+        // Only the DashPay target creates a `ContactPaymentRecipient`.
+        throw CoordinatorError.noWallet
+        #endif
+    }
+
+    /// Errors that prove a withdrawal never executed: the app's own guards
+    /// in front of the Platform withdrawal, and the shielded failures the
+    /// SDK documents as not broadcast (or definitively rejected) with every
+    /// note released.
+    static func provesWithdrawalNotSubmitted(_ error: Error) -> Bool {
+        switch error {
+        case PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
+             PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+             PlatformWalletError.shieldedNoRecordedAnchor,
+             PlatformWalletError.shieldedBroadcastFailed,
+             PlatformWalletError.shieldedInsufficientBalance:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// True when `error` left a contact withdrawal's outcome unknown: the
+    /// record is marked `.unconfirmed`, the contact is locked and the sheet
+    /// ends on `.submittedUnconfirmed`, so the caller only schedules its
+    /// resync. Platform may have accepted the withdrawal with only the
+    /// response lost, so it is never offered for retry — a second attempt
+    /// would reserve another address and could pay the contact twice.
+    ///
+    /// False for a withdrawal that does not pay a contact, and for one the
+    /// error proves never executed once its record is dropped: the caller
+    /// fails it as retryable like any other. A record that can't be dropped
+    /// ends on the unknown outcome too.
+    private func concludeUncertainContactWithdrawal(_ withdrawal: ContactWithdrawal?, error: Error) -> Bool {
+        guard let withdrawal else { return false }
+        if Self.provesWithdrawalNotSubmitted(error) {
+            if dropUnsubmittedContactWithdrawal(withdrawal) { return false }
+        } else {
+            Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal outcome unknown \(String(describing: error), privacy: .public)")
+        }
+        endOnUnknownContactOutcome(withdrawal)
+        return true
+    }
+
+    /// Fails a contact withdrawal refused after its record was written but
+    /// before the SDK was called, as retryable once its record is dropped.
+    private func failUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal, error: Error) {
+        if dropUnsubmittedContactWithdrawal(withdrawal) {
+            handleFailure(error)
+        } else {
+            endOnUnknownContactOutcome(withdrawal)
+        }
+    }
+
+    /// Drops the record of a withdrawal known never to have been submitted:
+    /// left behind it would show as an unknown payment that never left. False
+    /// when it can't be dropped — it then still reads as unknown and locks the
+    /// contact, so a retry would only be refused, and the payment has to end
+    /// on the unknown outcome instead.
+    private func dropUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal) -> Bool {
+        do {
+            try DashPayWithdrawalStore.shared.remove(withdrawal)
+            return true
+        } catch {
+            Self.logger.error("🛡️ SHIELD-TX :: unsubmitted contact withdrawal record could not be dropped \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
+    private func endOnUnknownContactOutcome(_ withdrawal: ContactWithdrawal) {
+        // The `.submitting` record already on disk reads as unknown too, so a
+        // failure of this write loses nothing.
+        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .unconfirmed)
+        #if DASHPAY
+        // The same per-contact lock an unknown Transparent contact payment
+        // takes, so reopening the contact cannot start a duplicate.
+        WalletSendService.shared.unknownContactPaymentOutcomes
+            .record(contactIdentityId: withdrawal.contactIdentityId)
+        #endif
+        contactWithdrawalOutcomeUnknown = true
+        phase = .submittedUnconfirmed
+    }
+
+    private func markContactWithdrawalSubmitted(_ withdrawal: ContactWithdrawal?) {
+        guard let withdrawal else { return }
+        // Never turn an accepted withdrawal into an error because this write
+        // failed: the record then stays `.submitting`, shown as unknown.
+        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .submitted)
+    }
+
     /// Reset to `.idle` so the user can retry from a `.failed` state.
     /// Keeps no in-flight observers — the FFI calls themselves are
     /// uncancellable, so this just resets UI state.
@@ -1595,6 +2087,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastFailure = nil
         lastResumeReport = nil
+        contactWithdrawalOutcomeUnknown = false
         phase = .idle
     }
 
@@ -1688,7 +2181,28 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously
     /// by `beginTransfer()`); this just awaits user authorization and maps
     /// the cancel/fail outcomes onto coordinator errors.
-    private func authorize() async throws {
+    ///
+    /// `contactSpendDuffs` is set for a payment to a DashPay contact, which
+    /// authorizes like the Transparent contact send: the amount engages the
+    /// biometric spending limit (an amount over the remaining allowance needs
+    /// the PIN) and is deducted from it. Every other route keeps the
+    /// identity gate.
+    private func authorize(contactSpendDuffs: UInt64? = nil) async throws {
+        if let contactSpendDuffs {
+            #if DASHPAY
+            do {
+                try await WalletSendService.shared.authorizeContactPayment(amountDuffs: contactSpendDuffs)
+            } catch {
+                throw WalletSendService.isAuthenticationCancelledError(error as NSError)
+                    ? CoordinatorError.authCancelled
+                    : CoordinatorError.authFailed
+            }
+            return
+            #else
+            // Only the DashPay target pays contacts.
+            throw CoordinatorError.authFailed
+            #endif
+        }
         do {
             try await authorizer.authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {

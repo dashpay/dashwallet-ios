@@ -21,6 +21,9 @@ struct ContactProfileSheet: View {
     @State private var isProcessing = false
     @State private var errorMessage: String? = nil
     @State private var showingPaySheet = false
+    /// The wallet and identity this profile opened on, handed to the pay
+    /// sheet so a wallet switch while the profile is open can't rebind it.
+    @State private var paymentRecipient: ContactPaymentRecipient?
 
     // Owner-private contact meta, editable for established contacts.
     // Seeded from the immutable snapshot in onAppear; saved through
@@ -111,9 +114,12 @@ struct ContactProfileSheet: View {
                 Text(errorMessage ?? "")
             }
             .sheet(isPresented: $showingPaySheet) {
-                PayContactSheet(contact: contact)
+                PayContactSheet(contact: contact, recipient: paymentRecipient)
             }
             .onAppear {
+                if paymentRecipient == nil {
+                    paymentRecipient = ContactPaymentRecipient.current(for: contact)
+                }
                 aliasText = contact.alias ?? ""
                 noteText = contact.note ?? ""
                 isHidden = contact.isHidden
@@ -635,11 +641,16 @@ struct ContactProfileSheet: View {
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
+                Text("\(payment.amountIsEstimate ? "≈ " : "")\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
                     Text(fiat)
+                        .font(.system(size: 12))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                if let status = payment.statusNote {
+                    Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -716,6 +727,14 @@ struct ContactProfileSheet: View {
 /// fee can't push the send over the balance.
 struct PayContactSheet: View {
     let contact: ContactItem
+    /// The wallet and identity the profile opened on (or, failing that, this
+    /// sheet): the payment is bound to them, so a wallet switch voids it.
+    @State private var recipient: ContactPaymentRecipient?
+
+    init(contact: ContactItem, recipient: ContactPaymentRecipient?) {
+        self.contact = contact
+        _recipient = State(initialValue: recipient)
+    }
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var walletState = SwiftDashSDKWalletState.shared
@@ -743,6 +762,10 @@ struct PayContactSheet: View {
                 }
             }
             .padding(24)
+            .onAppear {
+                // Once: a re-appear must not rebind to whatever is active now.
+                if recipient == nil { recipient = ContactPaymentRecipient.current(for: contact) }
+            }
             .navigationTitle(String(
                 format: NSLocalizedString("Pay %@", comment: "DashPay Contacts"),
                 contact.displayTitle))
@@ -881,7 +904,8 @@ struct PayContactSheet: View {
             do {
                 let (txid, feeDuffs) = try await WalletSendService.shared.sendToContact(
                     contactIdentityId: contact.contactIdentityId,
-                    amount: duffs)
+                    amount: duffs,
+                    recipient: recipient)
                 sentTxid = txid
                 sentFeeDuffs = feeDuffs
                 sentAmountDuffs = duffs

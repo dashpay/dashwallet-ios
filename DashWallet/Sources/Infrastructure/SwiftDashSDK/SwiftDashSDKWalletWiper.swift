@@ -314,6 +314,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 "Core drain marker cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
             return false
         }
+        // The contact-payment journal too, including entries of wallets the
+        // inventory no longer lists: left behind, a re-import would
+        // inherit their history and unresolved-payment locks. Cleared only
+        // now, so a failed deletion keeps the locks of wallets that survive.
+        do {
+            try DashPayWithdrawalStore.shared.resetForWipe()
+        } catch {
+            logger.error(
+                "DashPay payment journal cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
+            return false
+        }
 
         // The SDK wallet deletion is now known to have succeeded for every
         // network. Clear every global app-owned store only at this commit
@@ -825,6 +836,20 @@ final class SwiftDashSDKWalletWiper: NSObject {
             throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
         }
 
+#if DASHPAY
+        // The contact-payment journal is cleared only once the wallet is
+        // gone, so a failed deletion keeps its unresolved-payment locks; a
+        // journal that can't even be read now refuses the removal up front.
+        for walletId in walletIds.values {
+            do {
+                _ = try DashPayWithdrawalStore.shared.files(ofWallet: walletId)
+            } catch {
+                logger.error("the DashPay payment journal could not be read; refusing the removal: \(String(describing: error), privacy: .public)")
+                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+            }
+        }
+#endif
+
         try await SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccounts(
             matching: mnemonic)
 
@@ -938,6 +963,23 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+
+#if DASHPAY
+        // Left behind, a re-import of the same seed would inherit the
+        // journal's history and its unresolved-payment locks, so a journal
+        // that can't be cleared fails the removal rather than reporting it
+        // done. The check above makes that unlikely; when it happens the
+        // wallet is already gone from the SDK, and the entries stay until a
+        // full wipe or the re-imported wallet's removal clears them.
+        // Every network's records at once, so a failure never leaves one
+        // network's locks gone and another's still there.
+        do {
+            try DashPayWithdrawalStore.shared.clearForWallets(walletIds: Array(walletIds.values))
+        } catch {
+            logger.error("the DashPay payment journal of the removed wallet could not be cleared: \(String(describing: error), privacy: .public)")
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+        }
+#endif
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust
