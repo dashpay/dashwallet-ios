@@ -268,6 +268,50 @@ struct ConnectionDetails: Equatable {
     let identityId: String?
     let username: String?
     let access: ConnectionAccess?
+    /// When the connection was made: the latest of its grants' approvals.
+    var connectedAt: Date? = nil
+    /// What is left of each key's budget, read from Platform; `nil` when it
+    /// was not read (a disconnected app, or the connection is on another
+    /// identity) or could not be (`fundingReadFailed`).
+    var keyFunding: [KeyFunding]? = nil
+    var fundingReadFailed = false
+    /// A disconnect turns the app's keys off on Platform. `false` for a
+    /// two-QR login with nothing else of the app's: it only changes the
+    /// local status.
+    var disconnectRevokesKeys = true
+}
+
+/// One of a connection's keys, with what is left of its budget.
+struct KeyFunding: Equatable {
+    /// The key is bound to the DashPay profile, not to the app's data.
+    let isProfileKey: Bool
+    /// What the key may spend over its life; `nil` with no limit.
+    let totalBudget: UInt64?
+    /// What is left of it; `nil` with no limit, or when Platform did not say.
+    let remaining: UInt64?
+
+    /// The keys of `grants` in their order, each with its budget as the
+    /// grant recorded it and what `remaining` (by key id) says is left. A
+    /// record from before `grantedAccess` knows its primary key's budget
+    /// only, and no key of it as the DashPay profile's.
+    static func of(grants: [AppConnectGrant], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
+        grants.flatMap { grant -> [KeyFunding] in
+            let keys = grant.grantedAccess.flatMap { $0.isUnreadable ? nil : $0.keys }
+            return grant.keyIds.enumerated().map { index, keyId in
+                let key = keys.flatMap { index < $0.count ? $0[index] : nil }
+                let isProfileKey: Bool
+                if case .documentType(let contractId, let name)? = key?.bound {
+                    isProfileKey = contractId.toBase58String() == AppConnect.dashPayContractId && name == "profile"
+                } else {
+                    isProfileKey = false
+                }
+                return KeyFunding(
+                    isProfileKey: isProfileKey,
+                    totalBudget: key?.totalBudget ?? (index == 0 ? grant.totalBudget : nil),
+                    remaining: remaining[keyId] ?? nil)
+            }
+        }
+    }
 }
 
 /// Whether an app's keys are past their expiry on Platform but still on.

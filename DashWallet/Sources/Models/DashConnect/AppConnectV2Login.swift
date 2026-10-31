@@ -120,6 +120,8 @@ extension AppConnect {
         /// the record it is part of names keys a disconnect needs, so this
         /// never makes the record unreadable.
         private(set) var isUnreadable = false
+        /// What such a build wrote, written back as it was.
+        private var unreadable: StoredJSON?
 
         private enum CodingKeys: String, CodingKey {
             case keys, receivesMessages, isSessionKeyLogin
@@ -149,23 +151,107 @@ extension AppConnect {
                       ?? false else {
                 self.init(keys: [], receivesMessages: false)
                 isUnreadable = true
+                unreadable = try? StoredJSON(from: decoder)
                 return
             }
             self.init(keys: keys, receivesMessages: receivesMessages, isSessionKeyLogin: isSessionKeyLogin)
         }
 
-        /// One that could not be read is written back as nothing known
-        /// (`null`), never as an empty access.
+        /// One that could not be read is written back as it was stored
+        /// (`null` when even that could not be read), never as an empty
+        /// access.
         func encode(to encoder: Encoder) throws {
             guard !isUnreadable else {
-                var container = encoder.singleValueContainer()
-                try container.encodeNil()
+                if let unreadable {
+                    try unreadable.encode(to: encoder)
+                } else {
+                    var container = encoder.singleValueContainer()
+                    try container.encodeNil()
+                }
                 return
             }
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(keys, forKey: .keys)
             try container.encode(receivesMessages, forKey: .receivesMessages)
             try container.encode(isSessionKeyLogin, forKey: .isSessionKeyLogin)
+        }
+    }
+
+    /// Any JSON value, kept as it was read, so that a value this build
+    /// cannot read is written back unchanged. Integers keep their 64 bits.
+    indirect enum StoredJSON: Codable, Equatable {
+        case null
+        case bool(Bool)
+        case int(Int64)
+        case uint(UInt64)
+        case double(Double)
+        case string(String)
+        case array([StoredJSON])
+        case object([String: StoredJSON])
+
+        init(from decoder: Decoder) throws {
+            if var array = try? decoder.unkeyedContainer() {
+                var values: [StoredJSON] = []
+                while !array.isAtEnd { values.append(try array.decode(StoredJSON.self)) }
+                self = .array(values)
+                return
+            }
+            if let object = try? decoder.container(keyedBy: AnyKey.self) {
+                var values: [String: StoredJSON] = [:]
+                for key in object.allKeys { values[key.stringValue] = try object.decode(StoredJSON.self, forKey: key) }
+                self = .object(values)
+                return
+            }
+            let value = try decoder.singleValueContainer()
+            if value.decodeNil() {
+                self = .null
+            } else if let bool = try? value.decode(Bool.self) {
+                self = .bool(bool)
+            } else if let int = try? value.decode(Int64.self) {
+                self = .int(int)
+            } else if let uint = try? value.decode(UInt64.self) {
+                self = .uint(uint)
+            } else if let double = try? value.decode(Double.self) {
+                self = .double(double)
+            } else {
+                self = .string(try value.decode(String.self))
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            switch self {
+            case .array(let values):
+                var array = encoder.unkeyedContainer()
+                for value in values { try array.encode(value) }
+            case .object(let values):
+                var object = encoder.container(keyedBy: AnyKey.self)
+                for (key, value) in values { try object.encode(value, forKey: AnyKey(stringValue: key)) }
+            case .null:
+                var value = encoder.singleValueContainer()
+                try value.encodeNil()
+            case .bool(let bool):
+                var value = encoder.singleValueContainer()
+                try value.encode(bool)
+            case .int(let int):
+                var value = encoder.singleValueContainer()
+                try value.encode(int)
+            case .uint(let uint):
+                var value = encoder.singleValueContainer()
+                try value.encode(uint)
+            case .double(let double):
+                var value = encoder.singleValueContainer()
+                try value.encode(double)
+            case .string(let string):
+                var value = encoder.singleValueContainer()
+                try value.encode(string)
+            }
+        }
+
+        private struct AnyKey: CodingKey {
+            let stringValue: String
+            var intValue: Int? { nil }
+            init(stringValue: String) { self.stringValue = stringValue }
+            init?(intValue: Int) { nil }
         }
     }
 

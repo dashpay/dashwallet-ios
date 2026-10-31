@@ -31,6 +31,16 @@ struct ConnectionSheet: View {
     let granted: [String]?
     /// What it was not given.
     let withheld: [String]
+    /// Each key with what is left of its budget; `nil` while unknown or not
+    /// read.
+    let funding: [(title: String, value: String)]?
+    /// Platform could not be read for it.
+    let fundingFailed: Bool
+    /// When the connection was made.
+    let connectedAt: Date?
+    /// A disconnect turns the app's keys off on Platform; otherwise it only
+    /// turns the connection off on this device.
+    let disconnectRevokesKeys: Bool
     let isBusy: Bool
     /// Platform is being read for the expiry.
     let isCheckingStatus: Bool
@@ -190,7 +200,7 @@ struct ConnectionSheet: View {
     @ViewBuilder
     private var limitsCard: some View {
         let access = details?.access
-        if access != nil || item.disconnectedAt != nil {
+        if access != nil || item.disconnectedAt != nil || connectedAt != nil {
             VStack(alignment: .leading, spacing: 2) {
                 if let access {
                     VStack(alignment: .leading, spacing: 2) {
@@ -211,6 +221,45 @@ struct ConnectionSheet: View {
                             .dashFont(.subhead)
                             .foregroundColor(Color.dash.primaryText)
                     }
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
+                if let funding, !funding.isEmpty, item.connection != nil {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString("Funding left", comment: "DashConnect connection sheet"))
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.tertiaryText)
+                        ForEach(Array(funding.enumerated()), id: \.offset) { _, line in
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%1$@: %2$@", comment: "DashConnect connection sheet: a key's name, then its budget"),
+                                line.title, line.value))
+                                .dashFont(.subhead)
+                                .foregroundColor(Color.dash.primaryText)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
+                if fundingFailed, item.connection != nil {
+                    Text(NSLocalizedString(
+                        "What is left of the keys' budgets could not be read.", comment: "DashConnect connection sheet"))
+                        .dashFont(.footnote)
+                        .foregroundColor(Color.dash.tertiaryText)
+                        .padding(.leading, 14)
+                        .padding(.vertical, 8)
+                }
+                if let connectedAt {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString("Connected", comment: "DashConnect connection sheet: when the connection was made"))
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.tertiaryText)
+                        Text(Self.dateFormatter.string(from: connectedAt))
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
+                    .accessibilityElement(children: .combine)
                     .padding(.leading, 14)
                     .padding(.vertical, 8)
                 }
@@ -310,11 +359,12 @@ struct ConnectionSheet: View {
 
     // MARK: - Text
 
-    /// What a disconnect will do, as far as the row tells: a two-QR login is
-    /// only turned off on this device; a one-QR one has its keys turned off,
-    /// and may take unattributed DashPay profile keys with it.
+    /// What a disconnect will do, as the data source will run it
+    /// (`disconnectRevokesKeys`): one that only changes the local status, or
+    /// one that turns the keys off and may take unattributed DashPay profile
+    /// keys with it.
     private var disconnectConsequence: String {
-        if item.connection?.loginKind == .twoQR {
+        if !disconnectRevokesKeys {
             return NSLocalizedString(
                 "It is turned off on this device. Approving the app's code again turns it back on.",
                 comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")

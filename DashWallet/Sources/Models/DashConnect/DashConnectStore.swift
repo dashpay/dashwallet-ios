@@ -257,6 +257,9 @@ struct DisconnectedConnection: Codable, Equatable, Identifiable {
     let disconnectedAt: Date
     /// What the connection gave the app when it was disconnected.
     let access: ConnectionAccess?
+    /// When the connection was made; absent in entries from before it was
+    /// kept.
+    var connectedAt: Date? = nil
 }
 
 /// The disconnected apps of one wallet and network.

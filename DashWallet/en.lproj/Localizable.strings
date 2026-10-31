@@ -6699,3 +6699,21 @@
 
 /* DashConnect */
 "Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
+
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";

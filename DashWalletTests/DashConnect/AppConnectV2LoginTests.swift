@@ -1525,6 +1525,36 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(decoded.sessionKeyId, 3, "the record a disconnect needs still reads")
         XCTAssertEqual(decoded.grantedAccess?.isUnreadable, true)
         XCTAssertNil(ConnectionAccess(grants: [decoded])?.keys, "shown as limits only")
+        let rewritten = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as? [String: Any])
+        XCTAssertEqual(
+            rewritten["grantedAccess"] as? NSDictionary, object["grantedAccess"] as? NSDictionary,
+            "what a newer build wrote is written back as it was")
+    }
+
+    func testEachKeyOfAConnectionWithWhatIsLeftOfItsBudget() throws {
+        var grant = Self.grant(sessionKeyId: 3, additionalKeyIds: [4])
+        let dashPay = try XCTUnwrap(Data.identifier(fromBase58: AppConnect.dashPayContractId))
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [
+                .init(bound: .contractGroup(Self.groupId), isCritical: true, totalBudget: 50_000_000_000,
+                      expiresAt: Self.expiresAt, isAdministered: false),
+                .init(bound: .documentType(contractId: dashPay, name: "profile"), isCritical: false,
+                      totalBudget: 200_000_000, expiresAt: Self.expiresAt, isAdministered: false),
+            ],
+            receivesMessages: false)
+        let older = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "bb", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1_000),
+            additionalKeyIds: [10])
+        let funding = KeyFunding.of(grants: [grant, older], remaining: [3: 1_000, 4: nil, 9: 5])
+        XCTAssertEqual(funding, [
+            KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 1_000),
+            KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
+            KeyFunding(isProfileKey: false, totalBudget: 7, remaining: 5),
+            KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
+        ], "an older record knows its primary key's budget only")
     }
 
     func testConnectionAccessShowsTheLargestKeyAndWhatWasGiven() throws {

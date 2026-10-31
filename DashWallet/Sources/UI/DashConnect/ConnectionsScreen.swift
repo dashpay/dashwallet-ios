@@ -95,6 +95,7 @@ struct ConnectionsScreen: View {
         }
         .sheet(item: shownConnectionBinding, onDismiss: {
             showsFundingLimitsInfo = false
+            viewModel.connectionSheetDismissed()
             guard scansAfterSheet else { return }
             scansAfterSheet = false
             showScanner()
@@ -208,6 +209,10 @@ struct ConnectionsScreen: View {
             detailsFailed: viewModel.shownDetailsFailed,
             granted: viewModel.shownGrantedLines,
             withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
+            connectedAt: viewModel.shownConnectedAt,
+            disconnectRevokesKeys: viewModel.shownDisconnectRevokesKeys,
             isBusy: viewModel.isDisconnecting,
             isCheckingStatus: viewModel.isCheckingStatus,
             message: viewModel.connectionSheetMessage,
