@@ -3281,8 +3281,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // is not taken for an unattributed one. A dropped record names
         // nothing, and the profile key it sent again goes here like any
         // other.
+        // A disconnect that leaves one of the app's records waiting ends in
+        // `registrationPending` (or lets the row go without settling it), so
+        // it is not one that ends here.
         let completesHere = (!keyIds.isEmpty || !granted.isEmpty) && heldOnAnotherIdentity == false
-            && reasonHeldElsewhere(heldOnAnotherIdentity: false) == nil
+            && reasonHeldElsewhere(heldOnAnotherIdentity: false) == nil && pendingV2.isEmpty
         var profileKeysOff: [UInt32] = []
         var profileKeysUnchecked = false
         if completesHere {

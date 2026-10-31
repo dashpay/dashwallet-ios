@@ -933,8 +933,9 @@ extension AppConnect {
 
     /// The unattributed profile keys a disconnect disables, from a fresh view
     /// of the identity: live, not yet expired, bound to an allowlisted
-    /// foreign document type, and not in `recordedKeyIds` (the keys confirmed
-    /// records name).
+    /// foreign document type, and not in `recordedKeyIds` (`recordedKeyIds(of:grants:bindings:)`:
+    /// the keys confirmed records name, and the keys a record waiting for its
+    /// update sends again or adds and the store places).
     /// `nil` when the view cannot be trusted: a live v2-shaped key no record
     /// names, in the view or in the store, has no readable stored bound, so
     /// it may be one of them; or the store holds one of them that the view

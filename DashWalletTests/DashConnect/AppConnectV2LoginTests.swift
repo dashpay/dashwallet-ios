@@ -474,6 +474,20 @@ final class AppConnectV2LoginTests: XCTestCase {
             AppConnect.sharedProfileKeyIdsToDisable(
                 recordedKeyIds: [5], bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
             [1, 2], "not the expired one, the app's own, or the recorded one")
+        // A record of another app waiting for its update holds the profile
+        // key it sends again (2) and the one it adds that the store places (1).
+        var waiting = Self.pendingGrant(
+            [ManagedPlatformWallet.IdentityPubkey(
+                keyId: 1, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+                pubkeyBytes: Data([1]), contractBounds: .singleContractDocumentType(id: dashPay, documentTypeName: "profile"),
+                totalBudget: 1_000, expiresAt: 200_000_000)],
+            appId: "other-app")
+        waiting.additionalKeyIds = [2]
+        let recorded = AppConnect.recordedKeyIds(of: "identity", grants: [waiting], bindings: bindings)
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [5], "another app's waiting profile keys are its own, not unattributed")
         XCTAssertEqual(
             AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
             [1, 2])
