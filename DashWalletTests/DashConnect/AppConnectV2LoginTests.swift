@@ -1495,6 +1495,120 @@ extension AppConnectV2LoginTests {
             "an encryption key bound to another contract")
     }
 
+    func testAnAppIsExpiredOnlyWhenEveryKeyStillOnIsPastItsExpiry() {
+        let now = Int64(Self.createdAt)
+        func onIdentity(_ keyId: UInt32, expiresAt: Int64?, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: Int32(bitPattern: keyId), purpose: .authentication, securityLevel: .critical,
+                keyType: .ecdsaHash160, readOnly: false, disabledAt: disabled ? 1 : nil,
+                data: Data(repeating: UInt8(keyId), count: 20), totalBudget: nil, expiresAt: expiresAt)
+        }
+        let past = now - 2 * Int64(Self.dayMilliseconds)
+        let future = now + 2 * Int64(Self.dayMilliseconds)
+        let grants = [
+            Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "expired"),
+            Self.grant(sessionKeyId: 5, additionalKeyIds: [6], appId: "partly"),
+            Self.grant(sessionKeyId: 7, appId: "missing"),
+            Self.grant(sessionKeyId: 8, appId: "off"),
+            Self.grant(sessionKeyId: 9, appId: "forever"),
+        ]
+        let keys = [
+            onIdentity(3, expiresAt: past), onIdentity(4, expiresAt: past),
+            onIdentity(5, expiresAt: past), onIdentity(6, expiresAt: future),
+            onIdentity(8, expiresAt: past, disabled: true),
+            onIdentity(9, expiresAt: nil),
+        ]
+        let expiries = AppConnect.connectionExpiries(grants: grants, currentIdentityPublicKeys: keys, nowMilliseconds: now)
+        XCTAssertEqual(expiries["expired"], .expired)
+        XCTAssertEqual(expiries["partly"], .current, "one of its keys still works")
+        XCTAssertEqual(expiries["missing"], .unknown, "the view lacks its key")
+        XCTAssertEqual(expiries["off"], .unknown, "its keys are off while its record says connected")
+        XCTAssertEqual(expiries["forever"], .current, "a key with no expiry never expires")
+    }
+
+    func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {
+        var grant = Self.grant(sessionKeyId: 3)
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [.init(bound: .singleContract(Self.appId), isCritical: false, totalBudget: 5,
+                         expiresAt: Self.expiresAt, isAdministered: false)],
+            receivesMessages: false, isSessionKeyLogin: true)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(grant)) as? [String: Any])
+        XCTAssertEqual(try JSONDecoder().decode(AppConnectGrant.self, from: JSONEncoder().encode(grant)), grant)
+        object["grantedAccess"] = ["keys": [["bound": ["someFutureBound": [:]]]], "receivesMessages": true]
+        let decoded = try JSONDecoder().decode(AppConnectGrant.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertEqual(decoded.sessionKeyId, 3, "the record a disconnect needs still reads")
+        XCTAssertEqual(decoded.grantedAccess?.isUnreadable, true)
+        XCTAssertNil(ConnectionAccess(grants: [decoded])?.keys, "shown as limits only")
+        let rewritten = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as? [String: Any])
+        XCTAssertEqual(
+            rewritten["grantedAccess"] as? NSDictionary, object["grantedAccess"] as? NSDictionary,
+            "what a newer build wrote is written back as it was")
+    }
+
+    func testEachKeyOfAConnectionWithWhatIsLeftOfItsBudget() throws {
+        var grant = Self.grant(sessionKeyId: 3, additionalKeyIds: [4])
+        let dashPay = try XCTUnwrap(Data.identifier(fromBase58: AppConnect.dashPayContractId))
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [
+                .init(bound: .contractGroup(Self.groupId), isCritical: true, totalBudget: 50_000_000_000,
+                      expiresAt: Self.expiresAt, isAdministered: false),
+                .init(bound: .documentType(contractId: dashPay, name: "profile"), isCritical: false,
+                      totalBudget: 200_000_000, expiresAt: Self.expiresAt, isAdministered: false),
+            ],
+            receivesMessages: false)
+        let older = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "bb", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1_000),
+            additionalKeyIds: [10])
+        let funding = KeyFunding.of(grants: [grant, older], remaining: [3: 1_000, 4: nil, 9: 5])
+        XCTAssertEqual(funding, [
+            KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 1_000),
+            KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
+            KeyFunding(isProfileKey: false, totalBudget: 7, remaining: 5),
+            KeyFunding(isProfileKey: false, totalBudget: nil, isBudgetKnown: false, remaining: nil),
+        ], "an older record knows its primary key's budget only")
+        XCTAssertEqual(
+            KeyFunding.of(grants: [grant, grant], remaining: [:]).count, 2, "a key two grants name is listed once")
+    }
+
+    func testConnectionAccessShowsTheLargestKeyAndWhatWasGiven() throws {
+        var grant = Self.grant(sessionKeyId: 3, additionalKeyIds: [4])
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [
+                .init(bound: .contractGroup(Self.groupId), isCritical: true, totalBudget: 50_000_000_000,
+                      expiresAt: Self.expiresAt, isAdministered: false),
+                .init(bound: .documentType(contractId: Self.appId, name: "profile"), isCritical: false,
+                      totalBudget: 1_000_000_000, expiresAt: Self.expiresAt + Self.dayMilliseconds, isAdministered: false),
+            ],
+            receivesMessages: true)
+        let access = try XCTUnwrap(ConnectionAccess(grants: [grant]))
+        XCTAssertEqual(access.largestBudget, 50_000_000_000)
+        XCTAssertFalse(access.hasUnlimitedKey)
+        XCTAssertEqual(access.keys?.count, 2)
+        XCTAssertTrue(access.receivesMessages)
+        XCTAssertEqual(
+            access.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.expiresAt + Self.dayMilliseconds) / 1000),
+            "the connection lasts as long as its last key")
+
+        let older = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: Self.expiresAt, publishedAt: Date(timeIntervalSince1970: 1))
+        let mixed = try XCTUnwrap(ConnectionAccess(grants: [grant, older]))
+        XCTAssertNil(mixed.keys, "a record without what it gave shows the limits only")
+        XCTAssertEqual(mixed.largestBudget, 50_000_000_000)
+        XCTAssertNil(ConnectionAccess(grants: []))
+
+        var unlimited = grant
+        unlimited.grantedAccess = AppConnect.GrantedAccess(
+            keys: [.init(bound: .singleContract(Self.appId), isCritical: false, totalBudget: nil,
+                         expiresAt: Self.expiresAt, isAdministered: false)],
+            receivesMessages: false)
+        XCTAssertEqual(ConnectionAccess(grants: [unlimited])?.hasUnlimitedKey, true)
+    }
+
     func testSettlingConfirmsWhatLandedDropsWhatCannotAndMarksTheGrantsItRetired() {
         let landedKey = Self.addedAuthKey(7, data: 0x07)
         let impossibleKey = Self.addedAuthKey(9, data: 0x09)

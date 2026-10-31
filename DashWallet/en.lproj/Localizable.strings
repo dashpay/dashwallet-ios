@@ -6592,8 +6592,131 @@
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
 
-/* DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off */
-"Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
+/* DashConnect connection sheet */
+"App ID" = "App ID";
+
+/* DashConnect */
+"Checking connections" = "Checking connections";
+
+/* Accessibility: a section that is closed */
+"Collapsed" = "Collapsed";
+
+/* DashConnect */
+"Connect an app" = "Connect an app";
+
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
+/* DashConnect connection sheet */
+"Connection will expire" = "Connection will expire";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
+/* Accessibility: a section that is open */
+"Expanded" = "Expanded";
+
+/* DashConnect connection status */
+"Expired" = "Expired";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
+
+/* DashConnect: what identity funding limits are */
+"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
+
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
+
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
+
+/* DashConnect connection sheet */
+"Reading the details of this connection" = "Reading the details of this connection";
+
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet */
+"The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection status */
+"Waiting for the second code" = "Waiting for the second code";
+
+/* DashConnect connection sheet */
+"What are identity funding limits?" = "What are identity funding limits?";
+
+/* DashConnect connection sheet */
+"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
+
+/* DashConnect */
+"Which connections expired could not be checked." = "Which connections expired could not be checked.";
+
+/* DashConnect: what identity funding limits are */
+"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
+
+/* DashConnect: confirm a disconnect; the app's name */
+"Disconnect %@?" = "Disconnect %@?";
 
 /* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */
 "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off." = "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off.";
+
+/* DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off */
+"Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
+
+/* DashConnect: what a disconnect does, in its confirmation */
+"Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again." = "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.";
+
+/* DashConnect: what disconnecting a two-QR connection does, in its confirmation */
+"It is turned off on this device. Approving the app's code again turns it back on." = "It is turned off on this device. Approving the app's code again turns it back on.";
+
+/* DashConnect */
+"Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
+
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
+
+/* DashConnect connection sheet: what is left of a key's budget; an amount with its unit */
+"%@ left" = "%@ left";

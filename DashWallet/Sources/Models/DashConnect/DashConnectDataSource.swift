@@ -43,12 +43,14 @@ protocol DashConnectDataSource {
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
     /// stays as it was. A disconnect that disables keys of the app's on the
-    /// active identity, and is not stopped by another identity holding the
-    /// app, also disables the live DashPay profile keys of that identity
+    /// active identity, leaves none of the app's records waiting for their
+    /// update, and is known not to be stopped by another identity holding
+    /// the app, also disables the live DashPay profile keys of that identity
     /// that no grant record names: their bound does not say which app was
     /// given them. When those cannot be told apart, none is disabled and the
-    /// app's own keys still are. The result says which. The connection also stays, and that is thrown, while
-    /// the app holds a key on another identity of the wallet. For a two-QR
+    /// app's own keys still are. The result says which. The connection also
+    /// stays, and that is thrown, while the app holds a key on another
+    /// identity of the wallet. For a two-QR
     /// connection with nothing else of the app's on the identity it only
     /// changes the local status: that login derives the same key every time
     /// and Platform never re-adds a disabled key, so disabling it would lock
@@ -62,6 +64,24 @@ protocol DashConnectDataSource {
     @discardableResult
     func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
+    /// The apps disconnected on the active wallet, most recent first; `nil`
+    /// when they cannot be read.
+    func disconnectedConnections() async -> [DisconnectedConnection]?
+    /// What the connection sheet shows for the row `id`, from the grant
+    /// records of the active identity; `nil` when there is no active wallet
+    /// or `scope` is not its.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// For each app with a confirmed grant on the active identity, whether
+    /// its keys are past their expiry on Platform but still on, from a fresh
+    /// read of the identity. `nil` when the identity could not be read.
+    func connectionExpiries() async -> [String: ConnectionExpiry]?
+}
+
+extension DashConnectDataSource {
+    /// A source that keeps no history cannot tell: unknown.
+    func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func connectionExpiries() async -> [String: ConnectionExpiry]? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -290,6 +310,17 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
     }
+
+    /// The mock keeps no history and grants no keys: nothing to list, no
+    /// details beyond the row, and no key to expire.
+    func disconnectedConnections() async -> [DisconnectedConnection]? { [] }
+
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard subject.value.contains(where: { $0.id == id }) else { return nil }
+        return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)
+    }
+
+    func connectionExpiries() async -> [String: ConnectionExpiry]? { [:] }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {
