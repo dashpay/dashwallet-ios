@@ -442,10 +442,10 @@ final class AppConnectV2LoginTests: XCTestCase {
             [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
     }
 
-    /// Revoking shared profile access takes the live, unexpired DashPay
-    /// profile keys no confirmed record names, and refuses a view of the
-    /// identity it cannot trust.
-    func testRevokingSharedProfileAccessTakesOnlyUnattributedLiveProfileKeys() {
+    /// A disconnect takes the live, unexpired DashPay profile keys no
+    /// confirmed record names, and refuses a view of the identity it cannot
+    /// trust.
+    func testADisconnectTakesOnlyUnattributedLiveProfileKeys() {
         let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
         let app = Data(repeating: 0xA1, count: 32)
         let now: Int64 = 100_000_000
@@ -474,6 +474,20 @@ final class AppConnectV2LoginTests: XCTestCase {
             AppConnect.sharedProfileKeyIdsToDisable(
                 recordedKeyIds: [5], bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
             [1, 2], "not the expired one, the app's own, or the recorded one")
+        // A record of another app waiting for its update holds the profile
+        // key it sends again (2) and the one it adds that the store places (1).
+        var waiting = Self.pendingGrant(
+            [ManagedPlatformWallet.IdentityPubkey(
+                keyId: 1, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+                pubkeyBytes: Data([1]), contractBounds: .singleContractDocumentType(id: dashPay, documentTypeName: "profile"),
+                totalBudget: 1_000, expiresAt: 200_000_000)],
+            appId: "other-app")
+        waiting.additionalKeyIds = [2]
+        let recorded = AppConnect.recordedKeyIds(of: "identity", grants: [waiting], bindings: bindings)
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [5], "another app's waiting profile keys are its own, not unattributed")
         XCTAssertEqual(
             AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
             [1, 2])

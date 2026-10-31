@@ -44,6 +44,7 @@ struct ConnectionSheet: View {
 
     @State private var showsGranted = false
     @State private var showsWithheld = false
+    @State private var isConfirmingDisconnect = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -289,9 +290,23 @@ struct ConnectionSheet: View {
             DashUIKit.DashButton(
                 text: NSLocalizedString("Disconnect", comment: "DashConnect"),
                 isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .plainRed,
-                action: onDisconnect)
+                action: { isConfirmingDisconnect = true })
                 .background(Color.dash.redAlpha5)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .confirmationDialog(
+                    String(
+                        format: NSLocalizedString("Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
+                        item.name),
+                    isPresented: $isConfirmingDisconnect,
+                    titleVisibility: .visible
+                ) {
+                    Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
+                    Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+                } message: {
+                    Text(NSLocalizedString(
+                        "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection are turned off too, so another app using one has to ask again.",
+                        comment: "DashConnect: what a disconnect does, in its confirmation"))
+                }
         }
     }
 

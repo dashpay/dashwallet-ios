@@ -1372,245 +1372,30 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
-    /// A one-QR disconnect that leaves DashPay profile keys no connection
-    /// accounts for says so, and the screen offers to revoke them; the revoke
-    /// goes with the access the count was read for and clears the offer.
-    func testADisconnectThatLeavesSharedProfileKeysOffersToRevokeThem() async {
+    /// A disconnect that also turned off DashPay profile keys no
+    /// connection accounted for says how many; one that could not tell them
+    /// apart says so; one that turned off none says nothing.
+    func testADisconnectSaysWhatItDidWithTheProfileKeys() async {
         let spy = PurchaseApprovalSpy()
-        let access = SharedProfileAccess(keyIds: Array(1 ... 2), scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = access
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        var oneQR = Self.connection
-        oneQR.loginKind = .oneQR
 
-        viewModel.disconnect(oneQR)
-        await waitUntil { !viewModel.isDisconnecting && viewModel.message != nil }
-
-        XCTAssertEqual(viewModel.sharedProfileAccess, access)
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysTurnedOff: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+        XCTAssertEqual(viewModel.message?.kind, .success)
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
 
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysUnchecked: true)
         viewModel.message = nil
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-        await waitUntil { !viewModel.isDisconnecting && viewModel.message != nil }
-
-        XCTAssertEqual(spy.revoked, [access])
-        XCTAssertNil(viewModel.sharedProfileAccess)
-        XCTAssertEqual(viewModel.message?.kind, .success)
-    }
-
-    /// A two-QR login gives an app no DashPay profile key, so its disconnect
-    /// says nothing about them; the row still shows them.
-    func testATwoQRDisconnectSaysNothingAboutSharedProfileKeys() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: Array(1 ... 1), scope: "wallet-a t", identityId: "identity-a")
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-
         viewModel.disconnect(Self.connection)
-        await waitUntil { !viewModel.isDisconnecting && viewModel.sharedProfileAccess != nil }
-
-        XCTAssertNil(viewModel.message)
-        XCTAssertEqual(viewModel.sharedProfileAccess?.keyCount, 1)
-    }
-
-    /// A count that could not be read is shown as unknown, not as none.
-    func testAnUnreadableCountIsShownAsUnknown() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: nil, scope: "wallet-a t", identityId: "identity-a")
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        var oneQR = Self.connection
-        oneQR.loginKind = .oneQR
-
-        viewModel.disconnect(oneQR)
-        await waitUntil { !viewModel.isDisconnecting && viewModel.message != nil }
-
-        XCTAssertNotNil(viewModel.sharedProfileAccess)
-        XCTAssertNil(viewModel.sharedProfileAccess?.keyCount)
-        XCTAssertEqual(viewModel.message?.text.contains("could not check"), true)
-    }
-
-    /// An access whose identity could not be read revokes nothing.
-    func testAnAccessWithNoIdentityRevokesNothing() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: nil, scope: "wallet-a t", identityId: nil)
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertFalse(viewModel.isDisconnecting)
-    }
-
-    /// With none shared there is nothing to offer, and a revoke asks nothing
-    /// of the data source.
-    func testWithoutSharedProfileKeysNothingIsOffered() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: Array(1 ... 1), scope: "wallet-a t", identityId: "identity-a")
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        XCTAssertNotNil(viewModel.sharedProfileAccess)
-        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-a t", identityId: "identity-a")
-
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        XCTAssertNil(viewModel.sharedProfileAccess)
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-        XCTAssertEqual(spy.revoked, [])
-    }
-
-    /// A failed revoke is reported, and the count is read again.
-    func testAFailedRevokeIsReported() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: Array(1 ... 3), scope: "wallet-a t", identityId: "identity-a")
-        spy.revokeFailure = PurchaseSpyError.refused
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        let reads = spy.sharedAccessReads
-
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-        XCTAssertTrue(viewModel.isDisconnecting)
-        // A second tap while the first is still out must not start another.
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-        await waitUntil { !viewModel.isDisconnecting }
-
-        XCTAssertEqual(spy.revoked.count, 1)
-        XCTAssertEqual(viewModel.message?.kind, .error)
-        XCTAssertGreaterThan(spy.sharedAccessReads, reads)
-        XCTAssertEqual(viewModel.sharedProfileAccess?.keyCount, 3)
-    }
-
-    /// A count that could not be read offers no revoke and no keep, and a
-    /// revoke confirmed before the read came back runs nothing.
-    func testAnUnknownCountOffersNeitherRevokeNorKeep() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: nil, scope: "wallet-a t", identityId: "identity-a")
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-
-        XCTAssertFalse(viewModel.canActOnSharedProfileAccess)
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-        viewModel.keepSharedProfileAccess(try! XCTUnwrap(viewModel.sharedProfileAccess))
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertEqual(spy.kept, [])
-        XCTAssertEqual(viewModel.message?.kind, .error)
-    }
-
-    /// An access that went away because nothing could be read is not
-    /// reported as nothing to revoke.
-    func testAnAccessLostToAnUnreadableWalletIsNotReportedAsNone() async {
-        let spy = PurchaseApprovalSpy()
-        spy.sharedAccess = SharedProfileAccess(keyIds: Array(1 ... 1), scope: "wallet-a t", identityId: "identity-a")
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        spy.sharedAccess = nil
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        viewModel.revokeSharedProfileAccess(viewModel.sharedProfileAccess)
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertEqual(viewModel.message?.kind, .error)
-    }
-
-    /// A revoke goes only with the access its confirmation was opened for:
-    /// one read meanwhile, of another wallet or identity, is not revoked.
-    func testARevokeIsPinnedToTheAccessItWasConfirmedFor() async {
-        let spy = PurchaseApprovalSpy()
-        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = shown
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        spy.sharedAccess = SharedProfileAccess(keyIds: [9], scope: "wallet-b t", identityId: "identity-b")
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess?.scope == "wallet-b t" }
-
-        viewModel.revokeSharedProfileAccess(shown)
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertEqual(viewModel.message?.kind, .error)
-    }
-
-    /// A confirmed revoke whose access a later read replaced with none, of
-    /// another wallet, is not reported as nothing to revoke.
-    func testARevokeWhoseAccessWasReadAsNoneElsewhereIsNotReportedAsDone() async {
-        let spy = PurchaseApprovalSpy()
-        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = shown
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-b t", identityId: "identity-b")
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        viewModel.revokeSharedProfileAccess(shown)
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertEqual(viewModel.message?.kind, .error)
-    }
-
-    /// A read of the confirmed identity that finds none left is reported as
-    /// such; keeping then has nothing to do, and says nothing.
-    func testNoneLeftForTheConfirmedIdentityIsReportedAsNone() async {
-        let spy = PurchaseApprovalSpy()
-        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = shown
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-a t", identityId: "identity-a")
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        viewModel.keepSharedProfileAccess(shown)
-        XCTAssertNil(viewModel.message)
-        viewModel.revokeSharedProfileAccess(shown)
-
-        XCTAssertEqual(spy.revoked, [])
-        XCTAssertEqual(spy.kept, [])
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
         XCTAssertEqual(viewModel.message?.kind, .success)
-    }
+        XCTAssertEqual(viewModel.message?.text.contains("could not be checked"), true)
 
-    /// Keeping an access a later read of another wallet replaced is refused.
-    func testAKeepWhoseAccessWasReadAsNoneElsewhereIsRefused() async {
-        let spy = PurchaseApprovalSpy()
-        let shown = SharedProfileAccess(keyIds: [4], scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = shown
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-        spy.sharedAccess = SharedProfileAccess(keyIds: [], scope: "wallet-b t", identityId: "identity-b")
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        viewModel.keepSharedProfileAccess(shown)
-
-        XCTAssertEqual(spy.kept, [])
-        XCTAssertEqual(viewModel.message?.kind, .error)
-    }
-
-    /// Keeping goes with the access shown and reads the count again.
-    func testKeepingSharedProfileAccessHidesTheKeysShown() async {
-        let spy = PurchaseApprovalSpy()
-        let access = SharedProfileAccess(keyIds: [4, 7], scope: "wallet-a t", identityId: "identity-a")
-        spy.sharedAccess = access
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        viewModel.refreshSharedProfileAccess()
-        await waitUntil { viewModel.sharedProfileAccess != nil }
-
-        viewModel.keepSharedProfileAccess(access)
-        await waitUntil { viewModel.sharedProfileAccess == nil }
-
-        XCTAssertEqual(spy.kept, [access])
-        XCTAssertEqual(spy.revoked, [])
+        spy.disconnectResult = DashConnectDisconnectResult()
+        viewModel.message = nil
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 3 }
         XCTAssertNil(viewModel.message)
     }
 
@@ -1890,73 +1675,26 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    func disconnect(id: String, scope: String?) async throws {
-        let failure = lock.withLock { () -> Error? in
+    private var storedDisconnectResult = DashConnectDisconnectResult()
+
+    /// What a successful disconnect reports about the profile keys.
+    var disconnectResult: DashConnectDisconnectResult {
+        get { lock.withLock { storedDisconnectResult } }
+        set { lock.withLock { storedDisconnectResult = newValue } }
+    }
+
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+        let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            return storedDisconnectFailure
+            return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
+        return result
     }
 
     func remove(id: String, scope: String?) async {
         XCTFail("remove is not part of the purchase approval flow")
-    }
-
-    private var storedSharedAccess: SharedProfileAccess?
-    private var storedSharedAccessReads = 0
-    private var storedRevoked: [SharedProfileAccess] = []
-    private var storedRevokeFailure: Error?
-    private var storedKept: [SharedProfileAccess] = []
-
-    var kept: [SharedProfileAccess] {
-        lock.withLock { storedKept }
-    }
-
-    /// What `sharedProfileAccess` reports; a revoke or a keep that succeeds
-    /// clears it.
-    var sharedAccess: SharedProfileAccess? {
-        get { lock.withLock { storedSharedAccess } }
-        set { lock.withLock { storedSharedAccess = newValue } }
-    }
-
-    var sharedAccessReads: Int {
-        lock.withLock { storedSharedAccessReads }
-    }
-
-    var revoked: [SharedProfileAccess] {
-        lock.withLock { storedRevoked }
-    }
-
-    var revokeFailure: Error? {
-        get { lock.withLock { storedRevokeFailure } }
-        set { lock.withLock { storedRevokeFailure = newValue } }
-    }
-
-    func sharedProfileAccess() async -> SharedProfileAccess? {
-        lock.withLock {
-            storedSharedAccessReads += 1
-            return storedSharedAccess
-        }
-    }
-
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int {
-        let (count, failure) = lock.withLock { () -> (Int, Error?) in
-            storedRevoked.append(access)
-            if let failure = storedRevokeFailure { return (0, failure) }
-            let count = storedSharedAccess?.keyCount ?? 0
-            storedSharedAccess = nil
-            return (count, nil)
-        }
-        if let failure { throw failure }
-        return count
-    }
-
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {
-        lock.withLock {
-            storedKept.append(access)
-            storedSharedAccess = nil
-        }
     }
 }
 
@@ -2017,14 +1755,11 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?) async throws {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         throw PurchaseSpyError.unsupported
     }
 
     func remove(id: String, scope: String?) async {}
-    func sharedProfileAccess() async -> SharedProfileAccess? { nil }
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int { 0 }
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {}
 }
 
 /// The Connections page's tabs and connection sheet.
@@ -2219,7 +1954,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
         throw PurchaseSpyError.unsupported
     }
-    func disconnect(id: String, scope: String?) async throws {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         guard disconnectSucceeds, let row = rows.value.first(where: { $0.id == id }) else {
             throw PurchaseSpyError.unsupported
         }
@@ -2229,11 +1964,9 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
                 disconnectedAt: Date(timeIntervalSince1970: 50), access: nil)]
         }
         rows.send(rows.value.filter { $0.id != id })
+        return DashConnectDisconnectResult()
     }
     func remove(id: String, scope: String?) async {}
-    func sharedProfileAccess() async -> SharedProfileAccess? { nil }
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int { 0 }
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {}
 }
 
 /// The URLs a view model asked to open, in order.
@@ -2919,41 +2652,6 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(store.load(), [grant])
     }
 
-    /// A count read for one wallet does not revoke in another: the revoke is
-    /// refused before the PIN prompt, and nothing else is touched.
-    func testARevokeCountedForAnotherWalletIsRefused() async {
-        let active = ActiveWallet("wallet-a")
-        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [Self.twoQRRow(status: .active)])
-        let scopeA = Self.shownRows(dataSource)[0].scope!
-        active.idHex = "wallet-b"
-        let other = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .approved)
-        connections.save([other])
-
-        await Self.expectWalletChanged {
-            _ = try await dataSource.revokeSharedProfileAccess(
-                SharedProfileAccess(keyIds: Array(1 ... 1), scope: scopeA, identityId: "identity-a"))
-        }
-        await Self.expectWalletChanged {
-            try await dataSource.keepSharedProfileAccess(
-                SharedProfileAccess(keyIds: [3], scope: scopeA, identityId: "identity-a"))
-        }
-        XCTAssertEqual(connections.load(), [other])
-    }
-
-    /// With a wallet whose identity cannot be read (no SDK yet, as at launch)
-    /// the count is unknown and names no identity, so nothing can be revoked
-    /// from it.
-    func testACountWithoutAReadableIdentityIsUnknown() async {
-        let active = ActiveWallet("wallet-a")
-        let (dataSource, _) = makeScopedDataSource(active: active)
-
-        let access = await dataSource.sharedProfileAccess()
-
-        XCTAssertNotNil(access)
-        XCTAssertNil(access?.keyCount)
-        XCTAssertNil(access?.identityId)
-    }
-
     func testDisconnectOfARowFromAnotherWalletIsRefusedAndTheListMovesToTheActiveWallet() async {
         let active = ActiveWallet("wallet-a")
         let row = Self.twoQRRow(status: .active)
@@ -3637,9 +3335,31 @@ final class AppConnectLoginTests: XCTestCase {
             activeWalletIdHex: { active.idHex },
             networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
-            operationGate: operationGate
+            operationGate: operationGate,
+            defaults: defaults
         )
         return (dataSource, connections)
+    }
+
+    /// What an earlier build noted about kept shared profile keys is removed
+    /// once, when the data source starts; nothing else in the defaults is
+    /// touched, and a later start scans nothing.
+    func testKeptSharedProfileKeysAreRemovedWhenTheDataSourceStarts() {
+        defaults.set([4, 7], forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a")
+        defaults.set([9], forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b")
+        defaults.set("x", forKey: "DashConnect.other")
+
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a"))
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b"))
+        XCTAssertEqual(defaults.string(forKey: "DashConnect.other"), "x")
+        XCTAssertTrue(defaults.bool(forKey: PlatformDashConnectDataSource.keptSharedProfileKeysRemovedKey))
+
+        defaults.set([5], forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c")
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+        XCTAssertNotNil(
+            defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c"), "it runs once")
     }
 
     private static func twoQRRow(
