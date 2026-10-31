@@ -142,9 +142,6 @@ struct SegmentedControl<T: Hashable>: View {
         Text(label(option))
             .font(.footnoteMedium)
             .lineLimit(1)
-            // A narrow screen shrinks a long label a little rather than
-            // cutting it off; labels that fit are unchanged.
-            .minimumScaleFactor(0.8)
     }
 
     private func updateSelection(at x: CGFloat) {
