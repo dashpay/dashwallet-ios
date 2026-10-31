@@ -3381,10 +3381,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // live one the store cannot place, means a view is behind.
         // The keys it adds that the store places as added are its too.
         let waiting = stores.grants.load().filter { pendingV2.contains($0.key) }
-        let resentOnly = waiting.reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) }
         let resentByWaiting = AppConnect.waitingKeyIds(waiting, bindings: bindings)
         let resentLive = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).intersection(resentByWaiting)
-        guard resentOnly.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
+        // Every key it holds (sent again, or added and placed by the store)
+        // has to be in the fetched list: one it lacks means the list is
+        // behind, and the keys could not be shown off.
+        guard resentByWaiting.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
               currentPublicKeys.filter({ resentLive.contains(UInt32(bitPattern: $0.keyId)) }).allSatisfy({ key in
                   bindings.contains {
                       $0.keyId == UInt32(bitPattern: key.keyId) && $0.data == key.data && !$0.hasUnreadableBound
