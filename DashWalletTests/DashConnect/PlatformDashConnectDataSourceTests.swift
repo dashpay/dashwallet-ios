@@ -1399,6 +1399,16 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
+    /// A confirmed disconnect that cannot run now says why.
+    func testADisconnectThatCannotRunNowSaysWhy() {
+        let viewModel = ConnectionsViewModel(dataSource: PurchaseApprovalSpy(), featureUnavailable: false)
+        viewModel.isProcessingStateTransition = true
+        viewModel.disconnect(Self.connection)
+        XCTAssertFalse(viewModel.isDisconnecting)
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertEqual(viewModel.message?.text.contains("in progress"), true)
+    }
+
     /// With the login unresolved the sheet's action asks again and approves
     /// nothing.
     func testAnUnresolvedLoginIsAskedForAgainInsteadOfApproved() async {

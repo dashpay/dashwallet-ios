@@ -6916,4 +6916,10 @@
 "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
 
 /* DashConnect: what a disconnect does, in its confirmation */
-"Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection are turned off too, so another app using one has to ask again." = "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection are turned off too, so another app using one has to ask again.";
+"Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again." = "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.";
+
+/* DashConnect: what disconnecting a two-QR connection does, in its confirmation */
+"It is turned off on this device. Approving the app's code again turns it back on." = "It is turned off on this device. Approving the app's code again turns it back on.";
+
+/* DashConnect */
+"Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";

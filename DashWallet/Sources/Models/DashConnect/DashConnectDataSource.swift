@@ -43,12 +43,14 @@ protocol DashConnectDataSource {
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
     /// stays as it was. A disconnect that disables keys of the app's on the
-    /// active identity, and is not stopped by another identity holding the
-    /// app, also disables the live DashPay profile keys of that identity
+    /// active identity, leaves none of the app's records waiting for their
+    /// update, and is known not to be stopped by another identity holding
+    /// the app, also disables the live DashPay profile keys of that identity
     /// that no grant record names: their bound does not say which app was
     /// given them. When those cannot be told apart, none is disabled and the
-    /// app's own keys still are. The result says which. The connection also stays, and that is thrown, while
-    /// the app holds a key on another identity of the wallet. For a two-QR
+    /// app's own keys still are. The result says which. The connection also
+    /// stays, and that is thrown, while the app holds a key on another
+    /// identity of the wallet. For a two-QR
     /// connection with nothing else of the app's on the identity it only
     /// changes the local status: that login derives the same key every time
     /// and Platform never re-adds a disabled key, so disabling it would lock

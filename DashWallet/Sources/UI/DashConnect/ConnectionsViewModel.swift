@@ -123,7 +123,8 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
     @Published var isProcessingStateTransition = false
-    /// A disconnect that is signing an identity update. Its own flag, not
+    /// A disconnect in progress, from the tap until the status read after it
+    /// has ended, whether or not it signs an identity update. Its own flag, not
     /// `isProcessingStateTransition`: a `dash-st:` task clears that one when
     /// it finishes, which would lift the guard while a disconnect is still out.
     @Published private(set) var isDisconnecting = false
@@ -630,7 +631,15 @@ final class ConnectionsViewModel: ObservableObject {
         // touches the same records: a second tap, an approval on screen or in
         // flight, a request still resolving, a `dash-st:` in progress.
         guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
+            // The user confirmed it; say why nothing ran.
+            show(ConnectionsScreenMessage(
+                kind: .error,
+                text: NSLocalizedString(
+                    "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect")),
+                from: connection)
+            return
+        }
         isDisconnecting = true
         Task { [weak self] in
             guard let self else { return }

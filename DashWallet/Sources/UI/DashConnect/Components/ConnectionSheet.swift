@@ -303,14 +303,26 @@ struct ConnectionSheet: View {
                     Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
                     Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
                 } message: {
-                    Text(NSLocalizedString(
-                        "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection are turned off too, so another app using one has to ask again.",
-                        comment: "DashConnect: what a disconnect does, in its confirmation"))
+                    Text(disconnectConsequence)
                 }
         }
     }
 
     // MARK: - Text
+
+    /// What a disconnect will do, as far as the row tells: a two-QR login is
+    /// only turned off on this device; a one-QR one has its keys turned off,
+    /// and may take unattributed DashPay profile keys with it.
+    private var disconnectConsequence: String {
+        if item.connection?.loginKind == .twoQR {
+            return NSLocalizedString(
+                "It is turned off on this device. Approving the app's code again turns it back on.",
+                comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
+        }
+        return NSLocalizedString(
+            "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.",
+            comment: "DashConnect: what a disconnect does, in its confirmation")
+    }
 
     private var statusText: String {
         switch item.status {
