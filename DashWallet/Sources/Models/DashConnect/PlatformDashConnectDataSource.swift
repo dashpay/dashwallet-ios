@@ -1533,9 +1533,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         if !reused.isEmpty {
             let grants = stores.grants.load().filter { $0.identityId == identityId }
-            if let recorded = grants.first(where: isGrantForRequest),
-               Set(recorded.keyIds) != reused || authKeyIds.contains(nil) {
-                throw DashConnectPlatformError.sessionKeyUnusable
+            if let recorded = grants.first(where: { isGrantForRequest($0) && $0.isPendingV2 })
+                ?? grants.first(where: isGrantForRequest) {
+                // A record waiting for its update sends these again and adds
+                // the rest; the retry below checks what it adds. One of them
+                // missing from the fetched list means the list is behind.
+                let fetched = Set(currentPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+                guard !recorded.isPendingV2 || AppConnect.resentKeyIds(of: recorded).isSubset(of: fetched) else {
+                    throw DashConnectPlatformError.identityKeysOutOfDate
+                }
+                let sentAgain = recorded.isPendingV2
+                    ? AppConnect.resentKeyIds(of: recorded) : Set(recorded.keyIds)
+                guard sentAgain == reused, recorded.isPendingV2 || !authKeyIds.contains(nil) else {
+                    throw DashConnectPlatformError.sessionKeyUnusable
+                }
             }
             if grants.contains(where: { !isGrantForRequest($0) && !reused.isDisjoint(with: $0.keyIds) }) {
                 throw DashConnectPlatformError.sessionKeyUnusable
@@ -1691,9 +1702,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             currentIdentityPublicKeys: currentPublicKeys
         )
         // The confirmed grants whose every key is off once the update lands.
-        let liveAfterUpdate = Set(currentPublicKeys.filter(AppConnect.isLiveGrantedKey)
-            .map { UInt32(bitPattern: $0.keyId) }).subtracting(disable)
-        let retiredGrantKeys = pendingRetry?.pendingUpdate.map { Set($0.retiredGrantKeys) } ?? Set(superseded
+        // A retry keeps the earlier attempt's, and adds a grant confirmed
+        // since whose keys are all off once the update lands.
+        let liveAfterUpdate = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).subtracting(disable)
+        let retiredGrantKeys = Set(pendingRetry?.pendingUpdate?.retiredGrantKeys ?? []).union(superseded
             .filter { !$0.isUnconfirmed && !$0.keyIds.contains(where: liveAfterUpdate.contains) }
             .map(\.key))
 
@@ -1956,7 +1968,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// settle it by `AppConnect.pendingV2Outcome`. Landed confirms as on
     /// success when the keys it disables show off; with any of them still
     /// on, the keys were added by another update, so the record is confirmed
-    /// without retiring anything and the failure stands; cannot land runs
+    /// without retiring anything and the failure stands; with limits raised
+    /// past what was added (`AppConnect.showsAddedLimits`), the record is
+    /// confirmed and the failure stands, so nothing wider than the approval
+    /// is published; cannot land runs
     /// `onDropped` with the records without this one, drops it when that
     /// wrote the rows, and rethrows;
     /// unknown keeps the record and rethrows. A record that adds nothing is
@@ -2044,16 +2059,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     of: pending, currentIdentityPublicKeys: view.keys, bindings: view.bindings,
                     nowMilliseconds: nowMilliseconds())
                 switch outcome {
-                case .landed where disabled:
+                case .landed where disabled && AppConnect.showsAddedLimits(of: pending, in: view.keys):
                     logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
                     return confirm()
                 case .landed:
-                    // Its keys are there and the keys it replaces are not
-                    // off: another update added them. They are this grant's,
-                    // and the grants it replaces keep theirs until a retry
-                    // or a disconnect turns them off.
-                    logger.error("🔗 DASHCONNECT :: the keys of this approval are on the identity, the keys it replaces are still on")
-                    _ = confirm(retiring: false)
+                    // Its keys are there, but either the keys it replaces are
+                    // not off, so another update added them, or their limits
+                    // are wider than this approval's. They are this grant's,
+                    // recorded so a disconnect turns them off, but the
+                    // approval is not completed with them. The grants it
+                    // replaces are retired only when their keys show off.
+                    let why = disabled ? "with limits wider than this approval's" : "and the keys it replaces are still on"
+                    logger.error("🔗 DASHCONNECT :: the keys of this approval are on the identity \(why, privacy: .public)")
+                    _ = confirm(retiring: disabled)
                     throw error
                 case .landedAndOff, .cannotLand:
                     let didLand = outcome == .landedAndOff
@@ -3275,6 +3293,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             currentIdentityPublicKeys: currentPublicKeys,
             twoQRAuthenticationKeyHash160: checksUnrecordedKeys ? nil : twoQRKeys.authenticationPublicKeyHash160
         )
+        // A waiting v2 record sends some of its auth keys again: they are
+        // live and counted as its (`AppConnect.recordedKeyIds`), so they go
+        // with the confirmed grants' keys. One the fetched list lacks, or a
+        // live one the store cannot place, means a view is behind.
+        let resentByWaiting = stores.grants.load().filter { pendingV2.contains($0.key) }
+            .reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) }
+        let resentLive = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).intersection(resentByWaiting)
+        guard resentByWaiting.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
+              currentPublicKeys.filter({ resentLive.contains(UInt32(bitPattern: $0.keyId)) }).allSatisfy({ key in
+                  bindings.contains {
+                      $0.keyId == UInt32(bitPattern: key.keyId) && $0.data == key.data && !$0.hasUnreadableBound
+                  }
+              }) else {
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
+        keyIds = Array(Set(keyIds).union(resentLive)).sorted()
         if checksUnrecordedKeys {
             // The keys of v2 grants whose record is gone. A contract or a
             // group they are bound to is the app's if the app's owner owns
@@ -3464,13 +3498,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         signer: KeychainSigner
     ) async throws {
         guard !grants.isEmpty else { return }
-        let live = Set(keys.filter { $0.disabledAt == nil }.map { UInt32(bitPattern: $0.keyId) })
-        let keyIds = Set(grants.flatMap(\.keyIds)).intersection(live).sorted()
+        let keyIds = Set(grants.flatMap(\.keyIds)).intersection(AppConnect.liveGrantedKeyIds(in: keys)).sorted()
         if !keyIds.isEmpty {
             Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) key(s) of App Connect grants that landed late")
             try await disableKeys(keyIds, context: context, signer: signer)
         }
-        let grantKeys = Set(grants.map(\.key))
+        // A live key a login could not have granted is left on, and so is
+        // the grant that names it.
+        // A grant naming a key the view lacks is not marked either: the view
+        // may be behind.
+        let leftOn = Set(keys.filter { $0.disabledAt == nil && !AppConnect.isLiveGrantedKey($0) }
+            .map { UInt32(bitPattern: $0.keyId) })
+        let shown = Set(keys.map { UInt32(bitPattern: $0.keyId) })
+        let grantKeys = Set(grants.filter { $0.keyIds.allSatisfy { shown.contains($0) && !leftOn.contains($0) } }
+            .map(\.key))
         updateGrants(in: context.stores) { AppConnect.markKeysDisabled(in: &$0) { grantKeys.contains($0.key) } }
     }
 

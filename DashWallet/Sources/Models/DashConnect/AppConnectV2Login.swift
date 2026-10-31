@@ -1242,6 +1242,33 @@ extension AppConnect {
         return (confirmed, dropped)
     }
 
+    /// Whether every key `pending` adds is on the identity, live, with the
+    /// limits it was added with: what the approval granted, so its response
+    /// may go out. A key whose limits were raised since is still the grant's
+    /// (`isAddedKey`), but wider than the approval; a key turned off since
+    /// cannot be handed out.
+    static func showsAddedLimits(
+        of pending: AppConnectGrant.PendingV2Update,
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        pending.addedKeys.allSatisfy { expected in
+            keys.contains {
+                UInt32(bitPattern: $0.keyId) == expected.keyId && $0.data == expected.data && $0.disabledAt == nil
+                    && $0.totalBudget == expected.totalBudget
+                    && $0.expiresAt.map { UInt64(bitPattern: $0) } == expected.expiresAt
+            }
+        }
+    }
+
+    /// The auth keys a v2 record waiting for its update sends again: the
+    /// ones it names that the update does not add. They were on the
+    /// identity when it was recorded, and are the grant's. Empty for any
+    /// other record.
+    static func resentKeyIds(of grant: AppConnectGrant) -> Set<UInt32> {
+        guard let pending = grant.pendingUpdate else { return [] }
+        return Set(grant.keyIds).subtracting(pending.addedKeys.map(\.keyId))
+    }
+
     /// The ids a confirmed record of `identityId` names, and the ids of the
     /// keys a v2 record waiting for its update adds that the store shows
     /// there as added (same data and bound), and the auth keys such a record
@@ -1255,11 +1282,7 @@ extension AppConnect {
     ) -> Set<UInt32> {
         var ids = Set(grants.filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
         for grant in grants where grant.identityId == identityId {
-            // Its auth keys the update does not add were on the identity
-            // when it was recorded: sent again, they are the grant's.
-            if let pending = grant.pendingUpdate {
-                ids.formUnion(Set(grant.keyIds).subtracting(pending.addedKeys.map(\.keyId)))
-            }
+            ids.formUnion(resentKeyIds(of: grant))
             for expected in grant.pendingUpdate?.addedKeys ?? [] where bindings.contains(where: {
                 $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound
                     && $0.bound == expected.bound
@@ -1295,9 +1318,10 @@ extension AppConnect {
     /// Whether `stored`, a key an earlier approval of the same request
     /// added, may be sent again for an approval that grants `planned`: the
     /// same key under the same id, type, purpose, level, read-only flag,
-    /// bound and budget, and an expiry still ahead and no later than the
-    /// plan's (`clockTolerance` covers a clock moved back between two tries),
-    /// as `canResendAuthKey` asks of a key already there. A request that
+    /// bound and budget; and, when the plan sets an expiry, one still ahead
+    /// and no later than it (`clockTolerance` covers a clock moved back
+    /// between two tries), as `canResendAuthKey` asks of a key already
+    /// there; when it sets none, none. A request that
     /// repeats the ephemeral key derives the same keys whatever terms it
     /// asks for, so the earlier approval's terms are checked against this
     /// one's.
@@ -1321,6 +1345,11 @@ extension AppConnect {
     static func isLiveGrantedKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
         key.purpose == .authentication && key.keyType == .ecdsaHash160
             && key.securityLevel != .master && key.disabledAt == nil
+    }
+
+    /// The ids of `keys` that pass `isLiveGrantedKey`.
+    static func liveGrantedKeyIds(in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Set<UInt32> {
+        Set(keys.filter(isLiveGrantedKey).map { UInt32(bitPattern: $0.keyId) })
     }
 
     /// Whether a key already on the identity at this binding's derived
