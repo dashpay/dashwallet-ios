@@ -813,7 +813,8 @@ extension AppConnect {
     /// own among them), a document type on one, or a contract group that
     /// owner owns (`appGroupIds`). A key bound to a foreign document type v2
     /// allows (DashPay `profile`) is not among them: that bound names no
-    /// app, so with no record it may be any app's (`unattributedProfileKeyIds`).
+    /// app, so with no record it may be any app's, and a disconnect takes it
+    /// through `unattributedProfileKeyIds` instead.
     static func appsV2KeyIds(
         appContractIds: Set<Data>,
         appGroupIds: Set<Data>,
@@ -832,9 +833,9 @@ extension AppConnect {
 
     /// The ids of the keys in `keys` bound to a foreign document type v2
     /// allows (DashPay `profile`). Every app can be given such a key and the
-    /// bound does not say which one was, so with no record a disconnect
-    /// leaves it on; only revoking shared profile access turns these off,
-    /// for every app that holds one.
+    /// bound does not say which one was, so with no record every disconnect
+    /// on the identity turns these off, for every app that holds one
+    /// (`sharedProfileKeyIdsToDisable`).
     static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
         keys.filter { _, bound in
             guard case .documentType(let id, let name) = bound else { return false }
@@ -859,7 +860,7 @@ extension AppConnect {
     }
 
     /// The unattributed profile keys the wallet's store shows as live and
-    /// not yet expired: what the Connections screen counts.
+    /// not yet expired.
     static func storedSharedProfileKeyIds(
         recordedKeyIds: Set<UInt32>,
         bindings: [KeyBinding],
@@ -871,8 +872,9 @@ extension AppConnect {
     }
 
     /// Whether the store shows a live, unexpired v2-shaped key that no record
-    /// names and whose bound this build cannot read: it may be a shared
-    /// profile key, so neither the count nor a revoke can be trusted.
+    /// names and whose bound this build cannot read: it may be an
+    /// unattributed profile key, so the set a disconnect turns off cannot be
+    /// trusted.
     static func hasUnplacedStoredKey(recordedKeyIds: Set<UInt32>, bindings: [KeyBinding], nowMilliseconds: Int64) -> Bool {
         bindings.contains {
             $0.isV2AuthKeyShaped && $0.hasUnreadableBound && !$0.isDisabled
@@ -880,10 +882,10 @@ extension AppConnect {
         }
     }
 
-    /// The keys revoking shared profile access disables, from a fresh view of
-    /// the identity: live, not yet expired, bound to an allowlisted foreign
-    /// document type, and not in `recordedKeyIds` (the keys confirmed records
-    /// name, and those the user kept).
+    /// The unattributed profile keys a disconnect disables, from a fresh view
+    /// of the identity: live, not yet expired, bound to an allowlisted
+    /// foreign document type, and not in `recordedKeyIds` (the keys confirmed
+    /// records name).
     /// `nil` when the view cannot be trusted: a live v2-shaped key no record
     /// names, in the view or in the store, has no readable stored bound, so
     /// it may be one of them; or the store holds one of them that the view

@@ -27,8 +27,6 @@ struct ConnectionsList: View {
     let onScanQR: () -> Void
     let onMockScan: () -> Void
     let onDisconnect: (DAppConnection) -> Void
-    /// A row under the connections, in the same card and scroll view.
-    var footer: AnyView? = nil
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -41,7 +39,6 @@ struct ConnectionsList: View {
                         onDisconnect: { onDisconnect(connection) }
                     )
                 }
-                if let footer { footer }
             }
             .modifier(MenuViewModifier())
         }

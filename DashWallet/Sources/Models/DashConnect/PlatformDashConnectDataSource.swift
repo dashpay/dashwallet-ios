@@ -495,9 +495,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
-    /// Where the shared profile keys the user kept are noted, per scope and
-    /// identity.
-    private let keptSharedProfileKeys: UserDefaults
 
     /// The DashConnect network matching the app's current network selection —
     /// what the default data source serves. Mainnet maps to `.mainnet` for
@@ -521,7 +518,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         networkEndpoint: (() -> String?)? = nil,
         notificationCenter: NotificationCenter = .default,
         operationGate: DashConnectOperationGate = .shared,
-        keptSharedProfileKeys: UserDefaults = .standard,
         now: @escaping () -> Date = Date.init
     ) {
         assert(
@@ -533,7 +529,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.authorizer = authorizer
         self.stateTransitionParser = stateTransitionParser
         self.now = now
-        self.keptSharedProfileKeys = keptSharedProfileKeys
         self.activeWalletIdHex = activeWalletIdHex
         self.operationGate = operationGate
         // Only a devnet's nodes are configurable.
@@ -2329,190 +2324,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
     }
 
-    func disconnect(id: String, scope: String?) async throws {
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> Int {
         try await gated { try await disconnectInTurn(id: id, scope: scope) }
-    }
-
-    func sharedProfileAccess() async -> SharedProfileAccess? {
-        guard let stores = await showActiveWalletRows() else { return nil }
-        let context: Context
-        do {
-            context = try await requireContext(pinnedTo: stores)
-        } catch DashConnectPlatformError.noIdentity {
-            return nil
-        } catch {
-            // The wallet is there but its identity could not be read: unknown,
-            // not none, and nothing to revoke on.
-            return SharedProfileAccess(keyIds: nil, scope: stores.scope, identityId: nil)
-        }
-        let identityId = context.identityId.toBase58String()
-        let recorded = accountedKeyIds(of: identityId, in: stores)
-        let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
-        var stored = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-        // An identity always has keys: none stored means not loaded yet, and
-        // one load writes them.
-        if stored?.isEmpty == true, (try? await refreshedIdentityPublicKeys(context: context)) != nil {
-            stored = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-        }
-        guard let bindings = stored,
-              Self.canTellSharedProfileKeys(
-                  identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores, nowMilliseconds: nowMilliseconds)
-        else {
-            return SharedProfileAccess(keyIds: nil, scope: stores.scope, identityId: identityId)
-        }
-        let keyIds = AppConnect.storedSharedProfileKeyIds(
-            recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds)
-        return SharedProfileAccess(keyIds: keyIds, scope: stores.scope, identityId: identityId)
-    }
-
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {
-        try await gated {
-            guard let stores = await showActiveWalletRows() else {
-                throw DashConnectPlatformError.noWallet
-            }
-            guard access.scope == stores.scope, let identityId = access.identityId else {
-                throw DashConnectPlatformError.walletChanged
-            }
-            var context = try await requireContext(pinnedTo: stores)
-            guard identityId == context.identityId.toBase58String() else {
-                throw DashConnectPlatformError.walletChanged
-            }
-            guard let keyIds = access.keyIds else { throw DashConnectPlatformError.identityKeysOutOfDate }
-            // The shared keys the store tells apart now, or a refusal: read
-            // before the PIN prompt, so an unknown state asks for nothing,
-            // and again after it, since the store can change meanwhile.
-            func sharedNow() throws -> (recorded: Set<UInt32>, bindings: [AppConnect.KeyBinding], nowMilliseconds: Int64) {
-                let recorded = accountedKeyIds(of: identityId, in: stores)
-                let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
-                let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-                guard Self.canTellSharedProfileKeys(
-                    identityId: identityId, recordedKeyIds: recorded, bindings: bindings, stores: stores,
-                    nowMilliseconds: nowMilliseconds)
-                else { throw DashConnectPlatformError.identityKeysOutOfDate }
-                return (recorded, bindings, nowMilliseconds)
-            }
-            let before = try sharedNow()
-            // None of the shown keys is still shared: nothing to keep, and no
-            // reason to ask for the PIN.
-            guard keyIds.contains(where: Set(AppConnect.storedSharedProfileKeyIds(
-                recordedKeyIds: before.recorded, bindings: before.bindings, nowMilliseconds: before.nowMilliseconds
-            )).contains) else { return }
-            // It takes keys off what a revoke can reach, so it asks as a
-            // revoke does.
-            try await authorize()
-            context = try await contextAfterAuthorization(matching: context)
-            // Only keys the store still counts as shared now: an id that is
-            // no longer one must not be exempted from the checks the kept
-            // ids skip.
-            let (recorded, bindings, nowMilliseconds) = try sharedNow()
-            let shared = Set(AppConnect.storedSharedProfileKeyIds(
-                recordedKeyIds: recorded, bindings: bindings, nowMilliseconds: nowMilliseconds))
-            let key = Self.keptSharedProfileKeysKey(scope: stores.scope, identityId: identityId)
-            let kept = keptSharedProfileKeyIds(scope: stores.scope, identityId: identityId)
-                .union(keyIds.filter(shared.contains))
-            keptSharedProfileKeys.set(kept.sorted().map(Int.init), forKey: key)
-        }
-    }
-
-    /// The key ids this identity's confirmed grant records name, and the
-    /// shared profile keys the user kept: the keys the count and a revoke
-    /// leave alone.
-    private func accountedKeyIds(of identityId: String, in stores: Stores) -> Set<UInt32> {
-        Self.recordedKeyIds(of: identityId, in: stores)
-            .union(keptSharedProfileKeyIds(scope: stores.scope, identityId: identityId))
-    }
-
-    /// Whether the wallet's records can tell the shared profile keys apart:
-    /// not while the identity's keys are not loaded (an identity always has
-    /// some, so none stored means not loaded), a grant record cannot be read
-    /// (it may name one of them), or a stored key cannot be placed
-    /// (`AppConnect.hasUnplacedStoredKey`).
-    private static func canTellSharedProfileKeys(
-        identityId: String,
-        recordedKeyIds: Set<UInt32>,
-        bindings: [AppConnect.KeyBinding],
-        stores: Stores,
-        nowMilliseconds: Int64
-    ) -> Bool {
-        !bindings.isEmpty && !stores.grants.hasUnreadableRows(identityId: identityId)
-            && !AppConnect.hasUnplacedStoredKey(
-                recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds)
-    }
-
-    /// The shared profile keys the user kept for this identity in this scope.
-    /// A key id is never reused on an identity, so an id names one key.
-    private func keptSharedProfileKeyIds(scope: String, identityId: String) -> Set<UInt32> {
-        let stored = keptSharedProfileKeys.array(
-            forKey: Self.keptSharedProfileKeysKey(scope: scope, identityId: identityId)) as? [Int] ?? []
-        return Set(stored.compactMap(UInt32.init(exactly:)))
-    }
-
-    private static func keptSharedProfileKeysKey(scope: String, identityId: String) -> String {
-        "DashConnect.keptSharedProfileKeys \(scope) \(identityId)"
-    }
-
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int {
-        try await gated { try await revokeSharedProfileAccessInTurn(access) }
-    }
-
-    /// Disables every live DashPay profile key of the identity `access` was
-    /// read for that no confirmed grant record names and the user did not
-    /// keep, whichever app was given it. The set is read again from Platform after the PIN prompt; nothing
-    /// from the count is reused. Nothing is turned off while that read cannot
-    /// be trusted (`AppConnect.sharedProfileKeyIdsToDisable`).
-    /// TODO(app-connect-v2-pending-record): a v2 approval writes its record
-    /// only once its update is seen to land, so the profile key of one whose
-    /// outcome was unknown when it failed has no record and is disabled here
-    /// like any other.
-    private func revokeSharedProfileAccessInTurn(_ access: SharedProfileAccess) async throws -> Int {
-        guard let stores = await showActiveWalletRows() else {
-            throw DashConnectPlatformError.noWallet
-        }
-        guard access.scope == stores.scope else {
-            throw DashConnectPlatformError.walletChanged
-        }
-        var context = try await requireContext(pinnedTo: stores)
-        guard access.identityId == context.identityId.toBase58String() else {
-            throw DashConnectPlatformError.walletChanged
-        }
-        // A count that was never established is not a go-ahead, nor is one a
-        // grant record the store cannot read may contradict.
-        guard let shownKeyIds = access.keyIds, let accessIdentityId = access.identityId,
-              !stores.grants.hasUnreadableRows(identityId: accessIdentityId) else {
-            throw DashConnectPlatformError.identityKeysOutOfDate
-        }
-        try await authorize()
-        context = try await contextAfterAuthorization(matching: context)
-        let identityId = context.identityId.toBase58String()
-        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
-        // A registration whose key has turned up is confirmed, and its key is
-        // then the app's, not shared.
-        await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores)
-        let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
-        guard !bindings.isEmpty, !stores.grants.hasUnreadableRows(identityId: identityId) else {
-            throw DashConnectPlatformError.identityKeysOutOfDate
-        }
-        guard let unattributed = AppConnect.sharedProfileKeyIdsToDisable(
-            recordedKeyIds: accountedKeyIds(of: identityId, in: stores),
-            bindings: bindings,
-            currentIdentityPublicKeys: currentPublicKeys,
-            nowMilliseconds: Int64(AppConnect.milliseconds(now()))
-        ) else {
-            throw DashConnectPlatformError.identityKeysOutOfDate
-        }
-        // Only keys the user was shown: one that turned up since is counted
-        // and offered next time, not turned off unseen.
-        let shown = Set(shownKeyIds)
-        let keyIds = unattributed.filter(shown.contains)
-        guard !keyIds.isEmpty else { return 0 }
-        Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) shared profile key(s)")
-        try await disableKeys(keyIds, context: context, signer: KeychainSigner(modelContainer: context.modelContainer))
-        // The reload writes the disabled keys to the store the count is read
-        // from. The keys are off either way.
-        _ = try? await refreshedIdentityPublicKeys(context: context)
-        return keyIds.count
     }
 
     /// The key ids this identity's confirmed grant records name. An
@@ -2521,7 +2335,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Set(stores.grants.load().filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
     }
 
-    private func disconnectInTurn(id: String, scope: String?) async throws {
+    private func disconnectInTurn(id: String, scope: String?) async throws -> Int {
         guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
         }
@@ -2542,6 +2356,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let hasGrants = stores.grants.load().contains {
             $0.appContractId == id && (!$0.isUnconfirmed || $0.submittedRevision != nil)
         }
+        var profileKeysOff = 0
         if rowIsOneQR || hasGrants {
             let revocation = try await revokeAppConnectGrants(
                 appContractId: id, rowIsOneQR: rowIsOneQR, stores: stores)
@@ -2551,6 +2366,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // while it is the active one, so the row stays to get there, and
             // the user is told; this identity's keys are off.
             if let heldElsewhere = revocation.heldElsewhere { throw heldElsewhere }
+            profileKeysOff = revocation.profileKeysOff
             if revocation.asOneQR {
                 // The session keys are disabled, and so are the keys of an
                 // earlier two-QR login that were found: the same QR can no
@@ -2558,7 +2374,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // for, so the row goes instead of sitting in the two-QR
                 // "approved" state.
                 await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
-                return
+                return profileKeysOff
             }
         }
 
@@ -2578,6 +2394,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 )
             }
         }
+        return profileKeysOff
     }
 
     /// Whether a disconnect of the app takes the one-QR path. A live session
@@ -2690,10 +2507,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// that are bound to the app's contract and shaped as this login
     /// registers them, so the keys a reinstalled wallet kept no record of go
     /// too. For a one-QR disconnect that includes the shapes App Connect v2
-    /// registers (`AppConnect.appsV2KeyIds`). A DashPay profile key with no
-    /// record stays: its bound names no app, so it may be another app's, and
-    /// only `revokeSharedProfileAccess` turns it off. A key another wallet
-    /// gave the app in any other shape stays.
+    /// registers (`AppConnect.appsV2KeyIds`). Every live DashPay profile key
+    /// no record names goes as well: its bound names no app, so it may be
+    /// another app's, and it is turned off with any app's disconnect
+    /// (`AppConnect.sharedProfileKeyIdsToDisable`); their number is returned
+    /// as `profileKeysOff`. A key another wallet gave the app in any other
+    /// shape stays.
     /// TODO(app-connect-orphan-responses): the response behind a key with no
     /// record stays on Platform. It can only be found by its request hash,
     /// which the record held.
@@ -2707,7 +2526,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// shows the app with a live key on another identity of this wallet, or
     /// with a registration there that may still land
     /// (`reasonHeldElsewhere`). When this identity gave it none, that is
-    /// thrown instead: nothing was turned off. For a one-QR disconnect that
+    /// thrown instead, before anything is signed: nothing was turned off,
+    /// the profile keys included. For a one-QR disconnect that
     /// also covers keys on another identity that no grant record names, as
     /// far as the wallet's store shows them. `asOneQR` says which disconnect
     /// this was.
@@ -2729,7 +2549,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         appContractId: String,
         rowIsOneQR: Bool,
         stores: Stores
-    ) async throws -> (heldElsewhere: DashConnectPlatformError?, asOneQR: Bool) {
+    ) async throws -> (heldElsewhere: DashConnectPlatformError?, asOneQR: Bool, profileKeysOff: Int) {
         // The row was picked in the wallet `stores` belongs to; another
         // wallet's identity is not the one the row belongs to.
         var context = try await requireContext(pinnedTo: stores)
@@ -2767,7 +2587,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // an earlier two-QR login can only be looked for after it.
             if !holdsUnrecordedKey, !rowIsOneQR {
                 if let heldElsewhere = reasonHeldElsewhere() { throw heldElsewhere }
-                return (heldElsewhere: nil, asOneQR: false)
+                return (heldElsewhere: nil, asOneQR: false, profileKeysOff: 0)
             }
         }
 
@@ -2884,6 +2704,25 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded)
             keyIds = Array(Set(keyIds).union(liveTwoQRLoginKeyIds).union(unrecordedV2KeyIds)).sorted()
         }
+        // The DashPay profile keys no record names go too: their bound does
+        // not say which app was given them, so they are turned off with
+        // every disconnect rather than left on for none to reach. A view the
+        // set cannot be told from (a live key no record names whose bound
+        // the store cannot read, a stored one the view lacks, a record the
+        // store cannot read) stops the disconnect.
+        // TODO(app-connect-v2-pending-record): a v2 approval writes its record
+        // only once its update is seen to land, so the profile key of one whose
+        // outcome was unknown when it failed has no record and is turned off
+        // here like any other.
+        guard !stores.grants.hasUnreadableRows(identityId: identityId),
+              let profileKeyIds = AppConnect.sharedProfileKeyIdsToDisable(
+                  recordedKeyIds: Self.recordedKeyIds(of: identityId, in: stores),
+                  bindings: bindings,
+                  currentIdentityPublicKeys: currentPublicKeys,
+                  nowMilliseconds: Int64(AppConnect.milliseconds(now())))
+        else {
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
         if !mayStillLand.isEmpty, keyIds.isEmpty {
             // No update would be sent, so nothing settles the registration.
             // This identity's own state comes first: whatever another
@@ -2906,6 +2745,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
            let heldElsewhere = reasonHeldElsewhere(heldOnAnotherIdentity: heldOnAnotherIdentity == true) {
             throw heldElsewhere
         }
+        // Only once this disconnect turns off something of the app's: one
+        // that stops before signing leaves the profile keys too.
+        keyIds = Array(Set(keyIds).union(profileKeyIds)).sorted()
         if !keyIds.isEmpty {
             Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) app key(s)")
             // Platform takes a limited number of keys per update. A failure
@@ -2913,8 +2755,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // attempt picks up what is still live.
             try await disableKeys(keyIds, context: context, signer: signer)
             Self.logger.info("🔗 DASHCONNECT :: app key(s) disabled")
-            // The reload writes the disabled keys to the store the shared
-            // profile count is read from. The keys are off either way.
+            // The reload writes the disabled keys to the store. The keys are
+            // off either way.
             if mayStillLand.isEmpty {
                 _ = try? await refreshedIdentityPublicKeys(context: context)
             }
@@ -2958,13 +2800,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
         }
         if let heldElsewhere = reasonHeldElsewhere(heldOnAnotherIdentity: heldOnAnotherIdentity == true) {
-            return (heldElsewhere: heldElsewhere, asOneQR: asOneQR)
+            return (heldElsewhere: heldElsewhere, asOneQR: asOneQR, profileKeysOff: profileKeyIds.count)
         }
         // This identity's keys are off. Whether another one holds a key of
         // the app could not be read from the store, so the row stays, with
         // an error rather than without one.
         guard heldOnAnotherIdentity != nil else { throw DashConnectPlatformError.otherIdentitiesNotChecked }
-        return (heldElsewhere: nil, asOneQR: asOneQR)
+        return (heldElsewhere: nil, asOneQR: asOneQR, profileKeysOff: profileKeyIds.count)
     }
 
     /// Disables `keyIds` on the identity, as many per update as Platform
