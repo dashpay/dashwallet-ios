@@ -2481,9 +2481,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
                 bindings: bindings)
             confirmedV2 = settled.confirmed
-            // An app whose update turned out to have landed is connected
-            // again, whatever a disconnect wrote to its history meanwhile.
-            for appId in Set(settled.confirmed.map(\.appContractId)) { stores.history.remove(appId: appId) }
             if !settled.confirmed.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: \(settled.confirmed.count, privacy: .public) App Connect update(s) found to have landed")
             }
@@ -2507,6 +2504,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.rowsAfterConfirming(appIds: appIds, in: rows, at: confirmedAt)
             }
         }
+        // An app whose update turned out to have landed is connected again,
+        // whatever a disconnect wrote to its history meanwhile. Removed once
+        // its row is back, so it is never in neither list.
+        for appId in Set(confirmedV2.map(\.appContractId)) { stores.history.remove(appId: appId) }
         return confirmedV2
     }
 
@@ -2918,7 +2919,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             appId: appId, identityId: identityId, username: isActiveIdentity ? context?.storedUsername : nil,
             access: ConnectionAccess(grants: grants), connectedAt: grants.map(\.publishedAt).max(),
             disconnectRevokesKeys: revokes)
-        if readsFunding, isActiveIdentity, let context {
+        // A waiting record's ids may be another key's: funding is read only
+        // for confirmed grants.
+        if readsFunding, isActiveIdentity, !confirmed.isEmpty, let context {
             // A read-only query: it does not touch the identity copy the
             // operations that sign use, so it does not wait on them.
             let keyIds = Array(Set(grants.flatMap(\.keyIds))).sorted()
