@@ -346,6 +346,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(resend(key(budget: 60_000_000_000)))
         XCTAssertFalse(resend(key(budget: nil)))
         XCTAssertFalse(resend(key(expiresAt: Self.expiresAt + 2 * Self.dayMilliseconds)))
+        XCTAssertFalse(resend(key(expiresAt: Self.expiresAt + 1)), "the approved expiry is a ceiling")
         XCTAssertFalse(resend(key(), now: Self.date(milliseconds: Self.expiresAt + 1)), "an expired key cannot sign")
         // The payload alone does not make the key this binding's: the store
         // has to show it with the binding's bound.
@@ -1035,7 +1036,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         func superseded(_ connectionId: String?, keeping: Set<UInt32> = []) -> [UInt32] {
             AppConnect.supersededKeyIds(
                 grants: grants, identityId: "identity", appId: "app", connectionId: connectionId,
-                keeping: keeping, currentIdentityPublicKeys: keys)
+                keeping: keeping, currentIdentityPublicKeys: keys, bindings: [])
         }
         XCTAssertEqual(superseded("c1"), [10, 11])
         XCTAssertEqual(superseded("c2"), [20, 21])
@@ -1056,8 +1057,31 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.supersededKeyIds(
                 grants: grants, identityId: "identity", appId: "app", connectionId: "c1",
-                keeping: [], currentIdentityPublicKeys: keys),
+                keeping: [], currentIdentityPublicKeys: keys, bindings: []),
             [3], "a damaged record never gets the identity's own keys disabled")
+    }
+
+    func testAPendingPredecessorGivesUpOnlyTheKeysItCanBeShownToHold() {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var waiting = Self.pendingGrant([added], requestHash: "a1")
+        waiting.additionalKeyIds = [5]
+        let keys = [Self.key(5, level: .critical), Self.onIdentity(added)]
+        func superseded(_ bindings: [AppConnect.KeyBinding]) -> [UInt32] {
+            AppConnect.supersededKeyIds(
+                grants: [waiting], identityId: "identity", appId: "app", connectionId: "c1",
+                keeping: [], currentIdentityPublicKeys: keys, bindings: bindings)
+        }
+        XCTAssertEqual(superseded([Self.stored(added)]), [5, 8])
+        XCTAssertEqual(superseded([]), [5], "the same payload under its id may be another request's")
+        var otherBound = Self.stored(added)
+        otherBound.bound = .singleContract(Self.appId)
+        XCTAssertEqual(superseded([otherBound]), [5])
+        XCTAssertTrue(AppConnect.hasUnplacedPendingKey([waiting], currentIdentityPublicKeys: keys, bindings: []))
+        XCTAssertFalse(
+            AppConnect.hasUnplacedPendingKey([waiting], currentIdentityPublicKeys: keys, bindings: [Self.stored(added)]))
+        XCTAssertEqual(
+            AppConnect.reservedKeyIds(grants: [waiting], identityId: "identity"), [5, 8],
+            "a waiting record holds the ids it sends again too")
     }
 
     func testARenewalTurnsOffEveryReplacedKeyInOneUpdateOrNone() {
@@ -1421,6 +1445,9 @@ extension AppConnectV2LoginTests {
                 stored, planned: plan(), now: Self.date(milliseconds: Self.expiresAt)),
             "its expiry has passed")
         XCTAssertFalse(
+            AppConnect.isWithinPlan(stored, planned: plan(expiresAt: Self.expiresAt - 1), now: Self.now),
+            "an expiry even slightly earlier than the earlier approval's")
+        XCTAssertFalse(
             AppConnect.isWithinPlan(stored, planned: plan(expiresAt: nil), now: Self.now),
             "the plan sets no expiry, the earlier approval did")
         let encryption = Self.addedEncryptionKey(8, data: 0x08)
@@ -1628,6 +1655,10 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             after([], rows: [row(.active)]).map(\.status), [],
             "an active one-QR row the waiting record kept goes once nothing holds the app")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterDropping(
+                appIds: [app], keeping: [app], grants: [], bindings: [], rows: [row(.confirming)]).map(\.status),
+            [.active], "the app may hold keys elsewhere: a disconnect judges them")
         XCTAssertEqual(
             after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.active)]).map(\.status), [.active])
         XCTAssertEqual(

@@ -212,7 +212,9 @@ enum AppConnect {
     /// record out of `grants`.
     static func reservedKeyIds(grants: [AppConnectGrant], identityId: String) -> Set<UInt32> {
         Set(grants.filter { $0.identityId == identityId && $0.isUnconfirmed }.flatMap { grant -> [UInt32] in
-            if let pending = grant.pendingUpdate { return pending.addedKeys.map(\.keyId) }
+            // A v2 record holds the ids it adds and the ones it sends again:
+            // a view that lags behind the record may not show the latter.
+            if let pending = grant.pendingUpdate { return grant.keyIds + pending.addedKeys.map(\.keyId) }
             return grant.submittedRevision == nil ? [] : [grant.sessionKeyId]
         })
     }
