@@ -210,22 +210,14 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
-/// The DashPay profile keys App Connect gave apps on the active identity
-/// that no grant record names. Such a key's bound names no app, so a
-/// disconnect cannot tell whose it is and leaves it on.
-struct SharedProfileAccess: Equatable {
-    /// The keys counted; `nil` when the identity or the wallet's store could
-    /// not be read, or the store holds a key that may be one of them but
-    /// cannot be placed: unknown, not none.
-    let keyIds: [UInt32]?
-    /// The wallet and network, and the identity, the count was read for; a
-    /// revoke or a keep acts only while they are still the active ones.
-    /// `identityId` is nil when the identity could not be read, and then
-    /// nothing can be revoked or kept from this access.
-    let scope: String
-    let identityId: String?
-
-    var keyCount: Int? { keyIds?.count }
+/// What a disconnect did with the active identity's DashPay profile keys
+/// that no grant record names, besides turning off the app's own keys.
+struct DashConnectDisconnectResult: Equatable {
+    /// How many of them it turned off.
+    var profileKeysTurnedOff = 0
+    /// They could not be told apart, so none was turned off; the app's own
+    /// keys were.
+    var profileKeysUnchecked = false
 }
 
 /// A pending request derived from a scanned login QR code.

@@ -42,32 +42,26 @@ protocol DashConnectDataSource {
     /// Turns a connection off. For a one-QR connection this disables the key
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
-    /// stays as it was. The connection also stays, and that is thrown, while
+    /// stays as it was. A disconnect that disables keys of the app's on the
+    /// active identity, and is not stopped by another identity holding the
+    /// app, also disables the live DashPay profile keys of that identity
+    /// that no grant record names: their bound does not say which app was
+    /// given them. When those cannot be told apart, none is disabled and the
+    /// app's own keys still are. The result says which. The connection also stays, and that is thrown, while
     /// the app holds a key on another identity of the wallet. For a two-QR
-    /// connection it only changes the local status: that login derives the
-    /// same key every time and Platform never re-adds a disabled key, so
-    /// disabling it would lock the app out for good. Turning off a one-QR
+    /// connection with nothing else of the app's on the identity it only
+    /// changes the local status: that login derives the same key every time
+    /// and Platform never re-adds a disabled key, so disabling it would lock
+    /// the app out for good. A two-QR row whose app also holds a one-QR
+    /// grant there has that grant's keys disabled. Turning off a one-QR
     /// connection that replaced a two-QR one does disable those keys too.
     ///
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
-    func disconnect(id: String, scope: String?) async throws
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
-    /// The live DashPay profile keys of the active identity that no grant
-    /// record names and the user did not keep, from the wallet's store: keys
-    /// App Connect gave some app that a disconnect leaves on, because the
-    /// bound does not say which app it was. `nil` when there is no active
-    /// wallet or identity; `nil` `keyIds` when they could not be told.
-    func sharedProfileAccess() async -> SharedProfileAccess?
-    /// Disables those keys, for every app that holds one, after the PIN
-    /// prompt and a fresh read of the identity, while `access` still names
-    /// the active wallet and identity. Returns how many were disabled.
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int
-    /// Records on this device, after the PIN prompt, that the user
-    /// recognizes the keys `access` counted that are still shared: they are
-    /// no longer counted or revoked from here. Nothing changes on Platform.
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -277,7 +271,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String, scope: String?) async throws {
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
@@ -289,20 +284,11 @@ final class MockDashConnectDataSource: DashConnectDataSource {
                 updatedAt: disconnectedAt
             )
         })
+        return DashConnectDisconnectResult()
     }
 
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
-    }
-
-    /// The mock grants no keys, so it holds no shared profile key.
-    func sharedProfileAccess() async -> SharedProfileAccess? { nil }
-
-    func revokeSharedProfileAccess(_ access: SharedProfileAccess) async throws -> Int { 0 }
-
-    /// The mock never reports keys to keep.
-    func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws {
-        throw DashConnectMockError.approveFailed
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

@@ -442,10 +442,10 @@ final class AppConnectV2LoginTests: XCTestCase {
             [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
     }
 
-    /// Revoking shared profile access takes the live, unexpired DashPay
-    /// profile keys no confirmed record names, and refuses a view of the
-    /// identity it cannot trust.
-    func testRevokingSharedProfileAccessTakesOnlyUnattributedLiveProfileKeys() {
+    /// A disconnect takes the live, unexpired DashPay profile keys no
+    /// confirmed record names, and refuses a view of the identity it cannot
+    /// trust.
+    func testADisconnectTakesOnlyUnattributedLiveProfileKeys() {
         let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
         let app = Data(repeating: 0xA1, count: 32)
         let now: Int64 = 100_000_000
