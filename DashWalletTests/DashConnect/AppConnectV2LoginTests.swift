@@ -1351,61 +1351,21 @@ extension AppConnectV2LoginTests {
             "a HASH160 payload is not unique, so it says nothing")
     }
 
-    func testAnUpdateOfOursThatLandedLaterSettlesAPendingOneOnceAViewShowsIt() {
+    func testALaterUpdateOfOursLeavesAPendingOneUnknown() {
         let auth = Self.addedAuthKey(7, data: 0x07)
         let master = Self.key(0, level: .master)
         let laterKey = Self.addedAuthKey(11, data: 0x0B)
         let later = AppConnect.OwnUpdate(added: [laterKey], disabledKeyIds: [3])
-        let showsLater = Self.key(3, disabled: true)
+        // A note an earlier build made: the SDK's copy of the identity can
+        // be reloaded while an update is on its way, so the pending one can
+        // still land after the later one.
         XCTAssertEqual(
-            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey)], outlivedBy: later), .cannotLand)
-        // Key 3 turned off once before this update, which then lands, and
-        // turned off again by a later disconnect: a view from between the
-        // two disables shows the second one too, without this update's key.
+            Self.outcome([auth], keys: [master, Self.key(3, disabled: true), Self.onIdentity(laterKey)], outlivedBy: later),
+            .unknown)
         XCTAssertEqual(
-            Self.outcome([auth], keys: [master, showsLater], outlivedBy: AppConnect.OwnUpdate(disabledKeyIds: [3])),
-            .unknown, "a disable can be sent again for a key already off, so it witnesses nothing")
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [master, Self.key(3)], outlivedBy: later), .unknown,
-            "a view that does not show the later update is behind it")
-        XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater]), .unknown, "without one it may still land")
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey), Self.onIdentity(auth)],
-                         outlivedBy: later), .landed)
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [showsLater, Self.onIdentity(laterKey), Self.onIdentity(auth)], bindings: [],
-                         outlivedBy: later), .unknown,
-            "its key is there; the store just cannot place it")
-        let added = Self.addedAuthKey(9, data: 0x09)
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [master, Self.onIdentity(added)],
-                         outlivedBy: AppConnect.OwnUpdate(added: [added])),
-            .cannotLand, "a later update that added a key is shown by that key")
-    }
-
-    func testAnUpdateOfOursIsNotedOnEveryRecordWaitingButItsOwn() {
-        let own = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], requestHash: "a1")
-        let earlier = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a2")
-        var noted = Self.pendingGrant([Self.addedAuthKey(11, data: 0x0B)], requestHash: "a3")
-        let first = AppConnect.OwnUpdate(added: [Self.addedAuthKey(21, data: 0x15)], disabledKeyIds: [1])
-        noted.pendingUpdate?.outlivedBy = first
-        let other = Self.pendingGrant([Self.addedAuthKey(13, data: 0x0D)], identityId: "other", requestHash: "a4")
-        var grants = [own, earlier, noted, other, Self.grant(sessionKeyId: 3)]
-        let update = AppConnect.OwnUpdate(added: [Self.addedAuthKey(22, data: 0x16)], disabledKeyIds: [2])
-        var disableOnly = grants
-        AppConnect.noteOwnUpdate(
-            AppConnect.OwnUpdate(disabledKeyIds: [2]), in: &disableOnly, identityId: "identity", exceptKey: own.key)
-        XCTAssertNil(disableOnly[1].pendingUpdate?.outlivedBy, "an update that only disables witnesses nothing")
-        var olderNote = grants
-        olderNote[1].pendingUpdate?.outlivedBy = AppConnect.OwnUpdate(disabledKeyIds: [4])
-        AppConnect.noteOwnUpdate(update, in: &olderNote, identityId: "identity", exceptKey: own.key)
-        XCTAssertEqual(olderNote[1].pendingUpdate?.outlivedBy, update, "a note of a disable-only update gives way")
-        AppConnect.noteOwnUpdate(update, in: &grants, identityId: "identity", exceptKey: own.key)
-        XCTAssertNil(grants[0].pendingUpdate?.outlivedBy, "an update does not outlive itself")
-        XCTAssertEqual(grants[1].pendingUpdate?.outlivedBy, update)
-        XCTAssertEqual(grants[2].pendingUpdate?.outlivedBy, first, "an earlier note settles the same way")
-        XCTAssertNil(grants[3].pendingUpdate?.outlivedBy, "another identity's update")
-        XCTAssertNil(grants[4].pendingUpdate)
+            Self.outcome([auth], keys: [master, Self.key(3, disabled: true), Self.onIdentity(laterKey), Self.onIdentity(auth)],
+                         outlivedBy: later),
+            .landed, "its own key settles it")
     }
 
     func testAPendingUpdateWhoseKeyLimitsWereRaisedSinceLanded() {
@@ -1724,6 +1684,50 @@ extension AppConnectV2LoginTests {
                 in: &others, identityId: "identity", currentIdentityPublicKeys: unplaced, bindings: []).dropped, [])
     }
 
+    func testAWaitingRecordThatHoldsAKeyGetsARowToDisconnectIt() {
+        // It adds profile key A (7) and B (8); only A is on the identity and
+        // in the store, and the app has no row (a disconnect let it go).
+        let keyA = ManagedPlatformWallet.IdentityPubkey(
+            keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+            pubkeyBytes: Data(repeating: 0x07, count: 20),
+            contractBounds: .singleContractDocumentType(id: Self.dashpayContractId, documentTypeName: "profile"),
+            totalBudget: 1_000_000_000, expiresAt: Self.expiresAt)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB], appId: Self.appId.toBase58String(), requestHash: "a1")
+        let keys = [Self.onIdentity(keyA)]
+        let bindings = [Self.stored(keyA)]
+        let app = Self.appId.toBase58String()
+        let appIds = PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+            grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings, rows: [])
+        XCTAssertEqual(appIds, [app])
+        let rows = PlatformDashConnectDataSource.rowsAfterHolding(
+            appIds: appIds, in: [], at: Date(timeIntervalSince1970: 2_000))
+        XCTAssertEqual(rows.map(\.id), [app])
+        XCTAssertEqual(rows.map(\.status), [.confirming], "a confirming row offers the disconnect")
+
+        let row = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .confirming,
+                                 updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .oneQR)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings,
+                rows: [row]),
+            [], "a row that offers a disconnect is left as it is")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: [], bindings: [], rows: []),
+            [], "a record that holds nothing needs no row")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: [], rows: []),
+            [], "a key the store cannot place yet could not be turned off from that row")
+        let active = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .active,
+                                    updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .oneQR)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterHolding(
+                appIds: [app], in: [active], at: Date(timeIntervalSince1970: 2_000)).map(\.status),
+            [.active], "a row written meanwhile that offers a disconnect stays")
+    }
+
     func testAFailedUpdateKeepsARecordTheStoreGivesAKeyAViewOmits() async {
         let keyA = Self.addedAuthKey(7, data: 0x07)
         let keyB = Self.addedAuthKey(8, data: 0x08)
@@ -1859,6 +1863,11 @@ extension AppConnectV2LoginTests {
             PlatformDashConnectDataSource.reasonHeldElsewhere(
                 grants: grants, appContractId: "app", identityId: "identity", heldOnAnotherIdentity: false),
             .registrationPendingOnAnotherIdentity)
+        XCTAssertNil(
+            PlatformDashConnectDataSource.reasonHeldElsewhere(
+                grants: grants, appContractId: "app", identityId: "identity", heldOnAnotherIdentity: false,
+                waitingHoldsKeys: { _ in false }),
+            "one that holds no key there, such as an update that never left the device, does not hold the row")
     }
 
     func testALoginCleansUpOnlyResponsesThatWereAttempted() {
@@ -2033,31 +2042,6 @@ extension AppConnectV2LoginTests {
         XCTAssertNil(grant.pendingUpdate)
         XCTAssertEqual(store.grants.first { $0.key == record.key }, grant)
         XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
-    }
-
-    func testOnlyAnUpdateThatReturnedSuccessIsNotedOnTheOtherRecordsWaiting() async throws {
-        let waiting = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a9")
-        let key = Self.addedAuthKey(7, data: 0x07)
-        let succeeded = MemoryGrantStore([waiting])
-        _ = try await Self.register(Self.pendingGrant([key]), add: [key], disable: [3], store: succeeded, calls: Calls())
-        XCTAssertEqual(
-            succeeded.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
-            AppConnect.OwnUpdate(added: [key], disabledKeyIds: [3]))
-
-        let landedAnyway = MemoryGrantStore([waiting])
-        _ = try await Self.register(
-            Self.pendingGrant([key]), add: [key], store: landedAnyway, calls: Calls(), submit: { throw UpdateFailed() },
-            views: [([Self.onIdentity(key)], [Self.stored(key)])])
-        XCTAssertNil(
-            landedAnyway.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
-            "keys found after a failure may be an earlier submission's")
-
-        let unknown = MemoryGrantStore([waiting])
-        _ = try? await Self.register(
-            Self.pendingGrant([key]), add: [key], store: unknown, calls: Calls(), submit: { throw UpdateFailed() })
-        XCTAssertNil(
-            unknown.grants.first { $0.key == waiting.key }?.pendingUpdate?.outlivedBy,
-            "an update whose outcome is not known proves nothing")
     }
 
     func testARenewalThatReusesItsKeysStillRetiresTheGrantsItReplaced() async throws {
