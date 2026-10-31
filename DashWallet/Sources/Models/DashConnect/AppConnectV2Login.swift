@@ -860,6 +860,15 @@ extension AppConnect {
             .sorted()
     }
 
+    /// The keys records waiting for their update hold: the ones they send
+    /// again, and the ones they add that the store places as added.
+    static func waitingKeyIds(_ waiting: [AppConnectGrant], bindings: [KeyBinding]) -> Set<UInt32> {
+        waiting.reduce(into: Set<UInt32>()) { ids, grant in
+            ids.formUnion(resentKeyIds(of: grant))
+            ids.formUnion(grant.pendingUpdate?.addedKeys.filter { isPlaced($0, in: bindings) }.map(\.keyId) ?? [])
+        }
+    }
+
     /// Whether the store shows `expected` as it was added: the same id,
     /// payload and bound.
     static func isPlaced(_ expected: ExpectedKey, in bindings: [KeyBinding]) -> Bool {
@@ -1184,6 +1193,10 @@ extension AppConnect {
     /// never undoes: the keys it added (a key is never removed) and the ids
     /// it disabled (a key is never enabled again). A view that shows all of
     /// it is at that update or past it.
+    /// TODO(dashconnect-disable-witness): Platform also takes a disable of
+    /// a key already off, so a view taken after an earlier disable of the
+    /// same id shows a disable-only update too; the SDK's handle to the
+    /// signed transition (dashpay/platform#5690) would settle it exactly.
     struct OwnUpdate: Codable, Equatable {
         struct AddedKey: Codable, Equatable {
             let keyId: UInt32
