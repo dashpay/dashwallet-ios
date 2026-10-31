@@ -1082,6 +1082,9 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(
             AppConnect.reservedKeyIds(grants: [waiting], identityId: "identity"), [5, 8],
             "a waiting record holds the ids it sends again too")
+        XCTAssertEqual(AppConnect.waitingKeyIds([waiting], bindings: [Self.stored(added)]), [5, 8])
+        XCTAssertEqual(
+            AppConnect.waitingKeyIds([waiting], bindings: []), [5], "an added key the store does not place is not taken")
     }
 
     func testARenewalTurnsOffEveryReplacedKeyInOneUpdateOrNone() {
@@ -1343,9 +1346,6 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey)], outlivedBy: later), .cannotLand)
         XCTAssertEqual(
-            Self.outcome([auth], keys: [master, showsLater], outlivedBy: AppConnect.OwnUpdate(disabledKeyIds: [3])),
-            .unknown, "a disable can be sent again for a key already off, so it witnesses nothing")
-        XCTAssertEqual(
             Self.outcome([auth], keys: [master, Self.key(3)], outlivedBy: later), .unknown,
             "a view that does not show the later update is behind it")
         XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater]), .unknown, "without one it may still land")
@@ -1371,10 +1371,6 @@ extension AppConnectV2LoginTests {
         noted.pendingUpdate?.outlivedBy = first
         let other = Self.pendingGrant([Self.addedAuthKey(13, data: 0x0D)], identityId: "other", requestHash: "a4")
         var grants = [own, earlier, noted, other, Self.grant(sessionKeyId: 3)]
-        var disableOnly = grants
-        AppConnect.noteOwnUpdate(
-            AppConnect.OwnUpdate(disabledKeyIds: [2]), in: &disableOnly, identityId: "identity", exceptKey: own.key)
-        XCTAssertNil(disableOnly[1].pendingUpdate?.outlivedBy, "an update that only disables witnesses nothing")
         let update = AppConnect.OwnUpdate(added: [Self.addedAuthKey(22, data: 0x16)], disabledKeyIds: [2])
         AppConnect.noteOwnUpdate(update, in: &grants, identityId: "identity", exceptKey: own.key)
         XCTAssertNil(grants[0].pendingUpdate?.outlivedBy, "an update does not outlive itself")

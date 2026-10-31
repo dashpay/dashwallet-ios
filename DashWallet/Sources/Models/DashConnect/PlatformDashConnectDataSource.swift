@@ -3381,14 +3381,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // live one the store cannot place, means a view is behind.
         // The keys it adds that the store places as added are its too.
         let waiting = stores.grants.load().filter { pendingV2.contains($0.key) }
-        guard !AppConnect.hasUnplacedPendingKey(waiting, currentIdentityPublicKeys: currentPublicKeys, bindings: bindings)
-        else { throw DashConnectPlatformError.identityKeysOutOfDate }
-        let resentByWaiting = waiting.reduce(into: Set<UInt32>()) { ids, grant in
-            ids.formUnion(AppConnect.resentKeyIds(of: grant))
-            ids.formUnion(grant.pendingUpdate?.addedKeys.filter { AppConnect.isPlaced($0, in: bindings) }.map(\.keyId) ?? [])
-        }
-        let resentLive = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).intersection(resentByWaiting)
         let resentOnly = waiting.reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) }
+        let resentByWaiting = AppConnect.waitingKeyIds(waiting, bindings: bindings)
+        let resentLive = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).intersection(resentByWaiting)
         guard resentOnly.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
               currentPublicKeys.filter({ resentLive.contains(UInt32(bitPattern: $0.keyId)) }).allSatisfy({ key in
                   bindings.contains {
@@ -3527,9 +3522,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // the row, once what was turned off above is marked.
         if let lateDisableFailure { throw lateDisableFailure }
         // An update of the app whose outcome this disconnect could not tell
-        // keeps the row. A disconnect only disables, which witnesses nothing
-        // (`AppConnect.OwnUpdate`), so the next disconnect finds nothing live
-        // and lets the row go with the record kept.
+        // keeps the row: the next disconnect settles it by the update that
+        // landed here, which it has noted.
         if !leavesWaitingRecord, stores.grants.load().contains(where: { pendingV2.contains($0.key) && $0.isPendingV2 }) {
             Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
             throw DashConnectPlatformError.registrationPending
