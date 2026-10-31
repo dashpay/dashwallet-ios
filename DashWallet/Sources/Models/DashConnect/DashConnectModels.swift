@@ -287,6 +287,9 @@ enum ConnectionExpiry: Equatable {
     case current
     /// The identity could not be read.
     case unknown
+    /// The app has no live grant on the active identity: there is nothing
+    /// of this identity's to judge.
+    case notJudged
 }
 
 /// A pending request derived from a scanned login QR code.

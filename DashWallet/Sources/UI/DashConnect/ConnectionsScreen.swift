@@ -161,6 +161,14 @@ struct ConnectionsScreen: View {
         if viewModel.featureUnavailable {
             title
             ConnectionsUnavailableState()
+        } else if !viewModel.hasConnectionsOrHistory, viewModel.isLoadingHistory {
+            // Not known yet whether anything was connected: no empty state
+            // that the history may replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
         } else if !viewModel.hasConnectionsOrHistory {
             title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
@@ -187,21 +195,53 @@ struct ConnectionsScreen: View {
     }
 
     @ViewBuilder private var tabContent: some View {
-        let rows = viewModel.rows(for: viewModel.selectedTab)
-        if viewModel.selectedTab == .disconnected, viewModel.historyIsUnreadable {
-            Text(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
-                .dashFont(.subhead)
-                .foregroundColor(Color.dash.secondaryText)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-        } else if rows.isEmpty {
-            Text(NSLocalizedString("No apps here", comment: "DashConnect: an empty tab of the Connections page"))
-                .dashFont(.subhead)
-                .foregroundColor(Color.dash.secondaryText)
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-        } else {
+        let tab = viewModel.selectedTab
+        let rows = viewModel.rows(for: tab)
+        if tab == .disconnected, viewModel.historyIsUnreadable {
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
+        } else if !rows.isEmpty {
             ConnectionsList(items: rows, onOpen: viewModel.showConnection)
+            if tab == .expired, viewModel.isCheckingStatus { checking }
+        } else if (tab == .disconnected && viewModel.isLoadingHistory)
+            || (tab == .expired && viewModel.isCheckingStatus) {
+            checking
+        } else if tab == .expired, !viewModel.expiriesAreKnown {
+            tabNote(
+                NSLocalizedString("Which connections expired could not be checked.", comment: "DashConnect"),
+                retries: true)
+        } else {
+            tabNote(Self.emptyTabText(tab), retries: false)
+        }
+    }
+
+    private var checking: some View {
+        SwiftUI.ProgressView()
+            .frame(maxWidth: .infinity)
+            .padding(.top, 20)
+            .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
+    }
+
+    private func tabNote(_ text: String, retries: Bool) -> some View {
+        VStack(spacing: 12) {
+            Text(text)
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
+                .multilineTextAlignment(.center)
+            if retries {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Retry", comment: "DashConnect"),
+                    size: .small, style: .tintedBlue, action: viewModel.refreshConnectionStatus)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+    }
+
+    private static func emptyTabText(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
+        case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
         }
     }
 
@@ -249,6 +289,9 @@ struct ConnectionsScreen: View {
         ConnectionSheet(
             item: item,
             details: viewModel.shownDetails,
+            detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
+            withheld: viewModel.shownWithheldLines,
             isBusy: viewModel.isDisconnecting,
             isCheckingStatus: viewModel.isCheckingStatus,
             message: viewModel.connectionSheetMessage,
@@ -263,9 +306,11 @@ struct ConnectionsScreen: View {
             onMockScan: mockScan,
             onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
         )
+        .presentationDragIndicator(.visible)
         .sheet(isPresented: $showsFundingLimitsInfo) {
             FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
     }
 

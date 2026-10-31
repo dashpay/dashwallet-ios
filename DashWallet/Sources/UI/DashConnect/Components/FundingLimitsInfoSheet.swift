@@ -27,6 +27,8 @@ struct FundingLimitsInfoSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Scrolls at large text sizes, so "Got it" stays in reach.
+            ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("What are identity funding limits?", comment: "DashConnect connection sheet"))
                     .dashFont(.title2)
@@ -43,8 +45,10 @@ struct FundingLimitsInfoSheet: View {
                     .foregroundColor(Color.dash.primaryText)
                     .padding(.top, 14)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 40)
             .padding(.top, 40)
+            }
 
             DashUIKit.DashButton(
                 text: NSLocalizedString("Got it", comment: "DashConnect"),

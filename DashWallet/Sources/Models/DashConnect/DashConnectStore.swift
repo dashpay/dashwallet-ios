@@ -264,23 +264,12 @@ protocol DashConnectHistoryStore {
     /// `nil` when the stored entries cannot be read: unknown, not none.
     func load() -> [DisconnectedConnection]?
     func save(_ entries: [DisconnectedConnection])
+    /// Records `entry`, in place of an earlier one of the same app.
+    func record(_ entry: DisconnectedConnection)
+    /// Forgets the app: it is connected again.
+    func remove(appId: String)
     /// This store fixed to one wallet, as `DashConnectStore.pinned`.
     func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectHistoryStore
-}
-
-extension DashConnectHistoryStore {
-    /// Records `entry`, in place of an earlier one of the same app.
-    /// Nothing is written over entries that cannot be read.
-    func record(_ entry: DisconnectedConnection) {
-        guard let entries = load() else { return }
-        save(entries.filter { $0.id != entry.id } + [entry])
-    }
-
-    /// Forgets the app: it is connected again.
-    func remove(appId: String) {
-        guard let entries = load(), entries.contains(where: { $0.id == appId }) else { return }
-        save(entries.filter { $0.id != appId })
-    }
 }
 
 /// Keyed like `UserDefaultsDashConnectStore`, by network and wallet.
@@ -299,24 +288,51 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
 
     private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "dashconnect.history")
 
-    private var storageKey: String? { scope.scopedKey(prefix: "dashconnect.history.v1") }
+    private var storageKey: String? { scope.scopedKey(prefix: Self.storagePrefix) }
 
     /// Entry by entry: one this build cannot read is left out, and the
     /// others still read. `nil` only when the stored value is not a list.
+    /// One entry per app, the latest.
     func load() -> [DisconnectedConnection]? {
         guard let stored = readRows() else { return nil }
         if !stored.unreadable.isEmpty {
             Self.logger.warning("DashConnect history: \(stored.unreadable.count, privacy: .public) entry(ies) could not be read")
         }
-        return stored.entries
+        var latest: [String: DisconnectedConnection] = [:]
+        for entry in stored.entries where (latest[entry.id]?.disconnectedAt ?? .distantPast) <= entry.disconnectedAt {
+            latest[entry.id] = entry
+        }
+        var shown = Set<String>()
+        return stored.entries.filter { latest[$0.id] == $0 && shown.insert($0.id).inserted }
     }
 
     /// Entries this build cannot read are written back as they were.
     func save(_ entries: [DisconnectedConnection]) {
+        write(entries, forgetting: [])
+    }
+
+    /// An entry this build cannot read of the same app goes too: the app has
+    /// one entry, this one.
+    func record(_ entry: DisconnectedConnection) {
+        guard let entries = load() else { return }
+        write(entries.filter { $0.id != entry.id } + [entry], forgetting: [entry.id])
+    }
+
+    func remove(appId: String) {
+        guard let entries = load() else { return }
+        write(entries.filter { $0.id != appId }, forgetting: [appId])
+    }
+
+    /// Writes `entries`, and back the entries this build cannot read, except
+    /// those naming an app in `forgetting`.
+    private func write(_ entries: [DisconnectedConnection], forgetting: Set<String>) {
         guard let storageKey, let stored = readRows() else { return }
         do {
             let rows = try entries.map { try JSONSerialization.jsonObject(with: Self.encoder.encode($0)) }
-                + stored.unreadable
+                + stored.unreadable.filter { row in
+                    guard let id = (row as? [String: Any])?["id"] as? String else { return true }
+                    return !forgetting.contains(id)
+                }
             guard !rows.isEmpty else {
                 defaults.removeObject(forKey: storageKey)
                 return
@@ -348,6 +364,17 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
         }
         return (entries, unreadable)
     }
+
+    /// Forgets every network's history of the wallet: it is deleted.
+    static func clear(walletIdHex: String, defaults: UserDefaults = .standard) {
+        let suffix = ".\(walletIdHex)"
+        for key in defaults.dictionaryRepresentation().keys
+        where key.hasPrefix(storagePrefix + ".") && key.hasSuffix(suffix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    private static let storagePrefix = "dashconnect.history.v1"
 
     func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectHistoryStore {
         UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: scope.pinnedStore(toWalletIdHex: walletIdHex))

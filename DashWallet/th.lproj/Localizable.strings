@@ -172,31 +172,6 @@
 "80 km" = "80 กม.";
 
 /* No comment provided by engineer. */
-"App ID" = "App ID";
-"Close this connection first, then scan again." = "Close this connection first, then scan again.";
-"Collapsed" = "Collapsed";
-"Connect an app" = "Connect an app";
-"Connection disconnected" = "Connection disconnected";
-"Connection expired" = "Connection expired";
-"Connection will expire" = "Connection will expire";
-"Disconnected apps could not be read." = "Disconnected apps could not be read.";
-"Expanded" = "Expanded";
-"Expired" = "Expired";
-"Identity funding limits" = "Identity funding limits";
-"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
-"Maximum of %@" = "Maximum of %@";
-"No apps here" = "No apps here";
-"No limit" = "No limit";
-"Not known" = "Not known";
-"Reconnect" = "Reconnect";
-"See what %@ can do" = "See what %@ can do";
-"See what %@ cannot access" = "See what %@ cannot access";
-"See what %@ could do" = "See what %@ could do";
-"See what %@ could not access" = "See what %@ could not access";
-"Waiting for the second code" = "Waiting for the second code";
-"What are identity funding limits?" = "What are identity funding limits?";
-"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
-"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
 "\"%@\" is not a recovery phrase word" = "%@ไม่ใช่วลีกู้คืน";
 
 /* No comment provided by engineer. */
@@ -6858,3 +6833,93 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* DashConnect connection sheet */
+"App ID" = "App ID";
+
+/* DashConnect */
+"Checking connections" = "Checking connections";
+
+/* Accessibility: a section that is closed */
+"Collapsed" = "Collapsed";
+
+/* DashConnect */
+"Connect an app" = "Connect an app";
+
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
+/* DashConnect connection sheet */
+"Connection will expire" = "Connection will expire";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
+/* Accessibility: a section that is open */
+"Expanded" = "Expanded";
+
+/* DashConnect connection status */
+"Expired" = "Expired";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
+
+/* DashConnect: what identity funding limits are */
+"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
+
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
+
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
+
+/* DashConnect connection sheet */
+"Reading the details of this connection" = "Reading the details of this connection";
+
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet */
+"The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection status */
+"Waiting for the second code" = "Waiting for the second code";
+
+/* DashConnect connection sheet */
+"What are identity funding limits?" = "What are identity funding limits?";
+
+/* DashConnect connection sheet */
+"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
+
+/* DashConnect */
+"Which connections expired could not be checked." = "Which connections expired could not be checked.";
+
+/* DashConnect: what identity funding limits are */
+"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";

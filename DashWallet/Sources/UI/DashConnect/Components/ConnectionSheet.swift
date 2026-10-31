@@ -24,8 +24,13 @@ import SwiftUI
 /// given, and the action that fits its status.
 struct ConnectionSheet: View {
     let item: ConnectionSheetItem
-    /// `nil` while it is read.
+    /// `nil` while it is read, or when it could not be read (`detailsFailed`).
     let details: ConnectionDetails?
+    let detailsFailed: Bool
+    /// What the app was given; `nil` while unknown.
+    let granted: [String]?
+    /// What it was not given.
+    let withheld: [String]
     let isBusy: Bool
     /// Platform is being read for the expiry.
     let isCheckingStatus: Bool
@@ -57,6 +62,9 @@ struct ConnectionSheet: View {
                         ScanToCompleteBanner(onScanQR: onReconnect, onMockScan: onMockScan)
                     }
                     detailsCard
+                    if details == nil {
+                        detailsPlaceholder
+                    }
                     limitsCard
                     if let granted {
                         collapsible(title: grantedTitle, isExpanded: $showsGranted) {
@@ -100,9 +108,15 @@ struct ConnectionSheet: View {
                 .dashFont(.title1)
                 .foregroundColor(Color.dash.primaryText)
             if !item.url.isEmpty {
-                Text(item.url)
-                    .dashFont(.headline)
-                    .foregroundColor(Color.dash.blue)
+                HStack(spacing: 10) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color.dash.blue)
+                        .accessibilityHidden(true)
+                    Text(item.url)
+                        .dashFont(.headline)
+                        .foregroundColor(Color.dash.blue)
+                }
             }
         }
     }
@@ -152,6 +166,24 @@ struct ConnectionSheet: View {
         .padding(6)
         .background(Color.dash.gray300Alpha10)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    /// While the details are read, or when they could not be.
+    @ViewBuilder
+    private var detailsPlaceholder: some View {
+        if detailsFailed {
+            Text(NSLocalizedString(
+                "The details of this connection could not be read.", comment: "DashConnect connection sheet"))
+                .dashFont(.footnote)
+                .foregroundColor(Color.dash.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            // The app declares its own `ProgressView: UIView`.
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .accessibilityLabel(Text(NSLocalizedString(
+                    "Reading the details of this connection", comment: "DashConnect connection sheet")))
+        }
     }
 
     @ViewBuilder
@@ -281,32 +313,19 @@ struct ConnectionSheet: View {
     private var grantedTitle: String {
         String(
             format: isPast
-                ? NSLocalizedString("See what %@ could do", comment: "DashConnect connection sheet: the app's name")
-                : NSLocalizedString("See what %@ can do", comment: "DashConnect connection sheet: the app's name"),
+                ? NSLocalizedString("See what %@ was able to do", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString("See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
     private var withheldTitle: String {
         String(
             format: isPast
-                ? NSLocalizedString("See what %@ could not access", comment: "DashConnect connection sheet: the app's name")
-                : NSLocalizedString("See what %@ cannot access", comment: "DashConnect connection sheet: the app's name"),
+                ? NSLocalizedString(
+                    "See what %@ did NOT have access to", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString(
+                    "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
             item.name)
-    }
-
-    /// The lines of what the app was given; `nil` while unknown.
-    private var granted: [String]? {
-        guard let keys = details?.access?.keys else { return nil }
-        return DashConnectPermissionText.granted(
-            AppConnect.GrantedAccess(
-                keys: keys, receivesMessages: details?.access?.receivesMessages ?? false,
-                isSessionKeyLogin: details?.access?.isSessionKeyLogin ?? false),
-            appLabel: item.name)
-    }
-
-    private var withheld: [String] {
-        details?.access?.isSessionKeyLogin == true
-            ? DashConnectPermissionText.sessionKeyWithheld : DashConnectPermissionText.withheld
     }
 
     private func fundingLimitText(_ access: ConnectionAccess) -> String {

@@ -332,6 +332,50 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(history.load()?.map(\.id).sorted(), ["app-1", "app-3"])
     }
 
+    func testOneHistoryEntryPerAppTheLatest() throws {
+        let scope = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let history = UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: scope)
+        let key = try XCTUnwrap(scope.scopedKey(prefix: "dashconnect.history.v1"))
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .millisecondsSince1970
+        let rows = try [historyEntry("app-1", at: 10), historyEntry("app-1", at: 30), historyEntry("app-2", at: 20)]
+            .map { try JSONSerialization.jsonObject(with: encoder.encode($0)) }
+        defaults.set(try JSONSerialization.data(withJSONObject: rows), forKey: key)
+        let loaded = try XCTUnwrap(history.load())
+        XCTAssertEqual(loaded.map(\.id).sorted(), ["app-1", "app-2"])
+        XCTAssertEqual(loaded.first { $0.id == "app-1" }?.disconnectedAt, Date(timeIntervalSince1970: 30))
+    }
+
+    func testRecordingAnAppReplacesItsEntryThisBuildCannotRead() throws {
+        let scope = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let history = UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: scope)
+        let key = try XCTUnwrap(scope.scopedKey(prefix: "dashconnect.history.v1"))
+        defaults.set(try JSONSerialization.data(withJSONObject: [["id": "app-1", "name": 7], ["id": "app-2", "name": 7]]),
+                     forKey: key)
+        history.record(historyEntry("app-1"))
+        var written = try XCTUnwrap(JSONSerialization.jsonObject(with: try XCTUnwrap(defaults.data(forKey: key))) as? [Any])
+        XCTAssertEqual(written.count, 2, "app-1's unreadable entry is replaced, app-2's is kept")
+        history.remove(appId: "app-2")
+        written = try XCTUnwrap(JSONSerialization.jsonObject(with: try XCTUnwrap(defaults.data(forKey: key))) as? [Any])
+        XCTAssertEqual(written.count, 1, "a removed app's unreadable entry goes too")
+    }
+
+    func testDeletingAWalletClearsItsHistoryOnEveryNetwork() {
+        let testnet = UserDefaultsDashConnectHistoryStore(
+            defaults: defaults, scope: makeStore(network: .testnet, walletIdHex: "abcd"))
+        let devnet = UserDefaultsDashConnectHistoryStore(
+            defaults: defaults, scope: makeStore(network: .devnet, walletIdHex: "abcd"))
+        let other = UserDefaultsDashConnectHistoryStore(
+            defaults: defaults, scope: makeStore(network: .testnet, walletIdHex: "ef01"))
+        testnet.record(historyEntry("app-1"))
+        devnet.record(historyEntry("app-1"))
+        other.record(historyEntry("app-1"))
+        UserDefaultsDashConnectHistoryStore.clear(walletIdHex: "abcd", defaults: defaults)
+        XCTAssertEqual(testnet.load(), [])
+        XCTAssertEqual(devnet.load(), [])
+        XCTAssertEqual(other.load()?.map(\.id), ["app-1"], "another wallet's history stays")
+    }
+
     func testNoWalletMeansNoHistory() {
         let history = UserDefaultsDashConnectHistoryStore(
             defaults: defaults, scope: makeStore(network: .testnet, walletIdHex: nil))
