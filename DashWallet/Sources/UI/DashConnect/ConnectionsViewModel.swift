@@ -838,6 +838,26 @@ final class ConnectionsViewModel: ObservableObject {
             .map { ($0, $0 == approvalTerms?.fundingLimit) }
     }
 
+    /// The funding limit in effect when it is none of the presets offered
+    /// (an app's own ask, or a typed amount), as "0.51 DASH"; `nil` when a
+    /// preset is in effect.
+    var customFundingLimitText: String? {
+        guard let limit = approvalTerms?.fundingLimit, !fundingPresets.contains(where: \.isSelected) else { return nil }
+        return PlatformCreditsFormatter.dashString(limit)
+    }
+
+    /// The custom limit as the keypad writes it ("0.51"), for the keypad to
+    /// open on; `nil` when a preset is in effect.
+    var customFundingLimitTyped: String? {
+        guard customFundingLimitText != nil, let limit = approvalTerms?.fundingLimit else { return nil }
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.maximumFractionDigits = 11
+        return formatter.string(from: NSDecimalNumber(
+            decimal: Decimal(limit) / Decimal(PlatformCreditsFormatter.creditsPerDash)))
+    }
+
     /// Whether the user may change the funding limit: not for a request of
     /// DashPay profile keys only, whose budget is fixed (`profileKeyShare`).
     var canChangeFundingLimit: Bool {
@@ -851,6 +871,14 @@ final class ConnectionsViewModel: ObservableObject {
         return AppConnect.expiryPresetDays.map { days in
             (days, approvalTerms.map { Self.sameDay($0.expiresAt, AppConnect.expiry(days: days, from: start)) } ?? false)
         }
+    }
+
+    /// The expiry in effect when it is none of the presets (an app's own
+    /// ask, or a picked date), as the sheet writes dates; `nil` when a preset
+    /// is in effect.
+    var customExpiryText: String? {
+        guard approvalTerms != nil, !expiryPresets.contains(where: \.isSelected) else { return nil }
+        return approvalExpiryText
     }
 
     /// The latest expiry the user may pick now.

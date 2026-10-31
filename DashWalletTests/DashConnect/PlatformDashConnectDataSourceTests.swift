@@ -3707,6 +3707,15 @@ final class AppConnectApprovalTermsTests: XCTestCase {
 
         XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 2)
         XCTAssertEqual(viewModel.fundingPresets.filter(\.isSelected).map(\.credits), [Self.dash / 2])
+        XCTAssertNil(viewModel.customFundingLimitText, "a preset is in effect")
+        XCTAssertTrue(viewModel.setFundingLimit(Self.dash / 2 + Self.dash / 100))
+        XCTAssertTrue(viewModel.fundingPresets.allSatisfy { !$0.isSelected })
+        XCTAssertEqual(
+            viewModel.customFundingLimitText, PlatformCreditsFormatter.dashString(Self.dash / 2 + Self.dash / 100),
+            "a limit that is none of the presets is the custom row's")
+        XCTAssertEqual(
+            viewModel.credits(fromDash: viewModel.customFundingLimitTyped ?? ""), Self.dash / 2 + Self.dash / 100,
+            "the keypad opens on the custom limit")
         viewModel.refreshConnectionStatus()
         await waitUntil { viewModel.history != nil }
         XCTAssertTrue(viewModel.pendingIsFirstConnection, "nothing connected and no history")
@@ -3716,6 +3725,9 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         viewModel.setExpiry(days: 30)
         XCTAssertEqual(viewModel.approvalTerms?.expiresAt, AppConnect.expiry(days: 30, from: Self.now))
         XCTAssertEqual(viewModel.expiryPresets.filter(\.isSelected).map(\.days), [30])
+        XCTAssertNil(viewModel.customExpiryText, "a preset is in effect")
+        XCTAssertTrue(viewModel.setExpiry(date: Self.now.addingTimeInterval(45 * 86_400)))
+        XCTAssertEqual(viewModel.customExpiryText, viewModel.approvalExpiryText, "a picked date is the custom row's")
         XCTAssertFalse(viewModel.setExpiry(date: Self.now.addingTimeInterval(-86_400)), "a day already gone")
     }
 

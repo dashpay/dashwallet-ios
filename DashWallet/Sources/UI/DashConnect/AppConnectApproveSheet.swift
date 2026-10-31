@@ -87,20 +87,28 @@ struct AppConnectApproveSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
             }
+            // Room under the content for the toast, so nothing stays under it.
+            .contentMargins(
+                .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
+                for: .scrollContent)
+            // Over the end of the scrolling content, above the buttons.
+            .dashConnectErrorToast(viewModel.approveError ?? viewModel.approveDisabledReason)
 
             footer
         }
         .background(Color.dash.secondaryBackground)
-        // Every terms sheet is as tall as what it shows. Each starts at the
-        // tallest it may be, so the first measurement is of all of it.
+        // Every terms sheet is as tall as what it shows. The info sheets
+        // start at the tallest they may be, so the first measurement is of
+        // all of it; the funding and expiry sheets switch between presets and
+        // a keypad or a calendar, so their height follows in an animation.
         .sheet(item: $termsSheet) { sheet in
             switch sheet {
             case .funding:
                 FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                    .animatedSelfSizingSheet(background: Color.dash.secondaryBackground)
             case .expiry:
                 ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                    .animatedSelfSizingSheet(background: Color.dash.secondaryBackground)
             case .fundingInfo:
                 FundingLimitsInfoSheet(onClose: { termsSheet = nil })
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
@@ -252,13 +260,6 @@ struct AppConnectApproveSheet: View {
 
     private var footer: some View {
         VStack(spacing: 10) {
-            if let error = viewModel.approveError ?? viewModel.approveDisabledReason {
-                Text(error)
-                    .dashFont(.footnote)
-                    .foregroundColor(Color.dash.red)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-            }
             if viewModel.approveNeedsTopUp {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Top up identity", comment: "DashConnect approve sheet"),
@@ -297,12 +298,16 @@ struct FundingLimitSheet: View {
                 ? NSLocalizedString("Funding limit", comment: "DashConnect funding limit keypad")
                 : NSLocalizedString("Identity funding limits", comment: "DashConnect funding limit presets"),
             showBackButton: .constant(isTyping),
-            onBackButtonPressed: { isTyping = false },
+            onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isTyping = false } },
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground
         ) {
-            if isTyping { keypad } else { presets }
+            // One slot: during the cross-fade only the incoming view sets
+            // the height the sheet animates to.
+            ZStack(alignment: .top) {
+                if isTyping { keypad.transition(.opacity) } else { presets.transition(.opacity) }
+            }
         }
     }
 
@@ -319,17 +324,18 @@ struct FundingLimitSheet: View {
                 }
             }
             .modifier(MenuViewModifier())
-            Button(action: { isTyping = true }) {
-                Text(NSLocalizedString("Set limit", comment: "DashConnect funding limit presets"))
-                    .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 16)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .modifier(MenuViewModifier())
+            // A limit that is none of the presets (the app's own ask, or a
+            // typed amount) is this row's, selected with its amount.
+            RadioButtonRow(
+                title: NSLocalizedString("Set limit", comment: "DashConnect funding limit presets"),
+                trailingText: viewModel.customFundingLimitText,
+                isSelected: viewModel.customFundingLimitText != nil,
+                action: {
+                    // Opens on the limit in effect when it is this row's.
+                    typed = viewModel.customFundingLimitTyped ?? ""
+                    withAnimation(.smooth(duration: 0.3)) { isTyping = true }
+                })
+                .modifier(MenuViewModifier())
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
@@ -340,8 +346,9 @@ struct FundingLimitSheet: View {
         let credits = viewModel.credits(fromDash: typed)
         let color = error == nil ? Color.dash.primaryText : Color.dash.red
         return VStack(spacing: 0) {
-            // The typed amount with the Dash sign, and what is wrong with it
-            // underneath, over the keypad (Figma "Custom funding limit").
+            // The typed amount with the Dash sign over the keypad (Figma
+            // "Custom funding limit"); what is wrong with it shows as a toast
+            // under the amount.
             VStack(spacing: 4) {
                 HStack(spacing: 4) {
                     Text(typed.isEmpty ? "0" : typed)
@@ -358,13 +365,9 @@ struct FundingLimitSheet: View {
                 .accessibilityLabel(Text(String(
                     format: NSLocalizedString("%@ DASH", comment: "DashConnect funding limit keypad: a typed amount"),
                     typed.isEmpty ? "0" : typed)))
-                Text(error ?? " ")
-                    .dashFont(.footnote)
-                    .foregroundColor(Color.dash.red)
-                    .multilineTextAlignment(.center)
-                    .accessibilityHidden(error == nil)
+                DashConnectInlineErrorToast(message: error)
             }
-            .frame(maxWidth: .infinity, minHeight: 92)
+            .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
             .padding(.horizontal, 20)
             .padding(.top, 10)
             .padding(.bottom, 40)
@@ -389,6 +392,8 @@ struct ExpirySheet: View {
 
     @State private var isPickingDate = false
     @State private var date = Date()
+    /// Why the picked date was not taken.
+    @State private var dateError: String?
 
     var body: some View {
         BottomSheet(
@@ -396,12 +401,14 @@ struct ExpirySheet: View {
                 ? NSLocalizedString("Set date", comment: "DashConnect expiry date picker")
                 : NSLocalizedString("Connection expiration period", comment: "DashConnect expiry presets"),
             showBackButton: .constant(isPickingDate),
-            onBackButtonPressed: { isPickingDate = false },
+            onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isPickingDate = false } },
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground
         ) {
-            if isPickingDate { picker } else { presets }
+            ZStack(alignment: .top) {
+                if isPickingDate { picker.transition(.opacity) } else { presets.transition(.opacity) }
+            }
         }
     }
 
@@ -421,21 +428,19 @@ struct ExpirySheet: View {
                 }
             }
             .modifier(MenuViewModifier())
-            Button(action: {
-                // Opens on the expiry in effect, not on today.
-                date = viewModel.approvalExpiryDate ?? viewModel.earliestExpiry
-                isPickingDate = true
-            }) {
-                Text(NSLocalizedString("Set date", comment: "DashConnect expiry presets"))
-                    .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 16)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .modifier(MenuViewModifier())
+            // An expiry that is none of the presets (the app's own ask, or a
+            // picked date) is this row's, selected with its date.
+            RadioButtonRow(
+                title: NSLocalizedString("Set date", comment: "DashConnect expiry presets"),
+                trailingText: viewModel.customExpiryText,
+                isSelected: viewModel.customExpiryText != nil,
+                action: {
+                    // Opens on the expiry in effect, not on today.
+                    date = viewModel.approvalExpiryDate ?? viewModel.earliestExpiry
+                    dateError = nil
+                    withAnimation(.smooth(duration: 0.3)) { isPickingDate = true }
+                })
+                .modifier(MenuViewModifier())
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
@@ -449,13 +454,23 @@ struct ExpirySheet: View {
                 in: viewModel.earliestExpiry...viewModel.latestExpiry,
                 displayedComponents: .date)
                 .datePickerStyle(.graphical)
+            DashConnectInlineErrorToast(message: dateError)
             DashUIKit.DashButton(
                 text: NSLocalizedString("Submit", comment: "DashConnect funding limit keypad"),
                 fillsWidth: true, size: .large, style: .filledBlue,
-                action: { if viewModel.setExpiry(date: date) { onClose() } })
+                action: {
+                    if viewModel.setExpiry(date: date) {
+                        onClose()
+                    } else {
+                        dateError = NSLocalizedString(
+                            "This date has passed or is too far away. Pick another one.",
+                            comment: "DashConnect expiry date picker: the picked date was refused")
+                    }
+                })
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
+        .onChange(of: date) { _, _ in dateError = nil }
     }
 }
 
