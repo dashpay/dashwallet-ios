@@ -10,9 +10,8 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
-    /// The most budget the wallet grants a key the app proposes a budget
-    /// for. A binding that asks for none gets none, and the sheet says the
-    /// key can spend without a limit.
+    /// The most a connection's funding limit can be; every key's budget comes
+    /// out of it (`AppConnect.keyBudgets`).
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60

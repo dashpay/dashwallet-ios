@@ -47,17 +47,22 @@ extension AppConnect {
     /// about 0.0004 DASH).
     static let profileKeyShare: UInt64 = PlatformCreditsFormatter.creditsPerDash / 500
 
+    /// The limit the sheet opens with when the app asks for no budget at all.
+    /// TODO(dashconnect-default-limit): the product rule for a request with
+    /// no budget is not decided; 0.5 DASH is the middle preset.
+    static let defaultFundingLimit: UInt64 = PlatformCreditsFormatter.creditsPerDash / 2
+
     /// The terms the sheet opens with: the total the app asks for, capped at
-    /// `v2BudgetCapCredits`, or the cap when it asks for none; and the
-    /// latest expiry the plan gives a key (the app's request capped at a
-    /// year, or the default lifetime).
+    /// `v2BudgetCapCredits`, or `defaultFundingLimit` when it asks for none;
+    /// and the latest expiry the plan gives a key (the app's request capped
+    /// at a year, or the default lifetime).
     static func defaultTerms(for plan: GrantPlan, now: Date) -> ConnectionTerms {
         let requested = plan.auth.reduce(UInt64(0)) { total, grant in
             let (sum, overflow) = total.addingReportingOverflow(grant.binding.totalBudget ?? 0)
             return overflow ? .max : sum
         }
         return ConnectionTerms(
-            fundingLimit: requested == 0 ? v2BudgetCapCredits : min(requested, v2BudgetCapCredits),
+            fundingLimit: requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits),
             expiresAt: plan.expiresAt ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime)))
     }
 
@@ -107,7 +112,8 @@ extension AppConnect {
         for (index, share) in zip(profile, evenShares(of: profileTotal, count: profile.count)) {
             budgets[index] = share
         }
-        let requested = app.map { plan.auth[$0].binding.totalBudget ?? 0 }
+        // What the plan gives each key is the app's ask, already capped.
+        let requested = app.map { plan.auth[$0].totalBudget ?? 0 }
         for (index, share) in zip(app, appKeyBudgets(of: limit - profileTotal, requested: requested)) {
             budgets[index] = share
         }
@@ -115,16 +121,23 @@ extension AppConnect {
     }
 
     /// How the app's own keys share `total`: in proportion to what each asked
-    /// for, evenly when none asked. The remainder of the division goes to the
-    /// first key.
+    /// for (each at most `v2BudgetCapCredits`). A key that asked for nothing
+    /// weighs as much as the smallest ask, and all of them evenly when none
+    /// asked. The remainder of the division goes to the first key.
     /// TODO(dashconnect-app-key-split): the product rule for several app keys
     /// is not decided yet; this is the one place to change it.
     static func appKeyBudgets(of total: UInt64, requested: [UInt64]) -> [UInt64] {
         guard !requested.isEmpty else { return [] }
-        let weights = requested.allSatisfy { $0 == 0 } ? requested.map { _ in UInt64(1) } : requested
-        let weightTotal = weights.reduce(0, +)
-        var shares = weights.map { UInt64((Double(total) * Double($0) / Double(weightTotal)).rounded(.down)) }
-        let given = shares.reduce(0, +)
+        let asked = requested.map { min($0, v2BudgetCapCredits) }
+        let smallest = asked.filter { $0 > 0 }.min() ?? 1
+        let weights = asked.map { $0 == 0 ? smallest : $0 }
+        // At most a few keys at the cap each: no overflow.
+        let weightTotal = weights.reduce(UInt64(0), +)
+        var shares = weights.map { weight -> UInt64 in
+            let product = total.multipliedFullWidth(by: weight)
+            return weightTotal.dividingFullWidth((high: product.high, low: product.low)).quotient
+        }
+        let given = shares.reduce(UInt64(0), +)
         if given < total { shares[0] += total - given }
         return shares
     }

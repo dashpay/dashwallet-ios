@@ -138,8 +138,7 @@ struct AppConnectApproveSheet: View {
             DashConnectDetailLine(title: NSLocalizedString("App ID", comment: "DashConnect connection sheet"), value: request.appContractId)
             DashConnectDetailLine(
                 title: NSLocalizedString("Requested", comment: "DashConnect approve sheet: when the app asked"),
-                value: Self.ageFormatter.localizedString(
-                    for: Date(timeIntervalSince1970: TimeInterval(plan.createdAt) / 1000), relativeTo: Date()))
+                value: viewModel.approvalRequestAge ?? "")
             if let username = request.walletUsername {
                 DashConnectDetailLine(title: NSLocalizedString("Username", comment: "DashConnect"), value: username)
             }
@@ -228,7 +227,8 @@ struct AppConnectApproveSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             DashUIKit.DashButton(
                 text: NSLocalizedString("Change", comment: "DashConnect approve sheet"),
-                isEnabled: !viewModel.isApproving, size: .small, style: .plainBlue, action: onChange)
+                isEnabled: !viewModel.isApproving && !viewModel.approvalTermsLocked,
+                size: .small, style: .plainBlue, action: onChange)
                 .accessibilityLabel(Text(changeLabel))
         }
         .padding(.leading, 14)
@@ -281,12 +281,6 @@ struct AppConnectApproveSheet: View {
         .padding(.top, 12)
         .padding(.bottom, 20)
     }
-
-    private static let ageFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
 }
 
 /// The funding limit for the whole connection: a preset, or an amount typed

@@ -3592,6 +3592,14 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: 2 * Self.dash), [3 * Self.dash / 2, Self.dash / 2])
         XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: [0, 0, 0]), [4, 3, 3], "evenly when none asked")
         XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: []), [])
+        XCTAssertEqual(
+            AppConnect.appKeyBudgets(of: 10, requested: [4, 0]), [5, 5],
+            "a key that asked for nothing weighs as much as the smallest ask")
+        XCTAssertEqual(
+            AppConnect.appKeyBudgets(of: 5 * Self.dash, requested: [.max, .max]), [5 * Self.dash / 2, 5 * Self.dash / 2],
+            "asks past the cap are capped, and do not overflow")
+        let shares = AppConnect.appKeyBudgets(of: 5 * Self.dash, requested: [3, 7, 11])
+        XCTAssertEqual(shares.reduce(0, +), 5 * Self.dash, "the shares add up to the limit exactly")
     }
 
     func testAProfileKeyAloneTakesTheWholeLimit() {
@@ -3610,8 +3618,8 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(AppConnect.defaultTerms(for: large, now: Self.now).fundingLimit, AppConnect.v2BudgetCapCredits)
         let none = Self.plan([Self.binding(.singleContract, id: Self.appContract, budget: nil)])
         XCTAssertEqual(
-            AppConnect.defaultTerms(for: none, now: Self.now).fundingLimit, AppConnect.v2BudgetCapCredits,
-            "no budget asked: the largest preset")
+            AppConnect.defaultTerms(for: none, now: Self.now).fundingLimit, AppConnect.defaultFundingLimit,
+            "no budget asked: the default limit")
         XCTAssertEqual(
             AppConnect.defaultTerms(for: none, now: Self.now).expiresAt,
             AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2DefaultLifetime)))
@@ -3675,6 +3683,44 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.approvalTerms?.expiresAt, AppConnect.expiry(days: 30, from: Self.now))
         XCTAssertEqual(viewModel.expiryPresets.filter(\.isSelected).map(\.days), [30])
         XCTAssertFalse(viewModel.setExpiry(date: Self.now.addingTimeInterval(-86_400)), "a day already gone")
+    }
+
+    func testTermsSurviveARebuildAndLockAfterAFailedApproval() async {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        var unresolved = request
+        unresolved.login = .unresolved
+        let spy = LoginApprovalSpy(shown: [request, unresolved, request])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved, DashConnectPlatformError.grantNotRecorded]
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, canPayKeyRegistration: { true },
+            now: { Self.now })
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.setFundingLimit(Self.dash / 10)
+
+        // The approval cannot tell the login: the sheet is rebuilt without a
+        // plan, then with it again.
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest?.login == .unresolved }
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 10)
+        viewModel.retryPendingRequest()
+        await waitUntil { viewModel.pendingRequest?.login.grantPlan != nil }
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 10, "what the user chose is kept")
+
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approvalTermsLocked }
+        XCTAssertTrue(viewModel.approvalTermsLocked, "an approval that may have landed fixes the terms")
+        XCTAssertFalse(viewModel.setFundingLimit(Self.dash))
+    }
+
+    func testABalanceRefusalOffersATopUp() {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "IdentityInsufficientBalanceError: identity has insufficient balance" }
+        }
+        XCTAssertTrue(ConnectionsViewModel.isInsufficientBalance(Refused()))
+        XCTAssertFalse(ConnectionsViewModel.isInsufficientBalance(DashConnectPlatformError.noIdentity))
     }
 
     func testTypedAmountsAreReadAndCapped() {

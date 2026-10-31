@@ -228,9 +228,14 @@ enum AppConnectOriginText {
             brandHost)
     }
 
-    static func origin(_ plan: AppConnect.GrantPlan, now: Date = Date()) -> String {
-        let requested = ageFormatter.localizedString(
+    /// How long ago the request was made, e.g. "14 seconds ago".
+    static func age(_ plan: AppConnect.GrantPlan, now: Date = Date()) -> String {
+        ageFormatter.localizedString(
             for: Date(timeIntervalSince1970: TimeInterval(plan.createdAt) / 1000), relativeTo: now)
+    }
+
+    static func origin(_ plan: AppConnect.GrantPlan, now: Date = Date()) -> String {
+        let requested = age(plan, now: now)
         guard let host = plan.callbackHost else {
             return String(
                 format: NSLocalizedString(

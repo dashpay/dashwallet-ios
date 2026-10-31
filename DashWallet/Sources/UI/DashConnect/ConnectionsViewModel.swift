@@ -177,20 +177,31 @@ final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var needsUsername: Bool
     @Published var pendingRequest: ConnectionRequest? {
         didSet {
-            // Terms belong to one request: a sheet for another one (or the
-            // same one rebuilt with another plan) starts from its defaults;
-            // the same request rebuilt keeps what the user chose.
-            let plan = pendingRequest?.login.grantPlan
-            if plan?.appEphemeralPubKeyHash != oldValue?.login.grantPlan?.appEphemeralPubKeyHash || approvalTerms == nil {
-                approvalTerms = plan.map { AppConnect.defaultTerms(for: $0, now: now()) }
+            // Terms belong to one request, by its ephemeral key: a sheet for
+            // another request starts from its defaults; the same request
+            // rebuilt keeps what the user chose, also across a rebuild that
+            // could not tell its login for a while.
+            if let plan = pendingRequest?.login.grantPlan, plan.appEphemeralPubKeyHash != termsRequestHash {
+                termsRequestHash = plan.appEphemeralPubKeyHash
+                approvalTerms = AppConnect.defaultTerms(for: plan, now: now())
+                approvalTermsLocked = false
+            } else if pendingRequest == nil {
+                termsRequestHash = nil
+                approvalTerms = nil
+                approvalTermsLocked = false
             }
-            if plan == nil { approvalTerms = nil }
             approveNeedsTopUp = false
         }
     }
     /// The funding limit and expiry the user set for the pending v2 request;
     /// `nil` for any other request.
     @Published private(set) var approvalTerms: AppConnect.ConnectionTerms?
+    /// The request `approvalTerms` were set for.
+    private var termsRequestHash: Data?
+    /// An approval of these terms failed after it may have reached
+    /// Platform: a retry has to send the same keys with the same terms, so
+    /// they can no longer change.
+    @Published private(set) var approvalTermsLocked = false
     /// The last approve attempt stopped because the identity's balance
     /// cannot pay to register the keys; the sheet offers a top-up.
     @Published private(set) var approveNeedsTopUp = false
@@ -696,8 +707,25 @@ final class ConnectionsViewModel: ObservableObject {
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription
                 )
+                // Past the PIN prompt the keys may have reached Platform:
+                // a retry has to send them with the same terms.
+                let platformError = error as? DashConnectPlatformError
+                if platformError != .authorizationCancelled, platformError != .authorizationFailed {
+                    self.approvalTermsLocked = true
+                }
+                // Platform refused the update for the identity's balance.
+                if Self.isInsufficientBalance(error) {
+                    self.approveNeedsTopUp = true
+                }
             }
         }
+    }
+
+    /// Whether Platform refused an identity update because the identity's
+    /// balance cannot pay for it, as its consensus error names it.
+    static func isInsufficientBalance(_ error: Error) -> Bool {
+        let text = "\(error) \(error.localizedDescription)".lowercased()
+        return text.contains("insufficientbalance") || text.contains("insufficient balance")
     }
 
     /// Builds the pending request again, for a sheet that could not tell
@@ -761,6 +789,11 @@ final class ConnectionsViewModel: ObservableObject {
         pendingRequest?.login.grantPlan.flatMap(AppConnectOriginText.warning) != nil
     }
 
+    /// How long ago the pending v2 request was made.
+    var approvalRequestAge: String? {
+        pendingRequest?.login.grantPlan.map { AppConnectOriginText.age($0, now: now()) }
+    }
+
     /// The first-connection caution: the app is neither connected nor in
     /// the history, in any status. A history not read yet counts as no
     /// earlier connection.
@@ -788,7 +821,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// Sets the funding limit. False when it is out of bounds.
     @discardableResult
     func setFundingLimit(_ credits: UInt64) -> Bool {
-        guard approvalTerms != nil, AppConnect.isValidFundingLimit(credits) else { return false }
+        guard approvalTerms != nil, !approvalTermsLocked, AppConnect.isValidFundingLimit(credits) else { return false }
         approvalTerms?.fundingLimit = credits
         return true
     }
@@ -831,7 +864,9 @@ final class ConnectionsViewModel: ObservableObject {
 
     @discardableResult
     private func setExpiry(_ expiresAt: UInt64) -> Bool {
-        guard approvalTerms != nil, AppConnect.isValidExpiry(expiresAt, now: now()) else { return false }
+        guard approvalTerms != nil, !approvalTermsLocked, AppConnect.isValidExpiry(expiresAt, now: now()) else {
+            return false
+        }
         approvalTerms?.expiresAt = expiresAt
         return true
     }
