@@ -6941,3 +6941,6 @@
 
 /* DashConnect connection sheet */
 "What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
+
+/* DashConnect connection sheet: what is left of a key's budget; an amount with its unit */
+"%@ left" = "%@ left";

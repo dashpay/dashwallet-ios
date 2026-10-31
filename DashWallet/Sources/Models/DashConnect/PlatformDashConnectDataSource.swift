@@ -2904,7 +2904,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if readsFunding, isActiveIdentity, let context {
             // A read-only query: it does not touch the identity copy the
             // operations that sign use, so it does not wait on them.
-            let keyIds = grants.flatMap(\.keyIds)
+            let keyIds = Array(Set(grants.flatMap(\.keyIds))).sorted()
             if let remaining = try? await context.sdk.fetchKeysRemainingBudgets(identityId: identityId, keyIds: keyIds) {
                 details.keyFunding = KeyFunding.of(grants: grants, remaining: remaining)
             } else {
@@ -2949,7 +2949,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                   let context = try? await requireContext(pinnedTo: stores) else { return nil }
             let judged = judgedExpiryGrants(stores: stores, identityId: context.identityId.toBase58String())
             guard !judged.grants.isEmpty else { return Self.notJudged(judged.apps) }
-            guard let keys = try? await refreshedIdentityPublicKeys(context: context) else { return nil }
+            // A read that fails leaves the apps it would judge unknown; one
+            // with nothing to judge stays not judged.
+            guard let keys = try? await refreshedIdentityPublicKeys(context: context) else {
+                let unknown = Set(judged.grants.map(\.appContractId))
+                return Dictionary(uniqueKeysWithValues: judged.apps.map {
+                    ($0, unknown.contains($0) ? ConnectionExpiry.unknown : .notJudged)
+                })
+            }
             let read = AppConnect.connectionExpiries(
                 grants: judged.grants, currentIdentityPublicKeys: keys,
                 nowMilliseconds: Int64(AppConnect.milliseconds(now())))
@@ -2961,10 +2968,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Dictionary(uniqueKeysWithValues: apps.map { ($0, ConnectionExpiry.notJudged) })
     }
 
-    /// The active rows, and the live grants on `identityId` of the apps whose
-    /// disconnect turns keys off (`disconnectRevokesKeys`), which alone can
-    /// turn Expired: a two-QR login with nothing else of the app's has keys
-    /// with no expiry.
+    /// The active rows, and the live confirmed grants on `identityId` of
+    /// their apps, which alone can turn Expired: a two-QR login with no
+    /// grant of the app has keys with no expiry.
     private func judgedExpiryGrants(stores: Stores, identityId: String?) -> (apps: Set<String>, grants: [AppConnectGrant]) {
         let apps = Set(rows(in: stores).filter { $0.status == .active }.map(\.id))
         guard let identityId else { return (apps, []) }

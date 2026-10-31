@@ -1553,8 +1553,10 @@ extension AppConnectV2LoginTests {
             KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 1_000),
             KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
             KeyFunding(isProfileKey: false, totalBudget: 7, remaining: 5),
-            KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
+            KeyFunding(isProfileKey: false, totalBudget: nil, isBudgetKnown: false, remaining: nil),
         ], "an older record knows its primary key's budget only")
+        XCTAssertEqual(
+            KeyFunding.of(grants: [grant, grant], remaining: [:]).count, 2, "a key two grants name is listed once")
     }
 
     func testConnectionAccessShowsTheLargestKeyAndWhatWasGiven() throws {

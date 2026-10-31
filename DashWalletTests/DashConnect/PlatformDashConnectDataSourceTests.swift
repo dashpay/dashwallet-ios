@@ -1942,6 +1942,20 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertFalse(viewModel.shownDisconnectRevokesKeys, "the data source's decision, not the row's kind")
     }
 
+    func testDetailsReadWhileTheStatusIsCheckedStillShow() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: ["app": .current])
+        spy.detailsDelay = 200_000_000
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        XCTAssertEqual(viewModel.shownConnection?.isStatusChecked, false)
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.shownConnection?.isStatusChecked == true }
+        await waitUntil { viewModel.shownDetails != nil }
+        XCTAssertEqual(viewModel.shownDetails?.appId, "app", "a status checked meanwhile does not drop the read")
+        XCTAssertEqual(spy.detailReads, 1)
+    }
+
     func testATabIsNotShownEmptyWhileItsAppsAreUnknown() async {
         let spy = ConnectionStatusSpy(rows: [], history: [], expiries: [:])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
@@ -1973,6 +1987,8 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     var disconnectSucceeds = false
     /// How long a disconnect takes, in nanoseconds.
     var disconnectDelay: UInt64 = 0
+    /// How long a details read takes, in nanoseconds.
+    var detailsDelay: UInt64 = 0
     /// What the details read answers; a fixed connection on `identity` when
     /// unset.
     var details: ConnectionDetails?
@@ -1997,6 +2013,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         lock.withLock { storedDetailReads += 1 }
+        if detailsDelay > 0 { try? await Task.sleep(nanoseconds: detailsDelay) }
         return details ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
     }
 

@@ -121,6 +121,16 @@ final class ConnectionsViewModel: ObservableObject {
             let title = key.isProfileKey
                 ? NSLocalizedString("DashPay profile key", comment: "DashConnect connection sheet: a key's budget line")
                 : NSLocalizedString("App key", comment: "DashConnect connection sheet: a key's budget line")
+            guard key.isBudgetKnown else {
+                // An older record does not say this key's budget.
+                guard let remaining = key.remaining else {
+                    return (title, NSLocalizedString("Not known", comment: "DashConnect connection sheet"))
+                }
+                return (title, String(
+                    format: NSLocalizedString(
+                        "%@ left", comment: "DashConnect connection sheet: what is left of a key's budget; an amount with its unit"),
+                    PlatformCreditsFormatter.dashString(remaining)))
+            }
             guard let total = key.totalBudget else {
                 return (title, NSLocalizedString(
                     "No limit", comment: "DashConnect connection sheet: a key with no spending limit"))
@@ -218,6 +228,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// sheet at a time.
     private var sheetDismissal: CheckedContinuation<Void, Never>?
     private var sheetDismissalNumber = 0
+    /// From opening a connection's sheet until it reports being gone: it
+    /// may still be leaving the screen after `shownConnection` is cleared.
+    private var isConnectionSheetOnScreen = false
 
     init(
         dataSource: (any DashConnectDataSource)? = nil,
@@ -347,6 +360,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// request reads or is on screen: its sheet comes next.
     func showConnection(_ item: ConnectionSheetItem) {
         guard !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        isConnectionSheetOnScreen = true
         shownConnection = item
         shownDetails = nil
         shownDetailsFailed = false
@@ -366,9 +380,9 @@ final class ConnectionsViewModel: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             let details = await self.dataSource.connectionDetails(id: item.id, scope: item.connection?.scope)
-            // Only for the sheet as it was read: it may have turned into
-            // another state of the same app meanwhile.
-            guard self.shownConnection == item else { return }
+            // Only for the sheet it was read for: the same app, connected or
+            // not as it was. A status change alone does not make it stale.
+            guard let shown = self.shownConnection, !Self.readsAnew(shown, from: item) else { return }
             self.shownDetails = details
             self.shownDetailsFailed = details == nil
         }
@@ -381,8 +395,18 @@ final class ConnectionsViewModel: ObservableObject {
         connectionSheetMessage = nil
     }
 
+    /// Whether the sheet's details have to be read again for `item` after
+    /// `previous`: another app, a row that changed (its status or kind), or
+    /// a connection that is no longer one. Not for the expiry check alone.
+    private static func readsAnew(_ item: ConnectionSheetItem, from previous: ConnectionSheetItem) -> Bool {
+        item.id != previous.id || item.connection?.status != previous.connection?.status
+            || item.connection?.loginKind != previous.connection?.loginKind
+            || (item.connection == nil) != (previous.connection == nil)
+    }
+
     /// The connection's sheet is gone from the screen.
     func connectionSheetDismissed() {
+        isConnectionSheetOnScreen = false
         sheetDismissal?.resume()
         sheetDismissal = nil
     }
@@ -391,7 +415,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// request's sheet can show. A sheet that never reports going (the
     /// screen is not up) is waited for no longer than a second.
     private func closeConnectionSheet() async {
-        guard shownConnection != nil else { return }
+        guard isConnectionSheetOnScreen else { return }
         hideConnection()
         sheetDismissalNumber &+= 1
         let number = sheetDismissalNumber
@@ -416,9 +440,9 @@ final class ConnectionsViewModel: ObservableObject {
         if let current {
             guard current != shown else { return }
             shownConnection = current
-            // What the sheet reads changes with the app or with whether it is
-            // still connected, not with its status.
-            if current.id != shown.id || (current.connection == nil) != (shown.connection == nil) {
+            // What the sheet reads changes with the app, its row, or whether
+            // it is still connected, not with the expiry check.
+            if Self.readsAnew(current, from: shown) {
                 shownDetails = nil
                 shownDetailsFailed = false
                 readShownDetails(current)
@@ -757,8 +781,8 @@ final class ConnectionsViewModel: ObservableObject {
             self.history = history
             self.historyIsUnreadable = history == nil
             self.isDisconnecting = false
+            // The rows changed, which reads the expiries again.
             self.updateShownConnection()
-            self.refreshConnectionStatus()
             // What the disconnect did with the DashPay profile keys no
             // connection accounts for; said, since they may have been
             // another app's.

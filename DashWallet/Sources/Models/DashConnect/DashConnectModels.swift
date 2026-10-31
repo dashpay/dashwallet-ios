@@ -268,16 +268,20 @@ struct ConnectionDetails: Equatable {
     let identityId: String?
     let username: String?
     let access: ConnectionAccess?
-    /// When the connection was made: the latest of its grants' approvals.
+    /// When the connection was made: the latest of its grants' approvals,
+    /// so a renewal from a new code counts as the connection it made.
     var connectedAt: Date? = nil
     /// What is left of each key's budget, read from Platform; `nil` when it
     /// was not read (a disconnected app, or the connection is on another
     /// identity) or could not be (`fundingReadFailed`).
     var keyFunding: [KeyFunding]? = nil
     var fundingReadFailed = false
-    /// A disconnect turns the app's keys off on Platform. `false` for a
-    /// two-QR login with nothing else of the app's: it only changes the
-    /// local status.
+    /// A disconnect may turn the app's keys off on Platform: a one-QR row,
+    /// or an app with a grant that can reach Platform. `false` for a two-QR
+    /// login with nothing else of the app's, whose disconnect only changes
+    /// the local status. The disconnect itself decides from a fresh view
+    /// of the identity, and may still only change the local status when
+    /// the grant's keys turn out to be off already.
     var disconnectRevokesKeys = true
 }
 
@@ -285,8 +289,12 @@ struct ConnectionDetails: Equatable {
 struct KeyFunding: Equatable {
     /// The key is bound to the DashPay profile, not to the app's data.
     let isProfileKey: Bool
-    /// What the key may spend over its life; `nil` with no limit.
+    /// What the key may spend over its life; `nil` with no limit or when
+    /// not known (`isBudgetKnown`).
     let totalBudget: UInt64?
+    /// The record says what the key's budget is (or that it has none). An
+    /// older record names its primary key's only.
+    var isBudgetKnown = true
     /// What is left of it; `nil` with no limit, or when Platform did not say.
     let remaining: UInt64?
 
@@ -294,10 +302,13 @@ struct KeyFunding: Equatable {
     /// grant recorded it and what `remaining` (by key id) says is left. A
     /// record from before `grantedAccess` knows its primary key's budget
     /// only, and no key of it as the DashPay profile's.
+    /// A key two grants name is listed once.
     static func of(grants: [AppConnectGrant], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
-        grants.flatMap { grant -> [KeyFunding] in
+        var listed = Set<UInt32>()
+        return grants.flatMap { grant -> [KeyFunding] in
             let keys = grant.grantedAccess.flatMap { $0.isUnreadable ? nil : $0.keys }
-            return grant.keyIds.enumerated().map { index, keyId in
+            return grant.keyIds.enumerated().compactMap { index, keyId -> KeyFunding? in
+                guard listed.insert(keyId).inserted else { return nil }
                 let key = keys.flatMap { index < $0.count ? $0[index] : nil }
                 let isProfileKey: Bool
                 if case .documentType(let contractId, let name)? = key?.bound {
@@ -305,9 +316,11 @@ struct KeyFunding: Equatable {
                 } else {
                     isProfileKey = false
                 }
+                let isBudgetKnown = key != nil || index == 0
                 return KeyFunding(
                     isProfileKey: isProfileKey,
-                    totalBudget: key?.totalBudget ?? (index == 0 ? grant.totalBudget : nil),
+                    totalBudget: key.map(\.totalBudget) ?? (index == 0 ? grant.totalBudget : nil),
+                    isBudgetKnown: isBudgetKnown,
                     remaining: remaining[keyId] ?? nil)
             }
         }
