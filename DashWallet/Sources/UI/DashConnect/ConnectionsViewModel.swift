@@ -181,7 +181,12 @@ final class ConnectionsViewModel: ObservableObject {
             // another request starts from its defaults; the same request
             // rebuilt keeps what the user chose, also across a rebuild that
             // could not tell its login for a while.
-            if let plan = pendingRequest?.login.grantPlan, plan.appEphemeralPubKeyHash != termsRequestHash {
+            if let plan = pendingRequest?.login.grantPlan, plan.hasRecordedTerms {
+                // An earlier approval of it recorded its terms; they stay.
+                termsRequestHash = plan.appEphemeralPubKeyHash
+                approvalTerms = AppConnect.terms(of: plan)
+                approvalTermsLocked = true
+            } else if let plan = pendingRequest?.login.grantPlan, plan.appEphemeralPubKeyHash != termsRequestHash {
                 termsRequestHash = plan.appEphemeralPubKeyHash
                 approvalTerms = AppConnect.defaultTerms(for: plan, now: now())
                 approvalTermsLocked = false
@@ -198,9 +203,9 @@ final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var approvalTerms: AppConnect.ConnectionTerms?
     /// The request `approvalTerms` were set for.
     private var termsRequestHash: Data?
-    /// An approval of these terms failed after it may have reached
-    /// Platform: a retry has to send the same keys with the same terms, so
-    /// they can no longer change.
+    /// An earlier approval of this request recorded these terms before it
+    /// submitted (`GrantPlan.hasRecordedTerms`): its update may have landed,
+    /// so a retry sends them as they were and they cannot change.
     @Published private(set) var approvalTermsLocked = false
     /// The last approve attempt stopped because the identity's balance
     /// cannot pay to register the keys; the sheet offers a top-up.
@@ -639,8 +644,8 @@ final class ConnectionsViewModel: ObservableObject {
               let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         // A v2 approval registers its keys with the terms the user set.
-        if let plan = consent.login.grantPlan {
-            guard let terms = approvalTerms, let applied = AppConnect.applying(terms, to: plan, now: now()) else {
+        if consent.login.grantPlan != nil {
+            guard let applied = termsAppliedPlan else {
                 approveError = NSLocalizedString(
                     "Set a funding limit and an expiry within the limits, then approve again.",
                     comment: "DashConnect approve sheet: the terms are out of bounds")
@@ -707,26 +712,21 @@ final class ConnectionsViewModel: ObservableObject {
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription
                 )
-                // Past the PIN prompt the keys may have reached Platform:
-                // a retry has to send them with the same terms.
+                let needsTopUp = AppConnect.isInsufficientBalance(error)
+                // A grant recorded before the update was submitted fixes the
+                // terms of a retry: the sheet is read again so it shows them.
                 let platformError = error as? DashConnectPlatformError
                 if platformError != .authorizationCancelled, platformError != .authorizationFailed {
-                    self.approvalTermsLocked = true
+                    let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                    if rebuilt.login.grantPlan?.hasRecordedTerms == true { self.pendingRequest = rebuilt }
                 }
                 // Platform refused the update for the identity's balance.
-                if Self.isInsufficientBalance(error) {
-                    self.approveNeedsTopUp = true
-                }
+                self.approveNeedsTopUp = needsTopUp
             }
         }
     }
 
-    /// Whether Platform refused an identity update because the identity's
-    /// balance cannot pay for it, as its consensus error names it.
-    static func isInsufficientBalance(_ error: Error) -> Bool {
-        let text = "\(error) \(error.localizedDescription)".lowercased()
-        return text.contains("insufficientbalance") || text.contains("insufficient balance")
-    }
+
 
     /// Builds the pending request again, for a sheet that could not tell
     /// which login it would run. Approves nothing.
@@ -749,6 +749,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// it; `nil` for any other request or terms out of bounds.
     var termsAppliedPlan: AppConnect.GrantPlan? {
         guard let plan = pendingRequest?.login.grantPlan, let approvalTerms else { return nil }
+        if plan.hasRecordedTerms { return AppConnect.hasValidTerms(plan, now: now()) ? plan : nil }
         return AppConnect.applying(approvalTerms, to: plan, now: now())
     }
 

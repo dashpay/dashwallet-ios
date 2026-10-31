@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 /// The two terms the user sets on the approve sheet for a v2 connection:
 /// one funding limit for the whole connection and one expiry for all of its
@@ -54,16 +55,17 @@ extension AppConnect {
 
     /// The terms the sheet opens with: the total the app asks for, capped at
     /// `v2BudgetCapCredits`, or `defaultFundingLimit` when it asks for none;
-    /// and the latest expiry the plan gives a key (the app's request capped
-    /// at a year, or the default lifetime).
+    /// and the earliest expiry the plan gives a key (the app's request capped
+    /// at a year, or the default lifetime), so no key lives longer than the
+    /// app asked unless the user chooses so.
     static func defaultTerms(for plan: GrantPlan, now: Date) -> ConnectionTerms {
         let requested = plan.auth.reduce(UInt64(0)) { total, grant in
-            let (sum, overflow) = total.addingReportingOverflow(grant.binding.totalBudget ?? 0)
+            let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
             return overflow ? .max : sum
         }
         return ConnectionTerms(
             fundingLimit: requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits),
-            expiresAt: plan.expiresAt ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime)))
+            expiresAt: plan.auth.map(\.expiresAt).min() ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime)))
     }
 
     /// Whether `credits` is a funding limit the user may set: above zero and
@@ -177,5 +179,41 @@ extension AppConnect {
             total = sum
         }
         return plan.auth.isEmpty || isValidFundingLimit(total)
+    }
+
+    /// `plan` with the terms an earlier approval of the same request recorded
+    /// (`GrantedAccess`, written before its update was submitted), when they
+    /// name its keys one for one. That update may have landed, and a retry
+    /// has to send the same keys with the same terms.
+    static func withRecordedTerms(_ plan: GrantPlan, access: GrantedAccess?) -> GrantPlan {
+        guard let access, !access.isUnreadable, !access.isSessionKeyLogin, access.keys.count == plan.auth.count,
+              zip(access.keys, plan.auth).allSatisfy({ $0.bound == $1.storedBound }) else { return plan }
+        var recorded = plan
+        recorded.auth = zip(plan.auth, access.keys).map { grant, key in
+            AuthGrant(bindingIndex: grant.bindingIndex, binding: grant.binding, totalBudget: key.totalBudget,
+                      expiresAt: key.expiresAt)
+        }
+        recorded.hasRecordedTerms = true
+        return recorded
+    }
+
+    /// The terms a plan's keys carry, read back: their total budget and their
+    /// latest expiry.
+    static func terms(of plan: GrantPlan) -> ConnectionTerms? {
+        guard let expiresAt = plan.expiresAt else { return nil }
+        let total = plan.auth.reduce(UInt64(0)) { total, grant in
+            let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
+            return overflow ? .max : sum
+        }
+        return ConnectionTerms(fundingLimit: total, expiresAt: expiresAt)
+    }
+
+    /// Whether Platform refused an identity update because the identity's
+    /// balance cannot pay for it: the wallet's typed error, or the consensus
+    /// error's name.
+    static func isInsufficientBalance(_ error: Error) -> Bool {
+        if case .insufficientIdentityCredits? = error as? PlatformWalletError { return true }
+        let text = "\(error) \(error.localizedDescription)".lowercased()
+        return text.contains("identityinsufficientbalance") || text.contains("insufficientidentitycredits")
     }
 }

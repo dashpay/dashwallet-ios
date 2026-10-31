@@ -744,6 +744,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             plan.administeredGroupIds = ownership.administeredGroupIds
             plan.currentKeyRules = ownership.currentKeyRules
+            // An earlier approval of this request recorded its terms before it
+            // submitted; its update may have landed, so they are the ones a
+            // retry sends.
+            let identityId = context.identityId.toBase58String()
+            let appId = plan.appId.toBase58String()
+            let requestHash = plan.appEphemeralPubKeyHash.toHexString()
+            let recorded = context.stores.grants.load().first {
+                $0.identityId == identityId && $0.appContractId == appId
+                    && $0.values.appEphemeralPubKeyHash == requestHash && $0.grantedAccess != nil
+            }
+            plan = AppConnect.withRecordedTerms(plan, access: recorded?.grantedAccess)
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)

@@ -284,6 +284,10 @@ extension AppConnect {
         /// How the app's contract keeps the current key of each encryption
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
+        /// The keys carry the terms an earlier approval of this request
+        /// recorded (`AppConnect.withRecordedTerms`): a retry has to send them
+        /// as they were, so the user cannot change them.
+        var hasRecordedTerms = false
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {

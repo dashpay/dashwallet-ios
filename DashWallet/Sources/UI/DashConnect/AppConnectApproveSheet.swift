@@ -175,6 +175,15 @@ struct AppConnectApproveSheet: View {
 
     private var termsCard: some View {
         VStack(alignment: .leading, spacing: 2) {
+            if viewModel.approvalTermsLocked {
+                Text(NSLocalizedString(
+                    "An earlier approval of this request may have gone through, so its limit and expiry stay as they were.",
+                    comment: "DashConnect approve sheet: terms fixed by an earlier approval"))
+                    .dashFont(.footnote)
+                    .foregroundColor(Color.dash.secondaryText)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 8)
+            }
             termRow(
                 title: NSLocalizedString("Identity funding limit", comment: "DashConnect approve sheet"),
                 value: viewModel.approvalFundingText ?? "",
