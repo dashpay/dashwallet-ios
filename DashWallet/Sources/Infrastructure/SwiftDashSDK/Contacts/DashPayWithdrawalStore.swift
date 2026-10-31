@@ -152,30 +152,46 @@ final class DashPayWithdrawalStore {
         return try walletFiles(walletId)
     }
 
-    /// All or nothing: the wallet's files move into a staging directory that
-    /// still reads as the journal, which is then retired in one rename. A
-    /// failure part way leaves every record counted, here or there.
     func clearForWallet(walletId: Data) throws {
+        try clearForWallets(walletIds: [walletId])
+    }
+
+    /// All or nothing across every wallet id given — a logical wallet has one
+    /// per network: their files move into one staging directory that still
+    /// reads as the journal, which is then retired in one rename. A failure
+    /// part way leaves every record counted, here or there.
+    func clearForWallets(walletIds: [Data]) throws {
         lock.lock()
         defer { lock.unlock() }
         sweepRetired(in: directory)
         sweepRetired(in: directory.deletingLastPathComponent())
-        let files = try walletFiles(walletId)
-        let staging = stagingDirectory(walletHex: Self.hex(walletId))
-        if !files.isEmpty {
-            try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        let walletHexes = Set(walletIds.map(Self.hex))
+        // Records an earlier, interrupted clear staged first: a live file of
+        // the same name was written after it, from its contents, so it is
+        // the newer one and replaces it below.
+        var files: [URL] = []
+        let earlierStagings = try stagingDirectories()
+        for staging in earlierStagings {
+            files += try FileManager.default.contentsOfDirectory(
+                at: staging, includingPropertiesForKeys: nil)
+                .filter { Self.walletHex(ofFile: $0).map(walletHexes.contains) == true }
         }
+        files += try liveFiles().filter { Self.walletHex(ofFile: $0).map(walletHexes.contains) == true }
+        guard !files.isEmpty else { return }
+        let staging = directory.appendingPathComponent(
+            "\(stagingPrefix)\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         for file in files {
             let staged = staging.appendingPathComponent(file.lastPathComponent)
-            // One staged by an earlier attempt is older than the live file.
             try? FileManager.default.removeItem(at: staged)
             try FileManager.default.moveItem(at: file, to: staged)
         }
-        // Also what an earlier attempt staged and never retired.
-        do {
-            try retire(staging, in: directory)
-        } catch CocoaError.fileNoSuchFile {
-            return
+        try retire(staging, in: directory)
+        for earlier in earlierStagings {
+            // Emptied above unless it also holds other wallets' records.
+            if (try? FileManager.default.contentsOfDirectory(atPath: earlier.path))?.isEmpty == true {
+                try? FileManager.default.removeItem(at: earlier)
+            }
         }
         notifyChange()
     }
@@ -214,22 +230,36 @@ final class DashPayWithdrawalStore {
 
     private var retiredPrefix: String { ".\(directory.lastPathComponent)-retired-" }
 
-    private func stagingDirectory(walletHex: String) -> URL {
-        directory.appendingPathComponent(".clearing-\(walletHex)", isDirectory: true)
-    }
+    private let stagingPrefix = ".clearing-"
 
-    private func walletFiles(_ walletId: Data) throws -> [URL] {
-        let names: [URL]
+    /// The journal's entries; only a directory that is genuinely absent
+    /// reads as empty.
+    private func directoryEntries() throws -> [URL] {
         do {
-            names = try FileManager.default.contentsOfDirectory(
+            return try FileManager.default.contentsOfDirectory(
                 at: directory, includingPropertiesForKeys: nil)
         } catch CocoaError.fileReadNoSuchFile {
             return []
         }
+    }
+
+    private func liveFiles() throws -> [URL] {
+        try directoryEntries().filter { !$0.lastPathComponent.hasPrefix(".") }
+    }
+
+    /// Where interrupted clears left records they had not yet retired.
+    private func stagingDirectories() throws -> [URL] {
+        try directoryEntries().filter { $0.lastPathComponent.hasPrefix(stagingPrefix) }
+    }
+
+    private func walletFiles(_ walletId: Data) throws -> [URL] {
         let walletHex = Self.hex(walletId)
-        return names.filter {
-            $0.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init) == walletHex
-        }
+        return try liveFiles().filter { Self.walletHex(ofFile: $0) == walletHex }
+    }
+
+    /// `<network>_<walletHex>_<ownerHex>.json` → `walletHex`.
+    private static func walletHex(ofFile url: URL) -> String? {
+        url.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init)
     }
 
     private func fileURL(scope: Scope) -> URL {
@@ -238,23 +268,31 @@ final class DashPayWithdrawalStore {
     }
 
     /// The live file, or else the copy a clear that has not finished staged.
+    /// A file is staged only by moving it into a fresh staging directory, so
+    /// there is at most one staged copy; more than one fails closed, since
+    /// which is newer can't be told.
+    ///
+    /// Anything but a missing file throws: `fileExists` also answers false
+    /// when existence can't be determined, and an unreadable journal must
+    /// lock contact payments rather than read as empty. Nor is corrupt
+    /// history overwritten with an empty one.
     private func load(scope: Scope) throws -> [Entry] {
-        let staged = stagingDirectory(walletHex: Self.hex(scope.walletId))
-            .appendingPathComponent(fileURL(scope: scope).lastPathComponent)
-        for file in [fileURL(scope: scope), staged] {
-            let data: Data
-            do {
-                data = try Data(contentsOf: file)
-            } catch CocoaError.fileReadNoSuchFile {
-                continue
-            }
-            // Anything but a missing file throws: `fileExists` also answers
-            // false when existence can't be determined, and an unreadable
-            // journal must lock contact payments rather than read as empty.
-            // Nor is corrupt history overwritten with an empty one.
+        if let data = try read(fileURL(scope: scope)) {
             return try JSONDecoder().decode([Entry].self, from: data)
         }
-        return []
+        let name = fileURL(scope: scope).lastPathComponent
+        let staged = try stagingDirectories().compactMap { try read($0.appendingPathComponent(name)) }
+        guard staged.count <= 1 else { throw CocoaError(.fileReadCorruptFile) }
+        return try staged.first.map { try JSONDecoder().decode([Entry].self, from: $0) } ?? []
+    }
+
+    /// Nil only when the file is genuinely absent.
+    private func read(_ file: URL) throws -> Data? {
+        do {
+            return try Data(contentsOf: file)
+        } catch CocoaError.fileReadNoSuchFile {
+            return nil
+        }
     }
 
     private func save(_ entries: [Entry], scope: Scope) throws {

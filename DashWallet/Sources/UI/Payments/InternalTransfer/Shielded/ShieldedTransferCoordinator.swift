@@ -1237,6 +1237,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        guard beginContactPayment(contactRecipient) else { return }
+        defer { endContactPayment(contactRecipient) }
+
         let submittedAmount: UInt64
         if contactRecipient != nil {
             // A sweep sends whatever the notes hold; a contact is only ever
@@ -1621,6 +1624,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
+        guard beginContactPayment(contactRecipient) else { return }
+        defer { endContactPayment(contactRecipient) }
 
         // Destination Core (BIP44, Base58Check) address — for the internal
         // transfer, the wallet's own receive address (same resolution as the
@@ -1687,7 +1692,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
-        if let contactWithdrawal { coreAddress = contactWithdrawal.address }
+        if let contactWithdrawal {
+            // And again after the reservation's await, the last point before
+            // the SDK withdraws. A refusal here has used up the address.
+            // TODO(shielded-withdraw-fee-cap): dashpay/platform#5698.
+            let preflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
+            do {
+                preflight = try await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
+            } catch {
+                Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal preflight failed after reservation \(String(describing: error), privacy: .public)")
+                preflight = nil
+            }
+            if let refusal = Self.contactPlatformFeeRefusal(
+                confirmedFeeCredits: contactNetworkFeeCredits,
+                liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
+                failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
+                return
+            }
+            coreAddress = contactWithdrawal.address
+        }
 
         phase = .broadcasting
 
@@ -1872,6 +1895,32 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
+
+    /// Claims the contact for the whole payment, before its first await
+    /// (`WalletSendService.beginContactPayment`), so no other payment to it,
+    /// from any balance, runs alongside. True with no contact to pay; false
+    /// after failing the transfer.
+    private func beginContactPayment(_ recipient: ContactPaymentRecipient?) -> Bool {
+        guard let recipient else { return true }
+        #if DASHPAY
+        do {
+            try WalletSendService.shared.beginContactPayment(recipient)
+            return true
+        } catch {
+            handleFailure(error)
+            return false
+        }
+        #else
+        handleFailure(CoordinatorError.noWallet)
+        return false
+        #endif
+    }
+
+    private func endContactPayment(_ recipient: ContactPaymentRecipient?) {
+        #if DASHPAY
+        if let recipient { WalletSendService.shared.endContactPayment(recipient) }
+        #endif
+    }
 
     /// Reserve a fresh address of the contact's and record the withdrawal to
     /// it. Call after `authorize()` and right before submitting: the SDK marks

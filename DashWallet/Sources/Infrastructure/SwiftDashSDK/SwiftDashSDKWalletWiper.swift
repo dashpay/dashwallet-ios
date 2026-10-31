@@ -971,13 +971,13 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // done. The check above makes that unlikely; when it happens the
         // wallet is already gone from the SDK, and the entries stay until a
         // full wipe or the re-imported wallet's removal clears them.
-        for walletId in walletIds.values {
-            do {
-                try DashPayWithdrawalStore.shared.clearForWallet(walletId: walletId)
-            } catch {
-                logger.error("the DashPay payment journal of the removed wallet could not be cleared: \(String(describing: error), privacy: .public)")
-                throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
-            }
+        // Every network's records at once, so a failure never leaves one
+        // network's locks gone and another's still there.
+        do {
+            try DashPayWithdrawalStore.shared.clearForWallets(walletIds: Array(walletIds.values))
+        } catch {
+            logger.error("the DashPay payment journal of the removed wallet could not be cleared: \(String(describing: error), privacy: .public)")
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
 #endif
     }

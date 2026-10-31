@@ -292,14 +292,20 @@ final class UnknownContactPaymentOutcomes {
     }
 }
 
-/// Contacts a payment is under way to, from just before its lock check until
-/// the payment is either journaled (a withdrawal) or finished (a Transparent
-/// send). Two payment surfaces could each pass the lock check while neither
-/// had written anything yet; every write that takes the lock happens while
-/// the claim is held, so a check made under it stays true.
+/// Contacts a payment is under way to, from just before its first lock check
+/// — before the PIN — until it has finished, whichever balance pays. Two
+/// payment surfaces could each pass the lock check while neither had written
+/// anything yet; every write that takes the lock happens while the claim is
+/// held, so a check made under it stays true.
 final class ContactPaymentClaims {
     private let lock = NSLock()
     private var contactIdentityIds: Set<Data> = []
+
+    func isClaimed(contactIdentityId: Data) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return contactIdentityIds.contains(contactIdentityId)
+    }
 
     /// False when a payment to the contact already holds the claim.
     func claim(contactIdentityId: Data) -> Bool {
@@ -735,6 +741,25 @@ final class WalletSendService: NSObject {
         )
     }
 
+    /// Starts a Platform- or Shielded-funded payment to the contact: claims it
+    /// for the whole payment, then checks its lock. Call before anything
+    /// awaits, and `endContactPayment` once the payment has finished.
+    @MainActor
+    func beginContactPayment(_ recipient: ContactPaymentRecipient) throws {
+        try claimContactPayment(recipient.identityId)
+        do {
+            try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
+        } catch {
+            contactPaymentClaims.release(contactIdentityId: recipient.identityId)
+            throw error
+        }
+    }
+
+    @MainActor
+    func endContactPayment(_ recipient: ContactPaymentRecipient) {
+        contactPaymentClaims.release(contactIdentityId: recipient.identityId)
+    }
+
     private func claimContactPayment(_ contactIdentityId: Data) throws {
         guard contactPaymentClaims.claim(contactIdentityId: contactIdentityId) else {
             throw Self.makeError(
@@ -766,12 +791,6 @@ final class WalletSendService: NSObject {
         }
     }
 
-    /// Reserve a fresh DIP-15 address of the contact's for a Platform- or
-    /// Shielded-funded payment, which pays it through a withdrawal.
-    ///
-    /// Call only after the user confirmed the payment and authorized it: the
-    /// SDK marks the address used before returning it, and it stays used if
-    /// the withdrawal is then cancelled, rejected or never confirmed.
     /// The spend gate a Platform- or Shielded-funded contact payment passes
     /// before its address is reserved — the same one `sendToContact` uses, so
     /// the biometric spending limit applies whichever balance pays.
@@ -780,21 +799,29 @@ final class WalletSendService: NSObject {
         try await sendAuthorizer.authorizeSend(spendAmount: amountDuffs)
     }
 
-    /// Reserves the contact's address and journals the withdrawal to it via
-    /// `journal`, as one step against any other payment to the contact: the
-    /// lock is checked and the contact claimed before the reservation awaits,
-    /// and the claim is released only once `journal` has written the record
+    /// Reserves a fresh DIP-15 address of the contact's for a Platform- or
+    /// Shielded-funded payment, which pays it through a withdrawal, and
+    /// journals the withdrawal to it via `journal`.
+    ///
+    /// Call only after the user confirmed the payment and authorized it: the
+    /// SDK marks the address used before returning it, and it stays used if
+    /// the withdrawal is then cancelled, rejected or never confirmed.
+    /// Only within `beginContactPayment`'s claim, so no other
+    /// payment to the contact can run between the lock check and the record
     /// that locks it from then on.
     @MainActor
     func reserveContactPaymentAddress<Record>(
         for recipient: ContactPaymentRecipient,
         journal: (String) throws -> Record
     ) async throws -> Record {
+        guard contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId) else {
+            assertionFailure("contact payment address reserved outside beginContactPayment")
+            throw Self.makeError(
+                code: .dashPayPaymentUnavailable,
+                description: "Wallet or DashPay identity is not ready")
+        }
         // At the boundary rather than on the screen: one opened before the
-        // lock was taken must not be able to start a second payment. Claimed
-        // first, so no payment that could take the lock runs in between.
-        try claimContactPayment(recipient.identityId)
-        defer { contactPaymentClaims.release(contactIdentityId: recipient.identityId) }
+        // lock was taken must not be able to start a second payment.
         try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
         try Self.validateContactRecipient(recipient)
         try Self.ensureOnline()

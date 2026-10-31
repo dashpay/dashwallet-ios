@@ -161,6 +161,24 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
     }
 
+    /// A logical wallet's ids, one per network, are cleared together; other
+    /// wallets keep their records.
+    func testClearingSeveralWalletsTogetherKeepsOthers() throws {
+        let testnet = DashPayWithdrawalStore.Scope(
+            networkRaw: 1, walletId: Data(repeating: 1, count: 32), ownerIdentityId: scope.ownerIdentityId)
+        let mainnet = DashPayWithdrawalStore.Scope(
+            networkRaw: 0, walletId: Data(repeating: 5, count: 32), ownerIdentityId: scope.ownerIdentityId)
+        let other = DashPayWithdrawalStore.Scope(
+            networkRaw: 1, walletId: Data(repeating: 8, count: 32), ownerIdentityId: scope.ownerIdentityId)
+        _ = try begin(scope: testnet)
+        _ = try begin(scope: mainnet)
+        let survivor = try begin(scope: other)
+        try store.clearForWallets(walletIds: [testnet.walletId, mainnet.walletId])
+        XCTAssertTrue(try store.entries(scope: testnet, contactIdentityId: contact).isEmpty)
+        XCTAssertTrue(try store.entries(scope: mainnet, contactIdentityId: contact).isEmpty)
+        XCTAssertEqual(try store.entries(scope: other, contactIdentityId: contact), [survivor])
+    }
+
     func testClearingAnAbsentJournalSucceeds() throws {
         XCTAssertEqual(try store.files(ofWallet: scope.walletId), [])
         try store.clearForWallet(walletId: scope.walletId)
@@ -423,6 +441,23 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         XCTAssertEqual(
             Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: nil, liveFeeCredits: 5_000).map { "\($0)" },
             "contactPaymentNotPriced")
+    }
+
+    /// A Platform or Shielded payment claims the contact for its whole run:
+    /// meanwhile no other payment to it can start, and once it ends one can.
+    @MainActor
+    func testContactPaymentHoldsTheClaimUntilItEnds() throws {
+        let recipient = ContactPaymentRecipient(
+            identityId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }), displayName: "c",
+            walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
+            ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
+        let service = WalletSendService.shared
+        try service.beginContactPayment(recipient)
+        XCTAssertThrowsError(try service.beginContactPayment(recipient))
+        service.endContactPayment(recipient)
+        try service.beginContactPayment(recipient)
+        service.endContactPayment(recipient)
+        XCTAssertFalse(service.contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId))
     }
 
     /// Only one payment to a contact at a time, from any balance.
