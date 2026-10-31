@@ -1732,7 +1732,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             from: currentPublicKeys, for: superseded.filter { !$0.isUnconfirmed }
         ).isEmpty, !AppConnect.hasUnplacedPendingKey(
             superseded, currentIdentityPublicKeys: currentPublicKeys, bindings: bindings
-        ), superseded.reduce(into: Set<UInt32>(), { $0.formUnion(AppConnect.resentKeyIds(of: $1)) })
+        // Every key a waiting predecessor holds (sent again, or added and
+        // placed by the store) has to be in the fetched list: one it lacks
+        // means the list is behind, and the renewal could not turn it off.
+        ), AppConnect.waitingKeyIds(superseded, bindings: bindings)
             .isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) })
         else {
             throw DashConnectPlatformError.identityKeysOutOfDate
@@ -2025,7 +2028,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// confirmed and the failure stands, so nothing wider than the approval
     /// is published; cannot land runs
     /// `onDropped` with the records without this one, drops it when that
-    /// wrote the rows, and rethrows;
+    /// wrote the rows, and rethrows (a record that still holds a live auth
+    /// key stays waiting instead, and the failure stands);
     /// unknown keeps the record and rethrows. A record that adds nothing is
     /// confirmed from the start and only waits for its disables.
     ///
@@ -2069,7 +2073,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // noted.
         func landed(noting: Bool, retiring: Bool = true) -> [AppConnectGrant] {
             var all = grants.load()
-            if noting, !add.isEmpty || !disable.isEmpty {
+            if noting, !add.isEmpty {
                 AppConnect.noteOwnUpdate(
                     AppConnect.OwnUpdate(added: add, disabledKeyIds: disable), in: &all,
                     identityId: record.identityId, exceptKey: record.key)
@@ -2125,6 +2129,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     throw error
                 case .landedAndOff, .cannotLand:
                     let didLand = outcome == .landedAndOff
+                    // A record that holds a live auth key (one it sends
+                    // again, or one it added) stays waiting: it keeps the
+                    // app's row and lets a disconnect turn that key off.
+                    guard AppConnect.liveAuthKeyIds(heldBy: record, in: view.keys, bindings: view.bindings).isEmpty else {
+                        logger.info("🔗 DASHCONNECT :: the identity update will not complete, and its record holds a live key; it stays")
+                        if didLand { grants.save(landed(noting: false, retiring: disabled)) }
+                        throw error
+                    }
                     let what = didLand ? "landed, and its keys are off already" : "can no longer land"
                     logger.info("🔗 DASHCONNECT :: the identity update \(what, privacy: .public); its record is dropped")
                     var all = didLand ? landed(noting: false, retiring: disabled) : grants.load()
@@ -3389,12 +3401,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: a session key registration of the app may still land, and there is no key to disable")
             throw DashConnectPlatformError.registrationPending
         }
-        // A v2 update that never left the device reads the same as one on
-        // its way. With nothing live to turn off, the row goes and its record
-        // stays: if the update lands after all, a later settle confirms it
-        // and shows the app again (`appIdsWithoutTheirOneQRRow`), to be
-        // disconnected then.
-        let leavesWaitingRecord = !pendingV2.isEmpty && keyIds.isEmpty
         // For a one-QR row, the keys on another identity that no grant
         // record shows. `nil` when that could not be told.
         let heldOnAnotherIdentity: Bool? = checksUnrecordedKeys && !hasLiveGrantElsewhere()
@@ -3421,9 +3427,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // is not taken for an unattributed one. A dropped record names
         // nothing, and the profile key it sent again goes here like any
         // other.
-        // A disconnect that leaves one of the app's records waiting ends in
-        // `registrationPending` (or lets the row go without settling it), so
-        // it is not one that ends here.
+        // A disconnect with one of the app's records waiting can still end in
+        // `registrationPending` after its update (a key turned up, or the
+        // identity could not be read again), so it is not one that ends here.
         let completesHere = (!keyIds.isEmpty || !granted.isEmpty) && heldOnAnotherIdentity == false
             && reasonHeldElsewhere(heldOnAnotherIdentity: false) == nil && pendingV2.isEmpty
         var profileKeysOff: [UInt32] = []
@@ -3444,6 +3450,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 profileKeysUnchecked = true
             }
         }
+        // The identity as this disconnect leaves it: as read, when it sends
+        // nothing; as read again after its update, when it does.
+        var keysAfterUpdate: [ManagedIdentity.IdentityPublicKeyInfo]? = keyIds.isEmpty ? currentPublicKeys : nil
         if !keyIds.isEmpty {
             Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) app key(s)")
             // Platform takes a limited number of keys per update. A failure
@@ -3480,6 +3489,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // turns out to have landed holds keys that are turned off too.
             // The keys above are off either way.
             if let settled = await settleAfterOwnUpdate(context: context, stores: stores) {
+                keysAfterUpdate = settled.keys
                 do {
                     try await disableLateLandedGrants(
                         settled.confirmed.filter { pendingV2.contains($0.key) }, liveIn: settled.keys,
@@ -3518,15 +3528,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // Keys of the app that landed late and could not be turned off keep
         // the row, once what was turned off above is marked.
         if let lateDisableFailure { throw lateDisableFailure }
-        // An update of the app whose outcome this disconnect could not tell
-        // keeps the row: the next disconnect settles it by the update that
-        // landed here, which it has noted.
-        if !leavesWaitingRecord, stores.grants.load().contains(where: { pendingV2.contains($0.key) && $0.isPendingV2 }) {
-            Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
-            throw DashConnectPlatformError.registrationPending
-        }
-        if leavesWaitingRecord {
-            Self.logger.info("🔗 DASHCONNECT :: no key of the app is live; its waiting update stays recorded")
+        // A record of the app still waiting for its update keeps the row
+        // while it holds a live key, or while the identity could not be read
+        // again. One that holds none lets the row go and stays recorded: a
+        // disconnect only disables, which witnesses nothing
+        // (`AppConnect.OwnUpdate`), and an update that never left the device
+        // reads the same as one on its way. If it lands after all, a later
+        // settle confirms it and shows the app again
+        // (`appIdsWithoutTheirOneQRRow`), to be disconnected then.
+        let stillWaiting = stores.grants.load().filter { pendingV2.contains($0.key) && $0.isPendingV2 }
+        if !stillWaiting.isEmpty {
+            // The store as the read after the update left it; a live key a
+            // record adds that it cannot place may be the record's too.
+            guard let keysAfterUpdate,
+                  let bindingsAfter = try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer),
+                  stillWaiting.allSatisfy({
+                      AppConnect.liveAuthKeyIds(heldBy: $0, in: keysAfterUpdate, bindings: bindingsAfter).isEmpty
+                  }),
+                  !AppConnect.hasUnplacedPendingKey(stillWaiting, currentIdentityPublicKeys: keysAfterUpdate, bindings: bindingsAfter)
+            else {
+                Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
+                throw DashConnectPlatformError.registrationPending
+            }
+            Self.logger.info("🔗 DASHCONNECT :: no key of the app's waiting update is live; it stays recorded")
         }
         if let heldElsewhere = reasonHeldElsewhere(heldOnAnotherIdentity: heldOnAnotherIdentity == true) {
             return (heldElsewhere: heldElsewhere, asOneQR: asOneQR, profileKeys: DashConnectDisconnectResult())
@@ -3568,6 +3592,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// (`AppConnect.pendingV2Outcome`). The v2 approval notes its own update
     /// in `registerAppConnectV2Grant`, leaving its own record out.
     private func noteOwnUpdateLanded(_ update: AppConnect.OwnUpdate, context: Context) {
+        // One that only disables witnesses nothing (`AppConnect.OwnUpdate`).
+        guard !update.addedKeys.isEmpty else { return }
         let identityId = context.identityId.toBase58String()
         guard context.stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) else {
             return
