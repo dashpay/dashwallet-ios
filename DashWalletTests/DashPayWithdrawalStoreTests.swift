@@ -429,6 +429,17 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         }
     }
 
+    /// Platform rejects a Shielded withdrawal above 500 DASH, Core fee
+    /// included, so a contact can be paid at most 499.9999981 DASH from it.
+    func testContactShieldedMaximumLeavesRoomForTheCoreFee() throws {
+        XCTAssertEqual(ShieldedTransferCoordinator.shieldedWithdrawalMaximumCredits, 50_000_000_000_000)
+        XCTAssertEqual(ShieldedTransferCoordinator.contactShieldedMaximumCredits, 49_999_999_810_000)
+        XCTAssertEqual(
+            try ShieldedTransferCoordinator.contactWithdrawalCredits(
+                recipientCredits: ShieldedTransferCoordinator.contactShieldedMaximumCredits),
+            ShieldedTransferCoordinator.shieldedWithdrawalMaximumCredits)
+    }
+
     func testContactPlatformFeeIsHeldToTheConfirmedFee() {
         typealias Coordinator = ShieldedTransferCoordinator
         XCTAssertNil(Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: 5_000))

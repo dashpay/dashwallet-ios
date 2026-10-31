@@ -6729,3 +6729,6 @@
 
 /* DashPay: a second payment to a contact started while one was still being sent */
 "A payment to this contact is already in progress." = "A payment to this contact is already in progress.";
+
+/* DashPay contact payment from Shielded: the protocol's single-withdrawal maximum */
+"You can send up to %@ to a contact from your Shielded balance in one payment." = "You can send up to %@ to a contact from your Shielded balance in one payment.";

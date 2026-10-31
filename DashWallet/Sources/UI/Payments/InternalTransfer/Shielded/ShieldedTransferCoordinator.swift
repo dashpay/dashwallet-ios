@@ -323,6 +323,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// A contact payment, priced again, would now be charged more than
         /// the fee it was confirmed and authorized with.
         case contactFeeChanged
+        /// A Shielded contact payment above what one withdrawal may carry.
+        case contactAboveShieldedWithdrawalMaximum
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         /// A Max drain's lock whose recipient cannot be established.
@@ -395,6 +397,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "The fee for this payment could not be worked out. Go back and try again.",
                     comment: "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation")
+            case .contactAboveShieldedWithdrawalMaximum:
+                return ShieldedTransferCoordinator.contactShieldedMaximumMessage
             case .contactFeeChanged:
                 return NSLocalizedString(
                     "The network fee for this payment changed. Close this confirmation and review it again.",
@@ -1254,6 +1258,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 handleFailure(error)
                 return
             }
+            guard submittedAmount <= Self.shieldedWithdrawalMaximumCredits else {
+                handleFailure(CoordinatorError.contactAboveShieldedWithdrawalMaximum)
+                return
+            }
             if rejectIfAboveSpendCeiling(submittedAmount, feeKind: .withdrawal) { return }
             if let refusal = Self.contactShieldedFeeRefusal(
                 submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
@@ -1874,6 +1882,26 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Before 14 the contact receives these 190 duffs as well — never less
     /// than the amount entered.
     nonisolated static let contactCoreFeeCredits: UInt64 = 190_000
+
+    /// The most one Shielded withdrawal may carry, Core fee included: the
+    /// protocol's `max_withdrawal_amount` (500 DASH), which
+    /// `ShieldedWithdrawalTransition` checks against the amount it reserves.
+    /// Platform address withdrawals have no such limit.
+    nonisolated static let shieldedWithdrawalMaximumCredits: UInt64 = 50_000_000_000_000
+
+    nonisolated static var contactShieldedMaximumMessage: String {
+        String.localizedStringWithFormat(
+            NSLocalizedString(
+                "You can send up to %@ to a contact from your Shielded balance in one payment.",
+                comment: "DashPay contact payment from Shielded: the protocol's single-withdrawal maximum"),
+            "\((contactShieldedMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+    }
+
+    /// The most a contact can be paid from Shielded in one payment: the
+    /// withdrawal maximum less the Core fee added on top.
+    nonisolated static var contactShieldedMaximumCredits: UInt64 {
+        shieldedWithdrawalMaximumCredits - contactCoreFeeCredits
+    }
 
     /// The amount a withdrawal carries for the contact to receive
     /// `recipientCredits`: the amount plus `contactCoreFeeCredits`. Throws

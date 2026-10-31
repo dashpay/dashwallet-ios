@@ -655,8 +655,21 @@ final class SendViewModel: ObservableObject {
             // Without the note-priced ceiling, `canContinue` falls back to
             // the balance less the worst-case reserve; so does this.
             let ceiling = shieldedSpendCeilingCredits ?? creditsMinusFeeReserve(shieldedBalance)
-            return (ceiling > contactCoreFeeCredits ? ceiling - contactCoreFeeCredits : 0) / 1000
+            return contactShieldedRecipientCredits(withinCeiling: ceiling) / 1000
         }
+    }
+
+    /// What a contact can be paid from Shielded out of a spend ceiling: less
+    /// the Core fee added on top, and no more than one withdrawal may carry.
+    private func contactShieldedRecipientCredits(withinCeiling ceiling: UInt64) -> UInt64 {
+        min(ceiling > contactCoreFeeCredits ? ceiling - contactCoreFeeCredits : 0,
+            ShieldedTransferCoordinator.contactShieldedMaximumCredits)
+    }
+
+    /// A Shielded contact payment above what one withdrawal may carry.
+    private var exceedsContactShieldedMaximum: Bool {
+        route == .shieldedToCore && contactCoreFeeCredits > 0
+            && creditsPreview > ShieldedTransferCoordinator.contactShieldedMaximumCredits
     }
 
     /// The Core fee a contact paid from Platform or Shielded has added on
@@ -1356,6 +1369,9 @@ final class SendViewModel: ObservableObject {
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
             if isFullShieldedSweep { return nil }
+            if exceedsContactShieldedMaximum, creditsPreview <= shieldedBalance {
+                return ShieldedTransferCoordinator.contactShieldedMaximumMessage
+            }
             // The ceiling is priced from the notes that would actually be
             // spent, so it supersedes the flat reserve — which always charges
             // a full-size bundle and would reject amounts a one- or two-note
@@ -1531,6 +1547,7 @@ final class SendViewModel: ObservableObject {
             if isFullShieldedSweep {
                 return shieldedSweepAmountCredits != nil
             }
+            if exceedsContactShieldedMaximum { return false }
             if let ceiling = shieldedSpendCeilingCredits {
                 return ceiling >= contactCoreFeeCredits && creditsPreview <= ceiling - contactCoreFeeCredits
             }
@@ -1597,8 +1614,7 @@ final class SendViewModel: ObservableObject {
             // transition can send, less the Core fee added on top.
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: .withdrawal) {
             case .ready(let plan):
-                let fee = contactCoreFeeCredits
-                sourceDuffs = (plan.amountCredits > fee ? plan.amountCredits - fee : 0) / 1000
+                sourceDuffs = contactShieldedRecipientCredits(withinCeiling: plan.amountCredits) / 1000
             case .waitingForConfirmation(let credits):
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
                 sourceDuffs = 0
