@@ -1731,6 +1731,27 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // update adds (the app's encryption key changed since).
                 throw DashConnectPlatformError.earlierApprovalPending
             }
+            // The same keys may come with other terms: the request repeats
+            // the ephemeral key and asks for less. What is sent again has to
+            // be within what this approval grants, for this connection.
+            let planned = zip(added, ids.auth).map { index, keyId in
+                AppConnect.authIdentityPubkey(
+                    plan.auth[index], keyId: keyId, publicKeyHash160: authKeys[index].publicKeyHash160)
+            } + zip(registered, ids.encryption).map { slot, keyId in
+                AppConnect.encryptionIdentityPubkey(
+                    plan.encryption[encryptionSlots[slot].keyIndex], keyId: keyId, publicKey: encryptionKey(slot).publicKey)
+            }
+            guard pendingRetry?.connectionId == connectionId else {
+                Self.logger.error("🔗 DASHCONNECT :: an earlier approval of this request for another connection may still land")
+                throw DashConnectPlatformError.earlierApprovalPending
+            }
+            let retryNow = now()
+            guard planned.allSatisfy({ key in
+                pending.addedKeys.contains { AppConnect.isWithinPlan($0, planned: key, now: retryNow) }
+            }) else {
+                Self.logger.error("🔗 DASHCONNECT :: an earlier approval of this request with other terms may still land")
+                throw DashConnectPlatformError.earlierApprovalPending
+            }
             for (index, keyId) in zip(added, ids.auth) { authKeyIds[index] = keyId }
             for (slot, keyId) in zip(registered, ids.encryption) { encryptionSlots[slot].keyId = keyId }
             add = pending.addedKeys.map(\.identityPubkey)
@@ -1933,8 +1954,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// submission's. A failure may still have landed:
     /// up to three reads (`reread`, `pause` before the second and third)
     /// settle it by `AppConnect.pendingV2Outcome`. Landed confirms as on
-    /// success; cannot land runs `onDropped` with the records without this
-    /// one, drops it when that wrote the rows, and rethrows;
+    /// success when the keys it disables show off; with any of them still
+    /// on, the keys were added by another update, so the record is confirmed
+    /// without retiring anything and the failure stands; cannot land runs
+    /// `onDropped` with the records without this one, drops it when that
+    /// wrote the rows, and rethrows;
     /// unknown keeps the record and rethrows. A record that adds nothing is
     /// confirmed from the start and only waits for its disables.
     ///
@@ -1977,18 +2001,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // found after a failure may be an earlier submission's of the same
         // grant, which proves nothing about the others, so that is not
         // noted.
-        func landed(noting: Bool) -> [AppConnectGrant] {
+        func landed(noting: Bool, retiring: Bool = true) -> [AppConnectGrant] {
             var all = grants.load()
             if noting, !add.isEmpty || !disable.isEmpty {
                 AppConnect.noteOwnUpdate(
                     AppConnect.OwnUpdate(added: add, disabledKeyIds: disable), in: &all,
                     identityId: record.identityId, exceptKey: record.key)
             }
-            AppConnect.markKeysDisabled(in: &all) { retiredGrantKeys.contains($0.key) && !$0.isUnconfirmed }
+            if retiring {
+                AppConnect.markKeysDisabled(in: &all) { retiredGrantKeys.contains($0.key) && !$0.isUnconfirmed }
+            }
             return all
         }
-        func confirm(noting: Bool = false) -> AppConnectGrant {
-            var all = landed(noting: noting)
+        func confirm(noting: Bool = false, retiring: Bool = true) -> AppConnectGrant {
+            var all = landed(noting: noting, retiring: retiring)
             guard let index = all.firstIndex(where: { $0.key == record.key }) else { return record }
             all[index].pendingUpdate = nil
             all[index].unconfirmedKeyHash160 = nil
@@ -2018,14 +2044,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     of: pending, currentIdentityPublicKeys: view.keys, bindings: view.bindings,
                     nowMilliseconds: nowMilliseconds())
                 switch outcome {
-                case .landed:
+                case .landed where disabled:
                     logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
                     return confirm()
+                case .landed:
+                    // Its keys are there and the keys it replaces are not
+                    // off: another update added them. They are this grant's,
+                    // and the grants it replaces keep theirs until a retry
+                    // or a disconnect turns them off.
+                    logger.error("🔗 DASHCONNECT :: the keys of this approval are on the identity, the keys it replaces are still on")
+                    _ = confirm(retiring: false)
+                    throw error
                 case .landedAndOff, .cannotLand:
                     let didLand = outcome == .landedAndOff
                     let what = didLand ? "landed, and its keys are off already" : "can no longer land"
                     logger.info("🔗 DASHCONNECT :: the identity update \(what, privacy: .public); its record is dropped")
-                    var all = didLand ? landed(noting: false) : grants.load()
+                    var all = didLand ? landed(noting: false, retiring: disabled) : grants.load()
                     all.removeAll { $0.key == record.key }
                     // Dropped only once its rows can be judged; otherwise the
                     // next settle drops it.

@@ -1189,13 +1189,14 @@ extension AppConnectV2LoginTests {
         keyId: UInt32? = nil,
         data: Data? = nil,
         totalBudget: UInt64?? = nil,
+        expiresAt: UInt64?? = nil,
         disabled: Bool = false
     ) -> ManagedIdentity.IdentityPublicKeyInfo {
         ManagedIdentity.IdentityPublicKeyInfo(
             keyId: Int32(bitPattern: keyId ?? added.keyId), purpose: added.purpose,
             securityLevel: added.securityLevel, keyType: added.keyType, readOnly: false,
             disabledAt: disabled ? 1 : nil, data: data ?? added.pubkeyBytes,
-            totalBudget: totalBudget ?? added.totalBudget, expiresAt: added.expiresAt.map { Int64($0) })
+            totalBudget: totalBudget ?? added.totalBudget, expiresAt: (expiresAt ?? added.expiresAt).map { Int64(bitPattern: $0) })
     }
 
     /// The store's record of `added`, bound as it was added.
@@ -1363,6 +1364,79 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [], now: past), .unknown,
             "its key is there, the store just cannot place it yet")
+    }
+
+    func testAPendingUpdateWhoseKeyLimitsWereRaisedSinceLanded() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(auth.totalBudget! + 1))]), .landed,
+            "a limits update raised its budget")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(auth.expiresAt! + Self.dayMilliseconds))]),
+            .landed, "a limits update extended it")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(UInt64.max))]), .landed,
+            "extended to the largest expiry")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(nil))]), .cannotLand,
+            "a limits update never takes a limit away")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(auth.expiresAt! - 1))]), .cannotLand,
+            "nor lowers one")
+    }
+
+    func testAPendingUpdateWhoseReplacedKeysAreStillOnRetiresNothing() {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var pending = Self.pendingGrant([key], requestHash: "a1", retiring: [old.key])
+        pending.pendingUpdate?.disabledKeyIds = [3]
+        var grants = [old, pending]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key), Self.key(3)],
+            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+        XCTAssertEqual(settled.confirmed.map(\.key), [pending.key], "its keys are there and need their record")
+        XCTAssertNil(grants[0].keyDisabled, "another update added them; the replaced key is still on")
+
+        var landedOff = [old, pending]
+        _ = AppConnect.settlePendingV2Registrations(
+            in: &landedOff, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3)],
+            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+        XCTAssertEqual(landedOff.map(\.key), [old.key])
+        XCTAssertNil(landedOff[0].keyDisabled)
+    }
+
+    func testARetryIsSentOnlyWithinWhatThisApprovalGrants() {
+        let stored = AppConnect.ExpectedKey(Self.addedAuthKey(7, data: 0x07))
+        let planned = Self.addedAuthKey(7, data: 0x07, expiresAt: Self.expiresAt + Self.dayMilliseconds)
+        XCTAssertTrue(
+            AppConnect.isWithinPlan(stored, planned: planned, now: Self.now), "the plan's default expiry moved on")
+        func plan(
+            level: SecurityLevel = .critical,
+            bounds: ManagedPlatformWallet.ContractBounds = .contractGroup(id: Self.groupId),
+            budget: UInt64? = 50_000_000_000,
+            expiresAt: UInt64? = Self.expiresAt
+        ) -> ManagedPlatformWallet.IdentityPubkey {
+            ManagedPlatformWallet.IdentityPubkey(
+                keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: level,
+                pubkeyBytes: Data(repeating: 0x07, count: 20), contractBounds: bounds,
+                totalBudget: budget, expiresAt: expiresAt)
+        }
+        for (key, why) in [
+            (plan(budget: 1), "a smaller budget"),
+            (plan(budget: 60_000_000_000), "another budget"),
+            (plan(budget: nil), "no limit"),
+            (plan(expiresAt: Self.expiresAt - Self.dayMilliseconds), "an earlier expiry"),
+            (plan(level: .high), "another level"),
+            (plan(bounds: .singleContract(id: Self.appId)), "another bound"),
+        ] {
+            XCTAssertFalse(AppConnect.isWithinPlan(stored, planned: key, now: Self.now), why)
+        }
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(
+                stored, planned: plan(), now: Self.date(milliseconds: Self.expiresAt)),
+            "its expiry has passed")
     }
 
     func testSettlingConfirmsWhatLandedDropsWhatCannotAndMarksTheGrantsItRetired() {
@@ -1731,6 +1805,27 @@ extension AppConnectV2LoginTests {
         XCTAssertFalse(grant.isUnconfirmed)
         XCTAssertEqual(calls.rereads, 2)
         XCTAssertEqual(calls.pauses, [1])
+    }
+
+    func testAFailedUpdateWhoseKeysAnotherUpdateAddedRetiresNothing() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var record = Self.pendingGrant([key], retiring: [old.key])
+        record.pendingUpdate?.disabledKeyIds = [3]
+        let store = MemoryGrantStore([old])
+        do {
+            _ = try await Self.register(
+                record, add: [key], disable: [3], retiring: [old.key], store: store, calls: Calls(),
+                submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key), Self.key(3)], [Self.stored(key)])])
+            XCTFail("the replacement did not happen")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        let recorded = store.grants.first { $0.key == record.key }
+        XCTAssertNotNil(recorded)
+        XCTAssertNil(recorded?.pendingUpdate, "its keys are on the identity")
+        XCTAssertNil(store.grants.first { $0.key == old.key }?.keyDisabled, "the replaced key is still on")
     }
 
     func testAFailedUpdateThatCanNeverLandDropsItsRecord() async {

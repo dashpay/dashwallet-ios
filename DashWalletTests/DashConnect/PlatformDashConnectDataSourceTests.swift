@@ -3042,11 +3042,19 @@ final class AppConnectLoginTests: XCTestCase {
 
         XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: bound))
         for (keys, why) in [
+            (key(budget: 9_000), "a limits update raised its budget"),
+            (key(expiry: 7_000), "a limits update extended it"),
+            (key(expiry: -1), "extended to the largest expiry, read with its unsigned bits"),
+        ] {
+            XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys, bindings: bound), why)
+        }
+        for (keys, why) in [
             (key(data: Data(repeating: 0x01, count: 20)), "another key under the same id"),
             (key(disabledAt: 1), "a disabled key"),
             (key(level: .critical), "another security level"),
             (key(budget: nil), "no budget"),
-            (key(budget: 9_000), "another budget"),
+            (key(budget: 4_000), "a lower budget"),
+            (key(expiry: 5_000), "an earlier expiry"),
             (key(expiry: nil), "no expiry"),
             ([], "no key at all"),
         ] {

@@ -438,9 +438,9 @@ enum AppConnect {
 
     /// Whether the identity holds, live, the key a record names. For an
     /// unconfirmed record that is the key it was going to register, with
-    /// everything that key was given: the data, the kind, the limits, and the
-    /// bound to the record's app as the wallet's store reads it. A bound the
-    /// store does not show is not taken on trust.
+    /// everything that key was given: the data, the kind, the limits (raised
+    /// at most), and the bound to the record's app as the wallet's store
+    /// reads it. A bound the store does not show is not taken on trust.
     static func holdsRecordedKey(
         _ grant: AppConnectGrant,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
@@ -457,8 +457,8 @@ enum AppConnect {
             guard let appContractId = Data.identifier(fromBase58: grant.appContractId) else { return false }
             return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
                 && key.purpose == .authentication && key.securityLevel == .high
-                && key.totalBudget == grant.totalBudget
-                && key.expiresAt.map({ UInt64(max(0, $0)) }) == grant.expiresAt
+                && isNotLowered(key.totalBudget, from: grant.totalBudget)
+                && isNotLowered(key.expiresAt.map { UInt64(bitPattern: $0) }, from: grant.expiresAt)
                 && bindings.contains {
                     $0.keyId == grant.sessionKeyId && $0.data == key.data && !$0.hasUnreadableBound
                         && $0.singleContractId == appContractId
