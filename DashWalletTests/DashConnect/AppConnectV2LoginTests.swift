@@ -1658,7 +1658,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             PlatformDashConnectDataSource.rowsAfterDropping(
                 appIds: [app], keeping: [app], grants: [], bindings: [], rows: [row(.confirming)]).map(\.status),
-            [.active], "the app may hold keys elsewhere: a disconnect judges them")
+            [.confirming], "the app may hold keys elsewhere: kept as it is for a disconnect to judge")
         XCTAssertEqual(
             after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.active)]).map(\.status), [.active])
         XCTAssertEqual(
