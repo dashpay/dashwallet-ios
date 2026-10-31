@@ -97,6 +97,78 @@ extension AppConnect {
         }
     }
 
+    /// What an approval gave an app, kept with its grant so the
+    /// connection can list it later.
+    struct GrantedAccess: Codable, Equatable {
+        struct Key: Codable, Equatable {
+            let bound: StoredBound
+            let isCritical: Bool
+            /// `nil` for a key with no spending limit.
+            let totalBudget: UInt64?
+            /// Milliseconds since the epoch.
+            let expiresAt: UInt64
+            /// The key's group has administrators who can add contracts to it.
+            let isAdministered: Bool
+        }
+
+        let keys: [Key]
+        /// The response carries an encryption key for the app.
+        let receivesMessages: Bool
+        /// A one-QR login: one session key, listed as its sheet listed it.
+        let isSessionKeyLogin: Bool
+        /// Written by a build whose form this one cannot read. Not stored:
+        /// the record it is part of names keys a disconnect needs, so this
+        /// never makes the record unreadable.
+        private(set) var isUnreadable = false
+
+        private enum CodingKeys: String, CodingKey {
+            case keys, receivesMessages, isSessionKeyLogin
+        }
+
+        init(keys: [Key], receivesMessages: Bool, isSessionKeyLogin: Bool = false) {
+            self.keys = keys
+            self.receivesMessages = receivesMessages
+            self.isSessionKeyLogin = isSessionKeyLogin
+        }
+
+        init(plan: GrantPlan) {
+            keys = plan.auth.map {
+                Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
+                    expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
+            }
+            receivesMessages = !plan.encryption.isEmpty
+            isSessionKeyLogin = false
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try? decoder.container(keyedBy: CodingKeys.self)
+            guard let container,
+                  let keys = try? container.decode([Key].self, forKey: .keys),
+                  let receivesMessages = try? container.decode(Bool.self, forKey: .receivesMessages),
+                  let isSessionKeyLogin = try? container.decodeIfPresent(Bool.self, forKey: .isSessionKeyLogin)
+                      ?? false else {
+                self.init(keys: [], receivesMessages: false)
+                isUnreadable = true
+                return
+            }
+            self.init(keys: keys, receivesMessages: receivesMessages, isSessionKeyLogin: isSessionKeyLogin)
+        }
+
+        /// One that could not be read is written back as nothing known
+        /// (`null`), never as an empty access.
+        func encode(to encoder: Encoder) throws {
+            guard !isUnreadable else {
+                var container = encoder.singleValueContainer()
+                try container.encodeNil()
+                return
+            }
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(keys, forKey: .keys)
+            try container.encode(receivesMessages, forKey: .receivesMessages)
+            try container.encode(isSessionKeyLogin, forKey: .isSessionKeyLogin)
+        }
+    }
+
     /// What approving a v2 request gives the app, as the approval sheet
     /// shows it. The keys are registered with exactly these terms.
     struct GrantPlan: Equatable {
@@ -896,6 +968,27 @@ extension AppConnect {
         guard let expiresAt else { return false }
         let earliest = max(0, nowMilliseconds - Int64(clockTolerance * 1000))
         return UInt64(bitPattern: expiresAt) > UInt64(earliest)
+    }
+
+    /// For each app among `grants`, whether every auth key they name that
+    /// is still on is past its expiry (`.expired`: the app can no longer sign,
+    /// and a disconnect turns the keys off), or not. A key the view lacks
+    /// leaves the app `.unknown`, and so do keys that are all off: the
+    /// records say the app is connected, the identity says it is not.
+    static func connectionExpiries(
+        grants: [AppConnectGrant],
+        currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        nowMilliseconds: Int64
+    ) -> [String: ConnectionExpiry] {
+        Dictionary(grouping: grants, by: \.appContractId).mapValues { appGrants in
+            let ids = Set(appGrants.flatMap(\.keyIds))
+            let named = keys.filter { ids.contains(UInt32(bitPattern: $0.keyId)) }
+            guard Set(named.map { UInt32(bitPattern: $0.keyId) }) == ids else { return .unknown }
+            let live = named.filter { $0.disabledAt == nil }
+            guard !live.isEmpty else { return .unknown }
+            return live.allSatisfy { $0.expiresAt != nil && !isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }
+                ? .expired : .current
+        }
     }
 
     /// The unattributed profile keys the wallet's store shows as live and

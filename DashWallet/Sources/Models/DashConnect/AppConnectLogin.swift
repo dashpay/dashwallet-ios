@@ -728,6 +728,9 @@ struct AppConnectGrant: Codable, Equatable {
     /// `unconfirmedKeyHash160`, the primary key's hash, so a build that
     /// does not know this field still reads the record as unconfirmed.
     var pendingUpdate: PendingV2Update? = nil
+    /// What the approval gave the app, as its sheet listed it; `nil` on a
+    /// record from a build that did not note it.
+    var grantedAccess: AppConnect.GrantedAccess? = nil
 
     var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
 

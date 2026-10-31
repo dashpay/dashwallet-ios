@@ -68,6 +68,24 @@ protocol DashConnectDataSource {
     /// recognizes the keys `access` counted that are still shared: they are
     /// no longer counted or revoked from here. Nothing changes on Platform.
     func keepSharedProfileAccess(_ access: SharedProfileAccess) async throws
+    /// The apps disconnected on the active wallet, most recent first; `nil`
+    /// when they cannot be read.
+    func disconnectedConnections() async -> [DisconnectedConnection]?
+    /// What the connection sheet shows for the row `id`, from the grant
+    /// records of the active identity; `nil` when there is no active wallet
+    /// or `scope` is not its.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// For each app with a confirmed grant on the active identity, whether
+    /// its keys are past their expiry on Platform but still on, from a fresh
+    /// read of the identity. `nil` when the identity could not be read.
+    func connectionExpiries() async -> [String: ConnectionExpiry]?
+}
+
+extension DashConnectDataSource {
+    /// A source that keeps no history cannot tell: unknown.
+    func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func connectionExpiries() async -> [String: ConnectionExpiry]? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -294,6 +312,17 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
     }
+
+    /// The mock keeps no history and grants no keys: nothing to list, no
+    /// details beyond the row, and no key to expire.
+    func disconnectedConnections() async -> [DisconnectedConnection]? { [] }
+
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard subject.value.contains(where: { $0.id == id }) else { return nil }
+        return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)
+    }
+
+    func connectionExpiries() async -> [String: ConnectionExpiry]? { [:] }
 
     /// The mock grants no keys, so it holds no shared profile key.
     func sharedProfileAccess() async -> SharedProfileAccess? { nil }

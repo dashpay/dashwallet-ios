@@ -40,29 +40,41 @@ struct ConnectionsScreen: View {
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
 
+    @State private var showsFundingLimitsInfo = false
+    /// Reconnect closes the connection sheet first: the scanner is
+    /// presented once it is gone.
+    @State private var scansAfterSheet = false
+
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    },
+                    trailing: {
+                        if !viewModel.featureUnavailable {
+                            DashUIKit.NavigationBarElement.plus.button(action: showScanner)
+                                .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
+                        }
                     }
                 )
 
-                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
-
                 content
 
-                // With connections the row is in their card, so it scrolls
-                // with them; without, it stands on its own.
-                if viewModel.connections.isEmpty, let row = sharedProfileAccessRow {
-                    row
-                        .modifier(MenuViewModifier())
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
+                if let message = sharedProfileAccessMessage {
+                    message
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 20)
+                        // "Dismiss" keeps the keys, which cannot be undone
+                        // from this device: the actions are named for that.
+                        .accessibilityElement(children: .combine)
+                        .accessibilityActions {
+                            if viewModel.canActOnSharedProfileAccess {
+                                Button(NSLocalizedString("Keep shared profile access", comment: "DashConnect"), action: confirmKeep)
+                                Button(NSLocalizedString("Revoke shared profile access", comment: "DashConnect"), action: confirmRevoke)
+                            }
+                        }
                 }
             }
 
@@ -82,7 +94,10 @@ struct ConnectionsScreen: View {
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         // Another identity may have become active while the screen was away.
-        .onAppear { viewModel.refreshSharedProfileAccess() }
+        .onAppear {
+            viewModel.refreshSharedProfileAccess()
+            viewModel.refreshConnectionStatus()
+        }
         .confirmationDialog(
             NSLocalizedString("Revoke shared profile access?", comment: "DashConnect"),
             isPresented: $isConfirmingSharedProfileRevoke,
@@ -130,39 +145,127 @@ struct ConnectionsScreen: View {
                 tokenPurchaseSheet(for: purchase)
             }
         }
+        .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
+            guard scansAfterSheet else { return }
+            scansAfterSheet = false
+            showScanner()
+        }) { item in
+            connectionSheet(for: item)
+        }
     }
 
     // MARK: - States
 
-    /// The shared profile keys row, while there is something to show.
-    private var sharedProfileAccessRow: SharedProfileAccessRow? {
-        guard viewModel.showsSharedProfileAccess else { return nil }
-        return SharedProfileAccessRow(
-            keyCount: viewModel.sharedProfileAccess?.keyCount,
-            onRevoke: viewModel.canActOnSharedProfileAccess ? {
-                sharedProfileAccessToRevoke = viewModel.sharedProfileAccess
-                isConfirmingSharedProfileRevoke = true
-            } : nil,
-            onKeep: viewModel.canActOnSharedProfileAccess ? {
-                sharedProfileAccessToKeep = viewModel.sharedProfileAccess
-                isConfirmingSharedProfileKeep = true
-            } : nil)
-    }
-
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
+            title
             ConnectionsUnavailableState()
-        } else if viewModel.connections.isEmpty {
+        } else if !viewModel.hasConnectionsOrHistory {
+            title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
-            ConnectionsList(
-                connections: viewModel.connections,
-                onScanQR: showScanner,
-                onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect,
-                footer: sharedProfileAccessRow.map { AnyView($0) }
-            )
-            .padding(.horizontal, 20)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    title
+                    SegmentedControl(
+                        options: ConnectionsTab.allCases,
+                        selection: $viewModel.selectedTab,
+                        label: Self.tabName)
+                    tabContent
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+        }
+    }
+
+    private var title: some View {
+        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+            .padding(.horizontal, viewModel.hasConnectionsOrHistory && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.top, 10)
+    }
+
+    @ViewBuilder private var tabContent: some View {
+        let rows = viewModel.rows(for: viewModel.selectedTab)
+        if viewModel.selectedTab == .disconnected, viewModel.historyIsUnreadable {
+            Text(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
+        } else if rows.isEmpty {
+            Text(NSLocalizedString("No apps here", comment: "DashConnect: an empty tab of the Connections page"))
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
+        } else {
+            ConnectionsList(items: rows, onOpen: viewModel.showConnection)
+        }
+    }
+
+    private static func tabName(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
+        }
+    }
+
+    /// The DashPay profile keys on the active identity that no connection
+    /// accounts for, and the way to keep or revoke them, while there are any.
+    private var sharedProfileAccessMessage: SystemMessageView? {
+        guard viewModel.showsSharedProfileAccess else { return nil }
+        let keyCount = viewModel.sharedProfileAccess?.keyCount
+        let canAct = viewModel.canActOnSharedProfileAccess
+        return SystemMessageView(
+            title: NSLocalizedString("Shared profile access", comment: "DashConnect"),
+            subtitle: keyCount.map {
+                String(
+                    format: NSLocalizedString(
+                        "Keys not linked to a connection that can update your DashPay profile: %d", comment: "DashConnect"),
+                    $0)
+            } ?? NSLocalizedString("Keys that can update your DashPay profile could not be checked", comment: "DashConnect"),
+            backgroundColor: Color.dash.white,
+            buttonName: canAct ? NSLocalizedString("Dismiss", comment: "DashConnect: keep the shared profile keys") : nil,
+            onAction: canAct ? confirmKeep : nil,
+            secondaryButtonName: canAct ? NSLocalizedString("Revoke", comment: "DashConnect") : nil,
+            onSecondaryAction: canAct ? confirmRevoke : nil,
+            buttonStyle: .tintedGray)
+    }
+
+    private func confirmKeep() {
+        sharedProfileAccessToKeep = viewModel.sharedProfileAccess
+        isConfirmingSharedProfileKeep = true
+    }
+
+    private func confirmRevoke() {
+        sharedProfileAccessToRevoke = viewModel.sharedProfileAccess
+        isConfirmingSharedProfileRevoke = true
+    }
+
+    private func connectionSheet(for item: ConnectionSheetItem) -> some View {
+        ConnectionSheet(
+            item: item,
+            details: viewModel.shownDetails,
+            isBusy: viewModel.isDisconnecting,
+            isCheckingStatus: viewModel.isCheckingStatus,
+            message: viewModel.connectionSheetMessage,
+            onClose: viewModel.hideConnection,
+            onDisconnect: {
+                if let connection = item.connection { viewModel.disconnect(connection) }
+            },
+            onReconnect: {
+                scansAfterSheet = true
+                viewModel.hideConnection()
+            },
+            onMockScan: mockScan,
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
+        )
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                .presentationDetents([.medium])
         }
     }
 
@@ -212,6 +315,13 @@ struct ConnectionsScreen: View {
                     viewModel.denyPendingTokenPurchase()
                 }
             }
+        )
+    }
+
+    private var shownConnectionBinding: Binding<ConnectionSheetItem?> {
+        Binding(
+            get: { viewModel.shownConnection },
+            set: { if $0 == nil { viewModel.hideConnection() } }
         )
     }
 
@@ -290,50 +400,4 @@ struct ConnectionsScreen: View {
             featureUnavailable: false
         )
     )
-}
-
-/// The DashPay profile keys on the active identity that no connection
-/// accounts for, and the way to turn them all off. A disconnect leaves them,
-/// since their bound does not say which app was given them.
-private struct SharedProfileAccessRow: View {
-    /// `nil` when the store could not be read.
-    let keyCount: Int?
-    /// `nil` when the identity or the count could not be read: nothing to
-    /// revoke or keep.
-    let onRevoke: (() -> Void)?
-    let onKeep: (() -> Void)?
-
-    var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("Shared profile access", comment: "DashConnect"))
-                    .dashFont(.subhead)
-                    .foregroundStyle(Color.dash.primaryText)
-                Text(keyCount.map {
-                    String(
-                        format: NSLocalizedString("Keys not linked to a connection that can update your DashPay profile: %d", comment: "DashConnect"),
-                        $0)
-                } ?? NSLocalizedString("Keys that can update your DashPay profile could not be checked", comment: "DashConnect"))
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
-
-            if let onKeep {
-                Button(NSLocalizedString("Keep", comment: "DashConnect"), action: onKeep)
-                    .dashFont(.subhead)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel(Text(NSLocalizedString("Keep shared profile access", comment: "DashConnect")))
-            }
-            if let onRevoke {
-                Button(NSLocalizedString("Revoke", comment: "DashConnect"), role: .destructive, action: onRevoke)
-                    .dashFont(.subhead)
-                    .frame(minWidth: 44, minHeight: 44)
-                    .accessibilityLabel(Text(NSLocalizedString("Revoke shared profile access", comment: "DashConnect")))
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-    }
 }

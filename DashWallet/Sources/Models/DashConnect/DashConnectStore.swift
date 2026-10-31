@@ -75,12 +75,17 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     /// shares the network code, and the same wallet on devnet B would otherwise
     /// load the connections it approved on devnet A. An unnamed devnet has no
     /// scope, so nothing is stored or loaded for it.
-    var storageKey: String? {
+    var storageKey: String? { scopedKey(prefix: "dashconnect.connections.v1") }
+
+    /// `prefix` followed by the network and wallet scope `storageKey` is
+    /// built from; `nil` when there is no scope. Other per-wallet DashConnect
+    /// stores are keyed the same way.
+    func scopedKey(prefix: String) -> String? {
         guard let walletScope = walletIdHexProvider()?
             .trimmingCharacters(in: .whitespacesAndNewlines),
             !walletScope.isEmpty else { return nil }
         guard let networkScope else { return nil }
-        return "dashconnect.connections.v1.\(networkScope).\(walletScope)"
+        return "\(prefix).\(networkScope).\(walletScope)"
     }
 
     var scopeKey: String? { storageKey }
@@ -237,4 +242,126 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         result.append(contentsOf: buffer[start...])
         return result
     }
+}
+
+/// An app disconnected on this wallet, as the Connections page lists it
+/// under Disconnected. Kept for as long as the wallet is; a later approval
+/// of the app removes it.
+struct DisconnectedConnection: Codable, Equatable, Identifiable {
+    /// The app's contract id (Base58).
+    let id: String
+    let name: String
+    let url: String
+    let identityId: String?
+    let username: String?
+    let disconnectedAt: Date
+    /// What the connection gave the app when it was disconnected.
+    let access: ConnectionAccess?
+}
+
+/// The disconnected apps of one wallet and network.
+protocol DashConnectHistoryStore {
+    /// `nil` when the stored entries cannot be read: unknown, not none.
+    func load() -> [DisconnectedConnection]?
+    func save(_ entries: [DisconnectedConnection])
+    /// This store fixed to one wallet, as `DashConnectStore.pinned`.
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectHistoryStore
+}
+
+extension DashConnectHistoryStore {
+    /// Records `entry`, in place of an earlier one of the same app.
+    /// Nothing is written over entries that cannot be read.
+    func record(_ entry: DisconnectedConnection) {
+        guard let entries = load() else { return }
+        save(entries.filter { $0.id != entry.id } + [entry])
+    }
+
+    /// Forgets the app: it is connected again.
+    func remove(appId: String) {
+        guard let entries = load(), entries.contains(where: { $0.id == appId }) else { return }
+        save(entries.filter { $0.id != appId })
+    }
+}
+
+/// Keyed like `UserDefaultsDashConnectStore`, by network and wallet.
+final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
+    private let defaults: UserDefaults
+    private let scope: UserDefaultsDashConnectStore
+
+    init(defaults: UserDefaults = .standard, scope: UserDefaultsDashConnectStore) {
+        self.defaults = defaults
+        self.scope = scope
+    }
+
+    convenience init(defaults: UserDefaults = .standard, network: DashConnectNetwork) {
+        self.init(defaults: defaults, scope: UserDefaultsDashConnectStore(defaults: defaults, network: network))
+    }
+
+    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "dashconnect.history")
+
+    private var storageKey: String? { scope.scopedKey(prefix: "dashconnect.history.v1") }
+
+    /// Entry by entry: one this build cannot read is left out, and the
+    /// others still read. `nil` only when the stored value is not a list.
+    func load() -> [DisconnectedConnection]? {
+        guard let stored = readRows() else { return nil }
+        if !stored.unreadable.isEmpty {
+            Self.logger.warning("DashConnect history: \(stored.unreadable.count, privacy: .public) entry(ies) could not be read")
+        }
+        return stored.entries
+    }
+
+    /// Entries this build cannot read are written back as they were.
+    func save(_ entries: [DisconnectedConnection]) {
+        guard let storageKey, let stored = readRows() else { return }
+        do {
+            let rows = try entries.map { try JSONSerialization.jsonObject(with: Self.encoder.encode($0)) }
+                + stored.unreadable
+            guard !rows.isEmpty else {
+                defaults.removeObject(forKey: storageKey)
+                return
+            }
+            defaults.set(try JSONSerialization.data(withJSONObject: rows), forKey: storageKey)
+        } catch {
+            Self.logger.error("DashConnect history could not be written: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// The stored entries one by one; `nil` when the stored value is not a
+    /// list, which is left in place.
+    private func readRows() -> (entries: [DisconnectedConnection], unreadable: [Any])? {
+        guard let storageKey, let data = defaults.data(forKey: storageKey) else { return ([], []) }
+        guard let rows = (try? JSONSerialization.jsonObject(with: data)) as? [Any] else {
+            Self.logger.error("DashConnect history is not a JSON array; left in place")
+            return nil
+        }
+        var entries: [DisconnectedConnection] = []
+        var unreadable: [Any] = []
+        for row in rows {
+            if JSONSerialization.isValidJSONObject(row),
+               let rowData = try? JSONSerialization.data(withJSONObject: row),
+               let entry = try? Self.decoder.decode(DisconnectedConnection.self, from: rowData) {
+                entries.append(entry)
+            } else {
+                unreadable.append(row)
+            }
+        }
+        return (entries, unreadable)
+    }
+
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectHistoryStore {
+        UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: scope.pinnedStore(toWalletIdHex: walletIdHex))
+    }
+
+    private static let encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .millisecondsSince1970
+        return encoder
+    }()
+
+    private static let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+        return decoder
+    }()
 }

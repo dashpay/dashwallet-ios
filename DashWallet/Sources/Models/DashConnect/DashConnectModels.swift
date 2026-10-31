@@ -228,6 +228,67 @@ struct SharedProfileAccess: Equatable {
     var keyCount: Int? { keyIds?.count }
 }
 
+/// What a connection gives its app, from the grant records of one
+/// identity, as the connection sheet shows it.
+struct ConnectionAccess: Codable, Equatable {
+    /// What each key can do; `nil` when a record predates
+    /// `AppConnectGrant.grantedAccess`, and only the limits are known.
+    let keys: [AppConnect.GrantedAccess.Key]?
+    /// The largest budget among the keys, in credits; `nil` when no key has
+    /// one (see `hasUnlimitedKey`) or none is known.
+    let largestBudget: UInt64?
+    /// A key with no spending limit.
+    let hasUnlimitedKey: Bool
+    /// When the last of the keys stops working.
+    let expiresAt: Date?
+    /// The connection can receive messages encrypted to this identity.
+    let receivesMessages: Bool
+    /// Every grant is a one-QR login's session key.
+    let isSessionKeyLogin: Bool
+
+    /// `nil` with no grant.
+    init?(grants: [AppConnectGrant]) {
+        guard !grants.isEmpty else { return nil }
+        let recorded = grants.compactMap(\.grantedAccess).filter { !$0.isUnreadable }
+        let keys = recorded.count == grants.count ? recorded.flatMap(\.keys) : nil
+        self.keys = keys
+        // An older record names its primary key's limits only: with other
+        // keys, its largest budget and last expiry are not known.
+        func readable(_ grant: AppConnectGrant) -> AppConnect.GrantedAccess? {
+            grant.grantedAccess.flatMap { $0.isUnreadable ? nil : $0 }
+        }
+        let isPartial = grants.contains { readable($0) == nil && !($0.additionalKeyIds ?? []).isEmpty }
+        let budgets = grants.flatMap { readable($0)?.keys.map(\.totalBudget) ?? [$0.totalBudget] }
+        largestBudget = isPartial ? nil : budgets.compactMap { $0 }.max()
+        // An older record's primary key without a budget has no limit.
+        hasUnlimitedKey = budgets.contains(where: { $0 == nil })
+        let expiries = grants.flatMap { readable($0)?.keys.map(\.expiresAt) ?? $0.expiresAt.map { [$0] } ?? [] }
+        expiresAt = isPartial ? nil : expiries.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        receivesMessages = recorded.contains(where: \.receivesMessages)
+        isSessionKeyLogin = recorded.count == grants.count && recorded.allSatisfy(\.isSessionKeyLogin)
+    }
+}
+
+/// A connection as its sheet shows it: the app, the identity it is
+/// connected on, and what it was given.
+struct ConnectionDetails: Equatable {
+    let appId: String
+    let identityId: String?
+    let username: String?
+    let access: ConnectionAccess?
+}
+
+/// Whether an app's keys are past their expiry on Platform but still on.
+enum ConnectionExpiry: Equatable {
+    /// Every key of the app's grants on the active identity is past its
+    /// expiry and still enabled: it can no longer sign, and a disconnect
+    /// turns the keys off.
+    case expired
+    case current
+    /// The identity could not be read.
+    case unknown
+}
+
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String
