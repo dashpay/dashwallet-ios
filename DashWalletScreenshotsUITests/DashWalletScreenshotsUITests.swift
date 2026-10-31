@@ -89,9 +89,10 @@ class DashWalletScreenshotsUITests: XCTestCase {
 /// inside a button is where a tap can end up answered twice, so this pins the
 /// split: the switch flips the setting and the sheet stays shut.
 ///
-/// `SwitchView` is not a `Toggle` — it is a custom view carrying `.isButton`
-/// and an On/Off accessibility value — which is why the switch is found as a
-/// button descendant of the row rather than through `app.switches`.
+/// `SwitchView` reads to accessibility as a native `Toggle`, so the switch is
+/// the `.switch` element inside the row. The row reads as a switch with the
+/// same value too, because the button merges its children, but a tap on the
+/// row opens the explainer, so the test taps the switch inside it.
 class AdvancedModeRowUITests: XCTestCase {
 
     private var app: XCUIApplication!
@@ -109,7 +110,7 @@ class AdvancedModeRowUITests: XCTestCase {
         XCTAssert(row.waitForExistence(timeout: 15),
                   "Advanced mode row not found — the Settings screen is not on display")
 
-        let toggle = row.buttons.firstMatch
+        let toggle = row.switches.firstMatch
         XCTAssert(toggle.waitForExistence(timeout: 3),
                   "No switch inside the Advanced mode row")
 
