@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "확인됨";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "확인하면 시작 블록 높이 %u가 저장되고, 다음 앱 실행 시 이 네트워크의 체인 데이터가 지워진 뒤 다시 다운로드되어 해당 높이부터 필터를 다시 스캔합니다. 실행 중인 세션은 기존 스캔 하한을 유지합니다. 앱을 종료했다가 다시 열면 시작됩니다.";
 
@@ -6247,6 +6248,8 @@
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again." = "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.";
+"An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code." = "An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code.";
 "This identity cannot take another key." = "This identity cannot take another key.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";

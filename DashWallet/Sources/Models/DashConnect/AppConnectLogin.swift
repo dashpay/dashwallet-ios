@@ -159,12 +159,15 @@ enum AppConnect {
 
     /// `count` ids that no key of the identity has, for one update that
     /// adds `count` keys: above the highest id while they fit, then the
-    /// lowest gaps. Nil when the identity cannot take that many.
+    /// lowest gaps. Nil when the identity cannot take that many. `reserved`
+    /// ids count as taken: an update that may still land adds keys under
+    /// them (`reservedKeyIds`).
     static func freeKeyIds(
         count: Int,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        reserved: Set<UInt32> = []
     ) -> [UInt32]? {
-        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }).union(reserved)
         let highest = taken.max()
         var ids: [UInt32] = []
         var next = highest.map { $0 == .max ? nil : $0 + 1 } ?? 0
@@ -187,16 +190,33 @@ enum AppConnect {
     /// keys included. Platform only refuses an id the identity already has,
     /// so when the highest is the last id a key can have (a key an app
     /// registered can be given it) the lowest id no key has is taken
-    /// instead. `nil` only when every id is taken.
+    /// instead. `nil` only when every id is taken. `reserved` ids count as
+    /// taken (`reservedKeyIds`).
     static func nextKeyId(
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        reserved: Set<UInt32> = []
     ) -> UInt32? {
-        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        let taken = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) }).union(reserved)
         let highest = taken.max() ?? 0
         guard highest == .max else { return highest + 1 }
         // The identity holds far fewer keys than there are ids, so this
         // stops within a few steps of the lowest gap.
         return (0 ... UInt32.max).first { !taken.contains($0) }
+    }
+
+    /// The ids the unconfirmed records of `identityId` whose update may
+    /// still land add keys under: every key of a v2 record waiting for its
+    /// update, and the session key of a one-QR registration that notes its
+    /// revision. A new key under one of them would make that update, or
+    /// itself, be refused. A caller retrying one of them leaves its own
+    /// record out of `grants`.
+    static func reservedKeyIds(grants: [AppConnectGrant], identityId: String) -> Set<UInt32> {
+        Set(grants.filter { $0.identityId == identityId && $0.isUnconfirmed }.flatMap { grant -> [UInt32] in
+            // A v2 record holds the ids it adds and the ones it sends again:
+            // a view that lags behind the record may not show the latter.
+            if let pending = grant.pendingUpdate { return grant.keyIds + pending.addedKeys.map(\.keyId) }
+            return grant.submittedRevision == nil ? [] : [grant.sessionKeyId]
+        })
     }
 
     /// The key an app is given: it can only sign for the contract the request
@@ -252,7 +272,7 @@ enum AppConnect {
     }
 
     /// A key's contract bound, as the wallet's store records it.
-    enum StoredBound: Equatable {
+    enum StoredBound: Equatable, Codable {
         case singleContract(Data)
         case documentType(contractId: Data, name: String)
         case contractGroup(Data)
@@ -420,9 +440,9 @@ enum AppConnect {
 
     /// Whether the identity holds, live, the key a record names. For an
     /// unconfirmed record that is the key it was going to register, with
-    /// everything that key was given: the data, the kind, the limits, and the
-    /// bound to the record's app as the wallet's store reads it. A bound the
-    /// store does not show is not taken on trust.
+    /// everything that key was given: the data, the kind, the limits (raised
+    /// at most), and the bound to the record's app as the wallet's store
+    /// reads it. A bound the store does not show is not taken on trust.
     static func holdsRecordedKey(
         _ grant: AppConnectGrant,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
@@ -439,8 +459,8 @@ enum AppConnect {
             guard let appContractId = Data.identifier(fromBase58: grant.appContractId) else { return false }
             return key.keyType == .ecdsaHash160 && key.data.toHexString() == hash
                 && key.purpose == .authentication && key.securityLevel == .high
-                && key.totalBudget == grant.totalBudget
-                && key.expiresAt.map({ UInt64(max(0, $0)) }) == grant.expiresAt
+                && isNotLowered(key.totalBudget, from: grant.totalBudget)
+                && isNotLowered(key.expiresAt.map { UInt64(bitPattern: $0) }, from: grant.expiresAt)
                 && bindings.contains {
                     $0.keyId == grant.sessionKeyId && $0.data == key.data && !$0.hasUnreadableBound
                         && $0.singleContractId == appContractId
@@ -448,10 +468,26 @@ enum AppConnect {
         }
     }
 
-    /// Confirms the unconfirmed records of `identityId` whose key the
+    /// Whether the identity shows a record's session key live with exactly
+    /// the limits it was registered with: what the approval granted, so it
+    /// may be handed out. `holdsRecordedKey` also takes a key whose limits
+    /// were raised since, which is the grant's but wider than the approval.
+    static func showsRecordedLimits(
+        of grant: AppConnectGrant,
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        keys.contains {
+            UInt32(bitPattern: $0.keyId) == grant.sessionKeyId && $0.disabledAt == nil
+                && $0.totalBudget == grant.totalBudget
+                && $0.expiresAt.map { UInt64(bitPattern: $0) } == grant.expiresAt
+        }
+    }
+
+    /// Confirms the unconfirmed one-QR records of `identityId` whose key the
     /// identity now holds, and returns them. A record whose key is not there
     /// stays as it is: the update may still land, and nothing is taken from
-    /// a view that may be behind.
+    /// a view that may be behind. An App Connect v2 record waiting for its
+    /// update is settled by `settlePendingV2Registrations`.
     static func confirmRegistrations(
         in grants: inout [AppConnectGrant],
         identityId: String,
@@ -461,6 +497,7 @@ enum AppConnect {
         var confirmed: [AppConnectGrant] = []
         for index in grants.indices
         where grants[index].identityId == identityId && grants[index].isUnconfirmed
+            && !grants[index].isPendingV2
             && holdsRecordedKey(
                 grants[index], currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings) {
             grants[index].unconfirmedKeyHash160 = nil
@@ -673,9 +710,10 @@ struct AppConnectGrant: Codable, Equatable {
     /// The hex hash160 of the session key, set from just before its
     /// registration is submitted until the key is seen on the identity.
     /// While set, the key may be there or not: an update can land without
-    /// confirming. Such a record has no row and no response; it is kept so
+    /// confirming. A one-QR record has no row and no response; it is kept so
     /// the key, if it lands, is found and confirmed, until a disconnect
-    /// finds that the update can no longer land.
+    /// finds that the update can no longer land. A v2 record
+    /// (`pendingUpdate`) has a confirming row and no response.
     var unconfirmedKeyHash160: String? = nil
     /// The identity revision the registration's update was submitted with,
     /// set with `unconfirmedKeyHash160`. Platform takes an identity update
@@ -684,8 +722,36 @@ struct AppConnectGrant: Codable, Equatable {
     /// land.
     /// `nil` on a record from a build that did not note it.
     var submittedRevision: UInt64? = nil
+    /// App Connect v2: the update that registers this grant's keys, from
+    /// just before it is submitted until its outcome is known
+    /// (`AppConnect.pendingV2Outcome`). Set together with
+    /// `unconfirmedKeyHash160`, the primary key's hash, so a build that
+    /// does not know this field still reads the record as unconfirmed.
+    var pendingUpdate: PendingV2Update? = nil
 
     var isUnconfirmed: Bool { unconfirmedKeyHash160 != nil }
+
+    /// An App Connect v2 grant whose update may or may not have landed.
+    var isPendingV2: Bool { pendingUpdate != nil }
+
+    /// What an App Connect v2 update was submitted with, kept with the
+    /// grant until its outcome is known.
+    struct PendingV2Update: Codable, Equatable {
+        /// Every key the update adds, as it adds it.
+        var addedKeys: [AppConnect.ExpectedKey]
+        /// The keys of the connection's earlier grants it disables.
+        var disabledKeyIds: [UInt32]
+        /// The records of those grants (`key`) that are done once it lands.
+        var retiredGrantKeys: [String]
+        /// An update of this wallet to the identity that landed after this
+        /// one was submitted (`AppConnect.noteOwnUpdate`): this one cannot
+        /// land after it.
+        var outlivedBy: AppConnect.OwnUpdate? = nil
+        /// The app's row was a two-QR `.approved` one before this approval
+        /// showed it as confirming: it goes back to that if the update never
+        /// lands.
+        var replacesApprovedRow: Bool? = nil
+    }
 
     /// What makes two records the same grant: one session key given for one
     /// request. Records are matched on this, never on whole-value equality —

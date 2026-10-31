@@ -55,7 +55,7 @@ struct ConnectionRow: View {
                 ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
                     .fixedSize(horizontal: true, vertical: false)
 
-                if connection.status == .active {
+                if connection.status == .active || connection.status == .confirming {
                     activeSwitch
                 }
             }
@@ -86,7 +86,8 @@ struct ConnectionRow: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
-    /// Always reads as on: the row only shows it for an active connection, and
+    /// Always reads as on: the row only shows it for an active or confirming
+    /// connection (whose keys may be on the identity), and
     /// only the off direction is reachable from here. What turning it off does
     /// depends on the login that made the connection (see
     /// `DashConnectDataSource.disconnect`): a one-QR connection has the app's

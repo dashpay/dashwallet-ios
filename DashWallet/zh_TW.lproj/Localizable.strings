@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "已確認";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "確認後將儲存起始區塊高度 %u，並在下次啟動應用程式時清除該網絡的鏈資料，重新下載並從該高度重新掃描過濾器。目前的工作階段仍沿用舊的掃描下限——結束並重新開啟應用程式即可開始。";
 
@@ -6247,6 +6248,8 @@
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again." = "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.";
+"An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code." = "An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code.";
 "This identity cannot take another key." = "This identity cannot take another key.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";

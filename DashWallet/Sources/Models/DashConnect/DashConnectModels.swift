@@ -155,9 +155,19 @@ extension DashConnectTokenPurchaseRequest {
 /// wallet that this wallet has not disabled: the row is made once the key is
 /// seen on the identity, before its response is published, and stays
 /// whether or not the publish is confirmed.
+///
+/// `confirming` is an App Connect v2 connection whose identity update was
+/// submitted and whose outcome is not known yet: its keys may be on the
+/// identity, so it offers a disconnect like an active one. The disconnect
+/// turns off the app's live auth keys on the active identity, and is
+/// refused (`registrationPending`) while the record still waits after
+/// that. With nothing to turn off, the row goes and the record stays: an
+/// update that lands after all shows the app again. A build without this
+/// status drops the row on load; the grant record stays.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
     case active
+    case confirming
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

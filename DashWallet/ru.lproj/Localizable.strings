@@ -802,6 +802,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "Подтверждена";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Подтверждение сохранит начальную высоту %u и очистит данные блокчейна этой сети при следующем запуске приложения, после чего они будут загружены заново, а фильтры пересканированы с этой высоты. Текущая сессия сохранит прежнюю границу сканирования — закройте и снова откройте приложение, чтобы начать.";
 
@@ -6247,6 +6248,8 @@
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 "This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again." = "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.";
+"An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code." = "An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code.";
 "This identity cannot take another key." = "This identity cannot take another key.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
