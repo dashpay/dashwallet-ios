@@ -1337,17 +1337,24 @@ extension AppConnectV2LoginTests {
     func testAnUpdateOfOursThatLandedLaterSettlesAPendingOneOnceAViewShowsIt() {
         let auth = Self.addedAuthKey(7, data: 0x07)
         let master = Self.key(0, level: .master)
-        let later = AppConnect.OwnUpdate(disabledKeyIds: [3])
+        let laterKey = Self.addedAuthKey(11, data: 0x0B)
+        let later = AppConnect.OwnUpdate(added: [laterKey], disabledKeyIds: [3])
         let showsLater = Self.key(3, disabled: true)
-        XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater], outlivedBy: later), .cannotLand)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey)], outlivedBy: later), .cannotLand)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, showsLater], outlivedBy: AppConnect.OwnUpdate(disabledKeyIds: [3])),
+            .unknown, "a disable can be sent again for a key already off, so it witnesses nothing")
         XCTAssertEqual(
             Self.outcome([auth], keys: [master, Self.key(3)], outlivedBy: later), .unknown,
             "a view that does not show the later update is behind it")
         XCTAssertEqual(Self.outcome([auth], keys: [master, showsLater]), .unknown, "without one it may still land")
         XCTAssertEqual(
-            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(auth)], outlivedBy: later), .landed)
+            Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey), Self.onIdentity(auth)],
+                         outlivedBy: later), .landed)
         XCTAssertEqual(
-            Self.outcome([auth], keys: [showsLater, Self.onIdentity(auth)], bindings: [], outlivedBy: later), .unknown,
+            Self.outcome([auth], keys: [showsLater, Self.onIdentity(laterKey), Self.onIdentity(auth)], bindings: [],
+                         outlivedBy: later), .unknown,
             "its key is there; the store just cannot place it")
         let added = Self.addedAuthKey(9, data: 0x09)
         XCTAssertEqual(
@@ -1360,11 +1367,15 @@ extension AppConnectV2LoginTests {
         let own = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], requestHash: "a1")
         let earlier = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a2")
         var noted = Self.pendingGrant([Self.addedAuthKey(11, data: 0x0B)], requestHash: "a3")
-        let first = AppConnect.OwnUpdate(disabledKeyIds: [1])
+        let first = AppConnect.OwnUpdate(added: [Self.addedAuthKey(21, data: 0x15)], disabledKeyIds: [1])
         noted.pendingUpdate?.outlivedBy = first
         let other = Self.pendingGrant([Self.addedAuthKey(13, data: 0x0D)], identityId: "other", requestHash: "a4")
         var grants = [own, earlier, noted, other, Self.grant(sessionKeyId: 3)]
-        let update = AppConnect.OwnUpdate(disabledKeyIds: [2])
+        var disableOnly = grants
+        AppConnect.noteOwnUpdate(
+            AppConnect.OwnUpdate(disabledKeyIds: [2]), in: &disableOnly, identityId: "identity", exceptKey: own.key)
+        XCTAssertNil(disableOnly[1].pendingUpdate?.outlivedBy, "an update that only disables witnesses nothing")
+        let update = AppConnect.OwnUpdate(added: [Self.addedAuthKey(22, data: 0x16)], disabledKeyIds: [2])
         AppConnect.noteOwnUpdate(update, in: &grants, identityId: "identity", exceptKey: own.key)
         XCTAssertNil(grants[0].pendingUpdate?.outlivedBy, "an update does not outlive itself")
         XCTAssertEqual(grants[1].pendingUpdate?.outlivedBy, update)

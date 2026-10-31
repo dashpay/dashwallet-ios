@@ -1087,10 +1087,12 @@ extension AppConnect {
         }
     }
 
-    /// What an update of this wallet to an identity did, by what Platform
-    /// never undoes: the keys it added (a key is never removed) and the ids
-    /// it disabled (a key is never enabled again). A view that shows all of
-    /// it is at that update or past it.
+    /// What an update of this wallet to an identity did: the keys it added
+    /// and the ids it disabled. Only an added key witnesses the update: a key
+    /// is never removed and its id never taken again, while Platform takes a
+    /// disable of a key that is already off, so an update that only disables
+    /// proves nothing about when it landed. A view that shows all of an
+    /// update that added keys is at that update or past it.
     struct OwnUpdate: Codable, Equatable {
         struct AddedKey: Codable, Equatable {
             let keyId: UInt32
@@ -1106,7 +1108,7 @@ extension AppConnect {
         }
 
         func isShown(in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
-            addedKeys.allSatisfy { added in keys.contains {
+            !addedKeys.isEmpty && addedKeys.allSatisfy { added in keys.contains {
                 UInt32(bitPattern: $0.keyId) == added.keyId && $0.data == added.data
             } } && showsDisabled(disabledKeyIds, in: keys)
         }
@@ -1119,13 +1121,16 @@ extension AppConnect {
 
     /// Notes on every v2 record of `identityId` still waiting for its update
     /// (except `exceptKey`'s, the update's own) that `update` landed after
-    /// it was submitted. An earlier note stays: it settles the same way.
+    /// it was submitted, when it added keys. An earlier note stays: it
+    /// settles the same way.
     static func noteOwnUpdate(
         _ update: OwnUpdate,
         in grants: inout [AppConnectGrant],
         identityId: String,
         exceptKey: String? = nil
     ) {
+        // One that only disables witnesses nothing (`OwnUpdate`).
+        guard !update.addedKeys.isEmpty else { return }
         for index in grants.indices
         where grants[index].identityId == identityId && grants[index].key != exceptKey
             && grants[index].pendingUpdate != nil && grants[index].pendingUpdate?.outlivedBy == nil {

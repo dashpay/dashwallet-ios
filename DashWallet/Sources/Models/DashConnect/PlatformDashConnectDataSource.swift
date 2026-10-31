@@ -1926,6 +1926,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 else { return false }
                 await showRowsAfterDropping(
                     [record], grants: remaining, bindings: bindings, context: context, in: stores)
+                forgetKeptSharedProfileKeys(
+                    AppConnect.resentKeyIds(of: record), scope: stores.scope, identityId: identityId)
                 return true
             }
         )
@@ -2446,6 +2448,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.logger.info("🔗 DASHCONNECT :: dropping \(settled.dropped.count, privacy: .public) App Connect update(s) that can no longer land")
                 await showRowsAfterDropping(
                     settled.dropped, grants: grants, bindings: readBindings, context: context, in: stores)
+                forgetKeptSharedProfileKeys(
+                    settled.dropped.reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) },
+                    scope: stores.scope, identityId: identityId)
             }
             stores.grants.save(grants)
         }
@@ -2938,6 +2943,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds)
     }
 
+    /// Takes `keyIds` off the shared profile keys the user kept for this
+    /// identity: a record that sent them again is dropped, and a kept key
+    /// with no record has to show in shared profile access again, where it
+    /// can be revoked.
+    private func forgetKeptSharedProfileKeys(_ keyIds: Set<UInt32>, scope: String, identityId: String) {
+        guard !keyIds.isEmpty else { return }
+        let kept = keptSharedProfileKeyIds(scope: scope, identityId: identityId)
+        guard !kept.isDisjoint(with: keyIds) else { return }
+        keptSharedProfileKeys.set(
+            kept.subtracting(keyIds).sorted().map(Int.init),
+            forKey: Self.keptSharedProfileKeysKey(scope: scope, identityId: identityId))
+    }
+
     /// The shared profile keys the user kept for this identity in this scope.
     /// A key id is never reused on an identity, so an id names one key.
     private func keptSharedProfileKeyIds(scope: String, identityId: String) -> Set<UInt32> {
@@ -3361,10 +3379,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // live and counted as its (`AppConnect.recordedKeyIds`), so they go
         // with the confirmed grants' keys. One the fetched list lacks, or a
         // live one the store cannot place, means a view is behind.
-        let resentByWaiting = stores.grants.load().filter { pendingV2.contains($0.key) }
-            .reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) }
+        // The keys it adds that the store places as added are its too.
+        let waiting = stores.grants.load().filter { pendingV2.contains($0.key) }
+        guard !AppConnect.hasUnplacedPendingKey(waiting, currentIdentityPublicKeys: currentPublicKeys, bindings: bindings)
+        else { throw DashConnectPlatformError.identityKeysOutOfDate }
+        let resentByWaiting = waiting.reduce(into: Set<UInt32>()) { ids, grant in
+            ids.formUnion(AppConnect.resentKeyIds(of: grant))
+            ids.formUnion(grant.pendingUpdate?.addedKeys.filter { AppConnect.isPlaced($0, in: bindings) }.map(\.keyId) ?? [])
+        }
         let resentLive = AppConnect.liveGrantedKeyIds(in: currentPublicKeys).intersection(resentByWaiting)
-        guard resentByWaiting.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
+        let resentOnly = waiting.reduce(into: Set<UInt32>()) { $0.formUnion(AppConnect.resentKeyIds(of: $1)) }
+        guard resentOnly.isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) }),
               currentPublicKeys.filter({ resentLive.contains(UInt32(bitPattern: $0.keyId)) }).allSatisfy({ key in
                   bindings.contains {
                       $0.keyId == UInt32(bitPattern: key.keyId) && $0.data == key.data && !$0.hasUnreadableBound
@@ -3502,8 +3527,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // the row, once what was turned off above is marked.
         if let lateDisableFailure { throw lateDisableFailure }
         // An update of the app whose outcome this disconnect could not tell
-        // keeps the row: the next disconnect settles it by the update that
-        // landed here, which it has noted.
+        // keeps the row. A disconnect only disables, which witnesses nothing
+        // (`AppConnect.OwnUpdate`), so the next disconnect finds nothing live
+        // and lets the row go with the record kept.
         if !leavesWaitingRecord, stores.grants.load().contains(where: { pendingV2.contains($0.key) && $0.isPendingV2 }) {
             Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
             throw DashConnectPlatformError.registrationPending
