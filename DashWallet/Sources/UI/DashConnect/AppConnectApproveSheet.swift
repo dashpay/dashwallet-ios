@@ -59,7 +59,6 @@ struct AppConnectApproveSheet: View {
                             backgroundColor: Color.dash.yellowAlpha10)
                     }
                     detailsCard
-                    originNote
                     termsCard
                     if let granted = viewModel.approvalGrantedLines {
                         DashConnectCollapsibleCard(
@@ -92,20 +91,24 @@ struct AppConnectApproveSheet: View {
             footer
         }
         .background(Color.dash.secondaryBackground)
+        // Every terms sheet is as tall as what it shows. Each starts at the
+        // tallest it may be, so the first measurement is of all of it.
         .sheet(item: $termsSheet) { sheet in
             switch sheet {
             case .funding:
                 FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .presentationDetents([.medium, .large])
+                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
             case .expiry:
                 ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .presentationDetents([.medium, .large])
+                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
             case .fundingInfo:
                 FundingLimitsInfoSheet(onClose: { termsSheet = nil })
-                    .presentationDetents([.medium, .large])
+                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                    .presentationDragIndicator(.visible)
             case .spendableInfo:
                 SpendableDashInfoSheet(onClose: { termsSheet = nil })
-                    .presentationDetents([.medium, .large])
+                    .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -155,23 +158,6 @@ struct AppConnectApproveSheet: View {
     /// Where the request returns and what the wallet cannot vouch for: the
     /// user's signals that a request did not come from the app.
     @ViewBuilder
-    private var originNote: some View {
-        let lines = viewModel.approvalOriginLines
-        if !lines.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
-                ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                    Text(line)
-                        .dashFont(.footnote)
-                        .fontWeight(index == 0 && viewModel.approvalHasOriginWarning ? .semibold : .regular)
-                        .foregroundColor(index == 0 && viewModel.approvalHasOriginWarning
-                            ? Color.dash.primaryText : Color.dash.secondaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-            .padding(.horizontal, 14)
-        }
-    }
-
     private var termsCard: some View {
         VStack(alignment: .leading, spacing: 2) {
             if viewModel.approvalTermsLocked {
@@ -313,6 +299,7 @@ struct FundingLimitSheet: View {
             showBackButton: .constant(isTyping),
             onBackButtonPressed: { isTyping = false },
             onClose: onClose,
+            fillsHeight: false,
             background: Color.dash.secondaryBackground
         ) {
             if isTyping { keypad } else { presets }
@@ -343,7 +330,6 @@ struct FundingLimitSheet: View {
             }
             .buttonStyle(.plain)
             .modifier(MenuViewModifier())
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
@@ -352,18 +338,36 @@ struct FundingLimitSheet: View {
     private var keypad: some View {
         let error = viewModel.fundingLimitError(forDash: typed)
         let credits = viewModel.credits(fromDash: typed)
-        return VStack(spacing: 8) {
-            Spacer(minLength: 0)
-            Text(String(
-                format: NSLocalizedString("%@ DASH", comment: "DashConnect funding limit keypad: a typed amount"),
-                typed.isEmpty ? "0" : typed))
-                .dashFont(.title1)
-                .foregroundColor(error == nil ? Color.dash.primaryText : Color.dash.red)
-            Text(error ?? " ")
-                .dashFont(.footnote)
-                .foregroundColor(Color.dash.red)
-                .accessibilityHidden(error == nil)
-            Spacer(minLength: 0)
+        let color = error == nil ? Color.dash.primaryText : Color.dash.red
+        return VStack(spacing: 0) {
+            // The typed amount with the Dash sign, and what is wrong with it
+            // underneath, over the keypad (Figma "Custom funding limit").
+            VStack(spacing: 4) {
+                HStack(spacing: 4) {
+                    Text(typed.isEmpty ? "0" : typed)
+                        .font(.system(size: 32, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    DashIcon.Common.iconDashCurrency.image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20)
+                }
+                .foregroundColor(color)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString("%@ DASH", comment: "DashConnect funding limit keypad: a typed amount"),
+                    typed.isEmpty ? "0" : typed)))
+                Text(error ?? " ")
+                    .dashFont(.footnote)
+                    .foregroundColor(Color.dash.red)
+                    .multilineTextAlignment(.center)
+                    .accessibilityHidden(error == nil)
+            }
+            .frame(maxWidth: .infinity, minHeight: 92)
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 40)
             NumericKeyboardView(
                 value: $typed,
                 showDecimalSeparator: true,
@@ -394,6 +398,7 @@ struct ExpirySheet: View {
             showBackButton: .constant(isPickingDate),
             onBackButtonPressed: { isPickingDate = false },
             onClose: onClose,
+            fillsHeight: false,
             background: Color.dash.secondaryBackground
         ) {
             if isPickingDate { picker } else { presets }
@@ -431,7 +436,6 @@ struct ExpirySheet: View {
             }
             .buttonStyle(.plain)
             .modifier(MenuViewModifier())
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
@@ -460,9 +464,13 @@ struct ExpirySheet: View {
 struct SpendableDashInfoSheet: View {
     let onClose: () -> Void
 
+    /// The text's natural height: the scroll view takes no more than this,
+    /// so the sheet sizes to its content (`selfSizingSheet`) and scrolls only
+    /// when the text is taller than the sheet can be.
+    @State private var textHeight: CGFloat = 0
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Scrolls at large text sizes, so "Got it" stays in reach.
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(NSLocalizedString("What is spendable Dash?", comment: "DashConnect approve sheet"))
@@ -483,7 +491,10 @@ struct SpendableDashInfoSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 40)
                 .padding(.top, 40)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { textHeight = $0 }
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: textHeight)
 
             DashUIKit.DashButton(
                 text: NSLocalizedString("Got it", comment: "DashConnect"),

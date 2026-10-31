@@ -817,19 +817,6 @@ final class ConnectionsViewModel: ObservableObject {
         return DashConnectPermissionText.granted(AppConnect.GrantedAccess(plan: plan), appLabel: request.appLabel)
     }
 
-    /// What the sheet says about where the pending v2 request came from: a
-    /// warning first when there is one, then when to approve it. When it was
-    /// made is a detail line of its own.
-    var approvalOriginLines: [String] {
-        guard let plan = pendingRequest?.login.grantPlan, let request = pendingRequest else { return [] }
-        return [AppConnectOriginText.warning(plan)].compactMap { $0 }
-            + [AppConnectOriginText.onlyApprove(plan, appLabel: request.appLabel)]
-    }
-
-    var approvalHasOriginWarning: Bool {
-        pendingRequest?.login.grantPlan.flatMap(AppConnectOriginText.warning) != nil
-    }
-
     /// How long ago the pending v2 request was made.
     var approvalRequestAge: String? {
         pendingRequest?.login.grantPlan.map { AppConnectOriginText.age($0, now: now()) }
