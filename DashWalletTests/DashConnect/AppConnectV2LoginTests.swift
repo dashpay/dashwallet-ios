@@ -1530,16 +1530,34 @@ extension AppConnectV2LoginTests {
         let resentLive = Self.key(5, level: .critical)
         let taken = Self.onIdentity(added, data: Data(repeating: 0xEE, count: 20))
         let placed = [Self.stored(added)]
-        XCTAssertEqual(AppConnect.liveAuthKeyIds(heldBy: record, in: [resentLive, taken], bindings: placed), [5])
-        XCTAssertEqual(AppConnect.liveAuthKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: placed), [8])
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [resentLive, taken], bindings: placed), [5])
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: placed), [8])
         XCTAssertEqual(
-            AppConnect.liveAuthKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: []), [],
-            "an added key the store does not place may be another request's")
+            AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: []), [8],
+            "an added key live as added that the store cannot place yet: whose it is is not known")
+        var otherBound = Self.stored(added)
+        otherBound.bound = .singleContract(Self.appId)
         XCTAssertEqual(
-            AppConnect.liveAuthKeyIds(heldBy: record, in: [taken, Self.key(5, disabled: true)], bindings: placed), [],
+            AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: [otherBound]), [],
+            "the store reads it with another bound: another request's")
+        var otherBoundGrants = [record]
+        XCTAssertEqual(
+            AppConnect.settlePendingV2Registrations(
+                in: &otherBoundGrants, identityId: "identity",
+                currentIdentityPublicKeys: [Self.onIdentity(added)], bindings: [otherBound]).dropped.map(\.key),
+            [record.key])
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken], bindings: [AppConnect.KeyBinding(
+                keyId: 5, data: Data([5]), singleContractId: nil)]), [5],
+            "a key it sends again that the view omits counts while the store holds it")
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken], bindings: []), [],
+            "nor once nothing shows it")
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken, Self.key(5, disabled: true)], bindings: placed), [],
             "another key under its id is not its own")
         XCTAssertEqual(
-            AppConnect.liveAuthKeyIds(heldBy: Self.grant(sessionKeyId: 5), in: [resentLive], bindings: []), [],
+            AppConnect.heldKeyIds(heldBy: Self.grant(sessionKeyId: 5), in: [resentLive], bindings: []), [],
             "only a waiting record")
 
         for (keys, why) in [
@@ -1560,6 +1578,66 @@ extension AppConnectV2LoginTests {
             in: &grants, identityId: "identity",
             currentIdentityPublicKeys: [Self.key(5, disabled: true), taken], bindings: [])
         XCTAssertEqual(settled.dropped.map(\.key), [record.key], "nothing of it is live any more")
+    }
+
+    func testAWaitingRecordKeepsTheKeysTheStorePlacesEvenWhenAViewOmitsThem() {
+        // It adds A (7) and B (8); another key holds A's id, and the store
+        // already placed B, which this lagging view omits.
+        let keyA = Self.addedAuthKey(7, data: 0x07)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB], requestHash: "a1")
+        let conflict = Self.onIdentity(keyA, data: Data(repeating: 0xEE, count: 20))
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [conflict], bindings: [Self.stored(keyB)]), [8])
+        var bOff = Self.stored(keyB)
+        bOff.isDisabled = true
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [conflict], bindings: [bOff]), [],
+            "the store has it off")
+
+        var grants = [record]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [conflict], bindings: [Self.stored(keyB)])
+        XCTAssertEqual(settled.dropped, [], "it cannot land, but the store gives it B")
+        XCTAssertTrue(grants[0].isPendingV2)
+
+        // A matching key under A's id the store cannot place yet, with B's id
+        // held by another key: whose A is is not known, so the record stays.
+        let unplaced = [Self.onIdentity(keyA), Self.onIdentity(keyB, data: Data(repeating: 0xEE, count: 20))]
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: unplaced, bindings: []), [7])
+        var others = [record]
+        XCTAssertEqual(
+            AppConnect.settlePendingV2Registrations(
+                in: &others, identityId: "identity", currentIdentityPublicKeys: unplaced, bindings: []).dropped, [])
+    }
+
+    func testAFailedUpdateKeepsARecordTheStoreGivesAKeyAViewOmits() async {
+        let keyA = Self.addedAuthKey(7, data: 0x07)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        _ = try? await Self.register(
+            record, add: [keyA, keyB], store: store, calls: calls, submit: { throw UpdateFailed() },
+            views: [([Self.onIdentity(keyA, data: Data(repeating: 0xEE, count: 20))], [Self.stored(keyB)])])
+        XCTAssertEqual(store.grants.map(\.key), [record.key], "the store places B, which the view omits")
+        XCTAssertEqual(calls.dropped, 0)
+    }
+
+    func testAViewThatLacksAKeyAWaitingRecordHoldsIsBehind() {
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([keyB], requestHash: "a1")
+        record.additionalKeyIds = [5]
+        XCTAssertTrue(AppConnect.showsWaitingKeys(
+            [record], in: [Self.key(5), Self.onIdentity(keyB)], bindings: [Self.stored(keyB)]))
+        XCTAssertFalse(
+            AppConnect.showsWaitingKeys([record], in: [Self.key(5)], bindings: [Self.stored(keyB)]),
+            "the store places B and the view lacks it")
+        XCTAssertFalse(
+            AppConnect.showsWaitingKeys([record], in: [Self.onIdentity(keyB)], bindings: [Self.stored(keyB)]),
+            "it sends 5 again and the view lacks it")
+        XCTAssertTrue(
+            AppConnect.showsWaitingKeys([record], in: [Self.key(5)], bindings: []),
+            "an added key the store does not place is not required")
     }
 
     func testAPendingUpdateThatLandedAndIsOffAgainIsDroppedWithWhatItRetired() {

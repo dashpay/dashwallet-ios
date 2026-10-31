@@ -788,28 +788,71 @@ extension AppConnect {
             .sorted()
     }
 
-    /// The auth keys a v2 record waiting for its update holds that `keys`
-    /// shows live and grantable (`isLiveGrantedKey`): the ones it sends again, and the ones it adds that are
-    /// there under their id with their data and that the store places as
-    /// added (`isPlaced`: the same payload under its id with another bound
-    /// is another request's). Empty for any other record.
-    static func liveAuthKeyIds(
+    /// The auth keys a v2 record waiting for its update may still hold, so
+    /// that it is not dropped while one of them could be live. Ownership is
+    /// taken from the store, not only from `keys` (one view, which may lag
+    /// behind the store or omit a key):
+    /// - a key it sends again, or one it adds that the store places as added
+    ///   (`isPlaced`), unless `keys` shows that id off or with another key,
+    ///   or the store has it disabled; one `keys` omits counts while the
+    ///   store still holds it;
+    /// - a key it adds that `keys` shows live under its id with its data and
+    ///   that the store has no readable record of yet: whose it is is not
+    ///   known. A readable record with another bound is another request's.
+    /// A key `keys` shows live must be one a disconnect can turn off
+    /// (`isLiveGrantedKey`). Empty for any other record.
+    static func heldKeyIds(
         heldBy grant: AppConnectGrant,
         in keys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [KeyBinding]
     ) -> Set<UInt32> {
         guard let pending = grant.pendingUpdate else { return [] }
-        let resent = resentKeyIds(of: grant)
-        return Set(keys.compactMap { key -> UInt32? in
-            let keyId = UInt32(bitPattern: key.keyId)
-            // Keys a disconnect can turn off (`isLiveGrantedKey`), so a
-            // record kept for one does not wait on a key nothing turns off.
-            guard isLiveGrantedKey(key) else { return nil }
-            if resent.contains(keyId) { return keyId }
-            return pending.addedKeys.contains {
-                $0.keyId == keyId && $0.data == key.data && $0.purpose == .authentication && isPlaced($0, in: bindings)
-            } ? keyId : nil
-        })
+        func shown(_ keyId: UInt32) -> ManagedIdentity.IdentityPublicKeyInfo? {
+            keys.first { UInt32(bitPattern: $0.keyId) == keyId }
+        }
+        func isOff(_ keyId: UInt32) -> Bool {
+            shown(keyId)?.disabledAt != nil || bindings.contains { $0.keyId == keyId && $0.isDisabled }
+        }
+        // A key the view omits counts only while the store holds it, so a
+        // record is not kept for an id nothing on the identity shows.
+        func canBeTurnedOff(_ keyId: UInt32) -> Bool {
+            shown(keyId).map(isLiveGrantedKey) ?? bindings.contains { $0.keyId == keyId }
+        }
+        var held = Set<UInt32>()
+        for keyId in resentKeyIds(of: grant) where !isOff(keyId) && canBeTurnedOff(keyId) {
+            held.insert(keyId)
+        }
+        for expected in pending.addedKeys where expected.purpose == .authentication {
+            if isPlaced(expected, in: bindings) {
+                // Another key under its id in the view means the store's
+                // placement is not this key's: ids are never reused.
+                let sameKey = shown(expected.keyId).map { $0.data == expected.data } ?? true
+                if sameKey && !isOff(expected.keyId) && canBeTurnedOff(expected.keyId) { held.insert(expected.keyId) }
+            } else if let key = shown(expected.keyId), key.data == expected.data, isLiveGrantedKey(key),
+                      !bindings.contains(where: {
+                          $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound
+                      }) {
+                held.insert(expected.keyId)
+            }
+        }
+        return held
+    }
+
+    /// Whether `keys` shows every auth key the records in `waiting` hold by
+    /// the store (the ones they send again, and the ones they add that the
+    /// store places): a view that lacks one is behind, and cannot show those
+    /// keys off.
+    static func showsWaitingKeys(
+        _ waiting: [AppConnectGrant],
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> Bool {
+        let held = waiting.reduce(into: Set<UInt32>()) { ids, grant in
+            ids.formUnion(resentKeyIds(of: grant))
+            ids.formUnion(grant.pendingUpdate?.addedKeys
+                .filter { $0.purpose == .authentication && isPlaced($0, in: bindings) }.map(\.keyId) ?? [])
+        }
+        return held.isSubset(of: keys.map { UInt32(bitPattern: $0.keyId) })
     }
 
     /// The keys records waiting for their update hold: the ones they send
@@ -1272,7 +1315,7 @@ extension AppConnect {
     /// keys it disables show off; one that landed and is off again is
     /// dropped, with those marked done the same way; one that cannot land is
     /// dropped; the rest stay as they are. A record that would be dropped
-    /// while it holds a live auth key (`liveAuthKeyIds(heldBy:in:bindings:)`) stays
+    /// while it may still hold an auth key (`heldKeyIds(heldBy:in:bindings:)`) stays
     /// waiting instead: it is what keeps the app's row and lets a disconnect
     /// turn that key off. A grant whose keys are still on stays live, and a
     /// disconnect turns them off.
@@ -1300,7 +1343,7 @@ extension AppConnect {
                 retired.formUnion(replaced)
             case .landedAndOff, .cannotLand:
                 if outcome == .landedAndOff { retired.formUnion(replaced) }
-                if liveAuthKeyIds(heldBy: grant, in: currentIdentityPublicKeys, bindings: bindings).isEmpty {
+                if heldKeyIds(heldBy: grant, in: currentIdentityPublicKeys, bindings: bindings).isEmpty {
                     dropped.append(grant)
                 }
             case .unknown:
