@@ -342,6 +342,9 @@ struct ConnectionSheet: View {
                 action: { isConfirmingDisconnect = true })
                 .background(Color.dash.redAlpha5)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                // DashUIKit has no tinted red style: the plain red one has a
+                // clear background, so only its title would take the tap.
+                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .confirmationDialog(
                     String(
                         format: NSLocalizedString("Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
