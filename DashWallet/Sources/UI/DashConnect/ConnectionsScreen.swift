@@ -26,11 +26,22 @@ import DashUIKit
 /// sheet.
 struct ConnectionsScreen: View {
     private let vc: UINavigationController
+    /// Starts the app's username creation; `nil` where it cannot be reached.
+    private let onCreateUsername: (() -> Void)?
+    /// Presents the identity top-up over whatever is on screen.
+    private let onTopUpIdentity: (() -> Void)?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(
+        vc: UINavigationController,
+        viewModel: ConnectionsViewModel? = nil,
+        onCreateUsername: (() -> Void)? = nil,
+        onTopUpIdentity: (() -> Void)? = nil
+    ) {
         self.vc = vc
+        self.onCreateUsername = onCreateUsername
+        self.onTopUpIdentity = onTopUpIdentity
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
 
@@ -47,7 +58,7 @@ struct ConnectionsScreen: View {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
                     },
                     trailing: {
-                        if !viewModel.featureUnavailable {
+                        if !viewModel.featureUnavailable, !viewModel.needsUsername {
                             DashUIKit.NavigationBarElement.plus.button(action: showScanner)
                                 .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
                         }
@@ -73,7 +84,10 @@ struct ConnectionsScreen: View {
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         // Another identity may have become active while the screen was away.
-        .onAppear { viewModel.refreshConnectionStatus() }
+        .onAppear {
+            viewModel.refreshUsername()
+            viewModel.refreshConnectionStatus()
+        }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text(message.title),
@@ -110,6 +124,9 @@ struct ConnectionsScreen: View {
         if viewModel.featureUnavailable {
             title
             ConnectionsUnavailableState()
+        } else if viewModel.needsUsername {
+            title
+            ConnectionsEmptyState(kind: .noUsername(onCreateUsername: onCreateUsername))
         } else if !viewModel.hasConnectionsOrHistory, viewModel.isLoadingHistory {
             // Not known yet whether anything was connected: no empty state
             // that the history may replace a moment later.
@@ -120,7 +137,7 @@ struct ConnectionsScreen: View {
             Spacer()
         } else if !viewModel.hasConnectionsOrHistory {
             title
-            ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
+            ConnectionsEmptyState(kind: .noApps(onScanQR: showScanner, onMockScan: mockScan))
         } else {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
@@ -235,7 +252,18 @@ struct ConnectionsScreen: View {
         }
     }
 
+    @ViewBuilder
     private func approveSheet(for request: ConnectionRequest) -> some View {
+        if let plan = request.login.grantPlan {
+            AppConnectApproveSheet(
+                viewModel: viewModel, request: request, plan: plan, onTopUp: { onTopUpIdentity?() })
+                .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
+        } else {
+            legacyApproveSheet(for: request)
+        }
+    }
+
+    private func legacyApproveSheet(for request: ConnectionRequest) -> some View {
         ApproveConnectionSheet(
             request: request,
             isLoading: viewModel.isApproving,

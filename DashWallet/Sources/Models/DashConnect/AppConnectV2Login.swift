@@ -52,7 +52,8 @@ extension AppConnect {
         /// derivation, so the key does not depend on what else is granted.
         let bindingIndex: Int
         let binding: AppConnectRequest.AuthBinding
-        /// Set exactly when the binding asked for a budget.
+        /// Set when the binding asked for a budget, and on every key once the
+        /// user's terms are applied (`AppConnect.applying(_:to:now:)`).
         let totalBudget: UInt64?
         /// Block time in milliseconds. Always set.
         let expiresAt: UInt64
@@ -261,7 +262,9 @@ extension AppConnect {
         let appId: Data
         /// `hash160(appEphPub)`: names the request the plan was made for.
         let appEphemeralPubKeyHash: Data
-        let auth: [AuthGrant]
+        /// Set from the request, then from what the user chose on the sheet
+        /// (`AppConnect.applying(_:to:now:)`).
+        var auth: [AuthGrant]
         let encryption: [EncryptionGrant]
         let connectionId: Data?
         let identityHint: Data?

@@ -927,7 +927,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // App Connect.
         let approvedLogin: Bool
         if let appConnect = request.appConnect {
-            guard let plan = consent.login.grantPlan else {
+            // The plan carries the terms the user set on the sheet; whatever
+            // the sheet did, every key needs a budget and an expiry in bounds.
+            guard let plan = consent.login.grantPlan, AppConnect.hasValidTerms(plan, now: now()) else {
                 throw DashConnectPlatformError.approvalOutOfDate
             }
             let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)

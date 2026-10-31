@@ -110,7 +110,8 @@ final class ConnectionsViewModel: ObservableObject {
         return DashConnectPermissionText.granted(
             AppConnect.GrantedAccess(
                 keys: keys, receivesMessages: access.receivesMessages, isSessionKeyLogin: access.isSessionKeyLogin),
-            appLabel: item.name)
+            appLabel: item.name,
+            tense: item.status == .expired || item.status == .disconnected ? .past : .present)
     }
 
     /// Each of the shown connection's keys with what is left of its budget,
@@ -171,7 +172,28 @@ final class ConnectionsViewModel: ObservableObject {
             ? DashConnectPermissionText.sessionKeyWithheld : DashConnectPermissionText.withheld
     }
     @Published private(set) var featureUnavailable: Bool
-    @Published var pendingRequest: ConnectionRequest?
+    /// The wallet has no username: the page offers to create one, and a
+    /// request that arrives is not read.
+    @Published private(set) var needsUsername: Bool
+    @Published var pendingRequest: ConnectionRequest? {
+        didSet {
+            // Terms belong to one request: a sheet for another one (or the
+            // same one rebuilt with another plan) starts from its defaults;
+            // the same request rebuilt keeps what the user chose.
+            let plan = pendingRequest?.login.grantPlan
+            if plan?.appEphemeralPubKeyHash != oldValue?.login.grantPlan?.appEphemeralPubKeyHash || approvalTerms == nil {
+                approvalTerms = plan.map { AppConnect.defaultTerms(for: $0, now: now()) }
+            }
+            if plan == nil { approvalTerms = nil }
+            approveNeedsTopUp = false
+        }
+    }
+    /// The funding limit and expiry the user set for the pending v2 request;
+    /// `nil` for any other request.
+    @Published private(set) var approvalTerms: AppConnect.ConnectionTerms?
+    /// The last approve attempt stopped because the identity's balance
+    /// cannot pay to register the keys; the sheet offers a top-up.
+    @Published private(set) var approveNeedsTopUp = false
     @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
@@ -192,6 +214,11 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var purchaseApproveError: String?
 
     private let dataSource: any DashConnectDataSource
+    private let hasUsername: @MainActor () -> Bool
+    /// Whether the identity's balance can pay to register keys; `nil` when it
+    /// cannot be read.
+    private let canPayKeyRegistration: @MainActor () -> Bool?
+    private let now: () -> Date
     private var pendingLoginRequest: DashKeyRequest?
     /// Opens an App Connect request's return URL.
     private let openURL: @MainActor (URL) -> Void
@@ -235,10 +262,17 @@ final class ConnectionsViewModel: ObservableObject {
     init(
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil,
-        openURL: (@MainActor (URL) -> Void)? = nil
+        openURL: (@MainActor (URL) -> Void)? = nil,
+        hasUsername: @escaping @MainActor () -> Bool = { true },
+        canPayKeyRegistration: (@MainActor () -> Bool?)? = nil,
+        now: @escaping () -> Date = Date.init
     ) {
         let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
         self.featureUnavailable = computedFeatureUnavailable
+        self.hasUsername = hasUsername
+        self.needsUsername = !hasUsername()
+        self.canPayKeyRegistration = canPayKeyRegistration ?? Self.identityCanPayKeyRegistration
+        self.now = now
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
         self.openURL = openURL ?? { UIApplication.shared.open($0) }
 
@@ -456,8 +490,18 @@ final class ConnectionsViewModel: ObservableObject {
         receive(content, byLink: false)
     }
 
+    /// Reads again whether the wallet has a username, for a page coming back
+    /// from creating one.
+    func refreshUsername() {
+        needsUsername = !hasUsername()
+    }
+
     private func receive(_ content: String, byLink: Bool) {
         guard !featureUnavailable else { return }
+        // A request opened from anywhere without a username lands on the
+        // page's create-username state, not on an error: nothing is read.
+        refreshUsername()
+        guard !needsUsername else { return }
 
         // A request the user is already looking at owns the screen until they
         // answer it. Both sheets count: `pendingRequest` presents the connection
@@ -580,11 +624,32 @@ final class ConnectionsViewModel: ObservableObject {
         // authorize the request on screen moments before it is replaced.
         // An unresolved login has nothing to approve; the sheet offers
         // `retryPendingRequest` for it instead.
-        guard let consent = pendingRequest, consent.login.isApprovable,
+        guard var consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+
+        // A v2 approval registers its keys with the terms the user set.
+        if let plan = consent.login.grantPlan {
+            guard let terms = approvalTerms, let applied = AppConnect.applying(terms, to: plan, now: now()) else {
+                approveError = NSLocalizedString(
+                    "Set a funding limit and an expiry within the limits, then approve again.",
+                    comment: "DashConnect approve sheet: the terms are out of bounds")
+                return
+            }
+            // Registering keys costs the identity a fee: one that cannot pay
+            // it is offered a top-up rather than an update Platform refuses.
+            if canPayKeyRegistration() == false {
+                approveNeedsTopUp = true
+                approveError = NSLocalizedString(
+                    "Your identity balance cannot cover the fee to register this app's keys. Top it up, then approve again.",
+                    comment: "DashConnect approve sheet: the identity cannot pay the key registration fee")
+                return
+            }
+            consent.login = .appConnect(applied)
+        }
 
         isApproving = true
         approveError = nil
+        approveNeedsTopUp = false
 
         Task {
             defer { isApproving = false }
@@ -648,6 +713,142 @@ final class ConnectionsViewModel: ObservableObject {
             self.pendingFailureStatus = nil
             self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
+    }
+
+    // MARK: Approval terms
+
+    /// The pending v2 plan with the user's terms applied, as the sheet lists
+    /// it; `nil` for any other request or terms out of bounds.
+    var termsAppliedPlan: AppConnect.GrantPlan? {
+        guard let plan = pendingRequest?.login.grantPlan, let approvalTerms else { return nil }
+        return AppConnect.applying(approvalTerms, to: plan, now: now())
+    }
+
+    /// "Maximum of 0.5 DASH" for the pending request's funding limit.
+    var approvalFundingText: String? {
+        approvalTerms.map {
+            String(
+                format: NSLocalizedString(
+                    "Maximum of %@", comment: "DashConnect approve sheet: the funding limit with its unit, e.g. 0.5 DASH"),
+                PlatformCreditsFormatter.dashString($0.fundingLimit))
+        }
+    }
+
+    /// The pending request's expiry as the sheet writes dates.
+    var approvalExpiryText: String? {
+        approvalTerms.map {
+            DashConnectPermissionText.expiryFormatter.string(
+                from: Date(timeIntervalSince1970: TimeInterval($0.expiresAt) / 1000))
+        }
+    }
+
+    /// The lines of what the pending v2 request's app will be able to do.
+    var approvalGrantedLines: [String]? {
+        guard let plan = termsAppliedPlan, let request = pendingRequest else { return nil }
+        return DashConnectPermissionText.granted(AppConnect.GrantedAccess(plan: plan), appLabel: request.appLabel)
+    }
+
+    /// What the sheet says about where the pending v2 request came from: a
+    /// warning first when there is one, then when to approve it. When it was
+    /// made is a detail line of its own.
+    var approvalOriginLines: [String] {
+        guard let plan = pendingRequest?.login.grantPlan, let request = pendingRequest else { return [] }
+        return [AppConnectOriginText.warning(plan)].compactMap { $0 }
+            + [AppConnectOriginText.onlyApprove(plan, appLabel: request.appLabel)]
+    }
+
+    var approvalHasOriginWarning: Bool {
+        pendingRequest?.login.grantPlan.flatMap(AppConnectOriginText.warning) != nil
+    }
+
+    /// The first-connection caution: the app is neither connected nor in
+    /// the history, in any status. A history not read yet counts as no
+    /// earlier connection.
+    var pendingIsFirstConnection: Bool {
+        guard let id = pendingRequest?.appContractId else { return false }
+        return !connections.contains { $0.id == id } && !(history ?? []).contains { $0.id == id }
+    }
+
+    /// The funding presets, with the one in effect.
+    var fundingPresets: [(credits: UInt64, isSelected: Bool)] {
+        AppConnect.fundingPresets.map { ($0, $0 == approvalTerms?.fundingLimit) }
+    }
+
+    /// The expiry presets in days, with the one in effect (to the day).
+    var expiryPresets: [(days: Int, isSelected: Bool)] {
+        let start = now()
+        return AppConnect.expiryPresetDays.map { days in
+            (days, approvalTerms.map { Self.sameDay($0.expiresAt, AppConnect.expiry(days: days, from: start)) } ?? false)
+        }
+    }
+
+    /// The latest expiry the user may pick now.
+    var latestExpiry: Date { now().addingTimeInterval(AppConnect.v2LifetimeCap) }
+
+    /// Sets the funding limit. False when it is out of bounds.
+    @discardableResult
+    func setFundingLimit(_ credits: UInt64) -> Bool {
+        guard approvalTerms != nil, AppConnect.isValidFundingLimit(credits) else { return false }
+        approvalTerms?.fundingLimit = credits
+        return true
+    }
+
+    /// The credits a typed amount in DASH comes to, or `nil` when it is not a
+    /// number this locale writes.
+    func credits(fromDash text: String, locale: Locale = .current) -> UInt64? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let dash = Decimal(string: trimmed, locale: locale), dash >= 0 else { return nil }
+        let credits = dash * Decimal(PlatformCreditsFormatter.creditsPerDash)
+        guard credits <= Decimal(UInt64.max) else { return nil }
+        return NSDecimalNumber(decimal: credits).uint64Value
+    }
+
+    /// Why a typed funding limit cannot be set, or `nil` when it can.
+    func fundingLimitError(forDash text: String, locale: Locale = .current) -> String? {
+        guard let credits = credits(fromDash: text, locale: locale), credits > 0 else { return nil }
+        guard credits <= AppConnect.v2BudgetCapCredits else {
+            return String(
+                format: NSLocalizedString(
+                    "Max limit is %@", comment: "DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH"),
+                PlatformCreditsFormatter.dashString(AppConnect.v2BudgetCapCredits))
+        }
+        return nil
+    }
+
+    /// Sets the expiry to `days` from now.
+    func setExpiry(days: Int) {
+        setExpiry(AppConnect.expiry(days: days, from: now()))
+    }
+
+    /// Sets the expiry to the end of the day of `date`, capped at the latest
+    /// allowed. False when that is not after now.
+    @discardableResult
+    func setExpiry(date: Date) -> Bool {
+        let endOfDay = Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: date) ?? date
+        let expiry = min(AppConnect.milliseconds(endOfDay), AppConnect.milliseconds(latestExpiry))
+        return setExpiry(expiry)
+    }
+
+    @discardableResult
+    private func setExpiry(_ expiresAt: UInt64) -> Bool {
+        guard approvalTerms != nil, AppConnect.isValidExpiry(expiresAt, now: now()) else { return false }
+        approvalTerms?.expiresAt = expiresAt
+        return true
+    }
+
+    private static func sameDay(_ lhs: UInt64, _ rhs: UInt64) -> Bool {
+        Calendar.current.isDate(
+            Date(timeIntervalSince1970: TimeInterval(lhs) / 1000),
+            inSameDayAs: Date(timeIntervalSince1970: TimeInterval(rhs) / 1000))
+    }
+
+    @MainActor
+    private static func identityCanPayKeyRegistration() -> Bool? {
+        #if DASHPAY
+        return IdentityCreditBalance.current()?.isEnough
+        #else
+        return nil
+        #endif
     }
 
     func denyPendingRequest() {
