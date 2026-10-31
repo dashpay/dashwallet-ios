@@ -1112,7 +1112,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores)
+            context: context, in: stores)
         func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
                 && grant.values.appEphemeralPubKeyHash == requestHash
@@ -1501,7 +1501,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // as on any retry), and one that cannot land frees its ids.
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores, bindings: bindings)
+            context: context, in: stores, bindings: bindings)
         // Which rotations to derive depends on the keys the identity has.
         for grant in plan.encryption {
             encryptionKeys.append(try await MainActor.run {
@@ -1700,7 +1700,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let superseded = stores.grants.load().filter(isSuperseded)
         guard AppConnect.sessionKeyIdsMissing(
             from: currentPublicKeys, for: superseded.filter { !$0.isUnconfirmed }
-        ).isEmpty else {
+        ).isEmpty, !AppConnect.hasUnplacedPendingKey(
+            superseded, currentIdentityPublicKeys: currentPublicKeys, bindings: bindings
+        ), superseded.reduce(into: Set<UInt32>(), { $0.formUnion(AppConnect.resentKeyIds(of: $1)) })
+            .isSubset(of: currentPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
         // An earlier approval of this request whose update's outcome is not
@@ -1714,7 +1718,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             appId: appId,
             connectionId: connectionId,
             keeping: reused,
-            currentIdentityPublicKeys: currentPublicKeys
+            currentIdentityPublicKeys: currentPublicKeys,
+            bindings: bindings
         )
         // The confirmed grants whose every key is off once the update lands.
         // A retry keeps the earlier attempt's, and adds a grant confirmed
@@ -1739,7 +1744,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // or leave a key on; its outcome has to settle first.
             let current = AppConnect.supersededKeyIds(
                 grants: superseded, identityId: identityId, appId: appId, connectionId: connectionId,
-                keeping: reused, currentIdentityPublicKeys: currentPublicKeys)
+                keeping: reused, currentIdentityPublicKeys: currentPublicKeys, bindings: bindings)
             guard Set(current) == Set(pending.disabledKeyIds) else {
                 Self.logger.error("🔗 DASHCONNECT :: an earlier approval of this request may still land, and the connection changed since")
                 throw DashConnectPlatformError.earlierApprovalPending
@@ -1919,7 +1924,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             onDropped: { remaining in
                 guard let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)
                 else { return false }
-                await showRowsAfterDropping([record], grants: remaining, bindings: bindings, in: stores)
+                await showRowsAfterDropping(
+                    [record], grants: remaining, bindings: bindings, context: context, in: stores)
                 return true
             }
         )
@@ -2401,7 +2407,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func confirmRegistrations(
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
-        modelContainer: ModelContainer,
+        context: Context,
         in stores: Stores,
         bindings knownBindings: [AppConnect.KeyBinding]? = nil
     ) async -> [AppConnectGrant] {
@@ -2410,7 +2416,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // Unknown when the store cannot be read: no unconfirmed record is
         // confirmed without it, and no row is changed by it.
         let readBindings = knownBindings
-            ?? (try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer))
+            ?? (try? Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer))
         let bindings = readBindings ?? []
         if stores.grants.load().contains(where: { $0.identityId == identityId && $0.isUnconfirmed }) {
             let confirmed = updateGrants(in: stores) { grants in
@@ -2438,7 +2444,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // rows are written. A stop in between drops it again next time.
             if !settled.dropped.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: dropping \(settled.dropped.count, privacy: .public) App Connect update(s) that can no longer land")
-                await showRowsAfterDropping(settled.dropped, grants: grants, bindings: readBindings, in: stores)
+                await showRowsAfterDropping(
+                    settled.dropped, grants: grants, bindings: readBindings, context: context, in: stores)
             }
             stores.grants.save(grants)
         }
@@ -2464,14 +2471,52 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         _ dropped: [AppConnectGrant],
         grants: [AppConnectGrant],
         bindings: [AppConnect.KeyBinding],
+        context: Context,
         in stores: Stores
     ) async {
         let appIds = Set(dropped.map(\.appContractId))
         let restoring = Set(dropped.filter { $0.pendingUpdate?.replacesApprovedRow == true }.map(\.appContractId))
+        // A row that would go is kept while the app may still hold keys
+        // only a disconnect can judge: a key of this identity no record
+        // names, bound where only its owner says whose it is, or a key of the
+        // app on another identity of the wallet. Not known counts as yes: a
+        // row kept for nothing goes at the next disconnect, while a row
+        // dropped for live keys leaves no way to them.
+        let rows = rows(in: stores)
+        let after = Set(Self.rowsAfterDropping(
+            appIds: appIds, restoringApproved: restoring, grants: grants, bindings: bindings, rows: rows
+        ).map(\.id))
+        let going = appIds.filter { appId in rows.contains { $0.id == appId } && !after.contains(appId) }
+        var keeping: Set<String> = []
+        for appId in going {
+            guard let appContract = Self.decodeIdentifier(appId) else { continue }
+            if await appMayHoldUnrecordedKeys(
+                appContractId: appContract, grants: grants, bindings: bindings, context: context
+            ) != false {
+                keeping.insert(appId)
+            }
+        }
         await updateRows(in: stores) { rows in
             Self.rowsAfterDropping(
-                appIds: appIds, restoringApproved: restoring, grants: grants, bindings: bindings, rows: rows)
+                appIds: appIds, restoringApproved: restoring, keeping: keeping, grants: grants, bindings: bindings,
+                rows: rows)
         }
+    }
+
+    /// Whether the app holds a live key no grant record names, on this
+    /// identity or on another identity of the wallet
+    /// (`identityHoldsAppKeys`). Nil when that could not be told.
+    private func appMayHoldUnrecordedKeys(
+        appContractId: Data,
+        grants: [AppConnectGrant],
+        bindings: [AppConnect.KeyBinding],
+        context: Context
+    ) async -> Bool? {
+        let here = await identityHoldsAppKeys(
+            appContractId: appContractId, identityId: context.identityId, identityIndex: context.identityIndex,
+            bindings: bindings, grants: grants, context: context)
+        guard here == false else { return here }
+        return await anotherIdentityHoldsAppKeys(appContractId: appContractId, context: context)
     }
 
     /// After an update of this wallet to the identity landed: one more read
@@ -2487,7 +2532,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard let keys = try? await refreshedIdentityPublicKeys(context: context) else { return nil }
         let confirmed = await confirmRegistrations(
             identityId: context.identityId.toBase58String(), currentIdentityPublicKeys: keys,
-            modelContainer: context.modelContainer, in: stores)
+            context: context, in: stores)
         return (confirmed, keys)
     }
 
@@ -2496,11 +2541,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// waiting record kept, stays while another such record of the app
     /// does; is active while a confirmed grant of the app remains; goes back to the two-QR `.approved` row it
     /// replaced (`restoringApproved`); becomes active while a live auth key
-    /// the store shows bound to the app remains; and goes otherwise. Any other
+    /// the store shows bound to the app remains; stays as it is while the
+    /// app may hold keys elsewhere (`keeping`), so a disconnect can judge
+    /// them; and goes
+    /// otherwise. Any other
     /// row is left as it is.
     static func rowsAfterDropping(
         appIds: Set<String>,
         restoringApproved: Set<String> = [],
+        keeping: Set<String> = [],
         grants: [AppConnectGrant],
         bindings: [AppConnect.KeyBinding],
         rows: [DAppConnection]
@@ -2524,14 +2573,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // An auth key: the app's encryption key stays on after a
             // disconnect, and connects nothing by itself.
             let appContract = decodeIdentifier(row.id)
-            // A contract group is the app's only by its owner, which this
-            // does not look up.
+            // A contract group is the app's only by its owner, which the
+            // caller looks up (`keeping`).
             guard let appContract, bindings.contains(where: { binding in
                 guard !binding.isDisabled, binding.isSessionKeyShaped || binding.isV2AuthKeyShaped else { return false }
                 if binding.singleContractId == appContract { return true }
                 if case .documentType(let contractId, _) = binding.bound { return contractId == appContract }
                 return false
-            }) else { return nil }
+            }) else {
+                // Kept as it is, for a disconnect to judge: nothing here
+                // shows the app connected.
+                return keeping.contains(row.id) ? row : nil
+            }
             return row.withStatus(.active, loginKind: .oneQR, at: row.updatedAt)
         }
     }
@@ -2934,7 +2987,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // then the app's, not shared.
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores)
+            context: context, in: stores)
         let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
         guard !bindings.isEmpty, !stores.grants.hasUnreadableRows(identityId: identityId) else {
             throw DashConnectPlatformError.identityKeysOutOfDate
@@ -3221,7 +3274,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // A registration whose key has turned up is confirmed.
         await confirmRegistrations(
             identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
-            modelContainer: context.modelContainer, in: stores)
+            context: context, in: stores)
         // A v2 update of the app whose outcome the read above could not
         // tell is settled once an update of this disconnect lands.
         let pendingV2 = Set(stores.grants.load().filter { isGranted($0) && $0.isPendingV2 }.map(\.key))
@@ -3346,21 +3399,25 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded)
             keyIds = Array(Set(keyIds).union(liveTwoQRLoginKeyIds).union(unrecordedV2KeyIds)).sorted()
         }
-        if !mayStillLand.isEmpty || !pendingV2.isEmpty, keyIds.isEmpty {
+        if !mayStillLand.isEmpty, keyIds.isEmpty {
             // No update would be sent, so nothing settles the registration.
             // This identity's own state comes first: whatever another
             // identity holds, this one cannot be told to be done.
             // TODO(dashconnect-pending-registration): an update that was
             // refused, or never sent, cannot be told from one still on its
             // way, so this stays until the identity's revision moves or the
-            // app's code is approved again. A v2 record stays until an update
-            // of this wallet to the identity lands, or its auth keys expire
-            // when it registers no encryption key. Until then the record also holds
+            // app's code is approved again. Until then the record also holds
             // the row for the wallet's other identities
             // (`registrationPendingOnAnotherIdentity`).
             Self.logger.error("🔗 DASHCONNECT :: a session key registration of the app may still land, and there is no key to disable")
             throw DashConnectPlatformError.registrationPending
         }
+        // A v2 update that never left the device reads the same as one on
+        // its way. With nothing live to turn off, the row goes and its record
+        // stays: if the update lands after all, a later settle confirms it
+        // and shows the app again (`appIdsWithoutTheirOneQRRow`), to be
+        // disconnected then.
+        let leavesWaitingRecord = !pendingV2.isEmpty && keyIds.isEmpty
         // For a one-QR row, the keys on another identity that no grant
         // record shows. `nil` when that could not be told.
         let heldOnAnotherIdentity: Bool? = checksUnrecordedKeys && !hasLiveGrantElsewhere()
@@ -3447,9 +3504,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // An update of the app whose outcome this disconnect could not tell
         // keeps the row: the next disconnect settles it by the update that
         // landed here, which it has noted.
-        if stores.grants.load().contains(where: { pendingV2.contains($0.key) && $0.isPendingV2 }) {
+        if !leavesWaitingRecord, stores.grants.load().contains(where: { pendingV2.contains($0.key) && $0.isPendingV2 }) {
             Self.logger.error("🔗 DASHCONNECT :: an App Connect update of the app may still land")
             throw DashConnectPlatformError.registrationPending
+        }
+        if leavesWaitingRecord {
+            Self.logger.info("🔗 DASHCONNECT :: no key of the app is live; its waiting update stays recorded")
         }
         if let heldElsewhere = reasonHeldElsewhere(heldOnAnotherIdentity: heldOnAnotherIdentity == true) {
             return (heldElsewhere: heldElsewhere, asOneQR: asOneQR)
@@ -3555,58 +3615,84 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // another.
         var hasUnknown = false
         for other in others {
+            let bindings: [AppConnect.KeyBinding]
             do {
-                let bindings = try Self.storedKeyBindings(
+                bindings = try Self.storedKeyBindings(
                     identityId: other.identityId.toBase58String(), modelContainer: context.modelContainer)
-                if AppConnect.holdsLiveSessionKey(appContractId: appContractId, bindings: bindings) { return true }
-                let otherIdentityId = other.identityId.toBase58String()
-                let unrecorded = AppConnect.unrecordedV2Keys(
-                    recordedKeyIds: AppConnect.recordedKeyIds(
-                        of: otherIdentityId, grants: context.stores.grants.load(), bindings: bindings),
-                    bindings: bindings)
-                if !unrecorded.isEmpty {
-                    let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: appContractId, keys: unrecorded)
-                    let owned = try await Self.ownedByOwner(
-                        of: appContractId, contractIds: candidates.contracts, groupIds: candidates.groups,
-                        sdk: context.sdk)
-                    if !AppConnect.appsV2KeyIds(
-                        appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded
-                    ).isEmpty {
-                        return true
-                    }
-                }
-                // An identity always has keys, so none stored means not
-                // loaded; and a session-shaped key with an unreadable bound
-                // may be the app's.
-                if bindings.isEmpty || bindings.contains(where: {
-                    !$0.isDisabled && ($0.isSessionKeyShaped || $0.isV2AuthKeyShaped) && $0.hasUnreadableBound
-                }) {
-                    hasUnknown = true
-                }
-                // Derive only for an identity that has a live key of either
-                // two-QR kind at all.
-                guard bindings.contains(where: {
-                    !$0.isDisabled && ($0.isTwoQRAuthenticationKeyShaped || $0.isTwoQREncryptionKeyShaped)
-                }) else { continue }
-                let twoQRKeys = try await twoQRLoginPublicKeys(
-                    appContractId: appContractId,
-                    identityId: other.identityId,
-                    identityIndex: other.identityIndex,
-                    context: context)
-                if AppConnect.holdsLiveTwoQRLoginKey(
-                    authenticationPublicKeyHash160: twoQRKeys.authenticationPublicKeyHash160,
-                    encryptionPublicKey: twoQRKeys.encryptionPublicKey,
-                    bindings: bindings
-                ) {
-                    return true
-                }
             } catch {
                 Self.logger.error(
                     "🔗 DASHCONNECT :: keys of another identity not checked — \(error.localizedDescription, privacy: .public)")
                 hasUnknown = true
+                continue
+            }
+            switch await identityHoldsAppKeys(
+                appContractId: appContractId, identityId: other.identityId, identityIndex: other.identityIndex,
+                bindings: bindings, grants: context.stores.grants.load(), context: context) {
+            case true?: return true
+            case nil: hasUnknown = true
+            case false?: break
             }
         }
         return hasUnknown ? nil : false
+    }
+
+    /// Whether the store shows `identityId` with a live key of the app: a
+    /// session key bound to the app's contract, a v2-shaped key no grant
+    /// record in `grants` names bound to a contract or group the app's owner
+    /// owns (read from Platform), or a key the two-QR login derives for it.
+    /// `nil` when that cannot be told: no keys stored, a live session- or
+    /// v2-shaped key no record names with a bound this build cannot read,
+    /// or a read or derivation that failed.
+    private func identityHoldsAppKeys(
+        appContractId: Data,
+        identityId: Data,
+        identityIndex: UInt32,
+        bindings: [AppConnect.KeyBinding],
+        grants: [AppConnectGrant],
+        context: Context
+    ) async -> Bool? {
+        do {
+            if AppConnect.holdsLiveSessionKey(appContractId: appContractId, bindings: bindings) { return true }
+            let recorded = AppConnect.recordedKeyIds(of: identityId.toBase58String(), grants: grants, bindings: bindings)
+            let unrecorded = AppConnect.unrecordedV2Keys(recordedKeyIds: recorded, bindings: bindings)
+            if !unrecorded.isEmpty {
+                let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: appContractId, keys: unrecorded)
+                let owned = try await Self.ownedByOwner(
+                    of: appContractId, contractIds: candidates.contracts, groupIds: candidates.groups,
+                    sdk: context.sdk)
+                if !AppConnect.appsV2KeyIds(
+                    appContractIds: owned.contracts, appGroupIds: owned.groups, keys: unrecorded
+                ).isEmpty {
+                    return true
+                }
+            }
+            // An identity always has keys, so none stored means not
+            // loaded; and a session-shaped key with an unreadable bound
+            // may be the app's.
+            let unknown = bindings.isEmpty || bindings.contains(where: {
+                !$0.isDisabled && ($0.isSessionKeyShaped || $0.isV2AuthKeyShaped) && $0.hasUnreadableBound
+                    && !recorded.contains($0.keyId)
+            })
+            // Derive only for an identity that has a live key of either
+            // two-QR kind at all.
+            guard bindings.contains(where: {
+                !$0.isDisabled && ($0.isTwoQRAuthenticationKeyShaped || $0.isTwoQREncryptionKeyShaped)
+            }) else { return unknown ? nil : false }
+            let twoQRKeys = try await twoQRLoginPublicKeys(
+                appContractId: appContractId, identityId: identityId, identityIndex: identityIndex, context: context)
+            if AppConnect.holdsLiveTwoQRLoginKey(
+                authenticationPublicKeyHash160: twoQRKeys.authenticationPublicKeyHash160,
+                encryptionPublicKey: twoQRKeys.encryptionPublicKey,
+                bindings: bindings
+            ) {
+                return true
+            }
+            return unknown ? nil : false
+        } catch {
+            Self.logger.error(
+                "🔗 DASHCONNECT :: keys of an identity not checked — \(error.localizedDescription, privacy: .public)")
+            return nil
+        }
     }
 
     /// The identities the SDK's store attaches to this wallet on `network`.

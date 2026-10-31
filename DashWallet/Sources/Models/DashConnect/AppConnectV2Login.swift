@@ -766,12 +766,19 @@ extension AppConnect {
         appId: String,
         connectionId: String?,
         keeping: Set<UInt32>,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
     ) -> [UInt32] {
         guard let connectionId else { return [] }
+        // A record waiting for its update holds the keys it sends again, and
+        // of those it adds only the ones the store shows as added: an id
+        // with the same payload and another bound may be another request's.
         let previous = Set(grants
             .filter { $0.identityId == identityId && $0.appContractId == appId && $0.connectionId == connectionId }
-            .flatMap(\.keyIds))
+            .flatMap { grant -> [UInt32] in
+                guard let pending = grant.pendingUpdate else { return grant.keyIds }
+                return Array(resentKeyIds(of: grant)) + pending.addedKeys.filter { isPlaced($0, in: bindings) }.map(\.keyId)
+            })
             .subtracting(keeping)
         return currentIdentityPublicKeys
             .filter {
@@ -779,6 +786,31 @@ extension AppConnect {
             }
             .map { UInt32(bitPattern: $0.keyId) }
             .sorted()
+    }
+
+    /// Whether the store shows `expected` as it was added: the same id,
+    /// payload and bound.
+    static func isPlaced(_ expected: ExpectedKey, in bindings: [KeyBinding]) -> Bool {
+        bindings.contains {
+            $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound && $0.bound == expected.bound
+        }
+    }
+
+    /// Whether `grants` has a record waiting for its update with a key it
+    /// adds live under its id and payload that the store cannot place: whose
+    /// it is cannot be told yet.
+    static func hasUnplacedPendingKey(
+        _ grants: [AppConnectGrant],
+        currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> Bool {
+        grants.contains { grant in
+            grant.pendingUpdate?.addedKeys.contains { expected in
+                !isPlaced(expected, in: bindings) && keys.contains {
+                    UInt32(bitPattern: $0.keyId) == expected.keyId && $0.data == expected.data && isLiveGrantedKey($0)
+                }
+            } == true
+        }
     }
 
     /// Whether one identity update can turn off all of `keyIds`. A login
@@ -1276,10 +1308,7 @@ extension AppConnect {
         var ids = Set(grants.filter { $0.identityId == identityId && !$0.isUnconfirmed }.flatMap(\.keyIds))
         for grant in grants where grant.identityId == identityId {
             ids.formUnion(resentKeyIds(of: grant))
-            for expected in grant.pendingUpdate?.addedKeys ?? [] where bindings.contains(where: {
-                $0.keyId == expected.keyId && $0.data == expected.data && !$0.hasUnreadableBound
-                    && $0.bound == expected.bound
-            }) {
+            for expected in grant.pendingUpdate?.addedKeys ?? [] where isPlaced(expected, in: bindings) {
                 ids.insert(expected.keyId)
             }
         }
@@ -1312,9 +1341,7 @@ extension AppConnect {
     /// added, may be sent again for an approval that grants `planned`: the
     /// same key under the same id, type, purpose, level, read-only flag,
     /// bound and budget; and, when the plan sets an expiry, one still ahead
-    /// and no later than it (`clockTolerance` covers a clock moved back
-    /// between two tries), as `canResendAuthKey` asks of a key already
-    /// there; when it sets none, none. A request that
+    /// and no later than it; when it sets none, none. A request that
     /// repeats the ephemeral key derives the same keys whatever terms it
     /// asks for, so the earlier approval's terms are checked against this
     /// one's.
@@ -1330,7 +1357,7 @@ extension AppConnect {
               stored.totalBudget == planned.totalBudget else { return false }
         guard let plannedExpiry = planned.expiresAt else { return stored.expiresAt == nil }
         guard let expiry = stored.expiresAt, expiry > milliseconds(now) else { return false }
-        return expiry <= plannedExpiry + UInt64(clockTolerance * 1000)
+        return expiry <= plannedExpiry
     }
 
     /// A live auth key a login could have granted: HASH160 and never MASTER,
@@ -1351,8 +1378,7 @@ extension AppConnect {
     /// still has to be live, bound as the binding asks (`binding`, the
     /// store's record of the key; a key the store does not show, or shows
     /// with another bound, is not sent), carry the level the plan grants,
-    /// and limits no wider than the plan's (`clockTolerance` covers a clock
-    /// moved back between two tries). The payload alone proves nothing: a
+    /// and limits no wider than the plan's (its expiry is a ceiling). The payload alone proves nothing: a
     /// request that repeats another's ephemeral key derives the same one.
     /// A grant recorded for this request, when there is one, must name
     /// exactly the keys sent again; the caller checks that.
@@ -1367,7 +1393,7 @@ extension AppConnect {
         guard isLiveGrantedKey(key), key.securityLevel == grant.securityLevel,
               key.totalBudget == grant.totalBudget,
               let expiresAt = key.expiresAt, expiresAt > Int64(milliseconds(now)) else { return false }
-        return UInt64(expiresAt) <= grant.expiresAt + UInt64(clockTolerance * 1000)
+        return UInt64(expiresAt) <= grant.expiresAt
     }
 
     /// `callback` with `ac=<status>` appended, keeping its query.
