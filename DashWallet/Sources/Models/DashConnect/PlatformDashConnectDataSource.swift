@@ -1154,8 +1154,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         case .absent:
             guard let keyId = AppConnect.nextKeyId(
                 currentIdentityPublicKeys: currentPublicKeys,
+                // A one-QR retry of this request may take its own id again;
+                // a v2 record of it waiting for its update may not: one-QR
+                // and v2 derive other keys from the same ephemeral key.
                 reserved: AppConnect.reservedKeyIds(
-                    grants: stores.grants.load().filter { !isGrantForRequest($0) }, identityId: identityId)
+                    grants: stores.grants.load().filter { !isGrantForRequest($0) || $0.isPendingV2 },
+                    identityId: identityId)
             ) else {
                 throw DashConnectPlatformError.noFreeKeyId
             }
@@ -1234,6 +1238,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                           identityId: identityId, modelContainer: context.modelContainer),
                       AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: keys, bindings: bindings) else {
                     Self.logger.error("🔗 DASHCONNECT :: session key registration failed or is unconfirmed — \(error.localizedDescription, privacy: .public)")
+                    throw error
+                }
+                // Its limits raised since: the key is the grant's, recorded
+                // so a disconnect turns it off, but wider than this approval,
+                // so it is not handed out.
+                guard AppConnect.showsRecordedLimits(of: pending, in: keys) else {
+                    Self.logger.error("🔗 DASHCONNECT :: the session key is on the identity with limits wider than this approval's")
+                    updateGrants(in: stores) { grants in
+                        guard let index = grants.firstIndex(where: { $0.key == pending.key }) else { return }
+                        grants[index].unconfirmedKeyHash160 = nil
+                    }
                     throw error
                 }
                 Self.logger.info("🔗 DASHCONNECT :: session key is on the identity although the update reported a failure")
@@ -1872,7 +1887,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             disable: disable,
             retiredGrantKeys: retiredGrantKeys,
             grants: stores.grants,
-            nowMilliseconds: { Int64(AppConnect.milliseconds(self.now())) },
             showRow: {
                 // A record that waits for its update shows the app as
                 // confirming, unless its row is already active.
@@ -1985,7 +1999,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         disable: [UInt32],
         retiredGrantKeys: Set<String>,
         grants: any AppConnectResponseStore,
-        nowMilliseconds: () -> Int64,
         showRow: () async -> Void,
         submit: () async throws -> Void,
         reread: () async -> (keys: [ManagedIdentity.IdentityPublicKeyInfo], bindings: [AppConnect.KeyBinding])?,
@@ -2056,8 +2069,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     continue
                 }
                 let outcome = AppConnect.pendingV2Outcome(
-                    of: pending, currentIdentityPublicKeys: view.keys, bindings: view.bindings,
-                    nowMilliseconds: nowMilliseconds())
+                    of: pending, currentIdentityPublicKeys: view.keys, bindings: view.bindings)
                 switch outcome {
                 case .landed where disabled && AppConnect.showsAddedLimits(of: pending, in: view.keys):
                     logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
@@ -2414,11 +2426,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // Without the store's bindings a v2 record is not settled: one that
         // could not land would be dropped with its rows not judged.
         if let readBindings, stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
-            let nowMilliseconds = Int64(AppConnect.milliseconds(now()))
             var grants = stores.grants.load()
             let settled = AppConnect.settlePendingV2Registrations(
                 in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
-                bindings: bindings, nowMilliseconds: nowMilliseconds)
+                bindings: bindings)
             confirmedV2 = settled.confirmed
             if !settled.confirmed.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: \(settled.confirmed.count, privacy: .public) App Connect update(s) found to have landed")

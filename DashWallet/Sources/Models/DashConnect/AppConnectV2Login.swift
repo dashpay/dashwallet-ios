@@ -1138,17 +1138,16 @@ extension AppConnect {
     ///   above whatever the wallet's copy held, so `pending` cannot land
     ///   after it. A view that shows that update and none of its ids means
     ///   it never will. No revision is read: what the update did is.
-    /// - Every added key is an auth key past its expiry (with
-    ///   `clockTolerance`): if it lands, nothing can sign with it. An
-    ///   encryption key has no expiry, so this never ends one that adds it.
+    ///
+    /// Expiry ends nothing: Platform judges it by block time, which a view
+    /// does not carry, and the device's clock is not that.
     ///
     /// A key under an expected id with the expected data and no readable
     /// bound in the store is unknown: the store may not have loaded it yet.
     static func pendingV2Outcome(
         of pending: AppConnectGrant.PendingV2Update,
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
-        bindings: [KeyBinding],
-        nowMilliseconds: Int64
+        bindings: [KeyBinding]
     ) -> PendingV2Outcome {
         var allLanded = true
         var anyPresent = false
@@ -1183,12 +1182,8 @@ extension AppConnect {
         }
         if takenElsewhere { return .cannotLand }
         if !anyPresent, pending.outlivedBy?.isShown(in: keys) == true { return .cannotLand }
-        let allExpired = pending.addedKeys.allSatisfy { expected in
-            expected.purpose == .authentication
-                && expected.expiresAt.map { !isUnexpired(Int64(bitPattern: $0), nowMilliseconds: nowMilliseconds) } == true
-        }
         // Its keys there, unplaced, may be a landed update still to settle.
-        return allExpired && !anyPresent ? .cannotLand : .unknown
+        return .unknown
     }
 
     /// Settles the v2 records of `identityId` whose update's outcome was not
@@ -1203,8 +1198,7 @@ extension AppConnect {
         in grants: inout [AppConnectGrant],
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
-        bindings: [KeyBinding],
-        nowMilliseconds: Int64
+        bindings: [KeyBinding]
     ) -> (confirmed: [AppConnectGrant], dropped: [AppConnectGrant]) {
         var confirmed: [AppConnectGrant] = []
         var dropped: [AppConnectGrant] = []
@@ -1214,8 +1208,7 @@ extension AppConnect {
             let replaced = showsDisabled(pending.disabledKeyIds, in: currentIdentityPublicKeys)
                 ? pending.retiredGrantKeys : []
             switch pendingV2Outcome(
-                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings,
-                nowMilliseconds: nowMilliseconds
+                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings
             ) {
             case .landed:
                 var settled = grant

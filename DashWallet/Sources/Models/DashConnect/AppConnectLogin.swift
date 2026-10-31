@@ -466,6 +466,21 @@ enum AppConnect {
         }
     }
 
+    /// Whether the identity shows a record's session key live with exactly
+    /// the limits it was registered with: what the approval granted, so it
+    /// may be handed out. `holdsRecordedKey` also takes a key whose limits
+    /// were raised since, which is the grant's but wider than the approval.
+    static func showsRecordedLimits(
+        of grant: AppConnectGrant,
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        keys.contains {
+            UInt32(bitPattern: $0.keyId) == grant.sessionKeyId && $0.disabledAt == nil
+                && $0.totalBudget == grant.totalBudget
+                && $0.expiresAt.map { UInt64(bitPattern: $0) } == grant.expiresAt
+        }
+    }
+
     /// Confirms the unconfirmed one-QR records of `identityId` whose key the
     /// identity now holds, and returns them. A record whose key is not there
     /// stays as it is: the update may still land, and nothing is taken from

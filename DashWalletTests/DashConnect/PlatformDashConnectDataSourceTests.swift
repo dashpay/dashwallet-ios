@@ -3041,6 +3041,14 @@ final class AppConnectLoginTests: XCTestCase {
         }
 
         XCTAssertTrue(AppConnect.holdsRecordedKey(pending, currentIdentityPublicKeys: key(), bindings: bound))
+        XCTAssertTrue(AppConnect.showsRecordedLimits(of: pending, in: key()))
+        for (keys, why) in [
+            (key(budget: 9_000), "a raised budget is wider than the approval"),
+            (key(expiry: 7_000), "so is a later expiry"),
+            (key(disabledAt: 1), "a key turned off"),
+        ] {
+            XCTAssertFalse(AppConnect.showsRecordedLimits(of: pending, in: keys), why)
+        }
         for (keys, why) in [
             (key(budget: 9_000), "a limits update raised its budget"),
             (key(expiry: 7_000), "a limits update extended it"),

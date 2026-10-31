@@ -1239,13 +1239,12 @@ extension AppConnectV2LoginTests {
         _ added: [ManagedPlatformWallet.IdentityPubkey],
         keys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [AppConnect.KeyBinding]? = nil,
-        now: Int64 = pendingNow,
         outlivedBy: AppConnect.OwnUpdate? = nil
     ) -> AppConnect.PendingV2Outcome {
         var pending = pendingUpdate(added)
         pending.outlivedBy = outlivedBy
         return AppConnect.pendingV2Outcome(
-            of: pending, currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored), nowMilliseconds: now)
+            of: pending, currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored))
     }
 
     func testAPendingUpdateLandedOnlyWhenEveryKeyIsThereAsItWasAdded() {
@@ -1350,22 +1349,6 @@ extension AppConnectV2LoginTests {
         XCTAssertNil(grants[4].pendingUpdate)
     }
 
-    func testAPendingUpdateOfExpiredAuthKeysOnlyIsDropped() {
-        let auth = Self.addedAuthKey(7, data: 0x07, expiresAt: Self.createdAt)
-        let tolerance = Int64(AppConnect.clockTolerance * 1000)
-        let past = Int64(Self.createdAt) + tolerance + 1
-        XCTAssertEqual(Self.outcome([auth], keys: [], now: past), .cannotLand)
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [], now: Int64(Self.createdAt) + tolerance - 1), .unknown,
-            "a device clock up to the tolerance fast does not end it")
-        XCTAssertEqual(
-            Self.outcome([auth, Self.addedEncryptionKey(8, data: 0x08)], keys: [], now: past), .unknown,
-            "an encryption key never expires")
-        XCTAssertEqual(
-            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [], now: past), .unknown,
-            "its key is there, the store just cannot place it yet")
-    }
-
     func testAPendingUpdateWhoseKeyLimitsWereRaisedSinceLanded() {
         let auth = Self.addedAuthKey(7, data: 0x07)
         XCTAssertEqual(
@@ -1394,7 +1377,7 @@ extension AppConnectV2LoginTests {
         let settled = AppConnect.settlePendingV2Registrations(
             in: &grants, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key), Self.key(3)],
-            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+            bindings: [Self.stored(key)])
         XCTAssertEqual(settled.confirmed.map(\.key), [pending.key], "its keys are there and need their record")
         XCTAssertNil(grants[0].keyDisabled, "another update added them; the replaced key is still on")
 
@@ -1402,7 +1385,7 @@ extension AppConnectV2LoginTests {
         _ = AppConnect.settlePendingV2Registrations(
             in: &landedOff, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3)],
-            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+            bindings: [Self.stored(key)])
         XCTAssertEqual(landedOff.map(\.key), [old.key])
         XCTAssertNil(landedOff[0].keyDisabled)
     }
@@ -1466,7 +1449,7 @@ extension AppConnectV2LoginTests {
             currentIdentityPublicKeys: [
                 Self.onIdentity(landedKey), Self.onIdentity(impossibleKey, data: Data(repeating: 0xEE, count: 20)),
             ],
-            bindings: [Self.stored(landedKey)], nowMilliseconds: Self.pendingNow)
+            bindings: [Self.stored(landedKey)])
 
         XCTAssertEqual(settled.confirmed.map(\.key), [landed.key])
         XCTAssertEqual(settled.dropped.map(\.key), [impossible.key])
@@ -1486,7 +1469,7 @@ extension AppConnectV2LoginTests {
         let settled = AppConnect.settlePendingV2Registrations(
             in: &grants, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3, disabled: true)],
-            bindings: [Self.stored(key)], nowMilliseconds: Self.pendingNow)
+            bindings: [Self.stored(key)])
         XCTAssertEqual(settled.dropped.map(\.key), [pending.key])
         XCTAssertEqual(grants.map(\.key), [old.key])
         XCTAssertEqual(grants[0].keyDisabled, true, "its update turned the replaced grant off")
@@ -1720,7 +1703,6 @@ extension AppConnectV2LoginTests {
         var remaining = views
         return try await PlatformDashConnectDataSource.registerAppConnectV2Grant(
             record, add: add, disable: disable, retiredGrantKeys: retiring, grants: store,
-            nowMilliseconds: { pendingNow },
             showRow: { calls.rowShown += 1 },
             submit: { calls.submitted += 1; try submit() },
             reread: {
