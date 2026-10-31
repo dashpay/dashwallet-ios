@@ -952,6 +952,30 @@ extension AppConnect {
             .sorted()
     }
 
+    /// The auth keys a v2 record waiting for its update holds that `keys`
+    /// shows live and grantable (`isLiveGrantedKey`): the ones it sends again, and the ones it adds that are
+    /// there under their id with their data and that the store places as
+    /// added (`isPlaced`: the same payload under its id with another bound
+    /// is another request's). Empty for any other record.
+    static func liveAuthKeyIds(
+        heldBy grant: AppConnectGrant,
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [KeyBinding]
+    ) -> Set<UInt32> {
+        guard let pending = grant.pendingUpdate else { return [] }
+        let resent = resentKeyIds(of: grant)
+        return Set(keys.compactMap { key -> UInt32? in
+            let keyId = UInt32(bitPattern: key.keyId)
+            // Keys a disconnect can turn off (`isLiveGrantedKey`), so a
+            // record kept for one does not wait on a key nothing turns off.
+            guard isLiveGrantedKey(key) else { return nil }
+            if resent.contains(keyId) { return keyId }
+            return pending.addedKeys.contains {
+                $0.keyId == keyId && $0.data == key.data && $0.purpose == .authentication && isPlaced($0, in: bindings)
+            } ? keyId : nil
+        })
+    }
+
     /// The keys records waiting for their update hold: the ones they send
     /// again, and the ones they add that the store places as added.
     static func waitingKeyIds(_ waiting: [AppConnectGrant], bindings: [KeyBinding]) -> Set<UInt32> {
@@ -1284,14 +1308,16 @@ extension AppConnect {
         }
     }
 
-    /// What an update of this wallet to an identity did, by what Platform
-    /// never undoes: the keys it added (a key is never removed) and the ids
-    /// it disabled (a key is never enabled again). A view that shows all of
-    /// it is at that update or past it.
-    /// TODO(dashconnect-disable-witness): Platform also takes a disable of
-    /// a key already off, so a view taken after an earlier disable of the
-    /// same id shows a disable-only update too; the SDK's handle to the
-    /// signed transition (dashpay/platform#5690) would settle it exactly.
+    /// What an update of this wallet to an identity did: the keys it added
+    /// and the ids it disabled. Only an added key witnesses the update: a
+    /// key is never removed and its id never taken again, while Platform
+    /// takes a disable of a key that is already off, so a view taken after
+    /// an earlier disable of the same id would show a disable-only update
+    /// too. An update that added nothing is not noted (`noteOwnUpdate`), and
+    /// one that did is shown by a view that shows all of it.
+    /// TODO(dashconnect-disable-witness): a disconnect only disables, so it
+    /// never settles a waiting record; the SDK's handle to the signed
+    /// transition (dashpay/platform#5690) would.
     struct OwnUpdate: Codable, Equatable {
         struct AddedKey: Codable, Equatable {
             let keyId: UInt32
@@ -1307,7 +1333,7 @@ extension AppConnect {
         }
 
         func isShown(in keys: [ManagedIdentity.IdentityPublicKeyInfo]) -> Bool {
-            addedKeys.allSatisfy { added in keys.contains {
+            !addedKeys.isEmpty && addedKeys.allSatisfy { added in keys.contains {
                 UInt32(bitPattern: $0.keyId) == added.keyId && $0.data == added.data
             } } && showsDisabled(disabledKeyIds, in: keys)
         }
@@ -1327,9 +1353,14 @@ extension AppConnect {
         identityId: String,
         exceptKey: String? = nil
     ) {
+        // One that only disables witnesses nothing (`OwnUpdate`).
+        guard !update.addedKeys.isEmpty else { return }
         for index in grants.indices
         where grants[index].identityId == identityId && grants[index].key != exceptKey
-            && grants[index].pendingUpdate != nil && grants[index].pendingUpdate?.outlivedBy == nil {
+            && grants[index].pendingUpdate != nil
+            // A note an earlier build made of an update that added nothing
+            // witnesses nothing either, and gives way.
+            && grants[index].pendingUpdate?.outlivedBy?.addedKeys.isEmpty != false {
             grants[index].pendingUpdate?.outlivedBy = update
         }
     }
@@ -1425,8 +1456,11 @@ extension AppConnect {
     /// and the earlier grants its update retired are marked done once the
     /// keys it disables show off; one that landed and is off again is
     /// dropped, with those marked done the same way; one that cannot land is
-    /// dropped; the rest stay as they are. A grant whose keys are still on
-    /// stays live, and a disconnect turns them off.
+    /// dropped; the rest stay as they are. A record that would be dropped
+    /// while it holds a live auth key (`liveAuthKeyIds(heldBy:in:bindings:)`) stays
+    /// waiting instead: it is what keeps the app's row and lets a disconnect
+    /// turn that key off. A grant whose keys are still on stays live, and a
+    /// disconnect turns them off.
     static func settlePendingV2Registrations(
         in grants: inout [AppConnectGrant],
         identityId: String,
@@ -1440,20 +1474,20 @@ extension AppConnect {
             guard let pending = grant.pendingUpdate else { continue }
             let replaced = showsDisabled(pending.disabledKeyIds, in: currentIdentityPublicKeys)
                 ? pending.retiredGrantKeys : []
-            switch pendingV2Outcome(
-                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings
-            ) {
+            let outcome = pendingV2Outcome(
+                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
+            switch outcome {
             case .landed:
                 var settled = grant
                 settled.pendingUpdate = nil
                 settled.unconfirmedKeyHash160 = nil
                 confirmed.append(settled)
                 retired.formUnion(replaced)
-            case .landedAndOff:
-                dropped.append(grant)
-                retired.formUnion(replaced)
-            case .cannotLand:
-                dropped.append(grant)
+            case .landedAndOff, .cannotLand:
+                if outcome == .landedAndOff { retired.formUnion(replaced) }
+                if liveAuthKeyIds(heldBy: grant, in: currentIdentityPublicKeys, bindings: bindings).isEmpty {
+                    dropped.append(grant)
+                }
             case .unknown:
                 break
             }

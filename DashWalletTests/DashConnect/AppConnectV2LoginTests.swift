@@ -1359,6 +1359,12 @@ extension AppConnectV2LoginTests {
         let showsLater = Self.key(3, disabled: true)
         XCTAssertEqual(
             Self.outcome([auth], keys: [master, showsLater, Self.onIdentity(laterKey)], outlivedBy: later), .cannotLand)
+        // Key 3 turned off once before this update, which then lands, and
+        // turned off again by a later disconnect: a view from between the
+        // two disables shows the second one too, without this update's key.
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, showsLater], outlivedBy: AppConnect.OwnUpdate(disabledKeyIds: [3])),
+            .unknown, "a disable can be sent again for a key already off, so it witnesses nothing")
         XCTAssertEqual(
             Self.outcome([auth], keys: [master, Self.key(3)], outlivedBy: later), .unknown,
             "a view that does not show the later update is behind it")
@@ -1386,6 +1392,14 @@ extension AppConnectV2LoginTests {
         let other = Self.pendingGrant([Self.addedAuthKey(13, data: 0x0D)], identityId: "other", requestHash: "a4")
         var grants = [own, earlier, noted, other, Self.grant(sessionKeyId: 3)]
         let update = AppConnect.OwnUpdate(added: [Self.addedAuthKey(22, data: 0x16)], disabledKeyIds: [2])
+        var disableOnly = grants
+        AppConnect.noteOwnUpdate(
+            AppConnect.OwnUpdate(disabledKeyIds: [2]), in: &disableOnly, identityId: "identity", exceptKey: own.key)
+        XCTAssertNil(disableOnly[1].pendingUpdate?.outlivedBy, "an update that only disables witnesses nothing")
+        var olderNote = grants
+        olderNote[1].pendingUpdate?.outlivedBy = AppConnect.OwnUpdate(disabledKeyIds: [4])
+        AppConnect.noteOwnUpdate(update, in: &olderNote, identityId: "identity", exceptKey: own.key)
+        XCTAssertEqual(olderNote[1].pendingUpdate?.outlivedBy, update, "a note of a disable-only update gives way")
         AppConnect.noteOwnUpdate(update, in: &grants, identityId: "identity", exceptKey: own.key)
         XCTAssertNil(grants[0].pendingUpdate?.outlivedBy, "an update does not outlive itself")
         XCTAssertEqual(grants[1].pendingUpdate?.outlivedBy, update)
@@ -1621,6 +1635,45 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(grants[0].keyDisabled, true, "the grant its update replaced is done")
         XCTAssertTrue(grants[2].isPendingV2)
         XCTAssertTrue(grants[3].isPendingV2, "another identity's record waits for a view of that identity")
+    }
+
+    func testAWaitingRecordThatHoldsALiveKeyIsNotDropped() {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([added], requestHash: "a1")
+        record.additionalKeyIds = [5]
+        let resentLive = Self.key(5, level: .critical)
+        let taken = Self.onIdentity(added, data: Data(repeating: 0xEE, count: 20))
+        let placed = [Self.stored(added)]
+        XCTAssertEqual(AppConnect.liveAuthKeyIds(heldBy: record, in: [resentLive, taken], bindings: placed), [5])
+        XCTAssertEqual(AppConnect.liveAuthKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: placed), [8])
+        XCTAssertEqual(
+            AppConnect.liveAuthKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: []), [],
+            "an added key the store does not place may be another request's")
+        XCTAssertEqual(
+            AppConnect.liveAuthKeyIds(heldBy: record, in: [taken, Self.key(5, disabled: true)], bindings: placed), [],
+            "another key under its id is not its own")
+        XCTAssertEqual(
+            AppConnect.liveAuthKeyIds(heldBy: Self.grant(sessionKeyId: 5), in: [resentLive], bindings: []), [],
+            "only a waiting record")
+
+        for (keys, why) in [
+            ([resentLive, taken], "cannot land, a key it sends again is live"),
+            ([resentLive, Self.onIdentity(added, disabled: true)], "landed and off, a key it sends again is live"),
+            ([Self.key(5, disabled: true), Self.onIdentity(added, totalBudget: .some(1))],
+             "cannot land by its limits, its placed added key is live"),
+        ] {
+            var grants = [record]
+            let settled = AppConnect.settlePendingV2Registrations(
+                in: &grants, identityId: "identity", currentIdentityPublicKeys: keys, bindings: [Self.stored(added)])
+            XCTAssertEqual(settled.dropped, [], why)
+            XCTAssertEqual(grants.map(\.key), [record.key], why)
+            XCTAssertTrue(grants[0].isPendingV2, why)
+        }
+        var grants = [record]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.key(5, disabled: true), taken], bindings: [])
+        XCTAssertEqual(settled.dropped.map(\.key), [record.key], "nothing of it is live any more")
     }
 
     func testAPendingUpdateThatLandedAndIsOffAgainIsDroppedWithWhatItRetired() {
@@ -2036,6 +2089,26 @@ extension AppConnectV2LoginTests {
         } catch {
             XCTAssertTrue(error is UpdateFailed)
         }
+    }
+
+    func testAFailedUpdateThatCanNeverLandKeepsARecordHoldingALiveKey() async {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([added])
+        record.additionalKeyIds = [5]
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                record, add: [added], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.key(5, level: .critical), Self.onIdentity(added, data: Data(repeating: 0xEE, count: 20))], [])])
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants.map(\.key), [record.key], "the key it sent again is live, so the record stays")
+        XCTAssertTrue(store.grants.first?.isPendingV2 == true)
+        XCTAssertEqual(calls.dropped, 0, "its row stays")
+
     }
 
     func testAFailedUpdateThatCanNeverLandDropsItsRecord() async {
