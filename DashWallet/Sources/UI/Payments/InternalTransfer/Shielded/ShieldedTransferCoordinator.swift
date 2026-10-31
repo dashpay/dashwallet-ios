@@ -1709,6 +1709,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
                 return
             }
+            // `withdrawToCore` spends from whichever wallet is active, so the
+            // one the address was reserved and journaled for must still be.
+            #if DASHPAY
+            if let contactRecipient {
+                do {
+                    try WalletSendService.validateContactRecipient(contactRecipient)
+                } catch {
+                    failUnsubmittedContactWithdrawal(contactWithdrawal, error: error)
+                    return
+                }
+            }
+            #endif
             coreAddress = contactWithdrawal.address
         }
 
