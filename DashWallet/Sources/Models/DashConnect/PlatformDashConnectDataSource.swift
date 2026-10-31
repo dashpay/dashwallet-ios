@@ -2516,12 +2516,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     }
                 }
             }
+            // A row that comes back keeps the name and website the app's
+            // disconnected entry holds. The entry stays: the row is not a
+            // reconnection, and the Disconnected tab hides an app that has a
+            // row.
+            let named = Dictionary(
+                (stores.history.load() ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             await updateRows(in: stores) { rows in
-                Self.rowsAfterHolding(appIds: waitingAppIds, in: rows, at: shownAt)
+                let shown = Set(rows.map(\.id))
+                return Self.rowsAfterHolding(appIds: waitingAppIds, in: rows, at: shownAt).map { row in
+                    guard !shown.contains(row.id), let entry = named[row.id] else { return row }
+                    return DAppConnection(
+                        id: row.id, name: entry.name, url: entry.url, status: row.status,
+                        updatedAt: row.updatedAt, loginKind: row.loginKind)
+                }
             }
-            // Shown again, so not also listed as disconnected; removed once
-            // its row is back.
-            for appId in waitingAppIds { stores.history.remove(appId: appId) }
         }
         return confirmedV2
     }
