@@ -2481,6 +2481,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
                 bindings: bindings)
             confirmedV2 = settled.confirmed
+            // An app whose update turned out to have landed is connected
+            // again, whatever a disconnect wrote to its history meanwhile.
+            for appId in Set(settled.confirmed.map(\.appContractId)) { stores.history.remove(appId: appId) }
             if !settled.confirmed.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: \(settled.confirmed.count, privacy: .public) App Connect update(s) found to have landed")
             }
@@ -2898,9 +2901,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// With `readsFunding`, and on the active identity, what is left of each
     /// key's budget is read from Platform.
     private func details(of appId: String, stores: Stores, readsFunding: Bool) async -> ConnectionDetails {
-        let grants = stores.grants.load().filter {
-            $0.appContractId == appId && !$0.isUnconfirmed && $0.keyDisabled != true
-        }
+        // A record still waiting for its update counts too: one that holds a
+        // live key is kept, and holds the row, until its keys are off.
+        let all = stores.grants.load().filter { $0.appContractId == appId && $0.keyDisabled != true }
+        let confirmed = all.filter { !$0.isUnconfirmed }
+        let grants = confirmed.isEmpty ? all.filter(\.isPendingV2) : confirmed
         let revokes = disconnectRevokesKeys(appId: appId, stores: stores)
         let identityIds = Set(grants.map(\.identityId))
         guard identityIds.count == 1, let identityId = identityIds.first else {
