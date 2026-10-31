@@ -748,7 +748,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // submitted; its update may have landed, so they are the ones a
             // retry sends.
             plan = AppConnect.withRecordedTerms(
-                plan, access: Self.recordedGrantedAccess(plan: plan, context: context), now: now())
+                plan,
+                access: Self.recordedGrantedAccess(
+                    identityId: context.identityId, appId: plan.appId, requestHash: plan.appEphemeralPubKeyHash,
+                    stores: context.stores),
+                recordedFor: plan.appEphemeralPubKeyHash, now: now())
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)
@@ -758,16 +762,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// What an earlier approval of `plan`'s request recorded it would grant,
-    /// as the approval would retry it: a record still waiting for its update
-    /// first, then one whose keys were not turned off.
-    private static func recordedGrantedAccess(plan: AppConnect.GrantPlan, context: Context) -> AppConnect.GrantedAccess? {
-        let identityId = context.identityId.toBase58String()
-        let appId = plan.appId.toBase58String()
-        let requestHash = plan.appEphemeralPubKeyHash.toHexString()
-        let records = context.stores.grants.load().filter {
-            $0.identityId == identityId && $0.appContractId == appId
-                && $0.values.appEphemeralPubKeyHash == requestHash && $0.grantedAccess != nil && $0.keyDisabled != true
+    /// What an earlier approval of a request (`requestHash`) recorded it
+    /// would grant, as the approval would retry it: a record still waiting
+    /// for its update first, then one whose keys were not turned off.
+    private static func recordedGrantedAccess(
+        identityId: Data,
+        appId: Data,
+        requestHash: Data,
+        stores: Stores
+    ) -> AppConnect.GrantedAccess? {
+        let identity = identityId.toBase58String()
+        let app = appId.toBase58String()
+        let hash = requestHash.toHexString()
+        let records = stores.grants.load().filter {
+            $0.identityId == identity && $0.appContractId == app
+                && $0.values.appEphemeralPubKeyHash == hash && $0.grantedAccess != nil && $0.keyDisabled != true
         }
         return (records.first(where: \.isPendingV2) ?? records.first)?.grantedAccess
     }
@@ -776,14 +785,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard let appConnect = loginRequest.appConnect,
               let context = try? await requireContext(),
               let requestHash = try? KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey) else { return nil }
-        let identityId = context.identityId.toBase58String()
-        let appId = loginRequest.contractId.toBase58String()
-        let records = context.stores.grants.load().filter {
-            $0.identityId == identityId && $0.appContractId == appId
-                && $0.values.appEphemeralPubKeyHash == requestHash.toHexString() && $0.grantedAccess != nil
-                && $0.keyDisabled != true
-        }
-        return (records.first(where: \.isPendingV2) ?? records.first)?.grantedAccess
+        return Self.recordedGrantedAccess(
+            identityId: context.identityId, appId: loginRequest.contractId, requestHash: requestHash,
+            stores: context.stores)
     }
 
     /// The ids among `contractIds` and `groupIds` of the contracts and the
@@ -2087,6 +2091,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.tooManyKeysToReplace
         }
         var stored = grants.load()
+        // Whether an earlier submission of this grant may be on its way: only
+        // then can a refused one leave something that may still land.
+        let wasRecorded = stored.contains { $0.key == record.key }
         if let existing = stored.first(where: { $0.key == record.key }), !existing.isUnconfirmed, !record.isUnconfirmed {
             // Kept as it is: if its publish landed without confirming, its
             // values are the ones on Platform.
@@ -2133,6 +2140,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             try await submit()
         } catch {
+            // Platform turned the update away for the identity's balance: it
+            // is not on its way, and with no earlier submission of this grant
+            // nothing of it can land. The record goes, as it came.
+            if !wasRecorded, AppConnect.isInsufficientBalance(error) {
+                logger.info("🔗 DASHCONNECT :: the identity update was refused for the identity's balance; its record is dropped")
+                var all = grants.load()
+                all.removeAll { $0.key == record.key }
+                if await onDropped(all) { grants.save(all) }
+                throw error
+            }
             for attempt in 0 ..< 3 {
                 if attempt > 0 { await pause(attempt) }
                 guard let view = await reread() else { continue }

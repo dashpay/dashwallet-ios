@@ -26,7 +26,6 @@ import SwiftUI
 struct AppConnectApproveSheet: View {
     @ObservedObject var viewModel: ConnectionsViewModel
     let request: ConnectionRequest
-    let plan: AppConnect.GrantPlan
     let onTopUp: () -> Void
 
     @State private var showsGranted = true
@@ -190,12 +189,14 @@ struct AppConnectApproveSheet: View {
                 showsInfo: true,
                 changeLabel: NSLocalizedString(
                     "Change the identity funding limit", comment: "DashConnect approve sheet: accessibility"),
+                canChange: viewModel.canChangeFundingLimit,
                 onChange: { termsSheet = .funding })
             termRow(
                 title: NSLocalizedString("Connection will expire", comment: "DashConnect approve sheet"),
                 value: viewModel.approvalExpiryText ?? "",
                 showsInfo: false,
                 changeLabel: NSLocalizedString("Change when the connection expires", comment: "DashConnect approve sheet: accessibility"),
+                canChange: true,
                 onChange: { termsSheet = .expiry })
         }
         .padding(6)
@@ -210,6 +211,7 @@ struct AppConnectApproveSheet: View {
         value: String,
         showsInfo: Bool,
         changeLabel: String,
+        canChange: Bool,
         onChange: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 20) {
@@ -234,11 +236,13 @@ struct AppConnectApproveSheet: View {
                     .foregroundColor(Color.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Change", comment: "DashConnect approve sheet"),
-                isEnabled: !viewModel.isApproving && !viewModel.approvalTermsLocked,
-                size: .small, style: .plainBlue, action: onChange)
-                .accessibilityLabel(Text(changeLabel))
+            if canChange {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Change", comment: "DashConnect approve sheet"),
+                    isEnabled: !viewModel.isApproving && !viewModel.approvalTermsLocked,
+                    size: .small, style: .plainBlue, action: onChange)
+                    .accessibilityLabel(Text(changeLabel))
+            }
         }
         .padding(.leading, 14)
         .padding(.vertical, 8)
@@ -262,7 +266,7 @@ struct AppConnectApproveSheet: View {
 
     private var footer: some View {
         VStack(spacing: 10) {
-            if let error = viewModel.approveError {
+            if let error = viewModel.approveError ?? viewModel.approveDisabledReason {
                 Text(error)
                     .dashFont(.footnote)
                     .foregroundColor(Color.dash.red)
@@ -323,8 +327,7 @@ struct FundingLimitSheet: View {
                         title: PlatformCreditsFormatter.dashString(preset.credits),
                         isSelected: preset.isSelected,
                         action: {
-                            viewModel.setFundingLimit(preset.credits)
-                            onClose()
+                            if viewModel.setFundingLimit(preset.credits) { onClose() }
                         })
                 }
             }
@@ -413,7 +416,11 @@ struct ExpirySheet: View {
                 }
             }
             .modifier(MenuViewModifier())
-            Button(action: { isPickingDate = true }) {
+            Button(action: {
+                // Opens on the expiry in effect, not on today.
+                date = viewModel.approvalExpiryDate ?? viewModel.earliestExpiry
+                isPickingDate = true
+            }) {
                 Text(NSLocalizedString("Set date", comment: "DashConnect expiry presets"))
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
@@ -435,7 +442,7 @@ struct ExpirySheet: View {
             DatePicker(
                 NSLocalizedString("Connection will expire", comment: "DashConnect approve sheet"),
                 selection: $date,
-                in: Date()...viewModel.latestExpiry,
+                in: viewModel.earliestExpiry...viewModel.latestExpiry,
                 displayedComponents: .date)
                 .datePickerStyle(.graphical)
             DashUIKit.DashButton(

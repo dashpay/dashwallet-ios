@@ -46,6 +46,10 @@ struct ConnectionsScreen: View {
     }
 
     @State private var showsFundingLimitsInfo = false
+    /// The Join DashPay sheet, which leads to the username form as More's
+    /// does; `createsUsernameAfterSheet` carries the user's choice to it.
+    @State private var showsJoinDashPay = false
+    @State private var createsUsernameAfterSheet = false
     /// Reconnect closes the connection sheet first: the scanner is
     /// presented once it is gone.
     @State private var scansAfterSheet = false
@@ -58,8 +62,11 @@ struct ConnectionsScreen: View {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
                     },
                     trailing: {
-                        if !viewModel.featureUnavailable, !viewModel.needsUsername {
-                            DashUIKit.NavigationBarElement.plus.button(action: showScanner)
+                        if !viewModel.featureUnavailable, !showsNoUsernameState {
+                            // Without a username a new connection starts by
+                            // creating one.
+                            DashUIKit.NavigationBarElement.plus.button(
+                                action: viewModel.needsUsername ? startCreatingUsername : showScanner)
                                 .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
                         }
                     }
@@ -116,17 +123,40 @@ struct ConnectionsScreen: View {
         }) { item in
             connectionSheet(for: item)
         }
+        #if DASHPAY
+        .sheet(isPresented: $showsJoinDashPay, onDismiss: {
+            guard createsUsernameAfterSheet else { return }
+            createsUsernameAfterSheet = false
+            onCreateUsername?()
+        }) {
+            // No detent: the dialog sizes itself (`BottomSheet.selfSizing`).
+            JoinDashPayInfoDialog(action: { createsUsernameAfterSheet = true })
+        }
+        #endif
     }
 
     // MARK: - States
+
+    /// A wallet without a username and with nothing ever connected: the page
+    /// offers to create one. A wallet that has connections keeps its list,
+    /// so their keys can still be turned off.
+    private var showsNoUsernameState: Bool {
+        viewModel.needsUsername && !viewModel.hasConnectionsOrHistory && !viewModel.isLoadingHistory
+    }
+
+    /// Creating a username starts on the Join DashPay sheet, as from More.
+    private func startCreatingUsername() {
+        #if DASHPAY
+        showsJoinDashPay = true
+        #else
+        onCreateUsername?()
+        #endif
+    }
 
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
             title
             ConnectionsUnavailableState()
-        } else if viewModel.needsUsername {
-            title
-            ConnectionsEmptyState(kind: .noUsername(onCreateUsername: onCreateUsername))
         } else if !viewModel.hasConnectionsOrHistory, viewModel.isLoadingHistory {
             // Not known yet whether anything was connected: no empty state
             // that the history may replace a moment later.
@@ -135,6 +165,10 @@ struct ConnectionsScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
             Spacer()
+        } else if showsNoUsernameState {
+            title
+            ConnectionsEmptyState(
+                kind: .noUsername(onCreateUsername: onCreateUsername == nil ? nil : startCreatingUsername))
         } else if !viewModel.hasConnectionsOrHistory {
             title
             ConnectionsEmptyState(kind: .noApps(onScanQR: showScanner, onMockScan: mockScan))
@@ -254,9 +288,9 @@ struct ConnectionsScreen: View {
 
     @ViewBuilder
     private func approveSheet(for request: ConnectionRequest) -> some View {
-        if let plan = request.login.grantPlan {
+        if request.login.grantPlan != nil {
             AppConnectApproveSheet(
-                viewModel: viewModel, request: request, plan: plan, onTopUp: { onTopUpIdentity?() })
+                viewModel: viewModel, request: request, onTopUp: { onTopUpIdentity?() })
                 .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
         } else {
             legacyApproveSheet(for: request)

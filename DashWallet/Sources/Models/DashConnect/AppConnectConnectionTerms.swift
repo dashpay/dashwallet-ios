@@ -49,23 +49,36 @@ extension AppConnect {
     static let profileKeyShare: UInt64 = PlatformCreditsFormatter.creditsPerDash / 500
 
     /// The limit the sheet opens with when the app asks for no budget at all.
-    /// TODO(dashconnect-default-limit): the product rule for a request with
-    /// no budget is not decided; 0.5 DASH is the middle preset.
     static let defaultFundingLimit: UInt64 = PlatformCreditsFormatter.creditsPerDash / 2
 
     /// The terms the sheet opens with: the total the app asks for, capped at
-    /// `v2BudgetCapCredits`, or `defaultFundingLimit` when it asks for none;
-    /// and the earliest expiry the plan gives a key (the app's request capped
-    /// at a year, or the default lifetime), so no key lives longer than the
-    /// app asked unless the user chooses so.
+    /// `v2BudgetCapCredits`, or `defaultFundingLimit` when it asks for none
+    /// (`profileKeyShare` when it asks only for DashPay profile keys); and the
+    /// earliest expiry the plan gives a key (the app's request capped at a
+    /// year, or the default lifetime), so no key lives longer than the app
+    /// asked unless the user chooses so.
     static func defaultTerms(for plan: GrantPlan, now: Date) -> ConnectionTerms {
         let requested = totalBudget(of: plan)
-        // A very short ask could pass while the user reads the sheet: the
-        // default is at least a day.
         let earliest = plan.auth.map(\.expiresAt).min() ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime))
+        let profileOnly = !plan.auth.isEmpty && plan.auth.allSatisfy(isProfileKey)
+        let limit = requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits)
         return ConnectionTerms(
-            fundingLimit: requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits),
-            expiresAt: max(earliest, expiry(days: 1, from: now)))
+            fundingLimit: profileOnly ? min(limit, profileKeyShare) : limit,
+            expiresAt: earliest)
+    }
+
+    /// The smallest funding limit that gives every key of `plan` a budget
+    /// (`keyBudgets`); nil when no limit within the cap does.
+    static func smallestFundingLimit(for plan: GrantPlan) -> UInt64? {
+        guard !plan.auth.isEmpty else { return 1 }
+        var low: UInt64 = 1
+        var high = v2BudgetCapCredits
+        guard keyBudgets(for: plan, limit: high) != nil else { return nil }
+        while low < high {
+            let mid = low + (high - low) / 2
+            if keyBudgets(for: plan, limit: mid) != nil { high = mid } else { low = mid + 1 }
+        }
+        return low
     }
 
     /// Whether `credits` is a funding limit the user may set: above zero and
@@ -96,7 +109,8 @@ extension AppConnect {
     ///
     /// The DashPay profile keys take `profileKeyShare` between them, or half
     /// of a limit under twice that; the app's own keys share the rest
-    /// (`appKeyBudgets`). With no app key, the profile keys share it all.
+    /// (`appKeyBudgets`). With no app key, the profile keys take
+    /// `profileKeyShare`, or the whole limit when it is smaller.
     /// Nil when a key would get nothing: Platform needs a budget on every
     /// key.
     static func keyBudgets(for plan: GrantPlan, limit: UInt64) -> [UInt64]? {
@@ -107,7 +121,7 @@ extension AppConnect {
         if profile.isEmpty {
             profileTotal = 0
         } else if app.isEmpty {
-            profileTotal = limit
+            profileTotal = min(limit, profileKeyShare)
         } else {
             profileTotal = limit < 2 * profileKeyShare ? limit / 2 : profileKeyShare
         }
@@ -185,10 +199,18 @@ extension AppConnect {
     /// (`GrantedAccess`, written before its update was submitted), when they
     /// name its keys one for one. That update may have landed, and a retry
     /// has to send the same keys with the same terms.
-    /// Recorded terms that are no longer in bounds at `now` (an expiry gone
-    /// by, a key with no budget) are not taken: the plan comes back as it was.
-    static func withRecordedTerms(_ plan: GrantPlan, access: GrantedAccess?, now: Date) -> GrantPlan {
-        guard let access, !access.isUnreadable, !access.isSessionKeyLogin, access.keys.count == plan.auth.count,
+    /// `requestHash` is the request the terms were recorded for: another
+    /// request's plan comes back as it was. Recorded terms that are no longer
+    /// in bounds at `now` (an expiry gone by, a key with no budget) are not
+    /// taken either.
+    static func withRecordedTerms(
+        _ plan: GrantPlan,
+        access: GrantedAccess?,
+        recordedFor requestHash: Data,
+        now: Date
+    ) -> GrantPlan {
+        guard plan.appEphemeralPubKeyHash == requestHash,
+              let access, !access.isUnreadable, !access.isSessionKeyLogin, access.keys.count == plan.auth.count,
               zip(access.keys, plan.auth).allSatisfy({ $0.bound == $1.storedBound }) else { return plan }
         var recorded = plan
         recorded.auth = zip(plan.auth, access.keys).map { grant, key in

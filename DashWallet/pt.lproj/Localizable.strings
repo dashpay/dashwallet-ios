@@ -6991,12 +6991,6 @@
 /* DashConnect: what spendable Dash is */
 "It's separate from your identity's balance, which only pays for network actions." = "It's separate from your identity's balance, which only pays for network actions.";
 
-/* DashConnect approve sheet: the terms are out of bounds */
-"Set a funding limit and an expiry within the limits, then approve again." = "Set a funding limit and an expiry within the limits, then approve again.";
-
-/* DashConnect approve sheet: the identity cannot pay the key registration fee */
-"Your identity balance cannot cover the fee to register this app's keys. Top it up, then approve again." = "Your identity balance cannot cover the fee to register this app's keys. Top it up, then approve again.";
-
 /* DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH */
 "Max limit is %@" = "Max limit is %@";
 
@@ -7014,3 +7008,21 @@
 
 /* DashConnect approve sheet: terms fixed by an earlier approval */
 "An earlier approval of this request may have gone through, so its limit and expiry stay as they were." = "An earlier approval of this request may have gone through, so its limit and expiry stay as they were.";
+
+/* DashConnect funding limit keypad: the smallest limit with its unit */
+"Min limit is %@" = "Min limit is %@";
+
+/* DashConnect funding limit keypad */
+"This limit cannot be shared between the app's keys." = "This limit cannot be shared between the app's keys.";
+
+/* DashConnect approve sheet: recorded terms out of bounds */
+"The terms an earlier approval of this request recorded are no longer valid. Ask the app for a new code." = "The terms an earlier approval of this request recorded are no longer valid. Ask the app for a new code.";
+
+/* DashConnect approve sheet: the terms are out of bounds */
+"Set a funding limit and an expiry within the limits, then approve." = "Set a funding limit and an expiry within the limits, then approve.";
+
+/* DashConnect: a request arrived while the wallet has no username */
+"Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
+
+/* DashConnect approve sheet: the chosen expiry is in the past */
+"This expiry has passed. Pick another one, then approve." = "This expiry has passed. Pick another one, then approve.";

@@ -2111,6 +2111,25 @@ extension AppConnectV2LoginTests {
 
     }
 
+    func testAnUpdateRefusedForBalanceDropsANewRecordOnly() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let fresh = MemoryGrantStore()
+        let calls = Calls()
+        _ = try? await Self.register(
+            Self.pendingGrant([key]), add: [key], store: fresh, calls: calls, submit: { throw Refused() })
+        XCTAssertEqual(fresh.grants, [], "refused before it was on its way: nothing can land")
+        XCTAssertEqual(calls.rereads, 0)
+        XCTAssertEqual(calls.dropped, 1, "its row is put back")
+
+        let earlier = Self.pendingGrant([key])
+        let retried = MemoryGrantStore([earlier])
+        _ = try? await Self.register(earlier, add: [key], store: retried, calls: Calls(), submit: { throw Refused() })
+        XCTAssertEqual(retried.grants.map(\.key), [earlier.key], "an earlier submission of it may still land")
+    }
+
     func testAFailedUpdateThatCanNeverLandDropsItsRecord() async {
         let key = Self.addedAuthKey(7, data: 0x07)
         let store = MemoryGrantStore()
