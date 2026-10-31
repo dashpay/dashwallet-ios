@@ -111,6 +111,15 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
+    /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
+    var onAccessibilityEscape: (() -> Void)?
+
+    override func accessibilityPerformEscape() -> Bool {
+        guard let onAccessibilityEscape else { return super.accessibilityPerformEscape() }
+        onAccessibilityEscape()
+        return true
+    }
 
     enum Section: CaseIterable {
         case header
@@ -757,11 +766,19 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     private let source: Source
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
+    /// VoiceOver's escape gesture on the detail; `nil` leaves it to the default handling.
+    var onAccessibilityEscape: (() -> Void)? = nil
     
-    init(tx: Transaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
+    init(
+        tx: Transaction,
+        navigateBack: Binding<Bool>,
+        onDismissed: (() -> Void)? = nil,
+        onAccessibilityEscape: (() -> Void)? = nil
+    ) {
         self.source = .transaction(tx)
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
+        self.onAccessibilityEscape = onAccessibilityEscape
     }
 
     init(swapOrder: BuySwapOrderItem, navigateBack: Binding<Bool>) {
@@ -780,10 +797,12 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
         case .swapOrder(let item): model = TxDetailModel(swapOrder: item)
         }
         let vc = TXDetailViewController(model: model)
+        vc.onAccessibilityEscape = onAccessibilityEscape
         return vc
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        (uiViewController as? TXDetailViewController)?.onAccessibilityEscape = onAccessibilityEscape
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false

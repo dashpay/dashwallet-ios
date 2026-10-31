@@ -1170,15 +1170,19 @@ private struct TxDetailRoute: Identifiable {
 }
 
 struct TransactionDetailsSheet: View {
-    @State private var showBackButton: Bool = false
-    @State private var backNavigationRequested: Bool = false
+    /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
+    @State private var groupedTransaction: Transaction? = nil
+    @AccessibilityFocusState private var focusedGroupRow: String?
     
     var item: TransactionListDataItem
     
     var body: some View {
-        DashUIKit.BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
-            backNavigationRequested = true
-        }) {
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(groupedTransaction != nil),
+            onBackButtonPressed: {
+                closeGroupedTransaction()
+            }
+        ) {
             TxDetailsDestination(from: item)
         }
         .background(Color.dash.primaryBackground)
@@ -1190,38 +1194,68 @@ struct TransactionDetailsSheet: View {
     ) -> some View {
         switch txDataItem {
         case .crowdnode(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .coinjoin(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .coinjoinWithdrawal(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .tx(let txItem, _):
-            TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
+            TXDetailVCWrapper(tx: txItem, navigateBack: .constant(false))
         case .shieldedActivity(let item):
             ShieldedActivityDetailsView(item: item)
         case .platformActivity(let item):
             PlatformAddressActivityDetailsView(item: item)
         case .swapOrder(let item):
             // No Dash transaction yet: the standard screen, with what the order knows.
-            TXDetailVCWrapper(swapOrder: item, navigateBack: $backNavigationRequested)
+            TXDetailVCWrapper(swapOrder: item, navigateBack: .constant(false))
+        }
+    }
+    
+    /// The group stays in the hierarchy under an opened transaction, so going back
+    /// returns to the same scroll position. The opaque detail covers it.
+    private func groupedTransactionsDestination(model: GroupedTransactions) -> some View {
+        let isShowingTransaction = groupedTransaction != nil
+        return ZStack {
+            GroupedTransactionsScreen(
+                model: model,
+                focusedRow: $focusedGroupRow,
+                onOpenTransaction: openGroupedTransaction
+            )
+            .allowsHitTesting(!isShowingTransaction)
+            .accessibilityHidden(isShowingTransaction)
+            
+            if let groupedTransaction {
+                // `navigateBack` stays false: the wrapper's own dismiss would close
+                // the whole sheet. Back clears `groupedTransaction` instead.
+                TXDetailVCWrapper(
+                    tx: groupedTransaction,
+                    navigateBack: .constant(false),
+                    onAccessibilityEscape: closeGroupedTransaction
+                )
+                .id(groupedTransaction.txHashHexString)
+            }
+        }
+    }
+    
+    private func openGroupedTransaction(_ transaction: Transaction) {
+        groupedTransaction = transaction
+        // Cleared so that going back to the same row is a change VoiceOver acts on.
+        focusedGroupRow = nil
+        // After the detail is in the hierarchy, so VoiceOver reads the new screen
+        // from its top.
+        DispatchQueue.main.async {
+            UIAccessibility.post(notification: .screenChanged, argument: nil)
+        }
+    }
+    
+    private func closeGroupedTransaction() {
+        guard let closed = groupedTransaction else { return }
+        groupedTransaction = nil
+        // VoiceOver returns to the row that was opened.
+        DispatchQueue.main.async {
+            // Skipped when another transaction opened in the meantime.
+            guard groupedTransaction == nil else { return }
+            focusedGroupRow = closed.txHashHexString
         }
     }
 }
