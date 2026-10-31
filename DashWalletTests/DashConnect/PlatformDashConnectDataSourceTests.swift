@@ -1372,6 +1372,33 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
+    /// A disconnect that also turned off DashPay profile keys no
+    /// connection accounted for says how many; one that could not tell them
+    /// apart says so; one that turned off none says nothing.
+    func testADisconnectSaysWhatItDidWithTheProfileKeys() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysTurnedOff: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+        XCTAssertEqual(viewModel.message?.kind, .success)
+        XCTAssertEqual(viewModel.message?.text.contains("2"), true)
+
+        spy.disconnectResult = DashConnectDisconnectResult(profileKeysUnchecked: true)
+        viewModel.message = nil
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
+        XCTAssertEqual(viewModel.message?.kind, .success)
+        XCTAssertEqual(viewModel.message?.text.contains("could not be checked"), true)
+
+        spy.disconnectResult = DashConnectDisconnectResult()
+        viewModel.message = nil
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 3 }
+        XCTAssertNil(viewModel.message)
+    }
+
     /// With the login unresolved the sheet's action asks again and approves
     /// nothing.
     func testAnUnresolvedLoginIsAskedForAgainInsteadOfApproved() async {
@@ -1648,13 +1675,22 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    func disconnect(id: String, scope: String?) async throws {
-        let failure = lock.withLock { () -> Error? in
+    private var storedDisconnectResult = DashConnectDisconnectResult()
+
+    /// What a successful disconnect reports about the profile keys.
+    var disconnectResult: DashConnectDisconnectResult {
+        get { lock.withLock { storedDisconnectResult } }
+        set { lock.withLock { storedDisconnectResult = newValue } }
+    }
+
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+        let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            return storedDisconnectFailure
+            return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
+        return result
     }
 
     func remove(id: String, scope: String?) async {
@@ -1719,7 +1755,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?) async throws {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         throw PurchaseSpyError.unsupported
     }
 
@@ -2288,6 +2324,7 @@ final class AppConnectLoginTests: XCTestCase {
         let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
 
         XCTAssertEqual(store.load().map(\.sessionKeyId), [6])
+        XCTAssertTrue(store.hasUnreadableRows(identityId: "identity"), "a record load leaves out may name a key")
         store.save(store.load() + [Self.grant(sessionKeyId: 7)])
         XCTAssertEqual(store.load().map(\.sessionKeyId), [6, 7])
 
@@ -2301,6 +2338,15 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertNotNil(defaults.data(forKey: "scope.app-connect-responses.v1"))
     }
 
+    func testAnUnreadableRowOfAnotherIdentityLeavesThisOneReadable() {
+        let stored = #"[{"identityId":"other","somethingNewer":true}]"#
+        defaults.set(Data(stored.utf8), forKey: "scope.app-connect-responses.v1")
+        let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
+
+        XCTAssertFalse(store.hasUnreadableRows(identityId: "identity"))
+        XCTAssertTrue(store.hasUnreadableRows(identityId: "other"))
+    }
+
     func testAStoredValueThatIsNotARowListIsNeverReplaced() {
         let suiteName = "AppConnectResponseStoreTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -2309,10 +2355,12 @@ final class AppConnectLoginTests: XCTestCase {
         let store = UserDefaultsAppConnectResponseStore(defaults: defaults, network: .testnet) { "scope" }
 
         XCTAssertTrue(store.canPersist)
+        XCTAssertFalse(store.hasUnreadableRows(identityId: "identity"))
         for stored in [Data(#"{"rows":[]}"#.utf8), Data([0xFF, 0x00])] {
             defaults.set(stored, forKey: key)
             // Nothing new would be kept, so a login must not start.
             XCTAssertFalse(store.canPersist)
+            XCTAssertTrue(store.hasUnreadableRows(identityId: "identity"))
             XCTAssertEqual(store.load().count, 0)
             store.save([Self.grant(sessionKeyId: 7)])
             XCTAssertEqual(defaults.data(forKey: key), stored)
@@ -3064,9 +3112,31 @@ final class AppConnectLoginTests: XCTestCase {
             activeWalletIdHex: { active.idHex },
             networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
-            operationGate: operationGate
+            operationGate: operationGate,
+            defaults: defaults
         )
         return (dataSource, connections)
+    }
+
+    /// What an earlier build noted about kept shared profile keys is removed
+    /// once, when the data source starts; nothing else in the defaults is
+    /// touched, and a later start scans nothing.
+    func testKeptSharedProfileKeysAreRemovedWhenTheDataSourceStarts() {
+        defaults.set([4, 7], forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a")
+        defaults.set([9], forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b")
+        defaults.set("x", forKey: "DashConnect.other")
+
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-a t identity-a"))
+        XCTAssertNil(defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-b t identity-b"))
+        XCTAssertEqual(defaults.string(forKey: "DashConnect.other"), "x")
+        XCTAssertTrue(defaults.bool(forKey: PlatformDashConnectDataSource.keptSharedProfileKeysRemovedKey))
+
+        defaults.set([5], forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c")
+        _ = makeScopedDataSource(active: ActiveWallet("wallet-a"))
+        XCTAssertNotNil(
+            defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c"), "it runs once")
     }
 
     private static func twoQRRow(

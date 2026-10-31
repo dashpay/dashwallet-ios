@@ -42,17 +42,25 @@ protocol DashConnectDataSource {
     /// Turns a connection off. For a one-QR connection this disables the key
     /// the app was given on the identity and deletes the published response,
     /// and throws when the key could not be disabled — the connection then
-    /// stays as it was. The connection also stays, and that is thrown, while
+    /// stays as it was. A disconnect that disables keys of the app's on the
+    /// active identity, and is not stopped by another identity holding the
+    /// app, also disables the live DashPay profile keys of that identity
+    /// that no grant record names: their bound does not say which app was
+    /// given them. When those cannot be told apart, none is disabled and the
+    /// app's own keys still are. The result says which. The connection also stays, and that is thrown, while
     /// the app holds a key on another identity of the wallet. For a two-QR
-    /// connection it only changes the local status: that login derives the
-    /// same key every time and Platform never re-adds a disabled key, so
-    /// disabling it would lock the app out for good. Turning off a one-QR
+    /// connection with nothing else of the app's on the identity it only
+    /// changes the local status: that login derives the same key every time
+    /// and Platform never re-adds a disabled key, so disabling it would lock
+    /// the app out for good. A two-QR row whose app also holds a one-QR
+    /// grant there has that grant's keys disabled. Turning off a one-QR
     /// connection that replaced a two-QR one does disable those keys too.
     ///
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
-    func disconnect(id: String, scope: String?) async throws
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
 }
 
@@ -263,7 +271,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String, scope: String?) async throws {
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
@@ -275,6 +284,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
                 updatedAt: disconnectedAt
             )
         })
+        return DashConnectDisconnectResult()
     }
 
     func remove(id: String, scope: String?) async {

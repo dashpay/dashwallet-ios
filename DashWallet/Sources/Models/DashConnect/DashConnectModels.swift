@@ -200,6 +200,16 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
+/// What a disconnect did with the active identity's DashPay profile keys
+/// that no grant record names, besides turning off the app's own keys.
+struct DashConnectDisconnectResult: Equatable {
+    /// How many of them it turned off.
+    var profileKeysTurnedOff = 0
+    /// They could not be told apart, so none was turned off; the app's own
+    /// keys were.
+    var profileKeysUnchecked = false
+}
+
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String
