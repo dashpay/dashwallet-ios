@@ -88,29 +88,13 @@ final class SettingsRowsUITests: XCTestCase {
 /// as a named action. A plain tap on that element lands on the row's centre,
 /// which is the body that opens the explainer, so the taps go to the switch's
 /// place at the row's trailing end, as a finger would.
-final class AdvancedModeRowUITests: XCTestCase {
+extension SettingsRowsUITests {
 
     /// The switch's centre, from the row's trailing edge: `MenuItem` pads the
     /// row by 10 pt and the switch is 64 pt wide.
     private static let switchCenterFromTrailingEdge: CGFloat = 42
 
-    private var app: XCUIApplication!
-
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchEnvironment["SETTINGS_ROWS_UI_TEST"] = "1"
-        app.launch()
-    }
-
-    override func tearDown() {
-        app.terminate()
-        super.tearDown()
-    }
-
-    func testTappingTheSwitchDoesNotOpenTheExplainer() throws {
-
+    func testAdvancedModeSwitchDoesNotOpenTheExplainer() throws {
         let row = app.switches["settings_row_advanced_mode"]
         XCTAssert(row.waitForExistence(timeout: 15),
                   "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
@@ -130,6 +114,8 @@ final class AdvancedModeRowUITests: XCTestCase {
         // user's own choice, so it no longer turns on by itself afterwards.
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         addTeardownBlock { [self] in
+            // A failed check here must not stop the block before the restore.
+            continueAfterFailure = true
             // The row sits behind the explainer when it is open, so close it first.
             if sheet.exists {
                 let close = app.buttons["Close"].firstMatch
