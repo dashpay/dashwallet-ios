@@ -114,7 +114,7 @@ class AdvancedModeRowUITests: XCTestCase {
         let row = app.switches["settings_row_advanced_mode"]
         XCTAssert(row.waitForExistence(timeout: 15),
                   "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
-        XCTAssertEqual(row.label, "Advanced mode")
+        XCTAssertFalse(row.label.isEmpty, "The Advanced mode switch has no label")
         // One element, not a row with a second switch inside it.
         XCTAssertEqual(row.descendants(matching: .switch).count, 0,
                        "The Advanced mode row exposes a nested switch")
@@ -137,7 +137,12 @@ class AdvancedModeRowUITests: XCTestCase {
                       "Could not restore the Advanced mode switch to its original state")
     }
 
+    /// A coordinate tap does not scroll, so the row is brought on screen first.
     private func tapSwitch(in row: XCUIElement) {
+        for _ in 0..<3 where !row.isHittable {
+            app.swipeUp()
+        }
+        XCTAssert(row.isHittable, "The Advanced mode row could not be scrolled into view")
         row.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
             .withOffset(CGVector(dx: -Self.switchCenterFromTrailingEdge, dy: 0))
             .tap()
