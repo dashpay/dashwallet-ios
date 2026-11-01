@@ -1245,7 +1245,11 @@ struct TransactionDetailsSheet: View {
     }
     
     private func openGroupedTransaction(_ transaction: Transaction) {
-        groupedTransaction = transaction
+        // Animated here so the header's Back button comes in with the slide;
+        // InSheetPushStack sets its own animation for the two levels.
+        withAnimation(.smooth(duration: 0.35)) {
+            groupedTransaction = transaction
+        }
         // Cleared so that going back to the same row is a change VoiceOver acts on.
         focusedGroupRow = nil
         // After the detail is in the hierarchy, so VoiceOver reads the new screen
@@ -1257,7 +1261,9 @@ struct TransactionDetailsSheet: View {
     
     private func closeGroupedTransaction() {
         guard let closed = groupedTransaction else { return }
-        groupedTransaction = nil
+        withAnimation(.smooth(duration: 0.35)) {
+            groupedTransaction = nil
+        }
         // VoiceOver returns to the row that was opened.
         DispatchQueue.main.async {
             // Skipped when another transaction opened in the meantime.
@@ -1269,7 +1275,8 @@ struct TransactionDetailsSheet: View {
 
 /// A two-level route inside a sheet that moves like a navigation push: the pushed level
 /// slides in from the trailing edge while the root shifts toward the leading edge, and
-/// going back reverses it. Under Reduce Motion the levels cross-fade instead.
+/// going back reverses it. Under Reduce Motion the pushed level fades in and out over
+/// the root instead.
 ///
 /// The root stays in the hierarchy under the pushed level, so its scroll position
 /// survives the round trip; while covered it takes no taps and is hidden from VoiceOver.

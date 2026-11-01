@@ -113,10 +113,14 @@ class TXDetailViewController: BaseTxDetailsViewController {
     private var isRetryingAssetLock = false
     /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
     /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
+    /// An escape that rises from a controller this one presented is left to the default
+    /// handling, so it closes that controller and not this screen.
     var onAccessibilityEscape: (() -> Void)?
 
     override func accessibilityPerformEscape() -> Bool {
-        guard let onAccessibilityEscape else { return super.accessibilityPerformEscape() }
+        guard let onAccessibilityEscape, presentedViewController == nil else {
+            return super.accessibilityPerformEscape()
+        }
         onAccessibilityEscape()
         return true
     }
