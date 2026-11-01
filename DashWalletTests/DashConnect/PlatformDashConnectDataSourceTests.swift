@@ -136,6 +136,17 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(published.map(\.id), ["app"], "mainnet is served like any other network")
     }
 
+    func testMainnetWorksOnTheMainnetRuntimeAndRefusesTheTwoQrLogin() {
+        XCTAssertEqual(PlatformDashConnectDataSource.runtimeNetwork(for: .mainnet), .mainnet)
+        XCTAssertEqual(PlatformDashConnectDataSource.runtimeNetwork(for: .testnet), .testnet)
+        XCTAssertEqual(PlatformDashConnectDataSource.runtimeNetwork(for: .devnet), .devnet)
+        guard case .refused = PlatformDashConnectDataSource.login(on: .mainnet, protocolVersion: 13) else {
+            return XCTFail("mainnet below 14 has no two-QR contract to sign in with")
+        }
+        XCTAssertEqual(PlatformDashConnectDataSource.login(on: .testnet, protocolVersion: 13), .twoQR)
+        XCTAssertNotNil(PlatformDashConnectDataSource.login(on: .mainnet, protocolVersion: 14).sessionKeyTerms)
+    }
+
     func testConnectionsAreOfferedOnEveryNetworkByDefault() async {
         let viewModel = await ConnectionsViewModel(dataSource: MockDashConnectDataSource())
         let unavailable = await viewModel.featureUnavailable

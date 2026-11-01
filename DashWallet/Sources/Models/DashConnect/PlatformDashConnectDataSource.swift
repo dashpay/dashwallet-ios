@@ -676,7 +676,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             protocolVersion = nil
             unresolvedLoginReason = error.localizedDescription
         }
-        var login = protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved
+        var login = protocolVersion.map { Self.login(on: supportedNetwork, protocolVersion: $0) } ?? .unresolved
         if let appConnect = loginRequest.appConnect, let protocolVersion {
             (login, unresolvedLoginReason) = await appConnectLogin(
                 appConnect, protocolVersion: protocolVersion, context: context)
@@ -948,9 +948,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // prompt: from protocol version 14 the response goes to the App
         // Connect system contract and the wallet registers the key itself;
         // below it that contract does not exist and the two-QR flow runs.
-        // A pinned SDK reports its pin (testnet is pinned to 14 in
-        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet gets the App
-        // Connect login.
+        // The version is read from the network (`networkProtocolVersion`);
+        // on mainnet a two-QR answer never reaches here, since that request
+        // is refused before the sheet offers it.
         let protocolVersion: UInt32
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
@@ -1100,13 +1100,33 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return connection
     }
 
+    /// The login a request gets on `network` at `protocolVersion`. The
+    /// two-QR login's contract was never deployed on mainnet: a sign-in
+    /// there below protocol 14 is refused before the PIN.
+    static func login(on network: DashConnectNetwork, protocolVersion: UInt32) -> AppConnect.Login {
+        let login = AppConnect.login(protocolVersion: protocolVersion)
+        guard network == .mainnet, login == .twoQR else { return login }
+        return .refused(AppConnect.Refusal(.unsupported, NSLocalizedString(
+            "This network does not support this kind of sign-in yet.",
+            comment: "DashConnect App Connect v2")))
+    }
+
+    /// The SDK runtime network a data source for `network` works on.
+    static func runtimeNetwork(for network: DashConnectNetwork) -> Network {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
+        }
+    }
+
     /// The protocol version a login is chosen by. An SDK pinned to a
     /// version (`SwiftDashSDKHost.platformVersion(for:)`) builds only that
-    /// version's transitions, so its pin decides, with no network read. An
-    /// unpinned one gets the network's version from a proved read of the
-    /// current epoch, which throws when the read fails: the SDK's own
-    /// refreshed number is not used, since a failed refresh leaves its
-    /// starting value in place without an error.
+    /// version's transitions, so its pin decides, with no network read (no
+    /// network is pinned at present). An unpinned one gets the network's
+    /// version from a proved read of the current epoch, which throws when the
+    /// read fails: the SDK's own refreshed number is not used, since a failed
+    /// refresh leaves its starting value in place without an error.
     private static func networkProtocolVersion(sdk: SDK, network: Network) async throws -> UInt32 {
         let pin = await MainActor.run { SwiftDashSDKHost.platformVersion(for: network) }
         guard pin == 0 else { return pin }
@@ -2343,6 +2363,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         try validateNetwork(request.network)
         await showActiveWalletRows()
         let context = try await requireContext()
+        // On mainnet DashConnect opens with protocol 14: below it nothing of
+        // a scanned transition runs there.
+        if supportedNetwork == .mainnet {
+            let version = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
+            guard AppConnect.isAvailable(protocolVersion: version) else {
+                throw DashConnectPlatformError.loginContractUnavailable
+            }
+        }
         // The incoming bytes are parsed only to learn the intent — they are
         // never signed. Each branch validates the parsed values and rebuilds
         // the operation through the SDK itself.
@@ -4489,7 +4517,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: context missing: runningNetwork")
             throw DashConnectPlatformError.noWallet
         }
-        let expectedRuntimeNetwork: Network = supportedNetwork == .devnet ? .devnet : .testnet
+        let expectedRuntimeNetwork = Self.runtimeNetwork(for: supportedNetwork)
         guard network == expectedRuntimeNetwork else {
             Self.logger.error("🔗 DASHCONNECT :: wallet is on \(String(describing: network), privacy: .public), DashConnect here expects \(String(describing: expectedRuntimeNetwork), privacy: .public)")
             throw DashConnectPlatformError.unsupportedRuntimeNetwork(network)

@@ -298,9 +298,10 @@ final class ConnectionsViewModel: ObservableObject {
         hasUsername: @escaping @MainActor () -> Bool = { true },
         now: @escaping () -> Date = Date.init
     ) {
-        // Every network: a request is refused per network while its Platform
-        // protocol is below the one App Connect needs (14), so mainnet opens
-        // with its protocol 14 activation and no release.
+        // Every network: on mainnet a request is refused while its Platform
+        // protocol is below 14 (App Connect sign-ins, the two-QR login and
+        // scanned transitions alike), so mainnet opens with its protocol 14
+        // activation and no release.
         let computedFeatureUnavailable = featureUnavailable ?? false
         self.featureUnavailable = computedFeatureUnavailable
         self.hasUsername = hasUsername
