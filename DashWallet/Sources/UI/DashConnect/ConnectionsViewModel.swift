@@ -217,7 +217,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// so a retry sends them as they were and they cannot change.
     @Published private(set) var approvalTermsLocked = false
     /// The last approve attempt stopped because the identity's balance
-    /// cannot pay to register the keys; the sheet offers a top-up.
+    /// cannot pay to register the keys or to publish the response; the
+    /// sheet offers a top-up.
     @Published private(set) var approveNeedsTopUp = false
     @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest?
     @Published var isApproving = false
@@ -763,8 +764,12 @@ final class ConnectionsViewModel: ObservableObject {
     /// The `ac=failed` return of an App Connect request whose callback is on
     /// the website the wallet knows for its app; `nil` otherwise.
     static func noUsernameCallback(of request: DashKeyRequest) -> URL? {
-        guard let callback = request.appConnect?.callback, let host = callback.host?.lowercased(),
-              let brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: request.contractId.toBase58String()),
+        noUsernameCallback(appId: request.contractId.toBase58String(), callback: request.appConnect?.callback)
+    }
+
+    static func noUsernameCallback(appId: String, callback: URL?) -> URL? {
+        guard let callback, callback.scheme?.lowercased() == "https", let host = callback.host?.lowercased(),
+              let brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: appId),
               AppConnect.isHost(host, of: brandHost) else { return nil }
         return AppConnect.callbackURL(callback, status: .failed)
     }
@@ -849,9 +854,10 @@ final class ConnectionsViewModel: ObservableObject {
                 // terms of a retry: the sheet is read again so it shows them,
                 // when it still shows the request that failed.
                 let platformError = error as? DashConnectPlatformError
-                // A balance refusal is Platform turning the update away:
-                // nothing landed, so its terms do not bind a retry.
-                if !needsTopUp, platformError != .authorizationCancelled, platformError != .authorizationFailed,
+                // Whatever the error, a record still kept fixes the terms: a
+                // balance refusal may come after the keys were registered (the
+                // response's publish), or after an attempt that may land.
+                if platformError != .authorizationCancelled, platformError != .authorizationFailed,
                    let requestHash,
                    let access = await dataSource.recordedGrantedAccess(for: pendingLoginRequest),
                    var current = self.pendingRequest, let plan = current.login.grantPlan,
@@ -863,7 +869,8 @@ final class ConnectionsViewModel: ObservableObject {
                         self.pendingRequest = current
                     }
                 }
-                // Platform refused the update for the identity's balance.
+                // Platform refused the identity update, or the response's
+                // publish after it, for the identity's balance.
                 self.approveNeedsTopUp = needsTopUp
             }
         }
@@ -954,7 +961,7 @@ final class ConnectionsViewModel: ObservableObject {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.usesGroupingSeparator = false
-        formatter.maximumFractionDigits = 11
+        formatter.maximumFractionDigits = Self.creditDigits
         return formatter.string(from: NSDecimalNumber(
             decimal: Decimal(limit) / Decimal(PlatformCreditsFormatter.creditsPerDash)))
     }
@@ -996,17 +1003,39 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// The credits a typed amount in DASH comes to, or `nil` when it is not a
-    /// number this locale writes.
+    /// number this locale writes, or not a whole number of credits.
     func credits(fromDash text: String, locale: Locale = .current) -> UInt64? {
+        guard let credits = typedCredits(fromDash: text, locale: locale), Self.isWhole(credits) else { return nil }
+        return NSDecimalNumber(decimal: credits).uint64Value
+    }
+
+    private func typedCredits(fromDash text: String, locale: Locale) -> Decimal? {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, let dash = Decimal(string: trimmed, locale: locale), dash >= 0 else { return nil }
         let credits = dash * Decimal(PlatformCreditsFormatter.creditsPerDash)
-        guard credits <= Decimal(UInt64.max) else { return nil }
-        return NSDecimalNumber(decimal: credits).uint64Value
+        return credits <= Decimal(UInt64.max) ? credits : nil
+    }
+
+    /// The decimal places of DASH a credit is: a limit has no more.
+    private static let creditDigits = String(PlatformCreditsFormatter.creditsPerDash).count - 1
+
+    private static func isWhole(_ value: Decimal) -> Bool {
+        var value = value
+        var whole = Decimal()
+        NSDecimalRound(&whole, &value, 0, .down)
+        return whole == value
     }
 
     /// Why a typed funding limit cannot be set, or `nil` when it can.
     func fundingLimitError(forDash text: String, locale: Locale = .current) -> String? {
+        // Finer than a credit: said rather than cut to a smaller limit.
+        if let typed = typedCredits(fromDash: text, locale: locale), !Self.isWhole(typed) {
+            return String(
+                format: NSLocalizedString(
+                    "Use at most %ld digits after the decimal point",
+                    comment: "DashConnect funding limit keypad: the number of decimal places a limit can have"),
+                Self.creditDigits)
+        }
         guard let credits = credits(fromDash: text, locale: locale), credits > 0 else { return nil }
         guard credits <= AppConnect.v2BudgetCapCredits else {
             return String(

@@ -3987,6 +3987,32 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.termsAppliedPlan, recordedPlan, "a retry sends the recorded keys as they were")
     }
 
+    func testABalanceFailureAfterTheGrantWasRecordedFixesTheTermsToo() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to create document: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        let access = AppConnect.GrantedAccess(plan: AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 10, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
+            to: plan, now: Self.now)!)
+        let spy = LoginApprovalSpy(shown: [request])
+        spy.approveFailures = [Refused()]
+        spy.recordedAccess = access
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.now })
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approveNeedsTopUp && viewModel.approvalTermsLocked }
+        XCTAssertTrue(viewModel.approveNeedsTopUp)
+        XCTAssertTrue(
+            viewModel.approvalTermsLocked,
+            "the keys may be registered (the response's publish ran out of balance): a retry sends them as recorded")
+    }
+
     func testRecordedTermsNameTheKeysOneForOne() {
         let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash), Self.profile])
         let expiry = AppConnect.expiry(days: 30, from: Self.now)
@@ -4051,6 +4077,10 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         await waitUntil { viewModel.pendingRequest != nil }
         let us = Locale(identifier: "en_US")
         XCTAssertNotNil(viewModel.fundingLimitError(forDash: "0.00000000001", locale: us), "1 credit for two keys")
+        XCTAssertNotNil(
+            viewModel.fundingLimitError(forDash: "0.100000000005", locale: us), "finer than a credit is said, not cut")
+        XCTAssertNil(viewModel.credits(fromDash: "0.100000000005", locale: us))
+        XCTAssertEqual(viewModel.credits(fromDash: "0.1", locale: us), 10_000_000_000)
         XCTAssertFalse(viewModel.setFundingLimit(1))
         XCTAssertNil(viewModel.approveDisabledReason)
     }
@@ -4106,6 +4136,22 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertNil(
             ConnectionsViewModel.noUsernameCallback(of: MockDashConnectDataSource.sampleLoginRequest),
             "a request with no callback, or an app the wallet does not know, is not returned to")
+        let yappr = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        XCTAssertEqual(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://yap.pr/connect?r=d7")),
+            URL(string: "https://yap.pr/connect?r=d7&ac=failed"),
+            "a known app's own website gets the failure, its query kept")
+        XCTAssertNotNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://www.yap.pr/connect")))
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://notyap.pr/connect")),
+            "another website is not returned to")
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "http://yap.pr/connect")),
+            "nor a page that is not https")
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: "unknown", callback: URL(string: "https://yap.pr/connect")),
+            "nor is an app the wallet does not know")
     }
 
     func testWithoutAUsernameTheRequestLandsOnTheCreateUsernameState() async {

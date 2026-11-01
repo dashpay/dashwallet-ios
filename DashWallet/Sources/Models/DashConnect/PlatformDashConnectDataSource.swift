@@ -2083,9 +2083,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.tooManyKeysToReplace
         }
         var stored = grants.load()
-        // Whether an earlier submission of this grant may be on its way: only
-        // then can a refused one leave something that may still land.
-        let wasRecorded = stored.contains { $0.key == record.key }
         if let existing = stored.first(where: { $0.key == record.key }), !existing.isUnconfirmed, !record.isUnconfirmed {
             // Kept as it is: if its publish landed without confirming, its
             // values are the ones on Platform.
@@ -2122,16 +2119,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             try await submit()
         } catch {
-            // Platform turned the update away for the identity's balance: it
-            // is not on its way, and with no earlier submission of this grant
-            // nothing of it can land. The record goes, as it came.
-            if !wasRecorded, AppConnect.isInsufficientBalance(error) {
-                logger.info("🔗 DASHCONNECT :: the identity update was refused for the identity's balance; its record is dropped")
-                var all = grants.load()
-                all.removeAll { $0.key == record.key }
-                if await onDropped(all) { grants.save(all) }
-                throw error
-            }
+            // Settled by what the identity shows, whatever the error says: a
+            // refusal for the balance may follow an earlier attempt of the
+            // same broadcast that can still land, and the record may name a
+            // live key it reuses.
             for attempt in 0 ..< 3 {
                 if attempt > 0 { await pause(attempt) }
                 guard let view = await reread() else { continue }

@@ -2181,23 +2181,28 @@ extension AppConnectV2LoginTests {
 
     }
 
-    func testAnUpdateRefusedForBalanceDropsANewRecordOnly() async {
+    func testAnUpdateRefusedForBalanceIsSettledByTheIdentityLikeAnyFailure() async {
         struct Refused: Error, CustomStringConvertible {
             var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
         }
         let key = Self.addedAuthKey(7, data: 0x07)
-        let fresh = MemoryGrantStore()
+        let record = Self.pendingGrant([key])
+        let unknown = MemoryGrantStore()
         let calls = Calls()
-        _ = try? await Self.register(
-            Self.pendingGrant([key]), add: [key], store: fresh, calls: calls, submit: { throw Refused() })
-        XCTAssertEqual(fresh.grants, [], "refused before it was on its way: nothing can land")
-        XCTAssertEqual(calls.rereads, 0)
-        XCTAssertEqual(calls.dropped, 1, "its row is put back")
+        _ = try? await Self.register(record, add: [key], store: unknown, calls: calls, submit: { throw Refused() })
+        XCTAssertEqual(
+            unknown.grants.map(\.key), [record.key],
+            "an earlier attempt of the same broadcast may still land: the record stays until the identity tells")
+        XCTAssertGreaterThan(calls.rereads, 0)
+        XCTAssertEqual(calls.dropped, 0)
 
-        let earlier = Self.pendingGrant([key])
-        let retried = MemoryGrantStore([earlier])
-        _ = try? await Self.register(earlier, add: [key], store: retried, calls: Calls(), submit: { throw Refused() })
-        XCTAssertEqual(retried.grants.map(\.key), [earlier.key], "an earlier submission of it may still land")
+        let cannotLand = MemoryGrantStore()
+        let settled = Calls()
+        _ = try? await Self.register(
+            record, add: [key], store: cannotLand, calls: settled, submit: { throw Refused() },
+            views: [([Self.onIdentity(key, data: Data(repeating: 0xEE, count: 20))], [])])
+        XCTAssertEqual(cannotLand.grants, [], "the identity shows it cannot land: it goes, as any such record")
+        XCTAssertEqual(settled.dropped, 1)
     }
 
     func testAFailedUpdateThatCanNeverLandDropsItsRecord() async {
