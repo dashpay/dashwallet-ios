@@ -61,11 +61,12 @@ protocol DashConnectDataSource {
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
-    @discardableResult
+    ///
     /// `expecting` is what the user was told it does: a disconnect that
     /// turns out to do otherwise throws
     /// `DashConnectPlatformError.disconnectEffectChanged` before turning
     /// anything off. `.dependsOnPlatform` accepts either.
+    @discardableResult
     func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
         -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async

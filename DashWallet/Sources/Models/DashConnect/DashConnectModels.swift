@@ -293,8 +293,8 @@ struct ConnectionDetails: Equatable {
     /// so a renewal from a new code counts as the connection it made.
     var connectedAt: Date? = nil
     /// What is left of each key's budget, read from Platform; `nil` when it
-    /// was not read (a disconnected app, or the connection is on another
-    /// identity) or could not be (`fundingReadFailed`).
+    /// was not read (the connection is on another identity) or could not be
+    /// (`fundingReadFailed`).
     var keyFunding: [KeyFunding]? = nil
     var fundingReadFailed = false
 }

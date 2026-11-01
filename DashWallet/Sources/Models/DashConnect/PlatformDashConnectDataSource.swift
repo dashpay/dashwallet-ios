@@ -2936,17 +2936,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// What a disconnect of the app does, as far as the local records tell
-    /// (`disconnectsAsOneQR` with what only the identity shows unknown). A
-    /// one-QR row, or a registration of the app waiting for its update,
-    /// makes it one-QR whatever the identity shows. Otherwise a grant that
-    /// can reach Platform makes it depend on whether its keys or the
-    /// two-QR login's are live; without one nothing reaches Platform.
+    /// What a disconnect of the app does, as far as the local records tell:
+    /// `disconnectsAsOneQR` with what only the identity shows unknown. A
+    /// one-QR row makes it one-QR whatever the identity shows. A two-QR row
+    /// with a grant that can reach Platform depends on the identity: which
+    /// of its records are the active identity's, and which keys are live.
+    /// Without one, nothing reaches Platform.
     private func disconnectEffect(appId: String, stores: Stores, row: DAppConnection? = nil) -> DashConnectDisconnectEffect {
-        let grants = stores.grants.load().filter { $0.appContractId == appId }
-        if (row ?? rows(in: stores).first { $0.id == appId })?.loginKind == .oneQR || grants.contains(where: \.isPendingV2) {
-            return .revokesKeys
-        }
+        let row = row ?? rows(in: stores).first { $0.id == appId }
+        if row?.loginKind == .oneQR { return .revokesKeys }
         return disconnectRevokesKeys(appId: appId, stores: stores, row: row) ? .dependsOnPlatform : .localOnly
     }
 
@@ -2955,9 +2953,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// those grants are on, and is named only when it is one; the username
     /// only when that is the active identity, whose username is known here.
     ///
-    /// With `readsFunding`, and on the active identity, what is left of each
-    /// key's budget is read from Platform.
-    private func details(of appId: String, stores: Stores, readsFunding: Bool) async -> ConnectionDetails {
+    /// On the active identity, what is left of each key's budget is read
+    /// from Platform.
+    private func details(of appId: String, stores: Stores) async -> ConnectionDetails {
         // A record still waiting for its update counts too: one that holds a
         // live key is kept, and holds the row, until its keys are off.
         let all = stores.grants.load().filter { $0.appContractId == appId && $0.keyDisabled != true }
@@ -2975,7 +2973,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             access: ConnectionAccess(grants: grants), connectedAt: grants.map(\.publishedAt).max())
         // A waiting record's ids may be another key's: funding is read only
         // for confirmed grants.
-        if readsFunding, isActiveIdentity, !confirmed.isEmpty, let context {
+        if isActiveIdentity, !confirmed.isEmpty, let context {
             // A read-only query: it does not touch the identity copy the
             // operations that sign use, so it does not wait on them.
             let keyIds = Array(Set(grants.flatMap(\.keyIds))).sorted()
@@ -2990,7 +2988,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard let stores = await showActiveWalletRows(), scope == stores.scope else { return nil }
-        return await details(of: id, stores: stores, readsFunding: true)
+        return await details(of: id, stores: stores)
     }
 
     @MainActor
@@ -3293,6 +3291,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // an earlier two-QR login can only be looked for after it.
             if !holdsUnrecordedKey, !rowIsOneQR {
                 if let heldElsewhere = reasonHeldElsewhere() { throw heldElsewhere }
+                // A two-QR disconnect, nothing turned off: it has to be
+                // what the user was told too.
+                guard !Self.contradicts(expecting, revokesKeys: false) else {
+                    throw DashConnectPlatformError.disconnectEffectChanged
+                }
                 return (heldElsewhere: nil, asOneQR: false, profileKeys: DashConnectDisconnectResult())
             }
         }

@@ -1810,7 +1810,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
     func testARowsDisconnectOpensItsSheetAskingAtOnce() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.revokesKeys = true
+        spy.effect = .revokesKeys
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         let item = viewModel.rows[0]
@@ -1836,11 +1836,11 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
     func testTheQuestionASheetWasOpenedForIsAskedOnce() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.revokesKeys = true
+        spy.effect = .revokesKeys
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0], asksToDisconnect: true)
-        spy.revokesKeys = false
+        spy.effect = .localOnly
         XCTAssertEqual(viewModel.takeDisconnectQuestion(), .localOnly, "read when it is asked")
         XCTAssertNil(viewModel.takeDisconnectQuestion())
         XCTAssertNil(viewModel.connectionSheetMessage)
@@ -1850,7 +1850,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         var twoQR = Self.row("app", .active)
         twoQR.loginKind = .twoQR
         let spy = ConnectionStatusSpy(rows: [twoQR])
-        spy.revokesKeys = false
+        spy.effect = .localOnly
         spy.disconnectSucceeds = true
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
@@ -1895,13 +1895,13 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
     func testADisconnectConfirmedWithTextThatNoLongerHoldsDoesNotRun() async throws {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.revokesKeys = false
+        spy.effect = .localOnly
         spy.disconnectSucceeds = true
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         let item = viewModel.rows[0]
         viewModel.showConnection(item)
-        spy.revokesKeys = true
+        spy.effect = .revokesKeys
 
         viewModel.disconnectShown(asked: .localOnly)
         XCTAssertFalse(viewModel.isDisconnecting)
@@ -1912,13 +1912,27 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         viewModel.disconnectShown(asked: .revokesKeys)
         await waitUntil { viewModel.connections.isEmpty && !viewModel.isDisconnecting }
         XCTAssertTrue(viewModel.connections.isEmpty, "asked with what holds, it runs")
+        XCTAssertEqual(spy.expected, [.revokesKeys], "held to what it was confirmed as")
+    }
+
+    func testADisconnectThatDependsOnPlatformIsHeldToThatAnswer() async throws {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        spy.effect = .dependsOnPlatform
+        spy.disconnectSucceeds = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows[0])
+        XCTAssertEqual(viewModel.disconnectQuestion(), .dependsOnPlatform)
+        viewModel.disconnectShown(asked: .dependsOnPlatform)
+        await waitUntil { viewModel.connections.isEmpty && !viewModel.isDisconnecting }
+        XCTAssertEqual(spy.expected, [.dependsOnPlatform])
     }
 
     func testTheSheetAsksWithTheDataSourcesAnswerBeforeItsDetailsAreRead() async {
         var twoQR = Self.row("app", .active)
         twoQR.loginKind = .twoQR
         let spy = ConnectionStatusSpy(rows: [twoQR])
-        spy.revokesKeys = true
+        spy.effect = .revokesKeys
         spy.detailsDelay = 200_000_000
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
@@ -1969,7 +1983,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
                 KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
                 KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
             ])
-        spy.revokesKeys = false
+        spy.effect = .localOnly
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0])
@@ -2009,7 +2023,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         var walletB = walletA
         walletB.scope = "b"
         let spy = ConnectionStatusSpy(rows: [walletA])
-        spy.revokesKeys = true
+        spy.effect = .revokesKeys
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0], asksToDisconnect: true)
@@ -2043,7 +2057,10 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     /// unset.
     var details: ConnectionDetails?
     /// What the data source says a disconnect would do; no answer when unset.
-    var revokesKeys: Bool?
+    var effect: DashConnectDisconnectEffect?
+    private var storedExpected: [DashConnectDisconnectEffect] = []
+    /// What each disconnect was told it does, in order.
+    var expected: [DashConnectDisconnectEffect] { lock.withLock { storedExpected } }
 
     init(rows: [DAppConnection]) {
         self.rows = CurrentValueSubject(rows)
@@ -2061,7 +2078,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
         return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
     }
 
-    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect? { revokesKeys.map { $0 ? .revokesKeys : .localOnly } }
+    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect? { effect }
 
     func sendRows(_ value: [DAppConnection]) { rows.send(value) }
 
@@ -2081,6 +2098,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     func disconnect(
         id: String, scope: String?, expecting: DashConnectDisconnectEffect
     ) async throws -> DashConnectDisconnectResult {
+        lock.withLock { storedExpected.append(expecting) }
         if disconnectDelay > 0 { try? await Task.sleep(nanoseconds: disconnectDelay) }
         guard disconnectSucceeds, rows.value.contains(where: { $0.id == id }) else {
             throw PurchaseSpyError.unsupported
