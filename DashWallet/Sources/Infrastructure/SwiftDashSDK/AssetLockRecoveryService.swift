@@ -343,6 +343,7 @@ struct AssetLockRecoveryService {
             try await DWIdentityAuthorizer().authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             outcome.cancelled = true
+            AssetLockRetryLog.logBulkOutcome("outcome=cancelled before the first lock", count: pending.count)
             return outcome
         } catch {
             // Authentication can also time out or fail outright. Reporting
@@ -398,7 +399,13 @@ struct AssetLockRecoveryService {
                     statusBeforeRaw: item.statusRaw)
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 Self.apply(.cancelled, to: &outcome, consecutiveFailures: &consecutiveFailures)
-                DWLogger.log("LOCK-RETRY bulk cancelled at \(index + 1)/\(pending.count)")
+                AssetLockRetryLog.logOutcome(
+                    "outcome=cancelled",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
                 return outcome
             } catch {
                 let message = (error as? LocalizedError)?.errorDescription

@@ -66,14 +66,14 @@ final class AssetLockDiagnosticsTests: XCTestCase {
     }
 
     private func record(
+        outPointHex: String? = nil,
         statusRaw: Int = 5,
         fundingTypeRaw: Int = 5,
         transactionBytes: Data = Data(),
         lastFailure: AssetLockFailureRecord? = nil
     ) -> AssetLockDiagnosticRecord {
         AssetLockDiagnosticRecord(
-            txidDisplayHex: txidDisplay,
-            vout: 0,
+            outPointHex: outPointHex ?? "\(txidDisplay):0",
             fundingTypeRaw: fundingTypeRaw,
             statusRaw: statusRaw,
             amountDuffs: 250_000_000,
@@ -154,6 +154,17 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         XCTAssertEqual(DiagnosticLogExporter.assetLockStatusName(-1), "unknown")
         XCTAssertEqual(DiagnosticLogExporter.fundingTypeName(42), "unknown")
         XCTAssertEqual(DiagnosticLogExporter.assetLockStatusName(6), "drainCompleted")
+    }
+
+    func testMalformedStoredOutPointIsPrintedAsStoredNeverWithAMadeUpVout() {
+        for malformed in [txidDisplay, "\(txidDisplay):x", ":3", "\(txidDisplay):1:2"] {
+            let line = DiagnosticLogExporter.assetLockSection([record(outPointHex: malformed)])[1]
+            XCTAssertTrue(
+                line.hasPrefix("  \(malformed) (stored outpoint did not parse)  "),
+                "unexpected line for \(malformed): \(line)")
+        }
+        let wellFormed = DiagnosticLogExporter.assetLockSection([record(outPointHex: "\(txidDisplay):4")])[1]
+        XCTAssertTrue(wellFormed.hasPrefix("  \(txidDisplay):4  type="))
     }
 
     func testConsumedIsTheStatusTheSectionLeavesOut() {
@@ -352,6 +363,12 @@ final class AssetLockDiagnosticsTests: XCTestCase {
             "🔁 LOCK-RETRY :: single txid=\(txidDisplay):0 "
                 + "type=5 (assetLockShieldedAddressTopUp) statusBefore=5 (recoveredFromChain) "
                 + "FAILED case=assetLockTooManyInputs detail=too many inputs: 121 (max 100)")
+    }
+
+    func testBulkPassLineCarriesTheCountAndOutcome() {
+        XCTAssertEqual(
+            AssetLockRetryLog.bulkLine(count: 3, result: "outcome=cancelled before the first lock"),
+            "🔁 LOCK-RETRY :: bulk count=3 outcome=cancelled before the first lock")
     }
 
     func testRetryLogLineSaysUnknownWhenTheStatusBeforeWasNotRead() {

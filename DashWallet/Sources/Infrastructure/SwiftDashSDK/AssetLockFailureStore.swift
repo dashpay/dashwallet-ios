@@ -247,6 +247,19 @@ enum AssetLockRetryLog {
         return "\(prefix) \(event) txid=\(outPoint) type=\(type) statusBefore=\(status) \(result)"
     }
 
+    /// `<prefix> bulk count=<n> <result>`: a line about a bulk pass as a whole,
+    /// for an outcome no single lock produced (the pass's one PIN prompt).
+    /// Pure, so the format is pinned by a test.
+    static func bulkLine(count: Int, result: String) -> String {
+        "\(lockRetryPrefix) bulk count=\(count) \(result)"
+    }
+
+    /// Log a pass-level outcome. Never touches the failure store: nothing in
+    /// it is a failure of one lock.
+    static func logBulkOutcome(_ result: String, count: Int) {
+        write(bulkLine(count: count, result: result), isFailure: false)
+    }
+
     /// Write a finished line to both sinks.
     static func write(_ line: String, isFailure: Bool) {
         if isFailure {

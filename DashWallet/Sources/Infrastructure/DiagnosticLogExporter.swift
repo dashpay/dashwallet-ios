@@ -37,9 +37,10 @@ import SwiftDashSDK
 /// section's formatting is a pure function: captured on the main actor from
 /// the SDK's `PersistentAssetLock` rows, formatted off it.
 struct AssetLockDiagnosticRecord: Equatable, Sendable {
-    /// Display-order hex, the form a block explorer shows.
-    let txidDisplayHex: String
-    let vout: UInt32
+    /// `PersistentAssetLock.outPointHex` as stored: `<txid display hex>:<vout>`,
+    /// display order being the form a block explorer shows. Kept unparsed, so
+    /// a malformed row is printed as it is rather than with a made-up vout.
+    let outPointHex: String
     let fundingTypeRaw: Int
     let statusRaw: Int
     let amountDuffs: Int64
@@ -50,7 +51,11 @@ struct AssetLockDiagnosticRecord: Equatable, Sendable {
     let transactionBytes: Data
     let lastFailure: AssetLockFailureRecord?
 
-    var outPointKey: String { "\(txidDisplayHex):\(vout)" }
+    /// Whether `outPointHex` has the `<txid>:<vout>` shape the SDK writes.
+    var outPointIsWellFormed: Bool {
+        let parts = outPointHex.split(separator: ":", omittingEmptySubsequences: false)
+        return parts.count == 2 && !parts[0].isEmpty && UInt32(parts[1]) != nil
+    }
 }
 
 enum DiagnosticLogExportError: LocalizedError {
@@ -275,12 +280,8 @@ struct DiagnosticLogExporter {
         let failures = AssetLockFailureStore.shared.allFailures()
         return rows.compactMap { row in
             guard row.statusRaw != consumedAssetLockStatus else { return nil }
-            let parts = row.outPointHex.split(separator: ":", maxSplits: 1)
-            let txidDisplayHex = parts.first.map(String.init) ?? row.outPointHex
-            let vout = parts.count == 2 ? UInt32(parts[1]) ?? 0 : 0
             return AssetLockDiagnosticRecord(
-                txidDisplayHex: txidDisplayHex,
-                vout: vout,
+                outPointHex: row.outPointHex,
                 fundingTypeRaw: row.fundingTypeRaw,
                 statusRaw: row.statusRaw,
                 amountDuffs: row.amountDuffs,
@@ -310,8 +311,9 @@ struct DiagnosticLogExporter {
             return lines
         }
         for record in records {
+            let outPointNote = record.outPointIsWellFormed ? "" : " (stored outpoint did not parse)"
             lines.append(
-                "  \(record.outPointKey)  "
+                "  \(record.outPointHex)\(outPointNote)  "
                     + "type=\(record.fundingTypeRaw) (\(fundingTypeName(record.fundingTypeRaw)))  "
                     + "status=\(record.statusRaw) (\(assetLockStatusName(record.statusRaw)))  "
                     + "amount=\(record.amountDuffs) duffs")
