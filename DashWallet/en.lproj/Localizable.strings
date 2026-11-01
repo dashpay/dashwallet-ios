@@ -6847,6 +6847,9 @@
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
 
+/* DashConnect */
+"This network does not support DashConnect requests yet." = "This network does not support DashConnect requests yet.";
+
 /* DashConnect funding limit keypad: the number of decimal places a limit can have */
 "Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
 

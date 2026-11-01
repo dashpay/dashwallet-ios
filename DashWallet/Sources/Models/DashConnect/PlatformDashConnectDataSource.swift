@@ -32,8 +32,9 @@ struct DashConnectAppMetadata: Equatable {
 enum DashConnectFallbackAppMetadata {
     // Fallback-only branding keyed by the trustworthy contract id, not the spoofable QR label.
     private static let knownApps: [String: DashConnectAppMetadata] = [
-        // Yappr's App Connect App ID on testnet (its release set of
-        // 2026-10-21); it has none on mainnet yet.
+        // Yappr's App Connect App ID on testnet.
+        // TODO(yappr-mainnet-app-id): Yappr's mainnet App ID, once it is
+        // registered there.
         "D8benQGnycUTXbT8GRAaYf3GZMKVcWESiF9NyyW1Bi4e": .init(name: "Yappr", url: "yap.pr"),
         // An earlier Yappr contract, which the test vectors use.
         "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr"),
@@ -101,6 +102,9 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
     case loginContractUnavailable
+    /// The network's Platform protocol is below the one DashConnect needs
+    /// there.
+    case networkNotReady
 
     var errorDescription: String? {
         switch self {
@@ -220,6 +224,9 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 comment: "DashConnect")
         case .loginContractUnavailable:
             return "The DashConnect login contract is not available on this network."
+        case .networkNotReady:
+            return NSLocalizedString(
+                "This network does not support DashConnect requests yet.", comment: "DashConnect")
         }
     }
 
@@ -728,9 +735,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         context: Context
     ) async -> (AppConnect.Login, String?) {
         guard AppConnect.isAvailable(protocolVersion: protocolVersion) else {
-            return (.refused(AppConnect.Refusal(.unsupported, NSLocalizedString(
-                "This network does not support this kind of sign-in yet.",
-                comment: "DashConnect App Connect v2"))), nil)
+            return (.refused(.networkBelowAppConnect), nil)
         }
         do {
             var plan = try AppConnect.grantPlan(for: uri, now: now())
@@ -963,7 +968,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // The sheet showed the login `makeConnectionRequest` resolved, with
         // its terms for the one-QR login. If the network now gets the other
         // one, what was approved is not what would run.
-        let login = AppConnect.login(protocolVersion: protocolVersion)
+        let login = Self.login(on: supportedNetwork, protocolVersion: protocolVersion)
         // A v2 request was approved with the plan the sheet showed. It has
         // to be the plan for this request, and the network has to still take
         // App Connect.
@@ -1106,9 +1111,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     static func login(on network: DashConnectNetwork, protocolVersion: UInt32) -> AppConnect.Login {
         let login = AppConnect.login(protocolVersion: protocolVersion)
         guard network == .mainnet, login == .twoQR else { return login }
-        return .refused(AppConnect.Refusal(.unsupported, NSLocalizedString(
-            "This network does not support this kind of sign-in yet.",
-            comment: "DashConnect App Connect v2")))
+        return .refused(.networkBelowAppConnect)
     }
 
     /// The SDK runtime network a data source for `network` works on.
@@ -1122,8 +1125,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The protocol version a login is chosen by. An SDK pinned to a
     /// version (`SwiftDashSDKHost.platformVersion(for:)`) builds only that
-    /// version's transitions, so its pin decides, with no network read (no
-    /// network is pinned at present). An unpinned one gets the network's
+    /// version's transitions, so its pin decides, with no network read. An
+    /// unpinned one gets the network's
     /// version from a proved read of the current epoch, which throws when the
     /// read fails: the SDK's own refreshed number is not used, since a failed
     /// refresh leaves its starting value in place without an error.
@@ -2368,7 +2371,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if supportedNetwork == .mainnet {
             let version = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
             guard AppConnect.isAvailable(protocolVersion: version) else {
-                throw DashConnectPlatformError.loginContractUnavailable
+                throw DashConnectPlatformError.networkNotReady
             }
         }
         // The incoming bytes are parsed only to learn the intent — they are

@@ -323,6 +323,13 @@ extension AppConnect {
             self.reason = reason
         }
 
+        /// The network's Platform protocol is below the one App Connect needs.
+        static var networkBelowAppConnect: Refusal {
+            Refusal(.unsupported, NSLocalizedString(
+                "This network does not support this kind of sign-in yet.",
+                comment: "DashConnect App Connect v2"))
+        }
+
         init(_ error: AppConnectRequestError) {
             switch error {
             case .unsupported(let reason): self.init(.unsupported, reason)
