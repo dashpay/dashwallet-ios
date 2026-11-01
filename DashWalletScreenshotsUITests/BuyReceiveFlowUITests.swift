@@ -388,7 +388,7 @@ class BuyReceiveFlowUITests: XCTestCase {
         return timeout > 0 ? cell.waitForExistence(timeout: timeout) : cell.exists
     }
 
-    /// Taps the navigation bar's Back button until the SelectCoin (Buy list) screen is shown again.
+    /// Taps navigationbar-back until the SelectCoin (Buy list) screen is shown again.
     /// Returns false only if we've exhausted taps and still aren't on the Buy list.
     @discardableResult
     private func ensureOnBuyList(maxTaps: Int = 6) -> Bool {
@@ -398,7 +398,7 @@ class BuyReceiveFlowUITests: XCTestCase {
             let alertOK = app.alerts.firstMatch.buttons.firstMatch
             if alertOK.exists { alertOK.tap() }
 
-            let back = app.buttons["Back"].firstMatch
+            let back = app.buttons["navigationbar-back"].firstMatch
             guard back.exists else { break }
             back.tap()
             if onBuyList(timeout: 3) { return true }
