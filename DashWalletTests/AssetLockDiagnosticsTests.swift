@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import SwiftData
 import SwiftDashSDK
 import XCTest
 @testable import dashpay
@@ -165,6 +166,55 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         }
         let wellFormed = DiagnosticLogExporter.assetLockSection([record(outPointHex: "\(txidDisplay):4")])[1]
         XCTAssertTrue(wellFormed.hasPrefix("  \(txidDisplay):4  type="))
+    }
+
+    // MARK: capture from the SDK store
+
+    /// In-memory, without CloudKit: the dashpay host's iCloud entitlement
+    /// otherwise turns the default configuration into a CloudKit store that
+    /// refuses the schema (see `PlatformBalanceReaderTests`).
+    private func makeContainer() throws -> ModelContainer {
+        let configuration = ModelConfiguration(
+            schema: DashModelContainer.schema,
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none)
+        return try ModelContainer(for: DashModelContainer.schema, configurations: [configuration])
+    }
+
+    func testCaptureReturnsTheRestoredLockWithItsStoredFailure() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let walletId = Data(repeating: 0xA1, count: 32)
+        let otherWalletId = Data(repeating: 0xB2, count: 32)
+        let restoredOutPoint = "\(txidDisplay):0"
+        func lock(_ outPointHex: String, wallet: Data, statusRaw: Int) -> PersistentAssetLock {
+            PersistentAssetLock(
+                outPointHex: outPointHex,
+                walletId: wallet,
+                transactionBytes: Data(),
+                fundingTypeRaw: 5,
+                identityIndexRaw: -1,
+                amountDuffs: 250_000_000,
+                statusRaw: statusRaw)
+        }
+        context.insert(lock(restoredOutPoint, wallet: walletId, statusRaw: 5))
+        context.insert(lock("\(String(repeating: "ab", count: 32)):1", wallet: walletId, statusRaw: 4))
+        context.insert(lock("\(String(repeating: "cd", count: 32)):0", wallet: otherWalletId, statusRaw: 1))
+        try context.save()
+
+        let store = AssetLockFailureStore(defaults: defaults)
+        let failure = store.record(
+            txidWire: txidWire,
+            vout: 0,
+            error: PlatformWalletError.assetLockTooManyInputs("too many inputs: 121 (max 100)"))
+
+        let captured = try XCTUnwrap(DiagnosticLogExporter.captureAssetLocks(
+            walletId: walletId, context: context, failureStore: store))
+
+        // The consumed row and the other wallet's row are left out.
+        XCTAssertEqual(captured.map(\.outPointHex), [restoredOutPoint])
+        XCTAssertEqual(captured.first?.statusRaw, 5)
+        XCTAssertEqual(captured.first?.lastFailure, failure)
     }
 
     func testConsumedIsTheStatusTheSectionLeavesOut() {

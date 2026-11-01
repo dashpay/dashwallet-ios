@@ -273,11 +273,26 @@ struct DiagnosticLogExporter {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
               let container = SwiftDashSDKHost.shared.modelContainer
         else { return nil }
+        return captureAssetLocks(
+            walletId: walletId,
+            context: container.mainContext,
+            failureStore: .shared)
+    }
+
+    /// The capture over a given context and failure store, so a test runs the
+    /// real fetch, filter and join against an in-memory container. `nil` when
+    /// the fetch fails.
+    @MainActor
+    static func captureAssetLocks(
+        walletId: Data,
+        context: ModelContext,
+        failureStore: AssetLockFailureStore
+    ) -> [AssetLockDiagnosticRecord]? {
         let descriptor = FetchDescriptor<PersistentAssetLock>(
             predicate: PersistentAssetLock.predicate(walletId: walletId),
             sortBy: [SortDescriptor(\.createdAt)])
-        guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
-        let failures = AssetLockFailureStore.shared.allFailures()
+        guard let rows = try? context.fetch(descriptor) else { return nil }
+        let failures = failureStore.allFailures()
         return rows.compactMap { row in
             guard row.statusRaw != consumedAssetLockStatus else { return nil }
             return AssetLockDiagnosticRecord(
