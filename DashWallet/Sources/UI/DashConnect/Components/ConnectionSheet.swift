@@ -410,7 +410,7 @@ struct ConnectionSheet: View {
                 comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
         case .dependsOnPlatform:
             return NSLocalizedString(
-                "Its keys may be turned off on Platform for good, or the connection only turned off on this device, as Platform shows once it is read. DashPay profile keys not linked to any connection may be turned off too.",
+                "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.",
                 comment: "DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation")
         }
     }

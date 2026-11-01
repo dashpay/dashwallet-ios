@@ -146,13 +146,15 @@ extension AppConnect {
 
         /// What a v2 grant record notes its approval gave, once its response
         /// is sealed: an encryption key only when a slot carries one
-        /// (`sendsEncryptionKey`). A response sealed again (`resealed`) is
-        /// noted again; otherwise what the record noted stays.
-        static func noted(
-            _ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool, resealed: Bool
-        ) -> GrantedAccess {
-            if !resealed, let recorded { return recorded }
-            return GrantedAccess(plan: plan, receivesMessages: sendsEncryptionKey)
+        /// (`sendsEncryptionKey`). The keys stay as `recorded` noted them: a
+        /// retry, or an approval of a request already recorded, registers
+        /// the keys of the first attempt, with its terms. One this build
+        /// cannot read stays as it was.
+        static func noted(_ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool) -> GrantedAccess {
+            if let recorded, recorded.isUnreadable { return recorded }
+            return GrantedAccess(
+                keys: recorded?.keys ?? GrantedAccess(plan: plan, receivesMessages: sendsEncryptionKey).keys,
+                receivesMessages: sendsEncryptionKey)
         }
 
         init(from decoder: Decoder) throws {

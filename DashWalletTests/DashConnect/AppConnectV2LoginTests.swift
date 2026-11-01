@@ -1459,19 +1459,20 @@ extension AppConnectV2LoginTests {
         let plan = try Self.vectorPlan()
         XCTAssertFalse(plan.encryption.isEmpty, "the request asks for an encryption key")
 
-        let omitted = AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: false, resealed: false)
+        let omitted = AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: false)
         XCTAssertFalse(omitted.receivesMessages, "every encryption slot was left out")
         XCTAssertEqual(omitted.keys.count, plan.auth.count)
+        XCTAssertTrue(AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: true).receivesMessages)
 
-        let sent = AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: true, resealed: false)
-        XCTAssertTrue(sent.receivesMessages)
-
-        XCTAssertEqual(
-            AppConnect.GrantedAccess.noted(sent, plan: plan, sendsEncryptionKey: false, resealed: false), sent,
-            "a confirmed record keeps what its published response gave")
-        XCTAssertFalse(
-            AppConnect.GrantedAccess.noted(sent, plan: plan, sendsEncryptionKey: false, resealed: true).receivesMessages,
-            "a retry sealed again without the key notes it again")
+        // A retry registers the first attempt's keys, with its terms: a later
+        // plan does not change them, and the message access follows the slots.
+        let first = AppConnect.GrantedAccess(
+            keys: [.init(bound: plan.auth[0].storedBound, isCritical: false, totalBudget: 1, expiresAt: 7,
+                         isAdministered: false)],
+            receivesMessages: true)
+        let retried = AppConnect.GrantedAccess.noted(first, plan: plan, sendsEncryptionKey: false)
+        XCTAssertEqual(retried.keys, first.keys)
+        XCTAssertFalse(retried.receivesMessages)
     }
 
     func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {

@@ -222,6 +222,12 @@ enum DashConnectDisconnectEffect: Equatable {
     /// Either, depending on what the identity shows: a two-QR row with a
     /// grant whose keys may or may not still be live.
     case dependsOnPlatform
+
+    /// Whether a disconnect that does `effect` is what a user told this was
+    /// asked for: the same, or either when told it depends on Platform.
+    func accepts(_ effect: DashConnectDisconnectEffect) -> Bool {
+        self == .dependsOnPlatform || self == effect
+    }
 }
 
 /// What a disconnect did with the active identity's DashPay profile keys

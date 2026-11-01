@@ -1899,7 +1899,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 encryptionKeyIds: encryptionSlots.compactMap(\.keyId)
             )
         record.grantedAccess = AppConnect.GrantedAccess.noted(
-            record.grantedAccess, plan: plan, sendsEncryptionKey: !encryptionSlots.isEmpty, resealed: pendingRetry != nil)
+            record.grantedAccess, plan: plan, sendsEncryptionKey: !encryptionSlots.isEmpty)
         let connection = Self.makeConnection(
             preview: consent, status: .active, updatedAt: now(), loginKind: .oneQR)
         let modelContainer = context.modelContainer
@@ -3000,13 +3000,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return disconnectEffect(appId: id, stores: stores, row: row)
     }
 
-    /// Whether a disconnect that does `effect` is what the user was told
-    /// (`expecting`): the same, or anything when told it depends on
-    /// Platform.
-    static func accepts(_ expecting: DashConnectDisconnectEffect, _ effect: DashConnectDisconnectEffect) -> Bool {
-        expecting == .dependsOnPlatform || expecting == effect
-    }
-
     private func disconnectInTurn(
         id: String, scope: String?, expecting: DashConnectDisconnectEffect
     ) async throws -> DashConnectDisconnectResult {
@@ -3020,8 +3013,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard scope == stores.scope else {
             throw DashConnectPlatformError.walletChanged
         }
-        let row = rows(in: stores).first { $0.id == id }
-        let rowIsOneQR = row?.loginKind == .oneQR
+        // A row gone since the question: there is nothing it was asked about.
+        guard let row = rows(in: stores).first(where: { $0.id == id }) else {
+            throw DashConnectPlatformError.disconnectEffectChanged
+        }
+        let rowIsOneQR = row.loginKind == .oneQR
         // What can reach Platform (`disconnectRevokesKeys`): a confirmed
         // grant of the app, and a registration of it whose outcome is not
         // known yet. Which of the two disconnects runs is settled by the
@@ -3031,14 +3027,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // revocation.
         var result = DashConnectDisconnectResult()
         // The records changed since the question: refused before the PIN
-        // prompt. What the identity shows is held to it after the read.
+        // prompt. A one-QR row's revocation is one-QR whatever the identity
+        // shows, so the question it was asked holds after the read too.
         let effect = disconnectEffect(appId: id, stores: stores, row: row)
-        guard Self.accepts(expecting, effect) else {
+        guard expecting.accepts(effect) else {
             throw DashConnectPlatformError.disconnectEffectChanged
         }
         if effect != .localOnly {
             let revocation = try await revokeAppConnectGrants(
-                appContractId: id, rowIsOneQR: rowIsOneQR, stores: stores, expecting: expecting)
+                appContractId: id, rowIsOneQR: rowIsOneQR, stores: stores)
             // The row stands for the app, and the app still holds a key on
             // another identity of this wallet, or may still be given one
             // there. That identity's keys can only be read and disabled
@@ -3247,8 +3244,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func revokeAppConnectGrants(
         appContractId: String,
         rowIsOneQR: Bool,
-        stores: Stores,
-        expecting: DashConnectDisconnectEffect
+        stores: Stores
     ) async throws -> (heldElsewhere: DashConnectPlatformError?, asOneQR: Bool, profileKeys: DashConnectDisconnectResult) {
         // The row was picked in the wallet `stores` belongs to; another
         // wallet's identity is not the one the row belongs to.
@@ -3288,11 +3284,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // an earlier two-QR login can only be looked for after it.
             if !holdsUnrecordedKey, !rowIsOneQR {
                 if let heldElsewhere = reasonHeldElsewhere() { throw heldElsewhere }
-                // A two-QR disconnect, nothing turned off: it has to be
-                // what the user was told too.
-                guard Self.accepts(expecting, .localOnly) else {
-                    throw DashConnectPlatformError.disconnectEffectChanged
-                }
                 return (heldElsewhere: nil, asOneQR: false, profileKeys: DashConnectDisconnectResult())
             }
         }
@@ -3358,12 +3349,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             holdsUnrevokedGrant: granted.contains { $0.keyDisabled != true },
             holdsLiveTwoQRLoginKey: !liveTwoQRLoginKeyIds.isEmpty,
             hasRegistrationThatMayStillLand: !mayStillLand.isEmpty || !pendingV2.isEmpty)
-        // Before anything is turned off: a one-QR disconnect turns the app's
-        // keys off for good, a two-QR one keeps its login key. Either way it
-        // has to be what the user was told.
-        guard Self.accepts(expecting, asOneQR ? .revokesKeys : .localOnly) else {
-            throw DashConnectPlatformError.disconnectEffectChanged
-        }
         let checksUnrecordedKeys = asOneQR
         guard AppConnect.sessionKeyIdsMissing(from: currentPublicKeys, for: granted).isEmpty else {
             // Platform never removes a key, so the node that answered is

@@ -3443,15 +3443,15 @@ final class AppConnectLoginTests: XCTestCase {
     }
 
     func testWhatADisconnectQuestionAccepts() {
-        let accepts = PlatformDashConnectDataSource.accepts
-        XCTAssertTrue(accepts(.revokesKeys, .revokesKeys))
-        XCTAssertFalse(accepts(.revokesKeys, .localOnly))
-        XCTAssertFalse(accepts(.revokesKeys, .dependsOnPlatform), "told it is sure, it is refused before the PIN")
-        XCTAssertTrue(accepts(.localOnly, .localOnly))
-        XCTAssertFalse(accepts(.localOnly, .revokesKeys))
-        XCTAssertFalse(accepts(.localOnly, .dependsOnPlatform))
+        XCTAssertTrue(DashConnectDisconnectEffect.revokesKeys.accepts(.revokesKeys))
+        XCTAssertFalse(DashConnectDisconnectEffect.revokesKeys.accepts(.localOnly))
+        XCTAssertFalse(
+            DashConnectDisconnectEffect.revokesKeys.accepts(.dependsOnPlatform), "told it is sure, it is asked again")
+        XCTAssertTrue(DashConnectDisconnectEffect.localOnly.accepts(.localOnly))
+        XCTAssertFalse(DashConnectDisconnectEffect.localOnly.accepts(.revokesKeys))
+        XCTAssertFalse(DashConnectDisconnectEffect.localOnly.accepts(.dependsOnPlatform))
         for effect: DashConnectDisconnectEffect in [.revokesKeys, .localOnly, .dependsOnPlatform] {
-            XCTAssertTrue(accepts(.dependsOnPlatform, effect))
+            XCTAssertTrue(DashConnectDisconnectEffect.dependsOnPlatform.accepts(effect))
         }
     }
 

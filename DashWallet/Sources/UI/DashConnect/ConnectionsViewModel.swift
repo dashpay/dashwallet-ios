@@ -704,19 +704,20 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// A disconnect confirmed on the shown sheet with what it said
     /// (`asked`). It runs only if the sheet still offers one and the local
-    /// records still tell the same; otherwise the sheet shows what holds now,
-    /// and why nothing ran. The data source holds the disconnect to `asked`
-    /// once it has read the identity.
+    /// records still describe it so (`DashConnectDisconnectEffect.accepts`);
+    /// otherwise the sheet shows what holds now, and why nothing ran. The
+    /// data source holds the disconnect to `asked` in its turn again.
     func disconnectShown(asked: DashConnectDisconnectEffect) {
         guard let item = shownConnection, let connection = item.connection, item.status.offersDisconnect else {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return
         }
-        let effect = dataSource.disconnectEffect(id: connection.id, scope: connection.scope)
-        guard effect == asked else {
-            connectionSheetMessage = effect == nil
-                ? Self.connectionChangedMessage
-                : Self.staleQuestionMessage
+        guard let effect = dataSource.disconnectEffect(id: connection.id, scope: connection.scope) else {
+            connectionSheetMessage = Self.connectionChangedMessage
+            return
+        }
+        guard asked.accepts(effect) else {
+            connectionSheetMessage = Self.staleQuestionMessage
             return
         }
         disconnect(connection, expecting: asked)
@@ -750,6 +751,10 @@ final class ConnectionsViewModel: ObservableObject {
                     self.shownDetails = nil
                     self.shownDetailsFailed = false
                     self.readShownDetails(shown)
+                }
+                if case DashConnectPlatformError.disconnectEffectChanged = error {
+                    self.show(Self.staleQuestionMessage, from: connection)
+                    return
                 }
                 self.show(ConnectionsScreenMessage(
                     kind: .error,
