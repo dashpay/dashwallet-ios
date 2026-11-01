@@ -115,6 +115,10 @@ class AdvancedModeRowUITests: XCTestCase {
         XCTAssert(row.waitForExistence(timeout: 15),
                   "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
         XCTAssertFalse(row.label.isEmpty, "The Advanced mode switch has no label")
+        // One element: without the row's own representation the button still
+        // reads as a switch, with an unlabelled switch nested inside it.
+        XCTAssertEqual(row.descendants(matching: .switch).count, 0,
+                       "The Advanced mode row exposes a nested switch")
 
         let before = try XCTUnwrap(row.value as? String, "The Advanced mode switch has no value")
         let flipped = before == "1" ? "0" : "1"
@@ -124,13 +128,16 @@ class AdvancedModeRowUITests: XCTestCase {
         // test does not start in whichever mode this one left behind.
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         addTeardownBlock { [self] in
-            guard row.exists else {
+            // The row sits behind the explainer when it is open, so close it first.
+            if sheet.exists {
+                let close = app.buttons["Close"].firstMatch
+                XCTAssert(close.waitForExistence(timeout: 3), "The explainer has no Close button")
+                close.tap()
+                XCTAssert(sheet.waitForNonExistence(timeout: 3), "The explainer did not close")
+            }
+            guard row.waitForExistence(timeout: 3) else {
                 XCTFail("The Advanced mode row is gone, so its original state could not be restored")
                 return
-            }
-            if sheet.exists {
-                app.buttons["Close"].firstMatch.tap()
-                _ = sheet.waitForNonExistence(timeout: 3)
             }
             guard (row.value as? String) != before else { return }
             tapSwitch(in: row)
