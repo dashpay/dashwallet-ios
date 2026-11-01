@@ -436,8 +436,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let walletIdHex: String
         let connections: any DashConnectStore
         let grants: any AppConnectResponseStore
-        /// The apps disconnected on this wallet.
-        let history: any DashConnectHistoryStore
         /// Where the network is reached, as configured when the pair was
         /// made; `nil` on a network with one fixed set of nodes.
         let endpoint: String?
@@ -498,7 +496,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let supportedNetwork: DashConnectNetwork
     private let store: any DashConnectStore
     private let responseStore: any AppConnectResponseStore
-    private let historyStore: any DashConnectHistoryStore
     private let subject: CurrentValueSubject<[DAppConnection], Never>
     private let shownRows: ShownRows
     private let operationGate: DashConnectOperationGate
@@ -542,7 +539,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         supportedNetwork: DashConnectNetwork = PlatformDashConnectDataSource.currentEnvironmentNetwork(),
         store: (any DashConnectStore)? = nil,
         responseStore: (any AppConnectResponseStore)? = nil,
-        historyStore: (any DashConnectHistoryStore)? = nil,
         activeWalletIdHex: @escaping () -> String? = { WalletEnvironment.activeWalletIdHex as String? },
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
@@ -558,7 +554,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.responseStore = responseStore ?? UserDefaultsAppConnectResponseStore(network: supportedNetwork)
-        self.historyStore = historyStore ?? UserDefaultsDashConnectHistoryStore(network: supportedNetwork)
         self.authorizer = authorizer
         self.stateTransitionParser = stateTransitionParser
         self.now = now
@@ -570,8 +565,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             ?? (supportedNetwork == .devnet ? { DevnetConfiguration.quorumURL } : { nil })
         self.networkEndpoint = networkEndpoint
         let active = Self.pinnedStores(
-            walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore,
-            historyStore: self.historyStore, endpoint: networkEndpoint())
+            walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore, endpoint: networkEndpoint())
         self.shownRows = ShownRows(scope: active?.scope)
         self.subject = CurrentValueSubject(active.map { $0.published($0.connections.load()) } ?? [])
         // The list is loaded once, and the active wallet can change while
@@ -1052,7 +1046,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await updateRows(in: context.stores) { rows in
             rows.filter { $0.id != connection.id } + [connection]
         }
-        context.stores.history.remove(appId: connection.id)
         return connection
     }
 
@@ -1318,7 +1311,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await updateRows(in: stores) { rows in
             rows.filter { $0.id != connection.id } + [connection]
         }
-        stores.history.remove(appId: connection.id)
 
         try await publishAppConnectResponse(
             grant: grant,
@@ -1965,7 +1957,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         await updateRows(in: stores) { rows in
             rows.filter { $0.id != connection.id } + [connection]
         }
-        stores.history.remove(appId: connection.id)
 
         var publishFailure: Error?
         do {
@@ -2487,10 +2478,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.rowsAfterConfirming(appIds: appIds, in: rows, at: confirmedAt)
             }
         }
-        // An app whose update turned out to have landed is connected again,
-        // whatever a disconnect wrote to its history meanwhile. Removed once
-        // its row is back, so it is never in neither list.
-        for appId in Set(confirmedV2.map(\.appContractId)) { stores.history.remove(appId: appId) }
         // A record still waiting that holds a key of the app needs a row to
         // disconnect it, whether or not its whole update can be confirmed.
         let waitingAppIds = readBindings.map { readBindings in
@@ -2516,20 +2503,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     }
                 }
             }
-            // A row that comes back keeps the name and website the app's
-            // disconnected entry holds. The entry stays: the row is not a
-            // reconnection, and the Disconnected tab hides an app that has a
-            // row.
-            let named = Dictionary(
-                (stores.history.load() ?? []).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             await updateRows(in: stores) { rows in
-                let shown = Set(rows.map(\.id))
-                return Self.rowsAfterHolding(appIds: waitingAppIds, in: rows, at: shownAt).map { row in
-                    guard !shown.contains(row.id), let entry = named[row.id] else { return row }
-                    return DAppConnection(
-                        id: row.id, name: entry.name, url: entry.url, status: row.status,
-                        updatedAt: row.updatedAt, loginKind: row.loginKind)
-                }
+                Self.rowsAfterHolding(appIds: waitingAppIds, in: rows, at: shownAt)
             }
         }
         return confirmedV2
@@ -2943,16 +2918,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
 
-    /// The history entry a disconnect of the app records: its row and the
-    /// connection's details. `nil` without a row.
-    private func disconnectedEntry(appId: String, stores: Stores) async -> DisconnectedConnection? {
-        guard let row = rows(in: stores).first(where: { $0.id == appId }) else { return nil }
-        let details = await details(of: appId, stores: stores, readsFunding: false)
-        return DisconnectedConnection(
-            id: appId, name: row.name, url: row.url, identityId: details.identityId, username: details.username,
-            disconnectedAt: now(), access: details.access, connectedAt: details.connectedAt)
-    }
-
     /// Whether a disconnect of the app turns keys off on Platform rather
     /// than only the local status (see `disconnect`): a one-QR row, or an app
     /// with a grant that can reach Platform.
@@ -3001,11 +2966,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return details
     }
 
-    func disconnectedConnections() async -> [DisconnectedConnection]? {
-        guard let stores = await showActiveWalletRows() else { return [] }
-        return stores.history.load()?.sorted { $0.disconnectedAt > $1.disconnectedAt }
-    }
-
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard let stores = await showActiveWalletRows(), scope == stores.scope else { return nil }
         return await details(of: id, stores: stores, readsFunding: true)
@@ -3041,8 +3001,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // revocation.
         var result = DashConnectDisconnectResult()
         if disconnectRevokesKeys(appId: id, stores: stores) {
-            // What the connection was, read before its records change.
-            let entry = await disconnectedEntry(appId: id, stores: stores)
             let revocation = try await revokeAppConnectGrants(
                 appContractId: id, rowIsOneQR: rowIsOneQR, stores: stores)
             // The row stands for the app, and the app still holds a key on
@@ -3058,9 +3016,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // longer be approved and there is no second step to wait
                 // for, so the row goes instead of sitting in the two-QR
                 // "approved" state.
-                // Dated when the revocation ended, not when the entry was
-                // read before it.
-                result.notRecordedInHistory = !(entry.map { stores.history.record($0.disconnected(at: now())) } ?? false)
                 await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
                 return result
             }
@@ -4120,7 +4075,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         walletIdHex: String?,
         store: any DashConnectStore,
         responseStore: any AppConnectResponseStore,
-        historyStore: any DashConnectHistoryStore,
         endpoint: String?
     ) -> Stores? {
         guard let walletIdHex, !walletIdHex.isEmpty else { return nil }
@@ -4128,7 +4082,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: walletIdHex,
             connections: store.pinned(toWalletIdHex: walletIdHex),
             grants: responseStore.pinned(toWalletIdHex: walletIdHex),
-            history: historyStore.pinned(toWalletIdHex: walletIdHex),
             endpoint: endpoint)
     }
 
@@ -4136,8 +4089,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// once; `nil` with no wallet.
     private func pinnedActiveStores() -> Stores? {
         Self.pinnedStores(
-            walletIdHex: activeWalletIdHex(), store: store, responseStore: responseStore,
-            historyStore: historyStore, endpoint: networkEndpoint())
+            walletIdHex: activeWalletIdHex(), store: store, responseStore: responseStore, endpoint: networkEndpoint())
     }
 
     /// Publishes the active wallet's rows when the published list holds
@@ -4403,7 +4355,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: walletIdHex,
             connections: store.pinned(toWalletIdHex: walletIdHex),
             grants: responseStore.pinned(toWalletIdHex: walletIdHex),
-            history: historyStore.pinned(toWalletIdHex: walletIdHex),
             endpoint: networkEndpoint())
         guard await MainActor.run(body: { SwiftDashSDKHost.shared.sdk === sdk }) else {
             Self.logger.error("🔗 DASHCONNECT :: the SDK runtime changed while its context was read")

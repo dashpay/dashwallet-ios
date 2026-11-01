@@ -27,7 +27,6 @@ struct ConnectionRow: View {
     let item: ConnectionSheetItem
     let onOpen: () -> Void
     let onDisconnect: () -> Void
-    let onReconnect: () -> Void
 
     var body: some View {
         HStack(spacing: 20) {
@@ -70,15 +69,6 @@ struct ConnectionRow: View {
                 .accessibilityLabel(Text(String(
                     format: NSLocalizedString(
                         "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
-                    item.name)))
-        case .disconnected:
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
-                size: .small, style: .tintedBlue, action: onReconnect)
-                .fixedSize()
-                .accessibilityLabel(Text(String(
-                    format: NSLocalizedString(
-                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
         case .waitingForSecondScan:
             // Its sheet offers the second code; a disconnect only turns it
