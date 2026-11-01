@@ -114,14 +114,14 @@ class TXDetailViewController: BaseTxDetailsViewController {
     /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
     /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
     /// An escape that rises from a controller this one presented is left to the default
-    /// handling, so it closes that controller and not this screen.
-    var onAccessibilityEscape: (() -> Void)?
+    /// handling, so it closes that controller and not this screen. Returns whether it acted;
+    /// when it did not, the default handling runs.
+    var onAccessibilityEscape: (() -> Bool)?
 
     override func accessibilityPerformEscape() -> Bool {
-        guard let onAccessibilityEscape, presentedViewController == nil else {
+        guard let onAccessibilityEscape, presentedViewController == nil, onAccessibilityEscape() else {
             return super.accessibilityPerformEscape()
         }
-        onAccessibilityEscape()
         return true
     }
 
@@ -770,14 +770,15 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     private let source: Source
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
-    /// VoiceOver's escape gesture on the detail; `nil` leaves it to the default handling.
-    var onAccessibilityEscape: (() -> Void)? = nil
+    /// VoiceOver's escape gesture on the detail, returning whether it acted; `nil` or
+    /// `false` leaves the gesture to the default handling.
+    var onAccessibilityEscape: (() -> Bool)? = nil
     
     init(
         tx: Transaction,
         navigateBack: Binding<Bool>,
         onDismissed: (() -> Void)? = nil,
-        onAccessibilityEscape: (() -> Void)? = nil
+        onAccessibilityEscape: (() -> Bool)? = nil
     ) {
         self.source = .transaction(tx)
         self._navigateBack = navigateBack
@@ -794,7 +795,7 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
         Coordinator(self)
     }
 
-    func makeUIViewController(context: Context) -> some UIViewController {
+    func makeUIViewController(context: Context) -> TXDetailViewController {
         let model: TxDetailModel
         switch source {
         case .transaction(let tx): model = TxDetailModel(transaction: tx)
@@ -806,7 +807,7 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        (uiViewController as? TXDetailViewController)?.onAccessibilityEscape = onAccessibilityEscape
+        uiViewController.onAccessibilityEscape = onAccessibilityEscape
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false

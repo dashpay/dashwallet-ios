@@ -1171,6 +1171,7 @@ private struct TxDetailRoute: Identifiable {
 
 struct TransactionDetailsSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
     @State private var groupedTransaction: Transaction? = nil
@@ -1240,14 +1241,12 @@ struct TransactionDetailsSheet: View {
             // The table runs under the home indicator and insets its own content, so the
             // detail's colour reaches the bottom edge as the group's does.
             .ignoresSafeArea(.container, edges: .bottom)
-            .id(transaction.txHashHexString)
         }
     }
     
     private func openGroupedTransaction(_ transaction: Transaction) {
-        // Animated here so the header's Back button comes in with the slide;
-        // InSheetPushStack sets its own animation for the two levels.
-        withAnimation(.smooth(duration: 0.35)) {
+        // Animated here so the header's Back button comes in with the levels.
+        withAnimation(.inSheetPush(reduceMotion: reduceMotion)) {
             groupedTransaction = transaction
         }
         // Cleared so that going back to the same row is a change VoiceOver acts on.
@@ -1259,9 +1258,11 @@ struct TransactionDetailsSheet: View {
         }
     }
     
-    private func closeGroupedTransaction() {
-        guard let closed = groupedTransaction else { return }
-        withAnimation(.smooth(duration: 0.35)) {
+    /// Returns whether a transaction was open to close.
+    @discardableResult
+    private func closeGroupedTransaction() -> Bool {
+        guard let closed = groupedTransaction else { return false }
+        withAnimation(.inSheetPush(reduceMotion: reduceMotion)) {
             groupedTransaction = nil
         }
         // VoiceOver returns to the row that was opened.
@@ -1270,6 +1271,7 @@ struct TransactionDetailsSheet: View {
             guard groupedTransaction == nil else { return }
             focusedGroupRow = closed.txHashHexString
         }
+        return true
     }
 }
 
@@ -1280,14 +1282,13 @@ struct TransactionDetailsSheet: View {
 ///
 /// The root stays in the hierarchy under the pushed level, so its scroll position
 /// survives the round trip; while covered it takes no taps and is hidden from VoiceOver.
-/// The pushed level sits on an opaque `background` that runs through the bottom safe
+/// The pushed level sits on the sheet's opaque background, run through the bottom safe
 /// area, so the root never shows through it, mid-slide or at rest.
 struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     /// The item shown on the pushed level; `nil` shows the root.
     let pushed: Item?
-    var background: Color = .dash.primaryBackground
     @ViewBuilder let root: () -> Root
     @ViewBuilder let pushedContent: (Item) -> Pushed
     
@@ -1311,14 +1312,19 @@ struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
             if let pushed {
                 pushedContent(pushed)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(background, ignoresSafeAreaEdges: .all)
+                    .background(Color.dash.primaryBackground, ignoresSafeAreaEdges: .all)
                     .transition(reduceMotion ? .opacity : .move(edge: .trailing))
             }
         }
-        .animation(
-            reduceMotion ? .easeInOut(duration: 0.25) : .smooth(duration: 0.35),
-            value: isPushed
-        )
+        .animation(.inSheetPush(reduceMotion: reduceMotion), value: isPushed)
+    }
+}
+
+extension Animation {
+    /// The timing of an `InSheetPushStack` push or pop, for views outside the stack that
+    /// change with it, such as the sheet header's Back button.
+    static func inSheetPush(reduceMotion: Bool) -> Animation {
+        reduceMotion ? .easeInOut(duration: 0.25) : .smooth(duration: 0.35)
     }
 }
 
