@@ -89,11 +89,15 @@ class DashWalletScreenshotsUITests: XCTestCase {
 /// inside a button is where a tap can end up answered twice, so this pins the
 /// split: the switch flips the setting and the sheet stays shut.
 ///
-/// `SwitchView` reads to accessibility as a native `Toggle`, so the switch is
-/// the `.switch` element inside the row. The row reads as a switch with the
-/// same value too, because the button merges its children, but a tap on the
-/// row opens the explainer, so the test taps the switch inside it.
+/// To accessibility the row is the switch itself: one `.switch` element that
+/// carries the row's identifier and the setting's value, with the explainer
+/// as a named action. A plain tap on that element lands on the row's centre,
+/// which is the body that opens the explainer, so the taps go to the switch's
+/// place in the row, as a finger would.
 class AdvancedModeRowUITests: XCTestCase {
+
+    /// Where the switch sits in the row, as a fraction of the row's frame.
+    private static let switchOffset = CGVector(dx: 0.88, dy: 0.5)
 
     private var app: XCUIApplication!
 
@@ -106,29 +110,29 @@ class AdvancedModeRowUITests: XCTestCase {
     func testTappingTheSwitchDoesNotOpenTheExplainer() {
         app.launch()
 
-        let row = app.descendants(matching: .any)["settings_row_advanced_mode"]
+        let row = app.switches["settings_row_advanced_mode"]
         XCTAssert(row.waitForExistence(timeout: 15),
-                  "Advanced mode row not found — the Settings screen is not on display")
+                  "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
+        XCTAssertEqual(row.label, "Advanced mode")
+        // One element, not a row with a second switch inside it.
+        XCTAssertEqual(row.descendants(matching: .switch).count, 0,
+                       "The Advanced mode row exposes a nested switch")
 
-        let toggle = row.switches.firstMatch
-        XCTAssert(toggle.waitForExistence(timeout: 3),
-                  "No switch inside the Advanced mode row")
-
-        let before = toggle.value as? String
-        toggle.tap()
+        let before = row.value as? String
+        row.coordinate(withNormalizedOffset: Self.switchOffset).tap()
 
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         XCTAssertFalse(sheet.waitForExistence(timeout: 2),
                        "Tapping the switch opened the explainer — the row's button swallowed it")
 
-        XCTAssertNotEqual(toggle.value as? String, before,
+        XCTAssertNotEqual(row.value as? String, before,
                           "The switch did not change state, so the tap never reached it")
 
         // The switch writes through to UserDefaults, which this target does not
         // reset between runs — put it back so the next test does not start in
         // whichever mode this one left behind.
-        toggle.tap()
-        XCTAssertEqual(toggle.value as? String, before,
+        row.coordinate(withNormalizedOffset: Self.switchOffset).tap()
+        XCTAssertEqual(row.value as? String, before,
                        "Could not restore the Advanced mode switch to its original state")
     }
 }
