@@ -118,16 +118,26 @@ extension SettingsRowsUITests {
             continueAfterFailure = true
             // The row sits behind the explainer when it is open, so close it first.
             if sheet.exists {
-                let close = app.buttons["Close"].firstMatch
-                XCTAssert(close.waitForExistence(timeout: 3), "The explainer has no Close button")
+                let close = app.buttons["navigationbar-close"].firstMatch
+                guard close.waitForExistence(timeout: 3) else {
+                    XCTFail("The explainer has no Close button, so the mode could not be restored")
+                    return
+                }
                 close.tap()
-                XCTAssert(sheet.waitForNonExistence(timeout: 3), "The explainer did not close")
+                guard sheet.waitForNonExistence(timeout: 3) else {
+                    XCTFail("The explainer did not close, so the mode could not be restored")
+                    return
+                }
             }
             guard row.waitForExistence(timeout: 3) else {
                 XCTFail("The Advanced mode row is gone, so its original state could not be restored")
                 return
             }
             guard (row.value as? String) != before else { return }
+            guard row.isHittable else {
+                XCTFail("The Advanced mode row is covered, so its original state could not be restored")
+                return
+            }
             tapSwitch(in: row)
             XCTAssertTrue(waitForValue(of: row, toBe: before),
                           "Could not restore the Advanced mode switch to its original state")
