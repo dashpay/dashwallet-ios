@@ -1241,6 +1241,8 @@ struct TransactionDetailsSheet: View {
             // The table runs under the home indicator and insets its own content, so the
             // detail's colour reaches the bottom edge as the group's does.
             .ignoresSafeArea(.container, edges: .bottom)
+            // A fresh detail for each transaction, should one replace another directly.
+            .id(transaction.txHashHexString)
         }
     }
     
@@ -1282,8 +1284,9 @@ struct TransactionDetailsSheet: View {
 ///
 /// The root stays in the hierarchy under the pushed level, so its scroll position
 /// survives the round trip; while covered it takes no taps and is hidden from VoiceOver.
-/// The pushed level sits on the sheet's opaque background, run through the bottom safe
-/// area, so the root never shows through it, mid-slide or at rest.
+/// The pushed level sits on an opaque `primaryBackground`, `BottomSheet`'s default fill,
+/// run through the bottom safe area, so the root never shows through it, mid-slide or
+/// at rest.
 struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
