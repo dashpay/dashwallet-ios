@@ -1236,7 +1236,12 @@ struct TransactionDetailsSheet: View {
             TXDetailVCWrapper(
                 tx: transaction,
                 navigateBack: .constant(false),
-                onAccessibilityEscape: closeGroupedTransaction
+                // Always handled here: a second escape while the detail slides out
+                // must not fall through to the sheet and close it.
+                onAccessibilityEscape: {
+                    closeGroupedTransaction()
+                    return true
+                }
             )
             // The table runs under the home indicator and insets its own content, so the
             // detail's colour reaches the bottom edge as the group's does.
@@ -1284,9 +1289,9 @@ struct TransactionDetailsSheet: View {
 ///
 /// The root stays in the hierarchy under the pushed level, so its scroll position
 /// survives the round trip; while covered it takes no taps and is hidden from VoiceOver.
-/// The pushed level sits on an opaque `primaryBackground`, `BottomSheet`'s default fill,
-/// run through the bottom safe area, so the root never shows through it, mid-slide or
-/// at rest.
+/// The pushed level is backed by an opaque `primaryBackground` run through the bottom
+/// safe area, so the root never shows through it, mid-slide or at rest; content that
+/// paints its own background draws over that fill.
 struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
