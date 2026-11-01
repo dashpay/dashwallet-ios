@@ -158,12 +158,77 @@ final class PooledSendableBalanceTests: XCTestCase {
     ) -> String? {
         InternalTransferViewModel.coreTransferFundsMessage(
             requestedDuffs: requestedDuffs,
-            cachedSpendableDuffs: cachedSpendableDuffs,
+            ceilingDuffs: SwiftDashSDKWalletState.feeAwareMax(
+                spendable: cachedSpendableDuffs,
+                reserve: routeCostDuffs),
             sendableDuffs: sendableDuffs,
             l1ReserveDuffs: 1_000_000,
             routeCostDuffs: routeCostDuffs,
             pooledKnown: pooledKnown,
             pool: { pool })
+    }
+
+    func testCoreRouteFitDoesNotReadThePoolEvenIfTheReserveOverflows() {
+        var poolReads = 0
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 50_000_000,
+            ceilingDuffs: 50_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: UInt64.max,
+            routeCostDuffs: 1,
+            pooledKnown: false,
+            pool: { poolReads += 1; return nil })
+
+        XCTAssertNil(message)
+        XCTAssertEqual(poolReads, 0)
+    }
+
+    func testCoreRouteReserveOverflowFailsClosedWithoutReadingThePool() {
+        var poolReads = 0
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 50_000_001,
+            ceilingDuffs: 50_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: UInt64.max,
+            routeCostDuffs: 1,
+            pooledKnown: true,
+            pool: { poolReads += 1; return nil })
+
+        XCTAssertEqual(message, "Insufficient balance")
+        XCTAssertEqual(poolReads, 0)
+    }
+
+    func testCoreRouteUnknownPoolDoesNotReadTheSnapshot() {
+        var poolReads = 0
+        let snapshot = pool(confirmed: 100_000_000, unconfirmed: 100_000_000)
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 110_000_000,
+            ceilingDuffs: 99_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: 1_000_000,
+            routeCostDuffs: 1_000_000,
+            pooledKnown: false,
+            pool: { poolReads += 1; return snapshot })
+
+        XCTAssertEqual(message, "Insufficient balance")
+        XCTAssertEqual(poolReads, 0)
+    }
+
+    func testCoreToPlatformRouteUsesTheConversionCappedCeiling() {
+        let ceiling = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: UInt64.max,
+            reserveCredits: 1_000)
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: ceiling + 1,
+            ceilingDuffs: ceiling,
+            sendableDuffs: UInt64.max,
+            l1ReserveDuffs: 0,
+            routeCostDuffs: CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: 1_000),
+            pooledKnown: true,
+            pool: { nil })
+
+        XCTAssertEqual(ceiling, UInt64.max / 1000)
+        XCTAssertEqual(message, "Insufficient balance")
     }
 
     func testCoreToShieldedRouteReturnsStillConfirmingWhenThePoolFeeFits() {
@@ -172,7 +237,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
     }
 
     func testCoreToShieldedRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -210,7 +275,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
     }
 
     func testCoreToShieldedRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -221,7 +286,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
     }
 
     func testCoreToShieldedRouteDoesNotWaitWhileThePooledFigureIsUnknown() {
@@ -240,7 +305,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
     }
 
     func testCoreToPlatformRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -278,7 +343,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
     }
 
     func testCoreToPlatformRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -289,7 +354,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
-        XCTAssertTrue(message?.contains("still confirming") == true, "got: \(message ?? "nil")")
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
     }
 
     func testCoreToPlatformRouteDoesNotWaitWhileThePooledFigureIsUnknown() {

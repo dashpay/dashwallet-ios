@@ -1535,30 +1535,22 @@ final class InternalTransferViewModel: ObservableObject {
     /// Pure route arithmetic for a Core-funded asset-lock message. These
     /// routes spend only confirmed or InstantSend-locked coins, so waiting is
     /// the correct advice when the confirming pool can cover the shortfall.
-    /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`;
-    /// the fee-aware value is used only for the cached route ceiling. This
-    /// keeps the empty-wallet and pooled-read cases testable without a wallet.
+    /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`.
+    /// The caller supplies its exact route ceiling, including any conversion
+    /// cap, so validation uses the same envelope as Continue and Max. The pool
+    /// is read only above that ceiling while the pooled figure is known.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
-        cachedSpendableDuffs: UInt64,
+        ceilingDuffs: UInt64,
         sendableDuffs: UInt64,
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
-        let reserve = l1ReserveDuffs.addingReportingOverflow(routeCostDuffs)
-        guard !reserve.overflow else {
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: ChainNetwork.core.balanceName,
-                requestedDuffs: requestedDuffs,
-                spendableDuffs: 0)
-        }
-        let ceilingDuffs = SwiftDashSDKWalletState.feeAwareMax(
-            spendable: cachedSpendableDuffs,
-            reserve: routeCostDuffs)
         guard requestedDuffs > ceilingDuffs else { return nil }
-        guard pooledKnown else {
+        let reserve = l1ReserveDuffs.addingReportingOverflow(routeCostDuffs)
+        guard pooledKnown, !reserve.overflow else {
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,
                 requestedDuffs: requestedDuffs,
@@ -1630,20 +1622,14 @@ final class InternalTransferViewModel: ObservableObject {
                 spendable: coreSpendableDuffs,
                 reserve: feeDuffs)
             let state = SwiftDashSDKWalletState.shared
-            if let message = Self.coreTransferFundsMessage(
+            return Self.coreTransferFundsMessage(
                 requestedDuffs: dashDuffsUnsigned,
-                cachedSpendableDuffs: coreSpendableDuffs,
+                ceilingDuffs: ceilingDuffs,
                 sendableDuffs: state.sendableDuffs,
                 l1ReserveDuffs: coreL1FeeReserveDuffs,
                 routeCostDuffs: feeDuffs,
                 pooledKnown: state.pooledSpendableDuffs != nil,
-                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot) {
-                return message
-            }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: ceilingDuffs)
+                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
 
         case .coreToPlatform:
             // The static address-funding reserve rides on top of the amount,
@@ -1658,20 +1644,14 @@ final class InternalTransferViewModel: ObservableObject {
                 spendableDuffs: coreSpendableDuffs,
                 reserveCredits: reserveCredits)
             let state = SwiftDashSDKWalletState.shared
-            if let message = Self.coreTransferFundsMessage(
+            return Self.coreTransferFundsMessage(
                 requestedDuffs: dashDuffsUnsigned,
-                cachedSpendableDuffs: coreSpendableDuffs,
+                ceilingDuffs: ceilingDuffs,
                 sendableDuffs: state.sendableDuffs,
                 l1ReserveDuffs: coreL1FeeReserveDuffs,
                 routeCostDuffs: routeReserveDuffs,
                 pooledKnown: state.pooledSpendableDuffs != nil,
-                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot) {
-                return message
-            }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: ceilingDuffs)
+                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
