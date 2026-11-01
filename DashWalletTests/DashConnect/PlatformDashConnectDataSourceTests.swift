@@ -121,6 +121,27 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(found, existing)
     }
 
+    func testTheDataSourceServesMainnet() async {
+        let row = DAppConnection(
+            id: "app", name: "App", url: "app.example", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 1_773_132_300), loginKind: .oneQR)
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .mainnet,
+            store: TestDashConnectStore(initialConnections: [row]),
+            activeWalletIdHex: { "wallet" }
+        )
+        var published: [DAppConnection] = []
+        let subscription = dataSource.connections.sink { published = $0 }
+        defer { subscription.cancel() }
+        XCTAssertEqual(published.map(\.id), ["app"], "mainnet is served like any other network")
+    }
+
+    func testConnectionsAreOfferedOnEveryNetworkByDefault() async {
+        let viewModel = await ConnectionsViewModel(dataSource: MockDashConnectDataSource())
+        let unavailable = await viewModel.featureUnavailable
+        XCTAssertFalse(unavailable, "a request is refused below protocol 14 instead, so mainnet opens with its activation")
+    }
+
     func testMakeConnectionRequestReturnsNilForUnknownContract() async throws {
         let existing = DAppConnection(
             id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",

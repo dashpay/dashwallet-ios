@@ -298,7 +298,10 @@ final class ConnectionsViewModel: ObservableObject {
         hasUsername: @escaping @MainActor () -> Bool = { true },
         now: @escaping () -> Date = Date.init
     ) {
-        let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
+        // Every network: a request is refused per network while its Platform
+        // protocol is below the one App Connect needs (14), so mainnet opens
+        // with its protocol 14 activation and no release.
+        let computedFeatureUnavailable = featureUnavailable ?? false
         self.featureUnavailable = computedFeatureUnavailable
         self.hasUsername = hasUsername
         self.needsUsername = !hasUsername()
@@ -1374,11 +1377,6 @@ final class ConnectionsViewModel: ObservableObject {
         if isPreview || featureUnavailable {
             return MockDashConnectDataSource()
         }
-
-        assert(
-            WalletEnvironment.isTestNetwork,
-            "DashConnect real data source must only run on testnet or devnet."
-        )
         return PlatformDashConnectDataSource()
     }
 }

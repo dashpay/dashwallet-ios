@@ -32,7 +32,11 @@ struct DashConnectAppMetadata: Equatable {
 enum DashConnectFallbackAppMetadata {
     // Fallback-only branding keyed by the trustworthy contract id, not the spoofable QR label.
     private static let knownApps: [String: DashConnectAppMetadata] = [
-        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr")
+        // Yappr's App Connect App ID on testnet (its release set of
+        // 2026-10-21); it has none on mainnet yet.
+        "D8benQGnycUTXbT8GRAaYf3GZMKVcWESiF9NyyW1Bi4e": .init(name: "Yappr", url: "yap.pr"),
+        // An earlier Yappr contract, which the test vectors use.
+        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr"),
     ]
 
     /// The app's website, for an app the wallet knows.
@@ -531,9 +535,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// The DashConnect network matching the app's current network selection —
-    /// what the default data source serves. Mainnet maps to `.mainnet` for
-    /// completeness, but the real data source is never constructed there
-    /// (the feature is unavailable on mainnet; the mock is used instead).
+    /// what the default data source serves.
     static func currentEnvironmentNetwork() -> DashConnectNetwork {
         switch WalletEnvironment.networkKind {
         case .mainnet: return .mainnet
@@ -557,9 +559,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         now: @escaping () -> Date = Date.init,
         chainTime: @escaping @MainActor () -> Date? = { SwiftDashSDKHost.shared.manager?.spvTipBlockTime }
     ) {
-        assert(
-            supportedNetwork == .testnet || supportedNetwork == .devnet,
-            "DashConnect Platform publish runs on testnet and devnet only.")
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.responseStore = responseStore ?? UserDefaultsAppConnectResponseStore(network: supportedNetwork)
@@ -4357,8 +4356,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             return data
         case .mainnet:
-            // Unreachable through the app (mainnet gets the mock data
-            // source); fail closed rather than publish against a guess.
+            // The two-QR login's contract was never deployed on mainnet,
+            // which reaches App Connect (protocol 14) with one-QR sign-ins
+            // only; fail closed rather than publish against a guess.
             throw DashConnectPlatformError.loginContractUnavailable
         }
     }
