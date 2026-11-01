@@ -171,6 +171,9 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
+/* DashConnect expiry date picker: the picked date was refused */
+"This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
+
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" no es una palabra de la frase de recuperación";
 
@@ -858,6 +861,7 @@
 
 /* SPV diagnostics */
 "Confirmed" = "Confirmada";
+"Confirming" = "Confirming";
 
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Al confirmar se guarda la altura de origen %u y se borran los datos de la cadena de esta red en el próximo inicio de la app, volviendo a descargarlos y reescaneando los filtros desde esa altura. La sesión en curso conserva su límite de escaneo anterior: cierra y vuelve a abrir la app para empezar.";
 
@@ -6292,20 +6296,40 @@
 "“%@” has been registered. Send a contact request to the person who invited you?" = "«%@» se ha registrado. ¿Quieres enviar una solicitud de contacto a la persona que te invitó?";
 
 /* DashPay username registration recovery */
+"Act as you in this app without asking each time" = "Act as you in this app without asking each time";
+"App contract" = "App contract";
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
+"Could not disconnect: %@" = "Could not disconnect: %@";
 "Finish username registration" = "Finish username registration";
 "Identity is still loading" = "Identity is still loading";
 "Loading identity…" = "Loading identity…";
 "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
 "Retry loading identity" = "Retry loading identity";
+"Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
 "The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
+"The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
+"The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
+"The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
+"The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
+"This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
+"This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+"This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again." = "This connection has more keys than one sign-in can turn off. Disconnect it under Connections, then sign in again.";
+"An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code." = "An earlier approval of this sign-in has not finished on the network, and this connection changed since. Ask the app for a new code.";
+"This identity cannot take another key." = "This identity cannot take another key.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
+"This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
 "This username is no longer available. Please choose another one." = "This username is no longer available. Please choose another one.";
+"This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
+"This wallet cannot record the key it would give the app, so the sign-in was not started." = "This wallet cannot record the key it would give the app, so the sign-in was not started.";
+"This wallet could not check what this sign-in would give the app." = "This wallet could not check what this sign-in would give the app.";
+"This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
 "Username request completed" = "Username request completed";
 "Wait for the wallet and network to finish loading, then retry. No registration has been sent." = "Wait for the wallet and network to finish loading, then retry. No registration has been sent.";
+"Your Dash balance" = "Your Dash balance";
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
 "Your identity is ready. Use its existing credits to register a username." = "Your identity is ready. Use its existing credits to register a username.";
+"Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 "Couldn't move your wallet" = "Couldn't move your wallet";
 "Do not delete the app. Try moving your wallet again, or contact support if the problem continues." = "Do not delete the app. Try moving your wallet again, or contact support if the problem continues.";
@@ -6361,6 +6385,8 @@
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
+"A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again." = "A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again.";
+"A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it." = "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.";
 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
 "Account" = "Account";
 "Account Information" = "Account Information";
@@ -6800,6 +6826,43 @@
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
 
+/* DashConnect App Connect v2 */
+"%1$@, spending up to %2$@ of your identity's credits until %3$@" = "%1$@, spending up to %2$@ of your identity's credits until %3$@";
+"The credit limit does not limit how many of your tokens it can move." = "The credit limit does not limit how many of your tokens it can move.";
+"Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
+"%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+"Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
+"Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
+"Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
+"Edit your DashPay profile" = "Edit your DashPay profile";
+"Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
+"Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
+"Registering names or changing your keys" = "Registering names or changing your keys";
+"Requested %1$@ · returns to %2$@" = "Requested %1$@ · returns to %2$@";
+"Requested %@" = "Requested %@";
+"The app asks for a key on a contract group it does not own." = "The app asks for a key on a contract group it does not own.";
+"The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
+"The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
+"The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
+"The app's contract keeps no current key bound to it for the encryption it asks for." = "The app's contract keeps no current key bound to it for the encryption it asks for.";
+"This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet." = "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.";
+"The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
+"The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
+"This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet." = "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.";
+"The app's contract has no readable owner." = "The app's contract has no readable owner.";
+"The sign-in request is dated in the future. Check this device's clock." = "The sign-in request is dated in the future. Check this device's clock.";
+"The sign-in request is more than 10 minutes old." = "The sign-in request is more than 10 minutes old.";
+"This network does not support this kind of sign-in yet." = "This network does not support this kind of sign-in yet.";
+"This sign-in is for another identity. Switch to it in this wallet and ask the app again." = "This sign-in is for another identity. Switch to it in this wallet and ask the app again.";
+"This sign-in request has expired. Ask the app for a new one." = "This sign-in request has expired. Ask the app for a new one.";
+"This wallet will not answer this sign-in request." = "This wallet will not answer this sign-in request.";
+"Write \"%@\" documents as you" = "Write \"%@\" documents as you";
+"The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
+"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
+"The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
+"This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
+"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
+
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
 
@@ -6904,3 +6967,245 @@
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
+/* DashConnect connection sheet */
+"App ID" = "App ID";
+
+/* DashConnect */
+"Checking connections" = "Checking connections";
+
+/* Accessibility: a section that is closed */
+"Collapsed" = "Collapsed";
+
+/* DashConnect */
+"Connect an app" = "Connect an app";
+
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
+/* DashConnect connection sheet */
+"Connection will expire" = "Connection will expire";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
+/* Accessibility: a section that is open */
+"Expanded" = "Expanded";
+
+/* DashConnect connection status */
+"Expired" = "Expired";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
+
+/* DashConnect: what identity funding limits are */
+"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
+
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
+
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
+
+/* DashConnect connection sheet */
+"Reading the details of this connection" = "Reading the details of this connection";
+
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet */
+"The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection status */
+"Waiting for the second code" = "Waiting for the second code";
+
+/* DashConnect connection sheet */
+"What are identity funding limits?" = "What are identity funding limits?";
+
+/* DashConnect connection sheet */
+"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
+
+/* DashConnect */
+"Which connections expired could not be checked." = "Which connections expired could not be checked.";
+
+/* DashConnect: what identity funding limits are */
+"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
+
+/* DashConnect: confirm a disconnect; the app's name */
+"Disconnect %@?" = "Disconnect %@?";
+
+/* DashConnect funding limit keypad: the number of decimal places a limit can have */
+"Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
+
+/* DashConnect connection status: every recorded key is off */
+"Keys turned off" = "Keys turned off";
+
+/* DashConnect connection sheet */
+"The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Disconnect %@" = "Disconnect %@";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
+
+/* DashConnect: a disconnect confirmed with text that no longer holds */
+"What disconnecting does changed since you were asked. Check it and try again." = "What disconnecting does changed since you were asked. Check it and try again.";
+
+/* DashConnect: a disconnect asked for on a connection that no longer offers one */
+"This connection has nothing to disconnect now." = "This connection has nothing to disconnect now.";
+
+/* DashConnect: a disconnect asked for on a row that is no longer the active wallet's */
+"This connection changed. Check it and try again." = "This connection changed. Check it and try again.";
+
+/* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */
+"Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off." = "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off.";
+
+/* DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off */
+"Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
+
+/* DashConnect: what a disconnect does, in its confirmation */
+"Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again." = "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.";
+
+/* DashConnect: what disconnecting a two-QR connection does, in its confirmation */
+"It is turned off on this device. Approving the app's code again turns it back on." = "It is turned off on this device. Approving the app's code again turns it back on.";
+
+/* DashConnect */
+"Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
+
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
+
+/* DashConnect connection sheet: what is left of a key's budget; an amount with its unit */
+"%@ left" = "%@ left";
+
+/* DashConnect approve sheet: the app's name */
+"You have never connected to this app before. Only approve if you trust %@." = "You have never connected to this app before. Only approve if you trust %@.";
+
+/* DashConnect approve sheet: when the app asked */
+"Requested" = "Requested";
+
+/* DashConnect approve sheet */
+"Identity funding limit" = "Identity funding limit";
+
+/* DashConnect approve sheet: accessibility */
+"Change the identity funding limit" = "Change the identity funding limit";
+
+/* DashConnect approve sheet: accessibility */
+"Change when the connection expires" = "Change when the connection expires";
+
+/* DashConnect approve sheet */
+"Your spendable Dash balance" = "Your spendable Dash balance";
+
+/* DashConnect approve sheet */
+"What is spendable Dash?" = "What is spendable Dash?";
+
+/* DashConnect approve sheet */
+"Top up identity" = "Top up identity";
+
+/* DashConnect funding limit keypad */
+"Funding limit" = "Funding limit";
+
+/* DashConnect funding limit presets */
+"Set limit" = "Set limit";
+
+/* DashConnect funding limit keypad: a typed amount */
+"%@ DASH" = "%@ DASH";
+
+/* DashConnect expiry date picker */
+"Set date" = "Set date";
+
+/* DashConnect expiry presets */
+"Connection expiration period" = "Connection expiration period";
+
+/* DashConnect expiry presets: a number of days */
+"%d days" = "%d days";
+
+/* DashConnect: what spendable Dash is */
+"This is the Dash on your wallet's home screen – the balance you can send to anyone." = "This is the Dash on your wallet's home screen – the balance you can send to anyone.";
+
+/* DashConnect: what spendable Dash is */
+"It's separate from your identity's balance, which only pays for network actions." = "It's separate from your identity's balance, which only pays for network actions.";
+
+/* DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH */
+"Max limit is %@" = "Max limit is %@";
+
+/* DashConnect App Connect v2: the app's name, a date (29 Oct 2027), an amount with its unit (0.5 DASH); the app's name again */
+"Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens." = "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.";
+
+/* DashConnect connection sheet, a connection that ended: the app's name, a date, an amount with its unit; the app's name again */
+"Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens." = "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.";
+
+/* DashConnect: no username */
+"Sign in to apps without passwords" = "Sign in to apps without passwords";
+
+/* DashConnect: no username */
+"Apps on the Dash network use your Platform identity instead of accounts and passwords" = "Apps on the Dash network use your Platform identity instead of accounts and passwords";
+
+/* DashConnect approve sheet: terms fixed by an earlier approval */
+"An earlier approval of this request may have gone through, so its limit and expiry stay as they were." = "An earlier approval of this request may have gone through, so its limit and expiry stay as they were.";
+
+/* DashConnect funding limit keypad: the smallest limit with its unit */
+"Min limit is %@" = "Min limit is %@";
+
+/* DashConnect funding limit keypad */
+"This limit cannot be shared between the app's keys." = "This limit cannot be shared between the app's keys.";
+
+/* DashConnect approve sheet: recorded terms out of bounds */
+"The terms an earlier approval of this request recorded are no longer valid. Ask the app for a new code." = "The terms an earlier approval of this request recorded are no longer valid. Ask the app for a new code.";
+
+/* DashConnect approve sheet: the terms are out of bounds */
+"Set a funding limit and an expiry within the limits, then approve." = "Set a funding limit and an expiry within the limits, then approve.";
+
+/* DashConnect: a request arrived while the wallet has no username */
+"Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
+
+/* DashConnect approve sheet: the chosen expiry is in the past */
+"This expiry has passed. Pick another one, then approve." = "This expiry has passed. Pick another one, then approve.";

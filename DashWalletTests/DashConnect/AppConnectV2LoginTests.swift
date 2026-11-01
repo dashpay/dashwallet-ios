@@ -1,0 +1,2318 @@
+import Foundation
+import XCTest
+@testable import dashpay
+@testable import SwiftDashSDK
+
+/// The App Connect request v2 rules between decoding a request and
+/// registering its keys (`AppConnectV2Login.swift`).
+final class AppConnectV2LoginTests: XCTestCase {
+    /// Yappr's published request vector (`vendor/platform-auth/src/app-connect/vectors.json`):
+    /// a CRITICAL group binding (0.5 DASH, 90 days), a DashPay `profile`
+    /// binding (0.01 DASH, 90 days), an encryption binding on the app id,
+    /// a connection id and a callback.
+    private static let requestUri = "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
+    private static let appEphemeralPubKey = Data(hex: "03e83cb927e85f96ae50a95ca3be21cc7a3755139a941b15d99b01af4fecf0d270")!
+    private static let appId = Data(hex: "f8833c7a2d58ab816c24ae915fe2aa94676588b467ba1e9f2b24c1a3df7fdb78")!
+    private static let groupId = Data(hex: "b0590e59269c6885acf71d27ddfce85187e2cc9736c42e958127cd35be6d38e8")!
+    private static let dashpayContractId = Data(hex: "a2a1b4ac6fef22ea2a1a68e8123644b357875f6b412c18109281c146e7b271bc")!
+    private static let createdAt: UInt64 = 1_791_676_800_000
+    private static let expiresAt: UInt64 = 1_799_452_800_000
+    private static let appOwner = Data(repeating: 0x0A, count: 32)
+    private static let dayMilliseconds: UInt64 = 24 * 60 * 60 * 1000
+
+    private static func date(milliseconds: UInt64) -> Date {
+        Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
+    }
+
+    /// One minute after the vector's request was made.
+    private static let now = date(milliseconds: createdAt + 60_000)
+
+    private static func vectorUri() throws -> AppConnectUri {
+        try DashConnectUri.parseAppConnectRequest(requestUri)
+    }
+
+    private static func vectorPlan() throws -> AppConnect.GrantPlan {
+        try AppConnect.grantPlan(for: vectorUri(), now: now)
+    }
+
+    /// The vector's request with its bindings replaced.
+    private static func uri(
+        authBindings: [AppConnectRequest.AuthBinding],
+        encryptionBindings: [AppConnectRequest.EncryptionBinding] = [],
+        createdAt: UInt64 = createdAt
+    ) -> AppConnectUri {
+        AppConnectUri(
+            request: AppConnectRequest(
+                appEphemeralPubKey: appEphemeralPubKey,
+                appId: appId,
+                label: "Yappr",
+                identityHint: nil,
+                authBindings: authBindings,
+                connectionId: nil,
+                encryptionBindings: encryptionBindings,
+                isRenewal: false,
+                createdAt: createdAt),
+            network: .devnet,
+            callback: nil)
+    }
+
+    private static func groupBinding(
+        level: AppConnectRequest.SecurityLevel = .critical,
+        budget: UInt64? = 50_000_000_000,
+        expiresAt: UInt64? = expiresAt
+    ) -> AppConnectRequest.AuthBinding {
+        .init(kind: .contractGroup, securityLevel: level, id: groupId,
+              totalBudget: budget, expiresAt: expiresAt, documentTypeName: nil)
+    }
+
+    private static func key(
+        _ keyId: UInt32,
+        purpose: KeyPurpose = .authentication,
+        level: SecurityLevel = .high,
+        type: KeyType = .ecdsaHash160,
+        data: Data? = nil,
+        disabled: Bool = false
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
+        ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: Int32(bitPattern: keyId),
+            purpose: purpose,
+            securityLevel: level,
+            keyType: type,
+            readOnly: false,
+            disabledAt: disabled ? 1 : nil,
+            data: data ?? Data(repeating: UInt8(truncatingIfNeeded: keyId), count: type == .ecdsaSecp256k1 ? 33 : 20),
+            totalBudget: nil,
+            expiresAt: nil)
+    }
+
+    private static func grant(
+        sessionKeyId: UInt32,
+        additionalKeyIds: [UInt32]? = nil,
+        appId: String = "app",
+        requestHash: String = "aa",
+        connectionId: String? = nil
+    ) -> AppConnectGrant {
+        AppConnectGrant(
+            identityId: "identity", appContractId: appId, documentId: nil,
+            values: .init(appEphemeralPubKeyHash: requestHash, walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: sessionKeyId, totalBudget: nil, expiresAt: nil,
+            publishedAt: Date(timeIntervalSince1970: 1_000),
+            additionalKeyIds: additionalKeyIds,
+            connectionId: connectionId)
+    }
+
+    // MARK: - Derivation
+
+    func testEachBindingDerivesFromItsOwnLeafAndTheLeafIsStable() {
+        let leaves = (0 ..< AppConnectRequest.maxAuthBindings).map {
+            AppConnect.authKeyLeaf(appEphemeralPubKey: Self.appEphemeralPubKey, bindingIndex: $0)
+        }
+        XCTAssertEqual(Set(leaves).count, leaves.count, "every binding gets a distinct key")
+        XCTAssertTrue(leaves.allSatisfy { $0.count == 32 })
+        // A retry of the same request derives the same keys.
+        XCTAssertEqual(
+            leaves,
+            (0 ..< AppConnectRequest.maxAuthBindings).map {
+                AppConnect.authKeyLeaf(appEphemeralPubKey: Self.appEphemeralPubKey, bindingIndex: $0)
+            })
+        // Never the v1 session key of the same ephemeral key.
+        XCTAssertFalse(leaves.contains(AppConnect.requestId(appEphemeralPubKey: Self.appEphemeralPubKey)))
+        // hash256(appEphPub ‖ 0x00)
+        XCTAssertEqual(leaves[0], hash256(Self.appEphemeralPubKey + Data([0])))
+        // Another request derives other keys.
+        var other = Self.appEphemeralPubKey
+        other[other.count - 1] ^= 0x01
+        XCTAssertNotEqual(AppConnect.authKeyLeaf(appEphemeralPubKey: other, bindingIndex: 0), leaves[0])
+    }
+
+    private func hash256(_ data: Data) -> Data {
+        AppConnect.requestId(appEphemeralPubKey: data)
+    }
+
+    func testAuthKeysAreRegisteredWithTheirBindingLevelAndLimits() throws {
+        let plan = try Self.vectorPlan()
+        let hash = Data(repeating: 0x11, count: 20)
+
+        let group = AppConnect.authIdentityPubkey(plan.auth[0], keyId: 7, publicKeyHash160: hash)
+        XCTAssertEqual(group.keyId, 7)
+        XCTAssertEqual(group.keyType, .ecdsaHash160)
+        XCTAssertEqual(group.purpose, .authentication)
+        XCTAssertEqual(group.securityLevel, .critical)
+        XCTAssertEqual(group.pubkeyBytes, hash)
+        XCTAssertEqual(group.contractBounds, .contractGroup(id: Self.groupId))
+        XCTAssertEqual(group.totalBudget, 50_000_000_000)
+        XCTAssertEqual(group.expiresAt, Self.expiresAt)
+
+        let profile = AppConnect.authIdentityPubkey(plan.auth[1], keyId: 8, publicKeyHash160: hash)
+        XCTAssertEqual(profile.securityLevel, .high)
+        XCTAssertEqual(
+            profile.contractBounds,
+            .singleContractDocumentType(id: Self.dashpayContractId, documentTypeName: "profile"))
+        XCTAssertEqual(profile.totalBudget, 1_000_000_000)
+        XCTAssertEqual(profile.expiresAt, Self.expiresAt)
+    }
+
+    func testTheEncryptionKeyIsAMediumPointBoundToTheApp() throws {
+        let plan = try Self.vectorPlan()
+        let point = Data([0x02] + [UInt8](repeating: 0x44, count: 32))
+        let key = AppConnect.encryptionIdentityPubkey(plan.encryption[0], keyId: 9, publicKey: point)
+        XCTAssertEqual(key.keyType, .ecdsaSecp256k1)
+        XCTAssertEqual(key.purpose, .encryption)
+        XCTAssertEqual(key.securityLevel, .medium)
+        XCTAssertEqual(key.pubkeyBytes, point)
+        XCTAssertEqual(key.contractBounds, .singleContract(id: Self.appId))
+        XCTAssertNil(key.totalBudget)
+        XCTAssertNil(key.expiresAt)
+    }
+
+    // MARK: - Plan and limits
+
+    func testThePlanGrantsEveryBindingOfTheVector() throws {
+        let plan = try Self.vectorPlan()
+        XCTAssertEqual(plan.appId, Self.appId)
+        XCTAssertEqual(plan.appEphemeralPubKeyHash.toHexString(), "d77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        XCTAssertEqual(plan.auth.map(\.bindingIndex), [0, 1])
+        XCTAssertEqual(plan.auth.map(\.binding.kind), [.contractGroup, .documentType])
+        XCTAssertEqual(plan.encryption.map(\.binding.contractId), [Self.appId])
+        XCTAssertEqual(plan.connectionId?.toHexString(), "a69b1b4f666681453dec3734667a5ab2")
+        XCTAssertEqual(plan.callbackHost, "yap.pr")
+    }
+
+    func testProposalsAboveTheCapsAreClampedAndNoLimitIsDropped() throws {
+        let tooMuch = Self.groupBinding(
+            budget: 10 * PlatformCreditsFormatter.creditsPerDash,
+            expiresAt: Self.createdAt + 2 * 365 * Self.dayMilliseconds)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [tooMuch]), now: Self.now)
+        XCTAssertEqual(plan.auth[0].totalBudget, AppConnect.v2BudgetCapCredits)
+        XCTAssertEqual(plan.auth[0].expiresAt, AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2LifetimeCap)))
+    }
+
+    func testABindingWithoutLimitsGetsTheDefaultLifetimeAndNoBudget() throws {
+        let unlimited = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: Self.appId,
+            totalBudget: nil, expiresAt: nil, documentTypeName: nil)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [unlimited]), now: Self.now)
+        XCTAssertNil(plan.auth[0].totalBudget, "a budget the app did not ask for is not added")
+        XCTAssertEqual(
+            plan.auth[0].expiresAt,
+            AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2DefaultLifetime)))
+    }
+
+    func testAProposalBelowTheCapsIsKeptAsItIs() throws {
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), now: Self.now)
+        XCTAssertEqual(plan.auth[0].totalBudget, 50_000_000_000)
+        XCTAssertEqual(plan.auth[0].expiresAt, Self.expiresAt)
+    }
+
+    // MARK: - Refusals
+
+    func testAStaleOrFutureRequestIsRefusedAsStale() throws {
+        let uri = try Self.vectorUri()
+        let late = Self.date(milliseconds: Self.createdAt + 11 * 60_000)
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: late)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+        }
+        let early = Self.date(milliseconds: Self.createdAt - 3 * 60_000)
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: early)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+        }
+    }
+
+    func testAKeyThatWouldAlreadyBeExpiredIsRefused() {
+        let expired = Self.groupBinding(expiresAt: Self.createdAt)
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: Self.uri(authBindings: [expired]), now: Self.now)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
+        }
+    }
+
+    func testAnEncryptionKeyOnAnotherContractIsRefused() {
+        let foreign = AppConnectRequest.EncryptionBinding(contractId: Self.groupId, purpose: .encryption)
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: Self.uri(authBindings: [Self.groupBinding()], encryptionBindings: [foreign]), now: Self.now)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
+        }
+    }
+
+    func testBindingsMustBelongToTheAppsOwner() throws {
+        let plan = try Self.vectorPlan()
+        let stranger = Data(repeating: 0x0B, count: 32)
+        func refusal(
+            groupOwner: Data? = Self.appOwner,
+            purposes: Set<KeyPurpose> = [.encryption]
+        ) -> AppConnect.Refusal? {
+            AppConnect.ownershipRefusal(
+                for: plan,
+                appOwnerId: Self.appOwner,
+                groupOwners: groupOwner.map { [Self.groupId: $0] } ?? [:],
+                contractOwners: [Self.appId: Self.appOwner],
+                appBoundedKeyPurposes: purposes)
+        }
+        // The group is the app owner's and DashPay `profile` is allowlisted.
+        XCTAssertNil(refusal())
+        XCTAssertEqual(refusal(groupOwner: stranger)?.status, .invalid)
+        XCTAssertEqual(refusal(groupOwner: nil)?.status, .invalid, "a group that does not exist")
+        XCTAssertEqual(refusal(purposes: [])?.status, .invalid, "the app does not take bound encryption keys")
+        // A requirement this build cannot read asks for an update, whatever
+        // else the contract says.
+        let unreadable = AppConnect.ownershipRefusal(
+            for: plan, appOwnerId: Self.appOwner, groupOwners: [Self.groupId: Self.appOwner],
+            contractOwners: [Self.appId: Self.appOwner], appBoundedKeyPurposes: [],
+            appUnreadableKeyPurposes: [.encryption])
+        XCTAssertEqual(unreadable?.status, .unsupported)
+    }
+
+    func testOnlyDashPayProfileIsAllowedOnAContractTheAppDoesNotOwn() throws {
+        func plan(_ name: String) throws -> AppConnect.GrantPlan {
+            try AppConnect.grantPlan(for: Self.uri(authBindings: [
+                .init(kind: .documentType, securityLevel: .high, id: Self.dashpayContractId,
+                      totalBudget: nil, expiresAt: nil, documentTypeName: name),
+            ]), now: Self.now)
+        }
+        func refusal(_ plan: AppConnect.GrantPlan) -> AppConnect.Refusal? {
+            AppConnect.ownershipRefusal(
+                for: plan, appOwnerId: Self.appOwner, groupOwners: [:],
+                contractOwners: [Self.dashpayContractId: Data(repeating: 0, count: 32)],
+                appBoundedKeyPurposes: [])
+        }
+        XCTAssertNil(refusal(try plan("profile")))
+        XCTAssertEqual(refusal(try plan("contactRequest"))?.status, .invalid)
+    }
+
+    func testAContractBindingMustBeOnTheAppOwnersContract() throws {
+        let other = Data(repeating: 0x0C, count: 32)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
+            .init(kind: .singleContract, securityLevel: .high, id: other,
+                  totalBudget: nil, expiresAt: nil, documentTypeName: nil),
+        ]), now: Self.now)
+        func refusal(owner: Data) -> AppConnect.Refusal? {
+            AppConnect.ownershipRefusal(
+                for: plan, appOwnerId: Self.appOwner, groupOwners: [:],
+                contractOwners: [other: owner], appBoundedKeyPurposes: [])
+        }
+        XCTAssertNil(refusal(owner: Self.appOwner))
+        XCTAssertEqual(refusal(owner: Data(repeating: 0x0B, count: 32))?.status, .invalid)
+    }
+
+    func testASystemContractIsNeverTheAppNorABindingTarget() throws {
+        let dpns = try XCTUnwrap(Data.identifier(fromBase58: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
+        // A request naming DPNS as its app, where DPNS's owner would pass as
+        // the app's owner.
+        let asApp = AppConnectUri(
+            request: AppConnectRequest(
+                appEphemeralPubKey: Self.appEphemeralPubKey, appId: dpns, label: "Yappr", identityHint: nil,
+                authBindings: [.init(kind: .singleContract, securityLevel: .high, id: dpns,
+                                     totalBudget: nil, expiresAt: nil, documentTypeName: nil)],
+                connectionId: nil, encryptionBindings: [], isRenewal: false, createdAt: Self.createdAt),
+            network: .devnet, callback: nil)
+        let appPlan = try AppConnect.grantPlan(for: asApp, now: Self.now)
+        XCTAssertEqual(
+            AppConnect.ownershipRefusal(
+                for: appPlan, appOwnerId: Self.appOwner, groupOwners: [:],
+                contractOwners: [dpns: Self.appOwner], appBoundedKeyPurposes: [])?.status,
+            .invalid)
+        // A binding on DPNS from an app whose owner also owns DPNS's record.
+        let bindingPlan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
+            .init(kind: .documentType, securityLevel: .high, id: dpns,
+                  totalBudget: nil, expiresAt: nil, documentTypeName: "domain"),
+        ]), now: Self.now)
+        XCTAssertEqual(
+            AppConnect.ownershipRefusal(
+                for: bindingPlan, appOwnerId: Self.appOwner, groupOwners: [:],
+                contractOwners: [dpns: Self.appOwner], appBoundedKeyPurposes: [])?.status,
+            .invalid)
+    }
+
+    // MARK: - Re-sending an auth key
+
+    func testAKeyOnTheIdentityIsSentAgainOnlyWithinThePlansTerms() throws {
+        let plan = try Self.vectorPlan()
+        let group = plan.auth[0]
+        func key(level: SecurityLevel = .critical, budget: UInt64? = 50_000_000_000,
+                 expiresAt: UInt64? = Self.expiresAt, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: 7, purpose: .authentication, securityLevel: level, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data(repeating: 7, count: 20),
+                totalBudget: budget, expiresAt: expiresAt.map { Int64($0) })
+        }
+        let stored = AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        func resend(_ key: ManagedIdentity.IdentityPublicKeyInfo, binding: AppConnect.KeyBinding? = stored,
+                    now: Date = AppConnectV2LoginTests.now) -> Bool {
+            AppConnect.canResendAuthKey(key, for: group, binding: binding, now: now)
+        }
+        XCTAssertTrue(resend(key()))
+        XCTAssertFalse(resend(key(disabled: true)))
+        XCTAssertFalse(resend(key(level: .high)))
+        XCTAssertFalse(resend(key(budget: 60_000_000_000)))
+        XCTAssertFalse(resend(key(budget: nil)))
+        XCTAssertFalse(resend(key(expiresAt: Self.expiresAt + 2 * Self.dayMilliseconds)))
+        XCTAssertFalse(resend(key(expiresAt: Self.expiresAt + 1)), "the approved expiry is a ceiling")
+        XCTAssertFalse(resend(key(), now: Self.date(milliseconds: Self.expiresAt + 1)), "an expired key cannot sign")
+        // The payload alone does not make the key this binding's: the store
+        // has to show it with the binding's bound.
+        XCTAssertFalse(resend(key(), binding: nil), "a key the store does not show")
+        var otherBound = stored
+        otherBound.bound = .contractGroup(Data(repeating: 0xEE, count: 32))
+        XCTAssertFalse(resend(key(), binding: otherBound), "a key bound to another group")
+        var wholeContract = stored
+        wholeContract.bound = .singleContract(group.binding.id)
+        XCTAssertFalse(resend(key(), binding: wholeContract), "the same id as a contract, not a group")
+        var unreadable = stored
+        unreadable.hasUnreadableBound = true
+        XCTAssertFalse(resend(key(), binding: unreadable))
+        let otherKey = AppConnect.KeyBinding(
+            keyId: 8, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        XCTAssertFalse(resend(key(), binding: otherKey), "a record of another key id")
+    }
+
+    /// A disconnect finds the app's v2 keys that no record names: bound to
+    /// its contract, a document type on it, or a group its owner owns; with
+    /// an expiry; HIGH or CRITICAL. The allowlisted DashPay profile is shared.
+    func testADisconnectFindsTheAppsV2KeysThatNoRecordNames() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let group = Data(repeating: 0xB2, count: 32)
+        let otherGroup = Data(repeating: 0xC3, count: 32)
+        let other = Data(repeating: 0xD4, count: 32)
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        func key(_ id: Int32, level: SecurityLevel = .high, expires: Bool = true, disabled: Bool = false,
+                 type: KeyType = .ecdsaHash160) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: id, purpose: .authentication, securityLevel: level, keyType: type, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
+                totalBudget: nil, expiresAt: expires ? 9_000 : nil)
+        }
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, unreadable: Bool = false) -> AppConnect.KeyBinding {
+            AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
+                                  hasUnreadableBound: unreadable, bound: bound)
+        }
+        let keys = [
+            key(1), key(2), key(3, level: .critical), key(4, level: .critical), key(5), key(6),
+            key(7, expires: false), key(8, disabled: true), key(9, level: .master), key(10, type: .ecdsaSecp256k1),
+            key(11), key(12),
+        ]
+        let bindings = [
+            binding(1, .singleContract(app)),
+            binding(2, .documentType(contractId: app, name: "post")),
+            binding(3, .contractGroup(group)),
+            binding(4, .contractGroup(otherGroup)),
+            binding(5, .documentType(contractId: dashPay, name: "profile")),
+            binding(6, .documentType(contractId: dashPay, name: "contactRequest")),
+            binding(7, .singleContract(app)), binding(8, .singleContract(app)),
+            binding(9, .singleContract(app)), binding(10, .singleContract(app)),
+            binding(11, .singleContract(other)),
+            binding(12, .singleContract(app)),
+        ]
+        let recorded: Set<UInt32> = [12]
+        let unrecorded = AppConnect.unrecordedV2Keys(
+            recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys)
+
+        XCTAssertEqual(unrecorded.map(\.keyId), [1, 2, 3, 4, 5, 6, 11])
+        let candidates = AppConnect.unrecordedV2KeyBoundIds(appContractId: app, keys: unrecorded)
+        XCTAssertEqual(candidates.contracts, [other], "never the app itself, the allowlisted profile or a system contract")
+        XCTAssertEqual(candidates.groups, [group, otherGroup])
+        XCTAssertEqual(
+            AppConnect.appsV2KeyIds(appContractIds: [app], appGroupIds: [group], keys: unrecorded),
+            [1, 2, 3])
+        // Another contract of the app's owner: a binding the request could
+        // have had, so its key goes too.
+        XCTAssertEqual(
+            AppConnect.appsV2KeyIds(appContractIds: [app, other], appGroupIds: [group], keys: unrecorded),
+            [1, 2, 3, 11])
+        // The DashPay profile key names no app: it is never the app's, only
+        // shared, and the contact-request type v2 does not allow is neither.
+        XCTAssertEqual(AppConnect.unattributedProfileKeyIds(keys: unrecorded), [5])
+        // A key the store cannot place is the disconnect's stop, not a guess.
+        XCTAssertEqual(
+            AppConnect.unrecordedV2Keys(
+                recordedKeyIds: [], bindings: [binding(1, .singleContract(app), unreadable: true)],
+                currentIdentityPublicKeys: [key(1)]).count,
+            0)
+        // Another identity's keys, from the store alone.
+        var stored = binding(1, .singleContract(app))
+        stored.isV2AuthKeyShaped = true
+        var storedOff = binding(2, .singleContract(app))
+        storedOff.isV2AuthKeyShaped = true
+        storedOff.isDisabled = true
+        XCTAssertEqual(
+            AppConnect.unrecordedV2Keys(recordedKeyIds: [], bindings: [stored, storedOff, binding(3, .singleContract(app))])
+                .map(\.keyId),
+            [1])
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsWithUnknownBinding(for: [], bindings: [], currentIdentityPublicKeys: [key(3, level: .critical)]),
+            [3], "a CRITICAL HASH160 key the store does not show stops a disconnect too")
+    }
+
+    /// A disconnect takes the live, unexpired DashPay profile keys no
+    /// confirmed record names, and refuses a view of the identity it cannot
+    /// trust.
+    func testADisconnectTakesOnlyUnattributedLiveProfileKeys() {
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        let app = Data(repeating: 0xA1, count: 32)
+        let now: Int64 = 100_000_000
+        func key(_ id: Int32, expiresAt: Int64? = 200_000_000, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data([UInt8(id)]),
+                totalBudget: nil, expiresAt: expiresAt)
+        }
+        func binding(_ id: UInt32, _ bound: AppConnect.StoredBound?, expiresAt: Int64? = 200_000_000,
+                     unreadable: Bool = false) -> AppConnect.KeyBinding {
+            var binding = AppConnect.KeyBinding(keyId: id, data: Data([UInt8(id)]), singleContractId: nil,
+                                                hasUnreadableBound: unreadable, bound: bound)
+            binding.isV2AuthKeyShaped = true
+            binding.expiresAt = expiresAt
+            return binding
+        }
+        let profile = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
+        let keys = [key(1), key(2), key(3, expiresAt: 92_800_000), key(4), key(5)]
+        let bindings = [
+            binding(1, profile), binding(2, profile), binding(3, profile, expiresAt: 92_800_000),
+            binding(4, .singleContract(app)), binding(5, profile),
+        ]
+
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [5], bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [1, 2], "not the expired one, the app's own, or the recorded one")
+        // A record of another app waiting for its update holds the profile
+        // key it sends again (2) and the one it adds that the store places (1).
+        var waiting = Self.pendingGrant(
+            [ManagedPlatformWallet.IdentityPubkey(
+                keyId: 1, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+                pubkeyBytes: Data([1]), contractBounds: .singleContractDocumentType(id: dashPay, documentTypeName: "profile"),
+                totalBudget: 1_000, expiresAt: 200_000_000)],
+            appId: "other-app")
+        waiting.additionalKeyIds = [2]
+        let recorded = AppConnect.recordedKeyIds(of: "identity", grants: [waiting], bindings: bindings)
+        XCTAssertEqual(
+            AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: recorded, bindings: bindings, currentIdentityPublicKeys: keys, nowMilliseconds: now),
+            [5], "another app's waiting profile keys are its own, not unattributed")
+        XCTAssertEqual(
+            AppConnect.storedSharedProfileKeyIds(recordedKeyIds: [5], bindings: bindings, nowMilliseconds: now),
+            [1, 2])
+        // Expiries past Int64.max arrive as negative bit patterns and are far
+        // in the future: counted, revoked, and still blocking when unplaced.
+        for far in [Int64.max, Int64(bitPattern: UInt64(Int64.max) + 1), -1] {
+            XCTAssertTrue(AppConnect.isUnexpired(far, nowMilliseconds: now))
+            XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+                recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: far)],
+                currentIdentityPublicKeys: [key(1, expiresAt: far)], nowMilliseconds: now), [1])
+            XCTAssertTrue(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: [], bindings: [binding(2, nil, expiresAt: far, unreadable: true)], nowMilliseconds: now))
+        }
+        XCTAssertFalse(AppConnect.isUnexpired(nil, nowMilliseconds: now))
+        XCTAssertFalse(AppConnect.isUnexpired(0, nowMilliseconds: now))
+        // An hour of a fast device clock does not expire a working key.
+        XCTAssertEqual(AppConnect.storedSharedProfileKeyIds(
+            recordedKeyIds: [], bindings: [binding(1, profile, expiresAt: now - 1_000)], nowMilliseconds: now), [1])
+        // A live v2 key the store cannot place may be a profile key.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [], currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // A live v2 key the store cannot place counts even when the fetched
+        // view lacks it.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Not when that stored key is off, expired, or named by a record.
+        let placedOrOff: [(AppConnect.KeyBinding, Set<UInt32>)] = [
+            (binding(2, nil, unreadable: true).disabled(), []),
+            (binding(2, nil, expiresAt: 92_800_000, unreadable: true), []),
+            (binding(2, nil, unreadable: true), [2]),
+        ]
+        for (stored, recorded) in placedOrOff {
+            XCTAssertFalse(AppConnect.hasUnplacedStoredKey(
+                recordedKeyIds: recorded, bindings: [stored], nowMilliseconds: now))
+        }
+        // One the fetched view shows off does not.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, nil, unreadable: true)],
+            currentIdentityPublicKeys: [key(1), key(2, disabled: true)], nowMilliseconds: now), [1])
+        // A stored profile key the fetched view lacks: the node is behind.
+        XCTAssertNil(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile), binding(2, profile)],
+            currentIdentityPublicKeys: [key(1)], nowMilliseconds: now))
+        // Disabled on Platform: nothing to do.
+        XCTAssertEqual(AppConnect.sharedProfileKeyIdsToDisable(
+            recordedKeyIds: [], bindings: [binding(1, profile)],
+            currentIdentityPublicKeys: [key(1, disabled: true)], nowMilliseconds: now), [])
+    }
+
+    /// A v2 grant's CRITICAL group key is disabled under its recorded id,
+    /// but only while the store shows that key bound to a group: a CRITICAL
+    /// key under a recorded id with no such record is not taken for it.
+    func testADisconnectDisablesAV2GroupKeyOnlyAsTheGroupKey() {
+        let app = Data(repeating: 0xA1, count: 32)
+        let keys = [5, 6].map { id in
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: Int32(id), purpose: .authentication, securityLevel: .critical, keyType: .ecdsaHash160,
+                readOnly: false, disabledAt: nil, data: Data([UInt8(id)]), totalBudget: 1, expiresAt: 9_000)
+        }
+        let grant = Self.grant(sessionKeyId: 5, additionalKeyIds: [6])
+        let groupBound = AppConnect.KeyBinding(
+            keyId: 5, data: Data([5]), singleContractId: nil, bound: .contractGroup(Data(repeating: 0xB2, count: 32)))
+
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [grant], appContractId: app, bindings: [groupBound], currentIdentityPublicKeys: keys),
+            [5])
+        var v1 = grant
+        v1.additionalKeyIds = nil
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [v1], appContractId: app, bindings: [groupBound], currentIdentityPublicKeys: keys),
+            [], "a v1 grant never registered a CRITICAL key")
+    }
+
+    /// One update's new keys get ids no key of the identity has: above the
+    /// highest while they fit, then the lowest gaps, never an id twice.
+    func testTheKeysOfOneUpdateGetFreeIds() {
+        func keys(_ ids: [UInt32]) -> [ManagedIdentity.IdentityPublicKeyInfo] {
+            ids.map { Self.key($0) }
+        }
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 3, currentIdentityPublicKeys: keys([0, 1, 2])), [3, 4, 5])
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 2, currentIdentityPublicKeys: []), [0, 1])
+        XCTAssertEqual(
+            AppConnect.freeKeyIds(count: 2, currentIdentityPublicKeys: keys([0, 1, 2, 3, 5, .max])), [4, 6],
+            "past the last id: the gaps, skipping the taken 5")
+        XCTAssertEqual(
+            AppConnect.freeKeyIds(count: 3, currentIdentityPublicKeys: keys([0, .max - 1])), [.max, 1, 2],
+            "the last id, then the gaps, without overflowing")
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 0, currentIdentityPublicKeys: keys([1])), [])
+    }
+
+    /// After an update reported a failure, a key found under the added id is
+    /// taken as the added one only with everything it was registered with:
+    /// the same payload alone may be another request's key, bound otherwise.
+    func testASettledKeyIsTheAddedOneOnlyAsItWasAdded() throws {
+        let plan = try Self.vectorPlan()
+        let group = plan.auth[0]
+        let added = AppConnect.authIdentityPubkey(group, keyId: 7, publicKeyHash160: Data(repeating: 7, count: 20))
+        func key(level: SecurityLevel = .critical, budget: UInt64? = group.totalBudget, disabled: Bool = false)
+            -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: 7, purpose: .authentication, securityLevel: level, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: disabled ? 1 : nil, data: Data(repeating: 7, count: 20),
+                totalBudget: budget, expiresAt: Int64(group.expiresAt))
+        }
+        let stored = AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 7, count: 20), singleContractId: nil, bound: group.storedBound)
+        XCTAssertTrue(AppConnect.isAddedKey(key(), added: added, binding: stored))
+        var narrower = stored
+        narrower.bound = .documentType(contractId: group.binding.id, name: "post")
+        XCTAssertFalse(AppConnect.isAddedKey(key(), added: added, binding: narrower), "another request's bound")
+        XCTAssertFalse(AppConnect.isAddedKey(key(), added: added, binding: nil), "a key the store does not show")
+        XCTAssertFalse(AppConnect.isAddedKey(key(level: .high), added: added, binding: stored))
+        XCTAssertFalse(AppConnect.isAddedKey(key(budget: 1), added: added, binding: stored))
+        XCTAssertFalse(AppConnect.isAddedKey(key(disabled: true), added: added, binding: stored))
+    }
+
+    /// A stored bound is read from the store's discriminant, ids and name.
+    func testAStoredBoundIsReadFromTheStore() {
+        let id = Data(repeating: 1, count: 32)
+        XCTAssertEqual(AppConnect.storedBound(boundsKind: 1, boundIds: [id], documentTypeName: nil), .singleContract(id))
+        XCTAssertEqual(
+            AppConnect.storedBound(boundsKind: 2, boundIds: [id], documentTypeName: "profile"),
+            .documentType(contractId: id, name: "profile"))
+        XCTAssertEqual(AppConnect.storedBound(boundsKind: 3, boundIds: [id], documentTypeName: nil), .contractGroup(id))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 0, boundIds: nil, documentTypeName: nil))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 2, boundIds: [id], documentTypeName: nil))
+        XCTAssertNil(AppConnect.storedBound(boundsKind: 1, boundIds: [Data([1])], documentTypeName: nil))
+    }
+
+    // MARK: - Encryption key (wallet rule 7)
+
+    private static let derivedPoint = Data([0x03] + [UInt8](repeating: 0x55, count: 32))
+
+    private func encryptionState(
+        _ keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        rule: AppConnect.CurrentKeyRule = .latest,
+        current: AppConnect.CurrentContractKey?,
+        bindings: [AppConnect.KeyBinding]
+    ) -> AppConnect.EncryptionKeyState {
+        AppConnect.encryptionKeyState(
+            derivedPublicKeys: [Self.derivedPoint],
+            purpose: .encryption,
+            contractId: Self.appId,
+            rule: rule,
+            currentKey: current,
+            currentIdentityPublicKeys: keys,
+            bindings: bindings)
+    }
+
+    private static func current(_ keyId: UInt32, data: Data, disabled: Bool = false) -> AppConnect.CurrentContractKey {
+        AppConnect.CurrentContractKey(keyId: keyId, keyType: .ecdsaSecp256k1, data: data, isDisabled: disabled)
+    }
+
+    private static func encryptionKey(_ keyId: UInt32, data: Data, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+        key(keyId, purpose: .encryption, level: .medium, type: .ecdsaSecp256k1, data: data, disabled: disabled)
+    }
+
+    func testTheCurrentKeyIsSentAgainWhenThisWalletMadeIt() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        XCTAssertEqual(
+            encryptionState(
+                [mine], current: Self.current(5, data: Self.derivedPoint),
+                bindings: [.init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)]),
+            .current(keyId: 5))
+        // Fetched keys that do not show it yet are behind Platform.
+        XCTAssertEqual(encryptionState([], current: Self.current(5, data: Self.derivedPoint), bindings: []), .outOfDate)
+    }
+
+    func testTheKeyIsRegisteredWhenTheIdentityHasNoneForTheApp() {
+        let elsewhere = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
+        let other = Data(repeating: 0x0C, count: 32)
+        XCTAssertEqual(encryptionState([], current: nil, bindings: []), .absent)
+        // A key bound to another contract is not the app's.
+        XCTAssertEqual(
+            encryptionState(
+                [elsewhere], current: nil,
+                bindings: [.init(keyId: 5, data: elsewhere.data, singleContractId: other)]),
+            .absent)
+        // A disabled current key of another wallet's is a key for the app
+        // with none live (DIP rule 2): nothing is registered beside it.
+        let disabledTheirs = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
+        XCTAssertEqual(
+            encryptionState([disabledTheirs], current: Self.current(9, data: disabledTheirs.data, disabled: true), bindings: []),
+            .notThisWallets)
+    }
+
+    func testAnotherWalletsKeyIsNeitherSentNorReplaced() {
+        let theirs = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(
+            encryptionState(
+                [theirs], current: Self.current(5, data: theirs.data),
+                bindings: [.init(keyId: 5, data: theirs.data, singleContractId: Self.appId)]),
+            .notThisWallets)
+        // One the fetched keys do not show yet stops the login.
+        XCTAssertEqual(encryptionState([], current: Self.current(5, data: theirs.data), bindings: []), .outOfDate)
+        // Behind a disabled current key nothing is registered (DIP rule 2);
+        // a live key the store cannot place may be a later one with
+        // Platform's read behind, so a later read confirms it.
+        let disabledCurrent = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
+        XCTAssertEqual(
+            encryptionState(
+                [theirs, disabledCurrent], current: Self.current(9, data: disabledCurrent.data, disabled: true),
+                bindings: []),
+            .notThisWalletsIfSettled)
+        // With no current key at all, a key bound to the app would be it: a
+        // key the store cannot place is bound elsewhere, once a later read
+        // agrees.
+        XCTAssertEqual(encryptionState([theirs], current: nil, bindings: []), .absentIfSettled)
+        // A disabled one the store cannot place is weighed the same way.
+        let disabledUnplaced = Self.encryptionKey(7, data: Data(repeating: 0x99, count: 33), disabled: true)
+        XCTAssertEqual(encryptionState([disabledUnplaced], rule: .unique, current: nil, bindings: []), .absentIfSettled)
+        // Rotating is never part of a login: a disabled key of this wallet's
+        // cannot be added again, and is not replaced either.
+        let disabledMine = Self.encryptionKey(6, data: Self.derivedPoint, disabled: true)
+        XCTAssertEqual(
+            encryptionState(
+                [disabledMine], current: Self.current(6, data: Self.derivedPoint, disabled: true),
+                bindings: [.init(keyId: 6, data: Self.derivedPoint, singleContractId: Self.appId)]),
+            .notThisWallets)
+    }
+
+    func testThisWalletsKeyIsNotSentOnceANewerKeyIsCurrent() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let newer = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(
+            encryptionState([mine, newer], current: Self.current(9, data: newer.data), bindings: [
+                .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
+                .init(keyId: 9, data: newer.data, singleContractId: Self.appId),
+            ]),
+            .notThisWalletsIfSettled, "or Platform's read is behind this wallet's key")
+    }
+
+    /// Platform keeps naming the last key registered after it is disabled.
+    /// This wallet's older live key is not current then, and the app's
+    /// verifier would refuse it.
+    func testThisWalletsKeyIsNotSentWhenTheLatestKeyWasDisabled() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let disabled = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33), disabled: true)
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: disabled.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([mine, disabled], current: Self.current(9, data: disabled.data, disabled: true), bindings: bindings),
+            .notThisWalletsIfSettled, "registered before the disabled key, or after it with Platform's read behind")
+    }
+
+    /// A live current key beside another live key of the app's may be a
+    /// read from before that one was registered.
+    func testALiveCurrentKeyBesideAnotherKeyOfTheAppsWaitsOnALaterRead() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let other = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: other.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([mine, other], current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .currentIfSettled(keyId: 5))
+        XCTAssertEqual(
+            encryptionState([mine, other], current: Self.current(9, data: other.data), bindings: bindings),
+            .notThisWalletsIfSettled)
+        // So does a disabled one: it may be the key registered last.
+        let disabledOther = Self.encryptionKey(9, data: other.data, disabled: true)
+        XCTAssertEqual(
+            encryptionState([mine, disabledOther], current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .currentIfSettled(keyId: 5))
+        // Under `unique` there is no second key of the app's to wait on.
+        XCTAssertEqual(
+            encryptionState([mine, other], rule: .unique, current: Self.current(5, data: Self.derivedPoint), bindings: bindings),
+            .current(keyId: 5))
+    }
+
+    /// The current key is the one registered last, not the one with the
+    /// highest id.
+    func testTheCurrentKeyIsTheLastRegisteredNotTheHighestId() {
+        let theirs = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33))
+        let mineLower = Self.encryptionKey(3, data: Self.derivedPoint)
+        let bindings: [AppConnect.KeyBinding] = [
+            .init(keyId: 3, data: Self.derivedPoint, singleContractId: Self.appId),
+            .init(keyId: 9, data: theirs.data, singleContractId: Self.appId),
+        ]
+        XCTAssertEqual(
+            encryptionState([theirs, mineLower], current: Self.current(3, data: Self.derivedPoint), bindings: bindings),
+            .currentIfSettled(keyId: 3), "the higher id need not be the later key; a later read confirms")
+        let mineHigher = Self.encryptionKey(9, data: Self.derivedPoint)
+        let theirsLower = Self.encryptionKey(3, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(
+            encryptionState(
+                [mineHigher, theirsLower], current: Self.current(3, data: theirsLower.data),
+                bindings: [
+                    .init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId),
+                    .init(keyId: 3, data: theirsLower.data, singleContractId: Self.appId),
+                ]),
+            .notThisWalletsIfSettled)
+    }
+
+    /// The fetched keys and Platform's current key are two reads, and either
+    /// can be behind. The login goes ahead only when they agree.
+    func testTheFetchedKeysMustAgreeWithPlatformsCurrentKey() {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let mineBinding = AppConnect.KeyBinding(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)
+        // This wallet's live key bound to the app, and no current key: a
+        // registration Platform's read does not show yet.
+        XCTAssertEqual(encryptionState([mine], current: nil, bindings: [mineBinding]), .outOfDate)
+        // Platform shows it live, the fetched keys disabled; or the reverse.
+        XCTAssertEqual(
+            encryptionState(
+                [Self.encryptionKey(5, data: Self.derivedPoint, disabled: true)],
+                current: Self.current(5, data: Self.derivedPoint), bindings: [mineBinding]),
+            .outOfDate)
+        XCTAssertEqual(
+            encryptionState([mine], current: Self.current(5, data: Self.derivedPoint, disabled: true), bindings: [mineBinding]),
+            .outOfDate)
+        // The same id with other data.
+        XCTAssertEqual(
+            encryptionState(
+                [Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))],
+                current: Self.current(5, data: Self.derivedPoint), bindings: []),
+            .outOfDate)
+        // This wallet's key on the identity with no current key at all: it
+        // is derived for the app's contract, so Platform's read is behind.
+        XCTAssertEqual(encryptionState([mine], current: nil, bindings: []), .outOfDate)
+        // So is a disabled key the store places on the app.
+        let disabledTheirs = Self.encryptionKey(9, data: Data(repeating: 0x66, count: 33), disabled: true)
+        XCTAssertEqual(
+            encryptionState(
+                [disabledTheirs], rule: .unique, current: nil,
+                bindings: [.init(keyId: 9, data: disabledTheirs.data, singleContractId: Self.appId)]),
+            .outOfDate)
+        // This wallet's key, current and disabled, before the fetched keys
+        // show it: never registered again.
+        XCTAssertEqual(
+            encryptionState([], current: Self.current(6, data: Self.derivedPoint, disabled: true), bindings: []),
+            .outOfDate)
+    }
+
+    /// A state that holds only if Platform's read is not behind comes to
+    /// its plain form once a later read says the same.
+    func testAStateThatWaitsOnALaterReadSettles() {
+        XCTAssertEqual(AppConnect.EncryptionKeyState.absentIfSettled.settled, .absent)
+        XCTAssertEqual(AppConnect.EncryptionKeyState.notThisWalletsIfSettled.settled, .notThisWallets)
+        for state: AppConnect.EncryptionKeyState in [.current(keyId: 3), .absent, .notThisWallets, .outOfDate] {
+            XCTAssertEqual(state.settled, state)
+            XCTAssertFalse(state.needsSettling)
+        }
+        XCTAssertTrue(AppConnect.EncryptionKeyState.absentIfSettled.needsSettling)
+    }
+
+    func testARequirementThisBuildCannotReadIsToldApart() {
+        for unreadable: Any in [NSNumber(value: 3), "2", NSNumber(value: 1.5), NSNumber(value: true)] {
+            XCTAssertEqual(AppConnect.keyRequirement(unreadable), .unreadable, "\(unreadable)")
+        }
+    }
+
+    /// Platform never takes a current-key reference away and never gives a
+    /// disabled key back: a read that does is behind.
+    func testALaterReadThatLosesAKeyIsBehind() {
+        let live = Self.current(9, data: Self.derivedPoint)
+        let disabled = Self.current(9, data: Self.derivedPoint, disabled: true)
+        let other = Self.current(12, data: Data(repeating: 0x66, count: 33))
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: live]), .same)
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [:]), .behind)
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: disabled], later: [.encryption: live]), .behind)
+        XCTAssertEqual(AppConnect.compare(earlier: [:], later: [.encryption: live]), .newer([.encryption: live]))
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: disabled]), .newer([.encryption: disabled]))
+        // Key ids say nothing of order.
+        XCTAssertEqual(AppConnect.compare(earlier: [.encryption: live], later: [.encryption: other]), .conflict)
+        // Behind for one purpose, newer for another: the earlier key stays.
+        XCTAssertEqual(
+            AppConnect.compare(earlier: [.encryption: live], later: [.decryption: other]),
+            .newer([.encryption: live, .decryption: other]))
+    }
+
+    func testAStateThatWaitsSettlesOnlyOnAReadThatSaysTheSame() async throws {
+        let theirs = Self.encryptionKey(5, data: Data(repeating: 0x66, count: 33))
+        let disabledCurrent = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
+        let current = Self.current(9, data: disabledCurrent.data, disabled: true)
+        func states(_ keys: [KeyPurpose: AppConnect.CurrentContractKey]) -> [AppConnect.EncryptionKeyState] {
+            [encryptionState([theirs, disabledCurrent], current: keys[.encryption], bindings: [])]
+        }
+        func settle(_ reads: [[KeyPurpose: AppConnect.CurrentContractKey]]) async throws -> [AppConnect.EncryptionKeyState] {
+            var reads = reads
+            var pauses = 0
+            let result = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { reads.removeFirst() }, pause: { _ in pauses += 1 })
+            XCTAssertLessThanOrEqual(pauses, 3)
+            return result
+        }
+        // Behind a disabled current key the slot is left out (DIP rule 2),
+        // once a later read agrees that no newer key is current.
+        let agreed = try await settle([[.encryption: current]])
+        XCTAssertEqual(agreed, [.notThisWallets])
+        // A lagging node that has lost the disabled key does not settle the
+        // answer.
+        let lagging = try await settle([[:], [:], [:]])
+        XCTAssertEqual(lagging, [.outOfDate])
+        let caughtUp = try await settle([[:], [.encryption: current]])
+        XCTAssertEqual(caughtUp, [.notThisWallets])
+        // A read that conflicts makes the answer out of date, even if a
+        // later one agrees with the first.
+        let unknown = Self.current(11, data: Data(repeating: 0x88, count: 33))
+        let conflicting = try await settle([[.encryption: unknown], [.encryption: current]])
+        XCTAssertEqual(conflicting, [.outOfDate])
+        // A read that fails is set aside.
+        var reads: [[KeyPurpose: AppConnect.CurrentContractKey]?] = [nil, [.encryption: current]]
+        let afterAFailedRead = try await AppConnect.settle(
+            currentKeys: [.encryption: current], states: states,
+            reread: {
+                guard let read = reads.removeFirst() else { throw SDKError.timeout("read") }
+                return read
+            },
+            pause: { _ in })
+        XCTAssertEqual(afterAFailedRead, [.notThisWallets])
+        // When no read answers, the failure is thrown.
+        do {
+            _ = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { throw SDKError.timeout("read") }, pause: { _ in })
+            XCTFail("expected the read failure")
+        } catch SDKError.timeout {
+        }
+        // A failure called final is thrown at once.
+        var finalReads = 0
+        do {
+            _ = try await AppConnect.settle(
+                currentKeys: [.encryption: current], states: states,
+                reread: { finalReads += 1; throw SDKError.serializationError("unreadable") }, pause: { _ in },
+                isFinal: { _ in true })
+            XCTFail("expected the final failure")
+        } catch SDKError.serializationError {
+        }
+        XCTAssertEqual(finalReads, 1)
+    }
+
+    /// An answer a newer read gives has to be confirmed by a later one.
+    func testAnAnswerFromANewerReadNeedsASecondRead() async throws {
+        let mine = Self.encryptionKey(5, data: Self.derivedPoint)
+        let mineBinding = AppConnect.KeyBinding(keyId: 5, data: Self.derivedPoint, singleContractId: Self.appId)
+        let current = Self.current(5, data: Self.derivedPoint)
+        func states(_ keys: [KeyPurpose: AppConnect.CurrentContractKey]) -> [AppConnect.EncryptionKeyState] {
+            [encryptionState([mine], current: keys[.encryption], bindings: [mineBinding])]
+        }
+        func settle(_ reads: [[KeyPurpose: AppConnect.CurrentContractKey]]) async throws -> [AppConnect.EncryptionKeyState] {
+            var reads = reads
+            return try await AppConnect.settle(
+                currentKeys: [:], states: states, reread: { reads.removeFirst() }, pause: { _ in })
+        }
+        // The first read is behind this wallet's registration.
+        let confirmed = try await settle([[.encryption: current], [.encryption: current]])
+        XCTAssertEqual(confirmed, [.current(keyId: 5)])
+        let unconfirmed = try await settle([[.encryption: current], [:], [:]])
+        XCTAssertEqual(unconfirmed, [.outOfDate])
+        // An answer the first read gives is taken as it is.
+        let taken = try await AppConnect.settle(
+            currentKeys: [.encryption: current], states: states, reread: { XCTFail("no reread"); return [:] }, pause: { _ in })
+        XCTAssertEqual(taken, [.current(keyId: 5)])
+    }
+
+    func testOnlyARequirementThatKeepsACurrentKeyTakesALogin() {
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 0)), .currentKey(.unique))
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 2)), .currentKey(.latest))
+        XCTAssertEqual(AppConnect.keyRequirement(NSNumber(value: 1)), .noCurrentKey, "Multiple")
+        XCTAssertEqual(AppConnect.keyRequirement(NSNull()), .noCurrentKey)
+        XCTAssertEqual(AppConnect.keyRequirement(nil), .noCurrentKey)
+    }
+
+    /// Under `Unique` the first key registered stays current for good, and
+    /// no second key can be added.
+    func testAUniqueRequirementNeverTakesASecondKey() {
+        let theirs = Self.encryptionKey(4, data: Data(repeating: 0x66, count: 33), disabled: true)
+        XCTAssertEqual(
+            encryptionState([theirs], rule: .unique, current: Self.current(4, data: theirs.data, disabled: true), bindings: []),
+            .notThisWallets)
+        let disabledMine = Self.encryptionKey(4, data: Self.derivedPoint, disabled: true)
+        XCTAssertEqual(
+            encryptionState(
+                [disabledMine], rule: .unique, current: Self.current(4, data: Self.derivedPoint, disabled: true), bindings: []),
+            .notThisWallets)
+        let mine = Self.encryptionKey(4, data: Self.derivedPoint)
+        XCTAssertEqual(
+            encryptionState([mine], rule: .unique, current: Self.current(4, data: Self.derivedPoint), bindings: []),
+            .current(keyId: 4))
+        XCTAssertEqual(encryptionState([], rule: .unique, current: nil, bindings: []), .absent)
+    }
+
+    func testTheCurrentKeyIsReadFromTheContractKeysResponse() throws {
+        let identityId = "identity"
+        func read(_ response: [String: Any], _ purpose: KeyPurpose = .encryption) throws -> AppConnect.CurrentContractKey? {
+            try AppConnect.currentContractKey(from: response, identityId: identityId, purpose: purpose)
+        }
+        let key: [String: Any] = [
+            "id": 9, "type": 0, "data": Self.derivedPoint.toHexString(), "purpose": 1,
+            "security_level": 2, "read_only": false, "disabled_at": NSNull(),
+        ]
+        XCTAssertEqual(
+            try read([identityId: ["encryption": key]]),
+            AppConnect.CurrentContractKey(keyId: 9, keyType: .ecdsaSecp256k1, data: Self.derivedPoint, isDisabled: false))
+        var disabled = key
+        disabled["disabled_at"] = 1_700_000_000_000
+        XCTAssertEqual(try read([identityId: ["encryption": disabled]])?.isDisabled, true)
+        XCTAssertNil(try read([identityId: ["encryption": NSNull()]]), "proved absent")
+        XCTAssertEqual(try read([identityId: ["decryption": key]], .decryption)?.keyId, 9)
+        // A response that leaves the identity or the purpose out says nothing.
+        XCTAssertThrowsError(try read([:]))
+        XCTAssertThrowsError(try read([identityId: [:] as [String: Any]]))
+        XCTAssertThrowsError(try read([identityId: ["decryption": key]]))
+        var unreadable = key
+        unreadable["data"] = "zz"
+        XCTAssertThrowsError(try read([identityId: ["encryption": unreadable]]))
+        XCTAssertThrowsError(try read([identityId: ["authentication": key]], .authentication))
+        // Numbers are read only when exact.
+        for (field, value) in [("type", 256), ("id", -1), ("id", 4_294_967_301)] as [(String, Any)] {
+            var wrong = key
+            wrong[field] = value
+            XCTAssertThrowsError(try read([identityId: ["encryption": wrong]]), "\(field) = \(value)")
+        }
+        var fractional = key
+        fractional["id"] = 1.5
+        XCTAssertThrowsError(try read([identityId: ["encryption": fractional]]))
+        var boolean = key
+        boolean["id"] = true
+        XCTAssertThrowsError(try read([identityId: ["encryption": boolean]]))
+    }
+
+    /// The response as the SDK's JSON text decodes, not as Swift literals.
+    func testTheCurrentKeyIsReadFromTheSDKsJSONText() throws {
+        let text = """
+        {"identity":{"encryption":{"id":9,"type":0,"data":"\(Self.derivedPoint.toHexString())","purpose":1,\
+        "security_level":2,"read_only":false,"disabled_at":null},"decryption":null}}
+        """
+        let response = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
+        XCTAssertEqual(
+            try AppConnect.currentContractKey(from: response, identityId: "identity", purpose: .encryption),
+            AppConnect.CurrentContractKey(keyId: 9, keyType: .ecdsaSecp256k1, data: Self.derivedPoint, isDisabled: false))
+        XCTAssertNil(try AppConnect.currentContractKey(from: response, identityId: "identity", purpose: .decryption))
+    }
+
+    // MARK: - Supersession (wallet rule 8)
+
+    func testALoginReplacesTheLiveKeysOfTheSameConnectionOnly() {
+        let grants = [
+            Self.grant(sessionKeyId: 10, additionalKeyIds: [11], connectionId: "c1"),
+            Self.grant(sessionKeyId: 20, additionalKeyIds: [21], requestHash: "bb", connectionId: "c2"),
+            Self.grant(sessionKeyId: 30, appId: "other", connectionId: "c1"),
+        ]
+        let keys = [
+            Self.key(0, level: .master), Self.key(10, level: .critical), Self.key(11), Self.key(20), Self.key(21),
+            Self.key(30),
+        ]
+        func superseded(_ connectionId: String?, keeping: Set<UInt32> = []) -> [UInt32] {
+            AppConnect.supersededKeyIds(
+                grants: grants, identityId: "identity", appId: "app", connectionId: connectionId,
+                keeping: keeping, currentIdentityPublicKeys: keys, bindings: [])
+        }
+        XCTAssertEqual(superseded("c1"), [10, 11])
+        XCTAssertEqual(superseded("c2"), [20, 21])
+        XCTAssertEqual(superseded(nil), [], "without a connection id nothing is replaced")
+        XCTAssertEqual(superseded("c3"), [])
+        // A retry of the same request keeps the keys it sends again.
+        XCTAssertEqual(superseded("c1", keeping: [10, 11]), [])
+    }
+
+    func testSupersessionSkipsKeysThatAreOffOrNotAppKeys() {
+        let grants = [Self.grant(sessionKeyId: 0, additionalKeyIds: [1, 2, 3], connectionId: "c1")]
+        let keys = [
+            Self.key(0, level: .master),
+            Self.key(1, disabled: true),
+            Self.key(2, purpose: .transfer, level: .critical),
+            Self.key(3),
+        ]
+        XCTAssertEqual(
+            AppConnect.supersededKeyIds(
+                grants: grants, identityId: "identity", appId: "app", connectionId: "c1",
+                keeping: [], currentIdentityPublicKeys: keys, bindings: []),
+            [3], "a damaged record never gets the identity's own keys disabled")
+    }
+
+    func testAPendingPredecessorGivesUpOnlyTheKeysItCanBeShownToHold() {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var waiting = Self.pendingGrant([added], requestHash: "a1")
+        waiting.additionalKeyIds = [5]
+        let keys = [Self.key(5, level: .critical), Self.onIdentity(added)]
+        func superseded(_ bindings: [AppConnect.KeyBinding]) -> [UInt32] {
+            AppConnect.supersededKeyIds(
+                grants: [waiting], identityId: "identity", appId: "app", connectionId: "c1",
+                keeping: [], currentIdentityPublicKeys: keys, bindings: bindings)
+        }
+        XCTAssertEqual(superseded([Self.stored(added)]), [5, 8])
+        XCTAssertEqual(superseded([]), [5], "the same payload under its id may be another request's")
+        var otherBound = Self.stored(added)
+        otherBound.bound = .singleContract(Self.appId)
+        XCTAssertEqual(superseded([otherBound]), [5])
+        XCTAssertTrue(AppConnect.hasUnplacedPendingKey([waiting], currentIdentityPublicKeys: keys, bindings: []))
+        XCTAssertFalse(
+            AppConnect.hasUnplacedPendingKey([waiting], currentIdentityPublicKeys: keys, bindings: [Self.stored(added)]))
+        XCTAssertEqual(
+            AppConnect.reservedKeyIds(grants: [waiting], identityId: "identity"), [5, 8],
+            "a waiting record holds the ids it sends again too")
+        XCTAssertEqual(AppConnect.waitingKeyIds([waiting], bindings: [Self.stored(added)]), [5, 8])
+        XCTAssertEqual(
+            AppConnect.waitingKeyIds([waiting], bindings: []), [5], "an added key the store does not place is not taken")
+    }
+
+    func testARenewalTurnsOffEveryReplacedKeyInOneUpdateOrNone() {
+        let max = UInt32(AppConnect.maxKeysDisabledPerUpdate)
+        XCTAssertTrue(AppConnect.fitsOneUpdate(disabling: Array(1 ... max)))
+        XCTAssertFalse(AppConnect.fitsOneUpdate(disabling: Array(1 ... max + 1)))
+    }
+
+    // MARK: - Disconnect and the grant record
+
+    func testADisconnectDisablesEveryAuthKeyOfAV2Grant() {
+        let grant = Self.grant(sessionKeyId: 7, additionalKeyIds: [8])
+        let encryption = Self.encryptionKey(9, data: Self.derivedPoint)
+        let keys = [Self.key(0, level: .master), Self.key(7, level: .critical), Self.key(8), encryption]
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsToDisable(
+                for: [grant], appContractId: Self.appId,
+                bindings: [
+                    .init(keyId: 9, data: Self.derivedPoint, singleContractId: Self.appId),
+                    .init(keyId: 7, data: Self.key(7, level: .critical).data, singleContractId: nil,
+                          bound: .contractGroup(Data(repeating: 0xB2, count: 32))),
+                ],
+                currentIdentityPublicKeys: keys),
+            [7, 8], "the group key and the profile key go; the shared encryption key stays")
+        XCTAssertEqual(
+            AppConnect.sessionKeyIdsMissing(from: [Self.key(7, level: .critical)], for: [grant]),
+            [8])
+    }
+
+    func testAGrantRecordWithoutTheV2FieldsStillReads() throws {
+        let stored = """
+        {"identityId":"identity","appContractId":"app","values":{"appEphemeralPubKeyHash":"aa",\
+        "walletEphemeralPubKey":"bb","encryptedPayload":"cc"},"sessionKeyId":6,"publishedAt":1000}
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+        let grant = try decoder.decode(AppConnectGrant.self, from: Data(stored.utf8))
+        XCTAssertNil(grant.additionalKeyIds)
+        XCTAssertNil(grant.connectionId)
+        XCTAssertEqual(grant.keyIds, [6])
+
+        let v2 = Self.grant(sessionKeyId: 7, additionalKeyIds: [8, 9], connectionId: "c1")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .millisecondsSince1970
+        let roundTripped = try decoder.decode(AppConnectGrant.self, from: encoder.encode(v2))
+        XCTAssertEqual(roundTripped.keyIds, [7, 8, 9])
+        XCTAssertEqual(roundTripped.connectionId, "c1")
+    }
+
+    // MARK: - URI and callback
+
+    func testOnlyAVersionTwoKeyUriIsAnAppConnectRequest() {
+        XCTAssertTrue(DashConnectUri.isAppConnectUri(Self.requestUri))
+        XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=1"))
+        XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-st:abc?n=d&v=2"))
+        XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=22"))
+        // Read as the v2 parser reads the query: form-decoded.
+        XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=%32"))
+        XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&%76=2"))
+        XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v"))
+    }
+
+    /// A request for an app in the brand map that returns to a host the
+    /// app does not have is refused; one without a callback, or for an app
+    /// the wallet does not know, is left to the sheet's warning.
+    func testAKnownAppsRequestThatReturnsElsewhereIsRefused() {
+        XCTAssertEqual(
+            AppConnect.callbackRefusal(callbackHost: "yap.pr.example.com", brandHost: "yap.pr")?.status, .invalid)
+        XCTAssertEqual(AppConnect.callbackRefusal(callbackHost: "notyap.pr", brandHost: "yap.pr")?.status, .invalid)
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "yap.pr", brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "www.yap.pr", brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: nil, brandHost: "yap.pr"))
+        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "example.com", brandHost: nil))
+        XCTAssertEqual(
+            DashConnectFallbackAppMetadata.brandHost(contractId: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"), "yap.pr")
+        XCTAssertNil(DashConnectFallbackAppMetadata.brandHost(contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
+    }
+
+    func testTheCallbackKeepsItsQueryAndAddsTheStatus() throws {
+        let callback = try XCTUnwrap(Self.vectorUri().callback)
+        XCTAssertEqual(
+            AppConnect.callbackURL(callback, status: .ok)?.absoluteString,
+            "https://yap.pr/connect?r=d77dc0da9df83a47755a15c42c5d9db9d7a7fd62&ac=ok")
+        XCTAssertEqual(
+            AppConnect.callbackURL(try XCTUnwrap(URL(string: "https://yap.pr/connect")), status: .declined)?.absoluteString,
+            "https://yap.pr/connect?ac=declined")
+    }
+
+    func testARefusalKeepsTheDecodersStatus() {
+        XCTAssertEqual(AppConnect.Refusal(.unsupported("binding kind 3")).status, .unsupported)
+        XCTAssertEqual(AppConnect.Refusal(.invalid("label")).status, .invalid)
+    }
+
+    func testOnlyAGrantPlanOrAKnownLoginCanBeApproved() throws {
+        XCTAssertTrue(AppConnect.Login.appConnect(try Self.vectorPlan()).isApprovable)
+        XCTAssertTrue(AppConnect.Login.twoQR.isApprovable)
+        XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
+        XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
+    }
+}
+
+// MARK: - A v2 update whose outcome is not known
+
+extension AppConnectV2LoginTests {
+    private static let pendingNow = Int64(createdAt) + 60_000
+
+    /// A CRITICAL group key as a v2 update adds it.
+    private static func addedAuthKey(
+        _ keyId: UInt32,
+        data: UInt8,
+        expiresAt: UInt64 = expiresAt
+    ) -> ManagedPlatformWallet.IdentityPubkey {
+        ManagedPlatformWallet.IdentityPubkey(
+            keyId: keyId, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .critical,
+            pubkeyBytes: Data(repeating: data, count: 20), contractBounds: .contractGroup(id: groupId),
+            totalBudget: 50_000_000_000, expiresAt: expiresAt)
+    }
+
+    /// The app's encryption key as a v2 update registers it.
+    private static func addedEncryptionKey(_ keyId: UInt32, data: UInt8) -> ManagedPlatformWallet.IdentityPubkey {
+        ManagedPlatformWallet.IdentityPubkey(
+            keyId: keyId, keyType: .ecdsaSecp256k1, purpose: .encryption, securityLevel: .medium,
+            pubkeyBytes: Data(repeating: data, count: 33), contractBounds: .singleContract(id: appId))
+    }
+
+    /// `added` on the identity: as it was added unless told otherwise.
+    private static func onIdentity(
+        _ added: ManagedPlatformWallet.IdentityPubkey,
+        keyId: UInt32? = nil,
+        data: Data? = nil,
+        totalBudget: UInt64?? = nil,
+        expiresAt: UInt64?? = nil,
+        disabled: Bool = false
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
+        ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: Int32(bitPattern: keyId ?? added.keyId), purpose: added.purpose,
+            securityLevel: added.securityLevel, keyType: added.keyType, readOnly: false,
+            disabledAt: disabled ? 1 : nil, data: data ?? added.pubkeyBytes,
+            totalBudget: totalBudget ?? added.totalBudget, expiresAt: (expiresAt ?? added.expiresAt).map { Int64(bitPattern: $0) })
+    }
+
+    /// The store's record of `added`, bound as it was added.
+    private static func stored(_ added: ManagedPlatformWallet.IdentityPubkey) -> AppConnect.KeyBinding {
+        AppConnect.KeyBinding(
+            keyId: added.keyId, data: added.pubkeyBytes, singleContractId: nil,
+            bound: added.contractBounds.map(AppConnect.storedBound(of:)))
+    }
+
+    private static func pendingUpdate(
+        _ added: [ManagedPlatformWallet.IdentityPubkey],
+        disabling: [UInt32] = [],
+        retiring: [String] = []
+    ) -> AppConnectGrant.PendingV2Update {
+        .init(addedKeys: added.map(AppConnect.ExpectedKey.init), disabledKeyIds: disabling, retiredGrantKeys: retiring)
+    }
+
+    /// A v2 record waiting for the update that adds `added`.
+    private static func pendingGrant(
+        _ added: [ManagedPlatformWallet.IdentityPubkey],
+        identityId: String = "identity",
+        appId: String = "app",
+        requestHash: String = "aa",
+        retiring: [String] = []
+    ) -> AppConnectGrant {
+        let auth = added.filter { $0.purpose == .authentication }
+        var grant = AppConnectGrant(
+            identityId: identityId, appContractId: appId, documentId: nil,
+            values: .init(appEphemeralPubKeyHash: requestHash, walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: auth[0].keyId, totalBudget: auth[0].totalBudget, expiresAt: auth[0].expiresAt,
+            publishedAt: Date(timeIntervalSince1970: 1_000),
+            additionalKeyIds: auth.dropFirst().map(\.keyId), connectionId: "c1",
+            encryptionKeyIds: added.filter { $0.purpose != .authentication }.map(\.keyId))
+        grant.unconfirmedKeyHash160 = auth[0].pubkeyBytes.toHexString()
+        grant.pendingUpdate = pendingUpdate(added, retiring: retiring)
+        return grant
+    }
+
+    private static func outcome(
+        _ added: [ManagedPlatformWallet.IdentityPubkey],
+        keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        bindings: [AppConnect.KeyBinding]? = nil,
+        outlivedBy: AppConnect.OwnUpdate? = nil
+    ) -> AppConnect.PendingV2Outcome {
+        var pending = pendingUpdate(added)
+        pending.outlivedBy = outlivedBy
+        return AppConnect.pendingV2Outcome(
+            of: pending, currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored))
+    }
+
+    func testAPendingUpdateLandedOnlyWhenEveryKeyIsThereAsItWasAdded() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        let encryption = Self.addedEncryptionKey(8, data: 0x08)
+        let master = Self.key(0, level: .master)
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master, Self.onIdentity(auth), Self.onIdentity(encryption)]),
+            .landed)
+        XCTAssertEqual(Self.outcome([auth, encryption], keys: [master]), .unknown, "it may still land")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master, Self.onIdentity(auth)]), .unknown,
+            "a view that shows part of one update is behind")
+    }
+
+    func testAPendingUpdateWithSomeKeysOffAgainLandedAndKeepsItsRecord() {
+        let first = Self.addedAuthKey(7, data: 0x07)
+        let second = Self.addedAuthKey(8, data: 0x08)
+        XCTAssertEqual(
+            Self.outcome([first, second], keys: [Self.onIdentity(first), Self.onIdentity(second, disabled: true)]),
+            .landed, "a live key of it still needs its record")
+        XCTAssertEqual(
+            Self.outcome([first, second], keys: [
+                Self.onIdentity(first, disabled: true), Self.onIdentity(second, disabled: true),
+            ]),
+            .landedAndOff)
+        let encryption = Self.addedEncryptionKey(9, data: 0x09)
+        XCTAssertEqual(
+            Self.outcome([first, encryption], keys: [Self.onIdentity(first, disabled: true), Self.onIdentity(encryption)]),
+            .landedAndOff, "the identity's encryption key is never turned off here")
+    }
+
+    func testAnIdHeldByAnotherKeyMeansThePendingUpdateCanNeverLand() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, data: Data(repeating: 0xEE, count: 20))]), .cannotLand,
+            "Platform refuses an update that adds an id the identity has")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, disabled: true)]), .landedAndOff,
+            "it landed and is off again")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(1))]), .cannotLand,
+            "the same payload with other limits is another request's key")
+        var otherBound = Self.stored(auth)
+        otherBound.bound = .contractGroup(Data(repeating: 0xEE, count: 32))
+        XCTAssertEqual(Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [otherBound]), .cannotLand)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: []), .unknown,
+            "the store may not have loaded the key yet")
+        var unreadable = Self.stored(auth)
+        unreadable.hasUnreadableBound = true
+        XCTAssertEqual(Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [unreadable]), .unknown)
+    }
+
+    func testAPendingEncryptionKeyUnderAnotherIdMeansTheUpdateCanNeverLand() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        let encryption = Self.addedEncryptionKey(8, data: 0x08)
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [Self.onIdentity(encryption, keyId: 3)]), .cannotLand,
+            "an ECDSA_SECP256K1 key is unique on Platform")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [Self.onIdentity(auth, keyId: 3)]), .unknown,
+            "a HASH160 payload is not unique, so it says nothing")
+    }
+
+    func testALaterUpdateOfOursLeavesAPendingOneUnknown() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        let master = Self.key(0, level: .master)
+        let laterKey = Self.addedAuthKey(11, data: 0x0B)
+        let later = AppConnect.OwnUpdate(added: [laterKey], disabledKeyIds: [3])
+        // A note an earlier build made: the SDK's copy of the identity can
+        // be reloaded while an update is on its way, so the pending one can
+        // still land after the later one.
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, Self.key(3, disabled: true), Self.onIdentity(laterKey)], outlivedBy: later),
+            .unknown)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [master, Self.key(3, disabled: true), Self.onIdentity(laterKey), Self.onIdentity(auth)],
+                         outlivedBy: later),
+            .landed, "its own key settles it")
+    }
+
+    func testAPendingUpdateWhoseKeyLimitsWereRaisedSinceLanded() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(auth.totalBudget! + 1))]), .landed,
+            "a limits update raised its budget")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(auth.expiresAt! + Self.dayMilliseconds))]),
+            .landed, "a limits update extended it")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(UInt64.max))]), .landed,
+            "extended to the largest expiry")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, totalBudget: .some(nil))]), .cannotLand,
+            "a limits update never takes a limit away")
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth, expiresAt: .some(auth.expiresAt! - 1))]), .cannotLand,
+            "nor lowers one")
+    }
+
+    func testAPendingUpdateWhoseReplacedKeysAreStillOnRetiresNothing() {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var pending = Self.pendingGrant([key], requestHash: "a1", retiring: [old.key])
+        pending.pendingUpdate?.disabledKeyIds = [3]
+        var grants = [old, pending]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key), Self.key(3)],
+            bindings: [Self.stored(key)])
+        XCTAssertEqual(settled.confirmed.map(\.key), [pending.key], "its keys are there and need their record")
+        XCTAssertNil(grants[0].keyDisabled, "another update added them; the replaced key is still on")
+
+        var landedOff = [old, pending]
+        _ = AppConnect.settlePendingV2Registrations(
+            in: &landedOff, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3)],
+            bindings: [Self.stored(key)])
+        XCTAssertEqual(landedOff.map(\.key), [old.key])
+        XCTAssertNil(landedOff[0].keyDisabled)
+    }
+
+    func testARetryIsSentOnlyWithinWhatThisApprovalGrants() {
+        let stored = AppConnect.ExpectedKey(Self.addedAuthKey(7, data: 0x07))
+        let planned = Self.addedAuthKey(7, data: 0x07, expiresAt: Self.expiresAt + Self.dayMilliseconds)
+        XCTAssertTrue(
+            AppConnect.isWithinPlan(stored, planned: planned, now: Self.now), "the plan's default expiry moved on")
+        func plan(
+            level: SecurityLevel = .critical,
+            bounds: ManagedPlatformWallet.ContractBounds = .contractGroup(id: Self.groupId),
+            budget: UInt64? = 50_000_000_000,
+            expiresAt: UInt64? = Self.expiresAt
+        ) -> ManagedPlatformWallet.IdentityPubkey {
+            ManagedPlatformWallet.IdentityPubkey(
+                keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: level,
+                pubkeyBytes: Data(repeating: 0x07, count: 20), contractBounds: bounds,
+                totalBudget: budget, expiresAt: expiresAt)
+        }
+        for (key, why) in [
+            (plan(budget: 1), "a smaller budget"),
+            (plan(budget: 60_000_000_000), "another budget"),
+            (plan(budget: nil), "no limit"),
+            (plan(expiresAt: Self.expiresAt - Self.dayMilliseconds), "an earlier expiry"),
+            (plan(level: .high), "another level"),
+            (plan(bounds: .singleContract(id: Self.appId)), "another bound"),
+        ] {
+            XCTAssertFalse(AppConnect.isWithinPlan(stored, planned: key, now: Self.now), why)
+        }
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(
+                stored, planned: plan(), now: Self.date(milliseconds: Self.expiresAt)),
+            "its expiry has passed")
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(stored, planned: plan(expiresAt: Self.expiresAt - 1), now: Self.now),
+            "an expiry even slightly earlier than the earlier approval's")
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(stored, planned: plan(expiresAt: nil), now: Self.now),
+            "the plan sets no expiry, the earlier approval did")
+        let encryption = Self.addedEncryptionKey(8, data: 0x08)
+        XCTAssertTrue(AppConnect.isWithinPlan(AppConnect.ExpectedKey(encryption), planned: encryption, now: Self.now))
+        let otherContract = ManagedPlatformWallet.IdentityPubkey(
+            keyId: 8, keyType: .ecdsaSecp256k1, purpose: .encryption, securityLevel: .medium,
+            pubkeyBytes: encryption.pubkeyBytes, contractBounds: .singleContract(id: Self.groupId))
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(AppConnect.ExpectedKey(encryption), planned: otherContract, now: Self.now),
+            "an encryption key bound to another contract")
+    }
+
+    func testAnAppIsExpiredOnlyWhenEveryKeyStillOnIsPastItsExpiry() {
+        let now = Int64(Self.createdAt)
+        func onIdentity(_ keyId: UInt32, expiresAt: Int64?, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
+            ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: Int32(bitPattern: keyId), purpose: .authentication, securityLevel: .critical,
+                keyType: .ecdsaHash160, readOnly: false, disabledAt: disabled ? 1 : nil,
+                data: Data(repeating: UInt8(keyId), count: 20), totalBudget: nil, expiresAt: expiresAt)
+        }
+        let past = now - 2 * Int64(Self.dayMilliseconds)
+        let future = now + 2 * Int64(Self.dayMilliseconds)
+        let grants = [
+            Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "expired"),
+            Self.grant(sessionKeyId: 5, additionalKeyIds: [6], appId: "partly"),
+            Self.grant(sessionKeyId: 7, appId: "missing"),
+            Self.grant(sessionKeyId: 8, appId: "off"),
+            Self.grant(sessionKeyId: 9, appId: "forever"),
+        ]
+        let keys = [
+            onIdentity(3, expiresAt: past), onIdentity(4, expiresAt: past),
+            onIdentity(5, expiresAt: past), onIdentity(6, expiresAt: future),
+            onIdentity(8, expiresAt: past, disabled: true),
+            onIdentity(9, expiresAt: nil),
+        ]
+        let expiries = AppConnect.connectionExpiries(
+            grants: grants, currentIdentityPublicKeys: keys, nowMilliseconds: now,
+            chainTimeMilliseconds: now)
+        XCTAssertEqual(expiries["expired"], .expired)
+        XCTAssertEqual(expiries["partly"], .current, "one of its keys still works")
+        XCTAssertEqual(expiries["missing"], .unknown, "the view lacks its key")
+        XCTAssertEqual(expiries["off"], .keysOff, "its keys are off while its record says connected")
+        XCTAssertEqual(expiries["forever"], .current, "a key with no expiry never expires")
+    }
+
+    func testAKeyIsExpiredOnlyOnceTheChainIsPastItToo() {
+        let now = Int64(Self.createdAt)
+        let key = ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: 3, purpose: .authentication, securityLevel: .critical, keyType: .ecdsaHash160, readOnly: false,
+            disabledAt: nil, data: Data(repeating: 3, count: 20), totalBudget: nil,
+            expiresAt: now - 3 * 3_600_000)
+        let grants = [Self.grant(sessionKeyId: 3, appId: "app")]
+        func expiry(chainTime: Int64?) -> ConnectionExpiry? {
+            AppConnect.connectionExpiries(
+                grants: grants, currentIdentityPublicKeys: [key], nowMilliseconds: now,
+                chainTimeMilliseconds: chainTime)["app"]
+        }
+        XCTAssertEqual(expiry(chainTime: now - 60_000), .expired, "the chain is past the expiry too")
+        XCTAssertEqual(
+            expiry(chainTime: now - 4 * 3_600_000), .unknown,
+            "the phone's clock may run ahead, or the chain is behind: not told until the chain shows it")
+        XCTAssertEqual(expiry(chainTime: nil), .unknown, "without the chain's time it is not told")
+    }
+
+    func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {
+        var grant = Self.grant(sessionKeyId: 3)
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [.init(bound: .singleContract(Self.appId), isCritical: false, totalBudget: 5,
+                         expiresAt: Self.expiresAt, isAdministered: false)],
+            receivesMessages: false, isSessionKeyLogin: true)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(grant)) as? [String: Any])
+        XCTAssertEqual(try JSONDecoder().decode(AppConnectGrant.self, from: JSONEncoder().encode(grant)), grant)
+        object["grantedAccess"] = ["keys": [["bound": ["someFutureBound": [:]]]], "receivesMessages": true]
+        let decoded = try JSONDecoder().decode(AppConnectGrant.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertEqual(decoded.sessionKeyId, 3, "the record a disconnect needs still reads")
+        XCTAssertEqual(decoded.grantedAccess?.isUnreadable, true)
+        XCTAssertNil(ConnectionAccess(grants: [decoded])?.keys, "shown as limits only")
+        let rewritten = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as? [String: Any])
+        XCTAssertEqual(
+            rewritten["grantedAccess"] as? NSDictionary, object["grantedAccess"] as? NSDictionary,
+            "what a newer build wrote is written back as it was")
+    }
+
+    func testEachKeyOfAConnectionWithWhatIsLeftOfItsBudget() throws {
+        var grant = Self.grant(sessionKeyId: 3, additionalKeyIds: [4])
+        let dashPay = try XCTUnwrap(Data.identifier(fromBase58: AppConnect.dashPayContractId))
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [
+                .init(bound: .contractGroup(Self.groupId), isCritical: true, totalBudget: 50_000_000_000,
+                      expiresAt: Self.expiresAt, isAdministered: false),
+                .init(bound: .documentType(contractId: dashPay, name: "profile"), isCritical: false,
+                      totalBudget: 200_000_000, expiresAt: Self.expiresAt, isAdministered: false),
+            ],
+            receivesMessages: false)
+        let older = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "bb", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1_000),
+            additionalKeyIds: [10])
+        let funding = KeyFunding.of(grants: [grant, older], remaining: [3: 1_000, 4: nil, 9: 5])
+        XCTAssertEqual(funding, [
+            KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 1_000),
+            KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
+            KeyFunding(isProfileKey: false, totalBudget: 7, remaining: 5),
+            KeyFunding(isProfileKey: false, totalBudget: nil, isBudgetKnown: false, remaining: nil),
+        ], "an older record knows its primary key's budget only")
+        XCTAssertEqual(
+            KeyFunding.of(grants: [grant, grant], remaining: [:]).count, 2, "a key two grants name is listed once")
+    }
+
+    func testConnectionAccessShowsTheLargestKeyAndWhatWasGiven() throws {
+        var grant = Self.grant(sessionKeyId: 3, additionalKeyIds: [4])
+        grant.grantedAccess = AppConnect.GrantedAccess(
+            keys: [
+                .init(bound: .contractGroup(Self.groupId), isCritical: true, totalBudget: 50_000_000_000,
+                      expiresAt: Self.expiresAt, isAdministered: false),
+                .init(bound: .documentType(contractId: Self.appId, name: "profile"), isCritical: false,
+                      totalBudget: 1_000_000_000, expiresAt: Self.expiresAt + Self.dayMilliseconds, isAdministered: false),
+            ],
+            receivesMessages: true)
+        let access = try XCTUnwrap(ConnectionAccess(grants: [grant]))
+        XCTAssertEqual(access.largestBudget, 50_000_000_000)
+        XCTAssertFalse(access.hasUnlimitedKey)
+        XCTAssertEqual(access.keys?.count, 2)
+        XCTAssertTrue(access.receivesMessages)
+        XCTAssertEqual(
+            access.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.expiresAt + Self.dayMilliseconds) / 1000),
+            "the connection lasts as long as its last key")
+
+        let older = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: Self.expiresAt, publishedAt: Date(timeIntervalSince1970: 1))
+        let mixed = try XCTUnwrap(ConnectionAccess(grants: [grant, older]))
+        XCTAssertNil(mixed.keys, "a record without what it gave shows the limits only")
+        XCTAssertEqual(mixed.largestBudget, 50_000_000_000)
+        XCTAssertNil(ConnectionAccess(grants: []))
+
+        let noExpiry = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1))
+        XCTAssertNil(
+            ConnectionAccess(grants: [grant, noExpiry])?.expiresAt,
+            "a record that did not note its key's expiry leaves the connection's unknown")
+
+        var unlimited = grant
+        unlimited.grantedAccess = AppConnect.GrantedAccess(
+            keys: [.init(bound: .singleContract(Self.appId), isCritical: false, totalBudget: nil,
+                         expiresAt: Self.expiresAt, isAdministered: false)],
+            receivesMessages: false)
+        XCTAssertEqual(ConnectionAccess(grants: [unlimited])?.hasUnlimitedKey, true)
+    }
+
+    func testSettlingConfirmsWhatLandedDropsWhatCannotAndMarksTheGrantsItRetired() {
+        let landedKey = Self.addedAuthKey(7, data: 0x07)
+        let impossibleKey = Self.addedAuthKey(9, data: 0x09)
+        let unknownKey = Self.addedAuthKey(11, data: 0x0B)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let landed = Self.pendingGrant([landedKey], requestHash: "a1", retiring: [old.key])
+        let impossible = Self.pendingGrant([impossibleKey], requestHash: "a2")
+        let unknown = Self.pendingGrant([unknownKey], requestHash: "a3")
+        let otherIdentity = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], identityId: "other", requestHash: "a4")
+        var grants = [old, landed, impossible, unknown, otherIdentity]
+
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [
+                Self.onIdentity(landedKey), Self.onIdentity(impossibleKey, data: Data(repeating: 0xEE, count: 20)),
+            ],
+            bindings: [Self.stored(landedKey)])
+
+        XCTAssertEqual(settled.confirmed.map(\.key), [landed.key])
+        XCTAssertEqual(settled.dropped.map(\.key), [impossible.key])
+        XCTAssertEqual(grants.map(\.key), [old.key, landed.key, unknown.key, otherIdentity.key])
+        XCTAssertFalse(grants[1].isUnconfirmed)
+        XCTAssertNil(grants[1].pendingUpdate)
+        XCTAssertEqual(grants[0].keyDisabled, true, "the grant its update replaced is done")
+        XCTAssertTrue(grants[2].isPendingV2)
+        XCTAssertTrue(grants[3].isPendingV2, "another identity's record waits for a view of that identity")
+    }
+
+    func testAWaitingRecordThatHoldsALiveKeyIsNotDropped() {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([added], requestHash: "a1")
+        record.additionalKeyIds = [5]
+        let resentLive = Self.key(5, level: .critical)
+        let taken = Self.onIdentity(added, data: Data(repeating: 0xEE, count: 20))
+        let placed = [Self.stored(added)]
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [resentLive, taken], bindings: placed), [5])
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: placed), [8])
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: []), [8],
+            "an added key live as added that the store cannot place yet: whose it is is not known")
+        var otherBound = Self.stored(added)
+        otherBound.bound = .singleContract(Self.appId)
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [Self.onIdentity(added)], bindings: [otherBound]), [],
+            "the store reads it with another bound: another request's")
+        var otherBoundGrants = [record]
+        XCTAssertEqual(
+            AppConnect.settlePendingV2Registrations(
+                in: &otherBoundGrants, identityId: "identity",
+                currentIdentityPublicKeys: [Self.onIdentity(added)], bindings: [otherBound]).dropped.map(\.key),
+            [record.key])
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken], bindings: [AppConnect.KeyBinding(
+                keyId: 5, data: Data([5]), singleContractId: nil)]), [5],
+            "a key it sends again that the view omits counts while the store holds it")
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken], bindings: []), [],
+            "nor once nothing shows it")
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [taken, Self.key(5, disabled: true)], bindings: placed), [],
+            "another key under its id is not its own")
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: Self.grant(sessionKeyId: 5), in: [resentLive], bindings: []), [],
+            "only a waiting record")
+
+        for (keys, why) in [
+            ([resentLive, taken], "cannot land, a key it sends again is live"),
+            ([resentLive, Self.onIdentity(added, disabled: true)], "landed and off, a key it sends again is live"),
+            ([Self.key(5, disabled: true), Self.onIdentity(added, totalBudget: .some(1))],
+             "cannot land by its limits, its placed added key is live"),
+        ] {
+            var grants = [record]
+            let settled = AppConnect.settlePendingV2Registrations(
+                in: &grants, identityId: "identity", currentIdentityPublicKeys: keys, bindings: [Self.stored(added)])
+            XCTAssertEqual(settled.dropped, [], why)
+            XCTAssertEqual(grants.map(\.key), [record.key], why)
+            XCTAssertTrue(grants[0].isPendingV2, why)
+        }
+        var grants = [record]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.key(5, disabled: true), taken], bindings: [])
+        XCTAssertEqual(settled.dropped.map(\.key), [record.key], "nothing of it is live any more")
+    }
+
+    func testAWaitingRecordKeepsTheKeysTheStorePlacesEvenWhenAViewOmitsThem() {
+        // It adds A (7) and B (8); another key holds A's id, and the store
+        // already placed B, which this lagging view omits.
+        let keyA = Self.addedAuthKey(7, data: 0x07)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB], requestHash: "a1")
+        let conflict = Self.onIdentity(keyA, data: Data(repeating: 0xEE, count: 20))
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: [conflict], bindings: [Self.stored(keyB)]), [8])
+        var bOff = Self.stored(keyB)
+        bOff.isDisabled = true
+        XCTAssertEqual(
+            AppConnect.heldKeyIds(heldBy: record, in: [conflict], bindings: [bOff]), [],
+            "the store has it off")
+
+        var grants = [record]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [conflict], bindings: [Self.stored(keyB)])
+        XCTAssertEqual(settled.dropped, [], "it cannot land, but the store gives it B")
+        XCTAssertTrue(grants[0].isPendingV2)
+
+        // A matching key under A's id the store cannot place yet, with B's id
+        // held by another key: whose A is is not known, so the record stays.
+        let unplaced = [Self.onIdentity(keyA), Self.onIdentity(keyB, data: Data(repeating: 0xEE, count: 20))]
+        XCTAssertEqual(AppConnect.heldKeyIds(heldBy: record, in: unplaced, bindings: []), [7])
+        var others = [record]
+        XCTAssertEqual(
+            AppConnect.settlePendingV2Registrations(
+                in: &others, identityId: "identity", currentIdentityPublicKeys: unplaced, bindings: []).dropped, [])
+    }
+
+    func testAWaitingRecordThatHoldsAKeyGetsARowToDisconnectIt() {
+        // It adds profile key A (7) and B (8); only A is on the identity and
+        // in the store, and the app has no row (a disconnect let it go).
+        let keyA = ManagedPlatformWallet.IdentityPubkey(
+            keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+            pubkeyBytes: Data(repeating: 0x07, count: 20),
+            contractBounds: .singleContractDocumentType(id: Self.dashpayContractId, documentTypeName: "profile"),
+            totalBudget: 1_000_000_000, expiresAt: Self.expiresAt)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB], appId: Self.appId.toBase58String(), requestHash: "a1")
+        let keys = [Self.onIdentity(keyA)]
+        let bindings = [Self.stored(keyA)]
+        let app = Self.appId.toBase58String()
+        let appIds = PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+            grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings, rows: [])
+        XCTAssertEqual(appIds, [app])
+        let rows = PlatformDashConnectDataSource.rowsAfterHolding(
+            appIds: appIds, in: [], at: Date(timeIntervalSince1970: 2_000))
+        XCTAssertEqual(rows.map(\.id), [app])
+        XCTAssertEqual(rows.map(\.status), [.confirming], "a confirming row offers the disconnect")
+
+        let row = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .confirming,
+                                 updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .oneQR)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: bindings,
+                rows: [row]),
+            [], "a row that offers a disconnect is left as it is")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: [], bindings: [], rows: []),
+            [], "a record that holds nothing needs no row")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.appIdsWithoutTheirConfirmingRow(
+                grants: [record], identityId: "identity", currentIdentityPublicKeys: keys, bindings: [], rows: []),
+            [], "a key the store cannot place yet could not be turned off from that row")
+        let active = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .active,
+                                    updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .oneQR)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterHolding(
+                appIds: [app], in: [active], at: Date(timeIntervalSince1970: 2_000)).map(\.status),
+            [.active], "a row written meanwhile that offers a disconnect stays")
+    }
+
+    func testAFailedUpdateKeepsARecordTheStoreGivesAKeyAViewOmits() async {
+        let keyA = Self.addedAuthKey(7, data: 0x07)
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        let record = Self.pendingGrant([keyA, keyB])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        _ = try? await Self.register(
+            record, add: [keyA, keyB], store: store, calls: calls, submit: { throw UpdateFailed() },
+            views: [([Self.onIdentity(keyA, data: Data(repeating: 0xEE, count: 20))], [Self.stored(keyB)])])
+        XCTAssertEqual(store.grants.map(\.key), [record.key], "the store places B, which the view omits")
+        XCTAssertEqual(calls.dropped, 0)
+    }
+
+    func testAViewThatLacksAKeyAWaitingRecordHoldsIsBehind() {
+        let keyB = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([keyB], requestHash: "a1")
+        record.additionalKeyIds = [5]
+        XCTAssertTrue(AppConnect.showsWaitingKeys(
+            [record], in: [Self.key(5), Self.onIdentity(keyB)], bindings: [Self.stored(keyB)]))
+        XCTAssertFalse(
+            AppConnect.showsWaitingKeys([record], in: [Self.key(5)], bindings: [Self.stored(keyB)]),
+            "the store places B and the view lacks it")
+        XCTAssertFalse(
+            AppConnect.showsWaitingKeys([record], in: [Self.onIdentity(keyB)], bindings: [Self.stored(keyB)]),
+            "it sends 5 again and the view lacks it")
+        XCTAssertTrue(
+            AppConnect.showsWaitingKeys([record], in: [Self.key(5)], bindings: []),
+            "an added key the store does not place is not required")
+    }
+
+    func testAPendingUpdateThatLandedAndIsOffAgainIsDroppedWithWhatItRetired() {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let pending = Self.pendingGrant([key], requestHash: "a1", retiring: [old.key])
+        var grants = [old, pending]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity",
+            currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3, disabled: true)],
+            bindings: [Self.stored(key)])
+        XCTAssertEqual(settled.dropped.map(\.key), [pending.key])
+        XCTAssertEqual(grants.map(\.key), [old.key])
+        XCTAssertEqual(grants[0].keyDisabled, true, "its update turned the replaced grant off")
+    }
+
+    func testAPendingV2RecordStillReadsAsUnconfirmedWithoutItsNewField() throws {
+        let grant = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07), Self.addedEncryptionKey(8, data: 0x08)])
+        let encoded = try JSONEncoder().encode(grant)
+        XCTAssertEqual(try JSONDecoder().decode(AppConnectGrant.self, from: encoded), grant)
+
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        object["pendingUpdate"] = nil
+        let older = try JSONDecoder().decode(
+            AppConnectGrant.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertNil(older.pendingUpdate, "a record from before the field loads")
+        XCTAssertTrue(older.isUnconfirmed, "a build without the field still sees the record as unconfirmed")
+        XCTAssertNil(older.submittedRevision, "and settles it by no revision")
+    }
+
+    func testTheIdsAPendingUpdateAddsAreNotHandedOutAgain() {
+        let grants = [
+            Self.pendingGrant([Self.addedAuthKey(4, data: 0x04), Self.addedEncryptionKey(5, data: 0x05)]),
+            Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], identityId: "other"),
+            Self.grant(sessionKeyId: 6),
+        ]
+        var oneQR = Self.grant(sessionKeyId: 12, requestHash: "b1")
+        oneQR.unconfirmedKeyHash160 = "12"
+        oneQR.submittedRevision = 3
+        var oneQRWithoutRevision = Self.grant(sessionKeyId: 14, requestHash: "b2")
+        oneQRWithoutRevision.unconfirmedKeyHash160 = "14"
+        XCTAssertEqual(
+            AppConnect.reservedKeyIds(grants: grants + [oneQR, oneQRWithoutRevision], identityId: "identity"),
+            [4, 5, 12], "a one-QR registration that may still land holds its id too")
+        let reserved = AppConnect.reservedKeyIds(grants: grants, identityId: "identity")
+        XCTAssertEqual(reserved, [4, 5])
+        let keys = [Self.key(0, level: .master), Self.key(1), Self.key(2), Self.key(3)]
+        XCTAssertEqual(AppConnect.freeKeyIds(count: 2, currentIdentityPublicKeys: keys, reserved: reserved), [6, 7])
+        XCTAssertEqual(AppConnect.nextKeyId(currentIdentityPublicKeys: keys, reserved: reserved), 6)
+    }
+
+    func testAKeyAPendingUpdateAddedCountsAsItsGrantsWhereTheStoreShowsIt() {
+        let profileKey = ManagedPlatformWallet.IdentityPubkey(
+            keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+            pubkeyBytes: Data(repeating: 0x07, count: 20),
+            contractBounds: .singleContractDocumentType(id: Self.dashpayContractId, documentTypeName: "profile"),
+            totalBudget: 1_000_000_000, expiresAt: Self.expiresAt)
+        let grants = [Self.pendingGrant([profileKey]), Self.grant(sessionKeyId: 3)]
+        XCTAssertEqual(
+            AppConnect.recordedKeyIds(of: "identity", grants: grants, bindings: [Self.stored(profileKey)]), [3, 7])
+        var otherKey = Self.stored(profileKey)
+        otherKey = AppConnect.KeyBinding(
+            keyId: 7, data: Data(repeating: 0xEE, count: 20), singleContractId: nil, bound: otherKey.bound)
+        XCTAssertEqual(
+            AppConnect.recordedKeyIds(of: "identity", grants: grants, bindings: [otherKey]), [3],
+            "another key under the id is not the grant's")
+        XCTAssertEqual(AppConnect.recordedKeyIds(of: "identity", grants: grants, bindings: []), [3])
+        var withReused = Self.pendingGrant([Self.addedAuthKey(8, data: 0x08)], requestHash: "a6")
+        withReused.additionalKeyIds = [5]
+        XCTAssertTrue(
+            AppConnect.recordedKeyIds(of: "identity", grants: [withReused], bindings: []).contains(5),
+            "an auth key the record sends again was there when it was recorded")
+        XCTAssertEqual(AppConnect.resentKeyIds(of: withReused), [5])
+        let added = withReused.pendingUpdate!
+        XCTAssertTrue(AppConnect.showsAddedLimits(of: added, in: [Self.onIdentity(Self.addedAuthKey(8, data: 0x08))]))
+        XCTAssertFalse(AppConnect.showsAddedLimits(
+            of: added, in: [Self.onIdentity(Self.addedAuthKey(8, data: 0x08), totalBudget: .some(1))]))
+        XCTAssertEqual(AppConnect.resentKeyIds(of: Self.grant(sessionKeyId: 3, additionalKeyIds: [4])), [], "only a waiting record")
+    }
+
+    func testARetrySubmitsTheSameKeysUnderTheSameIds() throws {
+        let first = Self.addedAuthKey(4, data: 0x04)
+        let second = Self.addedAuthKey(5, data: 0x05)
+        let encryption = Self.addedEncryptionKey(6, data: 0x06)
+        let pending = Self.pendingUpdate([first, second, encryption])
+        let ids = try XCTUnwrap(AppConnect.keyIdsForRetry(
+            of: pending, authKeyHash160s: [first.pubkeyBytes, second.pubkeyBytes],
+            registeredEncryptionKeys: [encryption.pubkeyBytes]))
+        XCTAssertEqual(ids.auth, [4, 5])
+        XCTAssertEqual(ids.encryption, [6])
+        XCTAssertNil(
+            AppConnect.keyIdsForRetry(
+                of: pending, authKeyHash160s: [first.pubkeyBytes, Data(repeating: 0xEE, count: 20)],
+                registeredEncryptionKeys: [encryption.pubkeyBytes]),
+            "other keys are another approval")
+        XCTAssertNil(
+            AppConnect.keyIdsForRetry(
+                of: pending, authKeyHash160s: [first.pubkeyBytes, second.pubkeyBytes], registeredEncryptionKeys: []),
+            "an update that adds less is not the same update")
+    }
+
+    func testAPendingUpdateOnAnotherIdentityHoldsTheRow() {
+        let grants = [Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], identityId: "other")]
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.reasonHeldElsewhere(
+                grants: grants, appContractId: "app", identityId: "identity", heldOnAnotherIdentity: false),
+            .registrationPendingOnAnotherIdentity)
+        XCTAssertNil(
+            PlatformDashConnectDataSource.reasonHeldElsewhere(
+                grants: grants, appContractId: "app", identityId: "identity", heldOnAnotherIdentity: false,
+                waitingHoldsKeys: { _ in false }),
+            "one that holds no key there, such as an update that never left the device, does not hold the row")
+    }
+
+    func testALoginCleansUpOnlyResponsesThatWereAttempted() {
+        var disabled = Self.grant(sessionKeyId: 3, requestHash: "00")
+        disabled.keyDisabled = true
+        var pendingDisabled = Self.pendingGrant([Self.addedAuthKey(4, data: 0x04)], requestHash: "01")
+        pendingDisabled.keyDisabled = true
+        func cleans(_ grant: AppConnectGrant) -> Bool {
+            PlatformDashConnectDataSource.isLeftoverResponse(
+                grant, identityId: "identity", appContractId: "app", requestHash: "ff")
+        }
+        XCTAssertTrue(cleans(disabled))
+        XCTAssertTrue(cleans(Self.grant(sessionKeyId: 5, requestHash: "02")), "an earlier login of the app")
+        XCTAssertFalse(cleans(Self.grant(sessionKeyId: 6, requestHash: "ff")), "this login's own")
+        XCTAssertFalse(cleans(Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], requestHash: "03")))
+        XCTAssertFalse(cleans(pendingDisabled), "no response was published for it")
+    }
+
+    func testTheOneQRConfirmationLeavesAPendingV2RecordAlone() {
+        let key = ManagedPlatformWallet.IdentityPubkey(
+            keyId: 7, keyType: .ecdsaHash160, purpose: .authentication, securityLevel: .high,
+            pubkeyBytes: Data(repeating: 0x07, count: 20), contractBounds: .singleContract(id: Self.appId),
+            totalBudget: 1_000, expiresAt: Self.expiresAt)
+        var grants = [Self.pendingGrant([key], appId: Self.appId.toBase58String())]
+        let confirmed = AppConnect.confirmRegistrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [Self.onIdentity(key)],
+            bindings: [AppConnect.KeyBinding(
+                keyId: 7, data: key.pubkeyBytes, singleContractId: Self.appId, bound: .singleContract(Self.appId))])
+        XCTAssertEqual(confirmed, [])
+        XCTAssertTrue(grants[0].isPendingV2, "the v2 settlement owns it")
+    }
+
+    func testARowWaitingForADroppedUpdateGoesUnlessSomethingElseHoldsIt() {
+        let app = Self.appId.toBase58String()
+        func row(_ status: ConnectionStatus, id: String = app) -> DAppConnection {
+            DAppConnection(id: id, name: "Yappr", url: "yap.pr", status: status,
+                           updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .oneQR)
+        }
+        func after(_ grants: [AppConnectGrant], bindings: [AppConnect.KeyBinding] = [],
+                   rows: [DAppConnection]) -> [DAppConnection] {
+            PlatformDashConnectDataSource.rowsAfterDropping(appIds: [app], grants: grants, bindings: bindings, rows: rows)
+        }
+        let other = Data(repeating: 0xD4, count: 32).toBase58String()
+        XCTAssertEqual(after([], rows: [row(.confirming), row(.confirming, id: other)]).map(\.id), [other])
+        XCTAssertEqual(
+            after([Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], appId: app)], rows: [row(.confirming)])
+                .map(\.status),
+            [.confirming], "another update of the app still waits")
+        XCTAssertEqual(
+            after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.confirming)]).map(\.status), [.active])
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 3, data: Data([3]), singleContractId: Self.appId, isV2AuthKeyShaped: true)],
+                  rows: [row(.confirming)]).map(\.status),
+            [.active], "a live auth key bound to the app")
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(keyId: 4, data: Data([4]), singleContractId: Self.appId)],
+                  rows: [row(.confirming)]).map(\.status),
+            [], "the app's encryption key connects nothing by itself")
+        XCTAssertEqual(
+            after([], rows: [row(.active)]).map(\.status), [],
+            "an active one-QR row the waiting record kept goes once nothing holds the app")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterDropping(
+                appIds: [app], keeping: [app], grants: [], bindings: [], rows: [row(.confirming)]).map(\.status),
+            [.confirming], "the app may hold keys elsewhere: kept as it is for a disconnect to judge")
+        XCTAssertEqual(
+            after([Self.grant(sessionKeyId: 3, appId: app)], rows: [row(.active)]).map(\.status), [.active])
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 3, data: Data([3]), singleContractId: Self.appId, isSessionKeyShaped: true)],
+                  rows: [row(.active)]).map(\.status),
+            [.active], "a live session key of the app with no record")
+        let twoQR = DAppConnection(id: app, name: "Yappr", url: "yap.pr", status: .active,
+                                   updatedAt: Date(timeIntervalSince1970: 1_000), loginKind: .twoQR)
+        XCTAssertEqual(after([], rows: [twoQR]).map(\.status), [.active], "a two-QR row is not the record's")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rowsAfterDropping(
+                appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.active)]).map(\.status),
+            [], "only a confirming row goes back to the row it replaced")
+        let restored = PlatformDashConnectDataSource.rowsAfterDropping(
+            appIds: [app], restoringApproved: [app], grants: [], bindings: [], rows: [row(.confirming)])
+        XCTAssertEqual(restored.map(\.status), [.approved], "the two-QR row it replaced comes back")
+        XCTAssertEqual(restored.map(\.loginKind), [.twoQR])
+        XCTAssertEqual(
+            after([], bindings: [AppConnect.KeyBinding(
+                keyId: 5, data: Data([5]), singleContractId: nil, bound: .documentType(contractId: Self.appId, name: "post"),
+                isV2AuthKeyShaped: true)], rows: [row(.confirming)]).map(\.status),
+            [.active], "a v2 key bound to a document type of the app")
+        let twoQRKeyLive = PlatformDashConnectDataSource.rowsAfterDropping(
+            appIds: [app], restoringApproved: [app], grants: [],
+            bindings: [AppConnect.KeyBinding(keyId: 3, data: Data([3]), singleContractId: Self.appId)],
+            rows: [row(.confirming)])
+        XCTAssertEqual(twoQRKeyLive.map(\.status), [.approved], "the two-QR login's live key is that row's")
+    }
+}
+
+// MARK: - Recording a v2 grant around its identity update
+
+/// A grant store held in memory; `persists: false` drops every write.
+private final class MemoryGrantStore: AppConnectResponseStore {
+    var grants: [AppConnectGrant]
+    let persists: Bool
+
+    init(_ grants: [AppConnectGrant] = [], persists: Bool = true) {
+        self.grants = grants
+        self.persists = persists
+    }
+
+    func load() -> [AppConnectGrant] { grants }
+    func save(_ grants: [AppConnectGrant]) { if persists { self.grants = grants } }
+    func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectResponseStore { self }
+}
+
+private struct UpdateFailed: Error {}
+
+extension AppConnectV2LoginTests {
+    private typealias View = (keys: [ManagedIdentity.IdentityPublicKeyInfo], bindings: [AppConnect.KeyBinding])
+
+    private final class Calls {
+        var submitted = 0
+        var rowShown = 0
+        var rereads = 0
+        var pauses: [Int] = []
+        var dropped = 0
+    }
+
+    private static func register(
+        _ record: AppConnectGrant,
+        add: [ManagedPlatformWallet.IdentityPubkey],
+        disable: [UInt32] = [],
+        retiring: Set<String> = [],
+        store: MemoryGrantStore,
+        calls: Calls,
+        submit: @escaping () throws -> Void = {},
+        views: [View?] = [],
+        rowsJudged: Bool = true
+    ) async throws -> AppConnectGrant {
+        var remaining = views
+        return try await PlatformDashConnectDataSource.registerAppConnectV2Grant(
+            record, add: add, disable: disable, retiredGrantKeys: retiring, grants: store,
+            showRow: { calls.rowShown += 1 },
+            submit: { calls.submitted += 1; try submit() },
+            reread: {
+                calls.rereads += 1
+                return remaining.isEmpty ? nil : remaining.removeFirst()
+            },
+            pause: { calls.pauses.append($0) },
+            onDropped: { _ in
+                calls.dropped += 1
+                return rowsJudged
+            })
+    }
+
+    func testAV2GrantIsRecordedAndShownBeforeItsUpdateIsSubmitted() async throws {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let record = Self.pendingGrant([key], retiring: [old.key])
+        let store = MemoryGrantStore([old])
+        let calls = Calls()
+
+        let grant = try await Self.register(record, add: [key], disable: [3], retiring: [old.key], store: store, calls: calls) {
+            let stored = store.grants.first { $0.key == record.key }
+            XCTAssertEqual(stored?.pendingUpdate?.addedKeys, [AppConnect.ExpectedKey(key)], "recorded first")
+            XCTAssertTrue(stored?.isUnconfirmed == true)
+            XCTAssertEqual(calls.rowShown, 1, "and shown")
+            XCTAssertNil(store.grants.first { $0.key == old.key }?.keyDisabled, "the replaced grant waits for the update")
+        }
+
+        XCTAssertEqual(calls.submitted, 1)
+        XCTAssertFalse(grant.isUnconfirmed)
+        XCTAssertNil(grant.pendingUpdate)
+        XCTAssertEqual(store.grants.first { $0.key == record.key }, grant)
+        XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
+    }
+
+    func testARenewalThatReusesItsKeysStillRetiresTheGrantsItReplaced() async throws {
+        var earlier = Self.grant(sessionKeyId: 7, requestHash: "aa", connectionId: "c1")
+        earlier.documentId = "doc"
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        let store = MemoryGrantStore([old, earlier])
+        let calls = Calls()
+        _ = try await Self.register(earlier, add: [], disable: [], retiring: [old.key], store: store, calls: calls)
+        XCTAssertEqual(calls.submitted, 0, "nothing to send")
+        XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
+    }
+
+    func testARenewalThatCannotTurnOffEveryReplacedKeySubmitsNothing() async {
+        let key = Self.addedAuthKey(20, data: 0x14)
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        let tooMany = (1 ... UInt32(AppConnect.maxKeysDisabledPerUpdate + 1)).map { $0 }
+        do {
+            _ = try await Self.register(Self.pendingGrant([key]), add: [key], disable: tooMany, store: store, calls: calls)
+            XCTFail("refused")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .tooManyKeysToReplace)
+        }
+        XCTAssertEqual(calls.submitted, 0)
+        XCTAssertEqual(calls.rowShown, 0)
+        XCTAssertEqual(store.grants, [], "nothing recorded")
+
+        let fits = Array(tooMany.dropLast())
+        _ = try? await Self.register(Self.pendingGrant([key]), add: [key], disable: fits, store: store, calls: calls)
+        XCTAssertEqual(calls.submitted, 1, "every replaced key fits one update")
+    }
+
+    func testAFailedUpdateThatLandedAnywayIsConfirmed() async throws {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        let grant = try await Self.register(
+            Self.pendingGrant([key]), add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+            views: [nil, ([Self.onIdentity(key)], [Self.stored(key)])])
+        XCTAssertFalse(grant.isUnconfirmed)
+        XCTAssertEqual(calls.rereads, 2)
+        XCTAssertEqual(calls.pauses, [1])
+    }
+
+    func testAFailedUpdateWhoseKeysAnotherUpdateAddedRetiresNothing() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var record = Self.pendingGrant([key], retiring: [old.key])
+        record.pendingUpdate?.disabledKeyIds = [3]
+        let store = MemoryGrantStore([old])
+        do {
+            _ = try await Self.register(
+                record, add: [key], disable: [3], retiring: [old.key], store: store, calls: Calls(),
+                submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key), Self.key(3)], [Self.stored(key)])])
+            XCTFail("the replacement did not happen")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        let recorded = store.grants.first { $0.key == record.key }
+        XCTAssertNotNil(recorded)
+        XCTAssertNil(recorded?.pendingUpdate, "its keys are on the identity")
+        XCTAssertNil(store.grants.first { $0.key == old.key }?.keyDisabled, "the replaced key is still on")
+    }
+
+    func testARecoveredGrantWithWiderLimitsIsRecordedButNotCompleted() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        for (raised, why) in [
+            (Self.onIdentity(key, totalBudget: .some(key.totalBudget! + 1)), "a larger budget"),
+            (Self.onIdentity(key, expiresAt: .some(key.expiresAt! + Self.dayMilliseconds)), "a later expiry"),
+        ] {
+            let record = Self.pendingGrant([key])
+            let store = MemoryGrantStore()
+            do {
+                _ = try await Self.register(
+                    record, add: [key], store: store, calls: Calls(), submit: { throw UpdateFailed() },
+                    views: [([raised], [Self.stored(key)])])
+                XCTFail("not completed with \(why)")
+            } catch {
+                XCTAssertTrue(error is UpdateFailed, why)
+            }
+            let recorded = store.grants.first { $0.key == record.key }
+            XCTAssertNotNil(recorded, why)
+            XCTAssertNil(recorded?.pendingUpdate, "its key is there and can be disconnected")
+        }
+
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var renewal = Self.pendingGrant([key], retiring: [old.key])
+        renewal.pendingUpdate?.disabledKeyIds = [3]
+        let store = MemoryGrantStore([old])
+        _ = try? await Self.register(
+            renewal, add: [key], disable: [3], retiring: [old.key], store: store, calls: Calls(),
+            submit: { throw UpdateFailed() },
+            views: [([Self.onIdentity(key, totalBudget: .some(key.totalBudget! + 1)), Self.key(3, disabled: true)],
+                     [Self.stored(key)])])
+        XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true, "its disables landed")
+
+        let off = MemoryGrantStore()
+        do {
+            _ = try await Self.register(
+                Self.pendingGrant([key, Self.addedAuthKey(8, data: 0x08)]), add: [key, Self.addedAuthKey(8, data: 0x08)],
+                store: off, calls: Calls(), submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key), Self.onIdentity(Self.addedAuthKey(8, data: 0x08), disabled: true)],
+                         [Self.stored(key), Self.stored(Self.addedAuthKey(8, data: 0x08))])])
+            XCTFail("a key turned off since is not handed out")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+    }
+
+    func testAFailedUpdateThatCanNeverLandKeepsARecordHoldingALiveKey() async {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([added])
+        record.additionalKeyIds = [5]
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                record, add: [added], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.key(5, level: .critical), Self.onIdentity(added, data: Data(repeating: 0xEE, count: 20))], [])])
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants.map(\.key), [record.key], "the key it sent again is live, so the record stays")
+        XCTAssertTrue(store.grants.first?.isPendingV2 == true)
+        XCTAssertEqual(calls.dropped, 0, "its row stays")
+
+    }
+
+    func testAnUpdateRefusedForBalanceIsSettledByTheIdentityLikeAnyFailure() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let record = Self.pendingGrant([key])
+        let unknown = MemoryGrantStore()
+        let calls = Calls()
+        _ = try? await Self.register(record, add: [key], store: unknown, calls: calls, submit: { throw Refused() })
+        XCTAssertEqual(
+            unknown.grants.map(\.key), [record.key],
+            "an earlier attempt of the same broadcast may still land: the record stays until the identity tells")
+        XCTAssertGreaterThan(calls.rereads, 0)
+        XCTAssertEqual(calls.dropped, 0)
+
+        let cannotLand = MemoryGrantStore()
+        let settled = Calls()
+        _ = try? await Self.register(
+            record, add: [key], store: cannotLand, calls: settled, submit: { throw Refused() },
+            views: [([Self.onIdentity(key, data: Data(repeating: 0xEE, count: 20))], [])])
+        XCTAssertEqual(cannotLand.grants, [], "the identity shows it cannot land: it goes, as any such record")
+        XCTAssertEqual(settled.dropped, 1)
+    }
+
+    func testAFailedUpdateThatCanNeverLandDropsItsRecord() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                Self.pendingGrant([key]), add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key, data: Data(repeating: 0xEE, count: 20))], [])])
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants, [])
+        XCTAssertEqual(calls.dropped, 1, "its row is repaired")
+    }
+
+    func testARecordWhoseRowsCannotBeJudgedIsKept() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let record = Self.pendingGrant([key])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                record, add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.onIdentity(key, data: Data(repeating: 0xEE, count: 20))], [])], rowsJudged: false)
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants, [record], "the next settle drops it, with its rows judged")
+        XCTAssertEqual(calls.dropped, 1)
+    }
+
+    func testAFailedUpdateWhoseOutcomeIsUnknownKeepsItsRecord() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let record = Self.pendingGrant([key])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(record, add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+                                        views: [([Self.key(0, level: .master)], [])])
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(calls.rereads, 3)
+        XCTAssertEqual(calls.pauses, [1, 2])
+        XCTAssertEqual(store.grants, [record], "kept until the outcome is known")
+        XCTAssertEqual(calls.dropped, 0)
+    }
+
+    func testAGrantThatCannotBeRecordedIsNotSubmitted() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                Self.pendingGrant([key]), add: [key], store: MemoryGrantStore(persists: false), calls: calls)
+            XCTFail("refused")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .grantStoreUnavailable)
+        }
+        XCTAssertEqual(calls.submitted, 0)
+        XCTAssertEqual(calls.rowShown, 0)
+    }
+
+    func testAnUpdateThatOnlyDisablesKeepsTheEarlierRecordAndLandsWhenItsDisablesShow() async throws {
+        var earlier = Self.grant(sessionKeyId: 7, requestHash: "aa", connectionId: "c1")
+        earlier.documentId = "doc"
+        let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
+        var resent = earlier
+        resent.values = .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "new", encryptedPayload: "new")
+        resent.documentId = nil
+        let store = MemoryGrantStore([old, earlier])
+        let calls = Calls()
+        let grant = try await Self.register(
+            resent, add: [], disable: [3], retiring: [old.key], store: store, calls: calls,
+            submit: { throw UpdateFailed() },
+            views: [([Self.key(3, disabled: true)], [])])
+        XCTAssertEqual(grant, earlier, "its values are the ones on Platform")
+        XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
+    }
+}
+
+private extension AppConnect.KeyBinding {
+    func disabled() -> AppConnect.KeyBinding {
+        var binding = self
+        binding.isDisabled = true
+        return binding
+    }
+}

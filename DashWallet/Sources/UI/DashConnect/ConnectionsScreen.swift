@@ -26,13 +26,33 @@ import DashUIKit
 /// sheet.
 struct ConnectionsScreen: View {
     private let vc: UINavigationController
+    /// Starts the app's username creation; `nil` where it cannot be reached.
+    private let onCreateUsername: (() -> Void)?
+    /// Presents the identity top-up over whatever is on screen.
+    private let onTopUpIdentity: (() -> Void)?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(
+        vc: UINavigationController,
+        viewModel: ConnectionsViewModel? = nil,
+        onCreateUsername: (() -> Void)? = nil,
+        onTopUpIdentity: (() -> Void)? = nil
+    ) {
         self.vc = vc
+        self.onCreateUsername = onCreateUsername
+        self.onTopUpIdentity = onTopUpIdentity
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
+
+    @State private var showsFundingLimitsInfo = false
+    /// The Join DashPay sheet, which leads to the username form as More's
+    /// does; `createsUsernameAfterSheet` carries the user's choice to it.
+    @State private var showsJoinDashPay = false
+    @State private var createsUsernameAfterSheet = false
+    /// Reconnect closes the connection sheet first: the scanner is
+    /// presented once it is gone.
+    @State private var scansAfterSheet = false
 
     var body: some View {
         ZStack {
@@ -40,18 +60,22 @@ struct ConnectionsScreen: View {
                 DashUIKit.NavigationBar(
                     leading: {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    },
+                    trailing: {
+                        if !viewModel.featureUnavailable, !showsNoUsernameState {
+                            // Without a username a new connection starts by
+                            // creating one.
+                            DashUIKit.NavigationBarElement.plus.button(
+                                action: viewModel.needsUsername ? startCreatingUsername : showScanner)
+                                .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
+                        }
                     }
                 )
-
-                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
 
                 content
             }
 
-            if viewModel.isProcessingStateTransition {
+            if viewModel.isProcessingStateTransition || viewModel.isDisconnecting {
                 Color.black.opacity(0.08)
                     .ignoresSafeArea()
 
@@ -66,6 +90,11 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        // Another identity may have become active while the screen was away.
+        .onAppear {
+            viewModel.refreshUsername()
+            viewModel.refreshConnectionStatus()
+        }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text(message.title),
@@ -85,35 +114,215 @@ struct ConnectionsScreen: View {
                 tokenPurchaseSheet(for: purchase)
             }
         }
+        .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
+            viewModel.connectionSheetDismissed()
+            guard scansAfterSheet else { return }
+            scansAfterSheet = false
+            showScanner()
+        }) { item in
+            connectionSheet(for: item)
+        }
+        #if DASHPAY
+        .sheet(isPresented: $showsJoinDashPay, onDismiss: {
+            guard createsUsernameAfterSheet else { return }
+            createsUsernameAfterSheet = false
+            onCreateUsername?()
+        }) {
+            // No detent: the dialog sizes itself (`BottomSheet.selfSizing`).
+            JoinDashPayInfoDialog(action: { createsUsernameAfterSheet = true })
+        }
+        #endif
     }
 
     // MARK: - States
 
+    /// A wallet without a username and with nothing ever connected: the page
+    /// offers to create one. A wallet that has connections keeps its list,
+    /// so their keys can still be turned off.
+    private var showsNoUsernameState: Bool {
+        viewModel.needsUsername && !viewModel.hasConnectionsOrHistory && !viewModel.isLoadingHistory
+    }
+
+    /// Creating a username starts on the Join DashPay sheet, as from More.
+    private func startCreatingUsername() {
+        #if DASHPAY
+        showsJoinDashPay = true
+        #else
+        onCreateUsername?()
+        #endif
+    }
+
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
+            title
             ConnectionsUnavailableState()
-        } else if viewModel.connections.isEmpty {
-            ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
+        } else if !viewModel.hasConnectionsOrHistory, viewModel.isLoadingHistory {
+            // Not known yet whether anything was connected: no empty state
+            // that the history may replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
+        } else if showsNoUsernameState {
+            title
+            ConnectionsEmptyState(
+                kind: .noUsername(onCreateUsername: onCreateUsername == nil ? nil : startCreatingUsername))
+        } else if !viewModel.hasConnectionsOrHistory {
+            title
+            ConnectionsEmptyState(kind: .noApps(onScanQR: showScanner, onMockScan: mockScan))
         } else {
-            ConnectionsList(
-                connections: viewModel.connections,
-                onScanQR: showScanner,
-                onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect
-            )
-            .padding(.horizontal, 20)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    title
+                    SegmentedControl(
+                        options: ConnectionsTab.allCases,
+                        selection: $viewModel.selectedTab,
+                        label: Self.tabName)
+                    tabContent
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
         }
     }
 
+    private var title: some View {
+        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+            .padding(.horizontal, viewModel.hasConnectionsOrHistory && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.top, 10)
+    }
+
+    @ViewBuilder private var tabContent: some View {
+        let tab = viewModel.selectedTab
+        let rows = viewModel.rows(for: tab)
+        if tab == .disconnected, viewModel.historyIsUnreadable {
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
+        } else if !rows.isEmpty {
+            ConnectionsList(
+                items: rows,
+                onOpen: { viewModel.showConnection($0) },
+                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onReconnect: showScanner)
+            if tab == .expired, viewModel.isCheckingStatus {
+                checking
+            } else if tab == .expired, !viewModel.expiriesAreKnown {
+                // Some apps could not be checked: more may have expired.
+                expiryCheckFailed
+            }
+        } else if (tab == .disconnected && viewModel.isLoadingHistory)
+            || (tab == .expired && viewModel.isCheckingStatus) {
+            checking
+        } else if tab == .expired, !viewModel.expiriesAreKnown {
+            expiryCheckFailed
+        } else {
+            tabNote(Self.emptyTabText(tab), retries: false)
+        }
+    }
+
+    private var expiryCheckFailed: some View {
+        tabNote(
+            NSLocalizedString("Which connections expired could not be checked.", comment: "DashConnect"),
+            retries: true)
+    }
+
+    private var checking: some View {
+        SwiftUI.ProgressView()
+            .frame(maxWidth: .infinity)
+            .padding(.top, 20)
+            .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
+    }
+
+    private func tabNote(_ text: String, retries: Bool) -> some View {
+        VStack(spacing: 12) {
+            Text(text)
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
+                .multilineTextAlignment(.center)
+            if retries {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Retry", comment: "DashConnect"),
+                    size: .small, style: .tintedBlue, action: viewModel.refreshConnectionStatus)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+    }
+
+    private static func emptyTabText(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
+        case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
+        }
+    }
+
+    private static func tabName(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
+        }
+    }
+
+    private func connectionSheet(for item: ConnectionSheetItem) -> some View {
+        ConnectionSheet(
+            item: item,
+            details: viewModel.shownDetails,
+            detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
+            withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
+            connectedAt: viewModel.shownConnectedAt,
+            isBusy: viewModel.isDisconnecting,
+            isCheckingStatus: viewModel.isCheckingStatus,
+            message: viewModel.connectionSheetMessage,
+            onClose: viewModel.hideConnection,
+            onDisconnect: viewModel.disconnectShown(askedRevokesKeys:),
+            takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
+            disconnectQuestion: viewModel.disconnectQuestion,
+            onReconnect: {
+                scansAfterSheet = true
+                viewModel.hideConnection()
+            },
+            onMockScan: mockScan,
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
+        )
+        .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    @ViewBuilder
     private func approveSheet(for request: ConnectionRequest) -> some View {
+        if request.login.grantPlan != nil {
+            AppConnectApproveSheet(
+                viewModel: viewModel, request: request, onTopUp: { onTopUpIdentity?() })
+                .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
+        } else {
+            legacyApproveSheet(for: request)
+        }
+    }
+
+    private func legacyApproveSheet(for request: ConnectionRequest) -> some View {
         ApproveConnectionSheet(
             request: request,
             isLoading: viewModel.isApproving,
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
+            onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApproving)
+        // The one-QR terms make the sheet longer than the fixed height
+        // shows; who pays and when access ends must not sit below the fold.
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil || request.login.grantPlan != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -151,6 +360,13 @@ struct ConnectionsScreen: View {
         )
     }
 
+    private var shownConnectionBinding: Binding<ConnectionSheetItem?> {
+        Binding(
+            get: { viewModel.shownConnection },
+            set: { if $0 == nil { viewModel.hideConnection() } }
+        )
+    }
+
     private var messageBinding: Binding<ConnectionsScreenMessage?> {
         Binding(
             get: { viewModel.message },
@@ -161,6 +377,9 @@ struct ConnectionsScreen: View {
     // MARK: - Actions
 
     private func showScanner() {
+        // Not while something signs or an approval is up: the scanner would
+        // cover it.
+        guard viewModel.mayScan() else { return }
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in

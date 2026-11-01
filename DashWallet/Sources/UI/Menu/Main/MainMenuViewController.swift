@@ -311,7 +311,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: ToolsMenuScreen(vc: vc),
+                destination: ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel),
                 isActive: $showTools
             ) {
                 EmptyView()
@@ -645,7 +645,9 @@ struct MainMenuScreen: View {
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
     }
 
-    private static func pushCreateUsernameForm(
+    /// Pushes the username creation form, as More does for a returning
+    /// user; Connections reuses it for a wallet without a username.
+    static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
         definedUsername: String? = nil

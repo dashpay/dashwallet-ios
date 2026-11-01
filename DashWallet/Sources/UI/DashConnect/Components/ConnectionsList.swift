@@ -20,46 +20,21 @@
 import DashUIKit
 import SwiftUI
 
-/// The populated state: every connection stacked in one card. Rows carry their
-/// own status-specific content, so this only owns the card chrome and scroll.
+/// The apps of one tab of the Connections page, in one card.
 struct ConnectionsList: View {
-    let connections: [DAppConnection]
-    let onScanQR: () -> Void
-    let onMockScan: () -> Void
-    let onDisconnect: (DAppConnection) -> Void
+    let items: [ConnectionSheetItem]
+    let onOpen: (ConnectionSheetItem) -> Void
+    let onDisconnect: (ConnectionSheetItem) -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 2) {
-                ForEach(connections) { connection in
-                    ConnectionRow(
-                        connection: connection,
-                        onPrimaryAction: onScanQR,
-                        onMockScan: onMockScan,
-                        onDisconnect: { onDisconnect(connection) }
-                    )
-                }
+        VStack(spacing: 2) {
+            ForEach(items) { item in
+                ConnectionRow(
+                    item: item, onOpen: { onOpen(item) },
+                    onDisconnect: { onDisconnect(item) }, onReconnect: onReconnect)
             }
-            .modifier(MenuViewModifier())
         }
+        .modifier(MenuViewModifier())
     }
-}
-
-#Preview {
-    ConnectionsList(
-        connections: ConnectionStatus.allCases.map { status in
-            DAppConnection(
-                id: status.rawValue,
-                name: "Example App",
-                url: "https://example.org",
-                status: status,
-                updatedAt: Date()
-            )
-        },
-        onScanQR: {},
-        onMockScan: {},
-        onDisconnect: { _ in }
-    )
-    .padding(20)
-    .background(Color.primaryBackground)
 }
