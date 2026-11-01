@@ -370,7 +370,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     /// Shielded-funding readiness for the CURRENT typed name (contested
-    /// names need the 0.25 DASH exit denomination instead of 0.1).
+    /// names need the 0.25 DASH exit denomination instead of 0.03).
     /// Recomputed by `validateUsername` and on every readiness publish.
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
@@ -410,8 +410,168 @@ class CreateUsernameViewModel: ObservableObject {
     /// has no shielded top-up route: Shielded can pay only when the identity
     /// needs nothing.
     var hasReadyShieldedFunding: Bool {
-        if let identityTopUpDuffs, identityTopUpDuffs > 0 { return false }
+        if Self.shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffsOrStandard) != nil { return false }
         return shieldedReadiness?.state == .ready
+    }
+
+    /// `identityTopUpDuffs` for the judged name; before a name is judged
+    /// (the Join DashPay sheet and the privacy page it opens), the top-up a
+    /// standard name needs. nil when there is no existing identity.
+    var identityTopUpDuffsOrStandard: UInt64? {
+        identityTopUpDuffs ?? existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+    }
+
+    /// Whether Shielded, the chosen source, settles the typed name. An
+    /// existing identity that needs nothing is paid by no source at all, and
+    /// one that falls short cannot be topped up from Shielded.
+    nonisolated static func shieldedPays(identityTopUpDuffs: UInt64?, shieldedReady: Bool) -> Bool {
+        if shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) != nil { return false }
+        return identityTopUpDuffs == 0 || shieldedReady
+    }
+
+    /// Why Shielded, the chosen source, cannot pay for the typed name yet,
+    /// when the reason is its readiness rather than the price itself.
+    enum ShieldedCostBlocker: Equatable {
+        /// Enough is shielded; the covering notes are still resting.
+        case resting(readyAt: Date)
+        /// Not enough is shielded. `dashBalanceCovers`: the Dash balance
+        /// could pay for the name instead.
+        case short(shortfallDuffs: UInt64, dashBalanceCovers: Bool)
+        /// The shared pool is below the consensus minimum.
+        case poolTooSmall(current: UInt64)
+        /// The registration reuses an existing identity that is short by
+        /// `topUpDuffs`, and Shielded has no top-up route.
+        case cannotTopUp(topUpDuffs: UInt64)
+    }
+
+    /// nil when Shielded is not the source, can pay, or the registration
+    /// reuses an existing identity that needs nothing. Readiness describes
+    /// the exit that creates a new identity; an existing one is never
+    /// funded from Shielded.
+    var shieldedCostBlocker: ShieldedCostBlocker? {
+        Self.shieldedCostBlocker(
+            source: activeFundingSource,
+            identityTopUpDuffs: identityTopUpDuffs,
+            readiness: shieldedReadiness?.state,
+            dashBalanceCovers: hasMinimumRequiredCoreBalance)
+    }
+
+    /// The top-up an existing identity needs that Shielded cannot pay; nil
+    /// for a new identity or one that needs nothing.
+    nonisolated static func shieldedUnpayableTopUp(identityTopUpDuffs: UInt64?) -> UInt64? {
+        guard let identityTopUpDuffs, identityTopUpDuffs > 0 else { return nil }
+        return identityTopUpDuffs
+    }
+
+    static func shieldedCostBlocker(
+        source: DWIdentityFundingSource?,
+        identityTopUpDuffs: UInt64?,
+        readiness: ShieldedIdentityFundingReadiness.State?,
+        dashBalanceCovers: Bool
+    ) -> ShieldedCostBlocker? {
+        guard source == .shielded else { return nil }
+        if let topUp = shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) {
+            return .cannotTopUp(topUpDuffs: topUp)
+        }
+        if identityTopUpDuffs != nil { return nil }
+        guard let readiness else { return nil }
+        return shieldedCostBlocker(for: readiness, dashBalanceCovers: dashBalanceCovers)
+    }
+
+    static func shieldedCostBlocker(
+        for state: ShieldedIdentityFundingReadiness.State,
+        dashBalanceCovers: Bool
+    ) -> ShieldedCostBlocker? {
+        switch state {
+        case .ready:
+            return nil
+        case .maturing(let readyAt):
+            return .resting(readyAt: readyAt)
+        case .needsFunding(let shortfallCredits):
+            return .short(
+                shortfallDuffs: shieldedShortfallDuffs(shortfallCredits),
+                dashBalanceCovers: dashBalanceCovers)
+        case .poolTooSmall(let current):
+            return .poolTooSmall(current: current)
+        }
+    }
+
+    /// A Shielded shortfall in duffs, rounded up: shielding the stated
+    /// amount must never leave the balance short of the denomination.
+    nonisolated static func shieldedShortfallDuffs(_ shortfallCredits: UInt64) -> UInt64 {
+        let perDuff = ContestedUsernameFee.Amounts.creditsPerDuff
+        return (shortfallCredits + perDuff - 1) / perDuff
+    }
+
+    /// Why a private registration waits on the shared pool rather than on
+    /// the user's own funds. One wording for every screen that says it.
+    nonisolated static func shieldedPoolTooSmallMessage(current: UInt64) -> String {
+        let count: (UInt64) -> String = { NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal) }
+        return String.localizedStringWithFormat(
+            NSLocalizedString("The shared privacy pool holds %@ of the %@ notes a private registration needs. That count comes from everyone's shielded activity, so it grows on its own — try again later.", comment: "Usernames"),
+            count(current),
+            count(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+    }
+
+    /// What a ready Shielded balance pays for, where it changes what the
+    /// Join DashPay sheet says about the price.
+    enum ShieldedOnlyFunding: Equatable {
+        /// A standard name, not a contested one, and the Dash balance pays
+        /// for no name. `matureDuffs`: the shielded balance that can be
+        /// spent now.
+        case standardOnly(matureDuffs: UInt64)
+        /// Any name, contested included, whatever the Dash balance holds.
+        case everyName
+    }
+
+    /// nil when Shielded is not ready to pay, the registration reuses an
+    /// existing identity (Shielded only ever funds a new one), or Shielded
+    /// pays for a standard name only while the Dash balance covers one too.
+    var shieldedOnlyFunding: ShieldedOnlyFunding? {
+        Self.shieldedOnlyFunding(
+            reusesIdentity: existingIdentityCredits != nil,
+            dashBalanceCovers: hasMinimumRequiredCoreBalance,
+            shieldedReady: hasReadyShieldedFunding,
+            matureCredits: shieldedReadiness?.matureCredits ?? 0)
+    }
+
+    static func shieldedOnlyFunding(
+        reusesIdentity: Bool,
+        dashBalanceCovers: Bool,
+        shieldedReady: Bool,
+        matureCredits: UInt64
+    ) -> ShieldedOnlyFunding? {
+        guard !reusesIdentity, shieldedReady else { return nil }
+        if matureCredits >= ShieldedIdentityFundingReadiness.contestedDenominationCredits {
+            return .everyName
+        }
+        guard !dashBalanceCovers else { return nil }
+        return .standardOnly(matureDuffs: matureCredits / ContestedUsernameFee.Amounts.creditsPerDuff)
+    }
+
+    /// What the Join DashPay sheet says above its button.
+    enum JoinBalanceNote: Equatable {
+        /// No source covers a standard name: names the minimum.
+        case minimum
+        /// Only Shielded pays, and only for a standard name.
+        case shielded(matureDuffs: UInt64)
+        /// The Dash balance pays for a standard name, not for every name.
+        case dashBalance
+    }
+
+    /// nil when nothing needs saying: some source covers every name.
+    nonisolated static func joinBalanceNote(
+        canProceed: Bool,
+        transparentCoversEveryName: Bool,
+        shieldedOnlyFunding: ShieldedOnlyFunding?
+    ) -> JoinBalanceNote? {
+        guard canProceed else { return .minimum }
+        guard !transparentCoversEveryName else { return nil }
+        switch shieldedOnlyFunding {
+        case .everyName: return nil
+        case .standardOnly(let matureDuffs): return .shielded(matureDuffs: matureDuffs)
+        case nil: return .dashBalance
+        }
     }
 
     /// Reads the network's protocol version again; the fee subscription
@@ -1164,7 +1324,7 @@ class CreateUsernameViewModel: ObservableObject {
         case .platformPayment:
             hasEnoughFunding = hasEnoughPlatform
         case .shielded:
-            hasEnoughFunding = hasReadyShieldedFunding
+            hasEnoughFunding = Self.shieldedPays(identityTopUpDuffs: identityTopUpDuffs, shieldedReady: hasReadyShieldedFunding)
         case .invitation, .none:
             hasEnoughFunding = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         }
@@ -1472,6 +1632,20 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        // The readiness service evaluates the standard denomination again
+        // on its own and publishes; the contested one is this model's cache,
+        // which validation evaluates again once it is past its ready time.
+        NotificationCenter.default
+            .publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self,
+                      let contested = self.contestedShieldedReadiness,
+                      Self.isPastReadyTime(contested.state, now: Date()) else { return }
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
         // Fires on create / import / migrate, a wallet switch, a network
         // change and a wipe — not on an ordinary launch, which enqueues
         // `.startIfReady` and publishes nothing. Cold-launch ordering is
@@ -1541,10 +1715,23 @@ class CreateUsernameViewModel: ObservableObject {
     /// typing path. The standard denomination has no equivalent problem: it
     /// reads `ShieldedIdentityFundingReadiness.shared.standardSnapshot`, which
     /// the service itself keeps current.
+    ///
+    /// A cached `.maturing` past its ready time is evaluated again: the
+    /// maturity alarm is armed only for the name being typed, so a contested
+    /// snapshot cached while a standard name was typed has none.
     private func contestedReadiness() -> ShieldedIdentityFundingReadiness.Snapshot? {
-        if let contestedShieldedReadiness { return contestedShieldedReadiness }
+        if let contestedShieldedReadiness, !Self.isPastReadyTime(contestedShieldedReadiness.state, now: Date()) {
+            return contestedShieldedReadiness
+        }
         refreshShieldedReadinessSnapshots()
         return contestedShieldedReadiness
+    }
+
+    /// A `.maturing` state whose ready time has come: its notes may be
+    /// spendable now, and the state no longer says so.
+    nonisolated static func isPastReadyTime(_ state: ShieldedIdentityFundingReadiness.State, now: Date) -> Bool {
+        guard case .maturing(let readyAt) = state else { return false }
+        return readyAt <= now
     }
 
     private func refreshRegistrationRecoverySnapshot() {
@@ -1601,9 +1788,11 @@ class CreateUsernameViewModel: ObservableObject {
         // "user has enough to register" without caring about source, Platform
         // included in either mode. The contested-cost caption below counts
         // Platform only where the entry offers it (advanced mode).
-        // Judged at what Core or Platform pay for a contested name; the
+        // Judged at what Core or Platform pay for a contested name: the
+        // existing identity's top-up, or a new identity's funding. The
         // caption it gates names the dearest route (`recommendedBalance`).
-        let contestedCost = newIdentityFundingDuffs(isContested: true, source: .core)
+        let contestedCost = existingIdentityTopUpDuffs(isContested: true, nameCount: 1)
+            ?? newIdentityFundingDuffs(isContested: true, source: .core)
         hasRecommendedBalance = balance >= contestedCost
             || offersPlatform(covering: contestedCost)
     }

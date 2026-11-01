@@ -2921,7 +2921,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// pool count doesn't block here — the FFI error is the backstop.
     ///
     /// The denomination is the smallest current consensus exit covering
-    /// the name's cost: 0.1 DASH standard, 0.25 DASH for contested names.
+    /// the name's cost: 0.03 DASH standard, 0.25 DASH for contested names.
     /// The metered fee is
     /// taken FROM the denomination, so the new identity starts at
     /// denomination − fee and no extra headroom is required.
