@@ -205,17 +205,26 @@ struct ConnectionsScreen: View {
                 onOpen: { viewModel.showConnection($0) },
                 onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
                 onReconnect: showScanner)
-            if tab == .expired, viewModel.isCheckingStatus { checking }
+            if tab == .expired, viewModel.isCheckingStatus {
+                checking
+            } else if tab == .expired, !viewModel.expiriesAreKnown {
+                // Some apps could not be checked: more may have expired.
+                expiryCheckFailed
+            }
         } else if (tab == .disconnected && viewModel.isLoadingHistory)
             || (tab == .expired && viewModel.isCheckingStatus) {
             checking
         } else if tab == .expired, !viewModel.expiriesAreKnown {
-            tabNote(
-                NSLocalizedString("Which connections expired could not be checked.", comment: "DashConnect"),
-                retries: true)
+            expiryCheckFailed
         } else {
             tabNote(Self.emptyTabText(tab), retries: false)
         }
+    }
+
+    private var expiryCheckFailed: some View {
+        tabNote(
+            NSLocalizedString("Which connections expired could not be checked.", comment: "DashConnect"),
+            retries: true)
     }
 
     private var checking: some View {

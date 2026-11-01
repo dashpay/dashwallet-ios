@@ -1482,7 +1482,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(expiries["expired"], .expired)
         XCTAssertEqual(expiries["partly"], .current, "one of its keys still works")
         XCTAssertEqual(expiries["missing"], .unknown, "the view lacks its key")
-        XCTAssertEqual(expiries["off"], .unknown, "its keys are off while its record says connected")
+        XCTAssertEqual(expiries["off"], .keysOff, "its keys are off while its record says connected")
         XCTAssertEqual(expiries["forever"], .current, "a key with no expiry never expires")
     }
 
@@ -1560,6 +1560,14 @@ extension AppConnectV2LoginTests {
         XCTAssertNil(mixed.keys, "a record without what it gave shows the limits only")
         XCTAssertEqual(mixed.largestBudget, 50_000_000_000)
         XCTAssertNil(ConnectionAccess(grants: []))
+
+        let noExpiry = AppConnectGrant(
+            identityId: "identity", appContractId: "app", documentId: nil,
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: 9, totalBudget: 7, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1))
+        XCTAssertNil(
+            ConnectionAccess(grants: [grant, noExpiry])?.expiresAt,
+            "a record that did not note its key's expiry leaves the connection's unknown")
 
         var unlimited = grant
         unlimited.grantedAccess = AppConnect.GrantedAccess(

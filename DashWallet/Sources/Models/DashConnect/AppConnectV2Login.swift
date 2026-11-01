@@ -1142,8 +1142,8 @@ extension AppConnect {
     /// For each app among `grants`, whether every auth key they name that
     /// is still on is past its expiry (`.expired`: the app can no longer sign,
     /// and a disconnect turns the keys off), or not. A key the view lacks
-    /// leaves the app `.unknown`, and so do keys that are all off: the
-    /// records say the app is connected, the identity says it is not.
+    /// leaves the app `.unknown`; keys that are all off make it `.keysOff`:
+    /// the records say the app is connected, the identity says it is not.
     static func connectionExpiries(
         grants: [AppConnectGrant],
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
@@ -1154,7 +1154,7 @@ extension AppConnect {
             let named = keys.filter { ids.contains(UInt32(bitPattern: $0.keyId)) }
             guard Set(named.map { UInt32(bitPattern: $0.keyId) }) == ids else { return .unknown }
             let live = named.filter { $0.disabledAt == nil }
-            guard !live.isEmpty else { return .unknown }
+            guard !live.isEmpty else { return .keysOff }
             return live.allSatisfy { $0.expiresAt != nil && !isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }
                 ? .expired : .current
         }

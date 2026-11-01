@@ -232,7 +232,8 @@ struct ConnectionAccess: Codable, Equatable {
     let largestBudget: UInt64?
     /// A key with no spending limit.
     let hasUnlimitedKey: Bool
-    /// When the last of the keys stops working.
+    /// When the last of the keys stops working; `nil` when a key has no
+    /// expiry noted, or the records do not say for every key.
     let expiresAt: Date?
     /// The connection can receive messages encrypted to this identity.
     let receivesMessages: Bool
@@ -255,8 +256,14 @@ struct ConnectionAccess: Codable, Equatable {
         largestBudget = isPartial ? nil : budgets.compactMap { $0 }.max()
         // An older record's primary key without a budget has no limit.
         hasUnlimitedKey = budgets.contains(where: { $0 == nil })
-        let expiries = grants.flatMap { readable($0)?.keys.map(\.expiresAt) ?? $0.expiresAt.map { [$0] } ?? [] }
-        expiresAt = isPartial ? nil : expiries.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        // A record with no expiry noted (a key that never expires, or an
+        // older record that did not note it) leaves the connection with no
+        // end date to show: another key's date would not be its end.
+        let expiries = grants.flatMap { grant -> [UInt64?] in
+            readable(grant)?.keys.map(\.expiresAt) ?? [grant.expiresAt]
+        }
+        expiresAt = isPartial || expiries.contains(nil)
+            ? nil : expiries.compactMap { $0 }.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
         receivesMessages = recorded.contains(where: \.receivesMessages)
         isSessionKeyLogin = recorded.count == grants.count && recorded.allSatisfy(\.isSessionKeyLogin)
     }
@@ -328,8 +335,13 @@ enum ConnectionExpiry: Equatable {
     /// turns the keys off.
     case expired
     case current
-    /// The identity could not be read.
+    /// The identity could not be read, or the view lacks one of the keys:
+    /// reading again may tell.
     case unknown
+    /// The app's recorded keys are all off on Platform while its records
+    /// say it is connected (turned off elsewhere): reading again tells the
+    /// same.
+    case keysOff
     /// The app has no live grant on the active identity: there is nothing
     /// of this identity's to judge.
     case notJudged
