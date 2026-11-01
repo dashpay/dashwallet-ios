@@ -1397,6 +1397,10 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 3 }
         XCTAssertNil(viewModel.message)
+        spy.disconnectResult = DashConnectDisconnectResult(notRecordedInHistory: true)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 4 }
+        XCTAssertEqual(viewModel.message?.text.contains("could not be saved"), true, "an app missing from the list is said")
     }
 
     /// A confirmed disconnect that cannot run now says why.
@@ -2120,6 +2124,39 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["app"], "nor does a read that failed as a whole")
     }
 
+    func testAnotherWalletsReadDoesNotKeepThisWalletsExpiries() async {
+        var walletA = Self.row("app", .active)
+        walletA.scope = "a"
+        var walletB = walletA
+        walletB.scope = "b"
+        let spy = ConnectionStatusSpy(rows: [walletA], history: [], expiries: ["app": .expired])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.expiries != nil }
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["app"])
+
+        spy.expiries = ["app": .unknown]
+        let reads = spy.expiryReads
+        spy.sendRows([walletB])
+        await waitUntil { viewModel.connections.first?.scope == "b" }
+        XCTAssertEqual(viewModel.rows(for: .expired), [], "wallet A's answer is dropped before B's is read")
+        viewModel.refreshConnectionStatus()
+        await waitUntil { spy.expiryReads > reads && !viewModel.isCheckingStatus && viewModel.expiries?["app"] == .unknown }
+        XCTAssertEqual(viewModel.expiries?["app"], .unknown, "wallet A's answer is not wallet B's")
+        XCTAssertEqual(viewModel.rows(for: .expired), [])
+    }
+
+    func testAnAppTheReadDidNotAnswerForMakesTheCheckIncomplete() async {
+        let spy = ConnectionStatusSpy(
+            rows: [Self.row("told", .active), Self.row("untold", .active)], history: [], expiries: ["told": .current])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 2 }
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.expiries != nil }
+        XCTAssertFalse(viewModel.expiriesAreKnown)
+    }
+
     func testAnAppWhoseKeysAreAllOffDoesNotMakeTheCheckIncomplete() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: ["app": .keysOff])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
@@ -2127,6 +2164,8 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         viewModel.refreshConnectionStatus()
         await waitUntil { viewModel.expiries != nil }
         XCTAssertTrue(viewModel.expiriesAreKnown, "reading again tells the same: no Retry")
+        XCTAssertEqual(viewModel.rows(for: .active).first?.keysAreOff, true, "the sheet says the keys are off")
+        XCTAssertEqual(viewModel.rows(for: .active).first?.isStatusChecked, true, "not a failed check")
     }
 
     func testAnotherWalletsRowOfTheShownAppClosesItsSheet() async {
@@ -2171,8 +2210,12 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     private let lock = NSLock()
     private let rows: CurrentValueSubject<[DAppConnection], Never>
     private var history: [DisconnectedConnection]?
+    private var storedExpiries: [String: ConnectionExpiry]?
     /// What the next expiry read answers.
-    var expiries: [String: ConnectionExpiry]?
+    var expiries: [String: ConnectionExpiry]? {
+        get { lock.withLock { storedExpiries } }
+        set { lock.withLock { storedExpiries = newValue } }
+    }
     private var storedExpiryReads = 0
     private var storedDetailReads = 0
     /// A disconnect succeeds: the row goes and the app is in the history.
@@ -2200,9 +2243,9 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
 
     func disconnectedConnections() async -> [DisconnectedConnection]? { lock.withLock { history } }
 
-    func connectionExpiries() async -> [String: ConnectionExpiry]? {
+    func connectionExpiries() async -> ConnectionExpiries? {
         lock.withLock { storedExpiryReads += 1 }
-        return expiries
+        return expiries.map { ConnectionExpiries(scope: rows.value.first?.scope, byApp: $0) }
     }
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {

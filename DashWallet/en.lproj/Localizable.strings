@@ -6685,6 +6685,18 @@
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
 
+/* DashConnect connection status: every recorded key is off */
+"Keys turned off" = "Keys turned off";
+
+/* DashConnect connection sheet */
+"The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
+
 /* DashConnect: accessibility, a row's button; the app's name */
 "Disconnect %@" = "Disconnect %@";
 

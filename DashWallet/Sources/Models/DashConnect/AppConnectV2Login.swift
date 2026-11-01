@@ -1138,10 +1138,19 @@ extension AppConnect {
     /// and a disconnect turns the keys off), or not. A key the view lacks
     /// leaves the app `.unknown`; keys that are all off make it `.keysOff`:
     /// the records say the app is connected, the identity says it is not.
+    ///
+    /// Platform rejects an expired key by its block time, which this phone
+    /// does not know. A key counts as expired only once both this phone's
+    /// clock and the time of the last Core block it has synced
+    /// (`chainTimeMilliseconds`) are past its expiry: a phone clock running
+    /// ahead alone does not make a working key look expired. Until the chain
+    /// shows it, or without a chain time, an app the phone's clock calls
+    /// expired is `.unknown`.
     static func connectionExpiries(
         grants: [AppConnectGrant],
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
-        nowMilliseconds: Int64
+        nowMilliseconds: Int64,
+        chainTimeMilliseconds: Int64?
     ) -> [String: ConnectionExpiry] {
         Dictionary(grouping: grants, by: \.appContractId).mapValues { appGrants in
             let ids = Set(appGrants.flatMap(\.keyIds))
@@ -1149,8 +1158,14 @@ extension AppConnect {
             guard Set(named.map { UInt32(bitPattern: $0.keyId) }) == ids else { return .unknown }
             let live = named.filter { $0.disabledAt == nil }
             guard !live.isEmpty else { return .keysOff }
-            return live.allSatisfy { $0.expiresAt != nil && !isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }
-                ? .expired : .current
+            let expiries = live.compactMap(\.expiresAt)
+            guard expiries.count == live.count,
+                  expiries.allSatisfy({ !isUnexpired($0, nowMilliseconds: nowMilliseconds) })
+            else { return .current }
+            guard let chainTimeMilliseconds else { return .unknown }
+            // The phone says expired; the chain may not show it yet.
+            return expiries.allSatisfy { UInt64(bitPattern: $0) <= UInt64(max(0, chainTimeMilliseconds)) }
+                ? .expired : .unknown
         }
     }
 

@@ -80,14 +80,14 @@ protocol DashConnectDataSource {
     /// For each app with a confirmed grant on the active identity, whether
     /// its keys are past their expiry on Platform but still on, from a fresh
     /// read of the identity. `nil` when the identity could not be read.
-    func connectionExpiries() async -> [String: ConnectionExpiry]?
+    func connectionExpiries() async -> ConnectionExpiries?
 }
 
 extension DashConnectDataSource {
     /// A source that keeps no history cannot tell: unknown.
     func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
-    func connectionExpiries() async -> [String: ConnectionExpiry]? { nil }
+    func connectionExpiries() async -> ConnectionExpiries? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -326,7 +326,13 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)
     }
 
-    func connectionExpiries() async -> [String: ConnectionExpiry]? { [:] }
+    func connectionExpiries() async -> ConnectionExpiries? {
+        ConnectionExpiries(
+            scope: subject.value.first?.scope,
+            byApp: Dictionary(
+                subject.value.filter { $0.status == .active }.map { ($0.id, ConnectionExpiry.notJudged) },
+                uniquingKeysWith: { first, _ in first }))
+    }
 
     /// The mock holds no keys: its disconnect only changes the row.
     @MainActor

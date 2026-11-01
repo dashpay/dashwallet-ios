@@ -508,6 +508,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
+    /// The time of the last Core block this phone has synced, `nil` when not
+    /// known: a second clock beside the phone's for telling an expiry
+    /// (`AppConnect.connectionExpiries`).
+    private let chainTime: @MainActor () -> Date?
 
     /// Prefix of the shared profile keys an earlier build let the user keep.
     static let keptSharedProfileKeysPrefix = "DashConnect.keptSharedProfileKeys "
@@ -550,7 +554,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         notificationCenter: NotificationCenter = .default,
         operationGate: DashConnectOperationGate = .shared,
         defaults: UserDefaults = .standard,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        chainTime: @escaping @MainActor () -> Date? = { SwiftDashSDKHost.shared.manager?.spvTipBlockTime }
     ) {
         assert(
             supportedNetwork == .testnet || supportedNetwork == .devnet,
@@ -562,6 +567,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.authorizer = authorizer
         self.stateTransitionParser = stateTransitionParser
         self.now = now
+        self.chainTime = chainTime
         Self.removeKeptSharedProfileKeys(from: defaults)
         self.activeWalletIdHex = activeWalletIdHex
         self.operationGate = operationGate
@@ -3020,7 +3026,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return disconnectRevokesKeys(appId: id, stores: stores, row: row)
     }
 
-    func connectionExpiries() async -> [String: ConnectionExpiry]? {
+    func connectionExpiries() async -> ConnectionExpiries? {
         guard let stores = await showActiveWalletRows() else { return nil }
         let context: Context
         do {
@@ -3028,7 +3034,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch DashConnectPlatformError.noIdentity, DashConnectPlatformError.unsupportedRuntimeNetwork {
             // No identity to read: nothing of any row can be judged here,
             // which is not a read that failed.
-            return Self.notJudged(judgedExpiryGrants(stores: stores, identityId: nil).apps)
+            return ConnectionExpiries(
+                scope: stores.scope, byApp: Self.notJudged(judgedExpiryGrants(stores: stores, identityId: nil).apps))
         } catch {
             return nil
         }
@@ -3037,26 +3044,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // to read. Without any to judge, Platform is not read, and nothing
         // waits on the operations that sign.
         let judged = judgedExpiryGrants(stores: stores, identityId: context.identityId.toBase58String())
-        guard !judged.grants.isEmpty else { return Self.notJudged(judged.apps) }
+        guard !judged.grants.isEmpty else {
+            return ConnectionExpiries(scope: stores.scope, byApp: Self.notJudged(judged.apps))
+        }
         // In turn with the operations that sign: the read reloads the
         // identity copy an approval or a disconnect signs against.
-        return try? await gated { () async -> [String: ConnectionExpiry]? in
+        return try? await gated { () async -> ConnectionExpiries? in
             guard let stores = await showActiveWalletRows(),
                   let context = try? await requireContext(pinnedTo: stores) else { return nil }
             let judged = judgedExpiryGrants(stores: stores, identityId: context.identityId.toBase58String())
-            guard !judged.grants.isEmpty else { return Self.notJudged(judged.apps) }
+            guard !judged.grants.isEmpty else {
+                return ConnectionExpiries(scope: stores.scope, byApp: Self.notJudged(judged.apps))
+            }
             // A read that fails leaves the apps it would judge unknown; one
             // with nothing to judge stays not judged.
             guard let keys = try? await refreshedIdentityPublicKeys(context: context) else {
                 let unknown = Set(judged.grants.map(\.appContractId))
-                return Dictionary(uniqueKeysWithValues: judged.apps.map {
+                return ConnectionExpiries(scope: stores.scope, byApp: Dictionary(uniqueKeysWithValues: judged.apps.map {
                     ($0, unknown.contains($0) ? ConnectionExpiry.unknown : .notJudged)
-                })
+                }))
             }
+            let chainTime = await MainActor.run { self.chainTime() }
             let read = AppConnect.connectionExpiries(
                 grants: judged.grants, currentIdentityPublicKeys: keys,
-                nowMilliseconds: Int64(AppConnect.milliseconds(now())))
-            return Dictionary(uniqueKeysWithValues: judged.apps.map { ($0, read[$0] ?? .notJudged) })
+                nowMilliseconds: Int64(AppConnect.milliseconds(now())),
+                chainTimeMilliseconds: chainTime.map { Int64(AppConnect.milliseconds($0)) })
+            return ConnectionExpiries(
+                scope: stores.scope,
+                byApp: Dictionary(uniqueKeysWithValues: judged.apps.map { ($0, read[$0] ?? .notJudged) }))
         } ?? nil
     }
 
@@ -3116,7 +3131,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // "approved" state.
                 // Dated when the revocation ended, not when the entry was
                 // read before it.
-                if let entry { stores.history.record(entry.disconnected(at: now())) }
+                result.notRecordedInHistory = !(entry.map { stores.history.record($0.disconnected(at: now())) } ?? false)
                 await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
                 return result
             }
