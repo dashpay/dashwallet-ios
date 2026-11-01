@@ -1455,6 +1455,25 @@ extension AppConnectV2LoginTests {
             "an encryption key bound to another contract")
     }
 
+    func testARecordNotesMessagesOnlyWhenTheResponseCarriesAnEncryptionKey() throws {
+        let plan = try Self.vectorPlan()
+        XCTAssertFalse(plan.encryption.isEmpty, "the request asks for an encryption key")
+
+        let omitted = AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: false, resealed: false)
+        XCTAssertFalse(omitted.receivesMessages, "every encryption slot was left out")
+        XCTAssertEqual(omitted.keys.count, plan.auth.count)
+
+        let sent = AppConnect.GrantedAccess.noted(nil, plan: plan, sendsEncryptionKey: true, resealed: false)
+        XCTAssertTrue(sent.receivesMessages)
+
+        XCTAssertEqual(
+            AppConnect.GrantedAccess.noted(sent, plan: plan, sendsEncryptionKey: false, resealed: false), sent,
+            "a confirmed record keeps what its published response gave")
+        XCTAssertFalse(
+            AppConnect.GrantedAccess.noted(sent, plan: plan, sendsEncryptionKey: false, resealed: true).receivesMessages,
+            "a retry sealed again without the key notes it again")
+    }
+
     func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {
         var grant = Self.grant(sessionKeyId: 3)
         grant.grantedAccess = AppConnect.GrantedAccess(

@@ -62,18 +62,23 @@ protocol DashConnectDataSource {
     /// both calls act only while it still names the wallet they would act
     /// on.
     @discardableResult
-    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    /// `expecting` is what the user was told it does: a disconnect that
+    /// turns out to do otherwise throws
+    /// `DashConnectPlatformError.disconnectEffectChanged` before turning
+    /// anything off. `.dependsOnPlatform` accepts either.
+    func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
+        -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
     /// What the connection sheet shows for the row `id`, from the grant
     /// records of the active identity; `nil` when there is no active wallet
     /// or `scope` is not its.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
-    /// Whether `disconnect(id:scope:)` would turn keys off on Platform rather
-    /// than only the local status, from the local records alone; `nil` when
-    /// there is no active wallet, `scope` is not its, or it has no row `id`. Local and quick, so
-    /// a question about it can be asked on the tap.
+    /// What `disconnect(id:scope:expecting:)` would do, from the local
+    /// records alone; `nil` when there is no active wallet, `scope` is not
+    /// its, or it has no row `id`. Local and quick, so a question about it
+    /// can be asked on the tap.
     @MainActor
-    func disconnectRevokesKeys(id: String, scope: String?) -> Bool?
+    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect?
 }
 
 extension DashConnectDataSource {
@@ -288,7 +293,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+    func disconnect(
+        id: String, scope: String?, expecting: DashConnectDisconnectEffect
+    ) async throws -> DashConnectDisconnectResult {
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
@@ -315,8 +322,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
 
     /// The mock holds no keys: its disconnect only changes the row.
     @MainActor
-    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? {
-        subject.value.contains { $0.id == id && $0.scope == scope } ? false : nil
+    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect? {
+        subject.value.contains { $0.id == id && $0.scope == scope } ? .localOnly : nil
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

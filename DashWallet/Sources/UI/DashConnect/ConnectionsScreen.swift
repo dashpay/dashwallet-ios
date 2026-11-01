@@ -145,7 +145,7 @@ struct ConnectionsScreen: View {
             isBusy: viewModel.isDisconnecting,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
-            onDisconnect: viewModel.disconnectShown(askedRevokesKeys:),
+            onDisconnect: viewModel.disconnectShown(asked:),
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
             disconnectQuestion: viewModel.disconnectQuestion,
             onScan: {

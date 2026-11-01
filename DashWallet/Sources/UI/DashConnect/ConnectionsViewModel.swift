@@ -134,6 +134,10 @@ final class ConnectionsViewModel: ObservableObject {
         return shownDetails?.connectedAt
     }
 
+    /// Counts the reads of the shown sheet's details, and its closing: only
+    /// the latest read is shown.
+    private var detailsReadNumber = 0
+
     /// The sheet was opened by a row's Disconnect: it asks at once.
     private(set) var shownAsksToDisconnect = false
 
@@ -255,7 +259,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// The sheet opened by a row's Disconnect is up: its question, asked
     /// once (`disconnectQuestion`).
-    func takeDisconnectQuestion() -> Bool? {
+    func takeDisconnectQuestion() -> DashConnectDisconnectEffect? {
         guard shownAsksToDisconnect else { return nil }
         shownAsksToDisconnect = false
         return disconnectQuestion()
@@ -263,7 +267,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// What the shown sheet's disconnect question says a disconnect does,
     /// read now; `nil` when it cannot ask, and the sheet then says why.
-    func disconnectQuestion() -> Bool? {
+    func disconnectQuestion() -> DashConnectDisconnectEffect? {
         guard let item = shownConnection, let connection = item.connection, item.status.offersDisconnect else {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return nil
@@ -272,13 +276,13 @@ final class ConnectionsViewModel: ObservableObject {
             connectionSheetMessage = Self.anotherRequestMessage
             return nil
         }
-        guard let revokesKeys = dataSource.disconnectRevokesKeys(id: connection.id, scope: connection.scope) else {
+        guard let effect = dataSource.disconnectEffect(id: connection.id, scope: connection.scope) else {
             // Not the active wallet's, or gone from it.
             connectionSheetMessage = Self.connectionChangedMessage
             return nil
         }
         connectionSheetMessage = nil
-        return revokesKeys
+        return effect
     }
 
     /// Something that signs, or touches the records a disconnect does, is
@@ -323,18 +327,22 @@ final class ConnectionsViewModel: ObservableObject {
             comment: "DashConnect: a disconnect asked for on a row that is no longer the active wallet's"))
 
     private func readShownDetails(_ item: ConnectionSheetItem) {
+        detailsReadNumber += 1
+        let number = detailsReadNumber
         Task { [weak self] in
             guard let self else { return }
             let details = await self.dataSource.connectionDetails(id: item.id, scope: item.connection?.scope)
-            // Only for the sheet it was read for: the same app, connected or
-            // not as it was. A status change alone does not make it stale.
-            guard let shown = self.shownConnection, !Self.readsAnew(shown, from: item) else { return }
+            // Only the latest read of the sheet still up: one started before
+            // the sheet closed, opened again or read again tells of a
+            // connection as it was then.
+            guard number == self.detailsReadNumber, self.shownConnection != nil else { return }
             self.shownDetails = details
             self.shownDetailsFailed = details == nil
         }
     }
 
     func hideConnection() {
+        detailsReadNumber += 1
         shownAsksToDisconnect = false
         shownConnection = nil
         shownDetails = nil
@@ -695,25 +703,27 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// A disconnect confirmed on the shown sheet with what it said
-    /// (`askedRevokesKeys`). It runs only if the sheet still offers one and
-    /// it would still do what was said; otherwise the sheet shows what holds
-    /// now, and why nothing ran.
-    func disconnectShown(askedRevokesKeys: Bool) {
+    /// (`asked`). It runs only if the sheet still offers one and the local
+    /// records still tell the same; otherwise the sheet shows what holds now,
+    /// and why nothing ran. The data source holds the disconnect to `asked`
+    /// once it has read the identity.
+    func disconnectShown(asked: DashConnectDisconnectEffect) {
         guard let item = shownConnection, let connection = item.connection, item.status.offersDisconnect else {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return
         }
-        let revokesKeys = dataSource.disconnectRevokesKeys(id: connection.id, scope: connection.scope)
-        guard revokesKeys == askedRevokesKeys else {
-            connectionSheetMessage = revokesKeys == nil
+        let effect = dataSource.disconnectEffect(id: connection.id, scope: connection.scope)
+        guard effect == asked else {
+            connectionSheetMessage = effect == nil
                 ? Self.connectionChangedMessage
                 : Self.staleQuestionMessage
             return
         }
-        disconnect(connection)
+        disconnect(connection, expecting: asked)
     }
 
-    func disconnect(_ connection: DAppConnection) {
+    /// Disconnects `connection`, which the user was told does `expecting`.
+    func disconnect(_ connection: DAppConnection, expecting: DashConnectDisconnectEffect) {
         // Disconnecting a one-QR connection signs an identity update, which
         // takes seconds. It must not overlap anything else that signs one or
         // touches the same records: a second tap, an approval on screen or in
@@ -729,7 +739,8 @@ final class ConnectionsViewModel: ObservableObject {
             self.connectionSheetMessage = nil
             let result: DashConnectDisconnectResult
             do {
-                result = try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
+                result = try await self.dataSource.disconnect(
+                    id: connection.id, scope: connection.scope, expecting: expecting)
             } catch {
                 self.isDisconnecting = false
                 // It may have turned some keys off before it failed: what

@@ -211,6 +211,19 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
+/// What a disconnect of a connection does, as far as the local records tell
+/// before the identity is read.
+enum DashConnectDisconnectEffect: Equatable {
+    /// Its keys are turned off on Platform.
+    case revokesKeys
+    /// Only its local status changes: nothing of the app's can reach
+    /// Platform.
+    case localOnly
+    /// Either, depending on what the identity shows: a two-QR row with a
+    /// grant whose keys may or may not still be live.
+    case dependsOnPlatform
+}
+
 /// What a disconnect did with the active identity's DashPay profile keys
 /// that no grant record names, besides turning off the app's own keys.
 struct DashConnectDisconnectResult: Equatable {

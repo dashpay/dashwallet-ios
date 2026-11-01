@@ -133,13 +133,26 @@ extension AppConnect {
             self.isSessionKeyLogin = isSessionKeyLogin
         }
 
-        init(plan: GrantPlan) {
+        /// The keys of `plan`. `receivesMessages`: the response carries an
+        /// encryption key, which a plan that asks for one may still leave out.
+        init(plan: GrantPlan, receivesMessages: Bool) {
             keys = plan.auth.map {
                 Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
                     expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
             }
-            receivesMessages = !plan.encryption.isEmpty
+            self.receivesMessages = receivesMessages
             isSessionKeyLogin = false
+        }
+
+        /// What a v2 grant record notes its approval gave, once its response
+        /// is sealed: an encryption key only when a slot carries one
+        /// (`sendsEncryptionKey`). A response sealed again (`resealed`) is
+        /// noted again; otherwise what the record noted stays.
+        static func noted(
+            _ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool, resealed: Bool
+        ) -> GrantedAccess {
+            if !resealed, let recorded { return recorded }
+            return GrantedAccess(plan: plan, receivesMessages: sendsEncryptionKey)
         }
 
         init(from decoder: Decoder) throws {

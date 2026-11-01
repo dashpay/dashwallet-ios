@@ -6867,6 +6867,9 @@
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
 
+/* DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation */
+"Its keys may be turned off on Platform for good, or the connection only turned off on this device, as Platform shows once it is read. DashPay profile keys not linked to any connection may be turned off too." = "Its keys may be turned off on Platform for good, or the connection only turned off on this device, as Platform shows once it is read. DashPay profile keys not linked to any connection may be turned off too.";
+
 /* DashConnect connection sheet: the date its keys expire */
 "Connection expiry" = "Connection expiry";
 
