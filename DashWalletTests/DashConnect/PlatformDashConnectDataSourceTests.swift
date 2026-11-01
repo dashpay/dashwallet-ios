@@ -2088,6 +2088,65 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(spy.detailReads, 1)
     }
 
+    func testAnExpiryCheckThatLeftAppsUnknownIsNotShownComplete() async {
+        let spy = ConnectionStatusSpy(
+            rows: [Self.row("unknown", .active), Self.row("expired", .active)], history: [],
+            expiries: ["unknown": .unknown, "expired": .expired])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 2 }
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.expiries != nil }
+        XCTAssertFalse(viewModel.expiriesAreKnown, "an app Platform could not be read for may have expired too")
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["expired"], "what is known stays listed")
+    }
+
+    func testAReadThatCannotTellKeepsAnAppAlreadyShownExpired() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: ["app": .expired])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.expiries != nil }
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["app"])
+
+        spy.expiries = ["app": .unknown]
+        let reads = spy.expiryReads
+        viewModel.refreshConnectionStatus()
+        await waitUntil { spy.expiryReads > reads && !viewModel.isCheckingStatus }
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["app"], "a failed re-read does not move it back")
+
+        spy.expiries = nil
+        viewModel.refreshConnectionStatus()
+        await waitUntil { spy.expiryReads > reads + 1 && !viewModel.isCheckingStatus }
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["app"], "nor does a read that failed as a whole")
+    }
+
+    func testAnAppWhoseKeysAreAllOffDoesNotMakeTheCheckIncomplete() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: ["app": .keysOff])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.expiries != nil }
+        XCTAssertTrue(viewModel.expiriesAreKnown, "reading again tells the same: no Retry")
+    }
+
+    func testAnotherWalletsRowOfTheShownAppClosesItsSheet() async {
+        var walletA = Self.row("app", .active)
+        walletA.scope = "a"
+        var walletB = walletA
+        walletB.scope = "b"
+        let spy = ConnectionStatusSpy(rows: [walletA], history: [], expiries: ["app": .expired])
+        spy.revokesKeys = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshConnectionStatus()
+        await waitUntil { !viewModel.connections.isEmpty && viewModel.expiries != nil }
+        viewModel.showConnection(viewModel.rows(for: .expired)[0], asksToDisconnect: true)
+
+        spy.sendRows([walletB])
+        await waitUntil { viewModel.shownConnection == nil }
+        XCTAssertNil(viewModel.shownConnection, "the sheet, and its question, were about the other wallet's row")
+        XCTAssertNil(viewModel.takeDisconnectQuestion())
+    }
+
     func testATabIsNotShownEmptyWhileItsAppsAreUnknown() async {
         let spy = ConnectionStatusSpy(rows: [], history: [], expiries: [:])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
@@ -2112,7 +2171,8 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     private let lock = NSLock()
     private let rows: CurrentValueSubject<[DAppConnection], Never>
     private var history: [DisconnectedConnection]?
-    private let expiries: [String: ConnectionExpiry]?
+    /// What the next expiry read answers.
+    var expiries: [String: ConnectionExpiry]?
     private var storedExpiryReads = 0
     private var storedDetailReads = 0
     /// A disconnect succeeds: the row goes and the app is in the history.

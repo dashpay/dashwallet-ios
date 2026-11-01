@@ -3114,7 +3114,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // longer be approved and there is no second step to wait
                 // for, so the row goes instead of sitting in the two-QR
                 // "approved" state.
-                if let entry { stores.history.record(entry) }
+                // Dated when the revocation ended, not when the entry was
+                // read before it.
+                if let entry { stores.history.record(entry.disconnected(at: now())) }
                 await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
                 return result
             }

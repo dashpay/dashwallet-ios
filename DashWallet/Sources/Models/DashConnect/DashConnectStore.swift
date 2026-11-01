@@ -260,6 +260,13 @@ struct DisconnectedConnection: Codable, Equatable, Identifiable {
     /// When the connection was made; absent in entries from before it was
     /// kept.
     var connectedAt: Date? = nil
+
+    /// The same entry, disconnected at `date`.
+    func disconnected(at date: Date) -> DisconnectedConnection {
+        DisconnectedConnection(
+            id: id, name: name, url: url, identityId: identityId, username: username, disconnectedAt: date,
+            access: access, connectedAt: connectedAt)
+    }
 }
 
 /// The disconnected apps of one wallet and network.

@@ -283,8 +283,13 @@ final class ConnectionsViewModel: ObservableObject {
         !connections.isEmpty || !(history ?? []).isEmpty || historyIsUnreadable
     }
 
-    /// Platform's expiries were read.
-    var expiriesAreKnown: Bool { expiries != nil }
+    /// Platform's expiries were read, and none of a listed active app is
+    /// unknown: reading again would not tell more. An app whose keys are
+    /// all off (`.keysOff`) reads the same every time.
+    var expiriesAreKnown: Bool {
+        guard let expiries else { return false }
+        return !connections.contains { $0.status == .active && expiries[$0.id] == .unknown }
+    }
 
     /// The disconnected apps are being read for the first time.
     var isLoadingHistory: Bool { history == nil && !historyIsUnreadable && !featureUnavailable }
@@ -304,7 +309,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
         // Every active row has an answer once read; an app with nothing to
         // judge on this identity (`.notJudged`) is not a failed check.
-        let checked = expiries?[connection.id].map { $0 != .unknown } ?? false
+        let checked = expiries?[connection.id].map { $0 != .unknown && $0 != .keysOff } ?? false
         return ConnectionSheetItem(
             id: connection.id, name: connection.name, url: connection.url, status: status,
             isStatusChecked: connection.status != .active || checked, connection: connection, disconnectedAt: nil)
@@ -314,6 +319,19 @@ final class ConnectionsViewModel: ObservableObject {
         ConnectionSheetItem(
             id: entry.id, name: entry.name, url: entry.url, status: .disconnected, isStatusChecked: true,
             connection: nil, disconnectedAt: entry.disconnectedAt)
+    }
+
+    /// A read that could not tell an app's expiry keeps what an earlier read
+    /// told: an app shown as expired stays listed while the check is
+    /// incomplete. A read that failed as a whole leaves the earlier one.
+    private static func keepingKnownExpiries(
+        _ read: [String: ConnectionExpiry]?, over earlier: [String: ConnectionExpiry]?
+    ) -> [String: ConnectionExpiry]? {
+        guard let read else { return earlier }
+        return read.reduce(into: [:]) { result, entry in
+            let known = earlier?[entry.key]
+            result[entry.key] = entry.value == .unknown && (known == .expired || known == .current) ? known : entry.value
+        }
     }
 
     /// Reads the disconnected apps and the connected apps' expiries again.
@@ -350,7 +368,7 @@ final class ConnectionsViewModel: ObservableObject {
             self.history = history
             historyIsUnreadable = history == nil
             updateShownConnection()
-            self.expiries = await expiries
+            self.expiries = Self.keepingKnownExpiries(await expiries, over: self.expiries)
             updateShownConnection()
         } while refreshesStatusAgain
         isCheckingStatus = false
@@ -513,6 +531,13 @@ final class ConnectionsViewModel: ObservableObject {
     private func updateShownConnection() {
         guard let shown = shownConnection, !isDisconnecting else { return }
         let current = ConnectionsTab.allCases.lazy.flatMap { self.rows(for: $0) }.first { $0.id == shown.id }
+        // Another wallet's row of the same app is another connection: the
+        // sheet, its question and what it said were about the one before.
+        if let current, let scope = current.connection?.scope, let shownScope = shown.connection?.scope,
+           scope != shownScope {
+            hideConnection()
+            return
+        }
         if let current {
             guard current != shown else { return }
             shownConnection = current
