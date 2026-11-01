@@ -125,7 +125,9 @@ class AdvancedModeRowUITests: XCTestCase {
 
         // The switch writes through to UserDefaults, which this target does not
         // reset between runs — put it back, even after a failure, so the next
-        // test does not start in whichever mode this one left behind.
+        // test does not start in whichever mode this one left behind. Only the
+        // mode comes back: a flip by hand also records Advanced mode as the
+        // user's own choice, so it no longer turns on by itself afterwards.
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         addTeardownBlock { [self] in
             // The row sits behind the explainer when it is open, so close it first.

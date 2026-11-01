@@ -141,13 +141,15 @@ struct SettingsScreen: View {
     ///   toggle row that is the toggle, so the whole row flips the switch.
     @ViewBuilder
     private func row(for item: MenuItemModel) -> some View {
+        // One binding for the switch on screen and the one VoiceOver reads.
+        let isOn = Self.toggleBinding(item)
         let content = DashUIKit.MenuItem(
             leadingIcon: item.icon.map(Self.iconSource),
             title: item.title,
             helpText: item.subtitle,
             info: item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil,
             accessory: item.showToggle
-                ? .toggle(isOn: Self.toggleBinding(item))
+                ? .toggle(isOn: isOn)
                 : (item.details.map { .text($0) } ?? .none)
         )
         // The row's full height is the tap target: `MenuItem` draws no
@@ -163,14 +165,14 @@ struct SettingsScreen: View {
             // test can find the row and tap the switch's place in it.
             Button(action: infoAction) { content }
                 .buttonStyle(.plain)
-                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
+                .modifier(ToggleRowAccessibility(item: item, isOn: isOn))
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
             // anywhere on the row flips the switch.
             Button(action: action) { content }
                 .buttonStyle(.plain)
-                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
+                .modifier(ToggleRowAccessibility(item: item, isOn: isOn))
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else {
             content
