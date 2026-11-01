@@ -160,10 +160,10 @@ struct SettingsScreen: View {
         if item.showToggle, let infoAction = item.infoAction {
             // The switch owns its own tap, so the rest of the row is free
             // to answer the question the info glyph poses. Named so a UI
-            // test can tap the switch alone and assert the sheet stays shut.
+            // test can find the row and tap the switch's place in it.
             Button(action: infoAction) { content }
                 .buttonStyle(.plain)
-                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item), infoAction: infoAction))
+                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
@@ -343,7 +343,6 @@ extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
 private struct ToggleRowAccessibility: ViewModifier {
     let item: MenuItemModel
     let isOn: Binding<Bool>
-    var infoAction: (() -> Void)? = nil
 
     func body(content: Content) -> some View {
         if item.showToggle {
@@ -357,7 +356,7 @@ private struct ToggleRowAccessibility: ViewModifier {
                     }
                 }
                 .accessibilityActions {
-                    if let infoAction {
+                    if let infoAction = item.infoAction {
                         Button(NSLocalizedString("Learn more", comment: "Settings"), action: infoAction)
                     }
                 }

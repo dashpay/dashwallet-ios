@@ -93,11 +93,12 @@ class DashWalletScreenshotsUITests: XCTestCase {
 /// carries the row's identifier and the setting's value, with the explainer
 /// as a named action. A plain tap on that element lands on the row's centre,
 /// which is the body that opens the explainer, so the taps go to the switch's
-/// place in the row, as a finger would.
+/// place at the row's trailing end, as a finger would.
 class AdvancedModeRowUITests: XCTestCase {
 
-    /// Where the switch sits in the row, as a fraction of the row's frame.
-    private static let switchOffset = CGVector(dx: 0.88, dy: 0.5)
+    /// The switch's centre, from the row's trailing edge: `MenuItem` pads the
+    /// row by 10 pt and the switch is 64 pt wide.
+    private static let switchCenterFromTrailingEdge: CGFloat = 42
 
     private var app: XCUIApplication!
 
@@ -119,20 +120,37 @@ class AdvancedModeRowUITests: XCTestCase {
                        "The Advanced mode row exposes a nested switch")
 
         let before = row.value as? String
-        row.coordinate(withNormalizedOffset: Self.switchOffset).tap()
+        tapSwitch(in: row)
 
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         XCTAssertFalse(sheet.waitForExistence(timeout: 2),
                        "Tapping the switch opened the explainer — the row's button swallowed it")
 
-        XCTAssertNotEqual(row.value as? String, before,
-                          "The switch did not change state, so the tap never reached it")
+        XCTAssertTrue(waitForValue(of: row, toBe: before, negated: true),
+                      "The switch did not change state, so the tap never reached it")
 
         // The switch writes through to UserDefaults, which this target does not
         // reset between runs — put it back so the next test does not start in
         // whichever mode this one left behind.
-        row.coordinate(withNormalizedOffset: Self.switchOffset).tap()
-        XCTAssertEqual(row.value as? String, before,
-                       "Could not restore the Advanced mode switch to its original state")
+        tapSwitch(in: row)
+        XCTAssertTrue(waitForValue(of: row, toBe: before, negated: false),
+                      "Could not restore the Advanced mode switch to its original state")
+    }
+
+    private func tapSwitch(in row: XCUIElement) {
+        row.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+            .withOffset(CGVector(dx: -Self.switchCenterFromTrailingEdge, dy: 0))
+            .tap()
+    }
+
+    /// Waits for the row to re-render after a tap: whether its value becomes
+    /// `value`, or, `negated`, stops being it.
+    private func waitForValue(of row: XCUIElement, toBe value: String?, negated: Bool) -> Bool {
+        let predicate = NSPredicate { object, _ in
+            let current = (object as? XCUIElement)?.value as? String
+            return negated ? current != value : current == value
+        }
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: row)
+        return XCTWaiter.wait(for: [expectation], timeout: 3) == .completed
     }
 }
