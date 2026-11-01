@@ -1706,6 +1706,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     func remove(id: String, scope: String?) async {
         XCTFail("remove is not part of the purchase approval flow")
     }
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? { nil }
 }
 
 /// A `DashConnectDataSource` for the login approval: every QR is the sample
@@ -1770,6 +1771,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     func remove(id: String, scope: String?) async {}
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? { nil }
 }
 
 /// The Connections page's tabs and connection sheet.
@@ -1887,6 +1889,136 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
+    func testARowsDisconnectOpensItsSheetAskingAtOnce() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        spy.revokesKeys = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        let item = viewModel.rows(for: .active)[0]
+
+        viewModel.showConnection(item, asksToDisconnect: true)
+        XCTAssertEqual(viewModel.shownConnection?.id, "app")
+        XCTAssertTrue(viewModel.shownAsksToDisconnect)
+        XCTAssertEqual(viewModel.takeDisconnectQuestion(), true)
+
+        viewModel.hideConnection()
+        viewModel.showConnection(item)
+        XCTAssertFalse(viewModel.shownAsksToDisconnect, "opening the row itself asks nothing")
+    }
+
+    func testARowsDisconnectThatCannotAskSaysWhyOnTheSheet() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0], asksToDisconnect: true)
+        XCTAssertNil(viewModel.takeDisconnectQuestion(), "the data source cannot say what it would do")
+        XCTAssertEqual(viewModel.connectionSheetMessage?.kind, .error)
+    }
+
+    func testTheQuestionASheetWasOpenedForIsAskedOnce() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        spy.revokesKeys = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0], asksToDisconnect: true)
+        spy.revokesKeys = false
+        XCTAssertEqual(viewModel.takeDisconnectQuestion(), false, "read when it is asked")
+        XCTAssertNil(viewModel.takeDisconnectQuestion())
+        XCTAssertNil(viewModel.connectionSheetMessage)
+    }
+
+    func testADisconnectConfirmedOnASheetThatNoLongerOffersOneDoesNotRun() async throws {
+        var twoQR = Self.row("app", .active)
+        twoQR.loginKind = .twoQR
+        let spy = ConnectionStatusSpy(rows: [twoQR], history: [], expiries: [:])
+        spy.revokesKeys = false
+        spy.disconnectSucceeds = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        let waiting = DAppConnection(
+            id: twoQR.id, name: twoQR.name, url: twoQR.url, status: .approved, updatedAt: twoQR.updatedAt,
+            loginKind: .twoQR)
+        spy.sendRows([waiting])
+        await waitUntil { viewModel.shownConnection?.status == .waitingForSecondScan }
+        viewModel.disconnectShown(askedRevokesKeys: false)
+        XCTAssertFalse(viewModel.isDisconnecting)
+        XCTAssertEqual(viewModel.connectionSheetMessage?.kind, .error)
+    }
+
+    func testAScanWaitsForWhatSignsButSupersedesARequestStillResolving() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        spy.disconnectSucceeds = true
+        spy.disconnectDelay = 300_000_000
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        XCTAssertTrue(viewModel.mayScan())
+
+        viewModel.onQRScanned("dash-key:unparseable")
+        XCTAssertTrue(viewModel.mayScan(), "a newer scan supersedes a request still resolving")
+        // The unparseable request ends in its error.
+        await waitUntil { viewModel.message != nil }
+        viewModel.message = nil
+
+        viewModel.disconnect(viewModel.connections[0])
+        XCTAssertFalse(viewModel.mayScan())
+        XCTAssertEqual(viewModel.message?.kind, .error, "the page says why the scanner did not open")
+    }
+
+    func testTheSheetOfADisconnectedAppAsksNothingAndSaysWhy() async {
+        let spy = ConnectionStatusSpy(rows: [], history: [Self.gone("old")], expiries: [:])
+        spy.revokesKeys = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.refreshConnectionStatus()
+        await waitUntil { viewModel.history != nil }
+        viewModel.showConnection(viewModel.rows(for: .disconnected)[0])
+        XCTAssertNil(viewModel.disconnectQuestion())
+        XCTAssertEqual(viewModel.connectionSheetMessage?.kind, .error)
+    }
+
+    func testTheSheetAsksNothingWhenTheDataSourceCannotSayWhatItDoes() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        XCTAssertNil(viewModel.disconnectQuestion(), "not guessed from the row's kind")
+        XCTAssertEqual(viewModel.connectionSheetMessage?.kind, .error)
+    }
+
+    func testADisconnectConfirmedWithTextThatNoLongerHoldsDoesNotRun() async throws {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
+        spy.revokesKeys = false
+        spy.disconnectSucceeds = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        let item = viewModel.rows(for: .active)[0]
+        viewModel.showConnection(item)
+        spy.revokesKeys = true
+
+        viewModel.disconnectShown(askedRevokesKeys: false)
+        XCTAssertFalse(viewModel.isDisconnecting)
+        XCTAssertEqual(viewModel.connectionSheetMessage?.kind, .error)
+        XCTAssertEqual(viewModel.disconnectQuestion(), true, "asked again, it says what will happen")
+        XCTAssertNil(viewModel.connectionSheetMessage, "the earlier refusal goes with the new question")
+
+        viewModel.disconnectShown(askedRevokesKeys: true)
+        await waitUntil { viewModel.connections.isEmpty && !viewModel.isDisconnecting }
+        XCTAssertTrue(viewModel.connections.isEmpty, "asked with what holds, it runs")
+    }
+
+    func testTheSheetAsksWithTheDataSourcesAnswerBeforeItsDetailsAreRead() async {
+        var twoQR = Self.row("app", .active)
+        twoQR.loginKind = .twoQR
+        let spy = ConnectionStatusSpy(rows: [twoQR], history: [], expiries: [:])
+        spy.revokesKeys = true
+        spy.detailsDelay = 200_000_000
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        XCTAssertNil(viewModel.shownDetails)
+        XCTAssertEqual(viewModel.disconnectQuestion(), true, "not guessed from the two-QR row's kind")
+    }
+
     func testADisconnectTurnsTheOpenSheetIntoTheDisconnectedApp() async throws {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [], expiries: [:])
         spy.disconnectSucceeds = true
@@ -1926,8 +2058,8 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
                 KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 20_000_000_000),
                 KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
                 KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
-            ],
-            disconnectRevokesKeys: false)
+            ])
+        spy.revokesKeys = false
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows(for: .active)[0])
@@ -1939,7 +2071,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(lines?[1].value, "Maximum of \(dash(200_000_000))", "Platform did not say what is left")
         XCTAssertEqual(lines?[2].value, "No limit")
         XCTAssertEqual(viewModel.shownConnectedAt, Date(timeIntervalSince1970: 1_000))
-        XCTAssertFalse(viewModel.shownDisconnectRevokesKeys, "the data source's decision, not the row's kind")
+        XCTAssertEqual(viewModel.disconnectQuestion(), false, "the data source's decision, not the row's kind")
     }
 
     func testDetailsReadWhileTheStatusIsCheckedStillShow() async {
@@ -1992,6 +2124,8 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     /// What the details read answers; a fixed connection on `identity` when
     /// unset.
     var details: ConnectionDetails?
+    /// What the data source says a disconnect would do; no answer when unset.
+    var revokesKeys: Bool?
 
     init(rows: [DAppConnection], history: [DisconnectedConnection]?, expiries: [String: ConnectionExpiry]?) {
         self.rows = CurrentValueSubject(rows)
@@ -2016,6 +2150,10 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
         if detailsDelay > 0 { try? await Task.sleep(nanoseconds: detailsDelay) }
         return details ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
     }
+
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? { revokesKeys }
+
+    func sendRows(_ value: [DAppConnection]) { rows.send(value) }
 
     func parseQR(_ content: String) async throws -> DashConnectQr { throw PurchaseSpyError.unsupported }
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
@@ -3391,6 +3529,25 @@ final class AppConnectLoginTests: XCTestCase {
 
     /// `rows` are the active wallet's, stored before the data source loads
     /// its list.
+    @MainActor
+    func testADisconnectTurnsKeysOffForAOneQRRowOnlyOnTheActiveWallet() async throws {
+        let id = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        for (kind, revokes) in [(DashConnectLoginKind.oneQR, true), (.twoQR, false)] {
+            let row = DAppConnection(
+                id: id, name: "Yappr", url: "yap.pr", status: .active,
+                updatedAt: Date(timeIntervalSince1970: 1_773_132_300), loginKind: kind)
+            let (dataSource, _) = makeScopedDataSource(active: ActiveWallet("wallet-\(kind)"), rows: [row])
+            let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
+            let scope = try XCTUnwrap(request.existingConnection?.scope)
+
+            XCTAssertEqual(dataSource.disconnectRevokesKeys(id: id, scope: scope), revokes, "\(kind)")
+            XCTAssertNil(
+                dataSource.disconnectRevokesKeys(id: id, scope: scope + "-other"),
+                "a row of another wallet is not answered for")
+            XCTAssertNil(dataSource.disconnectRevokesKeys(id: "unknown", scope: scope), "nor an app with no row")
+        }
+    }
+
     private func makeScopedDataSource(
         active: ActiveWallet,
         rows: [DAppConnection] = [],

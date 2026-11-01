@@ -71,6 +71,12 @@ protocol DashConnectDataSource {
     /// records of the active identity; `nil` when there is no active wallet
     /// or `scope` is not its.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// Whether `disconnect(id:scope:)` would turn keys off on Platform rather
+    /// than only the local status, from the local records alone; `nil` when
+    /// there is no active wallet, `scope` is not its, or it has no row `id`. Local and quick, so
+    /// a question about it can be asked on the tap.
+    @MainActor
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool?
     /// For each app with a confirmed grant on the active identity, whether
     /// its keys are past their expiry on Platform but still on, from a fresh
     /// read of the identity. `nil` when the identity could not be read.
@@ -321,6 +327,12 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     func connectionExpiries() async -> [String: ConnectionExpiry]? { [:] }
+
+    /// The mock holds no keys: its disconnect only changes the row.
+    @MainActor
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? {
+        subject.value.contains { $0.id == id && $0.scope == scope } ? false : nil
+    }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {

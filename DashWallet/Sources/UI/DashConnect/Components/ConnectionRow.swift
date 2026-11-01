@@ -20,34 +20,70 @@
 import DashUIKit
 import SwiftUI
 
-/// One app on the Connections page: its name and website. The whole row
-/// opens the connection's sheet.
+/// One app on the Connections page: its name and website, which open the
+/// connection's sheet, and the action that fits its status. Disconnect opens
+/// the sheet too, which asks first.
 struct ConnectionRow: View {
     let item: ConnectionSheetItem
     let onOpen: () -> Void
+    let onDisconnect: () -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
-        Button(action: onOpen) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.name)
-                    .dashFont(.callout)
-                    .foregroundStyle(Color.dash.primaryText)
-                    .lineLimit(1)
-
-                if !item.url.isEmpty {
-                    Text(item.url)
-                        .dashFont(.caption1)
-                        .foregroundStyle(Color.dash.tertiaryText)
+        HStack(spacing: 20) {
+            Button(action: onOpen) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.name)
+                        .dashFont(.callout)
+                        .foregroundStyle(Color.dash.primaryText)
                         .lineLimit(1)
+
+                    if !item.url.isEmpty {
+                        Text(item.url)
+                            .dashFont(.caption1)
+                            .foregroundStyle(Color.dash.tertiaryText)
+                            .lineLimit(1)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 14)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+
+            action
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isButton)
+        .padding(.trailing, 14)
+    }
+
+    @ViewBuilder
+    private var action: some View {
+        switch item.status {
+        case .active, .confirming:
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+                size: .small, style: .tintedGray, action: onDisconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
+        case .disconnected, .expired:
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+                size: .small, style: .tintedBlue, action: onReconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
+        case .waitingForSecondScan:
+            // Its sheet offers the second code; a disconnect only turns it
+            // back into this state.
+            EmptyView()
+        }
     }
 }

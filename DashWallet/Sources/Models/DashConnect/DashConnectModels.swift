@@ -277,13 +277,6 @@ struct ConnectionDetails: Equatable {
     /// identity) or could not be (`fundingReadFailed`).
     var keyFunding: [KeyFunding]? = nil
     var fundingReadFailed = false
-    /// A disconnect may turn the app's keys off on Platform: a one-QR row,
-    /// or an app with a grant that can reach Platform. `false` for a two-QR
-    /// login with nothing else of the app's, whose disconnect only changes
-    /// the local status. The disconnect itself decides from a fresh view
-    /// of the identity, and may still only change the local status when
-    /// the grant's keys turn out to be off already.
-    var disconnectRevokesKeys = true
 }
 
 /// One of a connection's keys, with what is left of its budget.

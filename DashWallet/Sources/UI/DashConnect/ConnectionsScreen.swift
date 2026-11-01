@@ -149,7 +149,11 @@ struct ConnectionsScreen: View {
         if tab == .disconnected, viewModel.historyIsUnreadable {
             tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
         } else if !rows.isEmpty {
-            ConnectionsList(items: rows, onOpen: viewModel.showConnection)
+            ConnectionsList(
+                items: rows,
+                onOpen: { viewModel.showConnection($0) },
+                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onReconnect: showScanner)
             if tab == .expired, viewModel.isCheckingStatus { checking }
         } else if (tab == .disconnected && viewModel.isLoadingHistory)
             || (tab == .expired && viewModel.isCheckingStatus) {
@@ -212,14 +216,13 @@ struct ConnectionsScreen: View {
             funding: viewModel.shownFundingLines,
             fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
-            disconnectRevokesKeys: viewModel.shownDisconnectRevokesKeys,
             isBusy: viewModel.isDisconnecting,
             isCheckingStatus: viewModel.isCheckingStatus,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
-            onDisconnect: {
-                if let connection = item.connection { viewModel.disconnect(connection) }
-            },
+            onDisconnect: viewModel.disconnectShown(askedRevokesKeys:),
+            takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
+            disconnectQuestion: viewModel.disconnectQuestion,
             onReconnect: {
                 scansAfterSheet = true
                 viewModel.hideConnection()
@@ -303,6 +306,9 @@ struct ConnectionsScreen: View {
     // MARK: - Actions
 
     private func showScanner() {
+        // Not while something signs or an approval is up: the scanner would
+        // cover it.
+        guard viewModel.mayScan() else { return }
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in

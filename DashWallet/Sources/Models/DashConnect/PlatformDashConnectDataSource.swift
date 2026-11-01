@@ -2956,8 +2956,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Whether a disconnect of the app turns keys off on Platform rather
     /// than only the local status (see `disconnect`): a one-QR row, or an app
     /// with a grant that can reach Platform.
-    private func disconnectRevokesKeys(appId: String, stores: Stores) -> Bool {
-        rows(in: stores).first { $0.id == appId }?.loginKind == .oneQR || stores.grants.load().contains {
+    /// `row` is the app's row when already read.
+    private func disconnectRevokesKeys(appId: String, stores: Stores, row: DAppConnection? = nil) -> Bool {
+        (row ?? rows(in: stores).first { $0.id == appId })?.loginKind == .oneQR || stores.grants.load().contains {
             $0.appContractId == appId && (!$0.isUnconfirmed || $0.submittedRevision != nil || $0.isPendingV2)
         }
     }
@@ -2975,18 +2976,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let all = stores.grants.load().filter { $0.appContractId == appId && $0.keyDisabled != true }
         let confirmed = all.filter { !$0.isUnconfirmed }
         let grants = confirmed.isEmpty ? all.filter(\.isPendingV2) : confirmed
-        let revokes = disconnectRevokesKeys(appId: appId, stores: stores)
         let identityIds = Set(grants.map(\.identityId))
         guard identityIds.count == 1, let identityId = identityIds.first else {
             return ConnectionDetails(
-                appId: appId, identityId: nil, username: nil, access: nil, disconnectRevokesKeys: revokes)
+                appId: appId, identityId: nil, username: nil, access: nil)
         }
         let context = try? await requireContext(pinnedTo: stores)
         let isActiveIdentity = context?.identityId.toBase58String() == identityId
         var details = ConnectionDetails(
             appId: appId, identityId: identityId, username: isActiveIdentity ? context?.storedUsername : nil,
-            access: ConnectionAccess(grants: grants), connectedAt: grants.map(\.publishedAt).max(),
-            disconnectRevokesKeys: revokes)
+            access: ConnectionAccess(grants: grants), connectedAt: grants.map(\.publishedAt).max())
         // A waiting record's ids may be another key's: funding is read only
         // for confirmed grants.
         if readsFunding, isActiveIdentity, !confirmed.isEmpty, let context {
@@ -3010,6 +3009,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard let stores = await showActiveWalletRows(), scope == stores.scope else { return nil }
         return await details(of: id, stores: stores, readsFunding: true)
+    }
+
+    @MainActor
+    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? {
+        // Read only: the rows are republished elsewhere, not by a question.
+        guard let stores = pinnedActiveStores(), scope == stores.scope,
+              let row = rows(in: stores).first(where: { $0.id == id })
+        else { return nil }
+        return disconnectRevokesKeys(appId: id, stores: stores, row: row)
     }
 
     func connectionExpiries() async -> [String: ConnectionExpiry]? {
