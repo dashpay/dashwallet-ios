@@ -171,13 +171,19 @@ struct ConnectionSheet: View {
                 .foregroundColor(Color.dash.tertiaryText)
             HStack(spacing: 6) {
                 Circle()
-                    .fill(item.status == .active ? Color.dash.green : Color.dash.gray300Alpha90)
+                    .fill(isLive ? Color.dash.green : Color.dash.gray300Alpha90)
                     .frame(width: 8, height: 8)
                 Text(statusText)
                     .dashFont(.callout)
                     .foregroundColor(Color.dash.primaryText)
             }
-            if !item.isStatusChecked, !isCheckingStatus {
+            if item.keysAreOff {
+                Text(NSLocalizedString(
+                    "The keys this wallet recorded for this connection are already turned off on Platform.",
+                    comment: "DashConnect connection sheet"))
+                    .dashFont(.caption1)
+                    .foregroundColor(Color.dash.tertiaryText)
+            } else if !item.isStatusChecked, !isCheckingStatus {
                 Text(NSLocalizedString(
                     "Whether this connection has expired could not be checked.",
                     comment: "DashConnect connection sheet"))
@@ -190,7 +196,7 @@ struct ConnectionSheet: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(6)
-        .background(item.status == .active ? Color.dash.green.opacity(0.05) : Color.dash.gray300Alpha10)
+        .background(isLive ? Color.dash.green.opacity(0.05) : Color.dash.gray300Alpha10)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
@@ -392,8 +398,13 @@ struct ConnectionSheet: View {
                 comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
     }
 
+    /// Active, with keys that may still sign.
+    private var isLive: Bool { item.status == .active && !item.keysAreOff }
+
     private var statusText: String {
         switch item.status {
+        case .active where item.keysAreOff:
+            return NSLocalizedString("Keys turned off", comment: "DashConnect connection status: every recorded key is off")
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
         case .confirming: return NSLocalizedString("Confirming", comment: "DashConnect")
         case .waitingForSecondScan:

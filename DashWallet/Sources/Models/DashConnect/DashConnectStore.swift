@@ -274,8 +274,11 @@ protocol DashConnectHistoryStore {
     /// `nil` when the stored entries cannot be read: unknown, not none.
     func load() -> [DisconnectedConnection]?
     func save(_ entries: [DisconnectedConnection])
-    /// Records `entry`, in place of an earlier one of the same app.
-    func record(_ entry: DisconnectedConnection)
+    /// Records `entry`, in place of an earlier one of the same app; `false`
+    /// when it could not be saved (the stored entries cannot be read, or
+    /// writing failed).
+    @discardableResult
+    func record(_ entry: DisconnectedConnection) -> Bool
     /// Forgets the app: it is connected again.
     func remove(appId: String)
     /// This store fixed to one wallet, as `DashConnectStore.pinned`.
@@ -323,9 +326,10 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
 
     /// An entry this build cannot read of the same app goes too: the app has
     /// one entry, this one.
-    func record(_ entry: DisconnectedConnection) {
-        guard let entries = load() else { return }
-        write(entries.filter { $0.id != entry.id } + [entry], forgetting: [entry.id])
+    @discardableResult
+    func record(_ entry: DisconnectedConnection) -> Bool {
+        guard let entries = load() else { return false }
+        return write(entries.filter { $0.id != entry.id } + [entry], forgetting: [entry.id])
     }
 
     func remove(appId: String) {
@@ -335,8 +339,10 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
 
     /// Writes `entries`, and back the entries this build cannot read, except
     /// those naming an app in `forgetting`.
-    private func write(_ entries: [DisconnectedConnection], forgetting: Set<String>) {
-        guard let storageKey, let stored = readRows() else { return }
+    /// `false` when nothing could be written.
+    @discardableResult
+    private func write(_ entries: [DisconnectedConnection], forgetting: Set<String>) -> Bool {
+        guard let storageKey, let stored = readRows() else { return false }
         do {
             let rows = try entries.map { try JSONSerialization.jsonObject(with: Self.encoder.encode($0)) }
                 + stored.unreadable.filter { row in
@@ -345,11 +351,13 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
                 }
             guard !rows.isEmpty else {
                 defaults.removeObject(forKey: storageKey)
-                return
+                return true
             }
             defaults.set(try JSONSerialization.data(withJSONObject: rows), forKey: storageKey)
+            return true
         } catch {
             Self.logger.error("DashConnect history could not be written: \(error.localizedDescription, privacy: .public)")
+            return false
         }
     }
 

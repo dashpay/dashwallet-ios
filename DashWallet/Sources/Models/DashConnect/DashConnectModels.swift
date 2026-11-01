@@ -219,6 +219,9 @@ struct DashConnectDisconnectResult: Equatable {
     /// They could not be told apart, so none was turned off; the app's own
     /// keys were.
     var profileKeysUnchecked = false
+    /// The app is disconnected, but it could not be saved among the
+    /// disconnected apps.
+    var notRecordedInHistory = false
 }
 
 /// What a connection gives its app, from the grant records of one
@@ -328,6 +331,13 @@ struct KeyFunding: Equatable {
     }
 }
 
+/// The expiries read for one wallet's rows.
+struct ConnectionExpiries: Equatable {
+    /// The wallet the rows read were of (`DAppConnection.scope`).
+    let scope: String?
+    let byApp: [String: ConnectionExpiry]
+}
+
 /// Whether an app's keys are past their expiry on Platform but still on.
 enum ConnectionExpiry: Equatable {
     /// Every key of the app's grants on the active identity is past its
@@ -335,8 +345,9 @@ enum ConnectionExpiry: Equatable {
     /// turns the keys off.
     case expired
     case current
-    /// The identity could not be read, or the view lacks one of the keys:
-    /// reading again may tell.
+    /// Not told: the identity could not be read, the view lacks one of the
+    /// keys, or this phone's clock calls the keys expired while the synced
+    /// Core chain does not show it yet (or SPV gives no chain time).
     case unknown
     /// The app's recorded keys are all off on Platform while its records
     /// say it is connected (turned off elsewhere): reading again tells the

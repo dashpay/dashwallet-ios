@@ -312,7 +312,7 @@ final class DashConnectStoreTests: XCTestCase {
         let key = try XCTUnwrap(scope.scopedKey(prefix: "dashconnect.history.v1"))
         defaults.set(Data("not json".utf8), forKey: key)
         XCTAssertNil(history.load())
-        history.record(historyEntry("app-1"))
+        XCTAssertFalse(history.record(historyEntry("app-1")), "the caller is told nothing was recorded")
         XCTAssertEqual(defaults.data(forKey: key), Data("not json".utf8), "what cannot be read is not written over")
     }
 
