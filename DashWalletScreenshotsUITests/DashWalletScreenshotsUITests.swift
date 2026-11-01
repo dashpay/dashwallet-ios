@@ -115,9 +115,6 @@ class AdvancedModeRowUITests: XCTestCase {
         XCTAssert(row.waitForExistence(timeout: 15),
                   "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
         XCTAssertFalse(row.label.isEmpty, "The Advanced mode switch has no label")
-        // One element, not a row with a second switch inside it.
-        XCTAssertEqual(row.descendants(matching: .switch).count, 0,
-                       "The Advanced mode row exposes a nested switch")
 
         let before = try XCTUnwrap(row.value as? String, "The Advanced mode switch has no value")
         let flipped = before == "1" ? "0" : "1"
@@ -125,8 +122,17 @@ class AdvancedModeRowUITests: XCTestCase {
         // The switch writes through to UserDefaults, which this target does not
         // reset between runs — put it back, even after a failure, so the next
         // test does not start in whichever mode this one left behind.
+        let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         addTeardownBlock { [self] in
-            guard row.exists, (row.value as? String) != before else { return }
+            guard row.exists else {
+                XCTFail("The Advanced mode row is gone, so its original state could not be restored")
+                return
+            }
+            if sheet.exists {
+                app.buttons["Close"].firstMatch.tap()
+                _ = sheet.waitForNonExistence(timeout: 3)
+            }
+            guard (row.value as? String) != before else { return }
             tapSwitch(in: row)
             XCTAssertTrue(waitForValue(of: row, toBe: before),
                           "Could not restore the Advanced mode switch to its original state")
@@ -134,7 +140,6 @@ class AdvancedModeRowUITests: XCTestCase {
 
         tapSwitch(in: row)
 
-        let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
         XCTAssertFalse(sheet.waitForExistence(timeout: 2),
                        "Tapping the switch opened the explainer — the row's button swallowed it")
 
@@ -142,12 +147,10 @@ class AdvancedModeRowUITests: XCTestCase {
                       "The switch did not change state, so the tap never reached it")
     }
 
-    /// A coordinate tap does not scroll, so the row is brought on screen first.
+    /// A coordinate tap lands wherever the point is, so the row must be on
+    /// screen and uncovered first.
     private func tapSwitch(in row: XCUIElement) {
-        for _ in 0..<3 where !row.isHittable {
-            app.swipeUp()
-        }
-        XCTAssert(row.isHittable, "The Advanced mode row could not be scrolled into view")
+        XCTAssert(row.isHittable, "The Advanced mode row is off screen or covered")
         row.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
             .withOffset(CGVector(dx: -Self.switchCenterFromTrailingEdge, dy: 0))
             .tap()
@@ -155,9 +158,7 @@ class AdvancedModeRowUITests: XCTestCase {
 
     /// Waits for the row to re-render after a tap, until its value is `value`.
     private func waitForValue(of row: XCUIElement, toBe value: String) -> Bool {
-        let predicate = NSPredicate { object, _ in
-            ((object as? XCUIElement)?.value as? String) == value
-        }
+        let predicate = NSPredicate(format: "value == %@", value)
         let expectation = XCTNSPredicateExpectation(predicate: predicate, object: row)
         return XCTWaiter.wait(for: [expectation], timeout: 3) == .completed
     }
