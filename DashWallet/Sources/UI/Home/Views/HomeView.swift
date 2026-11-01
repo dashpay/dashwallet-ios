@@ -1170,6 +1170,8 @@ private struct TxDetailRoute: Identifiable {
 }
 
 struct TransactionDetailsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
     /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
     @State private var groupedTransaction: Transaction? = nil
     @AccessibilityFocusState private var focusedGroupRow: String?
@@ -1186,6 +1188,15 @@ struct TransactionDetailsSheet: View {
             TxDetailsDestination(from: item)
         }
         .background(Color.dash.primaryBackground)
+        // Reaches the SwiftUI elements, the header's Back and Close among them. A grouped
+        // transaction's UIKit detail answers escape itself through `onAccessibilityEscape`.
+        .accessibilityAction(.escape) {
+            if groupedTransaction != nil {
+                closeGroupedTransaction()
+            } else {
+                dismiss()
+            }
+        }
     }
     
     @ViewBuilder
@@ -1226,6 +1237,9 @@ struct TransactionDetailsSheet: View {
                 navigateBack: .constant(false),
                 onAccessibilityEscape: closeGroupedTransaction
             )
+            // The table runs under the home indicator and insets its own content, so the
+            // detail's colour reaches the bottom edge as the group's does.
+            .ignoresSafeArea(.container, edges: .bottom)
             .id(transaction.txHashHexString)
         }
     }
