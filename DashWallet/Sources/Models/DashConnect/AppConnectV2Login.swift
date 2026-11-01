@@ -136,12 +136,15 @@ extension AppConnect {
         /// The keys of `plan`. `receivesMessages`: the response carries an
         /// encryption key, which a plan that asks for one may still leave out.
         init(plan: GrantPlan, receivesMessages: Bool) {
-            keys = plan.auth.map {
+            self.init(keys: Self.keys(of: plan), receivesMessages: receivesMessages)
+        }
+
+        /// The auth keys of `plan`, with their terms.
+        private static func keys(of plan: GrantPlan) -> [Key] {
+            plan.auth.map {
                 Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
                     expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
             }
-            self.receivesMessages = receivesMessages
-            isSessionKeyLogin = false
         }
 
         /// What a v2 grant record notes its approval gave, once its response
@@ -153,7 +156,7 @@ extension AppConnect {
         static func noted(_ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool) -> GrantedAccess {
             if let recorded, recorded.isUnreadable { return recorded }
             return GrantedAccess(
-                keys: recorded?.keys ?? GrantedAccess(plan: plan, receivesMessages: sendsEncryptionKey).keys,
+                keys: recorded?.keys ?? keys(of: plan),
                 receivesMessages: sendsEncryptionKey)
         }
 

@@ -1790,7 +1790,9 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
     func testThePageListsEveryRow() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("active", .active), Self.row("second-scan", .approved)])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        XCTAssertFalse(viewModel.hasReadRows, "not known yet: no empty page")
         await waitUntil { viewModel.connections.count == 2 }
+        XCTAssertTrue(viewModel.hasReadRows)
 
         XCTAssertEqual(viewModel.rows.map(\.id), ["active", "second-scan"])
         XCTAssertEqual(viewModel.rows.last?.status, .waitingForSecondScan)

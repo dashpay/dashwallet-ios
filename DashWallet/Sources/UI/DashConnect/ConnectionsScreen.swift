@@ -108,6 +108,13 @@ struct ConnectionsScreen: View {
         if viewModel.featureUnavailable {
             title
             ConnectionsUnavailableState()
+        } else if !viewModel.hasReadRows {
+            // No empty state that the rows replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
         } else if viewModel.connections.isEmpty {
             title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)

@@ -415,7 +415,7 @@ struct ConnectionSheet: View {
         }
     }
 
-    /// Active, with keys that may still sign.
+    /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
     private var statusText: String {

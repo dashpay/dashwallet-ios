@@ -70,6 +70,9 @@ struct ConnectionSheetItem: Identifiable, Equatable {
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var connections: [DAppConnection] = []
+    /// The rows were delivered once: until then nothing is known to be
+    /// connected or not.
+    @Published private(set) var hasReadRows = false
     /// What the last action from the connection sheet ended in, shown on
     /// the sheet: an alert of the page cannot appear over it.
     @Published var connectionSheetMessage: ConnectionsScreenMessage?
@@ -130,8 +133,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// When the shown connection was made.
     var shownConnectedAt: Date? {
-        guard shownConnection != nil else { return nil }
-        return shownDetails?.connectedAt
+        shownDetails?.connectedAt
     }
 
     /// Counts the reads of the shown sheet's details, and its closing: only
@@ -222,6 +224,7 @@ final class ConnectionsViewModel: ObservableObject {
             .sink { [weak self] rows in
                 guard let self else { return }
                 self.connections = rows.sorted(by: { $0.updatedAt > $1.updatedAt })
+                self.hasReadRows = true
                 self.updateShownConnection()
             }
             .store(in: &cancellables)
@@ -309,10 +312,7 @@ final class ConnectionsViewModel: ObservableObject {
             "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
 
     private static let staleQuestionMessage = ConnectionsScreenMessage(
-        kind: .error,
-        text: NSLocalizedString(
-            "What disconnecting does changed since you were asked. Check it and try again.",
-            comment: "DashConnect: a disconnect confirmed with text that no longer holds"))
+        kind: .error, text: DashConnectPlatformError.disconnectEffectChanged.localizedDescription)
 
     private static let noLongerDisconnectableMessage = ConnectionsScreenMessage(
         kind: .error,
@@ -351,12 +351,10 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Whether the sheet's details have to be read again for `item` after
-    /// `previous`: another app, a row that changed (its status or kind), or
-    /// a connection that is no longer one.
+    /// `previous`: another app, or a row that changed (its status or kind).
     private static func readsAnew(_ item: ConnectionSheetItem, from previous: ConnectionSheetItem) -> Bool {
         item.id != previous.id || item.connection?.status != previous.connection?.status
             || item.connection?.loginKind != previous.connection?.loginKind
-            || (item.connection == nil) != (previous.connection == nil)
     }
 
     /// The connection's sheet is gone from the screen.
@@ -753,7 +751,10 @@ final class ConnectionsViewModel: ObservableObject {
                     self.readShownDetails(shown)
                 }
                 if case DashConnectPlatformError.disconnectEffectChanged = error {
-                    self.show(Self.staleQuestionMessage, from: connection)
+                    // Its row may be gone meanwhile: then there is nothing to
+                    // ask again about.
+                    let isStillARow = self.connections.contains { $0.id == connection.id && $0.scope == connection.scope }
+                    self.show(isStillARow ? Self.staleQuestionMessage : Self.connectionChangedMessage, from: connection)
                     return
                 }
                 self.show(ConnectionsScreenMessage(

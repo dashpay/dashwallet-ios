@@ -2926,26 +2926,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
 
-    /// Whether a disconnect of the app turns keys off on Platform rather
-    /// than only the local status (see `disconnect`): a one-QR row, or an app
-    /// with a grant that can reach Platform.
-    /// `row` is the app's row when already read.
-    private func disconnectRevokesKeys(appId: String, stores: Stores, row: DAppConnection? = nil) -> Bool {
-        (row ?? rows(in: stores).first { $0.id == appId })?.loginKind == .oneQR || stores.grants.load().contains {
-            $0.appContractId == appId && (!$0.isUnconfirmed || $0.submittedRevision != nil || $0.isPendingV2)
-        }
-    }
-
     /// What a disconnect of the app does, as far as the local records tell:
     /// `disconnectsAsOneQR` with what only the identity shows unknown. A
     /// one-QR row makes it one-QR whatever the identity shows. A two-QR row
     /// with a grant that can reach Platform depends on the identity: which
     /// of its records are the active identity's, and which keys are live.
-    /// Without one, nothing reaches Platform.
-    private func disconnectEffect(appId: String, stores: Stores, row: DAppConnection? = nil) -> DashConnectDisconnectEffect {
-        let row = row ?? rows(in: stores).first { $0.id == appId }
-        if row?.loginKind == .oneQR { return .revokesKeys }
-        return disconnectRevokesKeys(appId: appId, stores: stores, row: row) ? .dependsOnPlatform : .localOnly
+    /// Without one, nothing reaches Platform. A grant that can reach it is a
+    /// confirmed one, or a registration whose outcome is not known yet, on
+    /// any identity of the wallet.
+    private func disconnectEffect(appId: String, stores: Stores, row: DAppConnection) -> DashConnectDisconnectEffect {
+        if row.loginKind == .oneQR { return .revokesKeys }
+        let reachesPlatform = stores.grants.load().contains {
+            $0.appContractId == appId && (!$0.isUnconfirmed || $0.submittedRevision != nil || $0.isPendingV2)
+        }
+        return reachesPlatform ? .dependsOnPlatform : .localOnly
     }
 
     /// The app's connection as its confirmed grants that a disconnect has not
@@ -3018,9 +3012,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.disconnectEffectChanged
         }
         let rowIsOneQR = row.loginKind == .oneQR
-        // What can reach Platform (`disconnectRevokesKeys`): a confirmed
-        // grant of the app, and a registration of it whose outcome is not
-        // known yet. Which of the two disconnects runs is settled by the
+        // What can reach Platform (`disconnectEffect`): a confirmed grant of
+        // the app, and a registration of it whose outcome is not known yet.
+        // Which of the two disconnects runs is settled by the
         // revocation, from a fresh view of the identity, not by the row
         // alone. Records of every identity of the wallet count: the row is
         // shared, and one held by another identity is reported by the
