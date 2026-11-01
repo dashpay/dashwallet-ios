@@ -147,33 +147,18 @@ struct ConnectionsScreen: View {
         let tab = viewModel.selectedTab
         let rows = viewModel.rows(for: tab)
         if tab == .disconnected, viewModel.historyIsUnreadable {
-            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
         } else if !rows.isEmpty {
             ConnectionsList(
                 items: rows,
                 onOpen: { viewModel.showConnection($0) },
                 onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
                 onReconnect: showScanner)
-            if tab == .expired, viewModel.isCheckingStatus {
-                checking
-            } else if tab == .expired, !viewModel.expiriesAreKnown {
-                // Some apps could not be checked: more may have expired.
-                expiryCheckFailed
-            }
-        } else if (tab == .disconnected && viewModel.isLoadingHistory)
-            || (tab == .expired && viewModel.isCheckingStatus) {
+        } else if tab == .disconnected && viewModel.isLoadingHistory {
             checking
-        } else if tab == .expired, !viewModel.expiriesAreKnown {
-            expiryCheckFailed
         } else {
-            tabNote(Self.emptyTabText(tab), retries: false)
+            tabNote(Self.emptyTabText(tab))
         }
-    }
-
-    private var expiryCheckFailed: some View {
-        tabNote(
-            NSLocalizedString("Which connections expired could not be checked.", comment: "DashConnect"),
-            retries: true)
     }
 
     private var checking: some View {
@@ -183,19 +168,12 @@ struct ConnectionsScreen: View {
             .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
     }
 
-    private func tabNote(_ text: String, retries: Bool) -> some View {
-        VStack(spacing: 12) {
-            Text(text)
-                .dashFont(.subhead)
-                .foregroundColor(Color.dash.secondaryText)
-                .multilineTextAlignment(.center)
-            if retries {
-                DashUIKit.DashButton(
-                    text: NSLocalizedString("Retry", comment: "DashConnect"),
-                    size: .small, style: .tintedBlue, action: viewModel.refreshConnectionStatus)
-            }
-        }
-        .frame(maxWidth: .infinity)
+    private func tabNote(_ text: String) -> some View {
+        Text(text)
+            .dashFont(.subhead)
+            .foregroundColor(Color.dash.secondaryText)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
         .padding(.top, 20)
     }
 
@@ -203,7 +181,6 @@ struct ConnectionsScreen: View {
         switch tab {
         case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
         case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
-        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
         }
     }
 
@@ -211,7 +188,6 @@ struct ConnectionsScreen: View {
         switch tab {
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
-        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         }
     }
 
@@ -226,7 +202,6 @@ struct ConnectionsScreen: View {
             fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
-            isCheckingStatus: viewModel.isCheckingStatus,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
             onDisconnect: viewModel.disconnectShown(askedRevokesKeys:),

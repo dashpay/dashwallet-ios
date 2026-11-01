@@ -6829,20 +6829,11 @@
 /* DashConnect connection sheet */
 "Connection disconnected" = "Connection disconnected";
 
-/* DashConnect connection sheet */
-"Connection expired" = "Connection expired";
-
-/* DashConnect connection sheet */
-"Connection will expire" = "Connection will expire";
-
 /* DashConnect */
 "Disconnected apps could not be read." = "Disconnected apps could not be read.";
 
 /* Accessibility: a section that is open */
 "Expanded" = "Expanded";
-
-/* DashConnect connection status */
-"Expired" = "Expired";
 
 /* DashConnect connection sheet */
 "Identity funding limits" = "Identity funding limits";
@@ -6858,9 +6849,6 @@
 
 /* DashConnect: an empty tab */
 "No disconnected connections" = "No disconnected connections";
-
-/* DashConnect: an empty tab */
-"No expired connections" = "No expired connections";
 
 /* DashConnect connection sheet: a key with no spending limit */
 "No limit" = "No limit";
@@ -6895,23 +6883,14 @@
 /* DashConnect connection sheet */
 "What are identity funding limits?" = "What are identity funding limits?";
 
-/* DashConnect connection sheet */
-"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
-
-/* DashConnect */
-"Which connections expired could not be checked." = "Which connections expired could not be checked.";
-
 /* DashConnect: what identity funding limits are */
 "Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
 
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
 
-/* DashConnect connection status: every recorded key is off */
-"Keys turned off" = "Keys turned off";
-
-/* DashConnect connection sheet */
-"The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
 
 /* DashConnect: after a disconnect that could not be kept in the Disconnected list */
 "Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";

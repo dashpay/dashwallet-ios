@@ -1455,58 +1455,6 @@ extension AppConnectV2LoginTests {
             "an encryption key bound to another contract")
     }
 
-    func testAnAppIsExpiredOnlyWhenEveryKeyStillOnIsPastItsExpiry() {
-        let now = Int64(Self.createdAt)
-        func onIdentity(_ keyId: UInt32, expiresAt: Int64?, disabled: Bool = false) -> ManagedIdentity.IdentityPublicKeyInfo {
-            ManagedIdentity.IdentityPublicKeyInfo(
-                keyId: Int32(bitPattern: keyId), purpose: .authentication, securityLevel: .critical,
-                keyType: .ecdsaHash160, readOnly: false, disabledAt: disabled ? 1 : nil,
-                data: Data(repeating: UInt8(keyId), count: 20), totalBudget: nil, expiresAt: expiresAt)
-        }
-        let past = now - 2 * Int64(Self.dayMilliseconds)
-        let future = now + 2 * Int64(Self.dayMilliseconds)
-        let grants = [
-            Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "expired"),
-            Self.grant(sessionKeyId: 5, additionalKeyIds: [6], appId: "partly"),
-            Self.grant(sessionKeyId: 7, appId: "missing"),
-            Self.grant(sessionKeyId: 8, appId: "off"),
-            Self.grant(sessionKeyId: 9, appId: "forever"),
-        ]
-        let keys = [
-            onIdentity(3, expiresAt: past), onIdentity(4, expiresAt: past),
-            onIdentity(5, expiresAt: past), onIdentity(6, expiresAt: future),
-            onIdentity(8, expiresAt: past, disabled: true),
-            onIdentity(9, expiresAt: nil),
-        ]
-        let expiries = AppConnect.connectionExpiries(
-            grants: grants, currentIdentityPublicKeys: keys, nowMilliseconds: now,
-            chainTimeMilliseconds: now)
-        XCTAssertEqual(expiries["expired"], .expired)
-        XCTAssertEqual(expiries["partly"], .current, "one of its keys still works")
-        XCTAssertEqual(expiries["missing"], .unknown, "the view lacks its key")
-        XCTAssertEqual(expiries["off"], .keysOff, "its keys are off while its record says connected")
-        XCTAssertEqual(expiries["forever"], .current, "a key with no expiry never expires")
-    }
-
-    func testAKeyIsExpiredOnlyOnceTheChainIsPastItToo() {
-        let now = Int64(Self.createdAt)
-        let key = ManagedIdentity.IdentityPublicKeyInfo(
-            keyId: 3, purpose: .authentication, securityLevel: .critical, keyType: .ecdsaHash160, readOnly: false,
-            disabledAt: nil, data: Data(repeating: 3, count: 20), totalBudget: nil,
-            expiresAt: now - 3 * 3_600_000)
-        let grants = [Self.grant(sessionKeyId: 3, appId: "app")]
-        func expiry(chainTime: Int64?) -> ConnectionExpiry? {
-            AppConnect.connectionExpiries(
-                grants: grants, currentIdentityPublicKeys: [key], nowMilliseconds: now,
-                chainTimeMilliseconds: chainTime)["app"]
-        }
-        XCTAssertEqual(expiry(chainTime: now - 60_000), .expired, "the chain is past the expiry too")
-        XCTAssertEqual(
-            expiry(chainTime: now - 4 * 3_600_000), .unknown,
-            "the phone's clock may run ahead, or the chain is behind: not told until the chain shows it")
-        XCTAssertEqual(expiry(chainTime: nil), .unknown, "without the chain's time it is not told")
-    }
-
     func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {
         var grant = Self.grant(sessionKeyId: 3)
         grant.grantedAccess = AppConnect.GrantedAccess(

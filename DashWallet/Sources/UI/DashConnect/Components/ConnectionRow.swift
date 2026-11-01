@@ -71,7 +71,7 @@ struct ConnectionRow: View {
                     format: NSLocalizedString(
                         "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
-        case .disconnected, .expired:
+        case .disconnected:
             DashUIKit.DashButton(
                 text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
                 size: .small, style: .tintedBlue, action: onReconnect)

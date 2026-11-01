@@ -48,7 +48,6 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
 enum ConnectionsTab: CaseIterable {
     case active
     case disconnected
-    case expired
 }
 
 /// A connection as its sheet shows it: a row of the page, or an app
@@ -60,28 +59,21 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case confirming
         /// A two-QR login waiting for the app's second code.
         case waitingForSecondScan
-        case expired
         case disconnected
 
         /// A connection in this status can be disconnected: its keys may
         /// still be on. A two-QR row waiting for its second code only goes
         /// back to that state, and a disconnected app has nothing left.
-        var offersDisconnect: Bool { self == .active || self == .confirming || self == .expired }
+        var offersDisconnect: Bool { self == .active || self == .confirming }
     }
 
     let id: String
     let name: String
     let url: String
     let status: Status
-    /// Whether Platform could be read for the expiry; `false` shows the
-    /// status as not checked.
-    let isStatusChecked: Bool
     /// The page's row, which a disconnect acts on; `nil` for a disconnected app.
     let connection: DAppConnection?
     let disconnectedAt: Date?
-    /// Platform shows every key the records name already off, while the
-    /// records say the app is connected (turned off elsewhere).
-    var keysAreOff = false
 }
 
 @MainActor
@@ -92,25 +84,13 @@ final class ConnectionsViewModel: ObservableObject {
     /// could not be read (`historyIsUnreadable`).
     @Published private(set) var history: [DisconnectedConnection]?
     @Published private(set) var historyIsUnreadable = false
-    /// Platform is being read for the connected apps' expiries.
-    @Published private(set) var isCheckingStatus = false
     /// What the last action from the connection sheet ended in, shown on
     /// the sheet: an alert of the page cannot appear over it.
     @Published var connectionSheetMessage: ConnectionsScreenMessage?
-    /// The history and expiry read running now; one asked for meanwhile
+    /// The history read running now; one asked for meanwhile
     /// runs once it ends (`refreshesStatusAgain`).
     private var statusRead: Task<Void, Never>?
     private var refreshesStatusAgain = false
-    /// Each connected app's expiry as Platform shows it; `nil` until read, or
-    /// when the identity could not be read. A row is listed as expired only
-    /// once read so.
-    @Published private(set) var expiries: [String: ConnectionExpiry]?
-    /// Each app's row as it was when `expiries` was read: a verdict is
-    /// carried over a later read only for the same row (the same wallet,
-    /// and no renewal or other change since).
-    private var expiriesRows: [String: DAppConnection] = [:]
-    /// The wallet `expiries` were read for, as the data source says.
-    private var expiriesScope: String?
     /// The connection whose sheet is up.
     @Published var shownConnection: ConnectionSheetItem?
     /// What that sheet shows beyond the row; `nil` while it is read, or when
@@ -188,7 +168,7 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isProcessingStateTransition = false
     /// A disconnect in progress, from the tap until it has ended and the
     /// local history shows its result, whether or not it signs an identity
-    /// update; the expiry read after it is not part of it. Its own flag, not
+    /// update. Its own flag, not
     /// `isProcessingStateTransition`: a `dash-st:` task clears that one when
     /// it finishes, which would lift the guard while a disconnect is still out.
     @Published private(set) var isDisconnecting = false
@@ -256,19 +236,12 @@ final class ConnectionsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] rows in
                 guard let self else { return }
-                // Another wallet's rows: the expiries read are the other
-                // wallet's; they are read again.
-                if self.expiries != nil, let scope = rows.first?.scope, scope != self.expiriesScope {
-                    self.expiries = nil
-                    self.expiriesRows = [:]
-                    self.expiriesScope = nil
-                }
                 self.connections = rows.sorted(by: { $0.updatedAt > $1.updatedAt })
                 self.updateShownConnection()
             }
             .store(in: &cancellables)
         // The rows change when an app is approved, confirmed or removed,
-        // which is when the expiries and the history can change too. The
+        // which is when the history can change too. The
         // screen reads them when it appears; the current value the
         // publisher replays is skipped.
         self.dataSource.connections
@@ -281,14 +254,11 @@ final class ConnectionsViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// The rows of `tab`. A row moves to Expired only once Platform showed
-    /// its keys expired; a disconnected app is listed while it is not a row.
+    /// The rows of `tab`. A disconnected app is listed while it is not a row.
     func rows(for tab: ConnectionsTab) -> [ConnectionSheetItem] {
         switch tab {
         case .active:
-            return connections.filter { !isExpired($0) }.map { item(for: $0) }
-        case .expired:
-            return connections.filter(isExpired).map { item(for: $0) }
+            return connections.map { item(for: $0) }
         case .disconnected:
             let connected = Set(connections.map(\.id))
             return (history ?? []).filter { !connected.contains($0.id) }.map(item(for:))
@@ -300,68 +270,35 @@ final class ConnectionsViewModel: ObservableObject {
         !connections.isEmpty || !(history ?? []).isEmpty || historyIsUnreadable
     }
 
-    /// Platform's expiries were read, and none of a listed active app is
-    /// unknown: reading again would not tell more. An app whose keys are
-    /// all off (`.keysOff`) reads the same every time.
-    var expiriesAreKnown: Bool {
-        guard let expiries else { return false }
-        return !connections.contains { $0.status == .active && (expiries[$0.id] ?? .unknown) == .unknown }
-    }
-
     /// The disconnected apps are being read for the first time.
     var isLoadingHistory: Bool { history == nil && !historyIsUnreadable && !featureUnavailable }
-
-    /// An active row whose keys Platform showed expired. A row confirming
-    /// a renewal stays under Active whatever its earlier keys show.
-    private func isExpired(_ connection: DAppConnection) -> Bool {
-        connection.status == .active && expiries?[connection.id] == .expired
-    }
 
     private func item(for connection: DAppConnection) -> ConnectionSheetItem {
         let status: ConnectionSheetItem.Status
         switch connection.status {
-        case .active: status = isExpired(connection) ? .expired : .active
+        case .active: status = .active
         case .confirming: status = .confirming
         case .approved: status = .waitingForSecondScan
         }
-        // Every active row has an answer once read; an app with nothing to
-        // judge on this identity (`.notJudged`) is not a failed check.
-        let checked = expiries?[connection.id].map { $0 != .unknown } ?? false
         return ConnectionSheetItem(
             id: connection.id, name: connection.name, url: connection.url, status: status,
-            isStatusChecked: connection.status != .active || checked, connection: connection, disconnectedAt: nil,
-            keysAreOff: connection.status == .active && expiries?[connection.id] == .keysOff)
+            connection: connection, disconnectedAt: nil)
     }
 
     private func item(for entry: DisconnectedConnection) -> ConnectionSheetItem {
         ConnectionSheetItem(
-            id: entry.id, name: entry.name, url: entry.url, status: .disconnected, isStatusChecked: true,
+            id: entry.id, name: entry.name, url: entry.url, status: .disconnected,
             connection: nil, disconnectedAt: entry.disconnectedAt)
     }
 
-    /// A read that could not tell an app's expiry keeps an earlier read's
-    /// `.expired`: an app shown as expired stays listed while the check is
-    /// incomplete. An earlier `.current` is not kept, since time may have
-    /// passed its keys' expiry since. (A read that failed as a whole is not
-    /// applied.)
-    private static func keepingKnownExpiries(
-        _ read: [String: ConnectionExpiry], over earlier: [String: ConnectionExpiry]?
-    ) -> [String: ConnectionExpiry] {
-        read.reduce(into: [:]) { result, entry in
-            result[entry.key] = entry.value == .unknown && earlier?[entry.key] == .expired ? .expired : entry.value
-        }
-    }
-
-    /// Reads the disconnected apps and the connected apps' expiries again.
+    /// Reads the disconnected apps again.
     func refreshConnectionStatus() {
         guard !featureUnavailable else { return }
         Task { [weak self] in await self?.readConnectionStatus() }
     }
 
-    /// One read at a time: the expiry read loads the identity from Platform
-    /// in turn with the operations that sign, so a burst of row changes
-    /// makes one more read, not one each. Returns once a read that started
-    /// after this call has ended.
+    /// One read at a time: a burst of row changes makes one more read, not
+    /// one each. Returns once a read that started after this call has ended.
     private func readConnectionStatus() async {
         if let running = statusRead {
             refreshesStatusAgain = true
@@ -377,33 +314,13 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     private func runStatusReads() async {
-        isCheckingStatus = true
         repeat {
             refreshesStatusAgain = false
-            // The history is local: it shows without waiting on Platform.
-            // The rows when the read starts: what an earlier read told is
-            // kept only for a row that has not changed since.
-            let readRows = Dictionary(connections.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-            async let expiries = dataSource.connectionExpiries()
             let history = await dataSource.disconnectedConnections()
             self.history = history
             historyIsUnreadable = history == nil
             updateShownConnection()
-            let read = await expiries
-            // A read of another wallet than the rows shown now (it switched
-            // meanwhile) is not applied: the next pass reads this one's.
-            if let read, connections.first.map({ $0.scope == read.scope }) ?? true {
-                // A row's scope is part of it: another wallet's row is not
-                // the same row.
-                self.expiries = Self.keepingKnownExpiries(
-                    read.byApp,
-                    over: self.expiries?.filter { readRows[$0.key] != nil && readRows[$0.key] == expiriesRows[$0.key] })
-                expiriesRows = readRows
-                expiriesScope = read.scope
-            }
-            updateShownConnection()
         } while refreshesStatusAgain
-        isCheckingStatus = false
         statusRead = nil
     }
 
@@ -523,7 +440,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// Whether the sheet's details have to be read again for `item` after
     /// `previous`: another app, a row that changed (its status or kind), or
-    /// a connection that is no longer one. Not for the expiry check alone.
+    /// a connection that is no longer one.
     private static func readsAnew(_ item: ConnectionSheetItem, from previous: ConnectionSheetItem) -> Bool {
         item.id != previous.id || item.connection?.status != previous.connection?.status
             || item.connection?.loginKind != previous.connection?.loginKind
@@ -580,7 +497,7 @@ final class ConnectionsViewModel: ObservableObject {
             guard current != shown else { return }
             shownConnection = current
             // What the sheet reads changes with the app, its row, or whether
-            // it is still connected, not with the expiry check.
+            // it is still connected.
             if Self.readsAnew(current, from: shown) {
                 shownDetails = nil
                 shownDetailsFailed = false
@@ -931,12 +848,11 @@ final class ConnectionsViewModel: ObservableObject {
             }
             // The history is local: read before the disconnect ends, so the
             // sheet shows the app disconnected rather than closing as its
-            // row goes. The expiries, read from Platform, follow after.
+            // row goes.
             let history = await self.dataSource.disconnectedConnections()
             self.history = history
             self.historyIsUnreadable = history == nil
             self.isDisconnecting = false
-            // The rows changed, which reads the expiries again.
             self.updateShownConnection()
             // What the disconnect did with the DashPay profile keys no
             // connection accounts for; said, since they may have been

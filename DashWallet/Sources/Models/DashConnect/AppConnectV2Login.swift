@@ -1133,42 +1133,6 @@ extension AppConnect {
         return UInt64(bitPattern: expiresAt) > UInt64(earliest)
     }
 
-    /// For each app among `grants`, whether every auth key they name that
-    /// is still on is past its expiry (`.expired`: the app can no longer sign,
-    /// and a disconnect turns the keys off), or not. A key the view lacks
-    /// leaves the app `.unknown`; keys that are all off make it `.keysOff`:
-    /// the records say the app is connected, the identity says it is not.
-    ///
-    /// Platform rejects an expired key by its block time, which this phone
-    /// does not know. A key counts as expired only once both this phone's
-    /// clock and the time of the last Core block it has synced
-    /// (`chainTimeMilliseconds`) are past its expiry: a phone clock running
-    /// ahead alone does not make a working key look expired. Until the chain
-    /// shows it, or without a chain time, an app the phone's clock calls
-    /// expired is `.unknown`.
-    static func connectionExpiries(
-        grants: [AppConnectGrant],
-        currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
-        nowMilliseconds: Int64,
-        chainTimeMilliseconds: Int64?
-    ) -> [String: ConnectionExpiry] {
-        Dictionary(grouping: grants, by: \.appContractId).mapValues { appGrants in
-            let ids = Set(appGrants.flatMap(\.keyIds))
-            let named = keys.filter { ids.contains(UInt32(bitPattern: $0.keyId)) }
-            guard Set(named.map { UInt32(bitPattern: $0.keyId) }) == ids else { return .unknown }
-            let live = named.filter { $0.disabledAt == nil }
-            guard !live.isEmpty else { return .keysOff }
-            let expiries = live.compactMap(\.expiresAt)
-            guard expiries.count == live.count,
-                  expiries.allSatisfy({ !isUnexpired($0, nowMilliseconds: nowMilliseconds) })
-            else { return .current }
-            guard let chainTimeMilliseconds else { return .unknown }
-            // The phone says expired; the chain may not show it yet.
-            return expiries.allSatisfy { UInt64(bitPattern: $0) <= UInt64(max(0, chainTimeMilliseconds)) }
-                ? .expired : .unknown
-        }
-    }
-
     /// The unattributed profile keys the wallet's store shows as live and
     /// not yet expired.
     static func storedSharedProfileKeyIds(

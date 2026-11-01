@@ -331,33 +331,6 @@ struct KeyFunding: Equatable {
     }
 }
 
-/// The expiries read for one wallet's rows.
-struct ConnectionExpiries: Equatable {
-    /// The wallet the rows read were of (`DAppConnection.scope`).
-    let scope: String?
-    let byApp: [String: ConnectionExpiry]
-}
-
-/// Whether an app's keys are past their expiry on Platform but still on.
-enum ConnectionExpiry: Equatable {
-    /// Every key of the app's grants on the active identity is past its
-    /// expiry and still enabled: it can no longer sign, and a disconnect
-    /// turns the keys off.
-    case expired
-    case current
-    /// Not told: the identity could not be read, the view lacks one of the
-    /// keys, or this phone's clock calls the keys expired while the synced
-    /// Core chain does not show it yet (or SPV gives no chain time).
-    case unknown
-    /// The app's recorded keys are all off on Platform while its records
-    /// say it is connected (turned off elsewhere): reading again tells the
-    /// same.
-    case keysOff
-    /// The app has no live grant on the active identity: there is nothing
-    /// of this identity's to judge.
-    case notJudged
-}
-
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String
