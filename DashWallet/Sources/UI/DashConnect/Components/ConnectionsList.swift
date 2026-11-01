@@ -24,11 +24,15 @@ import SwiftUI
 struct ConnectionsList: View {
     let items: [ConnectionSheetItem]
     let onOpen: (ConnectionSheetItem) -> Void
+    let onDisconnect: (ConnectionSheetItem) -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
         VStack(spacing: 2) {
             ForEach(items) { item in
-                ConnectionRow(item: item, onOpen: { onOpen(item) })
+                ConnectionRow(
+                    item: item, onOpen: { onOpen(item) },
+                    onDisconnect: { onDisconnect(item) }, onReconnect: onReconnect)
             }
         }
         .modifier(MenuViewModifier())

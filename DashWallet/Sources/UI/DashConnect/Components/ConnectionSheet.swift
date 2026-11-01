@@ -38,16 +38,20 @@ struct ConnectionSheet: View {
     let fundingFailed: Bool
     /// When the connection was made.
     let connectedAt: Date?
-    /// A disconnect turns the app's keys off on Platform; otherwise it only
-    /// turns the connection off on this device.
-    let disconnectRevokesKeys: Bool
     let isBusy: Bool
     /// Platform is being read for the expiry.
     let isCheckingStatus: Bool
     /// What the last action from this sheet ended in.
     let message: ConnectionsScreenMessage?
     let onClose: () -> Void
-    let onDisconnect: () -> Void
+    /// Confirmed, with what the question said a disconnect does.
+    let onDisconnect: (Bool) -> Void
+    /// The question a row's Disconnect opened the sheet for, read when it
+    /// is asked: what a disconnect does. `nil` when there is none to ask, or
+    /// when it cannot ask (the view model then says why).
+    let takeDisconnectQuestion: () -> Bool?
+    /// The question of the sheet's own Disconnect, read when it is asked.
+    let disconnectQuestion: () -> Bool?
     let onReconnect: () -> Void
     let onMockScan: () -> Void
     let onShowFundingLimitsInfo: () -> Void
@@ -55,6 +59,8 @@ struct ConnectionSheet: View {
     @State private var showsGranted = false
     @State private var showsWithheld = false
     @State private var isConfirmingDisconnect = false
+    /// What the open question says a disconnect does; kept while it closes.
+    @State private var askedRevokesKeys: Bool?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -109,6 +115,32 @@ struct ConnectionSheet: View {
                 .padding(.bottom, 20)
         }
         .background(Color.dash.secondaryBackground)
+        // On the whole sheet: a status change while it asks does not take
+        // the question with it; confirming checks what holds then.
+        .confirmationDialog(
+            String(
+                format: NSLocalizedString(
+                    "Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
+                item.name),
+            isPresented: $isConfirmingDisconnect,
+            titleVisibility: .visible,
+            presenting: askedRevokesKeys
+        ) { asked in
+            Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive) {
+                onDisconnect(asked)
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+        } message: { asked in
+            Text(Self.disconnectConsequence(revokesKeys: asked))
+        }
+        // After the sheet's own transition: a dialog asked for while it
+        // slides in may not show.
+        .task {
+            do { try await Task.sleep(nanoseconds: 450_000_000) } catch { return }
+            // The user may have asked from the sheet's own button meanwhile.
+            guard !isConfirmingDisconnect, let revokesKeys = takeDisconnectQuestion() else { return }
+            ask(revokesKeys: revokesKeys)
+        }
     }
 
     // MARK: - Sections
@@ -289,53 +321,75 @@ struct ConnectionSheet: View {
     private var actionButton: some View {
         switch item.status {
         case .disconnected:
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
-                isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onReconnect)
+            reconnectButton
+        case .expired:
+            // Its keys can no longer be used, but stay on Platform until a
+            // disconnect, or a renewal of the same connection, turns them
+            // off: both are offered.
+            VStack(spacing: 10) {
+                reconnectButton
+                disconnectButton
+            }
         case .waitingForSecondScan:
             // A disconnect only turns a two-QR row back into this state: the
             // second code is the way forward.
             EmptyView()
-        case .active, .expired, .confirming:
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Disconnect", comment: "DashConnect"),
-                isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .plainRed,
-                action: { isConfirmingDisconnect = true })
-                .background(Color.dash.redAlpha5)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                // DashUIKit has no tinted red style: the plain red one has a
-                // clear background, so only its title would take the tap.
-                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .confirmationDialog(
-                    String(
-                        format: NSLocalizedString("Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
-                        item.name),
-                    isPresented: $isConfirmingDisconnect,
-                    titleVisibility: .visible
-                ) {
-                    Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
-                    Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
-                } message: {
-                    Text(disconnectConsequence)
-                }
+        case .active, .confirming:
+            disconnectButton
         }
+    }
+
+    private var reconnectButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+            isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onReconnect)
+    }
+
+    private var disconnectButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            // Enabled even when what it does is not known: the tap reads it
+            // again, or says why it cannot ask.
+            isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .plainRed,
+            action: askToDisconnect)
+            .background(Color.dash.redAlpha5)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            // DashUIKit has no tinted red style: the plain red one has a
+            // clear background, so only its title would take the tap.
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// Only where Disconnect is offered, and with what it will do known.
+    private func askToDisconnect() {
+        guard let revokesKeys = disconnectQuestion() else { return }
+        ask(revokesKeys: revokesKeys)
+    }
+
+    private func ask(revokesKeys: Bool) {
+        askedRevokesKeys = revokesKeys
+        // A question that did not show leaves the flag set: it is turned
+        // off first, so the button always asks.
+        guard isConfirmingDisconnect else {
+            isConfirmingDisconnect = true
+            return
+        }
+        isConfirmingDisconnect = false
+        Task { @MainActor in isConfirmingDisconnect = true }
     }
 
     // MARK: - Text
 
-    /// What a disconnect will do, as the data source will run it
-    /// (`disconnectRevokesKeys`): one that only changes the local status, or
-    /// one that turns the keys off and may take unattributed DashPay profile
-    /// keys with it.
-    private var disconnectConsequence: String {
-        if !disconnectRevokesKeys {
-            return NSLocalizedString(
+    /// What a disconnect will do, as the data source will run it: one that
+    /// only changes the local status, or one that turns the keys off and may
+    /// take unattributed DashPay profile keys with it.
+    private static func disconnectConsequence(revokesKeys: Bool) -> String {
+        revokesKeys
+            ? NSLocalizedString(
+                "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.",
+                comment: "DashConnect: what a disconnect does, in its confirmation")
+            : NSLocalizedString(
                 "It is turned off on this device. Approving the app's code again turns it back on.",
                 comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
-        }
-        return NSLocalizedString(
-            "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.",
-            comment: "DashConnect: what a disconnect does, in its confirmation")
     }
 
     private var statusText: String {

@@ -62,6 +62,11 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case waitingForSecondScan
         case expired
         case disconnected
+
+        /// A connection in this status can be disconnected: its keys may
+        /// still be on. A two-QR row waiting for its second code only goes
+        /// back to that state, and a disconnected app has nothing left.
+        var offersDisconnect: Bool { self == .active || self == .confirming || self == .expired }
     }
 
     let id: String
@@ -160,12 +165,8 @@ final class ConnectionsViewModel: ObservableObject {
         return shownDetails?.connectedAt
     }
 
-    /// Whether disconnecting the shown connection turns its keys off on
-    /// Platform, as the data source will run it; the row's kind until the
-    /// details are read.
-    var shownDisconnectRevokesKeys: Bool {
-        shownDetails?.disconnectRevokesKeys ?? (shownConnection?.connection?.loginKind != .twoQR)
-    }
+    /// The sheet was opened by a row's Disconnect: it asks at once.
+    private(set) var shownAsksToDisconnect = false
 
     var shownWithheldLines: [String] {
         shownDetails?.access?.isSessionKeyLogin == true
@@ -411,7 +412,9 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// Opens the sheet of `item`, and reads what it shows. Not while a
     /// request reads or is on screen: its sheet comes next.
-    func showConnection(_ item: ConnectionSheetItem) {
+    /// With `asksToDisconnect`, the sheet asks about a disconnect as it
+    /// opens: a row's Disconnect goes through the same question.
+    func showConnection(_ item: ConnectionSheetItem, asksToDisconnect: Bool = false) {
         guard !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
         isConnectionSheetOnScreen = true
         shownConnection = item
@@ -419,7 +422,79 @@ final class ConnectionsViewModel: ObservableObject {
         shownDetailsFailed = false
         connectionSheetMessage = nil
         readShownDetails(item)
+        shownAsksToDisconnect = asksToDisconnect
     }
+
+    /// The sheet opened by a row's Disconnect is up: its question, asked
+    /// once (`disconnectQuestion`).
+    func takeDisconnectQuestion() -> Bool? {
+        guard shownAsksToDisconnect else { return nil }
+        shownAsksToDisconnect = false
+        return disconnectQuestion()
+    }
+
+    /// What the shown sheet's disconnect question says a disconnect does,
+    /// read now; `nil` when it cannot ask, and the sheet then says why.
+    func disconnectQuestion() -> Bool? {
+        guard let item = shownConnection, let connection = item.connection, item.status.offersDisconnect else {
+            connectionSheetMessage = Self.noLongerDisconnectableMessage
+            return nil
+        }
+        guard !isBusyWithAnotherRequest else {
+            connectionSheetMessage = Self.anotherRequestMessage
+            return nil
+        }
+        guard let revokesKeys = dataSource.disconnectRevokesKeys(id: connection.id, scope: connection.scope) else {
+            // Not the active wallet's, or gone from it: the rows are read
+            // again.
+            connectionSheetMessage = Self.connectionChangedMessage
+            refreshConnectionStatus()
+            return nil
+        }
+        connectionSheetMessage = nil
+        return revokesKeys
+    }
+
+    /// Something that signs, or touches the records a disconnect does, is
+    /// running or about to show: a disconnect waits for it.
+    private var isBusyWithAnotherRequest: Bool { isBusySigning || isResolvingRequest }
+
+    /// Something signs, or an approval is on screen. A request still
+    /// resolving is not counted here: a newer scan supersedes it.
+    private var isBusySigning: Bool {
+        isDisconnecting || isProcessingStateTransition || isApproving || isApprovingPurchase
+            || pendingRequest != nil || pendingTokenPurchase != nil
+    }
+
+    /// Whether a scan may start now; otherwise the page says why.
+    func mayScan() -> Bool {
+        guard isBusySigning else { return true }
+        message = Self.anotherRequestMessage
+        return false
+    }
+
+    private static let anotherRequestMessage = ConnectionsScreenMessage(
+        kind: .error,
+        text: NSLocalizedString(
+            "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect"))
+
+    private static let staleQuestionMessage = ConnectionsScreenMessage(
+        kind: .error,
+        text: NSLocalizedString(
+            "What disconnecting does changed since you were asked. Check it and try again.",
+            comment: "DashConnect: a disconnect confirmed with text that no longer holds"))
+
+    private static let noLongerDisconnectableMessage = ConnectionsScreenMessage(
+        kind: .error,
+        text: NSLocalizedString(
+            "This connection has nothing to disconnect now.",
+            comment: "DashConnect: a disconnect asked for on a connection that no longer offers one"))
+
+    private static let connectionChangedMessage = ConnectionsScreenMessage(
+        kind: .error,
+        text: NSLocalizedString(
+            "This connection changed. Check it and try again.",
+            comment: "DashConnect: a disconnect asked for on a row that is no longer the active wallet's"))
 
     private func readShownDetails(_ item: ConnectionSheetItem) {
         if item.connection == nil {
@@ -442,6 +517,7 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func hideConnection() {
+        shownAsksToDisconnect = false
         shownConnection = nil
         shownDetails = nil
         shownDetailsFailed = false
@@ -1067,19 +1143,33 @@ final class ConnectionsViewModel: ObservableObject {
         purchaseApproveError = nil
     }
 
+    /// A disconnect confirmed on the shown sheet with what it said
+    /// (`askedRevokesKeys`). It runs only if the sheet still offers one and
+    /// it would still do what was said; otherwise the sheet shows what holds
+    /// now, and why nothing ran.
+    func disconnectShown(askedRevokesKeys: Bool) {
+        guard let item = shownConnection, let connection = item.connection, item.status.offersDisconnect else {
+            connectionSheetMessage = Self.noLongerDisconnectableMessage
+            return
+        }
+        let revokesKeys = dataSource.disconnectRevokesKeys(id: connection.id, scope: connection.scope)
+        guard revokesKeys == askedRevokesKeys else {
+            connectionSheetMessage = revokesKeys == nil
+                ? Self.connectionChangedMessage
+                : Self.staleQuestionMessage
+            return
+        }
+        disconnect(connection)
+    }
+
     func disconnect(_ connection: DAppConnection) {
         // Disconnecting a one-QR connection signs an identity update, which
         // takes seconds. It must not overlap anything else that signs one or
         // touches the same records: a second tap, an approval on screen or in
         // flight, a request still resolving, a `dash-st:` in progress.
-        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
+        guard !isBusyWithAnotherRequest else {
             // The user confirmed it; say why nothing ran.
-            show(ConnectionsScreenMessage(
-                kind: .error,
-                text: NSLocalizedString(
-                    "Another DashConnect request is in progress. Try again when it finishes.", comment: "DashConnect")),
-                from: connection)
+            show(Self.anotherRequestMessage, from: connection)
             return
         }
         isDisconnecting = true
