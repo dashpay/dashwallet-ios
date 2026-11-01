@@ -588,6 +588,7 @@
 		510336DA2FEBB0C9002E0899 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B006D5A0B006D5A0B006 /* DashSpendPayIntro.swift */; };
 		510336DB2FEBB0C9002E0899 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
 		510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
+		510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
 		510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EC2FEBB1B4002E0899 /* DashUIKit */; };
 		510336EF2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EE2FEBB1B4002E0899 /* DashUIKit */; };
 		514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
@@ -969,6 +970,7 @@
 		75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC52DE5CE14009416A2 /* GiftCardDetailsViewModel.swift */; };
 		75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBC42DE5CE14009416A2 /* GiftCardDetailsView.swift */; };
 		75DFA00175DFA00175DFA001 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
+		75DFA00275DFA00275DFA002 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
 		75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */; };
 		75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E2F3C92AA4D1B900C3B458 /* Topper.swift */; };
 		75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
@@ -3272,6 +3274,7 @@
 		75DE024D1B0EB7FC0027FF08 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DE02511B0EB8030027FF08 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; lineEnding = 0; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		75DFA10175DFA10175DFA101 /* DashStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashStepper.swift; sourceTree = "<group>"; };
+		75DFA10275DFA10275DFA102 /* SegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControl.swift; sourceTree = "<group>"; };
 		75E2F3C72AA4CF1900C3B458 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
 		75E2F3C92AA4D1B900C3B458 /* Topper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Topper.swift; sourceTree = "<group>"; };
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
@@ -7385,6 +7388,7 @@
 				75387B492E0400C300BCCC72 /* MerchantDenominations.swift */,
 				756FE7092CDCD6CD00E6C195 /* ValidationCheck.swift */,
 				75DFA10175DFA10175DFA101 /* DashStepper.swift */,
+				75DFA10275DFA10275DFA102 /* SegmentedControl.swift */,
 				487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */,
 			);
 			path = "SwiftUI Components";
@@ -10611,6 +10615,7 @@
 				D5A0C006D5A0C006D5A0C006 /* DashSpendPayIntro.swift in Sources */,
 				D5A0C007D5A0C007D5A0C007 /* DashSpendSinglePanel.swift in Sources */,
 				75DFA00175DFA00175DFA001 /* DashStepper.swift in Sources */,
+				75DFA00275DFA00275DFA002 /* SegmentedControl.swift in Sources */,
 				47F005FF297164600029EB10 /* UITableView+DashWallet.swift in Sources */,
 				2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */,
 				D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */,
@@ -11338,6 +11343,7 @@
 				510336DA2FEBB0C9002E0899 /* DashSpendPayIntro.swift in Sources */,
 				510336DB2FEBB0C9002E0899 /* DashSpendSinglePanel.swift in Sources */,
 				510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */,
+				510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */,
 				C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */,
 				C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */,
 				51F0D10530BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
