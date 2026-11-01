@@ -1152,9 +1152,10 @@ final class InternalTransferViewModel: ObservableObject {
     /// Continue gate and Max all read this one number so the screen can't offer
     /// an amount the transaction builder must then reject.
     ///
-    /// Recomputed whenever the verdict inputs publish, rather than per view
-    /// render — the underlying reserve estimate walks the account's UTXO set
-    /// over the FFI. Validation, Continue and Max all use this cached value.
+    /// Recomputed on every raw balance or pooled-spendable publication, rather
+    /// than per view render — the underlying reserve estimate walks the
+    /// account's UTXO set over the FFI. Validation, Continue and Max all use
+    /// this cached value.
     @Published private(set) var coreSpendableDuffs: UInt64 = 0
 
     /// The ordinary L1 reserve paired with `coreSpendableDuffs`. It is cached
@@ -1213,6 +1214,19 @@ final class InternalTransferViewModel: ObservableObject {
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 
+    /// Preserve every balance event as an envelope-refresh trigger, even when
+    /// its aggregate buckets are unchanged. The fee reserve depends on the
+    /// UTXO count, not just those aggregates. Pooled publications also refresh
+    /// the envelope, including the first read after a wallet balance event.
+    nonisolated static func coreEnvelopeRefreshPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        balance: AnyPublisher<WalletBalance?, Never>
+    ) -> AnyPublisher<Void, Never> {
+        Publishers.CombineLatest(pooled, balance)
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
+
     init() {
         SyncingActivityMonitor.shared.add(observer: self)
 
@@ -1250,11 +1264,13 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // A verdict can change when the pooled figure arrives or when a coin
-        // moves between confirmed and unconfirmed without moving the current
-        // spendable ceiling. Keep the Core envelope current for both cases;
-        // this is the only UTXO walk used by validation, Continue and Max.
-        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+        // Keep the base branch's raw balance-event refreshes as well as the
+        // pooled updates. Do not deduplicate aggregates here: the envelope's
+        // reserve is based on the UTXO set, not just the published sums.
+        let state = SwiftDashSDKWalletState.shared
+        Self.coreEnvelopeRefreshPublisher(
+            pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
+            balance: state.$balance.eraseToAnyPublisher())
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 let envelope = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()

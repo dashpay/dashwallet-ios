@@ -526,6 +526,50 @@ final class PooledSendableBalanceTests: XCTestCase {
     }
 
 
+    // MARK: - Internal transfer envelope refreshes
+
+    func testCoreEnvelopeRefreshesOnRepeatedRawBalancePublications() {
+        let snapshot = WalletBalance(confirmed: 100_000_000)
+        let pooled = CurrentValueSubject<UInt64?, Never>(100_000_000)
+        let balance = CurrentValueSubject<WalletBalance?, Never>(snapshot)
+        var reserve: UInt64 = 1_000_000
+        var envelopes: [UInt64] = []
+        let token = InternalTransferViewModel.coreEnvelopeRefreshPublisher(
+            pooled: pooled.eraseToAnyPublisher(),
+            balance: balance.eraseToAnyPublisher())
+            .sink {
+                // Stand in for the reserve read in the production sink. A new
+                // read must not be suppressed by identical balance buckets.
+                envelopes.append(SwiftDashSDKWalletState.feeAwareMax(
+                    spendable: 100_000_000,
+                    reserve: reserve))
+            }
+
+        reserve = 2_000_000
+        balance.send(snapshot)
+        balance.send(snapshot)
+
+        XCTAssertEqual(envelopes, [99_000_000, 98_000_000, 98_000_000])
+        token.cancel()
+    }
+
+    func testCoreEnvelopeRefreshesOnPooledPublicationsWithoutAnotherBalanceEvent() {
+        let pooled = CurrentValueSubject<UInt64?, Never>(nil)
+        let balance = CurrentValueSubject<WalletBalance?, Never>(WalletBalance(confirmed: 100_000_000))
+        var refreshes = 0
+        let token = InternalTransferViewModel.coreEnvelopeRefreshPublisher(
+            pooled: pooled.eraseToAnyPublisher(),
+            balance: balance.eraseToAnyPublisher())
+            .sink { refreshes += 1 }
+
+        pooled.send(80_000_000)
+        pooled.send(80_000_000)
+        pooled.send(nil)
+
+        XCTAssertEqual(refreshes, 4, "initial state and every raw pooled publication must refresh")
+        token.cancel()
+    }
+
     // MARK: - The verdict publisher
 
     private func balance(confirmed: UInt64, unconfirmed: UInt64 = 0, locked: UInt64 = 0) -> WalletBalance {
