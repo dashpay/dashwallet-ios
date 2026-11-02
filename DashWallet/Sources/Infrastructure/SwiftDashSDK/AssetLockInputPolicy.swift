@@ -30,7 +30,10 @@ import SwiftDashSDK
 /// with `require_final_inputs()` and BranchAndBound, which sorts coins largest
 /// first and, when no change-free match exists, accumulates them largest
 /// first. So only final coins (confirmed or InstantSend-locked) are counted,
-/// largest first, until they cover the amount plus the fee. On the pinned SDK
+/// largest first, until they cover the amount plus the lowest fee any
+/// selection of that many inputs could pay (`minimumFeeDuffs`). Then no
+/// selection within the budget exists when the count is over it, so a refusal
+/// is never one the SDK would have built within the cap. On the pinned SDK
 /// the refusal (`PlatformWalletError.assetLockTooManyInputs`) covers only a
 /// whole-balance drain.
 enum AssetLockInputPolicy {
@@ -55,23 +58,44 @@ enum AssetLockInputPolicy {
     /// and its length prefix) on top of a regular two-output transaction.
     static let payloadAllowanceBytes: UInt64 = 40
 
-    /// The fee of an asset lock spending `inputCount` inputs: the 1 duff/byte
-    /// size model of a regular send plus the payload.
+    /// The size of a one-credit asset lock without inputs and without change:
+    /// key-wallet's base (version, type, locktime, counts, the burn output)
+    /// plus the payload. A selection that needs no change pays only this and
+    /// its inputs; any other pays more.
+    static let noChangeBaseBytes: UInt64 = 81
+
+    /// The fee of an asset lock spending `inputCount` inputs with a change
+    /// output: the 1 duff/byte size model of a regular send plus the payload.
+    /// An upper estimate, used where a shortfall would cost the user a fee.
     static func estimatedFeeDuffs(inputCount: Int) -> UInt64 {
         SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: inputCount) + payloadAllowanceBytes
     }
 
-    /// The verdict for locking `amountDuffs` from coins worth `utxoValues`.
+    /// The lowest fee an asset lock spending `inputCount` inputs can pay at
+    /// 1 duff/byte: no change output (`noChangeBaseBytes`).
+    static func minimumFeeDuffs(inputCount: Int) -> UInt64 {
+        noChangeBaseBytes + UInt64(inputCount) * 148
+    }
+
+    /// The verdict for locking `amountDuffs` from coins worth `utxoValues`,
+    /// with the lowest fee (`minimumFeeDuffs`): the input count it finds is
+    /// the fewest any selection could use.
     ///
     /// - Parameter utxoValues: the values of the FINAL coins only; the
     ///   builder never spends one that is not.
     static func verdict(utxoValues: [UInt64], amountDuffs: UInt64, inputBudget: Int) -> Verdict {
+        verdict(utxoValues: utxoValues, amountDuffs: amountDuffs, inputBudget: inputBudget, fee: minimumFeeDuffs)
+    }
+
+    private static func verdict(
+        utxoValues: [UInt64], amountDuffs: UInt64, inputBudget: Int, fee: (Int) -> UInt64
+    ) -> Verdict {
         var total: UInt64 = 0
         for (index, value) in utxoValues.sorted(by: >).enumerated() {
             let (sum, overflow) = total.addingReportingOverflow(value)
             total = overflow ? .max : sum
             let inputCount = index + 1
-            let (needed, neededOverflow) = amountDuffs.addingReportingOverflow(estimatedFeeDuffs(inputCount: inputCount))
+            let (needed, neededOverflow) = amountDuffs.addingReportingOverflow(fee(inputCount))
             guard !neededOverflow else { return .insufficientFunds }
             if total >= needed {
                 return inputCount > inputBudget ? .needsConsolidation : .fits
@@ -89,7 +113,10 @@ enum AssetLockInputPolicy {
     /// The verdict for a lock of `amountDuffs` (nil: a whole-balance drain)
     /// once the Core consolidation has combined the `combinable` coins — the
     /// final coins of BIP44 account 0, the only account it spends. The other
-    /// final coins (`other`) stay as they are.
+    /// final coins (`other`) stay as they are. The lock is priced with a
+    /// change output (`estimatedFeeDuffs`): the combined coin is usually
+    /// larger than the amount, and Combine must not be offered for a lock
+    /// that would then fall short.
     static func verdictAfterCombining(
         combinable: [UInt64], other: [UInt64], amountDuffs: UInt64?, inputBudget: Int
     ) -> Verdict {
@@ -97,7 +124,17 @@ enum AssetLockInputPolicy {
         guard let amountDuffs else {
             return drainVerdict(finalCount: values.count, inputBudget: inputBudget)
         }
-        return verdict(utxoValues: values, amountDuffs: amountDuffs, inputBudget: inputBudget)
+        return verdict(utxoValues: values, amountDuffs: amountDuffs, inputBudget: inputBudget, fee: estimatedFeeDuffs)
+    }
+
+    /// The fee of combining `coinCount` coins: one transaction per chunk
+    /// (`combinedValues`), each priced like a regular send. An upper estimate:
+    /// the consolidation has one output, not two.
+    static func consolidationFeeDuffs(coinCount: Int) -> UInt64 {
+        guard coinCount >= 2 else { return 0 }
+        return SwiftDashSDKTransactionSender.balancedChunks(
+            Array(repeating: 0, count: coinCount), maxPerChunk: SwiftDashSDKTransactionSender.maxInputsPerSweep
+        ).reduce(0) { $0 + SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: $1.count) }
     }
 
     /// The coins the consolidation leaves for `values`: one per transaction
@@ -208,8 +245,8 @@ enum AssetLockInputLimit {
     }
 
     /// The verdict for `check` over the wallet's pooled Core coins, or nil
-    /// when no wallet is bound — then the caller goes ahead and the SDK
-    /// decides, as before this check existed.
+    /// when no wallet is bound or its coins cannot be read — then the caller
+    /// goes ahead and the SDK decides, as before this check existed.
     @MainActor
     static func verdict(for check: Check) -> AssetLockInputPolicy.Verdict? {
         guard let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos() else { return nil }
@@ -228,16 +265,17 @@ enum AssetLockInputLimit {
         return verdict
     }
 
-    /// Whether combining the coins (`CoreCoinConsolidationSheet`) would let
-    /// `check` fit: the BIP44 account has at least two final coins, and the
-    /// lock fits once they are one (`verdictAfterCombining`). False when no
-    /// wallet is bound.
+    /// The estimated fee of combining the coins (`CoreCoinConsolidationSheet`)
+    /// when that would let `check` fit: the BIP44 account has at least two
+    /// final coins, and the lock fits once they are one
+    /// (`verdictAfterCombining`). Nil when it would not, or when the wallet's
+    /// coins cannot be read.
     @MainActor
-    static func combiningWouldFit(_ check: Check) -> Bool {
-        guard let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos() else { return false }
+    static func combiningFeeToFit(_ check: Check) -> UInt64? {
+        guard let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos() else { return nil }
         let finals = utxos.filter(\.isFinal)
         let combinable = finals.filter(\.isCombinable).map(\.valueDuffs)
-        guard combinable.count >= 2 else { return false }
+        guard combinable.count >= 2 else { return nil }
         let verdict = AssetLockInputPolicy.verdictAfterCombining(
             combinable: combinable,
             other: finals.filter { !$0.isCombinable }.map(\.valueDuffs),
@@ -246,7 +284,8 @@ enum AssetLockInputLimit {
         DWLogger.log(
             "🔒 ASSET-LOCK-INPUTS :: after combining \(combinable.count) BIP44 coin(s): verdict=\(verdict)",
             className: "AssetLockInputLimit")
-        return verdict != .needsConsolidation
+        guard verdict == .fits else { return nil }
+        return AssetLockInputPolicy.consolidationFeeDuffs(coinCount: combinable.count)
     }
 
     /// Throws `TooManyInputsError` when `check` needs more inputs than its

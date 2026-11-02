@@ -34,10 +34,10 @@ final class AssetLockInputPolicyTests: XCTestCase {
     /// lock needs is set by the amount alone.
     private let coin: UInt64 = 10_000
 
-    /// The lock amount that `inputs` coins of `coin` cover exactly, fee
-    /// included — so `inputs - 1` coins fall short.
+    /// The lock amount that `inputs` coins of `coin` cover exactly, at the
+    /// lowest fee the pre-check prices — so `inputs - 1` coins fall short.
     private func amountNeeding(inputs: Int) -> UInt64 {
-        UInt64(inputs) * coin - Policy.estimatedFeeDuffs(inputCount: inputs)
+        UInt64(inputs) * coin - Policy.minimumFeeDuffs(inputCount: inputs)
     }
 
     private func coins(_ count: Int) -> [UInt64] {
@@ -92,7 +92,7 @@ final class AssetLockInputPolicyTests: XCTestCase {
         // The large coin goes first, and the rest of the amount takes 150
         // small ones.
         let values = [50_000_000] + coins(200)
-        let amount: UInt64 = 50_000_000 + 150 * coin - Policy.estimatedFeeDuffs(inputCount: 151)
+        let amount: UInt64 = 50_000_000 + 150 * coin - Policy.minimumFeeDuffs(inputCount: 151)
         XCTAssertEqual(
             Policy.verdict(utxoValues: values, amountDuffs: amount, inputBudget: 100),
             .needsConsolidation)
@@ -113,9 +113,23 @@ final class AssetLockInputPolicyTests: XCTestCase {
 
     func testFeeGrowsWithEachInput() {
         XCTAssertGreaterThan(Policy.estimatedFeeDuffs(inputCount: 101), Policy.estimatedFeeDuffs(inputCount: 100))
+        XCTAssertGreaterThan(Policy.minimumFeeDuffs(inputCount: 101), Policy.minimumFeeDuffs(inputCount: 100))
         XCTAssertGreaterThan(
             Policy.estimatedFeeDuffs(inputCount: 1),
             SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: 1))
+    }
+
+    func testTheLowestFeeIsTheNoChangeAssetLock() {
+        // key-wallet's one-credit asset lock without change: 81 bytes + 148 per input.
+        XCTAssertEqual(Policy.minimumFeeDuffs(inputCount: 100), 81 + 100 * 148)
+        XCTAssertLessThan(Policy.minimumFeeDuffs(inputCount: 100), Policy.estimatedFeeDuffs(inputCount: 100))
+    }
+
+    func testALegalHundredInputLockAtTheBoundaryIsNotRefused() {
+        // 100 coins of 100,000 fund 9,985,100 without change (fee 14,881,
+        // surplus 19); only a fee priced with change would need a 101st.
+        let values = Array(repeating: UInt64(100_000), count: 101)
+        XCTAssertEqual(Policy.verdict(utxoValues: values, amountDuffs: 9_985_100, inputBudget: 100), .fits)
     }
 
     // MARK: - Insufficient funds
@@ -169,6 +183,31 @@ final class AssetLockInputPolicyTests: XCTestCase {
         XCTAssertEqual(
             Policy.verdictAfterCombining(combinable: coins(150), other: coins(100), amountDuffs: nil, inputBudget: 100),
             .needsConsolidation)
+    }
+
+    func testCombineIsNotOfferedWhenTheCombinedCoinWouldFallShort() {
+        // 101 coins hold the lock, but once combined the consolidation fee
+        // leaves too little for it.
+        let amount: UInt64 = 994_934
+        XCTAssertEqual(Policy.verdict(utxoValues: coins(101), amountDuffs: amount, inputBudget: 100), .needsConsolidation)
+        XCTAssertEqual(
+            Policy.verdictAfterCombining(combinable: coins(101), other: [], amountDuffs: amount, inputBudget: 100),
+            .insufficientFunds)
+    }
+
+    func testTheConsolidationFeeCoversEveryTransaction() {
+        let fee = SwiftDashSDKTransactionSender.estimatedSignalFee
+        XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 150), fee(150))
+        XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 1_200), 3 * fee(400))
+        XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 1), 0)
+    }
+
+    func testAnAwaitedOutputSpentElsewhereIsNoLongerAwaited() {
+        let seenAndGone = Data([1]), present = Data([2]), notSeenYet = Data([3])
+        XCTAssertEqual(
+            CoreCoinConsolidationViewModel.stillAwaited(
+                [seenAndGone, present, notSeenYet], present: [present], observed: [seenAndGone, present]),
+            [present, notSeenYet])
     }
 
     func testCombiningLeavesOneCoinPerTransactionLessItsFee() {

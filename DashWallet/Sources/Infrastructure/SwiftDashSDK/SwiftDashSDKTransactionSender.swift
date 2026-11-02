@@ -587,7 +587,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             $0.confirmed == 0 && $0.unconfirmed == 0 && $0.immature == 0 && $0.locked == 0
         }
         guard CoinJoinShieldPlanner.utxoReadIsUsable(
-            accountCount: balances.count, coinJoinBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
+            accountCount: balances.count, accountBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
         else { return nil }
         return (cjBalance, utxos)
     }
@@ -1024,18 +1024,33 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     /// The coins a Core-funded asset lock may spend: the UTXO rows of the
     /// pooled accounts (`pooledAccountBalances`) without the `isLocked` ones
-    /// coin selection never spends. Nil when no wallet or manager is bound;
-    /// empty when the wallet has no pooled account.
+    /// coin selection never spends. Nil when no wallet or manager is bound,
+    /// or when the read can't be told apart from a failed one
+    /// (`CoinJoinShieldPlanner.utxoReadIsUsable`): every wallet has its BIP44
+    /// account, and an account with a balance has UTXOs.
     @MainActor
     static func pooledSpendableUtxos() -> [PooledUtxo]? {
         let host = SwiftDashSDKHost.shared
         guard let manager = host.manager, let wallet = host.wallet else { return nil }
         let walletId = wallet.walletId
+        guard let pooled = pooledAccountBalances(manager: manager, walletId: walletId) else {
+            logger.error("💸 TXSEND :: pooled UTXO read — no pooled account, treating the read as failed")
+            return nil
+        }
         let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
-        let pooled = pooledAccountBalances(manager: manager, walletId: walletId) ?? []
-        return pooled.flatMap { balance in
+        var coins: [PooledUtxo] = []
+        for balance in pooled {
+            let rows = manager.accountUtxos(for: walletId, balance: balance)
+            let balanceIsZero = balance.confirmed == 0 && balance.unconfirmed == 0
+                && balance.immature == 0 && balance.locked == 0
+            guard CoinJoinShieldPlanner.utxoReadIsUsable(
+                accountCount: pooled.count, accountBalanceIsZero: balanceIsZero, utxoCount: rows.count)
+            else {
+                logger.error("💸 TXSEND :: pooled UTXO read — an account with a balance returned no UTXOs, treating the read as failed")
+                return nil
+            }
             let isCombinable = isBip44Account0(balance)
-            return manager.accountUtxos(for: walletId, balance: balance)
+            coins += rows
                 .filter { !$0.isLocked }
                 .map { utxo in
                     PooledUtxo(
@@ -1045,6 +1060,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                         isCombinable: isCombinable)
                 }
         }
+        return coins
     }
 
     // MARK: - Broadcast

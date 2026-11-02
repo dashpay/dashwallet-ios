@@ -23,9 +23,10 @@ import Foundation
 final class CoreCoinConsolidationViewModel: ObservableObject {
 
     enum Stage: Equatable {
-        /// Why the transfer stopped. `canCombine` offers the consolidation;
-        /// without it the sheet says combining here would not help.
-        case explain(canCombine: Bool)
+        /// Why the transfer stopped. `combineFeeDuffs` offers the
+        /// consolidation at that estimated fee; nil means combining here
+        /// would not help, and the sheet says so.
+        case explain(combineFeeDuffs: UInt64?)
         case combining
         /// The coins are combined. `transferFits`: the transfer now fits and
         /// the user can retry it; otherwise the fee left too little for it.
@@ -33,7 +34,7 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
         case failed(String)
     }
 
-    @Published private(set) var stage: Stage = .explain(canCombine: false)
+    @Published private(set) var stage: Stage = .explain(combineFeeDuffs: nil)
 
     /// From the first line of `combine()` to its end, PIN prompt included,
     /// so a second tap is ignored instead of starting a second run.
@@ -56,13 +57,18 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
     /// the asset lock cannot spend that output.
     private var awaitedTxids: [Data] = []
 
+    /// Awaited txids that have had an output in the BIP44 account. One whose
+    /// output is gone again was spent by another send before it was final:
+    /// it can no longer become final here, so it is not waited for.
+    private var observedTxids: Set<Data> = []
+
     /// How long the wait for the combined coins to become final lasts.
     /// InstantSend normally locks within seconds.
     static let finalityTimeout: TimeInterval = CoinJoinMoveFundsViewModel.finalityTimeout
 
     init(check: AssetLockInputLimit.Check) {
         self.check = check
-        stage = .explain(canCombine: AssetLockInputLimit.combiningWouldFit(check))
+        stage = .explain(combineFeeDuffs: AssetLockInputLimit.combiningFeeToFit(check))
     }
 
     var isInFlight: Bool { isRunning || stage == .combining }
@@ -114,7 +120,7 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
         case .insufficientFunds:
             stage = .done(transferFits: false)
         case .needsConsolidation:
-            stage = .explain(canCombine: AssetLockInputLimit.combiningWouldFit(check))
+            stage = .explain(combineFeeDuffs: AssetLockInputLimit.combiningFeeToFit(check))
         }
     }
 
@@ -153,6 +159,7 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
             Self.log("an earlier consolidation is not in the wallet yet, not combining again")
             return Self.stillCombiningMessage
         }
+        observedTxids.formUnion(unobservedTxids)
         awaitedTxids += unobservedTxids
         unobservedTxids = []
         return nil
@@ -216,18 +223,27 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
     }
 
     /// Waits until every awaited consolidation has a final output in the
-    /// BIP44 account, so the asset lock can spend it.
+    /// BIP44 account, so the asset lock can spend it — or, once seen, has no
+    /// output left (`stillAwaited`).
     private func awaitFinal(
         _ binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding
     ) async throws(Stop) {
         let txids = awaitedTxids
         guard !txids.isEmpty else { return }
         let waitStart = Date()
+        let observed = TxidSet(observedTxids)
+        defer { observedTxids = observed.txids }
         let result: (state: SwiftDashSDKTransactionSender.CoinJoinUtxoState, satisfied: Bool)?
         do {
             result = try await SwiftDashSDKTransactionSender.waitForBip44UtxoState(
                 binding: binding, timeout: Self.finalityTimeout
-            ) { CoinJoinShieldPlanner.consolidationSettled(consolidationTxids: txids, utxos: $0.txidFinality) }
+            ) { state in
+                let present = Set(state.entries.map(\.txid))
+                observed.txids.formUnion(present.intersection(txids))
+                return CoinJoinShieldPlanner.consolidationSettled(
+                    consolidationTxids: Self.stillAwaited(txids, present: present, observed: observed.txids),
+                    utxos: state.txidFinality)
+            }
         } catch {
             Self.log("cancelled while waiting for finality")
             throw Stop(message: Self.stillCombiningMessage)
@@ -242,6 +258,19 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
                 + "(cap \(Int(Self.finalityTimeout))s): n=\(result.state.count) final=\(result.state.finalCount)")
         guard result.satisfied else { throw Stop(message: Self.stillCombiningMessage) }
         awaitedTxids = []
+    }
+
+    /// The awaited txids still worth waiting for: all but those seen with an
+    /// output (`observed`) whose output is gone (`present` holds the txids
+    /// with an output now).
+    nonisolated static func stillAwaited(_ awaited: [Data], present: Set<Data>, observed: Set<Data>) -> [Data] {
+        awaited.filter { present.contains($0) || !observed.contains($0) }
+    }
+
+    /// The observed txids, updated by the finality poll.
+    private final class TxidSet {
+        var txids: Set<Data>
+        init(_ txids: Set<Data>) { self.txids = txids }
     }
 
     // MARK: Strings
@@ -262,6 +291,11 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
         NSLocalizedString(
             "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.",
             comment: "Asset-lock input limit")
+    }
+
+    /// The estimated fee of combining, shown before the PIN prompt.
+    static func feeLine(duffs: UInt64) -> String {
+        String(format: NSLocalizedString("Network fee: %@ DASH", comment: ""), duffs.formattedDashAmountWithoutCurrencySymbol)
     }
 
     static var cannotCombineMessage: String {

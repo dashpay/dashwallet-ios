@@ -33,8 +33,8 @@ struct CoreCoinConsolidationSheet: View {
             onClose: onClose
         ) {
             switch viewModel.stage {
-            case .explain(let canCombine):
-                explainBody(canCombine: canCombine)
+            case .explain(let combineFeeDuffs):
+                explainBody(combineFeeDuffs: combineFeeDuffs)
             case .combining:
                 combiningBody
             case .done(let transferFits):
@@ -45,7 +45,7 @@ struct CoreCoinConsolidationSheet: View {
         }
     }
 
-    private func explainBody(canCombine: Bool) -> some View {
+    private func explainBody(combineFeeDuffs: UInt64?) -> some View {
         VStack(spacing: 0) {
             Image(systemName: "square.stack.3d.down.right.fill")
                 .resizable()
@@ -54,11 +54,19 @@ struct CoreCoinConsolidationSheet: View {
                 .foregroundColor(.dash.blue)
                 .padding(.top, 24)
 
-            message(canCombine ? AssetLockInputLimit.message : CoreCoinConsolidationViewModel.cannotCombineMessage)
+            message(combineFeeDuffs != nil ? AssetLockInputLimit.message : CoreCoinConsolidationViewModel.cannotCombineMessage)
+
+            if let combineFeeDuffs {
+                Text(CoreCoinConsolidationViewModel.feeLine(duffs: combineFeeDuffs))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.dash.primaryText)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+            }
 
             Spacer(minLength: 12)
 
-            if canCombine {
+            if combineFeeDuffs != nil {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
@@ -191,11 +199,11 @@ extension CoreCoinConsolidationSheet {
 }
 
 #Preview("Explain") {
-    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .explain(canCombine: true)))
+    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .explain(combineFeeDuffs: 22_278)))
 }
 
 #Preview("Explain — nothing to combine") {
-    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .explain(canCombine: false)))
+    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .explain(combineFeeDuffs: nil)))
 }
 
 #Preview("Combining") {
