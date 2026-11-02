@@ -238,6 +238,9 @@ struct DashConnectDisconnectResult: Equatable {
     /// They could not be told apart, so none was turned off; the app's own
     /// keys were.
     var profileKeysUnchecked = false
+    /// The app is disconnected, but it could not be saved among the
+    /// disconnected apps.
+    var notRecordedInHistory = false
 }
 
 /// What a connection gives its app, from the grant records of one

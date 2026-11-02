@@ -6825,6 +6825,12 @@
 /* DashConnect */
 "Connect an app" = "Connect an app";
 
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
 /* Accessibility: a section that is open */
 "Expanded" = "Expanded";
 
@@ -6837,6 +6843,12 @@
 /* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
 "Maximum of %@" = "Maximum of %@";
 
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
+
 /* DashConnect connection sheet: a key with no spending limit */
 "No limit" = "No limit";
 
@@ -6845,6 +6857,15 @@
 
 /* DashConnect connection sheet */
 "Reading the details of this connection" = "Reading the details of this connection";
+
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will NOT have access to" = "See what %@ will NOT have access to";
@@ -6873,8 +6894,17 @@
 /* DashConnect connection sheet: the date its keys expire */
 "Connection expiry" = "Connection expiry";
 
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
+
 /* DashConnect: accessibility, a row's button; the app's name */
 "Disconnect %@" = "Disconnect %@";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
 
 /* DashConnect: a disconnect confirmed with text that no longer holds */
 "What disconnecting does changed since you were asked. Check it and try again." = "What disconnecting does changed since you were asked. Check it and try again.";

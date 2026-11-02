@@ -35,7 +35,7 @@ struct ConnectionsScreen: View {
     }
 
     @State private var showsFundingLimitsInfo = false
-    /// Scanning from the connection sheet closes it first: the scanner is
+    /// Reconnect closes the connection sheet first: the scanner is
     /// presented once it is gone.
     @State private var scansAfterSheet = false
 
@@ -109,23 +109,25 @@ struct ConnectionsScreen: View {
             title
             ConnectionsUnavailableState()
         } else if !viewModel.hasReadRows {
-            // No empty state that the rows replace a moment later.
+            // Not known yet whether anything was connected: no empty state
+            // that the rows and the history replace a moment later.
             title
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
             Spacer()
-        } else if viewModel.connections.isEmpty {
+        } else if !viewModel.hasConnectionsOrHistory {
             title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     title
-                    ConnectionsList(
-                        items: viewModel.rows,
-                        onOpen: { viewModel.showConnection($0) },
-                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) })
+                    SegmentedControl(
+                        options: ConnectionsTab.allCases,
+                        selection: $viewModel.selectedTab,
+                        label: Self.tabName)
+                    tabContent
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -135,8 +137,47 @@ struct ConnectionsScreen: View {
 
     private var title: some View {
         TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-            .padding(.horizontal, !viewModel.connections.isEmpty && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.horizontal, viewModel.hasConnectionsOrHistory && !viewModel.featureUnavailable ? 0 : 20)
             .padding(.top, 10)
+    }
+
+    @ViewBuilder private var tabContent: some View {
+        let tab = viewModel.selectedTab
+        let rows = viewModel.rows(for: tab)
+        if tab == .disconnected, viewModel.historyIsUnreadable {
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
+        } else if !rows.isEmpty {
+            ConnectionsList(
+                items: rows,
+                onOpen: { viewModel.showConnection($0) },
+                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onReconnect: showScanner)
+        } else {
+            tabNote(Self.emptyTabText(tab))
+        }
+    }
+
+    private func tabNote(_ text: String) -> some View {
+        Text(text)
+            .dashFont(.subhead)
+            .foregroundColor(Color.dash.secondaryText)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 20)
+    }
+
+    private static func emptyTabText(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
+        case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        }
+    }
+
+    private static func tabName(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        }
     }
 
     private func connectionSheet(for item: ConnectionSheetItem) -> some View {
