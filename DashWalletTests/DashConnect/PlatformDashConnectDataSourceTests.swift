@@ -3362,6 +3362,61 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(outcome(unnoted, keys: [Self.key(keyId: 9, data: hash)], revision: 9), .keyLive)
     }
 
+    /// The revision a registration notes: one above the one the wallet
+    /// holds, raised after a failed submit when the wallet's revision moved.
+    func testASubmittedRevisionIsRaisedOnlyWhenAFailedSubmitFindsTheRevisionMoved() async {
+        struct Failed: Error {}
+        XCTAssertEqual(AppConnect.SubmittedRevision(held: 3).value, 4)
+        XCTAssertNil(AppConnect.SubmittedRevision(held: .max).value, "no update follows the largest revision")
+
+        let revision = AppConnect.SubmittedRevision(held: 3)
+        var reads = 0
+        var raised: [UInt64] = []
+        try? await revision.submit({}, readHeld: { reads += 1; return 9 }, raise: { raised.append($0) })
+        XCTAssertEqual(reads, 0, "a submit that went through reads nothing again")
+        XCTAssertEqual(raised, [])
+
+        for (after, expected, why) in [
+            (UInt64(5), [UInt64(6)], "another update moved it"),
+            (3, [], "unmoved"),
+            (2, [], "a lower read never lowers it"),
+            (.max, [], "nothing above the largest revision"),
+        ] {
+            raised = []
+            do {
+                try await revision.submit({ throw Failed() }, readHeld: { after }, raise: { raised.append($0) })
+                XCTFail("the failure stands: \(why)")
+            } catch {
+                XCTAssertTrue(error is Failed, why)
+            }
+            XCTAssertEqual(raised, expected, why)
+        }
+        raised = []
+        try? await revision.submit({ throw Failed() }, readHeld: { throw Failed() }, raise: { raised.append($0) })
+        XCTAssertEqual(raised, [], "an unreadable revision keeps the one noted")
+    }
+
+    func testARetryNeverLowersTheRevisionAnEarlierSubmissionNoted() async {
+        struct Failed: Error {}
+        XCTAssertEqual(AppConnect.SubmittedRevision(held: 3).value, 4)
+        XCTAssertEqual(
+            AppConnect.SubmittedRevision(held: 3, earlier: 7).value, 7,
+            "a read from a node that is behind keeps the earlier submission's")
+        XCTAssertEqual(AppConnect.SubmittedRevision(held: 8, earlier: 7).value, 9)
+        XCTAssertEqual(AppConnect.SubmittedRevision(held: .max, earlier: 7).value, 7)
+
+        let retry = AppConnect.SubmittedRevision(held: 3, earlier: 7)
+        for (after, expected, why) in [
+            (UInt64(4), [UInt64](), "below what is noted: kept"),
+            (6, [], "one above it is what is noted"),
+            (7, [8], "moved past what is noted"),
+        ] {
+            var raised: [UInt64] = []
+            try? await retry.submit({ throw Failed() }, readHeld: { after }, raise: { raised.append($0) })
+            XCTAssertEqual(raised, expected, why)
+        }
+    }
+
     /// After a disable update of the disconnect has landed, a registration
     /// that could still land when its keys were picked has either put its
     /// key on the identity, which is then picked for disabling too, or
