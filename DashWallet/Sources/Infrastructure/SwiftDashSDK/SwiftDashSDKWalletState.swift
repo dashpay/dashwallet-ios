@@ -282,7 +282,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// neither moved the answer.
     ///
     /// Takes its inputs as parameters so the wiring is testable without the
-    /// shared instance; `SendAmountModel.observeSendableCeiling` passes the published ones.
+    /// shared instance; `sendableCeiling` passes the published ones.
     static func sendableCeilingPublisher(
         pooled: AnyPublisher<UInt64?, Never>,
         walletSpendable: AnyPublisher<UInt64?, Never>
@@ -291,6 +291,13 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
             .map { sendableDuffs(pooled: $0, walletSpendable: $1) }
             .removeDuplicates()
             .eraseToAnyPublisher()
+    }
+
+    /// `sendableCeilingPublisher` over this instance's published inputs.
+    var sendableCeiling: AnyPublisher<UInt64, Never> {
+        Self.sendableCeilingPublisher(
+            pooled: $pooledSpendableDuffs.eraseToAnyPublisher(),
+            walletSpendable: $balance.map { $0?.spendable }.eraseToAnyPublisher())
     }
 
     /// The confirmed balance a plain send CANNOT draw on: what

@@ -141,11 +141,7 @@ class SendAmountModel: BaseAmountModel {
     /// of its own. Coins that confirm raise the ceiling, which is what clears
     /// a "still confirming" note.
     private func observeSendableCeiling() {
-        let state = SwiftDashSDKWalletState.shared
-        SwiftDashSDKWalletState
-            .sendableCeilingPublisher(
-                pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
-                walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
+        SwiftDashSDKWalletState.shared.sendableCeiling
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self, Self.ceilingMoveRechecks(self.error) else { return }
