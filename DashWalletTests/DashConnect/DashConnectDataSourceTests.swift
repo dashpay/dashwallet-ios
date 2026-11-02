@@ -85,7 +85,7 @@ final class DashConnectDataSourceTests: XCTestCase {
             try await dataSource.handleStateTransition(.init(
                 transitionBytes: Data([0x01, 0x02, 0x03, 0x04]),
                 network: .testnet
-            ))
+            ), refusesTokenPurchase: false)
         }) { error in
             XCTAssertEqual(error as? DashConnectMockError, .stateTransitionNotSupported)
         }

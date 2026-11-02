@@ -82,9 +82,12 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case grantStoreUnavailable
     case approvalOutOfDate
     /// The terms went out of bounds before the approval signed (an expiry
-    /// gone by while the PIN prompt was up); the approve sheet says why
-    /// itself.
+    /// gone by while the PIN prompt was up). Not shown: the approve sheet
+    /// says why itself (`ConnectionsViewModel.approveDisabledReason`).
     case approvalTermsExpired
+    /// A token purchase that came while the wallet has no username, refused
+    /// before anything about it is read from the network.
+    case tokenPurchaseNeedsUsername
     case loginUnresolved
     case grantNotRecorded
     case noFreeKeyId
@@ -211,9 +214,11 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
                 comment: "DashConnect")
         case .approvalTermsExpired:
+            return "The connection's expiry passed before the approval was signed."
+        case .tokenPurchaseNeedsUsername:
             return NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
-                comment: "DashConnect approve sheet: the chosen expiry is in the past")
+                "Create a username to buy tokens in apps, then ask the app again.",
+                comment: "DashConnect: a token purchase arrived while the wallet has no username")
         case .loginUnresolved:
             return NSLocalizedString(
                 "This wallet could not check what this sign-in would give the app.",
@@ -1053,22 +1058,27 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // to be the plan for this request, and the network has to still take
         // App Connect.
         let approvedLogin: Bool
+        // The v2 plan, carrying the terms the user set on the sheet.
+        var approvedPlan: AppConnect.GrantPlan?
         if let appConnect = request.appConnect {
-            // The plan carries the terms the user set on the sheet; whatever
-            // the sheet did, every key needs a budget and an expiry in bounds.
             guard let plan = consent.login.grantPlan else {
                 throw DashConnectPlatformError.approvalOutOfDate
             }
-            if let failure = AppConnect.termsFailure(of: plan, now: now()) { throw failure }
             let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
             approvedLogin = AppConnect.isAvailable(protocolVersion: protocolVersion)
                 && plan.appEphemeralPubKeyHash == requestHash
+            approvedPlan = plan
         } else {
             approvedLogin = consent.login == login
         }
         guard approvedLogin else {
             Self.logger.error("🔗 DASHCONNECT :: the network now answers with another login than the one approved")
             throw DashConnectPlatformError.approvalOutOfDate
+        }
+        // The plan is this request's: whatever the sheet did, every key
+        // needs a budget and an expiry in bounds.
+        if let approvedPlan, let failure = AppConnect.termsFailure(of: approvedPlan, now: now()) {
+            throw failure
         }
         do {
             try await authorize()
@@ -2430,7 +2440,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(
+        _ request: DashStRequest,
+        refusesTokenPurchase: Bool
+    ) async throws -> DashConnectStAction {
         try validateNetwork(request.network)
         await showActiveWalletRows()
         let context = try await requireContext()
@@ -2453,6 +2466,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             return .keyRegistrationCompleted
         case .tokenPurchase(let purchase):
+            // Refused before `makeTokenPurchaseRequest` reads the network.
+            guard !refusesTokenPurchase else { throw DashConnectPlatformError.tokenPurchaseNeedsUsername }
             return .tokenPurchaseApprovalRequired(
                 try await makeTokenPurchaseRequest(purchase, context: context)
             )

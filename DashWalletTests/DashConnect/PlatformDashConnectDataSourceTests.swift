@@ -1682,7 +1682,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         throw PurchaseSpyError.unsupported
     }
 
@@ -1829,12 +1829,24 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         return MockDashConnectDataSource.sample(.active)
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    private var storedLastRefusesTokenPurchase: Bool?
+
+    /// Whether the last state transition was asked to refuse a token
+    /// purchase.
+    var lastRefusesTokenPurchase: Bool? {
+        lock.withLock { storedLastRefusesTokenPurchase }
+    }
+
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         let (action, failure) = lock.withLock { () -> (DashConnectStAction, Error?) in
             storedHandledStateTransitions += 1
+            storedLastRefusesTokenPurchase = refusesTokenPurchase
             return (storedStateTransitionAction, storedStateTransitionFailure)
         }
         if let failure { throw failure }
+        if refusesTokenPurchase, case .tokenPurchaseApprovalRequired = action {
+            throw DashConnectPlatformError.tokenPurchaseNeedsUsername
+        }
         return action
     }
 
@@ -2513,7 +2525,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         throw PurchaseSpyError.unsupported
     }
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         throw PurchaseSpyError.unsupported
     }
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
@@ -4833,21 +4845,68 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         tokenId: Data(repeating: 0xab, count: 32), tokenContractPosition: 0, tokenCount: 1, tokenDecimals: 0,
         tokenName: nil, totalAgreedPriceCredits: 1, walletUsername: nil, walletIdentityId: "identity")
 
-    func testWithoutAUsernameATokenPurchaseIsRefused() async {
-        let (viewModel, spy) = viewModel(
-            plan: Self.plan([Self.profile]), hasUsername: { false }, rows: [MockDashConnectDataSource.sample(.active)])
+    func testWithoutAUsernameATokenPurchaseIsRefusedWithItsReason() async {
+        // On a page with connections, and on the create-username page.
+        for rows in [[MockDashConnectDataSource.sample(.active)], []] {
+            let (viewModel, spy) = viewModel(plan: Self.plan([Self.profile]), hasUsername: { false }, rows: rows)
+            spy.parsed = .stateTransition(DashStRequest(transitionBytes: Data([0x01]), network: .testnet))
+            spy.stateTransitionAction = .tokenPurchaseApprovalRequired(Self.purchase)
+            await waitUntil { viewModel.hasReadRows }
+
+            viewModel.onURIReceived("dash-st:x")
+            await waitUntil { viewModel.message != nil }
+            XCTAssertEqual(spy.lastRefusesTokenPurchase, true, "refused once parsed, before the network is read")
+            XCTAssertNil(viewModel.pendingTokenPurchase)
+            XCTAssertEqual(
+                viewModel.message?.text,
+                NSLocalizedString(
+                    "Create a username to buy tokens in apps, then ask the app again.",
+                    comment: "DashConnect: a token purchase arrived while the wallet has no username"),
+                "said on every page")
+        }
+    }
+
+    /// With no identity the request stops before its kind is read: the user
+    /// is told to create a username for apps at all.
+    func testWithoutAUsernameOrAnIdentityAStateTransitionSaysWhy() async {
+        let (viewModel, spy) = viewModel(plan: Self.plan([Self.profile]), hasUsername: { false })
         spy.parsed = .stateTransition(DashStRequest(transitionBytes: Data([0x01]), network: .testnet))
-        spy.stateTransitionAction = .tokenPurchaseApprovalRequired(Self.purchase)
+        spy.stateTransitionFailure = DashConnectPlatformError.noIdentity
         await waitUntil { viewModel.hasReadRows }
 
         viewModel.onURIReceived("dash-st:x")
         await waitUntil { viewModel.message != nil }
-        XCTAssertNil(viewModel.pendingTokenPurchase, "even from an app with a connection here")
         XCTAssertEqual(
             viewModel.message?.text,
             NSLocalizedString(
                 "Create a username to connect apps, then ask the app for a new code.",
-                comment: "DashConnect: a request arrived while the wallet has no username"))
+                comment: "DashConnect: a request arrived while the wallet has no username"),
+            "the reason the user can act on, not the missing identity")
+    }
+
+    func testWithAUsernameAMissingIdentityShowsItsReason() async {
+        let (viewModel, spy) = viewModel(plan: Self.plan([Self.profile]))
+        spy.parsed = .stateTransition(DashStRequest(transitionBytes: Data([0x01]), network: .testnet))
+        spy.stateTransitionFailure = DashConnectPlatformError.noIdentity
+
+        viewModel.onURIReceived("dash-st:x")
+        await waitUntil { viewModel.message != nil }
+        XCTAssertEqual(
+            viewModel.message?.text,
+            String(
+                format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
+                DashConnectPlatformError.noIdentity.localizedDescription))
+    }
+
+    func testWithAUsernameATokenPurchaseIsShown() async {
+        let (viewModel, spy) = viewModel(plan: Self.plan([Self.profile]))
+        spy.parsed = .stateTransition(DashStRequest(transitionBytes: Data([0x01]), network: .testnet))
+        spy.stateTransitionAction = .tokenPurchaseApprovalRequired(Self.purchase)
+
+        viewModel.onURIReceived("dash-st:x")
+        await waitUntil { viewModel.pendingTokenPurchase != nil }
+        XCTAssertEqual(spy.lastRefusesTokenPurchase, false)
+        XCTAssertEqual(viewModel.pendingTokenPurchase, Self.purchase)
     }
 
     /// A v2 request opened as a link and returning to yap.pr, from the app
@@ -4993,13 +5052,34 @@ final class AppConnectApprovalTermsTests: XCTestCase {
             "its own reason, with or without a username")
     }
 
-    func testAnExpiryGoneByWithRecordedTermsStaysAFailure() async throws {
+    func testRecordedTermsThatLapsedStayAFailure() async throws {
         let (viewModel, spy, opened) = try linkedApproval(knownApp: true)
         let plan = Self.plan([Self.profile])
         spy.recordedAccess = AppConnect.GrantedAccess(plan: AppConnect.applying(
             AppConnect.ConnectionTerms(fundingLimit: Self.dash / 1000, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
             to: plan, now: Self.now)!, receivesMessages: false)
         spy.approveFailures = [DashConnectPlatformError.grantNotRecorded, DashConnectPlatformError.approvalTermsExpired]
+        viewModel.onURIReceived("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approvalTermsLocked && !viewModel.isApproving }
+        XCTAssertTrue(viewModel.approvalTermsLocked, "an earlier attempt may have landed")
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
+
+        viewModel.denyPendingRequest(asksToReturn: true)
+        XCTAssertEqual(
+            opened.urls.first?.absoluteString.contains("ac=failed"), true,
+            "the earlier attempt's failure stands")
+    }
+
+    func testRecordedTermsTheAppMustRenewStayAFailure() async throws {
+        let (viewModel, spy, opened) = try linkedApproval(knownApp: true)
+        let plan = Self.plan([Self.profile])
+        spy.recordedAccess = AppConnect.GrantedAccess(plan: AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 1000, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
+            to: plan, now: Self.now)!, receivesMessages: false)
+        spy.approveFailures = [DashConnectPlatformError.grantNotRecorded, DashConnectPlatformError.sessionKeyUnusable]
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.approvePendingRequest()
@@ -5029,6 +5109,54 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertFalse(viewModel.mayScan(), "nothing starts while the step is up")
         XCTAssertNil(viewModel.message)
         XCTAssertEqual(opened.urls, [])
+    }
+
+    func testARefusedLinkDuringTheReturnStepOpensNoReturn() async throws {
+        var hasUsername = true
+        let (viewModel, spy, opened) = try linkedApproval(knownApp: false, hasUsername: { hasUsername })
+        viewModel.onURIReceived("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.denyPendingRequest(asksToReturn: true)
+        let asked = try XCTUnwrap(viewModel.pendingReturn)
+
+        // A known app's link, whose `ac=failed` would open without the step.
+        var known = MockDashConnectDataSource.sampleLoginRequest
+        known.appConnect = try DashConnectUri.parseAppConnectRequest("dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        spy.parsed = .login(known)
+        hasUsername = false
+        viewModel.onURIReceived("dash-key:y")
+        try? await Task.sleep(nanoseconds: 50_000_000)
+
+        XCTAssertEqual(opened.urls, [], "nothing opens under the step")
+        XCTAssertEqual(viewModel.pendingReturn, asked)
+        XCTAssertEqual(
+            viewModel.returnStepNote,
+            NSLocalizedString(
+                "Create a username to connect apps, then ask the app for a new code.",
+                comment: "DashConnect: a request arrived while the wallet has no username"),
+            "the step's sheet says why")
+        viewModel.stayInWallet()
+        XCTAssertNil(viewModel.returnStepNote)
+    }
+
+    func testChangingTheTermsClearsOnlyANoteOnThem() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        let (viewModel, spy) = viewModel(plan: plan)
+        spy.approveFailures = [Refused()]
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approveNeedsTopUp }
+
+        let balanceNote = viewModel.approveError
+        XCTAssertNotNil(balanceNote)
+        XCTAssertTrue(viewModel.setFundingLimit(Self.dash / 10))
+        viewModel.setExpiry(days: 30)
+        XCTAssertEqual(viewModel.approveError, balanceNote, "a balance refusal stays")
+        XCTAssertTrue(viewModel.approveNeedsTopUp, "with its top-up")
     }
 
     func testTheSheetAndTheReturnStepReadTheSameWebsite() async throws {

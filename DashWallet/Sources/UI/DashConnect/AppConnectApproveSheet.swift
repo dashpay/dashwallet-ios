@@ -297,6 +297,8 @@ struct AppConnectApproveSheet: View {
 struct DashConnectReturnStep: View {
     /// Where the return leads, e.g. "yap.pr".
     let host: String
+    /// Why a request that came meanwhile was not taken.
+    var note: String?
     let onOpen: () -> Void
     let onStay: () -> Void
 
@@ -324,6 +326,7 @@ struct DashConnectReturnStep: View {
             }
 
             VStack(spacing: 10) {
+                DashConnectInlineErrorToast(message: note)
                 DashUIKit.DashButton(
                     text: String(
                         format: NSLocalizedString(

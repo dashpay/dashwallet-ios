@@ -6776,6 +6776,9 @@
 /* DashConnect: do not return to an app the wallet does not know */
 "Stay in the wallet" = "Stay in the wallet";
 
+/* DashConnect: a token purchase arrived while the wallet has no username */
+"Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
+
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
 

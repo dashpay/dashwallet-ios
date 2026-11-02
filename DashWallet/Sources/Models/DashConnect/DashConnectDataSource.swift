@@ -47,8 +47,11 @@ protocol DashConnectDataSource {
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection
     /// Parses a scanned `dash-st:` payload and either completes key
     /// registration immediately or returns a token purchase that awaits
-    /// explicit user approval via `approveTokenPurchase(_:)`.
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
+    /// explicit user approval via `approveTokenPurchase(_:)`. With
+    /// `refusesTokenPurchase`, a token purchase throws
+    /// `DashConnectPlatformError.tokenPurchaseNeedsUsername` once parsed,
+    /// before anything about it is read from the network.
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction
     /// Rebuilds, signs and submits a token purchase the user approved.
     ///
     /// Throws `DashConnectTokenPurchaseFailure`, which says whether the
@@ -341,7 +344,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         try await Task.sleep(nanoseconds: 400_000_000)
         throw DashConnectMockError.stateTransitionNotSupported
     }

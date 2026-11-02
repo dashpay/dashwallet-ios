@@ -114,6 +114,7 @@ struct ConnectionsScreen: View {
                 // browser opens an app the wallet does not know.
                 DashConnectReturnStep(
                     host: url.host ?? url.absoluteString,
+                    note: viewModel.returnStepNote,
                     onOpen: { viewModel.openPendingReturn() },
                     onStay: { viewModel.stayInWallet() })
                     .approveSheetPresentation(isLoading: false)
