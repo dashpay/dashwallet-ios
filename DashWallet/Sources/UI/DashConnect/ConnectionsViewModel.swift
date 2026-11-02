@@ -60,8 +60,8 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case confirming
         /// A two-QR login waiting for the app's second code.
         case waitingForSecondScan
-        /// Active, with every live key past its expiry by this phone's clock
-        /// and by the Core tip with its margin (`ConnectionExpiry.Verdict.expired`).
+        /// Active, with every live key past its expiry by the Core tip
+        /// with its margin (`ConnectionExpiry.Verdict.expired`).
         case expired
         case disconnected
 

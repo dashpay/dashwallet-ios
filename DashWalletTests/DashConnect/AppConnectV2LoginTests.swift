@@ -2421,6 +2421,49 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(expiries["app"], .undecided, "key 6 is in no store record, so whose it is cannot be told")
     }
 
+    func testALiveProfileKeyNoRecordNamesLeavesAnAppPastExpiryUndecided() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let future = Self.expiryNow + Int64(Self.dayMilliseconds)
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        let profile = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
+        func verdict(otherBound: AppConnect.StoredBound, grants extra: [AppConnectGrant] = []) -> ConnectionExpiry.Verdict? {
+            Self.expiries(
+                apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")] + extra,
+                bindings: [
+                    Self.storedKey(3, bound: nil, expiresAt: past, sessionKeyShaped: true),
+                    Self.storedKey(7, bound: otherBound, expiresAt: future),
+                ],
+                keys: [Self.identityKey(3, expiresAt: past), Self.identityKey(7, expiresAt: future)],
+                chainTime: Self.expiryNow)["app"]
+        }
+        XCTAssertEqual(
+            verdict(otherBound: profile), .undecided,
+            "a profile bound names no app, so the live key may be this app's")
+        XCTAssertEqual(
+            verdict(otherBound: profile, grants: [Self.grant(sessionKeyId: 7, appId: "other")]), .expired,
+            "a record names the profile key as another app's")
+        XCTAssertEqual(
+            verdict(otherBound: .documentType(contractId: Data(repeating: 0xB2, count: 32), name: "note")), .expired,
+            "a bound to another app's own document type says the key is that app's")
+
+        // The profile key holds the app back until the tip shows it expired.
+        func judgement(profileExpiresAt: Int64) -> AppConnect.ExpiryJudgement? {
+            AppConnect.connectionExpiryJudgements(
+                identityId: "identity", apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+                bindings: [
+                    Self.storedKey(3, bound: nil, expiresAt: past, sessionKeyShaped: true),
+                    Self.storedKey(7, bound: profile, expiresAt: profileExpiresAt),
+                ],
+                currentIdentityPublicKeys: [Self.identityKey(3, expiresAt: past), Self.identityKey(7, expiresAt: profileExpiresAt)],
+                nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)["app"]
+        }
+        XCTAssertEqual(
+            judgement(profileExpiresAt: future)?.rejudgeAtChainTime, future + AppConnect.chainTimeMarginMilliseconds,
+            "judged again once the tip shows the profile key expired")
+        XCTAssertEqual(
+            judgement(profileExpiresAt: past)?.verdict, .expired, "a profile key the tip shows expired cannot sign for it")
+    }
+
     func testASessionKeyBoundToTheAppWithNoRecordIsJudged() {
         let app = Self.appId.toBase58String()
         let past = Self.expiryNow - Int64(Self.dayMilliseconds)
