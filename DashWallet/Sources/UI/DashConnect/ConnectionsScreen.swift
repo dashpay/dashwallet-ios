@@ -72,6 +72,8 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        .onAppear { viewModel.checkExpiries() }
+        .onDisappear { viewModel.stopCheckingExpiries() }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text(message.title),
@@ -145,31 +147,64 @@ struct ConnectionsScreen: View {
         let tab = viewModel.selectedTab
         let rows = viewModel.rows(for: tab)
         if tab == .disconnected, viewModel.historyIsUnreadable {
-            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
-        } else if !rows.isEmpty {
-            ConnectionsList(
-                items: rows,
-                onOpen: { viewModel.showConnection($0) },
-                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
-                onReconnect: showScanner)
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
         } else {
-            tabNote(Self.emptyTabText(tab))
+            if !rows.isEmpty {
+                ConnectionsList(
+                    items: rows,
+                    onOpen: { viewModel.showConnection($0) },
+                    onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                    onReconnect: showScanner)
+            }
+            // Under Expired, "none" is said only once a check has ended.
+            if tab == .expired, viewModel.isCheckingExpiries {
+                checking
+            } else if tab == .expired, viewModel.expiryCheckIsIncomplete {
+                // Some apps could not be checked: more may have expired. On a
+                // network with no identity to read, Retry tells the same.
+                tabNote(
+                    NSLocalizedString("Which connections have expired could not be checked.", comment: "DashConnect"),
+                    retries: viewModel.expiryCheck != .unavailable)
+            } else if tab == .expired, viewModel.expiriesAreUndecided {
+                // Told as far as the clocks and the keys allow: Retry would
+                // tell the same.
+                tabNote(
+                    NSLocalizedString("Whether some connections have expired is not known yet.", comment: "DashConnect"),
+                    retries: false)
+            } else if rows.isEmpty {
+                tabNote(Self.emptyTabText(tab), retries: false)
+            }
         }
     }
 
-    private func tabNote(_ text: String) -> some View {
-        Text(text)
-            .dashFont(.subhead)
-            .foregroundColor(Color.dash.secondaryText)
-            .multilineTextAlignment(.center)
+    private var checking: some View {
+        SwiftUI.ProgressView()
             .frame(maxWidth: .infinity)
             .padding(.top, 20)
+            .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
+    }
+
+    private func tabNote(_ text: String, retries: Bool) -> some View {
+        VStack(spacing: 12) {
+            Text(text)
+                .dashFont(.subhead)
+                .foregroundColor(Color.dash.secondaryText)
+                .multilineTextAlignment(.center)
+            if retries {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Retry", comment: "DashConnect"),
+                    size: .small, style: .tintedBlue, action: viewModel.retryExpiryCheck)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
     }
 
     private static func emptyTabText(_ tab: ConnectionsTab) -> String {
         switch tab {
         case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
         case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
         }
     }
 
@@ -177,6 +212,7 @@ struct ConnectionsScreen: View {
         switch tab {
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         }
     }
 
@@ -191,6 +227,7 @@ struct ConnectionsScreen: View {
             fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
+            expiryCheck: viewModel.expiryCheck,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
             onDisconnect: viewModel.disconnectShown(asked:),

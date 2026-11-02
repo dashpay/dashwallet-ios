@@ -28,6 +28,7 @@
 //  SPV.stop → host.stop.
 //
 
+import Combine
 import Foundation
 import OSLog
 import SwiftData
@@ -296,7 +297,8 @@ final class SwiftDashSDKHost {
     // MARK: - Owned state
 
     private(set) var sdk: SDK?
-    private(set) var manager: PlatformWalletManager?
+    /// Published so a reader can follow the manager that runs now.
+    @Published private(set) var manager: PlatformWalletManager?
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?

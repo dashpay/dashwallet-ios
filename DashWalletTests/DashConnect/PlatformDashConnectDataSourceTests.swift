@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -85,7 +86,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             // a fresh install that is mainnet, which the initializer rejects.
             supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing]),
-            activeWalletIdHex: { "wallet" }
+            activeWalletIdHex: { "wallet" },
+            expiryDependencies: idleExpiryDependencies(),
+            chainTimePublisher: Empty().eraseToAnyPublisher(),
+            runtimeChanges: Empty().eraseToAnyPublisher()
         )
 
         let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
@@ -110,7 +114,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             // a fresh install that is mainnet, which the initializer rejects.
             supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing]),
-            activeWalletIdHex: { "wallet" }
+            activeWalletIdHex: { "wallet" },
+            expiryDependencies: idleExpiryDependencies(),
+            chainTimePublisher: Empty().eraseToAnyPublisher(),
+            runtimeChanges: Empty().eraseToAnyPublisher()
         )
 
         let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
@@ -134,7 +141,10 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             // a fresh install that is mainnet, which the initializer rejects.
             supportedNetwork: .testnet,
             store: TestDashConnectStore(initialConnections: [existing]),
-            activeWalletIdHex: { "wallet" }
+            activeWalletIdHex: { "wallet" },
+            expiryDependencies: idleExpiryDependencies(),
+            chainTimePublisher: Empty().eraseToAnyPublisher(),
+            runtimeChanges: Empty().eraseToAnyPublisher()
         )
         let request = try makeLoginRequest(
             contractId: Data(repeating: 0x44, count: 32),
@@ -1621,8 +1631,12 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     }
 
     var listing: AnyPublisher<DashConnectListing, Never> {
-        Just(DashConnectListing(scope: nil, rows: [], disconnected: [])).eraseToAnyPublisher()
+        Just(DashConnectListing(scope: nil, rows: [], disconnected: [], expiries: .notStarted)).eraseToAnyPublisher()
     }
+
+    func refreshConnectionExpiries(forcesRead: Bool) {}
+    func stopConnectionExpiryReads() {}
+    func connectionExpiriesForegrounded() {}
 
     /// Lets a suspended `approveTokenPurchase` finish.
     func release() {
@@ -1744,8 +1758,12 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     var listing: AnyPublisher<DashConnectListing, Never> {
-        Just(DashConnectListing(scope: nil, rows: [], disconnected: [])).eraseToAnyPublisher()
+        Just(DashConnectListing(scope: nil, rows: [], disconnected: [], expiries: .notStarted)).eraseToAnyPublisher()
     }
+
+    func refreshConnectionExpiries(forcesRead: Bool) {}
+    func stopConnectionExpiryReads() {}
+    func connectionExpiriesForegrounded() {}
 
     func parseQR(_ content: String) async throws -> DashConnectQr {
         .login(loginRequest)
@@ -2165,6 +2183,154 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertNil(viewModel.takeDisconnectQuestion())
     }
 
+    func testARowIsUnderExpiredOnlyWhenTheCheckToldItExpired() async {
+        let spy = ConnectionStatusSpy(
+            rows: [
+                Self.row("expired", .active), Self.row("past", .active), Self.row("off", .active),
+                Self.row("unknown", .active), Self.row("renewing", .confirming),
+            ],
+            history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 5 }
+        spy.sendExpiries(.read, [
+            "expired": .expired, "past": .pastByPhone, "off": .keysOff, "unknown": .unknown, "renewing": .expired,
+        ])
+        await waitUntil { viewModel.expiryCheck == .read }
+
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["expired"])
+        XCTAssertEqual(viewModel.rows(for: .expired).first?.status, .expired)
+        XCTAssertTrue(viewModel.rows(for: .expired).first?.status.offersDisconnect == true)
+        XCTAssertEqual(
+            Set(viewModel.rows(for: .active).map(\.id)), ["past", "off", "unknown", "renewing"],
+            "a row confirming a renewal stays under Active whatever its earlier keys show")
+        XCTAssertEqual(viewModel.rows(for: .active).first { $0.id == "off" }?.expiry, .keysOff)
+        XCTAssertTrue(viewModel.expiryCheckIsIncomplete, "an app left unknown may have expired too")
+    }
+
+    func testAnAppPastByThePhoneOnlyStaysActiveAndItsSheetSaysSo() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        spy.sendExpiries(.read, ["app": .pastByPhone])
+        await waitUntil { viewModel.expiryCheck == .read }
+
+        XCTAssertEqual(viewModel.rows(for: .expired), [])
+        let item = viewModel.rows(for: .active)[0]
+        XCTAssertEqual(item.status, .active)
+        XCTAssertEqual(item.expiry, .pastByPhone)
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete, "the check told it; it is not a failed check")
+        XCTAssertTrue(viewModel.expiriesAreUndecided, "Expired says it is not known yet, without Retry")
+        viewModel.showConnection(item)
+        XCTAssertEqual(viewModel.shownConnection?.expiry, .pastByPhone)
+        let sheet = Self.sheet(for: item, check: viewModel.expiryCheck)
+        XCTAssertEqual(
+            sheet.expiryNote,
+            "The keys' expiry time has passed on this phone; the network has not shown it yet.")
+        XCTAssertNotEqual(sheet.expiryNote, "Whether this connection has expired could not be checked.")
+    }
+
+    func testAFailedCheckOffersRetryWhichChecksAgain() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.checkExpiries()
+        XCTAssertEqual(spy.expiryRefreshes, 1, "the page appearing checks")
+        XCTAssertTrue(viewModel.isCheckingExpiries, "before any check has ended, Expired says nothing is known")
+        spy.sendExpiries(.checking)
+        await waitUntil { viewModel.expiryCheck == .checking }
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete, "no note while it checks")
+
+        spy.sendExpiries(.failed)
+        await waitUntil { viewModel.expiryCheck == .failed }
+        XCTAssertTrue(viewModel.expiryCheckIsIncomplete, "the Expired tab shows the note and Retry")
+        XCTAssertEqual(
+            Self.sheet(for: viewModel.rows(for: .active)[0], check: viewModel.expiryCheck).expiryNote,
+            "Whether this connection has expired could not be checked.")
+        viewModel.retryExpiryCheck()
+        XCTAssertEqual(spy.expiryRefreshes, 2)
+        XCTAssertEqual(spy.forcedExpiryRefreshes, 1, "Retry reads anew; the page appearing may not")
+    }
+
+    func testTheExpiredTabSaysNoneOnlyWhenEveryActiveRowWasTold() async {
+        let spy = ConnectionStatusSpy(
+            rows: [Self.row("current", .active), Self.row("off", .active), Self.row("nothing", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 3 }
+        spy.sendExpiries(.read, ["current": .current, "off": .keysOff, "nothing": .notJudged])
+        await waitUntil { viewModel.expiryCheck == .read }
+        XCTAssertFalse(viewModel.isCheckingExpiries)
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete)
+        XCTAssertFalse(viewModel.expiriesAreUndecided, "\"No expired connections\" holds")
+
+        spy.sendExpiries(.read, ["current": .current, "off": .keysOff, "nothing": .pastByPhone])
+        await waitUntil { viewModel.expiriesAreUndecided }
+        XCTAssertTrue(viewModel.expiriesAreUndecided, "one may have expired: not \"none\"")
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete, "no Retry")
+
+        spy.sendExpiries(.read, ["current": .current, "off": .keysOff, "nothing": .unknown])
+        await waitUntil { viewModel.expiryCheckIsIncomplete }
+        XCTAssertFalse(viewModel.expiriesAreUndecided, "an unknown row is a check to retry instead")
+    }
+
+    func testComingBackToTheForegroundTellsTheExpiryCheck() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let center = NotificationCenter()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, notificationCenter: center)
+        await waitUntil { !viewModel.connections.isEmpty }
+        center.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        await waitUntil { spy.expiryForegrounds == 1 }
+        XCTAssertEqual(spy.expiryForegrounds, 1)
+    }
+
+    func testWithNoActiveRowTheExpiredTabNeitherChecksNorRetries() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("waiting", .approved)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        XCTAssertFalse(viewModel.isCheckingExpiries, "no spinner: nothing to check")
+        spy.sendExpiries(.failed)
+        await waitUntil { viewModel.expiryCheck == .failed }
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete, "no \"could not be checked\" and no Retry")
+    }
+
+    func testAnUnavailableCheckSaysCouldNotBeCheckedWithoutRetry() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        spy.sendExpiries(.unavailable)
+        await waitUntil { viewModel.expiryCheck == .unavailable }
+
+        XCTAssertTrue(viewModel.expiryCheckIsIncomplete, "not \"No expired connections\"")
+        XCTAssertFalse(viewModel.isCheckingExpiries)
+        XCTAssertEqual(
+            Self.sheet(for: viewModel.rows(for: .active)[0], check: viewModel.expiryCheck).expiryNote,
+            "Whether this connection has expired could not be checked.")
+    }
+
+    func testAnAppAStrayKeyMayBelongToIsNotAFailedCheck() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        spy.sendExpiries(.read, ["app": .undecided])
+        await waitUntil { viewModel.expiryCheck == .read }
+
+        XCTAssertEqual(viewModel.rows(for: .active).map(\.id), ["app"])
+        XCTAssertFalse(viewModel.expiryCheckIsIncomplete, "Retry cannot tell more: no note")
+        XCTAssertTrue(viewModel.expiriesAreUndecided)
+        XCTAssertEqual(
+            Self.sheet(for: viewModel.rows(for: .active)[0], check: viewModel.expiryCheck).expiryNote,
+            "A key on this identity could not be matched to an app, so whether this connection has expired is not known.")
+        viewModel.stopCheckingExpiries()
+        XCTAssertEqual(spy.expiryStops, 1, "the page leaving the screen stops the check")
+    }
+
+    private static func sheet(for item: ConnectionSheetItem, check: ConnectionExpiries.Check) -> ConnectionSheet {
+        ConnectionSheet(
+            item: item, details: nil, detailsFailed: false, granted: nil, withheld: [], funding: nil,
+            fundingFailed: false, connectedAt: nil, isBusy: false, expiryCheck: check, message: nil,
+            onClose: {}, onDisconnect: { _ in }, takeDisconnectQuestion: { nil }, disconnectQuestion: { nil },
+            onScan: {}, onMockScan: {}, onShowFundingLimitsInfo: {})
+    }
+
     private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition(), Date() < deadline {
@@ -2204,7 +2370,8 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
 
     init(rows: [DAppConnection], history: [DisconnectedConnection]? = []) {
         scope = rows.first?.scope
-        published = CurrentValueSubject(DashConnectListing(scope: scope, rows: rows, disconnected: history))
+        published = CurrentValueSubject(
+            DashConnectListing(scope: scope, rows: rows, disconnected: history, expiries: .notStarted))
         self.history = history
     }
 
@@ -2229,7 +2396,53 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
             if let rowScope = value.first?.scope { scope = rowScope }
             return self.history
         }
-        published.send(DashConnectListing(scope: scope, rows: value, disconnected: history))
+        published.send(DashConnectListing(
+            scope: scope, rows: value, disconnected: history, expiries: published.value.expiries))
+    }
+
+    /// The expiry check of the rows published now: `verdicts` by app, each
+    /// told for its row as it is.
+    func sendExpiries(_ check: ConnectionExpiries.Check, _ verdicts: [String: ConnectionExpiry.Verdict] = [:]) {
+        let current = published.value
+        let rowsById = Dictionary(current.rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        published.send(DashConnectListing(
+            scope: current.scope, rows: current.rows, disconnected: current.disconnected,
+            expiries: ConnectionExpiries(
+                identityId: "identity", check: check,
+                byApp: verdicts.reduce(into: [:]) { byApp, entry in
+                    if let row = rowsById[entry.key] { byApp[entry.key] = ConnectionExpiry(verdict: entry.value, row: row) }
+                })))
+    }
+
+    private var storedExpiryRefreshes = 0
+    /// How often the view model asked for the expiry check.
+    var expiryRefreshes: Int { lock.withLock { storedExpiryRefreshes } }
+
+    private var storedForcedRefreshes = 0
+    /// How many of them asked to read anew.
+    var forcedExpiryRefreshes: Int { lock.withLock { storedForcedRefreshes } }
+
+    func refreshConnectionExpiries(forcesRead: Bool) {
+        lock.withLock {
+            storedExpiryRefreshes += 1
+            if forcesRead { storedForcedRefreshes += 1 }
+        }
+    }
+
+    private var storedExpiryStops = 0
+    /// How often the view model stopped the expiry check.
+    var expiryStops: Int { lock.withLock { storedExpiryStops } }
+
+    func stopConnectionExpiryReads() {
+        lock.withLock { storedExpiryStops += 1 }
+    }
+
+    private var storedForegrounds = 0
+    /// How often the view model said the app came back to the foreground.
+    var expiryForegrounds: Int { lock.withLock { storedForegrounds } }
+
+    func connectionExpiriesForegrounded() {
+        lock.withLock { storedForegrounds += 1 }
     }
 
     /// Another wallet's list: `rows` and `history` under `scope`.
@@ -2238,7 +2451,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
             self.scope = scope
             self.history = history
         }
-        published.send(DashConnectListing(scope: scope, rows: rows, disconnected: history))
+        published.send(DashConnectListing(scope: scope, rows: rows, disconnected: history, expiries: .notStarted))
     }
 
     func parseQR(_ content: String) async throws -> DashConnectQr { throw PurchaseSpyError.unsupported }
@@ -3105,6 +3318,8 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([other])
         let moved = expectation(description: "the active wallet's rows are published")
+        // Its expiry check publishes the same rows again.
+        moved.assertForOverFulfill = false
         let subscription = dataSource.connections.sink { rows in
             if rows.map(\.id) == [other.id] { moved.fulfill() }
         }
@@ -3693,10 +3908,13 @@ final class AppConnectLoginTests: XCTestCase {
         for _ in 0..<100 where listings.count < 2 {
             try await Task.sleep(nanoseconds: 10_000_000)
         }
-        XCTAssertEqual(listings.count, 2)
-        XCTAssertNotEqual(listings.last?.scope, listings.first?.scope)
-        XCTAssertEqual(listings.last?.rows, [])
-        XCTAssertEqual(listings.last?.disconnected, [], "wallet A's disconnected app is not wallet B's")
+        // After the switch the list is wallet B's, also as its expiry check
+        // publishes.
+        let switched = listings.dropFirst()
+        XCTAssertFalse(switched.isEmpty)
+        XCTAssertTrue(switched.allSatisfy { $0.scope != listings.first?.scope })
+        XCTAssertTrue(switched.allSatisfy { $0.rows == [] })
+        XCTAssertTrue(switched.allSatisfy { $0.disconnected == [] }, "wallet A's disconnected app is not wallet B's")
     }
 
     /// A disconnect publishes its result in one value: the row gone and the
@@ -3866,7 +4084,10 @@ final class AppConnectLoginTests: XCTestCase {
             networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
             operationGate: operationGate,
-            defaults: defaults
+            defaults: defaults,
+            expiryDependencies: idleExpiryDependencies(),
+            chainTimePublisher: Empty().eraseToAnyPublisher(),
+            runtimeChanges: Empty().eraseToAnyPublisher()
         )
         return (dataSource, connections)
     }
@@ -3986,5 +4207,302 @@ final class AppConnectLoginTests: XCTestCase {
             index = next
         }
         return Data(bytes)
+    }
+}
+
+/// An expiry check that reads nothing: the runtime's network has no
+/// identity to read.
+private func idleExpiryDependencies() -> ConnectionExpiryChecker.Dependencies {
+    ConnectionExpiryChecker.Dependencies(
+        readKeys: { _ in .unavailable }, judge: { _, _, _, _, _ in [:] }, now: Date.init,
+        chainTime: { nil }, identityId: { nil }, sleep: { _ in })
+}
+
+/// The data source's wiring of its expiry check: what it tells the check,
+/// and what it publishes of it.
+@MainActor
+extension PlatformDashConnectDataSourceTests {
+    private static let expiryNow = Date(timeIntervalSince1970: 1_800_000_000)
+    private static let expiryAppA = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+    private static let expiryAppB = "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"
+
+    /// Answers the reads of the identity's keys, one answer per read (the
+    /// last one repeats), optionally holding each read until released.
+    @MainActor
+    private final class IdentityKeysReader {
+        var answers: [ConnectionExpiryReadResult]
+        var holds = false
+        private(set) var reads = 0
+        private var held: [CheckedContinuation<Void, Never>] = []
+
+        init(_ answers: [ConnectionExpiryReadResult]) {
+            self.answers = answers
+        }
+
+        func read() async -> ConnectionExpiryReadResult {
+            reads += 1
+            if holds { await withCheckedContinuation { held.append($0) } }
+            return answers.count > 1 ? answers.removeFirst() : answers[0]
+        }
+
+        func release() {
+            holds = false
+            let waiting = held
+            held = []
+            waiting.forEach { $0.resume() }
+        }
+    }
+
+    /// Every listing the data source published, in order.
+    @MainActor
+    private final class Listings {
+        private(set) var all: [DashConnectListing] = []
+        private var subscription: AnyCancellable?
+
+        init(_ dataSource: PlatformDashConnectDataSource) {
+            subscription = dataSource.listing.sink { [weak self] in self?.all.append($0) }
+        }
+
+        var last: DashConnectListing? { all.last }
+    }
+
+    private final class Box<Value> {
+        var value: Value
+        init(_ value: Value) { self.value = value }
+    }
+
+    private struct ExpiryFixture {
+        let dataSource: PlatformDashConnectDataSource
+        let connections: UserDefaultsDashConnectStore
+        let center: NotificationCenter
+        let activeWallet: Box<String?>
+        let listings: Listings
+    }
+
+    private static func expiryRow(_ id: String, updatedAt: TimeInterval = 10) -> DAppConnection {
+        DAppConnection(
+            id: id, name: id, url: "\(id).app", status: .active,
+            updatedAt: Date(timeIntervalSince1970: updatedAt), loginKind: .oneQR)
+    }
+
+    private static func expiryGrant(of appId: String, keyId: UInt32) -> AppConnectGrant {
+        AppConnectGrant(
+            identityId: "identity", appContractId: appId, documentId: "document-\(keyId)",
+            values: .init(appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc"),
+            sessionKeyId: keyId, totalBudget: nil, expiresAt: nil, publishedAt: Date(timeIntervalSince1970: 1_000))
+    }
+
+    /// The identity with `keyIds`, each past its expiry by `ago` seconds
+    /// (ahead of it when negative).
+    private static func identityKeys(
+        _ keyIds: [UInt32], expiredAgo ago: TimeInterval, identityId: String = "identity"
+    ) -> ConnectionExpiryReadResult {
+        let expiresAt = Int64(AppConnect.milliseconds(expiryNow.addingTimeInterval(-ago)))
+        return .keys(ConnectionIdentityKeys(
+            identityId: identityId,
+            keys: keyIds.map {
+                ManagedIdentity.IdentityPublicKeyInfo(
+                    keyId: Int32(bitPattern: $0), purpose: .authentication, securityLevel: .high,
+                    keyType: .ecdsaHash160, readOnly: false, disabledAt: nil,
+                    data: Data(repeating: UInt8($0), count: 20), totalBudget: nil, expiresAt: expiresAt)
+            },
+            bindings: []))
+    }
+
+    /// A data source on wallet A with `rows` and `grants`, whose expiry check
+    /// reads through `reader` and judges with the classifier.
+    private func makeExpiryFixture(
+        rows: [DAppConnection],
+        grants: [AppConnectGrant],
+        reader: IdentityKeysReader,
+        identity: Box<String?> = Box("identity")
+    ) -> ExpiryFixture {
+        let suiteName = "PlatformDashConnectDataSourceTests.expiry.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        addTeardownBlock { defaults.removePersistentDomain(forName: suiteName) }
+        let center = NotificationCenter()
+        let activeWallet = Box<String?>("wallet-a")
+        let now = Self.expiryNow
+        let connections = UserDefaultsDashConnectStore(
+            defaults: defaults, network: .testnet, walletIdHexProvider: { activeWallet.value },
+            devnetNameProvider: { nil }, notificationCenter: center)
+        connections.save(rows)
+        let responses = UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections))
+        responses.save(grants)
+        let dependencies = ConnectionExpiryChecker.Dependencies(
+            readKeys: { _ in await reader.read() },
+            judge: { _, apps, keys, nowMilliseconds, chainTimeMilliseconds in
+                AppConnect.connectionExpiryJudgements(
+                    identityId: keys.identityId, apps: apps, grants: responses.load(), bindings: keys.bindings,
+                    currentIdentityPublicKeys: keys.keys, nowMilliseconds: nowMilliseconds,
+                    chainTimeMilliseconds: chainTimeMilliseconds)
+            },
+            now: { now }, chainTime: { now }, identityId: { identity.value }, sleep: { _ in })
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: connections,
+            responseStore: responses,
+            historyStore: UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: connections),
+            activeWalletIdHex: { activeWallet.value },
+            networkEndpoint: { nil },
+            notificationCenter: center,
+            operationGate: DashConnectOperationGate(),
+            defaults: defaults,
+            now: { now },
+            expiryDependencies: dependencies,
+            chainTimePublisher: Empty().eraseToAnyPublisher(),
+            runtimeChanges: Empty().eraseToAnyPublisher())
+        return ExpiryFixture(
+            dataSource: dataSource, connections: connections, center: center, activeWallet: activeWallet,
+            listings: Listings(dataSource))
+    }
+
+    private func waitFor(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
+    }
+
+    func testAnExpiryReadPublishesCheckingThenItsVerdicts() async {
+        let reader = IdentityKeysReader([Self.identityKeys([3], expiredAgo: 86_400)])
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA)], grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)],
+            reader: reader)
+        XCTAssertEqual(fixture.listings.last?.expiries.check, .notStarted)
+
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { fixture.listings.last?.expiries.check == .read }
+
+        let checks = fixture.listings.all.map(\.expiries.check)
+        XCTAssertEqual(checks.firstIndex(of: .checking).map { $0 < checks.firstIndex(of: .read)! }, true)
+        let verdict = fixture.listings.last?.expiries.byApp[Self.expiryAppA]
+        XCTAssertEqual(verdict?.verdict, .expired)
+        XCTAssertEqual(verdict?.row, fixture.listings.last?.rows.first, "told for the row as published")
+        XCTAssertEqual(fixture.listings.last?.expiries.identityId, "identity")
+        XCTAssertEqual(reader.reads, 1)
+    }
+
+    func testAWalletSwitchPublishesTheNewWalletsRowsWithNoVerdictAndReadsOnce() async {
+        let reader = IdentityKeysReader([Self.identityKeys([3], expiredAgo: 86_400)])
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA)], grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)],
+            reader: reader)
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { fixture.listings.last?.expiries.check == .read }
+
+        fixture.activeWallet.value = "wallet-b"
+        fixture.connections.save([Self.expiryRow(Self.expiryAppB)])
+        fixture.center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+        await waitFor {
+            fixture.listings.last?.rows.map(\.id) == [Self.expiryAppB] && fixture.listings.last?.expiries.check == .read
+        }
+        try? await Task.sleep(nanoseconds: 150_000_000)
+
+        let switched = fixture.listings.all.first { $0.rows.map(\.id) == [Self.expiryAppB] }
+        XCTAssertEqual(switched?.expiries.byApp, [:], "wallet A's verdicts are not wallet B's")
+        XCTAssertEqual(switched?.expiries.check, .checking)
+        XCTAssertEqual(reader.reads, 2, "one read for wallet B")
+    }
+
+    func testAWalletSwitchDuringAReadDoesNotShowTheOldWalletsVerdicts() async {
+        let reader = IdentityKeysReader([Self.identityKeys([3], expiredAgo: 86_400)])
+        reader.holds = true
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA)], grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)],
+            reader: reader)
+        let walletAScope = fixture.listings.last?.scope
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { reader.reads == 1 }
+
+        fixture.activeWallet.value = "wallet-b"
+        fixture.connections.save([Self.expiryRow(Self.expiryAppA)])
+        fixture.center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+        await waitFor { fixture.listings.last?.scope != walletAScope }
+        reader.release()
+        await waitFor { reader.reads >= 2 && fixture.listings.last?.expiries.check == .read }
+
+        let walletB = fixture.listings.all.filter { $0.scope != walletAScope }
+        XCTAssertFalse(walletB.isEmpty)
+        XCTAssertTrue(
+            walletB.allSatisfy { listing in listing.expiries.byApp.values.allSatisfy { $0.row.scope == listing.scope } },
+            "a verdict read for wallet A is not shown on wallet B's row of the same app")
+    }
+
+    func testOnlyAChangeOfTheActiveRowsReadsAgain() async {
+        let waiting = DAppConnection(
+            id: Self.expiryAppB, name: "B", url: "b.app", status: .approved,
+            updatedAt: Date(timeIntervalSince1970: 10), loginKind: .twoQR)
+        let reader = IdentityKeysReader([Self.identityKeys([3], expiredAgo: 86_400)])
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA), waiting],
+            grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)], reader: reader)
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { fixture.listings.last?.expiries.check == .read }
+
+        let changed = DAppConnection(
+            id: waiting.id, name: waiting.name, url: waiting.url, status: .approved,
+            updatedAt: Date(timeIntervalSince1970: 50), loginKind: .twoQR)
+        fixture.connections.save([Self.expiryRow(Self.expiryAppA), changed])
+        await waitFor { fixture.listings.last?.rows.contains { $0.updatedAt == Date(timeIntervalSince1970: 50) } == true }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(reader.reads, 1, "a row waiting for its second code is not judged")
+
+        fixture.connections.save([Self.expiryRow(Self.expiryAppA, updatedAt: 20), changed])
+        await waitFor { reader.reads == 2 && fixture.listings.last?.expiries.check == .read }
+        XCTAssertEqual(reader.reads, 2, "a renewal of an active row reads again")
+    }
+
+    func testANameOrUrlChangeKeepsTheVerdictAndReadsNothing() async {
+        let reader = IdentityKeysReader([Self.identityKeys([3], expiredAgo: 86_400)])
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA)], grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)],
+            reader: reader)
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { fixture.listings.last?.expiries.check == .read }
+
+        let row = Self.expiryRow(Self.expiryAppA)
+        fixture.connections.save([DAppConnection(
+            id: row.id, name: "Renamed", url: "renamed.app", status: row.status, updatedAt: row.updatedAt,
+            loginKind: row.loginKind)])
+        await waitFor { fixture.listings.last?.rows.first?.name == "Renamed" }
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(reader.reads, 1)
+        XCTAssertEqual(fixture.listings.last?.expiries.check, .read)
+        XCTAssertEqual(fixture.listings.last?.expiries.byApp[Self.expiryAppA]?.verdict, .expired, "the same row")
+    }
+
+    func testARegistrationThatChangesTheIdentityStartsTheCheckAgain() async {
+        let identity = Box<String?>("identity")
+        let reader = IdentityKeysReader([
+            Self.identityKeys([3], expiredAgo: 86_400), Self.identityKeys([3], expiredAgo: 86_400, identityId: "other"),
+        ])
+        let fixture = makeExpiryFixture(
+            rows: [Self.expiryRow(Self.expiryAppA)], grants: [Self.expiryGrant(of: Self.expiryAppA, keyId: 3)],
+            reader: reader, identity: identity)
+        fixture.dataSource.refreshConnectionExpiries(forcesRead: false)
+        await waitFor { fixture.listings.last?.expiries.check == .read }
+
+        fixture.center.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(reader.reads, 1, "the same identity: nothing to read")
+
+        identity.value = "other"
+        fixture.center.post(name: DWIdentityRegistrationBridge.stateChangedNotification, object: nil)
+        await waitFor { reader.reads == 2 && fixture.listings.last?.expiries.check == .read }
+        XCTAssertEqual(fixture.listings.last?.expiries.identityId, "other")
+    }
+
+    func testAReadErrorTellsTheCheckWhatItMeans() {
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.expiryReadResult(for: DashConnectPlatformError.unsupportedRuntimeNetwork(.mainnet)),
+            .unavailable)
+        XCTAssertEqual(PlatformDashConnectDataSource.expiryReadResult(for: DashConnectPlatformError.noIdentity), .noIdentity)
+        for notReady: DashConnectPlatformError in [.noWallet, .noSDK, .noModelContainer, .walletChanged] {
+            XCTAssertEqual(PlatformDashConnectDataSource.expiryReadResult(for: notReady), .notReady, "\(notReady)")
+        }
+        let failure = DashConnectPlatformError.identityKeysOutOfDate
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.expiryReadResult(for: failure), .failed(failure.localizedDescription))
     }
 }
