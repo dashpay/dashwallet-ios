@@ -361,10 +361,10 @@ struct ConnectionSheet: View {
         case .disconnected:
             reconnectButton
         case .expired:
-            // Its live keys are past their expiry by this phone's clock and
-            // the Core tip with its margin, and stay on Platform until a
-            // disconnect, or a renewal of the same connection, turns them
-            // off: both are offered.
+            // Its live keys are past their expiry by the Core tip with its
+            // margin, whatever this phone's clock says, and stay on Platform
+            // until a disconnect, or a renewal of the same connection, turns
+            // them off: both are offered.
             VStack(spacing: 10) {
                 reconnectButton
                 disconnectButton
@@ -466,7 +466,7 @@ struct ConnectionSheet: View {
                 comment: "DashConnect connection sheet")
         case .pastByPhone?:
             return NSLocalizedString(
-                "The keys' expiry time has passed on this phone; the network has not shown it yet.",
+                "The keys' expiry time has passed, but the network has not shown it yet.",
                 comment: "DashConnect connection sheet")
         case .undecided?:
             return NSLocalizedString(
@@ -520,7 +520,7 @@ struct ConnectionSheet: View {
         }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
         // Past only once the expiry check found every live key past it by
-        // this phone's clock and by the Core tip with its margin.
+        // the Core tip with its margin, whatever this phone's clock says.
         return item.status == .expired
             ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
             : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)

@@ -2225,7 +2225,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         let sheet = Self.sheet(for: item, check: viewModel.expiryCheck)
         XCTAssertEqual(
             sheet.expiryNote,
-            "The keys' expiry time has passed on this phone; the network has not shown it yet.")
+            "The keys' expiry time has passed, but the network has not shown it yet.")
         XCTAssertNotEqual(sheet.expiryNote, "Whether this connection has expired could not be checked.")
     }
 

@@ -2310,11 +2310,12 @@ extension AppConnectV2LoginTests {
         grants: [AppConnectGrant],
         bindings: [AppConnect.KeyBinding] = [],
         keys: [ManagedIdentity.IdentityPublicKeyInfo],
-        chainTime: Int64?
+        chainTime: Int64?,
+        now: Int64 = expiryNow
     ) -> [String: ConnectionExpiry.Verdict] {
         AppConnect.connectionExpiryJudgements(
             identityId: "identity", apps: apps, grants: grants, bindings: bindings, currentIdentityPublicKeys: keys,
-            nowMilliseconds: expiryNow, chainTimeMilliseconds: chainTime
+            nowMilliseconds: now, chainTimeMilliseconds: chainTime
         ).mapValues(\.verdict)
     }
 
@@ -2345,16 +2346,36 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(expiries["nothing"], .notJudged, "nothing is attributed to it")
     }
 
-    func testAKeyIsExpiredOnlyOnceTheChainIsPastItByTheMargin() {
+    func testAKeyIsExpiredByTheCoreTipPastItByTheMargin() {
+        // The phone is three hours past the expiry.
         let expiry = Self.expiryNow - 3 * Self.hour
         let grants = [Self.grant(sessionKeyId: 3, appId: "app")]
         let keys = [Self.identityKey(3, expiresAt: expiry)]
-        func verdict(chainTime: Int64?) -> ConnectionExpiry.Verdict? {
-            Self.expiries(apps: ["app"], grants: grants, keys: keys, chainTime: chainTime)["app"]
+        func verdict(chainTime: Int64?, now: Int64 = Self.expiryNow) -> ConnectionExpiry.Verdict? {
+            Self.expiries(apps: ["app"], grants: grants, keys: keys, chainTime: chainTime, now: now)["app"]
         }
         XCTAssertEqual(verdict(chainTime: expiry + Self.hour), .pastByPhone, "the chain is past it by less than the margin")
         XCTAssertEqual(verdict(chainTime: expiry + 190 * 60_000), .expired, "the chain is past it by the margin")
         XCTAssertEqual(verdict(chainTime: nil), .pastByPhone, "without the chain's time it is not told")
+        XCTAssertEqual(
+            verdict(chainTime: expiry + 190 * 60_000, now: expiry - Int64(Self.dayMilliseconds)), .expired,
+            "the phone's clock set a day back does not matter: the tip shows real time")
+    }
+
+    func testWithoutTheCoreTipAnAppIsNeverExpired() {
+        let expiry = Self.expiryNow - 30 * Int64(Self.dayMilliseconds)
+        let verdict = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+            keys: [Self.identityKey(3, expiresAt: expiry)], chainTime: nil)["app"]
+        XCTAssertEqual(verdict, .pastByPhone, "a month past by the phone, but the tip is not known")
+    }
+
+    func testAKeyRenewedPastTheTipIsCurrent() {
+        let tip = Self.expiryNow
+        let verdict = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+            keys: [Self.identityKey(3, expiresAt: tip + Int64(Self.dayMilliseconds))], chainTime: tip)["app"]
+        XCTAssertEqual(verdict, .current)
     }
 
     func testALiveNonExpiringKeyBoundToTheAppKeepsItCurrent() {
@@ -2411,7 +2432,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(expiries[app], .expired, "the key is the app's by its bound")
     }
 
-    func testAStrayKeyPastItsExpiryByBothClocksDoesNotHoldAnAppBackFromExpired() {
+    func testAStrayKeyTheCoreTipShowsExpiredDoesNotHoldAnAppBackFromExpired() {
         let past = Self.expiryNow - Int64(Self.dayMilliseconds)
         func verdict(strayExpiresAt: Int64?) -> ConnectionExpiry.Verdict? {
             Self.expiries(
@@ -2466,8 +2487,8 @@ extension AppConnectV2LoginTests {
         let ahead = judgement(strayExpiresAt: Self.expiryNow + Self.hour)
         XCTAssertEqual(ahead?.verdict, .undecided)
         XCTAssertEqual(
-            ahead?.rejudgeAtPhoneTime, Self.expiryNow + Self.hour + Int64(AppConnect.clockTolerance * 1000),
-            "once the phone is past the stray key's expiry")
+            ahead?.rejudgeAtChainTime, Self.expiryNow + Self.hour + AppConnect.chainTimeMarginMilliseconds,
+            "once the Core tip is past the stray key's expiry by the margin")
         let pastByPhone = judgement(strayExpiresAt: Self.expiryNow - 2 * Self.hour)
         XCTAssertEqual(pastByPhone?.verdict, .undecided)
         XCTAssertEqual(
@@ -2534,6 +2555,29 @@ extension AppConnectV2LoginTests {
             keys: [Self.identityKey(4, expiresAt: nil, securityLevel: .medium, purpose: .encryption, keyType: .ecdsaSecp256k1)],
             chainTime: Self.expiryNow)
         XCTAssertEqual(expiries["app"], .notJudged)
+    }
+
+    func testAFarFutureExpiryIsNeverExpiredByTheTip() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        // Past `Int64.max`, an expiry is carried in a negative bit pattern.
+        for farFuture: Int64 in [.max, .min, -1] {
+            let own = AppConnect.connectionExpiryJudgements(
+                identityId: "identity", apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")], bindings: [],
+                currentIdentityPublicKeys: [Self.identityKey(3, expiresAt: farFuture)],
+                nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)["app"]
+            XCTAssertEqual(own?.verdict, .current, "\(farFuture)")
+            XCTAssertGreaterThanOrEqual(own?.rejudgeAtChainTime ?? 0, 0, "\(farFuture)")
+
+            let held = AppConnect.connectionExpiryJudgements(
+                identityId: "identity", apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+                bindings: [Self.storedKey(5, bound: nil, expiresAt: farFuture)],
+                currentIdentityPublicKeys: [
+                    Self.identityKey(3, expiresAt: past), Self.identityKey(5, expiresAt: farFuture),
+                ],
+                nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)["app"]
+            XCTAssertEqual(held?.verdict, .undecided, "the stray key may still sign: \(farFuture)")
+            XCTAssertGreaterThanOrEqual(held?.rejudgeAtChainTime ?? 0, 0, "no threshold in the past: \(farFuture)")
+        }
     }
 }
 
