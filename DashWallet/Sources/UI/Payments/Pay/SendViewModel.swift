@@ -340,8 +340,9 @@ final class SendViewModel: ObservableObject {
     var coreSpendableDuffs: UInt64 {
         SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
     }
-    /// The routes whose gate reads `coreSpendableDuffs`: a contact payment
-    /// and Core → Shielded. A plain Core send is held to `coreBalanceDuffs`.
+    /// The routes whose render reads the pooled figure — the fee-aware
+    /// ceiling and reserve, and `sendVerdict`: a contact payment and
+    /// Core → Shielded. A plain Core send is held to `coreBalanceDuffs`.
     private var readsCoreSpendable: Bool {
         #if DASHPAY
         if contactRecipient != nil { return true }
