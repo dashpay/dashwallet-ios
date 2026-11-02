@@ -121,6 +121,8 @@ final class CrowdNodeTransferModel: SendAmountModel {
         }
     }
 
+    override var gatesOnWalletSendPool: Bool { direction == .deposit }
+
     override func selectAllFunds() {
         if direction == .deposit {
             super.selectAllFunds()

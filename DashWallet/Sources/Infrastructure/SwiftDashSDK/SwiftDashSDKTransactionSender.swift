@@ -930,41 +930,69 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// no UTXOs) falls back to the flat reserve, i.e. the previous behaviour —
     /// the change never makes Max worse than before, only tighter when it can.
     static func maxSendFeeReserveDuffs() -> UInt64 {
-        let read = { @MainActor () -> UInt64? in
-            let host = SwiftDashSDKHost.shared
-            guard let manager = host.manager, let wallet = host.wallet else { return nil }
-            // Sizing the reserve off BIP44 alone would under-reserve whenever
-            // the other pooled sources contribute inputs, and Max would then
-            // price itself above what the builder can actually fund.
-            guard let count = Self.pooledUtxoRows(manager: manager, walletId: wallet.walletId)?.count,
-                  count > 0
-            else { return nil }
+        let dynamic = readSendPool { manager, walletId, pooled -> UInt64? in
+            let count = pooled.reduce(0) { total, balance in
+                total + manager.accountUtxos(for: walletId, balance: balance).count
+            }
+            guard count > 0 else { return nil }
             let base = estimatedSignalFee(inputCount: count)
             return base + base / 2 // +50 % margin — must never under-reserve
-        }
-
-        let dynamic: UInt64?
-        if Thread.isMainThread {
-            dynamic = MainActor.assumeIsolated { read() }
-        } else {
-            var captured: UInt64?
-            DispatchQueue.main.sync { captured = MainActor.assumeIsolated { read() } }
-            dynamic = captured
         }
         return dynamic ?? WalletBalance.sendFeeReserveDuffs
     }
 
+    /// The send pool's `confirmed` and `unconfirmed` sums over the same
+    /// accounts `maxSendFeeReserveDuffs` enumerates, from one read. Immature
+    /// coinbase and locked coins are left out — waiting a few minutes does not
+    /// free them.
+    ///
+    /// `nil` when the accounts cannot be enumerated (no wallet/manager yet).
+    static func sendPoolConfirmationSnapshot() -> SendPoolConfirmationSnapshot? {
+        readSendPool { _, _, pooled in
+            SendPoolConfirmationSnapshot(
+                confirmedDuffs: pooled.reduce(0) { $0 + $1.confirmed },
+                unconfirmedDuffs: pooled.reduce(0) { $0 + $1.unconfirmed })
+        }
+    }
+
+    /// Runs `read` on the main actor over the accounts `.allSpendable` funds a
+    /// send from, from any thread. `nil` when there is no wallet/manager or
+    /// none of those accounts exists.
+    ///
+    /// Enumerates exactly what `.allSpendable` spends — BIP44 + BIP32 at the
+    /// funding index, plus every DashPay receiving account. Sizing the fee
+    /// reserve off BIP44 alone would under-reserve whenever the other sources
+    /// contribute inputs, and Max would then price itself above what the
+    /// builder can actually fund.
+    private static func readSendPool<T: Sendable>(
+        _ read: @escaping @MainActor (PlatformWalletManager, Data, [PlatformWalletManager.AccountBalance]) -> T?
+    ) -> T? {
+        let body = { @MainActor () -> T? in
+            let host = SwiftDashSDKHost.shared
+            guard let manager = host.manager, let wallet = host.wallet else { return nil }
+            let walletId = wallet.walletId
+            guard let pooled = Self.pooledAccountBalances(manager: manager, walletId: walletId) else { return nil }
+            return read(manager, walletId, pooled)
+        }
+
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { body() }
+        }
+        var captured: T?
+        DispatchQueue.main.sync { captured = MainActor.assumeIsolated { body() } }
+        return captured
+    }
+
     // MARK: - Pooled Core UTXOs
 
-    /// The UTXO rows of exactly what `.allSpendable` spends — BIP44 + BIP32
-    /// at the funding index, plus every DashPay receiving account — locked
-    /// ones included. Also the asset-lock funding set
-    /// (`ASSET_LOCK_FUNDING_SOURCES` equals the send set SDK-side). Nil when
-    /// the wallet has none of those accounts.
+    /// The accounts `.allSpendable` spends from — BIP44 + BIP32 at the
+    /// funding index, plus every DashPay receiving account. Also the
+    /// asset-lock funding set (`ASSET_LOCK_FUNDING_SOURCES` equals the send
+    /// set SDK-side). Nil when the wallet has none of those accounts.
     @MainActor
-    private static func pooledUtxoRows(
+    private static func pooledAccountBalances(
         manager: PlatformWalletManager, walletId: Data
-    ) -> [PlatformWalletManager.AccountUtxo]? {
+    ) -> [PlatformWalletManager.AccountBalance]? {
         let pooled = manager.accountBalances(for: walletId).filter { balance in
             if balance.typeTag == Self.bip44TypeTag {
                 // Standard family: BIP44 and BIP32 both resolve to the
@@ -976,8 +1004,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // Every DashPay receiving account, whatever its index.
             return balance.typeTag == Self.dashpayReceivingTypeTag
         }
-        guard !pooled.isEmpty else { return nil }
-        return pooled.flatMap { manager.accountUtxos(for: walletId, balance: $0) }
+        return pooled.isEmpty ? nil : pooled
+    }
+
+    /// The UTXO rows of the pooled accounts (`pooledAccountBalances`),
+    /// locked ones included. Nil when the wallet has none of those accounts.
+    @MainActor
+    private static func pooledUtxoRows(
+        manager: PlatformWalletManager, walletId: Data
+    ) -> [PlatformWalletManager.AccountUtxo]? {
+        pooledAccountBalances(manager: manager, walletId: walletId)?
+            .flatMap { manager.accountUtxos(for: walletId, balance: $0) }
     }
 
     /// A pooled Core coin as `AssetLockInputPolicy` counts it.
