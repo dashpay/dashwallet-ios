@@ -216,9 +216,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// with them, and the caller records the accepted transactions *and* still
     /// surfaces the partial state.
     struct SweepOutcome {
-        /// Wire-order txids of the chunks that broadcast, in chunk order —
-        /// ready to record in `CoinJoinWithdrawalStore` (matches
-        /// `Transaction.txHashData`).
+        /// Wire-order txids of the chunks that broadcast, in chunk order
+        /// (matches `Transaction.txHashData`). The CoinJoin sweep records them
+        /// in `CoinJoinWithdrawalStore`; the Core consolidation never does.
         let txids: [Data]
         /// How many chunks were not accepted, including the unknown ones.
         let failedChunkCount: Int
@@ -479,11 +479,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
     private static func bip44AccountBalance(
         in balances: [PlatformWalletManager.AccountBalance]
     ) -> PlatformWalletManager.AccountBalance? {
-        balances.first(where: {
-            $0.typeTag == Self.bip44TypeTag
-                && $0.standardTag == Self.bip44StandardTag
-                && $0.index == Self.bip44AccountIndex
-        })
+        balances.first(where: isBip44Account0)
+    }
+
+    /// Whether `balance` describes BIP44 account 0, the account the Core
+    /// consolidation spends.
+    private static func isBip44Account0(_ balance: PlatformWalletManager.AccountBalance) -> Bool {
+        balance.typeTag == Self.bip44TypeTag
+            && balance.standardTag == Self.bip44StandardTag
+            && balance.index == Self.bip44AccountIndex
     }
 
     /// Snapshot of the BIP44 account-0 spendable UTXOs with their finality —
@@ -1007,43 +1011,40 @@ final class SwiftDashSDKTransactionSender: NSObject {
         return pooled.isEmpty ? nil : pooled
     }
 
-    /// The UTXO rows of the pooled accounts (`pooledAccountBalances`),
-    /// locked ones included. Nil when the wallet has none of those accounts.
-    @MainActor
-    private static func pooledUtxoRows(
-        manager: PlatformWalletManager, walletId: Data
-    ) -> [PlatformWalletManager.AccountUtxo]? {
-        pooledAccountBalances(manager: manager, walletId: walletId)?
-            .flatMap { manager.accountUtxos(for: walletId, balance: $0) }
-    }
-
     /// A pooled Core coin as `AssetLockInputPolicy` counts it.
     struct PooledUtxo: Equatable {
         let valueDuffs: UInt64
         /// Confirmed or InstantSend-locked — the only coins an asset lock
         /// spends (`require_final_inputs()`).
         let isFinal: Bool
+        /// In BIP44 account 0, the only account the Core consolidation
+        /// (`consolidateCoreAccount`) spends.
+        let isCombinable: Bool
     }
 
-    /// The coins a Core-funded asset lock may spend: the pooled rows
-    /// (`pooledUtxoRows`) without the `isLocked` ones coin selection never
-    /// spends. Nil when no wallet or manager is bound; empty when the wallet
-    /// has no pooled account.
+    /// The coins a Core-funded asset lock may spend: the UTXO rows of the
+    /// pooled accounts (`pooledAccountBalances`) without the `isLocked` ones
+    /// coin selection never spends. Nil when no wallet or manager is bound;
+    /// empty when the wallet has no pooled account.
     @MainActor
     static func pooledSpendableUtxos() -> [PooledUtxo]? {
         let host = SwiftDashSDKHost.shared
         guard let manager = host.manager, let wallet = host.wallet else { return nil }
         let walletId = wallet.walletId
-        let rows = pooledUtxoRows(manager: manager, walletId: walletId) ?? []
         let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
-        return rows
-            .filter { !$0.isLocked }
-            .map { utxo in
-                PooledUtxo(
-                    valueDuffs: utxo.valueDuffs,
-                    isFinal: CoinJoinShieldPlanner.isFinal(
-                        height: utxo.height, txid: utxo.outpointTxid, instantLockedTxids: instantLocked))
-            }
+        let pooled = pooledAccountBalances(manager: manager, walletId: walletId) ?? []
+        return pooled.flatMap { balance in
+            let isCombinable = isBip44Account0(balance)
+            return manager.accountUtxos(for: walletId, balance: balance)
+                .filter { !$0.isLocked }
+                .map { utxo in
+                    PooledUtxo(
+                        valueDuffs: utxo.valueDuffs,
+                        isFinal: CoinJoinShieldPlanner.isFinal(
+                            height: utxo.height, txid: utxo.outpointTxid, instantLockedTxids: instantLocked),
+                        isCombinable: isCombinable)
+                }
+        }
     }
 
     // MARK: - Broadcast

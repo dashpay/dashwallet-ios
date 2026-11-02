@@ -237,11 +237,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastFailure.flatMap(AssetLockInputLimit.check(for:))
     }
 
-    /// The input check for a Core → Shielded lock of `lockValueDuffs`: the
-    /// shield budget, tighter than the network's cap (see
-    /// `AssetLockInputPolicy.shieldInputBudget`).
+    /// The input check for a Core → Shielded lock of `lockValueDuffs`.
     static func shieldInputCheck(lockValueDuffs: UInt64) -> AssetLockInputLimit.Check {
-        AssetLockInputLimit.Check(amountDuffs: lockValueDuffs, inputBudget: AssetLockInputPolicy.shieldInputBudget)
+        AssetLockInputLimit.Check(amountDuffs: lockValueDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
     }
 
     /// What a resume established beyond its terminal phase. `.submittedUnconfirmed`
@@ -598,7 +596,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 // of it, and the shared sheet offers to combine them.
                 if case PlatformWalletError.assetLockTooManyInputs = error {
                     handleFailure(AssetLockInputLimit.TooManyInputsError(
-                        check: .drain(inputBudget: AssetLockInputPolicy.shieldInputBudget)))
+                        check: .drain(inputBudget: AssetLockInputPolicy.platformInputBudget)))
                 } else {
                     handleFailure(error)
                 }

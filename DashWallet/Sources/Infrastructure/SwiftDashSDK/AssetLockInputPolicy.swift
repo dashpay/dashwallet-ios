@@ -12,6 +12,10 @@
 //  when they would need too many inputs, offers to combine them
 //  (`CoreCoinConsolidationSheet`) instead of building the lock.
 //
+//  TODO(dashpay/platform#5712): the SDK refuses a fixed-amount lock over the
+//  cap once that PR is in the pinned SDK; this pre-check approximates its coin
+//  selection until then.
+//
 //  The policy is pure — its inputs are passed in — so
 //  `AssetLockInputPolicyTests` can pin it without a wallet. `AssetLockInputLimit`
 //  reads those inputs off the SDK and recognises the SDK's own refusal.
@@ -26,8 +30,9 @@ import SwiftDashSDK
 /// with `require_final_inputs()` and BranchAndBound, which sorts coins largest
 /// first and, when no change-free match exists, accumulates them largest
 /// first. So only final coins (confirmed or InstantSend-locked) are counted,
-/// largest first, until they cover the amount plus the fee. The SDK's own
-/// refusal (`PlatformWalletError.assetLockTooManyInputs`) stays authoritative.
+/// largest first, until they cover the amount plus the fee. On the pinned SDK
+/// the refusal (`PlatformWalletError.assetLockTooManyInputs`) covers only a
+/// whole-balance drain.
 enum AssetLockInputPolicy {
 
     enum Verdict: Equatable {
@@ -40,17 +45,11 @@ enum AssetLockInputPolicy {
         case insufficientFunds
     }
 
-    /// Input budget for a lock whose credits fund an identity or a Platform
-    /// address: the network's hard cap (`CoinJoinShieldPlanner.maxAssetLockInputs`).
+    /// Input budget for every Core-funded asset lock: the network's hard cap
+    /// (`CoinJoinShieldPlanner.maxAssetLockInputs`). A shielded lock gets the
+    /// same budget: when its InstantSend proof makes the transition too large,
+    /// the SDK resubmits it with a ChainLock proof (dashpay/platform#5460).
     static let platformInputBudget = CoinJoinShieldPlanner.maxAssetLockInputs
-
-    /// Input budget for a lock that is shielded right away. Tighter than the
-    /// hard cap: the ShieldFromAssetLock transition embeds the whole lock in
-    /// its InstantSend proof and outgrows Platform's 20 480-byte limit from
-    /// about 65 inputs (see `CoinJoinShieldPlanner.consolidationThreshold`).
-    /// Revisit once the ChainLock-proof fallback (dashpay/platform#5460) is in
-    /// the SDK the app builds against.
-    static let shieldInputBudget = CoinJoinShieldPlanner.consolidationThreshold
 
     /// Room for the asset-lock special payload (version, one credit output
     /// and its length prefix) on top of a regular two-output transaction.
@@ -85,6 +84,38 @@ enum AssetLockInputPolicy {
     static func drainVerdict(finalCount: Int, inputBudget: Int) -> Verdict {
         guard finalCount > 0 else { return .insufficientFunds }
         return finalCount > inputBudget ? .needsConsolidation : .fits
+    }
+
+    /// The verdict for a lock of `amountDuffs` (nil: a whole-balance drain)
+    /// once the Core consolidation has combined the `combinable` coins — the
+    /// final coins of BIP44 account 0, the only account it spends. The other
+    /// final coins (`other`) stay as they are.
+    static func verdictAfterCombining(
+        combinable: [UInt64], other: [UInt64], amountDuffs: UInt64?, inputBudget: Int
+    ) -> Verdict {
+        let values = other + combinedValues(combinable)
+        guard let amountDuffs else {
+            return drainVerdict(finalCount: values.count, inputBudget: inputBudget)
+        }
+        return verdict(utxoValues: values, amountDuffs: amountDuffs, inputBudget: inputBudget)
+    }
+
+    /// The coins the consolidation leaves for `values`: one per transaction
+    /// (`SwiftDashSDKTransactionSender.maxInputsPerSweep` inputs at most),
+    /// each worth its inputs less the transaction's fee. Fewer than two coins
+    /// are not combined.
+    static func combinedValues(_ values: [UInt64]) -> [UInt64] {
+        guard values.count >= 2 else { return values }
+        return SwiftDashSDKTransactionSender.balancedChunks(
+            values, maxPerChunk: SwiftDashSDKTransactionSender.maxInputsPerSweep
+        ).map { chunk in
+            let total = chunk.reduce(UInt64(0)) { sum, value in
+                let (next, overflow) = sum.addingReportingOverflow(value)
+                return overflow ? .max : next
+            }
+            let fee = SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: chunk.count)
+            return total > fee ? total - fee : 0
+        }
     }
 }
 
@@ -195,6 +226,27 @@ enum AssetLockInputLimit {
                 + "coins=\(utxos.count) final=\(finalValues.count) verdict=\(verdict)",
             className: "AssetLockInputLimit")
         return verdict
+    }
+
+    /// Whether combining the coins (`CoreCoinConsolidationSheet`) would let
+    /// `check` fit: the BIP44 account has at least two final coins, and the
+    /// lock fits once they are one (`verdictAfterCombining`). False when no
+    /// wallet is bound.
+    @MainActor
+    static func combiningWouldFit(_ check: Check) -> Bool {
+        guard let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos() else { return false }
+        let finals = utxos.filter(\.isFinal)
+        let combinable = finals.filter(\.isCombinable).map(\.valueDuffs)
+        guard combinable.count >= 2 else { return false }
+        let verdict = AssetLockInputPolicy.verdictAfterCombining(
+            combinable: combinable,
+            other: finals.filter { !$0.isCombinable }.map(\.valueDuffs),
+            amountDuffs: check.amountDuffs,
+            inputBudget: check.inputBudget)
+        DWLogger.log(
+            "🔒 ASSET-LOCK-INPUTS :: after combining \(combinable.count) BIP44 coin(s): verdict=\(verdict)",
+            className: "AssetLockInputLimit")
+        return verdict != .needsConsolidation
     }
 
     /// Throws `TooManyInputsError` when `check` needs more inputs than its

@@ -224,6 +224,9 @@
 /* Asset-lock input limit */
 "Combining coins…" = "Combining coins…";
 
+/* Asset-lock input limit */
+"Combining the coins in this wallet won't make this transfer fit. Try a smaller amount." = "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.";
+
 /* DashConnect token purchase */
 "Contract %@" = "Contract %@";
 
@@ -3135,6 +3138,9 @@
 
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
+
+/* Asset-lock input limit */
+"Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
 
 /* Asset-lock input limit */
 "Your coins are combined. You can try again now." = "Your coins are combined. You can try again now.";

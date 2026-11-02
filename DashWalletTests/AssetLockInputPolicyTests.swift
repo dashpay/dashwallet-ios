@@ -46,9 +46,10 @@ final class AssetLockInputPolicyTests: XCTestCase {
 
     // MARK: - Budgets
 
-    func testBudgetsMatchTheNetworkCapAndTheShieldThreshold() {
+    func testTheBudgetIsTheNetworkCap() {
+        // Shielded locks included: the SDK resubmits an oversized one with a
+        // ChainLock proof (dashpay/platform#5460).
         XCTAssertEqual(Policy.platformInputBudget, 100)
-        XCTAssertEqual(Policy.shieldInputBudget, 50)
     }
 
     // MARK: - Input count against the budget
@@ -62,7 +63,7 @@ final class AssetLockInputPolicyTests: XCTestCase {
             .needsConsolidation)
     }
 
-    func testFiftyInputsFitAndFiftyOneDoNotAtTheShieldBudget() {
+    func testFiftyInputsFitAndFiftyOneDoNotAtABudgetOfFifty() {
         XCTAssertEqual(
             Policy.verdict(utxoValues: coins(150), amountDuffs: amountNeeding(inputs: 50), inputBudget: 50),
             .fits)
@@ -140,6 +141,43 @@ final class AssetLockInputPolicyTests: XCTestCase {
         XCTAssertEqual(Policy.drainVerdict(finalCount: 100, inputBudget: 100), .fits)
         XCTAssertEqual(Policy.drainVerdict(finalCount: 101, inputBudget: 100), .needsConsolidation)
         XCTAssertEqual(Policy.drainVerdict(finalCount: 0, inputBudget: 100), .insufficientFunds)
+    }
+
+    // MARK: - After combining
+
+    func testCombiningTheBip44CoinsMakesTheLockFit() {
+        let amount = amountNeeding(inputs: 101)
+        XCTAssertEqual(Policy.verdict(utxoValues: coins(150), amountDuffs: amount, inputBudget: 100), .needsConsolidation)
+        XCTAssertEqual(
+            Policy.verdictAfterCombining(combinable: coins(150), other: [], amountDuffs: amount, inputBudget: 100),
+            .fits)
+    }
+
+    func testCoinsOutsideBip44StillNeedTooManyInputsAfterCombining() {
+        // Most coins arrived as DashPay contact payments; combining the two
+        // BIP44 coins cannot bring the lock under the cap.
+        XCTAssertEqual(
+            Policy.verdictAfterCombining(
+                combinable: coins(2), other: coins(120), amountDuffs: amountNeeding(inputs: 110), inputBudget: 100),
+            .needsConsolidation)
+    }
+
+    func testADrainCountsTheCombinedCoinsAsOne() {
+        XCTAssertEqual(
+            Policy.verdictAfterCombining(combinable: coins(150), other: coins(30), amountDuffs: nil, inputBudget: 100),
+            .fits)
+        XCTAssertEqual(
+            Policy.verdictAfterCombining(combinable: coins(150), other: coins(100), amountDuffs: nil, inputBudget: 100),
+            .needsConsolidation)
+    }
+
+    func testCombiningLeavesOneCoinPerTransactionLessItsFee() {
+        // 1 200 coins take three transactions of 400 inputs.
+        let combined = Policy.combinedValues(coins(1_200))
+        XCTAssertEqual(combined.count, 3)
+        XCTAssertEqual(combined, Array(
+            repeating: 400 * coin - SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: 400), count: 3))
+        XCTAssertEqual(Policy.combinedValues([coin]), [coin])
     }
 
     // MARK: - The SDK's refusal

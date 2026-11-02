@@ -37,8 +37,8 @@ struct CoreCoinConsolidationSheet: View {
                 explainBody(canCombine: canCombine)
             case .combining:
                 combiningBody
-            case .done:
-                doneBody
+            case .done(let transferFits):
+                doneBody(transferFits: transferFits)
             case .failed(let message):
                 failedBody(message: message)
             }
@@ -54,7 +54,7 @@ struct CoreCoinConsolidationSheet: View {
                 .foregroundColor(.dash.blue)
                 .padding(.top, 24)
 
-            message(AssetLockInputLimit.message)
+            message(canCombine ? AssetLockInputLimit.message : CoreCoinConsolidationViewModel.cannotCombineMessage)
 
             Spacer(minLength: 12)
 
@@ -86,7 +86,7 @@ struct CoreCoinConsolidationSheet: View {
         .padding(.vertical, 24)
     }
 
-    private var doneBody: some View {
+    private func doneBody(transferFits: Bool) -> some View {
         VStack(spacing: 0) {
             Image(systemName: "checkmark.circle.fill")
                 .resizable()
@@ -95,7 +95,9 @@ struct CoreCoinConsolidationSheet: View {
                 .foregroundColor(.green)
                 .padding(.top, 24)
 
-            message(CoreCoinConsolidationViewModel.doneMessage)
+            message(transferFits
+                ? CoreCoinConsolidationViewModel.doneMessage
+                : CoreCoinConsolidationViewModel.doneShortMessage)
 
             Spacer(minLength: 12)
 
@@ -201,7 +203,11 @@ extension CoreCoinConsolidationSheet {
 }
 
 #Preview("Done") {
-    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .done))
+    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .done(transferFits: true)))
+}
+
+#Preview("Done — amount too large now") {
+    CoreCoinConsolidationSheet(previewViewModel: .preview(stage: .done(transferFits: false)))
 }
 
 #Preview("Failed") {

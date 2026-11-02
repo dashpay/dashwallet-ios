@@ -624,6 +624,8 @@
 
 "Combining coins…" = "Combining coins…";
 
+"Combining the coins in this wallet won't make this transfer fit. Try a smaller amount." = "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.";
+
 /* Dash DEX / tx history row title */
 "Converting · %@" = "Converting · %@";
 
@@ -5171,6 +5173,8 @@
 
 /* Usernames */
 "Buy username" = "ซื้อชื่อผู้ใช้";
+
+"Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
 
 "Your coins are combined. You can try again now." = "Your coins are combined. You can try again now.";
 

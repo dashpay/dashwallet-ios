@@ -24,15 +24,20 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
 
     enum Stage: Equatable {
         /// Why the transfer stopped. `canCombine` offers the consolidation;
-        /// without it the message stands alone (combining would not help).
+        /// without it the sheet says combining here would not help.
         case explain(canCombine: Bool)
         case combining
-        /// The transfer now fits; the user can retry it.
-        case done
+        /// The coins are combined. `transferFits`: the transfer now fits and
+        /// the user can retry it; otherwise the fee left too little for it.
+        case done(transferFits: Bool)
         case failed(String)
     }
 
     @Published private(set) var stage: Stage = .explain(canCombine: false)
+
+    /// From the first line of `combine()` to its end, PIN prompt included,
+    /// so a second tap is ignored instead of starting a second run.
+    @Published private var isRunning = false
 
     /// The lock that was refused, re-checked once the coins are combined.
     let check: AssetLockInputLimit.Check
@@ -57,12 +62,10 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
 
     init(check: AssetLockInputLimit.Check) {
         self.check = check
-        // Something to combine: at least two final BIP44 coins.
-        let finalCount = binding.flatMap { SwiftDashSDKTransactionSender.bip44UtxoState(expecting: $0) }?.finalCount ?? 0
-        stage = .explain(canCombine: finalCount >= 2)
+        stage = .explain(canCombine: AssetLockInputLimit.combiningWouldFit(check))
     }
 
-    var isInFlight: Bool { stage == .combining }
+    var isInFlight: Bool { isRunning || stage == .combining }
 
     // MARK: Actions
 
@@ -70,6 +73,8 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
     /// to be final, and re-checks the refused lock.
     func combine() async {
         guard !isInFlight else { return }
+        isRunning = true
+        defer { isRunning = false }
         guard let binding, binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current() else {
             Self.log("refused — the active wallet changed")
             stage = .failed(Self.genericFailureMessage)
@@ -103,7 +108,14 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
             return
         }
         Self.log("re-check after combining: \(verdict)")
-        stage = verdict == .needsConsolidation ? .explain(canCombine: false) : .done
+        switch verdict {
+        case .fits:
+            stage = .done(transferFits: true)
+        case .insufficientFunds:
+            stage = .done(transferFits: false)
+        case .needsConsolidation:
+            stage = .explain(canCombine: AssetLockInputLimit.combiningWouldFit(check))
+        }
     }
 
     /// Ends an attempt with the message to show.
@@ -244,6 +256,18 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
 
     static var doneMessage: String {
         NSLocalizedString("Your coins are combined. You can try again now.", comment: "Asset-lock input limit")
+    }
+
+    static var doneShortMessage: String {
+        NSLocalizedString(
+            "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.",
+            comment: "Asset-lock input limit")
+    }
+
+    static var cannotCombineMessage: String {
+        NSLocalizedString(
+            "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.",
+            comment: "Asset-lock input limit")
     }
 
     private static var stillCombiningMessage: String {
