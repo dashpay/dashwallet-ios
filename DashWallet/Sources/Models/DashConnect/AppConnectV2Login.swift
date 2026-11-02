@@ -1064,8 +1064,7 @@ extension AppConnect {
             case .singleContract(let id):
                 if id != appContractId, !systemContractIds.contains(id.toBase58String()) { contracts.insert(id) }
             case .documentType(let id, let name):
-                if id != appContractId, !systemContractIds.contains(id.toBase58String()),
-                   !allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") {
+                if id != appContractId, !systemContractIds.contains(id.toBase58String()), !isSharedProfileBound(bound) {
                     contracts.insert(id)
                 }
             case .contractGroup(let id):
@@ -1104,12 +1103,16 @@ extension AppConnect {
     /// the identity that ends there turns these off with the app's keys,
     /// for every app that holds one (`sharedProfileKeyIdsToDisable`).
     static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
-        keys.filter { _, bound in
-            guard case .documentType(let id, let name) = bound else { return false }
-            return allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
-        }
-        .map(\.keyId)
-        .sorted()
+        keys.filter { isSharedProfileBound($0.bound) }
+            .map(\.keyId)
+            .sorted()
+    }
+
+    /// Whether `bound` is a foreign document type v2 allows (DashPay
+    /// `profile`): it names no app, since every app can be given such a key.
+    static func isSharedProfileBound(_ bound: StoredBound) -> Bool {
+        guard case .documentType(let id, let name) = bound else { return false }
+        return allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
     }
 
     /// Whether a v2 key with this expiry may still work at `nowMilliseconds`.
@@ -1185,10 +1188,10 @@ extension AppConnect {
     /// (`isUnexpired`), not all by the tip, is `.pastByPhone`. Any other app
     /// with a live key is `.current`. A live authentication key whose app
     /// cannot be told (missing from the store, or stored with no bound, one
-    /// this build cannot read, or a contract group's, and named by no
-    /// record), and that the tip does not show expired, may be the app's: an
-    /// app with live keys, none of which can sign, is then `.undecided`. An
-    /// app with no live key is `.keysOff`.
+    /// this build cannot read, a contract group's or a shared profile
+    /// document type's, and named by no record), and that the tip does not
+    /// show expired, may be the app's: an app with live keys, none of which
+    /// can sign, is then `.undecided`. An app with no live key is `.keysOff`.
     static func connectionExpiryJudgements(
         identityId: String,
         apps: Set<String>,
@@ -1228,10 +1231,12 @@ extension AppConnect {
             let isLive = viewed.map { $0.disabledAt == nil } ?? false
             guard isLive, isAuthShaped(binding), !recordedAll.contains(binding.keyId),
                   !isChainExpired(expiresAt) else { return nil }
-            if !binding.hasUnreadableBound {
-                switch binding.bound {
-                case nil, .contractGroup?: break
-                case .singleContract?, .documentType?: return nil
+            // A shared profile bound names no app, so it does not attribute
+            // the key.
+            if !binding.hasUnreadableBound, let bound = binding.bound, !isSharedProfileBound(bound) {
+                switch bound {
+                case .contractGroup: break
+                case .singleContract, .documentType: return nil
                 }
             }
             return .some(expiresAt)
