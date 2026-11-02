@@ -1123,9 +1123,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let appContractId = request.contractId.toBase58String()
         let requestHash = sealed.appEphemeralPubKeyHash.toHexString()
         let signer = KeychainSigner(modelContainer: context.modelContainer)
-        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
+        let (currentPublicKeys, currentRevision) = try await refreshedIdentityKeysAndRevision(context: context)
         await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, identityRevision: currentRevision,
             context: context, in: stores)
         func isGrantForRequest(_ grant: AppConnectGrant) -> Bool {
             grant.identityId == identityId && grant.appContractId == appContractId
@@ -1203,8 +1203,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             pending.unconfirmedKeyHash160 = sessionKeyHash160.toHexString()
             // The update is built at one above the revision the wallet holds
             // for the identity, read again from Platform above.
-            let revisionBefore = try context.wallet.managedIdentity(identityId: context.identityId).getRevision()
-            pending.submittedRevision = revisionBefore == .max ? nil : revisionBefore + 1
+            let readHeldRevision = { try Self.heldRevision(context: context) }
+            let revision = AppConnect.SubmittedRevision(
+                held: try readHeldRevision(),
+                earlier: stores.grants.load().first { $0.key == pending.key && $0.isUnconfirmed }?.submittedRevision)
+            pending.submittedRevision = revision.value
             // A confirmed record for this request means its key is on the
             // identity, and a view without it is behind: registering again
             // would be refused, and the record must keep its values.
@@ -1223,25 +1226,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             Self.logger.info("🔗 DASHCONNECT :: registering session key")
             do {
-                try await signer.withAdditionalSigningKeys([
-                    (publicKey: sessionKeyHash160, privateKey: sessionPrivateKey),
-                ]) {
-                    try await updateIdentity(add: [key], context: context, signer: signer)
-                }
-            } catch {
-                // Another update of the identity that landed meanwhile moved
-                // the wallet's revision, and this one may have been built on
-                // it: the record names the higher of the two, which only
-                // makes a disconnect wait longer for the outcome.
-                if let revisionAfter = try? context.wallet
-                    .managedIdentity(identityId: context.identityId).getRevision(),
-                    revisionAfter > revisionBefore, revisionAfter < .max {
+                try await revision.submit({
+                    try await signer.withAdditionalSigningKeys([
+                        (publicKey: sessionKeyHash160, privateKey: sessionPrivateKey),
+                    ]) {
+                        try await updateIdentity(add: [key], context: context, signer: signer)
+                    }
+                }, readHeld: readHeldRevision, raise: { raised in
                     updateGrants(in: stores) { grants in
                         guard let index = grants.firstIndex(where: { $0.key == pending.key }) else { return }
-                        grants[index].submittedRevision = revisionAfter + 1
+                        grants[index].submittedRevision = raised
                     }
-                    pending.submittedRevision = revisionAfter + 1
-                }
+                    pending.submittedRevision = raised
+                })
+            } catch {
                 // The update may have landed all the same. If the key is on
                 // the identity, the login goes on; otherwise the failure
                 // stands and the record stays unconfirmed, to be confirmed if
@@ -1507,14 +1505,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let firstCurrentKeysRead = Task { try await readCurrentKeys() }
         defer { firstCurrentKeysRead.cancel() }
-        let currentPublicKeys = try await refreshedIdentityPublicKeys(context: context)
+        let (currentPublicKeys, currentRevision) = try await refreshedIdentityKeysAndRevision(context: context)
         let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
         // This identity's records whose update's outcome was not known are
         // settled first: one that landed is a grant like any other below (for
         // this request, its keys are sent again and its response published
         // as on any retry), and one that cannot land frees its ids.
         await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, identityRevision: currentRevision,
             context: context, in: stores, bindings: bindings)
         // Which rotations to derive depends on the keys the identity has.
         for grant in plan.encryption {
@@ -1705,8 +1703,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // update. A key of a confirmed one the fetched list lacks means the
         // list is behind, and it could not be shown to be off. A previous
         // grant whose own update's outcome is not known has its keys that
-        // are there replaced like any other; the rest are settled once this
-        // update lands.
+        // are there replaced like any other. The rest are not turned off
+        // after this update: Platform applies an identity update only at one
+        // above the identity's revision, and the SDK builds this one above
+        // the revision of its copy, replaced by the read above, so an earlier
+        // update that lands first gets this one refused. The read after this
+        // update settles its record (`AppConnect.pendingV2Outcome`).
+        // TODO(dashconnect-update-outcome): a reload of the SDK's copy
+        // elsewhere between that read and the submit would build this update
+        // above a revision the earlier one already took; its keys then stay
+        // on, under a confirmed record, until this connection's next
+        // renewal or disconnect.
         func isSuperseded(_ grant: AppConnectGrant) -> Bool {
             connectionId != nil && grant.identityId == identityId && grant.appContractId == appId
                 && grant.connectionId == connectionId && !isGrantForRequest(grant)
@@ -1928,11 +1935,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     )
                 }
             },
+            readHeldRevision: { try Self.heldRevision(context: context) },
             reread: {
-                guard let keys = try? await refreshedIdentityPublicKeys(context: context),
+                guard let read = try? await refreshedIdentityKeysAndRevision(context: context),
                       let bindings = try? Self.storedKeyBindings(identityId: identityId, modelContainer: modelContainer)
                 else { return nil }
-                return (keys, bindings)
+                return (read.keys, read.revision, bindings)
             },
             pause: { _ in try? await Task.sleep(nanoseconds: 3_000_000_000) },
             onDropped: { remaining in
@@ -1962,19 +1970,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             publishFailure = error
         }
         // One more read settles the identity's records still waiting for
-        // their update by what it shows of their keys. A previous grant of this connection that turned out to have landed
-        // holds keys this login replaces: they are turned off too. This runs
-        // after this request's own response is out, the app is waiting for
-        // it, and whether or not that publish went through.
+        // their update by what it shows of their keys and its revision. This
+        // runs after this request's own response is out, the app is waiting
+        // for it, and whether or not that publish went through. Nothing is
+        // turned off after it (see the renewal's rule above): a previous
+        // grant of this connection whose update had not landed when this
+        // approval read the identity is refused once this update lands, as
+        // long as the SDK built it on that read.
         if !add.isEmpty || !disable.isEmpty,
            stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
-            if let settled = await settleAfterOwnUpdate(context: context, stores: stores) {
-                do {
-                    try await disableLateLandedGrants(
-                        settled.confirmed.filter(isSuperseded), liveIn: settled.keys, context: context, signer: signer)
-                } catch {
-                    Self.logger.error("🔗 DASHCONNECT :: keys of a replaced grant that landed late are still live — \(error.localizedDescription, privacy: .public)")
-                }
+            let waiting = Set(stores.grants.load().filter { isSuperseded($0) && $0.isPendingV2 }.map(\.key))
+            if let keys = await settleAfterOwnUpdate(context: context, stores: stores),
+               AppConnect.landedWithLiveKeys(stores.grants.load(), among: waiting, in: keys) {
+                // TODO(dashconnect-update-outcome): the window above; the
+                // keys stay on until this connection's next renewal or
+                // disconnect.
+                Self.logger.error("🔗 DASHCONNECT :: an earlier grant of this connection landed after this update; its keys are still live")
             }
         }
         if let publishFailure { throw publishFailure }
@@ -1985,7 +1996,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// written, and `showRow` run, before `submit` sends the identity update
     /// that adds `add` and disables `disable`, so keys that land are never
     /// without a record and a row to disconnect them from. A record that adds
-    /// keys carries them (`pendingUpdate`) until the outcome is known.
+    /// keys carries them (`pendingUpdate`) until the outcome is known, with
+    /// the revision the update is submitted at (`AppConnect.SubmittedRevision`
+    /// over `readHeldRevision`, the revision the wallet holds), raised on the
+    /// record and in the store when a failed submit finds the wallet's
+    /// revision moved.
     ///
     /// Nothing is written or submitted when `disable` does not fit one
     /// update: a renewal that left some of the replaced keys on would report
@@ -1993,8 +2008,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ///
     /// On success the record is confirmed and the grants in
     /// `retiredGrantKeys` are marked done. A failure may still have landed:
-    /// up to three reads (`reread`, `pause` before the second and third)
-    /// settle it by `AppConnect.pendingV2Outcome`. Landed confirms as on
+    /// up to three reads (`reread`, the identity's keys and revision, with
+    /// `pause` before the second and third) settle it by
+    /// `AppConnect.pendingV2Outcome`. Landed confirms as on
     /// success when the keys it disables show off; with any of them still
     /// on, the keys were added by another update, so the record is confirmed
     /// without retiring anything and the failure stands; with limits raised
@@ -2017,7 +2033,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         grants: any AppConnectResponseStore,
         showRow: () async -> Void,
         submit: () async throws -> Void,
-        reread: () async -> (keys: [ManagedIdentity.IdentityPublicKeyInfo], bindings: [AppConnect.KeyBinding])?,
+        readHeldRevision: () throws -> UInt64,
+        reread: () async -> (
+            keys: [ManagedIdentity.IdentityPublicKeyInfo], revision: UInt64, bindings: [AppConnect.KeyBinding]
+        )?,
         pause: (Int) async -> Void,
         onDropped: ([AppConnectGrant]) async -> Bool
     ) async throws -> AppConnectGrant {
@@ -2025,7 +2044,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             logger.error("🔗 DASHCONNECT :: \(disable.count, privacy: .public) superseded keys do not fit one update; not renewing")
             throw DashConnectPlatformError.tooManyKeysToReplace
         }
+        var record = record
+        // Noted on the record before it is written, so the update is never
+        // submitted without it.
         var stored = grants.load()
+        let earlierNoted = stored.first { $0.key == record.key }?.pendingUpdate?.submittedRevision
+        let revision = try record.pendingUpdate.map { _ in
+            AppConnect.SubmittedRevision(held: try readHeldRevision(), earlier: earlierNoted)
+        }
+        record.pendingUpdate?.submittedRevision = revision?.value
         if let existing = stored.first(where: { $0.key == record.key }), !existing.isUnconfirmed, !record.isUnconfirmed {
             // Kept as it is: if its publish landed without confirming, its
             // values are the ones on Platform.
@@ -2060,7 +2087,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         logger.info("🔗 DASHCONNECT :: registering \(add.count, privacy: .public) key(s), disabling \(disable.count, privacy: .public)")
         do {
-            try await submit()
+            if let revision {
+                try await revision.submit(submit, readHeld: readHeldRevision) { raised in
+                    record.pendingUpdate?.submittedRevision = raised
+                    var all = grants.load()
+                    guard let index = all.firstIndex(where: { $0.key == record.key }) else { return }
+                    all[index].pendingUpdate?.submittedRevision = raised
+                    grants.save(all)
+                }
+            } else {
+                try await submit()
+            }
         } catch {
             for attempt in 0 ..< 3 {
                 if attempt > 0 { await pause(attempt) }
@@ -2075,7 +2112,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     continue
                 }
                 let outcome = AppConnect.pendingV2Outcome(
-                    of: pending, currentIdentityPublicKeys: view.keys, bindings: view.bindings)
+                    of: pending, currentIdentityPublicKeys: view.keys, identityRevision: view.revision,
+                    bindings: view.bindings)
                 switch outcome {
                 case .landed where disabled && AppConnect.showsAddedLimits(of: pending, in: view.keys):
                     logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
@@ -2406,22 +2444,24 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// two-QR login.
     ///
     /// A v2 record whose update's outcome was not known is settled by
-    /// `AppConnect.settlePendingV2Registrations`. One that landed is confirmed
+    /// `AppConnect.settlePendingV2Registrations`, over
+    /// `currentIdentityPublicKeys` and `identityRevision` read together
+    /// (`refreshedIdentityKeysAndRevision`). One that landed is confirmed
     /// and its row shown; its response is not published: its approval
     /// stopped waiting, and the app asks again. One that cannot land is
     /// dropped, and its row with it when nothing else holds it
     /// (`showRowsAfterDropping`). Nothing is settled while the store's
-    /// bindings cannot be read. Returns the v2 grants confirmed.
-    @discardableResult
+    /// bindings cannot be read.
     private func confirmRegistrations(
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        identityRevision: UInt64,
         context: Context,
         in stores: Stores,
         bindings knownBindings: [AppConnect.KeyBinding]? = nil
-    ) async -> [AppConnectGrant] {
+    ) async {
         guard stores.grants.load().contains(where: { $0.identityId == identityId && $0.keyDisabled != true })
-        else { return [] }
+        else { return }
         // Unknown when the store cannot be read: no unconfirmed record is
         // confirmed without it, and no row is changed by it.
         let readBindings = knownBindings
@@ -2437,15 +2477,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.logger.info("🔗 DASHCONNECT :: \(confirmed.count, privacy: .public) unconfirmed session key(s) found on the identity")
             }
         }
-        var confirmedV2: [AppConnectGrant] = []
         // Without the store's bindings a v2 record is not settled: one that
         // could not land would be dropped with its rows not judged.
         if let readBindings, stores.grants.load().contains(where: { $0.identityId == identityId && $0.isPendingV2 }) {
             var grants = stores.grants.load()
             let settled = AppConnect.settlePendingV2Registrations(
                 in: &grants, identityId: identityId, currentIdentityPublicKeys: currentIdentityPublicKeys,
-                bindings: bindings)
-            confirmedV2 = settled.confirmed
+                identityRevision: identityRevision, bindings: bindings)
             if !settled.confirmed.isEmpty {
                 Self.logger.info("🔗 DASHCONNECT :: \(settled.confirmed.count, privacy: .public) App Connect update(s) found to have landed")
             }
@@ -2498,7 +2536,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 Self.rowsAfterHolding(appIds: waitingAppIds, in: rows, at: shownAt)
             }
         }
-        return confirmedV2
     }
 
     /// The apps of `identityId` whose v2 record waiting for its update holds
@@ -2605,17 +2642,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// After an update of this wallet to the identity landed: one more read
     /// of the identity, which also writes what it shows to the store, and
     /// the v2 records of the identity waiting for their outcome are settled
-    /// by what it shows of their keys. Returns the v2 grants
-    /// confirmed and the keys read, or nil when the read failed.
+    /// by what it shows of their keys and its revision. Returns the keys
+    /// read, or nil when the read failed.
     private func settleAfterOwnUpdate(
         context: Context,
         stores: Stores
-    ) async -> (confirmed: [AppConnectGrant], keys: [ManagedIdentity.IdentityPublicKeyInfo])? {
-        guard let keys = try? await refreshedIdentityPublicKeys(context: context) else { return nil }
-        let confirmed = await confirmRegistrations(
-            identityId: context.identityId.toBase58String(), currentIdentityPublicKeys: keys,
-            context: context, in: stores)
-        return (confirmed, keys)
+    ) async -> [ManagedIdentity.IdentityPublicKeyInfo]? {
+        guard let read = try? await refreshedIdentityKeysAndRevision(context: context) else { return nil }
+        await confirmRegistrations(
+            identityId: context.identityId.toBase58String(), currentIdentityPublicKeys: read.keys,
+            identityRevision: read.revision, context: context, in: stores)
+        return read.keys
     }
 
     /// `rows` once the v2 records of `appIds` that were waiting for their
@@ -3056,7 +3093,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// known and that holds a key there (`waitingHoldsKeys`), is settled
     /// only by a read of that identity, once it is the active one. A v2
     /// record that holds none, such as one whose update never left the
-    /// device, does not hold the row: nothing may settle it.
+    /// device, does not hold the row: it is settled by a read of that
+    /// identity, while it is the active one, that shows it at the revision
+    /// the record notes or past it, and never when it notes none
+    /// (TODO(dashconnect-unconfirmed-row)).
     static func reasonHeldElsewhere(
         grants: [AppConnectGrant],
         appContractId: String,
@@ -3193,12 +3233,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let (currentPublicKeys, revision) = try await refreshedIdentityKeysAndRevision(context: context)
         // A registration whose key has turned up is confirmed.
         await confirmRegistrations(
-            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys,
+            identityId: identityId, currentIdentityPublicKeys: currentPublicKeys, identityRevision: revision,
             context: context, in: stores)
         // A v2 update of the app whose outcome the read above could not
         // tell is settled once an update of this disconnect lands.
         let pendingV2 = Set(stores.grants.load().filter { isGranted($0) && $0.isPendingV2 }.map(\.key))
-        var lateDisableFailure: Error?
         // One that has not is settled by its revision. One that does not
         // note it takes no part: its key id may belong to another key, and
         // its absence says nothing.
@@ -3364,8 +3403,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // other.
         // A record of the app still waiting that holds a key this update does
         // not turn off keeps the disconnect from ending here; one that holds
-        // none (an update that never left the device) does not, since nothing
-        // may ever settle it.
+        // none (an update that never left the device) does not: it is
+        // settled by a read that shows the identity at the revision it
+        // notes or past it, and never when it notes none
+        // (TODO(dashconnect-unconfirmed-row)).
         let waitingHoldsOtherKeys = stores.grants.load().filter { pendingV2.contains($0.key) }.contains {
             !AppConnect.heldKeyIds(heldBy: $0, in: currentPublicKeys, bindings: bindings).subtracting(keyIds).isEmpty
         }
@@ -3389,6 +3430,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 profileKeysUnchecked = true
             }
         }
+        // The user turned the app off: a waiting record of it no longer puts
+        // back the two-QR row it replaced, whose keys this disconnect
+        // disables too.
+        func forgetReplacedApprovedRows() {
+            updateGrants(in: stores) { grants in
+                for index in grants.indices where isGranted(grants[index]) && grants[index].isPendingV2 {
+                    grants[index].pendingUpdate?.replacesApprovedRow = nil
+                }
+            }
+        }
         // The identity as this disconnect leaves it: as read, when it sends
         // nothing; as read again after its update, when it does.
         var keysAfterUpdate: [ManagedIdentity.IdentityPublicKeyInfo]? = keyIds.isEmpty ? currentPublicKeys : nil
@@ -3399,6 +3450,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // attempt picks up what is still live.
             try await disableKeys(keyIds, context: context, signer: signer)
             Self.logger.info("🔗 DASHCONNECT :: app key(s) disabled")
+            // Before any settle below can drop a waiting record and put back
+            // the two-QR row it replaced, whose keys are now off too.
+            if asOneQR { forgetReplacedApprovedRows() }
             // Each registration that might still land names a revision above
             // `revision`, the one below it the identity was already at. The
             // update that just landed took one above the identity's revision
@@ -3424,31 +3478,27 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             // The reload writes the disabled keys to the store, and settles
             // the v2 records still waiting for their update by what it shows
-            // of their keys. One of the app's that turns out to have landed
-            // holds keys that are turned off too.
-            // The keys above are off either way.
-            if let settled = await settleAfterOwnUpdate(context: context, stores: stores) {
-                keysAfterUpdate = settled.keys
-                do {
-                    try await disableLateLandedGrants(
-                        settled.confirmed.filter { pendingV2.contains($0.key) }, liveIn: settled.keys,
-                        context: context, signer: signer)
-                } catch {
-                    lateDisableFailure = error
-                }
-            }
+            // of their keys and its revision. Nothing is turned off after it:
+            // a waiting update of the app that had not landed when the
+            // identity was read above is refused once the update of this
+            // disconnect lands (Platform applies an identity update only at
+            // one above the identity's revision), as long as the SDK built
+            // that update on the read above.
+            // TODO(dashconnect-update-outcome): a reload of the SDK's copy
+            // elsewhere in between would let both land; this read then
+            // confirms the waiting record with its keys on (`landedLate`).
+            keysAfterUpdate = await settleAfterOwnUpdate(context: context, stores: stores)
+        } else if asOneQR {
+            forgetReplacedApprovedRows()
         }
-
-        // The user turned the app off: a waiting record of it no longer puts
-        // back the two-QR row it replaced, whose keys this disconnect
-        // disabled too.
-        if asOneQR {
-            updateGrants(in: stores) { grants in
-                for index in grants.indices where isGranted(grants[index]) && grants[index].isPendingV2 {
-                    grants[index].pendingUpdate?.replacesApprovedRow = nil
-                }
-            }
-        }
+        // A waiting update of the app that the read after the update shows
+        // landed (the window above, or a key the first read showed that the
+        // store could not place yet) left keys on that this disconnect did
+        // not turn off: once what was turned off is marked, the row stays
+        // and the next attempt turns them off.
+        let landedLate = keysAfterUpdate.map {
+            AppConnect.landedWithLiveKeys(stores.grants.load(), among: pendingV2, in: $0)
+        } ?? false
 
         // The session keys of the grants read above are now off, and only
         // those are marked.
@@ -3464,15 +3514,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 signer: signer
             )
         }
-        // Keys of the app that landed late and could not be turned off keep
-        // the row, once what was turned off above is marked.
-        if let lateDisableFailure { throw lateDisableFailure }
+        if landedLate {
+            Self.logger.error("🔗 DASHCONNECT :: a waiting update of the app turned out to have landed; its keys are still live")
+            throw DashConnectPlatformError.identityKeysOutOfDate
+        }
         // A record of the app still waiting for its update keeps the row
         // while it may hold a live key, while the read after the update
         // lacks a key the store gives it (`showsWaitingKeys`), or while the
-        // identity could not be read again. One that holds none lets the row
-        // go and stays recorded: an update that never left the device reads
-        // the same as one on its way. If it lands after all, a later
+        // identity could not be read again. A read that shows the identity
+        // at the revision its update was submitted at, or past it, without
+        // its keys has dropped it already, unless it holds a key
+        // (`AppConnect.pendingV2Outcome`).
+        // One left that holds none lets the row go and stays recorded:
+        // below that revision, or with none noted, an update that never left
+        // the device reads the same as one on its way. If it lands after all, a later
         // settle confirms it and shows the app again
         // (`appIdsWithoutTheirOneQRRow`), to be disconnected then.
         let stillWaiting = stores.grants.load().filter { pendingV2.contains($0.key) && $0.isPendingV2 }
@@ -3520,33 +3575,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ) async throws {
         try await context.wallet.updateIdentity(
             identityId: context.identityId, addPublicKeys: add, disablePublicKeyIds: disable, signer: signer)
-    }
-
-    /// Turns off the keys of `grants` that `keys` (a fresh view) shows live:
-    /// earlier grants that turned out to have landed after the keys to
-    /// replace or disconnect were picked. Then marks them done.
-    private func disableLateLandedGrants(
-        _ grants: [AppConnectGrant],
-        liveIn keys: [ManagedIdentity.IdentityPublicKeyInfo],
-        context: Context,
-        signer: KeychainSigner
-    ) async throws {
-        guard !grants.isEmpty else { return }
-        let keyIds = Set(grants.flatMap(\.keyIds)).intersection(AppConnect.liveGrantedKeyIds(in: keys)).sorted()
-        if !keyIds.isEmpty {
-            Self.logger.info("🔗 DASHCONNECT :: disabling \(keyIds.count, privacy: .public) key(s) of App Connect grants that landed late")
-            try await disableKeys(keyIds, context: context, signer: signer)
-        }
-        // A live key a login could not have granted is left on, and so is
-        // the grant that names it.
-        // A grant naming a key the view lacks is not marked either: the view
-        // may be behind.
-        let leftOn = Set(keys.filter { $0.disabledAt == nil && !AppConnect.isLiveGrantedKey($0) }
-            .map { UInt32(bitPattern: $0.keyId) })
-        let shown = Set(keys.map { UInt32(bitPattern: $0.keyId) })
-        let grantKeys = Set(grants.filter { $0.keyIds.allSatisfy { shown.contains($0) && !leftOn.contains($0) } }
-            .map(\.key))
-        updateGrants(in: context.stores) { AppConnect.markKeysDisabled(in: &$0) { grantKeys.contains($0.key) } }
     }
 
     /// Whether the wallet's store shows another identity of this wallet with
@@ -4164,8 +4192,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         try await refreshedIdentityKeysAndRevision(context: context).keys
     }
 
-    /// The identity's keys and revision as Platform has them, both read from
-    /// one copy of the identity.
+    /// The identity's keys and revision as Platform has them, read from the
+    /// SDK's copy of the identity right after it is reloaded. Both come from
+    /// one handle, a snapshot the SDK copies out of the wallet, so they are
+    /// of the same copy: a key absent from them was absent at that revision,
+    /// which is what settling an update by its revision takes.
     private func refreshedIdentityKeysAndRevision(
         context: Context
     ) async throws -> (keys: [ManagedIdentity.IdentityPublicKeyInfo], revision: UInt64) {
@@ -4174,6 +4205,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let identity = try context.wallet.managedIdentity(identityId: context.identityId)
         return (try identity.getPublicKeys(), try identity.getRevision())
+    }
+
+    /// The revision of the SDK's copy of the identity: the one the SDK
+    /// builds the next identity update above.
+    private static func heldRevision(context: Context) throws -> UInt64 {
+        try context.wallet.managedIdentity(identityId: context.identityId).getRevision()
     }
 
     /// What the wallet's store holds for each key of the identity. The store
