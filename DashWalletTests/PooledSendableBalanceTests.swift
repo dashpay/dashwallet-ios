@@ -367,6 +367,38 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertEqual(message, "Insufficient balance")
     }
 
+    // The Core → Identity top-up adds no route cost: only the L1 reserve
+    // rides on top of the amount, and the ceiling is the cached envelope.
+
+    func testNoRouteCostReturnsStillConfirmingWhenTheL1ReserveFits() {
+        let message = coreRouteMessage(
+            requestedDuffs: 110_000_000,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
+
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
+    }
+
+    func testNoRouteCostReturnsInsufficientWhenTheL1ReserveUsesTheLastRoom() {
+        let message = coreRouteMessage(
+            requestedDuffs: 119_500_000,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
+
+        XCTAssertEqual(message, "Insufficient balance")
+    }
+
+    func testNoRouteCostHandlesConfirmedFundsBelowTheL1Reserve() {
+        let message = coreRouteMessage(
+            requestedDuffs: 90_000_000,
+            cachedSpendableDuffs: 0,
+            sendableDuffs: 50_000,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
+
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
+    }
+
     func testAGapWithNothingConfirmingIsNeverCalledAWait() {
         // The pool holds more than the gate counts, but none of it is
         // confirming — a pooled figure not re-read yet, or an account the

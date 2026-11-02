@@ -1575,6 +1575,21 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// `coreTransferFundsMessage` for the typed amount: the caller gives its
+    /// route's ceiling and the cost the route adds on top of the L1 reserve;
+    /// the L1 reserve is the cached one and the pooled figures are read live.
+    private func coreRouteFundsMessage(ceilingDuffs: UInt64, routeCostDuffs: UInt64) -> String? {
+        let state = SwiftDashSDKWalletState.shared
+        return Self.coreTransferFundsMessage(
+            requestedDuffs: dashDuffsUnsigned,
+            ceilingDuffs: ceilingDuffs,
+            sendableDuffs: state.sendableDuffs,
+            l1ReserveDuffs: coreL1FeeReserveDuffs,
+            routeCostDuffs: routeCostDuffs,
+            pooledKnown: state.pooledSpendableDuffs != nil,
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
+    }
+
     /// Inline, user-facing explanation for an amount rejected before Confirm.
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
@@ -1618,18 +1633,11 @@ final class InternalTransferViewModel: ObservableObject {
             guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
                 return Self.feeEstimateUnavailableMessage
             }
-            let ceilingDuffs = SwiftDashSDKWalletState.feeAwareMax(
-                spendable: coreSpendableDuffs,
-                reserve: feeDuffs)
-            let state = SwiftDashSDKWalletState.shared
-            return Self.coreTransferFundsMessage(
-                requestedDuffs: dashDuffsUnsigned,
-                ceilingDuffs: ceilingDuffs,
-                sendableDuffs: state.sendableDuffs,
-                l1ReserveDuffs: coreL1FeeReserveDuffs,
-                routeCostDuffs: feeDuffs,
-                pooledKnown: state.pooledSpendableDuffs != nil,
-                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
+            return coreRouteFundsMessage(
+                ceilingDuffs: SwiftDashSDKWalletState.feeAwareMax(
+                    spendable: coreSpendableDuffs,
+                    reserve: feeDuffs),
+                routeCostDuffs: feeDuffs)
 
         case .coreToPlatform:
             // The static address-funding reserve rides on top of the amount,
@@ -1640,18 +1648,11 @@ final class InternalTransferViewModel: ObservableObject {
             }
             let routeReserveDuffs = CoreToPlatformAmountPolicy.reserveDuffs(
                 reserveCredits: reserveCredits)
-            let ceilingDuffs = CoreToPlatformAmountPolicy.maxAmountDuffs(
-                spendableDuffs: coreSpendableDuffs,
-                reserveCredits: reserveCredits)
-            let state = SwiftDashSDKWalletState.shared
-            return Self.coreTransferFundsMessage(
-                requestedDuffs: dashDuffsUnsigned,
-                ceilingDuffs: ceilingDuffs,
-                sendableDuffs: state.sendableDuffs,
-                l1ReserveDuffs: coreL1FeeReserveDuffs,
-                routeCostDuffs: routeReserveDuffs,
-                pooledKnown: state.pooledSpendableDuffs != nil,
-                pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
+            return coreRouteFundsMessage(
+                ceilingDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
+                    spendableDuffs: coreSpendableDuffs,
+                    reserveCredits: reserveCredits),
+                routeCostDuffs: routeReserveDuffs)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -1781,10 +1782,12 @@ final class InternalTransferViewModel: ObservableObject {
         }
         switch source {
         case .core:
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: source.balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs)
+            // The SDK builds the top-up's asset lock with the same pooled
+            // funding as Core → Platform; the lock holds nothing back beyond
+            // the ordinary L1 reserve, so the ceiling is the cached envelope.
+            return coreRouteFundsMessage(
+                ceilingDuffs: coreSpendableDuffs,
+                routeCostDuffs: 0)
         case .platform:
             guard let ceiling = platformIdentityFundableDuffs else {
                 return Self.feeEstimateUnavailableMessage
