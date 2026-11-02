@@ -399,6 +399,54 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
     }
 
+    func testNoRouteCostHandlesTheFirstReceiveIntoAnEmptyWallet() {
+        // 1.5M of room after confirmation: the 1M L1 reserve fits, any route
+        // cost above 0.5M would not.
+        let message = coreRouteMessage(
+            requestedDuffs: 98_500_000,
+            cachedSpendableDuffs: 0,
+            sendableDuffs: 0,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 0, unconfirmed: 100_000_000))
+
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000).errorDescription)
+    }
+
+    func testNoRouteCostReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
+        let message = coreRouteMessage(
+            requestedDuffs: 121_000_000,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
+
+        XCTAssertEqual(message, "Insufficient balance")
+    }
+
+    func testNoRouteCostDoesNotWaitWhileThePooledFigureIsUnknown() {
+        // A pool that would answer "still confirming" if it were read.
+        var poolReads = 0
+        let snapshot = pool(confirmed: 100_000_000, unconfirmed: 20_000_000)
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 110_000_000,
+            ceilingDuffs: 99_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: 1_000_000,
+            routeCostDuffs: 0,
+            pooledKnown: false,
+            pool: { poolReads += 1; return snapshot })
+
+        XCTAssertEqual(message, "Insufficient balance")
+        XCTAssertEqual(poolReads, 0)
+    }
+
+    func testNoRouteCostReturnsStillConfirmingWhenTheL1ReserveTakesExactlyTheRoomLeft() {
+        let message = coreRouteMessage(
+            requestedDuffs: 119_000_000,
+            routeCostDuffs: 0,
+            pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
+
+        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(20_000_000).errorDescription)
+    }
+
     func testAGapWithNothingConfirmingIsNeverCalledAWait() {
         // The pool holds more than the gate counts, but none of it is
         // confirming — a pooled figure not re-read yet, or an account the
