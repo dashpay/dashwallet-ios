@@ -309,6 +309,13 @@ extension TXDetailViewController {
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
+                AssetLockRetryLog.logOutcome(
+                    "outcome=\(outcome)",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
@@ -326,8 +333,25 @@ extension TXDetailViewController {
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
+                AssetLockRetryLog.logOutcome(
+                    "outcome=cancelled",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
             } catch {
                 failure = error
+                // The alert shows only the text; the log keeps the typed case.
+                // The failure store is written where the network call threw,
+                // not here, so a refusal cannot overwrite the stored reason.
+                AssetLockRetryLog.logFailure(
+                    error,
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
             }
 
             guard let self else { return }
