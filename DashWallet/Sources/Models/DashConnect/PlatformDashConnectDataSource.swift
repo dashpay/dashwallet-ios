@@ -3083,9 +3083,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard expecting.accepts(effect) else {
             throw DashConnectPlatformError.disconnectEffectChanged
         }
+        // What the connection was, read before its records change.
+        let entry = await disconnectedEntry(appId: id, stores: stores)
         if effect != .localOnly {
-            // What the connection was, read before its records change.
-            let entry = await disconnectedEntry(appId: id, stores: stores)
             let revocation = try await revokeAppConnectGrants(
                 appContractId: id, rowIsOneQR: rowIsOneQR, stores: stores)
             // The row stands for the app, and the app still holds a key on
@@ -3109,22 +3109,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
 
-        let disconnectedAt = now()
-        // Local-only for a two-QR connection: its `loginKeyResponse` document
-        // stays, and re-approving the same `dash-key:` QR returns it to
-        // `.active` while the identity keys are still registered.
-        await updateRows(in: stores) { rows in
-            rows.map { connection in
-                guard connection.id == id else { return connection }
-                return DAppConnection(
-                    id: connection.id,
-                    name: connection.name,
-                    url: connection.url,
-                    status: .approved,
-                    updatedAt: disconnectedAt
-                )
-            }
-        }
+        // Local-only for a two-QR connection: its keys stay on Platform and
+        // its `loginKeyResponse` document stays. Its row goes and the app is
+        // listed among the disconnected ones, as after a one-QR disconnect:
+        // left in the "approved" state, it would read as waiting for its
+        // second code. Approving the same `dash-key:` QR again makes a new
+        // row, `.active` while the identity keys are still registered.
+        result.notRecordedInHistory = !(entry.map { stores.history.record($0.disconnected(at: now())) } ?? false)
+        await updateRows(in: stores) { rows in rows.filter { $0.id != id } }
         return result
     }
 

@@ -2998,7 +2998,7 @@ final class AppConnectLoginTests: XCTestCase {
         // The row the new list shows is this wallet's own.
         let current = Self.shownRows(dataSource)
         try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, expecting: await Self.asked(dataSource, id: current[0].id, scope: current[0].scope))
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
+        XCTAssertEqual(connections.load(), [])
     }
 
     func testRemoveDoesNothingForARowPublishedForAnotherWallet() async {
@@ -3025,8 +3025,10 @@ final class AppConnectLoginTests: XCTestCase {
 
         try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, expecting: await Self.asked(dataSource, id: shown[0].id, scope: shown[0].scope))
 
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
-        XCTAssertEqual(Self.shownRows(dataSource).map(\.status), [.approved])
+        XCTAssertEqual(connections.load(), [], "not left waiting for a second code")
+        XCTAssertEqual(Self.shownRows(dataSource), [])
+        let history = UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: connections)
+        XCTAssertEqual(history.load()?.map(\.id), [row.id], "listed among the disconnected apps")
     }
 
     func testARowShownForADevnetAtOtherNodesIsNotActedOnUnderTheSameName() async throws {
@@ -3046,7 +3048,7 @@ final class AppConnectLoginTests: XCTestCase {
         let current = Self.shownRows(dataSource)
         XCTAssertNotEqual(current[0].scope, shown[0].scope)
         try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, expecting: await Self.asked(dataSource, id: current[0].id, scope: current[0].scope))
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
+        XCTAssertEqual(connections.load(), [])
     }
 
     func testARowWithNoScopeIsNotActedOn() async {
@@ -3145,9 +3147,9 @@ final class AppConnectLoginTests: XCTestCase {
         await other.value
         try await disconnect.value
 
-        let rows = connections.load()
-        XCTAssertEqual(rows.count, 2, "the row the other operation wrote is kept")
-        XCTAssertEqual(rows.first { $0.id == row.id }?.status, .approved)
+        XCTAssertEqual(
+            connections.load().map(\.id), ["7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"],
+            "the row the other operation wrote is kept, the disconnected one goes")
     }
 
     func testAnOperationDoesNotStartForAWalletThatIsNoLongerActiveWhenItsTurnComes() async {
@@ -3761,6 +3763,7 @@ final class AppConnectLoginTests: XCTestCase {
             supportedNetwork: .testnet,
             store: connections,
             responseStore: UserDefaultsAppConnectResponseStore(defaults: defaults, scope: .connections(connections)),
+            historyStore: UserDefaultsDashConnectHistoryStore(defaults: defaults, scope: connections),
             activeWalletIdHex: { active.idHex },
             networkEndpoint: { endpoint.url },
             notificationCenter: notificationCenter,
