@@ -211,6 +211,25 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
+/// What a disconnect of a connection does, as far as the local records tell
+/// before the identity is read.
+enum DashConnectDisconnectEffect: Equatable {
+    /// Its keys are turned off on Platform.
+    case revokesKeys
+    /// Only its local status changes: nothing of the app's can reach
+    /// Platform.
+    case localOnly
+    /// Either, depending on what the identity shows: a two-QR row with a
+    /// grant whose keys may or may not still be live.
+    case dependsOnPlatform
+
+    /// Whether a disconnect that does `effect` is what a user told this was
+    /// asked for: the same, or either when told it depends on Platform.
+    func accepts(_ effect: DashConnectDisconnectEffect) -> Bool {
+        self == .dependsOnPlatform || self == effect
+    }
+}
+
 /// What a disconnect did with the active identity's DashPay profile keys
 /// that no grant record names, besides turning off the app's own keys.
 struct DashConnectDisconnectResult: Equatable {
@@ -283,8 +302,8 @@ struct ConnectionDetails: Equatable {
     /// so a renewal from a new code counts as the connection it made.
     var connectedAt: Date? = nil
     /// What is left of each key's budget, read from Platform; `nil` when it
-    /// was not read (a disconnected app, or the connection is on another
-    /// identity) or could not be (`fundingReadFailed`).
+    /// was not read (the connection is on another identity) or could not be
+    /// (`fundingReadFailed`).
     var keyFunding: [KeyFunding]? = nil
     var fundingReadFailed = false
 }
@@ -331,31 +350,102 @@ struct KeyFunding: Equatable {
     }
 }
 
-/// The expiries read for one wallet's rows.
-struct ConnectionExpiries: Equatable {
-    /// The wallet the rows read were of (`DAppConnection.scope`).
-    let scope: String?
-    let byApp: [String: ConnectionExpiry]
+/// Whether a connected app's keys can still sign, as one read of the
+/// active identity told it, and the row it was told for.
+struct ConnectionExpiry: Equatable {
+    enum Verdict: Equatable {
+        /// Every live key of the app is past its expiry on this phone's
+        /// clock, and the Core tip is past it by at least
+        /// `AppConnect.chainTimeMarginMilliseconds`: the app can no longer
+        /// sign, and a disconnect turns the keys off.
+        case expired
+        /// A live key of the app can still sign: it has no expiry, or is
+        /// not past it.
+        case current
+        /// This phone's clock is past every live key's expiry, while the
+        /// Core tip is not known or not past it by the margin: the chain
+        /// does not show it.
+        case pastByPhone
+        /// Every key attributed to the app is disabled while its row says
+        /// connected (turned off elsewhere): reading again tells the same.
+        case keysOff
+        /// Not told: the identity view lacks one of the app's keys, or holds
+        /// another key under a stored id.
+        case unknown
+        /// None of the app's keys can sign, while a live authentication key
+        /// of the identity that may still sign cannot be matched to any app:
+        /// it may be the app's.
+        case undecided
+        /// Nothing of this identity's to judge: no grant of the app, and no
+        /// key bound to it.
+        case notJudged
+    }
+
+    let verdict: Verdict
+    /// The published row the verdict was told for, of a generation the read
+    /// was made for: the verdict holds while the published row has the same
+    /// generation (`DAppConnection.expiryGeneration`).
+    let row: DAppConnection
 }
 
-/// Whether an app's keys are past their expiry on Platform but still on.
-enum ConnectionExpiry: Equatable {
-    /// Every key of the app's grants on the active identity is past its
-    /// expiry and still enabled: it can no longer sign, and a disconnect
-    /// turns the keys off.
-    case expired
-    case current
-    /// Not told: the identity could not be read, the view lacks one of the
-    /// keys, or this phone's clock calls the keys expired while the synced
-    /// Core chain does not show it yet (or SPV gives no chain time).
-    case unknown
-    /// The app's recorded keys are all off on Platform while its records
-    /// say it is connected (turned off elsewhere): reading again tells the
-    /// same.
-    case keysOff
-    /// The app has no live grant on the active identity: there is nothing
-    /// of this identity's to judge.
-    case notJudged
+extension DAppConnection {
+    /// What of a row a verdict of the expiry check is told for: a change of
+    /// any of it makes the verdict another row's; a change of the rest (its
+    /// name, its url) does not.
+    struct ExpiryGeneration: Hashable {
+        let id: String
+        let scope: String?
+        let status: ConnectionStatus
+        let loginKind: DashConnectLoginKind
+        let updatedAt: Date
+    }
+
+    var expiryGeneration: ExpiryGeneration {
+        ExpiryGeneration(id: id, scope: scope, status: status, loginKind: loginKind, updatedAt: updatedAt)
+    }
+
+    /// The generations of the active ones of `rows`, by app: what the
+    /// expiry check reads again when it changes.
+    static func activeExpiryGenerations(_ rows: [DAppConnection]) -> [ExpiryGeneration] {
+        rows.filter { $0.status == .active }.map(\.expiryGeneration).sorted { $0.id < $1.id }
+    }
+}
+
+/// The expiry check of the active wallet's rows.
+struct ConnectionExpiries: Equatable {
+    enum Check: Equatable {
+        case notStarted
+        case checking
+        /// The last read ended with a verdict for every active row.
+        case read
+        /// The last read could not be made.
+        case failed
+        /// The runtime's network has no identity to read: reading again
+        /// tells the same.
+        case unavailable
+    }
+
+    /// The identity the verdicts were read on (Base58); `nil` with no
+    /// identity, or before a read.
+    let identityId: String?
+    let check: Check
+    /// By app id.
+    let byApp: [String: ConnectionExpiry]
+
+    static let notStarted = ConnectionExpiries(identityId: nil, check: .notStarted, byApp: [:])
+
+    /// The verdicts that hold for `rows` as they are published: each told
+    /// for its row as it is (`DAppConnection.expiryGeneration`); a row that
+    /// changed has none until it is checked again. With `onlyExpired`, only
+    /// the `.expired` ones.
+    func holding(for rows: [DAppConnection], onlyExpired: Bool = false) -> ConnectionExpiries {
+        let rowsById = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return ConnectionExpiries(identityId: identityId, check: check, byApp: byApp.filter { appId, expiry in
+            guard let row = rowsById[appId] else { return false }
+            guard row.expiryGeneration == expiry.row.expiryGeneration else { return false }
+            return !onlyExpired || expiry.verdict == .expired
+        })
+    }
 }
 
 /// A pending request derived from a scanned login QR code.

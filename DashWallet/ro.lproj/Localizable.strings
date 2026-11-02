@@ -171,9 +171,6 @@
 /* Explore Dash: Filters */
 "80 km" = "80 km";
 
-/* DashConnect expiry date picker: the picked date was refused */
-"This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
-
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word" = "\"%@\" nu este un cuvânt din fraza de recuperare";
 
@@ -6837,9 +6834,6 @@
 /* DashConnect connection sheet */
 "Connection expired" = "Connection expired";
 
-/* DashConnect connection sheet */
-"Connection will expire" = "Connection will expire";
-
 /* DashConnect */
 "Disconnected apps could not be read." = "Disconnected apps could not be read.";
 
@@ -6903,8 +6897,14 @@
 /* DashConnect connection sheet */
 "Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
 
+/* DashConnect connection sheet */
+"A key on this identity could not be matched to an app, so whether this connection has expired is not known." = "A key on this identity could not be matched to an app, so whether this connection has expired is not known.";
+
 /* DashConnect */
-"Which connections expired could not be checked." = "Which connections expired could not be checked.";
+"Which connections have expired could not be checked." = "Which connections have expired could not be checked.";
+
+/* DashConnect */
+"Whether some connections have expired is not known yet." = "Whether some connections have expired is not known yet.";
 
 /* DashConnect: what identity funding limits are */
 "Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
@@ -6912,14 +6912,20 @@
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
 
-/* DashConnect funding limit keypad: the number of decimal places a limit can have */
-"Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
-
-/* DashConnect connection status: every recorded key is off */
+/* DashConnect connection status: every key of the app is off */
 "Keys turned off" = "Keys turned off";
 
 /* DashConnect connection sheet */
 "The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
+
+/* DashConnect connection sheet */
+"The keys' expiry time has passed on this phone; the network has not shown it yet." = "The keys' expiry time has passed on this phone; the network has not shown it yet.";
+
+/* DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation */
+"Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too." = "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.";
+
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
 
 /* DashConnect: after a disconnect that could not be kept in the Disconnected list */
 "Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
@@ -6939,7 +6945,7 @@
 /* DashConnect: a disconnect asked for on a connection that no longer offers one */
 "This connection has nothing to disconnect now." = "This connection has nothing to disconnect now.";
 
-/* DashConnect: a disconnect asked for on a row that is no longer the active wallet's */
+/* DashConnect: a disconnect asked for on a row that is gone, or no longer the active wallet's */
 "This connection changed. Check it and try again." = "This connection changed. Check it and try again.";
 
 /* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */
@@ -6977,6 +6983,12 @@
 
 /* DashConnect connection sheet: what is left of a key's budget; an amount with its unit */
 "%@ left" = "%@ left";
+
+/* DashConnect expiry date picker: the picked date was refused */
+"This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
+
+/* DashConnect funding limit keypad: the number of decimal places a limit can have */
+"Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
 
 /* DashConnect approve sheet: the app's name */
 "You have never connected to this app before. Only approve if you trust %@." = "You have never connected to this app before. Only approve if you trust %@.";
@@ -7061,3 +7073,6 @@
 
 /* DashConnect approve sheet: the chosen expiry is in the past */
 "This expiry has passed. Pick another one, then approve." = "This expiry has passed. Pick another one, then approve.";
+
+/* DashConnect approve sheet */
+"Connection will expire" = "Connection will expire";

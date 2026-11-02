@@ -33,7 +33,14 @@ protocol DashConnectStore {
 }
 
 final class UserDefaultsDashConnectStore: DashConnectStore {
+    /// Posted after a save, with the `scopeKey` written under
+    /// (`scopeKeyUserInfoKey`). `PlatformDashConnectDataSource` republishes
+    /// its rows on it, whichever store instance wrote them.
+    static let didSaveNotification = Notification.Name("UserDefaultsDashConnectStore.didSave")
+    static let scopeKeyUserInfoKey = "scopeKey"
+
     private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
     private let network: DashConnectNetwork
     private let walletIdHexProvider: () -> String?
     private let devnetNameProvider: () -> String?
@@ -46,9 +53,11 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         walletIdHexProvider: @escaping () -> String? = {
             WalletEnvironment.activeWalletIdHex as String?
         },
-        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName }
+        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName },
+        notificationCenter: NotificationCenter = .default
     ) {
         self.defaults = defaults
+        self.notificationCenter = notificationCenter
         self.network = network
         self.walletIdHexProvider = walletIdHexProvider
         self.devnetNameProvider = devnetNameProvider
@@ -100,7 +109,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             defaults: defaults,
             network: network,
             walletIdHexProvider: { walletIdHex },
-            devnetNameProvider: { devnetName }
+            devnetNameProvider: { devnetName },
+            notificationCenter: notificationCenter
         )
     }
 
@@ -160,6 +170,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
 
         guard !connections.isEmpty else {
             defaults.removeObject(forKey: storageKey)
+            didSave(under: storageKey)
             return
         }
 
@@ -176,10 +187,16 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
 
         do {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
+            didSave(under: storageKey)
         } catch {
             Self.logger.error(
                 "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    private func didSave(under storageKey: String) {
+        notificationCenter.post(
+            name: Self.didSaveNotification, object: nil, userInfo: [Self.scopeKeyUserInfoKey: storageKey])
     }
 
     /// The storage key embeds the wallet id, a persistent user identifier, so
@@ -273,7 +290,6 @@ struct DisconnectedConnection: Codable, Equatable, Identifiable {
 protocol DashConnectHistoryStore {
     /// `nil` when the stored entries cannot be read: unknown, not none.
     func load() -> [DisconnectedConnection]?
-    func save(_ entries: [DisconnectedConnection])
     /// Records `entry`, in place of an earlier one of the same app; `false`
     /// when it could not be saved (the stored entries cannot be read, or
     /// writing failed).
@@ -319,13 +335,8 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
         return stored.entries.filter { latest[$0.id] == $0 && shown.insert($0.id).inserted }
     }
 
-    /// Entries this build cannot read are written back as they were.
-    func save(_ entries: [DisconnectedConnection]) {
-        write(entries, forgetting: [])
-    }
-
-    /// An entry this build cannot read of the same app goes too: the app has
-    /// one entry, this one.
+    /// Entries this build cannot read are written back as they were, except
+    /// one of the same app: the app has one entry, this one.
     @discardableResult
     func record(_ entry: DisconnectedConnection) -> Bool {
         guard let entries = load() else { return false }

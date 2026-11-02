@@ -20,8 +20,24 @@
 import Combine
 import Foundation
 
+/// What the Connections page lists for the active wallet, as published in
+/// one value: its rows, its disconnected apps and the expiry check of its
+/// rows, under the scope the rows name.
+struct DashConnectListing: Equatable {
+    /// The wallet, network and endpoint the rows were published for
+    /// (`DAppConnection.scope`); `nil` with no wallet.
+    let scope: String?
+    let rows: [DAppConnection]
+    /// The apps disconnected on that wallet, most recent first; `nil` when
+    /// they cannot be read.
+    let disconnected: [DisconnectedConnection]?
+    /// The verdicts that hold for `rows`: each told for its row as it is
+    /// published here.
+    let expiries: ConnectionExpiries
+}
+
 protocol DashConnectDataSource {
-    var connections: AnyPublisher<[DAppConnection], Never> { get }
+    var listing: AnyPublisher<DashConnectListing, Never> { get }
 
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
@@ -61,36 +77,54 @@ protocol DashConnectDataSource {
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
+    ///
+    /// `expecting` is what the user was told it does: a disconnect the
+    /// records no longer describe so (`DashConnectDisconnectEffect.accepts`)
+    /// throws `DashConnectPlatformError.disconnectEffectChanged` before the
+    /// PIN prompt, and one whose row is gone throws
+    /// `DashConnectPlatformError.connectionGone`; `connections` publishes
+    /// the rows without it.
     @discardableResult
-    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
+        -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
-    /// The apps disconnected on the active wallet, most recent first; `nil`
-    /// when they cannot be read.
-    func disconnectedConnections() async -> [DisconnectedConnection]?
     /// What the connection sheet shows for the row `id`, from the grant
     /// records of the active identity; `nil` when there is no active wallet
     /// or `scope` is not its.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
-    /// Whether `disconnect(id:scope:)` would turn keys off on Platform rather
-    /// than only the local status, from the local records alone; `nil` when
-    /// there is no active wallet, `scope` is not its, or it has no row `id`. Local and quick, so
-    /// a question about it can be asked on the tap.
+    /// What `disconnect(id:scope:expecting:)` would do, from the local
+    /// records alone; `nil` when there is no active wallet, `scope` is not
+    /// its, or it has no row `id`. Local and quick, so a question about it
+    /// can be asked on the tap.
     @MainActor
-    func disconnectRevokesKeys(id: String, scope: String?) -> Bool?
-    /// For each app with a confirmed grant on the active identity, whether
-    /// its keys are past their expiry on Platform but still on, from a fresh
-    /// read of the identity. `nil` when the identity could not be read.
-    func connectionExpiries() async -> ConnectionExpiries?
+    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect?
+    /// The Connections page is on screen: reads whether the active rows'
+    /// keys can still sign, and publishes the verdicts in `listing`, now and
+    /// as they can change. Without `forcesRead`, a read made moments ago may
+    /// be judged again instead. Returns at once.
+    @MainActor
+    func refreshConnectionExpiries(forcesRead: Bool)
+    /// The Connections page left the screen: a read running for the check
+    /// is cancelled, and nothing is read until
+    /// `refreshConnectionExpiries(forcesRead:)` is called again.
+    @MainActor
+    func stopConnectionExpiryReads()
+    /// The app came back to the foreground: the check's clocks may have
+    /// moved on while the device slept.
+    @MainActor
+    func connectionExpiriesForegrounded()
     /// What an earlier approval of `loginRequest` recorded it would grant,
     /// read from this device's store; `nil` when there is none.
     func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess?
 }
 
 extension DashConnectDataSource {
-    /// A source that keeps no history cannot tell: unknown.
-    func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
+    /// The rows `listing` publishes.
+    var connections: AnyPublisher<[DAppConnection], Never> {
+        listing.map(\.rows).eraseToAnyPublisher()
+    }
+
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
-    func connectionExpiries() async -> ConnectionExpiries? { nil }
     func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? { nil }
 }
 
@@ -212,6 +246,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     private let supportedNetwork: DashConnectNetwork
     private let store: any DashConnectStore
     private let subject: CurrentValueSubject<[DAppConnection], Never>
+    /// Whether the check was asked for: the rows are then told, each as
+    /// published, with nothing to judge.
+    private let expiriesChecked = CurrentValueSubject<Bool, Never>(false)
 
     init(
         initial: [DAppConnection] = [],
@@ -224,8 +261,21 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         self.subject = CurrentValueSubject(restored)
     }
 
-    var connections: AnyPublisher<[DAppConnection], Never> {
-        subject.eraseToAnyPublisher()
+    /// The mock keeps no history: no disconnected apps.
+    var listing: AnyPublisher<DashConnectListing, Never> {
+        subject.combineLatest(expiriesChecked)
+            .map { rows, checked in
+                guard checked else {
+                    return DashConnectListing(scope: nil, rows: rows, disconnected: [], expiries: .notStarted)
+                }
+                let byApp = Dictionary(
+                    rows.filter { $0.status == .active }.map { ($0.id, ConnectionExpiry(verdict: .notJudged, row: $0)) },
+                    uniquingKeysWith: { first, _ in first })
+                return DashConnectListing(
+                    scope: nil, rows: rows, disconnected: [],
+                    expiries: ConnectionExpiries(identityId: nil, check: .read, byApp: byApp))
+            }
+            .eraseToAnyPublisher()
     }
 
     var connectionsSnapshot: [DAppConnection] {
@@ -302,7 +352,12 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+    func disconnect(
+        id: String, scope: String?, expecting: DashConnectDisconnectEffect
+    ) async throws -> DashConnectDisconnectResult {
+        guard subject.value.contains(where: { $0.id == id && $0.scope == scope }) else {
+            throw DashConnectPlatformError.connectionGone
+        }
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
@@ -321,28 +376,32 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         persistAndSend(subject.value.filter { $0.id != id })
     }
 
-    /// The mock keeps no history and grants no keys: nothing to list, no
-    /// details beyond the row, and no key to expire.
-    func disconnectedConnections() async -> [DisconnectedConnection]? { [] }
-
+    /// The mock grants no keys: no details beyond the row.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard subject.value.contains(where: { $0.id == id }) else { return nil }
         return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)
     }
 
-    func connectionExpiries() async -> ConnectionExpiries? {
-        ConnectionExpiries(
-            scope: subject.value.first?.scope,
-            byApp: Dictionary(
-                subject.value.filter { $0.status == .active }.map { ($0.id, ConnectionExpiry.notJudged) },
-                uniquingKeysWith: { first, _ in first }))
-    }
-
     /// The mock holds no keys: its disconnect only changes the row.
     @MainActor
-    func disconnectRevokesKeys(id: String, scope: String?) -> Bool? {
-        subject.value.contains { $0.id == id && $0.scope == scope } ? false : nil
+    func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect? {
+        subject.value.contains { $0.id == id && $0.scope == scope } ? .localOnly : nil
     }
+
+    /// The mock grants no keys: nothing of any active row's to judge, for
+    /// every listing it publishes from now on.
+    @MainActor
+    func refreshConnectionExpiries(forcesRead: Bool) {
+        expiriesChecked.send(true)
+    }
+
+    /// The mock reads only when asked: nothing runs to be stopped.
+    @MainActor
+    func stopConnectionExpiryReads() {}
+
+    /// The mock's verdicts do not depend on the clocks.
+    @MainActor
+    func connectionExpiriesForegrounded() {}
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {

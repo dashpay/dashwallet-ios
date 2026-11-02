@@ -1183,6 +1183,7 @@
 		AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */; };
 		AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */; };
 		AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */; };
+		AA06A0E12FF6000000000E01 /* ConnectionExpiryMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0E32FF6000000000E03 /* ConnectionExpiryMachineTests.swift */; };
 		AA22BB33CC44DD55EE66FF78 /* BuyReceiveFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */; };
 		AA29B7041CF55787428E1A04 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
 		ABA7230759067F4D4EB39AE9 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
@@ -3369,6 +3370,7 @@
 		AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectV2LoginTests.swift; path = DashConnect/AppConnectV2LoginTests.swift; sourceTree = "<group>"; };
 		AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectEncryptionRotationTests.swift; path = DashConnect/AppConnectEncryptionRotationTests.swift; sourceTree = "<group>"; };
 		AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlatformDashConnectDataSourceTests.swift; path = DashConnect/PlatformDashConnectDataSourceTests.swift; sourceTree = "<group>"; };
+		AA06A0E32FF6000000000E03 /* ConnectionExpiryMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConnectionExpiryMachineTests.swift; path = DashConnect/ConnectionExpiryMachineTests.swift; sourceTree = "<group>"; };
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
 		5E1C0A0100000000000000F1 /* MerchantLogoPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantLogoPlaceholder.swift; sourceTree = "<group>"; };
@@ -7579,6 +7581,7 @@
 				AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */,
 				AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */,
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
+				AA06A0E32FF6000000000E03 /* ConnectionExpiryMachineTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
 				0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */,
@@ -10913,6 +10916,7 @@
 				AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */,
 				AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */,
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
+				AA06A0E12FF6000000000E01 /* ConnectionExpiryMachineTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
 				D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */,

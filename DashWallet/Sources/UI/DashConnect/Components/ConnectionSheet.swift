@@ -39,20 +39,21 @@ struct ConnectionSheet: View {
     /// When the connection was made.
     let connectedAt: Date?
     let isBusy: Bool
-    /// Platform is being read for the expiry.
-    let isCheckingStatus: Bool
+    /// Where the expiry check of the rows is.
+    let expiryCheck: ConnectionExpiries.Check
     /// What the last action from this sheet ended in.
     let message: ConnectionsScreenMessage?
     let onClose: () -> Void
     /// Confirmed, with what the question said a disconnect does.
-    let onDisconnect: (Bool) -> Void
+    let onDisconnect: (DashConnectDisconnectEffect) -> Void
     /// The question a row's Disconnect opened the sheet for, read when it
     /// is asked: what a disconnect does. `nil` when there is none to ask, or
     /// when it cannot ask (the view model then says why).
-    let takeDisconnectQuestion: () -> Bool?
+    let takeDisconnectQuestion: () -> DashConnectDisconnectEffect?
     /// The question of the sheet's own Disconnect, read when it is asked.
-    let disconnectQuestion: () -> Bool?
-    let onReconnect: () -> Void
+    let disconnectQuestion: () -> DashConnectDisconnectEffect?
+    /// Scans the app's code.
+    let onScan: () -> Void
     let onMockScan: () -> Void
     let onShowFundingLimitsInfo: () -> Void
 
@@ -60,7 +61,7 @@ struct ConnectionSheet: View {
     @State private var showsWithheld = false
     @State private var isConfirmingDisconnect = false
     /// What the open question says a disconnect does; kept while it closes.
-    @State private var askedRevokesKeys: Bool?
+    @State private var askedEffect: DashConnectDisconnectEffect?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -76,7 +77,7 @@ struct ConnectionSheet: View {
                     header
                     statusCard
                     if item.status == .waitingForSecondScan {
-                        ScanToCompleteBanner(onScanQR: onReconnect, onMockScan: onMockScan)
+                        ScanToCompleteBanner(onScanQR: onScan, onMockScan: onMockScan)
                     }
                     detailsCard
                     if details == nil {
@@ -124,22 +125,22 @@ struct ConnectionSheet: View {
                 item.name),
             isPresented: $isConfirmingDisconnect,
             titleVisibility: .visible,
-            presenting: askedRevokesKeys
+            presenting: askedEffect
         ) { asked in
             Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive) {
                 onDisconnect(asked)
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: { asked in
-            Text(Self.disconnectConsequence(revokesKeys: asked))
+            Text(Self.disconnectConsequence(asked))
         }
         // After the sheet's own transition: a dialog asked for while it
         // slides in may not show.
         .task {
             do { try await Task.sleep(nanoseconds: 450_000_000) } catch { return }
             // The user may have asked from the sheet's own button meanwhile.
-            guard !isConfirmingDisconnect, let revokesKeys = takeDisconnectQuestion() else { return }
-            ask(revokesKeys: revokesKeys)
+            guard !isConfirmingDisconnect, let effect = takeDisconnectQuestion() else { return }
+            ask(effect)
         }
     }
 
@@ -177,16 +178,8 @@ struct ConnectionSheet: View {
                     .dashFont(.callout)
                     .foregroundColor(Color.dash.primaryText)
             }
-            if item.keysAreOff {
-                Text(NSLocalizedString(
-                    "The keys this wallet recorded for this connection are already turned off on Platform.",
-                    comment: "DashConnect connection sheet"))
-                    .dashFont(.caption1)
-                    .foregroundColor(Color.dash.tertiaryText)
-            } else if !item.isStatusChecked, !isCheckingStatus {
-                Text(NSLocalizedString(
-                    "Whether this connection has expired could not be checked.",
-                    comment: "DashConnect connection sheet"))
+            if let expiryNote {
+                Text(expiryNote)
                     .dashFont(.caption1)
                     .foregroundColor(Color.dash.tertiaryText)
             }
@@ -329,7 +322,8 @@ struct ConnectionSheet: View {
         case .disconnected:
             reconnectButton
         case .expired:
-            // Its keys can no longer be used, but stay on Platform until a
+            // Its live keys are past their expiry by this phone's clock and
+            // the Core tip with its margin, and stay on Platform until a
             // disconnect, or a renewal of the same connection, turns them
             // off: both are offered.
             VStack(spacing: 10) {
@@ -337,8 +331,7 @@ struct ConnectionSheet: View {
                 disconnectButton
             }
         case .waitingForSecondScan:
-            // A disconnect only turns a two-QR row back into this state: the
-            // second code is the way forward.
+            // The second code is the way forward.
             EmptyView()
         case .active, .confirming:
             disconnectButton
@@ -348,7 +341,7 @@ struct ConnectionSheet: View {
     private var reconnectButton: some View {
         DashUIKit.DashButton(
             text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
-            isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onReconnect)
+            isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onScan)
     }
 
     private var disconnectButton: some View {
@@ -367,12 +360,12 @@ struct ConnectionSheet: View {
 
     /// Only where Disconnect is offered, and with what it will do known.
     private func askToDisconnect() {
-        guard let revokesKeys = disconnectQuestion() else { return }
-        ask(revokesKeys: revokesKeys)
+        guard let effect = disconnectQuestion() else { return }
+        ask(effect)
     }
 
-    private func ask(revokesKeys: Bool) {
-        askedRevokesKeys = revokesKeys
+    private func ask(_ effect: DashConnectDisconnectEffect) {
+        askedEffect = effect
         // A question that did not show leaves the flag set: it is turned
         // off first, so the button always asks.
         guard isConfirmingDisconnect else {
@@ -386,31 +379,66 @@ struct ConnectionSheet: View {
     // MARK: - Text
 
     /// What a disconnect will do, as the data source will run it: one that
-    /// only changes the local status, or one that turns the keys off and may
-    /// take unattributed DashPay profile keys with it.
-    private static func disconnectConsequence(revokesKeys: Bool) -> String {
-        revokesKeys
-            ? NSLocalizedString(
+    /// only changes the local status, one that turns the keys off and may
+    /// take unattributed DashPay profile keys with it, or either, as the
+    /// identity shows once it is read.
+    private static func disconnectConsequence(_ effect: DashConnectDisconnectEffect) -> String {
+        switch effect {
+        case .revokesKeys:
+            return NSLocalizedString(
                 "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.",
                 comment: "DashConnect: what a disconnect does, in its confirmation")
-            : NSLocalizedString(
+        case .localOnly:
+            return NSLocalizedString(
                 "It is turned off on this device. Approving the app's code again turns it back on.",
                 comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
+        case .dependsOnPlatform:
+            return NSLocalizedString(
+                "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.",
+                comment: "DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation")
+        }
     }
 
-    /// Active, with keys that may still sign.
-    private var isLive: Bool { item.status == .active && !item.keysAreOff }
+    /// The connection's record is active, and its keys are not all off.
+    private var isLive: Bool { item.status == .active && item.expiry != .keysOff }
 
     private var statusText: String {
         switch item.status {
-        case .active where item.keysAreOff:
-            return NSLocalizedString("Keys turned off", comment: "DashConnect connection status: every recorded key is off")
+        case .active where item.expiry == .keysOff:
+            return NSLocalizedString("Keys turned off", comment: "DashConnect connection status: every key of the app is off")
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         case .confirming: return NSLocalizedString("Confirming", comment: "DashConnect")
         case .waitingForSecondScan:
             return NSLocalizedString("Waiting for the second code", comment: "DashConnect connection status")
-        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        }
+    }
+
+    /// What the expiry check told of an active row beyond its status; `nil`
+    /// when it has nothing to add (the keys can still sign, or there is
+    /// nothing to judge), and before a check has ended.
+    var expiryNote: String? {
+        guard item.status == .active else { return nil }
+        switch item.expiry {
+        case .keysOff?:
+            return NSLocalizedString(
+                "The keys this wallet recorded for this connection are already turned off on Platform.",
+                comment: "DashConnect connection sheet")
+        case .pastByPhone?:
+            return NSLocalizedString(
+                "The keys' expiry time has passed on this phone; the network has not shown it yet.",
+                comment: "DashConnect connection sheet")
+        case .undecided?:
+            return NSLocalizedString(
+                "A key on this identity could not be matched to an app, so whether this connection has expired is not known.",
+                comment: "DashConnect connection sheet")
+        case .unknown?, nil:
+            guard expiryCheck == .read || expiryCheck == .failed || expiryCheck == .unavailable else { return nil }
+            return NSLocalizedString(
+                "Whether this connection has expired could not be checked.", comment: "DashConnect connection sheet")
+        case .current?, .notJudged?, .expired?:
+            return nil
         }
     }
 
@@ -452,9 +480,11 @@ struct ConnectionSheet: View {
             return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
         }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
+        // Past only once the expiry check found every live key past it by
+        // this phone's clock and by the Core tip with its margin.
         return item.status == .expired
             ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
-            : (NSLocalizedString("Connection will expire", comment: "DashConnect connection sheet"), expiresAt)
+            : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
     }
 
     private static let dateFormatter: DateFormatter = {

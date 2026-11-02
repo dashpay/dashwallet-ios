@@ -133,13 +133,32 @@ extension AppConnect {
             self.isSessionKeyLogin = isSessionKeyLogin
         }
 
-        init(plan: GrantPlan) {
-            keys = plan.auth.map {
+        /// The keys of `plan`. `receivesMessages`: the response carries an
+        /// encryption key, which a plan that asks for one may still leave out.
+        init(plan: GrantPlan, receivesMessages: Bool) {
+            self.init(keys: Self.keys(of: plan), receivesMessages: receivesMessages)
+        }
+
+        /// The auth keys of `plan`, with their terms.
+        private static func keys(of plan: GrantPlan) -> [Key] {
+            plan.auth.map {
                 Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
                     expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
             }
-            receivesMessages = !plan.encryption.isEmpty
-            isSessionKeyLogin = false
+        }
+
+        /// What a v2 grant record notes its approval gave, once its response
+        /// is sealed: an encryption key only when a slot carries one
+        /// (`sendsEncryptionKey`). The keys, and whether they are a session
+        /// key's, stay as `recorded` noted them: a retry, or an approval of a
+        /// request already recorded, registers the keys of the first attempt,
+        /// with its terms. One this build cannot read stays as it was.
+        static func noted(_ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool) -> GrantedAccess {
+            if let recorded, recorded.isUnreadable { return recorded }
+            return GrantedAccess(
+                keys: recorded?.keys ?? keys(of: plan),
+                receivesMessages: sendsEncryptionKey,
+                isSessionKeyLogin: recorded?.isSessionKeyLogin ?? false)
         }
 
         init(from decoder: Decoder) throws {
@@ -1139,40 +1158,150 @@ extension AppConnect {
         return UInt64(bitPattern: expiresAt) > UInt64(earliest)
     }
 
-    /// For each app among `grants`, whether every auth key they name that
-    /// is still on is past its expiry (`.expired`: the app can no longer sign,
-    /// and a disconnect turns the keys off), or not. A key the view lacks
-    /// leaves the app `.unknown`; keys that are all off make it `.keysOff`:
-    /// the records say the app is connected, the identity says it is not.
+    /// Core accepts a header up to 2 h ahead of network-adjusted time, which
+    /// itself is at most 70 min from real time; a tip past `expiresAt` by this
+    /// much means real time, and so Platform's block time, is past `expiresAt`.
+    static let chainTimeMarginMilliseconds: Int64 = (2 * 60 + 70) * 60 * 1_000
+
+    /// What `connectionExpiryJudgements` tells of one app: its verdict and
+    /// when it can change by the clocks alone.
+    struct ExpiryJudgement: Equatable {
+        let verdict: ConnectionExpiry.Verdict
+        /// The phone time from which the verdict can change: a `.current`
+        /// app's last live expiring key passes `isUnexpired`, or a key that
+        /// makes the app `.undecided` does. `nil` when no such time is ahead.
+        var rejudgeAtPhoneTime: Int64? = nil
+        /// The Core tip time from which the verdict can change: a
+        /// `.pastByPhone` app turns `.expired`, or a key that makes the app
+        /// `.undecided` can no longer sign. `nil` when no such time is ahead.
+        var rejudgeAtChainTime: Int64? = nil
+    }
+
+    /// `a + b`, or `Int64.max` where it would overflow.
+    private static func saturatingSum(_ a: Int64, _ b: Int64) -> Int64 {
+        let (sum, overflow) = a.addingReportingOverflow(b)
+        return overflow ? (b > 0 ? .max : .min) : sum
+    }
+
+    /// For each app in `apps` (contract ids, Base58), whether the keys
+    /// attributed to it on `identityId` can still sign
+    /// (`ConnectionExpiry.Verdict`), and when that can change by the clocks
+    /// alone (`ExpiryJudgement`). A key is the app's when a confirmed record
+    /// of the app names it (`recordedKeyIds`), or when the store shows an
+    /// authentication key bound to the app's contract. Only the app's keys
+    /// that can sign (`isGrantedKeyShaped`) are judged; an app with none is
+    /// `.notJudged`.
     ///
     /// Platform rejects an expired key by its block time, which this phone
-    /// does not know. A key counts as expired only once both this phone's
-    /// clock and the time of the last Core block it has synced
-    /// (`chainTimeMilliseconds`) are past its expiry: a phone clock running
-    /// ahead alone does not make a working key look expired. Until the chain
-    /// shows it, or without a chain time, an app the phone's clock calls
-    /// expired is `.unknown`.
-    static func connectionExpiries(
+    /// does not know. An app is `.expired` only once both this phone's clock
+    /// and the Core tip (`chainTimeMilliseconds`) are past every live key's
+    /// expiry, the tip by `chainTimeMarginMilliseconds`; before that it is
+    /// `.pastByPhone`. A live authentication key whose app cannot be told
+    /// (missing from the store, or stored with no bound, one this build
+    /// cannot read, or a contract group's, and named by no record) that may
+    /// still sign may be the app's: an app with live keys, none of which can
+    /// sign, is then `.undecided`. An app with no live key is `.keysOff`.
+    static func connectionExpiryJudgements(
+        identityId: String,
+        apps: Set<String>,
         grants: [AppConnectGrant],
+        bindings: [KeyBinding],
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
         nowMilliseconds: Int64,
         chainTimeMilliseconds: Int64?
-    ) -> [String: ConnectionExpiry] {
-        Dictionary(grouping: grants, by: \.appContractId).mapValues { appGrants in
-            let ids = Set(appGrants.flatMap(\.keyIds))
-            let named = keys.filter { ids.contains(UInt32(bitPattern: $0.keyId)) }
-            guard Set(named.map { UInt32(bitPattern: $0.keyId) }) == ids else { return .unknown }
-            let live = named.filter { $0.disabledAt == nil }
-            guard !live.isEmpty else { return .keysOff }
-            let expiries = live.compactMap(\.expiresAt)
-            guard expiries.count == live.count,
-                  expiries.allSatisfy({ !isUnexpired($0, nowMilliseconds: nowMilliseconds) })
-            else { return .current }
-            guard let chainTimeMilliseconds else { return .unknown }
-            // The phone says expired; the chain may not show it yet.
-            return expiries.allSatisfy { UInt64(bitPattern: $0) <= UInt64(max(0, chainTimeMilliseconds)) }
-                ? .expired : .unknown
+    ) -> [String: ExpiryJudgement] {
+        let recordedAll = recordedKeyIds(of: identityId, grants: grants, bindings: bindings)
+        let keysById = Dictionary(keys.map { (UInt32(bitPattern: $0.keyId), $0) }, uniquingKeysWith: { first, _ in first })
+        let storedIds = Set(bindings.map(\.keyId))
+        let toleranceMilliseconds = Int64(clockTolerance * 1000)
+        let isAuthShaped = { (binding: KeyBinding) in
+            binding.isSessionKeyShaped || binding.isV2AuthKeyShaped || binding.isTwoQRAuthenticationKeyShaped
         }
+        // Past its expiry by both clocks: the phone's, and the Core tip's by
+        // the margin.
+        let isExpiredByBothClocks = { (expiresAt: Int64?) -> Bool in
+            guard let expiresAt, !isUnexpired(expiresAt, nowMilliseconds: nowMilliseconds),
+                  let chainTimeMilliseconds else { return false }
+            return chainTimeMilliseconds >= saturatingSum(expiresAt, chainTimeMarginMilliseconds)
+        }
+        // The expiries (`nil`: none) of the live authentication keys that may
+        // still sign, that no record names, and whose app the stored bound
+        // does not say.
+        let unattributable: [Int64?] = keys.compactMap { key -> Int64?? in
+            let keyId = UInt32(bitPattern: key.keyId)
+            guard isLiveGrantedKey(key), !storedIds.contains(keyId), !recordedAll.contains(keyId),
+                  !isExpiredByBothClocks(key.expiresAt) else { return nil }
+            return .some(key.expiresAt)
+        } + bindings.compactMap { binding -> Int64?? in
+            let viewed = keysById[binding.keyId]
+            let expiresAt = viewed?.expiresAt ?? binding.expiresAt
+            // The fresh view says whether the key is live; the store can lag,
+            // and a key the view lacks cannot sign.
+            let isLive = viewed.map { $0.disabledAt == nil } ?? false
+            guard isLive, isAuthShaped(binding), !recordedAll.contains(binding.keyId),
+                  !isExpiredByBothClocks(expiresAt) else { return nil }
+            if !binding.hasUnreadableBound {
+                switch binding.bound {
+                case nil, .contractGroup?: break
+                case .singleContract?, .documentType?: return nil
+                }
+            }
+            return .some(expiresAt)
+        }
+        // When such a key can stop counting: the phone passing its expiry,
+        // then the Core tip passing it by the margin.
+        let undecidedUntil = ExpiryJudgement(
+            verdict: .undecided,
+            rejudgeAtPhoneTime: unattributable.compactMap { $0 }
+                .filter { isUnexpired($0, nowMilliseconds: nowMilliseconds) && $0 >= 0 }
+                .map { saturatingSum($0, toleranceMilliseconds) }.min(),
+            rejudgeAtChainTime: unattributable.compactMap { $0 }
+                .filter { !isUnexpired($0, nowMilliseconds: nowMilliseconds) }
+                .map { saturatingSum($0, chainTimeMarginMilliseconds) }.min())
+        // TODO(dashconnect-expiry): a contract-group key no record names is
+        // attributable through the group's owner, which this check does not read.
+        return Dictionary(uniqueKeysWithValues: apps.map { app in
+            let appContractId = Data.identifier(fromBase58: app)
+            let recorded = recordedKeyIds(
+                of: identityId, grants: grants.filter { $0.appContractId == app && $0.keyDisabled != true },
+                bindings: bindings)
+            let bound = bindings.filter { binding in
+                guard isAuthShaped(binding), let appContractId else { return false }
+                switch binding.bound {
+                case .singleContract(let id)?: return id == appContractId
+                case .documentType(let id, _)?: return id == appContractId
+                case .contractGroup?, nil: return false
+                }
+            }
+            let attributed = recorded.union(bound.map(\.keyId))
+            guard !attributed.isEmpty else { return (app, ExpiryJudgement(verdict: .notJudged)) }
+            let appKeys = attributed.compactMap { keysById[$0] }
+            // The view lacks a key, or holds another key under a stored id.
+            guard appKeys.count == attributed.count,
+                  bound.allSatisfy({ keysById[$0.keyId]?.data == $0.data })
+            else { return (app, ExpiryJudgement(verdict: .unknown)) }
+            // An encryption key the app was given cannot sign: it neither keeps
+            // the app current nor expires it.
+            let signing = appKeys.filter(isGrantedKeyShaped)
+            guard !signing.isEmpty else { return (app, ExpiryJudgement(verdict: .notJudged)) }
+            let live = signing.filter { $0.disabledAt == nil }
+            if live.contains(where: { $0.expiresAt == nil || isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }) {
+                // An expiry past `Int64.max` is far in the future: no time ahead.
+                let expiries = live.compactMap(\.expiresAt)
+                let currentUntil = expiries.count == live.count && expiries.allSatisfy({ $0 >= 0 })
+                    ? expiries.max().map { saturatingSum($0, toleranceMilliseconds) } : nil
+                return (app, ExpiryJudgement(verdict: .current, rejudgeAtPhoneTime: currentUntil))
+            }
+            guard !live.isEmpty else { return (app, ExpiryJudgement(verdict: .keysOff)) }
+            if !unattributable.isEmpty { return (app, undecidedUntil) }
+            // Every live key has an expiry the phone's clock is past.
+            guard let latest = live.compactMap(\.expiresAt).max() else { return (app, ExpiryJudgement(verdict: .keysOff)) }
+            let expiredFrom = saturatingSum(latest, chainTimeMarginMilliseconds)
+            guard let chainTimeMilliseconds, chainTimeMilliseconds >= expiredFrom else {
+                return (app, ExpiryJudgement(verdict: .pastByPhone, rejudgeAtChainTime: expiredFrom))
+            }
+            return (app, ExpiryJudgement(verdict: .expired))
+        })
     }
 
     /// The unattributed profile keys the wallet's store shows as live and
@@ -1621,11 +1750,15 @@ extension AppConnect {
         return expiry <= plannedExpiry
     }
 
-    /// A live auth key a login could have granted: HASH160 and never MASTER,
-    /// so a damaged record cannot get the identity's own keys disabled.
+    /// An auth key a login could have granted: HASH160 and never MASTER, so a
+    /// damaged record cannot get the identity's own keys disabled.
+    static func isGrantedKeyShaped(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
+        key.purpose == .authentication && key.keyType == .ecdsaHash160 && key.securityLevel != .master
+    }
+
+    /// A live key that passes `isGrantedKeyShaped`.
     static func isLiveGrantedKey(_ key: ManagedIdentity.IdentityPublicKeyInfo) -> Bool {
-        key.purpose == .authentication && key.keyType == .ecdsaHash160
-            && key.securityLevel != .master && key.disabledAt == nil
+        isGrantedKeyShaped(key) && key.disabledAt == nil
     }
 
     /// The ids of `keys` that pass `isLiveGrantedKey`.
