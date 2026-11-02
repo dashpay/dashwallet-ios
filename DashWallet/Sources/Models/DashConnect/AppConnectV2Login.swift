@@ -1518,12 +1518,15 @@ extension AppConnect {
 
     /// What an update of this wallet to an identity did, as an earlier build
     /// noted it on a waiting record (`PendingV2Update.outlivedBy`). It is
-    /// only decoded, never used to settle: a later own update is no proof
-    /// that a waiting one cannot land, because the SDK's copy of the
-    /// identity can be reloaded while an update is on its way.
-    /// TODO(dashconnect-update-outcome): a waiting record settles only on
-    /// what the identity shows of its own keys; the SDK's handle to the
-    /// signed transition (dashpay/platform#5690) would settle the rest.
+    /// only decoded, never used to settle: a waiting record is settled by
+    /// what the identity shows of its own keys and by the revision its own
+    /// update was submitted at (`PendingV2Update.submittedRevision`).
+    /// TODO(dashconnect-update-outcome): that revision is read from the
+    /// wallet's copy of the identity around the submit, not taken from the
+    /// signed transition: a reload of that copy elsewhere between the read
+    /// and the build would sign above a higher revision than the one noted.
+    /// The SDK returning the revision it signed (dashpay/platform#5690) would
+    /// make it exact.
     struct OwnUpdate: Codable, Equatable {
         struct AddedKey: Codable, Equatable {
             let keyId: UInt32
@@ -1558,9 +1561,23 @@ extension AppConnect {
         case unknown
     }
 
-    /// The outcome of `pending` by what `keys` (a fresh view of the
-    /// identity) and `bindings` (the store's bounds) show. No revision is
-    /// guessed: the SDK does not say which revision it signed.
+    /// Whether a record of `waiting` (keys of records that were waiting for
+    /// their update) is now confirmed with a key `keys` shows live: its
+    /// update landed after all.
+    static func landedWithLiveKeys(
+        _ grants: [AppConnectGrant],
+        among waiting: Set<String>,
+        in keys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> Bool {
+        let live = Set(keys.filter { $0.disabledAt == nil }.map { UInt32(bitPattern: $0.keyId) })
+        return grants.contains { grant in
+            waiting.contains(grant.key) && !grant.isPendingV2 && !grant.isUnconfirmed
+                && grant.keyIds.contains(where: live.contains)
+        }
+    }
+
+    /// The outcome of `pending` by what `keys` and `identityRevision` (a
+    /// fresh view of the identity) and `bindings` (the store's bounds) show.
     ///
     /// - Every added key there as it was added (its limits raised at
     ///   most), or turned off since: it landed (`landedAndOff` when every
@@ -1575,10 +1592,17 @@ extension AppConnect {
     /// - Its encryption key (ECDSA_SECP256K1, unique on Platform) under
     ///   another id: it can never land. HASH160 auth keys are not unique,
     ///   so their data elsewhere says nothing.
+    /// - A key it adds absent, with the identity at the revision the update
+    ///   was submitted at or past it (`submittedRevision`): Platform applies
+    ///   an identity update only at one above the identity's revision, and
+    ///   never removes a key, so it can never land. An update whose keys
+    ///   are all there, placed or not, is judged as above, whatever the
+    ///   revision.
     ///
-    /// A later update of this wallet is no evidence: the SDK's copy of the
-    /// identity can be reloaded while an update is on its way, so a waiting
-    /// one may still land after it.
+    /// TODO(dashconnect-unconfirmed-row): a record that does not note its
+    /// revision (from a build before `PendingV2Update.submittedRevision`)
+    /// with a key absent stays unknown: only its keys turning up, or another
+    /// key under its ids, settles it.
     ///
     /// Expiry ends nothing: Platform judges it by block time, which a view
     /// does not carry, and the device's clock is not that.
@@ -1588,14 +1612,17 @@ extension AppConnect {
     static func pendingV2Outcome(
         of pending: AppConnectGrant.PendingV2Update,
         currentIdentityPublicKeys keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        identityRevision: UInt64,
         bindings: [KeyBinding]
     ) -> PendingV2Outcome {
         var allLanded = true
         var anyPresent = false
+        var anyAbsent = false
         var offAuthCount = 0
         for expected in pending.addedKeys {
             guard let key = keys.first(where: { UInt32(bitPattern: $0.keyId) == expected.keyId }) else {
                 allLanded = false
+                anyAbsent = true
                 continue
             }
             anyPresent = true
@@ -1622,12 +1649,14 @@ extension AppConnect {
             }
         }
         if takenElsewhere { return .cannotLand }
+        if anyAbsent, let submitted = pending.submittedRevision, identityRevision >= submitted { return .cannotLand }
         // Its keys there, unplaced, may be a landed update still to settle.
         return .unknown
     }
 
     /// Settles the v2 records of `identityId` whose update's outcome was not
-    /// known, by `pendingV2Outcome`. A landed one becomes a grant like any
+    /// known, by `pendingV2Outcome` over `currentIdentityPublicKeys` and
+    /// `identityRevision`, read together. A landed one becomes a grant like any
     /// other (its response is not published: its approval stopped waiting),
     /// and the earlier grants its update retired are marked done once the
     /// keys it disables show off; one that landed and is off again is
@@ -1641,6 +1670,7 @@ extension AppConnect {
         in grants: inout [AppConnectGrant],
         identityId: String,
         currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        identityRevision: UInt64,
         bindings: [KeyBinding]
     ) -> (confirmed: [AppConnectGrant], dropped: [AppConnectGrant]) {
         var confirmed: [AppConnectGrant] = []
@@ -1651,7 +1681,8 @@ extension AppConnect {
             let replaced = showsDisabled(pending.disabledKeyIds, in: currentIdentityPublicKeys)
                 ? pending.retiredGrantKeys : []
             let outcome = pendingV2Outcome(
-                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys, bindings: bindings)
+                of: pending, currentIdentityPublicKeys: currentIdentityPublicKeys,
+                identityRevision: identityRevision, bindings: bindings)
             switch outcome {
             case .landed:
                 var settled = grant
