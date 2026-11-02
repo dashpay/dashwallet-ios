@@ -739,21 +739,23 @@ final class ConnectionsViewModel: ObservableObject {
                     id: connection.id, scope: connection.scope, expecting: expecting)
             } catch {
                 self.isDisconnecting = false
-                // It may have turned some keys off before it failed: what
-                // the sheet shows is read again.
+                // It may have turned some keys off before it failed, or the
+                // records changed: what the sheet shows is read again.
                 self.updateShownConnection()
                 if let shown = self.shownConnection, shown.id == connection.id {
                     self.shownDetails = nil
                     self.shownDetailsFailed = false
                     self.readShownDetails(shown)
                 }
-                // Nothing ran: the sheet says why, and its Disconnect asks
-                // again with what holds now.
                 switch error {
                 case DashConnectPlatformError.disconnectEffectChanged:
+                    // Nothing ran: the sheet's Disconnect asks again with
+                    // what holds now.
                     self.show(Self.staleQuestionMessage, from: connection)
                     return
                 case DashConnectPlatformError.connectionGone:
+                    // Nothing ran: the data source shows the page its rows,
+                    // and the sheet of a row they no longer list closes.
                     self.show(Self.connectionChangedMessage, from: connection)
                     return
                 default:

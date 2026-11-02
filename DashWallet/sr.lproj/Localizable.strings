@@ -6882,7 +6882,7 @@
 /* DashConnect: a disconnect asked for on a connection that no longer offers one */
 "This connection has nothing to disconnect now." = "This connection has nothing to disconnect now.";
 
-/* DashConnect: a disconnect asked for on a row that is no longer the active wallet's */
+/* DashConnect: a disconnect asked for on a row that is gone, or no longer the active wallet's */
 "This connection changed. Check it and try again." = "This connection changed. Check it and try again.";
 
 /* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */

@@ -1956,8 +1956,8 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertTrue(viewModel.connections.isEmpty, "asked again, it runs")
     }
 
-    /// A row the data source no longer has is said to have changed, even
-    /// while the page still shows it.
+    /// A row the data source no longer has is said to have changed, and
+    /// once the page drops it the sheet closes and the page says so.
     func testADisconnectOfARowGoneInItsTurnSaysTheConnectionChanged() async throws {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
         spy.effect = .localOnly
@@ -1968,9 +1968,33 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
         viewModel.disconnectShown(asked: .localOnly)
         await waitUntil { !viewModel.isDisconnecting && viewModel.connectionSheetMessage != nil }
-        XCTAssertFalse(viewModel.connections.isEmpty, "the page has not caught up")
         XCTAssertEqual(
             viewModel.connectionSheetMessage?.text, DashConnectPlatformError.connectionGone.localizedDescription)
+
+        spy.sendRows([])
+        await waitUntil { viewModel.shownConnection == nil }
+        viewModel.connectionSheetDismissed()
+        XCTAssertEqual(viewModel.message?.text, DashConnectPlatformError.connectionGone.localizedDescription)
+    }
+
+    /// The rows were dropped while the disconnect waited: the sheet closes
+    /// and the page says why nothing ran.
+    func testADisconnectWhoseRowWentWhileItWaitedSaysSoOnThePage() async throws {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        spy.effect = .localOnly
+        spy.disconnectDelay = 200_000_000
+        spy.disconnectFailure = DashConnectPlatformError.connectionGone
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows[0])
+
+        viewModel.disconnectShown(asked: .localOnly)
+        spy.sendRows([])
+        await waitUntil { !viewModel.isDisconnecting }
+        XCTAssertNil(viewModel.shownConnection, "the sheet closes")
+        XCTAssertNil(viewModel.connectionSheetMessage)
+        viewModel.connectionSheetDismissed()
+        XCTAssertEqual(viewModel.message?.text, DashConnectPlatformError.connectionGone.localizedDescription)
     }
 
     func testTheSheetAsksWithTheDataSourcesAnswerBeforeItsDetailsAreRead() async {
@@ -3501,9 +3525,16 @@ final class AppConnectLoginTests: XCTestCase {
     /// to ask again.
     func testADisconnectOfARowGoneSinceItsQuestionIsRefusedAsGone() async throws {
         let active = ActiveWallet("wallet-a")
-        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [Self.twoQRRow(status: .active)])
-        let shown = Self.shownRows(dataSource)
-        connections.save([])
+        let gone = Self.twoQRRow(status: .active)
+        let kept = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)
+        let (dataSource, _) = makeScopedDataSource(active: active, rows: [gone, kept])
+        let shown = Self.shownRows(dataSource).filter { $0.id == gone.id }
+        // Written by a store whose save this data source does not hear.
+        UserDefaultsDashConnectStore(
+            defaults: defaults, network: .testnet, walletIdHexProvider: { active.idHex },
+            devnetNameProvider: { nil }, notificationCenter: NotificationCenter()
+        ).save([kept])
+        XCTAssertEqual(Self.shownRows(dataSource).count, 2)
 
         do {
             try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, expecting: .localOnly)
@@ -3513,6 +3544,25 @@ final class AppConnectLoginTests: XCTestCase {
                 return XCTFail("unexpected error: \(error)")
             }
         }
+        XCTAssertEqual(Self.shownRows(dataSource).map(\.id), [kept.id], "the page is shown the rows as stored")
+    }
+
+    /// Another data source over the same rows (a page opened again while an
+    /// earlier one's operation runs) removes one: this one's page drops it.
+    func testARowAnotherDataSourceRemovesLeavesThePage() async throws {
+        let active = ActiveWallet("wallet-a")
+        let center = NotificationCenter()
+        let gone = Self.twoQRRow(status: .active)
+        let kept = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)
+        let (shown, _) = makeScopedDataSource(active: active, rows: [gone, kept], notificationCenter: center)
+        let (other, _) = makeScopedDataSource(active: active, rows: [gone, kept], notificationCenter: center)
+        XCTAssertEqual(Set(Self.shownRows(shown).map(\.id)), [gone.id, kept.id])
+
+        await other.remove(id: gone.id, scope: Self.shownRows(other)[0].scope)
+        for _ in 0..<100 where Self.shownRows(shown).count != 1 {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertEqual(Self.shownRows(shown).map(\.id), [kept.id])
     }
 
     func testWhatADisconnectQuestionAccepts() {
@@ -3632,7 +3682,8 @@ final class AppConnectLoginTests: XCTestCase {
             defaults: defaults,
             network: .testnet,
             walletIdHexProvider: { active.idHex },
-            devnetNameProvider: { nil }
+            devnetNameProvider: { nil },
+            notificationCenter: notificationCenter
         )
         connections.save(rows)
         let dataSource = PlatformDashConnectDataSource(

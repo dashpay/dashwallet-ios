@@ -191,7 +191,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .connectionGone:
             return NSLocalizedString(
                 "This connection changed. Check it and try again.",
-                comment: "DashConnect: a disconnect asked for on a row that is no longer the active wallet's")
+                comment: "DashConnect: a disconnect asked for on a row that is gone, or no longer the active wallet's")
         case .noFreeKeyId:
             return NSLocalizedString("This identity cannot take another key.", comment: "DashConnect")
         case .earlierApprovalPending:
@@ -512,6 +512,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let activeWalletIdHex: () -> String?
     private let networkEndpoint: () -> String?
     private var walletChangeObserver: AnyCancellable?
+    private var storeSaveObserver: AnyCancellable?
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
@@ -584,6 +585,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in self?.showActiveWalletRows() }
+            }
+        // Another data source over the same rows (a page opened again while
+        // an earlier one's operation runs) writes them too.
+        self.storeSaveObserver = notificationCenter
+            .publisher(for: UserDefaultsDashConnectStore.didSaveNotification)
+            .sink { [weak self] notification in
+                let scopeKey = notification.userInfo?[UserDefaultsDashConnectStore.scopeKeyUserInfoKey] as? String
+                Task { @MainActor in self?.showStoredRows(savedUnder: scopeKey) }
             }
     }
 
@@ -3014,6 +3023,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // A row gone since the question: there is nothing it was asked about.
         guard let row = rows(in: stores).first(where: { $0.id == id }) else {
+            // The page is shown the rows as stored, whoever removed it.
+            await showStoredRows(of: stores)
             throw DashConnectPlatformError.connectionGone
         }
         let rowIsOneQR = row.loginKind == .oneQR
@@ -4136,6 +4147,28 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return active
     }
 
+    /// Publishes the active wallet's rows as stored, after a save under
+    /// `scopeKey` by any store instance.
+    @MainActor
+    private func showStoredRows(savedUnder scopeKey: String?) {
+        guard store.scopeKey == scopeKey, let active = pinnedActiveStores(),
+              active.connections.scopeKey == scopeKey else { return }
+        showStoredRows(of: active)
+    }
+
+    /// Publishes the rows of the wallet `stores` belongs to as stored now.
+    @MainActor
+    private func showStoredRows(of stores: Stores) {
+        show(rows(in: stores), of: stores)
+    }
+
+    /// Publishes `rows`, the rows of the wallet `stores` belongs to, while
+    /// the published list is that wallet's.
+    @MainActor
+    private func show(_ rows: [DAppConnection], of stores: Stores) {
+        if shownRows.scope == stores.scope { subject.send(stores.published(rows)) }
+    }
+
     /// The rows of the wallet `stores` belongs to, as stored. Not the
     /// published list: another data source over the same store may have
     /// written since this one loaded it.
@@ -4155,7 +4188,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func updateRows(in stores: Stores, _ change: ([DAppConnection]) -> [DAppConnection]) {
         let sorted = Stores.stored(change(rows(in: stores))).sorted(by: { $0.updatedAt > $1.updatedAt })
         stores.connections.save(sorted)
-        if shownRows.scope == stores.scope { subject.send(stores.published(sorted)) }
+        show(sorted, of: stores)
     }
 
     /// The contract every bounded key in the transition points at, or `nil`

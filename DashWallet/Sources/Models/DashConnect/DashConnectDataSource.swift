@@ -66,7 +66,8 @@ protocol DashConnectDataSource {
     /// records no longer describe so (`DashConnectDisconnectEffect.accepts`)
     /// throws `DashConnectPlatformError.disconnectEffectChanged` before the
     /// PIN prompt, and one whose row is gone throws
-    /// `DashConnectPlatformError.connectionGone`.
+    /// `DashConnectPlatformError.connectionGone`; `connections` publishes
+    /// the rows without it.
     @discardableResult
     func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
         -> DashConnectDisconnectResult
@@ -298,6 +299,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func disconnect(
         id: String, scope: String?, expecting: DashConnectDisconnectEffect
     ) async throws -> DashConnectDisconnectResult {
+        guard subject.value.contains(where: { $0.id == id && $0.scope == scope }) else {
+            throw DashConnectPlatformError.connectionGone
+        }
         let disconnectedAt = Date()
         persistAndSend(subject.value.map { connection in
             guard connection.id == id else { return connection }
