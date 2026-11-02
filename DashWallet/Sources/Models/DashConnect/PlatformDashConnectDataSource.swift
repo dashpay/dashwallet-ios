@@ -24,34 +24,6 @@ import Security
 import SwiftData
 import SwiftDashSDK
 
-struct DashConnectAppMetadata: Equatable {
-    let name: String
-    let url: String
-}
-
-enum DashConnectFallbackAppMetadata {
-    // Fallback-only branding keyed by the trustworthy contract id, not the spoofable QR label.
-    private static let knownApps: [String: DashConnectAppMetadata] = [
-        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr")
-    ]
-
-    /// The app's website, for an app the wallet knows.
-    static func brandHost(contractId: String) -> String? {
-        knownApps[contractId].flatMap { $0.url.isEmpty ? nil : $0.url }
-    }
-
-    static func resolve(contractId: String, unauthenticatedLabel: String) -> DashConnectAppMetadata {
-        if let known = knownApps[contractId] {
-            return known
-        }
-
-        return DashConnectAppMetadata(
-            name: unauthenticatedLabel.trimmingCharacters(in: .whitespacesAndNewlines),
-            url: ""
-        )
-    }
-}
-
 /// `Equatable` so tests can assert which failure occurred rather than matching
 /// on its message. Matches `DashConnectMockError`, which is already declared
 /// the same way; every associated value here is itself `Equatable`, so the
@@ -755,7 +727,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // says so, and the sheet offers nothing to approve. The lookup runs
         // alongside the two below.
         async let resolvedProtocolVersion = Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
-        let metadata = await resolveAppMetadata(for: loginRequest, sdk: context.sdk)
+        let appName = await resolveAppName(for: loginRequest, sdk: context.sdk)
         let walletUsername = await resolveWalletUsername(context: context)
         let protocolVersion: UInt32?
         var unresolvedLoginReason: String?
@@ -774,8 +746,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         return ConnectionRequest(
             loginRequest: loginRequest,
-            appLabel: metadata.name.isEmpty ? fallback.appLabel : metadata.name,
-            appUrl: metadata.url,
+            appLabel: appName ?? fallback.appLabel,
+            appUrl: "",
             walletUsername: walletUsername,
             walletIdentityId: context.identityId.toBase58String(),
             existingConnection: existingConnection,
@@ -824,10 +796,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         do {
             var plan = try AppConnect.grantPlan(for: uri, now: now())
-            plan.brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: plan.appId.toBase58String())
-            if let refusal = AppConnect.callbackRefusal(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
-                return (.refused(refusal), nil)
-            }
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
@@ -2721,11 +2689,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let missing = appIds.subtracting(rows.map(\.id))
         return reconciled + missing.sorted().map { appId in
-            let branding = DashConnectFallbackAppMetadata.resolve(contractId: appId, unauthenticatedLabel: "")
-            return DAppConnection(
+            // "Unknown app" until a sign-in to the app writes its row
+            // again: the wallet keeps no app's name by its contract.
+            DAppConnection(
                 id: appId,
-                name: branding.name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : branding.name,
-                url: branding.url,
+                name: NSLocalizedString("Unknown app", comment: "DashConnect"),
+                url: "",
                 status: .confirming, updatedAt: shownAt, loginKind: .oneQR)
         }
     }
@@ -2906,11 +2875,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let missing = appIds.subtracting(rows.map(\.id))
         return reconciled + missing.sorted().map { appId in
-            let branding = DashConnectFallbackAppMetadata.resolve(contractId: appId, unauthenticatedLabel: "")
-            return DAppConnection(
+            // "Unknown app" until a sign-in to the app writes its row
+            // again: the wallet keeps no app's name by its contract.
+            DAppConnection(
                 id: appId,
-                name: branding.name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : branding.name,
-                url: branding.url,
+                name: NSLocalizedString("Unknown app", comment: "DashConnect"),
+                url: "",
                 status: .active, updatedAt: confirmedAt, loginKind: .oneQR)
         }
     }
@@ -4768,12 +4738,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    private func resolveAppMetadata(for request: DashKeyRequest, sdk: SDK) async -> DashConnectAppMetadata {
+    /// The DPNS name of the app contract's owner; `nil` when Platform names
+    /// none, and the sheet shows the label the request gives.
+    private func resolveAppName(for request: DashKeyRequest, sdk: SDK) async -> String? {
         let contractId = request.contractId.toBase58String()
-        let fallback = DashConnectFallbackAppMetadata.resolve(
-            contractId: contractId,
-            unauthenticatedLabel: request.label
-        )
 
         do {
             let contract = try await sdk.dataContractGet(id: contractId)
@@ -4783,13 +4751,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                let usernames = try? await sdk.dpnsGetUsername(identityId: ownerId, limit: 1),
                let label = usernames.first?["label"] as? String,
                !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return DashConnectAppMetadata(name: label, url: fallback.url)
+                return label
             }
         } catch {
             Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(String(describing: error), privacy: .public)")
         }
 
-        return fallback
+        return nil
     }
 
     private func resolveWalletUsername(context: Context) async -> String? {

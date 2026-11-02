@@ -109,11 +109,11 @@ struct ConnectionsScreen: View {
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
-            } else if let url = viewModel.pendingReturn {
+            } else if viewModel.pendingReturn != nil {
                 // The request is answered; the sheet asks before the
                 // browser opens an app the wallet does not know.
                 DashConnectReturnStep(
-                    host: url.host ?? url.absoluteString,
+                    host: viewModel.pendingReturnHost ?? "",
                     note: viewModel.returnStepNote,
                     onOpen: { viewModel.openPendingReturn() },
                     onStay: { viewModel.stayInWallet() })

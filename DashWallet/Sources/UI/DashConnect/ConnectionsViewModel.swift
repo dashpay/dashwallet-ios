@@ -647,11 +647,10 @@ final class ConnectionsViewModel: ObservableObject {
         // approved already, and fails without that approved row
         // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
         // is refused once parsed, before the network is read for it
-        // (`handleStateTransition`). Any other request is not approved: the page
-        // offers to create a username, the app is told the request did not
-        // go through, and nothing on screen changes for it.
+        // (`handleStateTransition`). Any other request is not approved
+        // (`answerWithoutUsername`).
         if needsUsername, !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            answerWithoutUsername(content, byLink: byLink)
+            answerWithoutUsername()
             return
         }
 
@@ -784,26 +783,17 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    /// A login request that came while the wallet has no username: a link from an
-    /// app on this phone returns to it with `ac=failed`, and a page that
-    /// shows connections (so not its create-username state) says why.
-    /// Only a callback on the website the wallet knows for the app is opened:
-    /// the user never saw this request's sheet, so an unknown app's return
-    /// address was not shown to anyone.
-    private func answerWithoutUsername(_ content: String, byLink: Bool) {
-        // The return step is up: its sheet says why, and no return opens
-        // under it.
+    /// A login request that came while the wallet has no username: only
+    /// the create-username note is shown, on the page, on an open
+    /// connection's sheet, or on the return step's sheet when one is up.
+    /// Nothing is opened and no return step starts: the user never saw this
+    /// request's sheet, so its return address was not shown to anyone.
+    private func answerWithoutUsername() {
         guard pendingReturn == nil else {
             returnStepNote = Self.usernameNeededText
             return
         }
         sayUsernameIsNeeded()
-        guard byLink else { return }
-        Task {
-            guard case let .login(request)? = try? await dataSource.parseQR(content),
-                  let url = Self.noUsernameCallback(of: request), pendingReturn == nil else { return }
-            openURL(url)
-        }
     }
 
     /// Why a request was not taken without a username.
@@ -816,23 +806,10 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    private static var usernameNeededText: String {
+    static var usernameNeededText: String {
         NSLocalizedString(
             "Create a username to connect apps, then ask the app for a new code.",
             comment: "DashConnect: a request arrived while the wallet has no username")
-    }
-
-    /// The `ac=failed` return of an App Connect request whose callback is on
-    /// the website the wallet knows for its app; `nil` otherwise.
-    static func noUsernameCallback(of request: DashKeyRequest) -> URL? {
-        noUsernameCallback(appId: request.contractId.toBase58String(), callback: request.appConnect?.callback)
-    }
-
-    static func noUsernameCallback(appId: String, callback: URL?) -> URL? {
-        guard let callback,
-              AppConnect.returnsToKnownWebsite(
-                callback, brandHost: DashConnectFallbackAppMetadata.brandHost(contractId: appId)) else { return nil }
-        return AppConnect.callbackURL(callback, status: .failed)
     }
 
     /// A `dash-key:` / `dash-st:` link opened by an app running on this phone.
@@ -873,7 +850,7 @@ final class ConnectionsViewModel: ObservableObject {
 
             do {
                 _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
-                openCallback(of: pendingLoginRequest, plan: consent.login.grantPlan, status: .ok, asksToReturn: true)
+                openCallback(of: pendingLoginRequest, status: .ok, asksToReturn: true)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
@@ -1009,11 +986,62 @@ final class ConnectionsViewModel: ObservableObject {
         pendingRequest?.login.grantPlan.map { AppConnectOriginText.age($0, now: now()) }
     }
 
+    /// The host of the return the step asks about (`pendingReturn`) or,
+    /// before it, of the pending request's: a link's callback, which the
+    /// return step asks about before opening. `nil` for a scanned code or a
+    /// request with no callback. The parser takes lowercase hosts only.
+    var pendingReturnHost: String? {
+        if let pendingReturn { return pendingReturn.host }
+        guard pendingRequestArrivedByLink, let callback = pendingLoginRequest?.appConnect?.callback else { return nil }
+        return callback.host
+    }
+
+    /// What the sheet says first about any app, which the wallet does not
+    /// know: naming `returnHost` when the wallet will ask before returning
+    /// there.
+    static func unknownAppText(returnHost: String?) -> String {
+        guard let returnHost else {
+            return NSLocalizedString(
+                "This wallet does not know this app.",
+                comment: "DashConnect approve sheet: an app the wallet does not know")
+        }
+        return String(
+            format: NSLocalizedString(
+                "This wallet does not know this app, so it cannot confirm where it will return you (%@).",
+                comment: "DashConnect approve sheet: an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
+            returnHost)
+    }
+
+    /// The first-connection caution. It does not name the app: the name is
+    /// the one the request gives, shown in the title.
+    static var firstConnectionText: String {
+        NSLocalizedString(
+            "You have never connected to this app before. Only approve if you trust it.",
+            comment: "DashConnect: approve sheet, first connection caution")
+    }
+
+    /// The approve sheet's caution box for a v2 request, read from the
+    /// pending request alone (the sheet's own). For a re-login: "This
+    /// connection already exists." over since when it is on, then the
+    /// unknown-app sentence (`unknownAppText`, naming the host of a link's
+    /// return), one per line. Otherwise the unknown-app sentence over the
+    /// first-connection caution, or over nothing.
+    var approvalCaution: (title: String, subtitle: String?)? {
+        guard let request = pendingRequest, request.login.grantPlan != nil else { return nil }
+        if request.isRelogin {
+            let lines = [request.connectedSinceText, Self.unknownAppText(returnHost: pendingReturnHost)]
+            return (ConnectionRequest.alreadyConnectedText, lines.compactMap { $0 }.joined(separator: "\n"))
+        }
+        return (
+            Self.unknownAppText(returnHost: pendingReturnHost),
+            pendingIsFirstConnection ? Self.firstConnectionText : nil)
+    }
+
     /// The first-connection caution: the app is neither connected nor in
     /// the history, in any status. While the history is not read, or cannot
     /// be, there is no caution: an earlier connection cannot be ruled out.
     var pendingIsFirstConnection: Bool {
-        guard let id = pendingRequest?.appContractId, let history else { return false }
+        guard hasReadRows, let id = pendingRequest?.appContractId, let history else { return false }
         return !connections.contains { $0.id == id } && !history.contains { $0.id == id }
     }
 
@@ -1204,16 +1232,14 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Declines the request on screen. `asksToReturn`: the Deny button; a
-    /// sheet closed by the user (`false`) does not go on to ask about a
-    /// return to an app the wallet does not know.
+    /// sheet closed by the user (`false`) does not go on to ask about the
+    /// return, and nothing is opened.
     func denyPendingRequest(asksToReturn: Bool) {
         guard !isApproving else { return }
         // A refused request never showed where it would return, so its
         // callback is not opened.
         if let pendingLoginRequest, pendingRequest?.login.isApprovable == true {
-            openCallback(
-                of: pendingLoginRequest, plan: pendingRequest?.login.grantPlan,
-                status: pendingFailureStatus ?? .declined, asksToReturn: asksToReturn)
+            openCallback(of: pendingLoginRequest, status: pendingFailureStatus ?? .declined, asksToReturn: asksToReturn)
         }
         pendingRequest = nil
         pendingLoginRequest = nil
@@ -1223,32 +1249,20 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// Returns to the app that sent an App Connect request, with how it
     /// ended (`ac=<status>`): only for a request that came as a link, and
-    /// only once the user has answered it. A known app's request that
-    /// returns elsewhere is refused before the sheet
-    /// (`AppConnect.callbackRefusal`), and one that returns to its website
-    /// is opened. A return to an app the wallet does not know is asked
-    /// about on the sheet first (`pendingReturn`) when `asksToReturn`, and
-    /// is not opened otherwise.
+    /// only once the user has answered it. The wallet knows no app's
+    /// website, so every return is asked about on the sheet first
+    /// (`pendingReturn`) when `asksToReturn`, and is not opened otherwise.
     /// The app treats it as a nudge to look for the response, never as
     /// proof of anything.
     private func openCallback(
         of request: DashKeyRequest,
-        plan: AppConnect.GrantPlan?,
         status: AppConnect.CallbackStatus,
         asksToReturn: Bool
     ) {
-        guard pendingRequestArrivedByLink,
+        guard asksToReturn, pendingRequestArrivedByLink,
               let callback = request.appConnect?.callback,
               let url = AppConnect.callbackURL(callback, status: status) else { return }
-        // The app's website as the sheet resolved it; looked up by the
-        // contract only for a request without a plan.
-        let brandHost = plan.map(\.brandHost)
-            ?? DashConnectFallbackAppMetadata.brandHost(contractId: request.contractId.toBase58String())
-        if AppConnect.returnsToKnownWebsite(callback, brandHost: brandHost) {
-            openURL(url)
-        } else if asksToReturn {
-            pendingReturn = url
-        }
+        pendingReturn = url
     }
 
     /// The return to an app the wallet does not know, of a request already

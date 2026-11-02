@@ -6761,7 +6761,6 @@
 "This wallet will not answer this sign-in request." = "This wallet will not answer this sign-in request.";
 "Write \"%@\" documents as you" = "Write \"%@\" documents as you";
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
-"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
 "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
 
 /* DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
@@ -6778,6 +6777,15 @@
 
 /* DashConnect: a token purchase arrived while the wallet has no username */
 "Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
+
+/* DashConnect approve sheet: an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"This wallet does not know this app, so it cannot confirm where it will return you (%@)." = "This wallet does not know this app, so it cannot confirm where it will return you (%@).";
+
+/* DashConnect approve sheet: an app the wallet does not know */
+"This wallet does not know this app." = "This wallet does not know this app.";
+
+/* DashConnect: approve sheet, first connection caution */
+"You have never connected to this app before. Only approve if you trust it." = "You have never connected to this app before. Only approve if you trust it.";
 
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
@@ -6997,9 +7005,6 @@
 
 /* DashConnect funding limit keypad: the number of decimal places a limit can have */
 "Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
-
-/* DashConnect approve sheet: the app's name */
-"You have never connected to this app before. Only approve if you trust %@." = "You have never connected to this app before. Only approve if you trust %@.";
 
 /* DashConnect approve sheet: when the app asked */
 "Requested" = "Requested";

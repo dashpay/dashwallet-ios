@@ -175,7 +175,6 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(plan.auth.map(\.binding.kind), [.contractGroup, .documentType])
         XCTAssertEqual(plan.encryption.map(\.binding.contractId), [Self.appId])
         XCTAssertEqual(plan.connectionId?.toHexString(), "a69b1b4f666681453dec3734667a5ab2")
-        XCTAssertEqual(plan.callbackHost, "yap.pr")
     }
 
     func testProposalsAboveTheCapsAreClampedAndNoLimitIsDropped() throws {
@@ -1159,22 +1158,6 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v=%32"))
         XCTAssertTrue(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&%76=2"))
         XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v"))
-    }
-
-    /// A request for an app in the brand map that returns to a host the
-    /// app does not have is refused; one without a callback, or for an app
-    /// the wallet does not know, is left to the sheet's warning.
-    func testAKnownAppsRequestThatReturnsElsewhereIsRefused() {
-        XCTAssertEqual(
-            AppConnect.callbackRefusal(callbackHost: "yap.pr.example.com", brandHost: "yap.pr")?.status, .invalid)
-        XCTAssertEqual(AppConnect.callbackRefusal(callbackHost: "notyap.pr", brandHost: "yap.pr")?.status, .invalid)
-        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "yap.pr", brandHost: "yap.pr"))
-        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "www.yap.pr", brandHost: "yap.pr"))
-        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: nil, brandHost: "yap.pr"))
-        XCTAssertNil(AppConnect.callbackRefusal(callbackHost: "example.com", brandHost: nil))
-        XCTAssertEqual(
-            DashConnectFallbackAppMetadata.brandHost(contractId: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"), "yap.pr")
-        XCTAssertNil(DashConnectFallbackAppMetadata.brandHost(contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
     }
 
     func testTheCallbackKeepsItsQueryAndAddsTheStatus() throws {

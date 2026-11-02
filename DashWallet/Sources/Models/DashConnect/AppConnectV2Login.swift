@@ -288,12 +288,6 @@ extension AppConnect {
         let identityHint: Data?
         /// Milliseconds since the epoch.
         let createdAt: UInt64
-        /// Where the wallet returns when it is done; shown on the sheet.
-        let callbackHost: String?
-        /// The app's website in the wallet's brand map, or nil for an app the
-        /// wallet does not know: then the name on the sheet is the one the
-        /// request gives.
-        var brandHost: String? = nil
         /// The groups among the bindings that have administrators besides
         /// their owner, as Platform proves them. Each administrator can add
         /// contracts of its own to the group, and a group key acts in every
@@ -400,42 +394,8 @@ extension AppConnect {
             encryption: encryption,
             connectionId: request.connectionId,
             identityHint: request.identityHint,
-            createdAt: request.createdAt,
-            callbackHost: uri.callback?.host
+            createdAt: request.createdAt
         )
-    }
-
-    /// The profile's callback rule for an app in the wallet's brand map: a
-    /// request whose `cb` is on a host that is not the app's is refused.
-    /// The sheet would be branded as the app and return somewhere else, and
-    /// the host is the user's main phishing signal. A request without `cb`
-    /// is not refused.
-    ///
-    /// The request itself proves nothing about where it came from: anyone
-    /// can put the app's id and the app's host in a QR code. What the wallet
-    /// can check is that what it shows agrees with itself.
-    static func callbackRefusal(callbackHost: String?, brandHost: String?) -> Refusal? {
-        guard let brandHost, let callbackHost, !isHost(callbackHost, of: brandHost) else { return nil }
-        return Refusal(.invalid, String(
-            format: NSLocalizedString(
-                "This request would return to %@, which is not the app's website.",
-                comment: "DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr"),
-            callbackHost))
-    }
-
-    /// Whether `host` is `brandHost` or one of its subdomains. Both are
-    /// lowercase DNS names: the callback parser takes no other host.
-    static func isHost(_ host: String, of brandHost: String) -> Bool {
-        host == brandHost || host.hasSuffix("." + brandHost)
-    }
-
-    /// Whether `callback` is an `https` address on `brandHost`, the website
-    /// the wallet knows for the app: the wallet may return there without
-    /// asking. False for an app the wallet does not know (`brandHost` nil).
-    static func returnsToKnownWebsite(_ callback: URL, brandHost: String?) -> Bool {
-        guard callback.scheme?.lowercased() == "https", let host = callback.host?.lowercased(),
-              let brandHost else { return false }
-        return isHost(host, of: brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:

@@ -46,21 +46,18 @@ struct AppConnectApproveSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
-                    // Approving replaces the app's row; keys an earlier
-                    // sign-in holds on the same connection are turned off in
-                    // the same identity update (`AppConnect.supersededKeyIds`).
-                    if let connectedSince = request.connectedSinceText {
+                    // One box for what to check before approving
+                    // (`approvalCaution`). A re-login, which replaces the
+                    // app's row and turns off keys an earlier sign-in holds
+                    // on the same connection (`AppConnect.supersededKeyIds`),
+                    // leads with that, then since when and that the wallet
+                    // does not know the app; otherwise the wallet does not
+                    // know the app (and where it returns), then a first
+                    // connection.
+                    if let caution = viewModel.approvalCaution {
                         SystemMessageView(
-                            title: ConnectionRequest.alreadyConnectedText,
-                            subtitle: connectedSince,
-                            backgroundColor: Color.dash.yellowAlpha10)
-                    } else if viewModel.pendingIsFirstConnection {
-                        SystemMessageView(
-                            title: String(
-                                format: NSLocalizedString(
-                                    "You have never connected to this app before. Only approve if you trust %@.",
-                                    comment: "DashConnect approve sheet: the app's name"),
-                                request.resolvedAppLabel),
+                            title: caution.title,
+                            subtitle: caution.subtitle,
                             backgroundColor: Color.dash.yellowAlpha10)
                     }
                     detailsCard

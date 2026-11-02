@@ -1460,11 +1460,11 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
 
     /// An App Connect request with a callback, approved from a scanned QR
     /// code or from a link opened on this phone.
-    private func approveAppConnectRequest(byLink: Bool) async throws -> [URL] {
+    private func approveAppConnectRequest(byLink: Bool) async throws -> (opened: [URL], asked: URL?) {
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(
             "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
-        let spy = LoginApprovalSpy(shown: [knownAppConsent(request)], loginRequest: request)
+        let spy = LoginApprovalSpy(shown: [appConnectConsent(request)], loginRequest: request)
         let opened = OpenedURLs()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
 
@@ -1477,21 +1477,24 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.approvePendingRequest()
         await waitUntil { viewModel.pendingRequest == nil }
         XCTAssertEqual(spy.approvedConsents.count, 1)
-        return opened.urls
+        return (opened.urls, viewModel.pendingReturn)
     }
 
     /// A QR code scanned off another screen is answered there: opening the
     /// callback on this phone would start an unrelated session of the app.
     func testApprovingAScannedAppConnectRequestDoesNotOpenItsCallback() async throws {
-        let opened = try await approveAppConnectRequest(byLink: false)
-        XCTAssertEqual(opened, [])
+        let answered = try await approveAppConnectRequest(byLink: false)
+        XCTAssertEqual(answered.opened, [])
+        XCTAssertNil(answered.asked, "nothing to ask about either")
     }
 
-    /// A link opened by the app on this phone returns to it when answered.
-    func testApprovingALinkedAppConnectRequestOpensItsCallback() async throws {
-        let opened = try await approveAppConnectRequest(byLink: true)
-        XCTAssertEqual(opened.map(\.host), ["yap.pr"])
-        XCTAssertEqual(opened.first?.absoluteString.contains("ac=ok"), true)
+    /// A link opened by the app on this phone returns to it when answered,
+    /// once the user says yes on the sheet.
+    func testApprovingALinkedAppConnectRequestAsksAboutItsCallback() async throws {
+        let answered = try await approveAppConnectRequest(byLink: true)
+        XCTAssertEqual(answered.opened, [])
+        XCTAssertEqual(answered.asked?.host, "yap.pr")
+        XCTAssertEqual(answered.asked?.absoluteString.contains("ac=ok"), true)
     }
 
     /// An attempt failed, the next one was cancelled at the PIN prompt, and
@@ -1501,7 +1504,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(
             "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
-        let spy = LoginApprovalSpy(shown: [knownAppConsent(request)], loginRequest: request)
+        let spy = LoginApprovalSpy(shown: [appConnectConsent(request)], loginRequest: request)
         spy.approveFailures = [DashConnectPlatformError.noIdentity, DashConnectPlatformError.authorizationCancelled]
         let opened = OpenedURLs()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
@@ -1514,8 +1517,8 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
         viewModel.denyPendingRequest(asksToReturn: true)
 
-        XCTAssertEqual(opened.urls.count, 1)
-        XCTAssertEqual(opened.urls.first?.absoluteString.contains("ac=declined"), true)
+        XCTAssertEqual(opened.urls, [])
+        XCTAssertEqual(viewModel.pendingReturn?.absoluteString.contains("ac=declined"), true)
     }
 
     /// Another identity became active, or the network answers with the other
@@ -2555,13 +2558,11 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
 }
 
 /// The URLs a view model asked to open, in order.
-/// A v2 request's sheet for the app the wallet knows as yap.pr, returning
-/// there.
-private func knownAppConsent(_ loginRequest: DashKeyRequest) -> ConnectionRequest {
-    var plan = AppConnect.GrantPlan(
+/// A v2 request's sheet.
+private func appConnectConsent(_ loginRequest: DashKeyRequest) -> ConnectionRequest {
+    let plan = AppConnect.GrantPlan(
         appId: loginRequest.contractId, appEphemeralPubKeyHash: Data(repeating: 0x01, count: 20), auth: [],
-        encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: "yap.pr")
-    plan.brandHost = "yap.pr"
+        encryption: [], connectionId: nil, identityHint: nil, createdAt: 0)
     var request = ConnectionRequest(loginRequest: loginRequest)
     request.login = .appConnect(plan)
     return request
@@ -4326,8 +4327,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
             encryption: [],
             connectionId: nil,
             identityHint: nil,
-            createdAt: AppConnect.milliseconds(now),
-            callbackHost: "yap.pr")
+            createdAt: AppConnect.milliseconds(now))
     }
 
     // MARK: Model
@@ -4656,28 +4656,6 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertTrue(read.pendingIsFirstConnection)
     }
 
-    func testOnlyAKnownAppsOwnWebsiteIsReturnedToWithoutAUsername() {
-        XCTAssertNil(
-            ConnectionsViewModel.noUsernameCallback(of: MockDashConnectDataSource.sampleLoginRequest),
-            "a request with no callback, or an app the wallet does not know, is not returned to")
-        let yappr = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
-        XCTAssertEqual(
-            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://yap.pr/connect?r=d7")),
-            URL(string: "https://yap.pr/connect?r=d7&ac=failed"),
-            "a known app's own website gets the failure, its query kept")
-        XCTAssertNotNil(
-            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://www.yap.pr/connect")))
-        XCTAssertNil(
-            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://notyap.pr/connect")),
-            "another website is not returned to")
-        XCTAssertNil(
-            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "http://yap.pr/connect")),
-            "nor a page that is not https")
-        XCTAssertNil(
-            ConnectionsViewModel.noUsernameCallback(appId: "unknown", callback: URL(string: "https://yap.pr/connect")),
-            "nor is an app the wallet does not know")
-    }
-
     func testWithoutAUsernameTheRequestLandsOnTheCreateUsernameState() async {
         var hasUsername = false
         let (viewModel, _) = viewModel(plan: Self.plan([Self.profile]), hasUsername: { hasUsername })
@@ -4909,30 +4887,34 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.pendingTokenPurchase, Self.purchase)
     }
 
-    /// A v2 request opened as a link and returning to yap.pr, from the app
-    /// the wallet knows there (`knownApp`) or from one it does not know;
-    /// its sheet shows `login`, a v2 plan by default, resolved with
-    /// `brandHost` when given.
+    /// A v2 request opened as a link and returning to yap.pr; its sheet
+    /// shows `login`, a v2 plan by default. `callback` replaces the
+    /// request's return;
+    /// `existingConnection` makes it a re-login; the page lists `rows`.
     private func linkedApproval(
-        knownApp: Bool,
         login: AppConnect.Login? = nil,
-        brandHost: String?? = nil,
+        callback: URL?? = nil,
+        existingConnection: DAppConnection? = nil,
+        rows: [DAppConnection] = [],
         hasUsername: @escaping @MainActor () -> Bool = { true }
     ) throws -> (ConnectionsViewModel, LoginApprovalSpy, OpenedURLs) {
         let sample = MockDashConnectDataSource.sampleLoginRequest
         var loginRequest = DashKeyRequest(
             appEphemeralPubKey: sample.appEphemeralPubKey,
-            contractId: knownApp ? sample.contractId : Self.appContract,
+            contractId: Self.appContract,
             label: sample.label, network: sample.network)
         loginRequest.appConnect = try DashConnectUri.parseAppConnectRequest(
             "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
-        var plan = Self.plan([Self.profile])
-        // As the sheet resolves it: the app's website when the wallet knows
-        // it.
-        plan.brandHost = brandHost ?? (knownApp ? "yap.pr" : nil)
-        var request = ConnectionRequest(loginRequest: loginRequest)
+        if let callback, let uri = loginRequest.appConnect {
+            loginRequest.appConnect = AppConnectUri(request: uri.request, network: uri.network, callback: callback)
+        }
+        let plan = Self.plan([Self.profile])
+        var request = ConnectionRequest(
+            loginRequest: loginRequest, appLabel: "Yappr", appUrl: "", walletUsername: nil, walletIdentityId: nil,
+            existingConnection: existingConnection)
         request.login = login ?? .appConnect(plan)
         let spy = LoginApprovalSpy(shown: [request], loginRequest: loginRequest)
+        spy.rows = rows
         let opened = OpenedURLs()
         let viewModel = ConnectionsViewModel(
             dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) },
@@ -4941,7 +4923,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
     }
 
     func testAReturnToAnUnknownAppIsAskedAboutOnTheSheet() async throws {
-        let (viewModel, spy, opened) = try linkedApproval(knownApp: false)
+        let (viewModel, spy, opened) = try linkedApproval()
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.approvePendingRequest()
@@ -4959,7 +4941,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
     }
 
     func testStayingInTheWalletOpensNothing() async throws {
-        let (viewModel, _, opened) = try linkedApproval(knownApp: false)
+        let (viewModel, _, opened) = try linkedApproval()
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.denyPendingRequest(asksToReturn: true)
@@ -4970,19 +4952,8 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(opened.urls, [])
     }
 
-    func testAKnownAppsReturnOpensDirectly() async throws {
-        let (viewModel, _, opened) = try linkedApproval(knownApp: true)
-        viewModel.onURIReceived("dash-key:x")
-        await waitUntil { viewModel.pendingRequest != nil }
-        viewModel.approvePendingRequest()
-        await waitUntil { viewModel.pendingRequest == nil }
-
-        XCTAssertEqual(opened.urls.map(\.host), ["yap.pr"])
-        XCTAssertNil(viewModel.pendingReturn, "nothing to ask")
-    }
-
     func testClosingTheSheetOfAnUnknownAppStaysInTheWallet() async throws {
-        let (viewModel, _, opened) = try linkedApproval(knownApp: false)
+        let (viewModel, _, opened) = try linkedApproval()
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
 
@@ -4992,19 +4963,8 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertEqual(opened.urls, [])
     }
 
-    func testAKnownAppsReturnOpensDirectlyWithoutAPlan() async throws {
-        let (viewModel, _, opened) = try linkedApproval(knownApp: true, login: .twoQR)
-        viewModel.onURIReceived("dash-key:x")
-        await waitUntil { viewModel.pendingRequest != nil }
-        viewModel.approvePendingRequest()
-        await waitUntil { viewModel.pendingRequest == nil }
-
-        XCTAssertEqual(opened.urls.map(\.host), ["yap.pr"])
-        XCTAssertNil(viewModel.pendingReturn)
-    }
-
     func testDenyAfterAnExpiryGoneByDuringThePINIsADecline() async throws {
-        let (viewModel, spy, opened) = try linkedApproval(knownApp: true)
+        let (viewModel, spy, opened) = try linkedApproval()
         spy.approveFailures = [DashConnectPlatformError.noIdentity, DashConnectPlatformError.approvalTermsExpired]
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
@@ -5014,9 +4974,9 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
 
         viewModel.denyPendingRequest(asksToReturn: true)
-        XCTAssertEqual(opened.urls.count, 1)
+        XCTAssertEqual(opened.urls, [])
         XCTAssertEqual(
-            opened.urls.first?.absoluteString.contains("ac=declined"), true,
+            viewModel.pendingReturn?.absoluteString.contains("ac=declined"), true,
             "nothing was signed: the user's answer, not the earlier failure")
     }
 
@@ -5053,7 +5013,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
     }
 
     func testRecordedTermsThatLapsedStayAFailure() async throws {
-        let (viewModel, spy, opened) = try linkedApproval(knownApp: true)
+        let (viewModel, spy, opened) = try linkedApproval()
         let plan = Self.plan([Self.profile])
         spy.recordedAccess = AppConnect.GrantedAccess(plan: AppConnect.applying(
             AppConnect.ConnectionTerms(fundingLimit: Self.dash / 1000, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
@@ -5069,12 +5029,12 @@ final class AppConnectApprovalTermsTests: XCTestCase {
 
         viewModel.denyPendingRequest(asksToReturn: true)
         XCTAssertEqual(
-            opened.urls.first?.absoluteString.contains("ac=failed"), true,
+            viewModel.pendingReturn?.absoluteString.contains("ac=failed"), true,
             "the earlier attempt's failure stands")
     }
 
     func testRecordedTermsTheAppMustRenewStayAFailure() async throws {
-        let (viewModel, spy, opened) = try linkedApproval(knownApp: true)
+        let (viewModel, spy, opened) = try linkedApproval()
         let plan = Self.plan([Self.profile])
         spy.recordedAccess = AppConnect.GrantedAccess(plan: AppConnect.applying(
             AppConnect.ConnectionTerms(fundingLimit: Self.dash / 1000, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
@@ -5090,13 +5050,13 @@ final class AppConnectApprovalTermsTests: XCTestCase {
 
         viewModel.denyPendingRequest(asksToReturn: true)
         XCTAssertEqual(
-            opened.urls.first?.absoluteString.contains("ac=failed"), true,
+            viewModel.pendingReturn?.absoluteString.contains("ac=failed"), true,
             "the earlier attempt's failure stands")
     }
 
     func testARefusedRequestWithoutAUsernameLeavesTheReturnStep() async throws {
         var hasUsername = true
-        let (viewModel, _, opened) = try linkedApproval(knownApp: false, hasUsername: { hasUsername })
+        let (viewModel, _, opened) = try linkedApproval(hasUsername: { hasUsername })
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.denyPendingRequest(asksToReturn: true)
@@ -5113,7 +5073,7 @@ final class AppConnectApprovalTermsTests: XCTestCase {
 
     func testARefusedLinkDuringTheReturnStepOpensNoReturn() async throws {
         var hasUsername = true
-        let (viewModel, spy, opened) = try linkedApproval(knownApp: false, hasUsername: { hasUsername })
+        let (viewModel, spy, opened) = try linkedApproval(hasUsername: { hasUsername })
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.denyPendingRequest(asksToReturn: true)
@@ -5159,20 +5119,120 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         XCTAssertTrue(viewModel.approveNeedsTopUp, "with its top-up")
     }
 
-    func testTheSheetAndTheReturnStepReadTheSameWebsite() async throws {
-        // A known contract whose sheet was resolved without the website:
-        // the step asks, as the sheet showed no website.
-        let (viewModel, _, opened) = try linkedApproval(knownApp: true, brandHost: .some(nil))
+    func testALinkNamesWhereItReturns() async throws {
+        let (viewModel, _, _) = try linkedApproval()
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
-        viewModel.denyPendingRequest(asksToReturn: true)
+        XCTAssertEqual(viewModel.pendingReturnHost, "yap.pr")
+        XCTAssertEqual(viewModel.approvalCaution?.title, ConnectionsViewModel.unknownAppText(returnHost: "yap.pr"))
+    }
 
-        XCTAssertNotNil(viewModel.pendingReturn)
+    func testAScannedCodeNamesNoReturnAndOpensNothing() async throws {
+        let (viewModel, _, opened) = try linkedApproval()
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNil(viewModel.pendingReturnHost, "a scanned code returns nowhere")
+        XCTAssertEqual(viewModel.approvalCaution?.title, ConnectionsViewModel.unknownAppText(returnHost: nil))
+        viewModel.denyPendingRequest(asksToReturn: true)
+        XCTAssertNil(viewModel.pendingReturn)
         XCTAssertEqual(opened.urls, [])
     }
 
+    func testALinkWithoutAReturnGetsTheShortNote() async throws {
+        let (viewModel, _, _) = try linkedApproval(callback: .some(nil))
+        viewModel.onURIReceived("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNil(viewModel.pendingReturnHost)
+        XCTAssertEqual(viewModel.approvalCaution?.title, ConnectionsViewModel.unknownAppText(returnHost: nil))
+    }
+
+    func testWithoutAUsernameALinkOnlySaysWhy() async throws {
+        let row = DAppConnection(
+            id: Self.appContract.toBase58String(), name: "App", url: "", status: .active, updatedAt: Self.now)
+        let (viewModel, _, opened) = try linkedApproval(rows: [row], hasUsername: { false })
+        await waitUntil { viewModel.hasReadRows }
+        XCTAssertTrue(viewModel.hasReadRows)
+
+        viewModel.onURIReceived("dash-key:x")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameNeededText, "the page says why")
+        XCTAssertNil(viewModel.pendingReturn, "no return step for a request the user never saw")
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertEqual(opened.urls, [])
+    }
+
+    func testWithoutAUsernameALinkSaysWhyOnAnOpenConnectionsSheet() async throws {
+        let row = DAppConnection(
+            id: Self.appContract.toBase58String(), name: "App", url: "", status: .active, updatedAt: Self.now)
+        let (viewModel, _, opened) = try linkedApproval(rows: [row], hasUsername: { false })
+        await waitUntil { viewModel.hasReadRows }
+        XCTAssertTrue(viewModel.hasReadRows)
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+
+        viewModel.onURIReceived("dash-key:x")
+        XCTAssertEqual(viewModel.connectionSheetMessage?.text, ConnectionsViewModel.usernameNeededText)
+        XCTAssertNil(viewModel.message)
+        XCTAssertNil(viewModel.pendingReturn)
+        XCTAssertEqual(opened.urls, [])
+    }
+
+    func testWithoutAUsernameAScannedCodeOpensNothing() async throws {
+        let (viewModel, _, opened) = try linkedApproval(hasUsername: { false })
+        viewModel.onQRScanned("dash-key:x")
+        XCTAssertNil(viewModel.pendingReturn, "refused at once, with no return to ask about")
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertEqual(opened.urls, [])
+    }
+
+    func testAConnectedAppGetsNoSecondSentence() async throws {
+        let row = DAppConnection(
+            id: Self.appContract.toBase58String(), name: "App", url: "", status: .active, updatedAt: Self.now)
+        let (viewModel, _, _) = try linkedApproval(rows: [row])
+        viewModel.onURIReceived("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil && viewModel.hasReadRows }
+        XCTAssertTrue(viewModel.hasReadRows)
+        XCTAssertFalse(viewModel.pendingIsFirstConnection)
+        XCTAssertNil(viewModel.approvalCaution?.subtitle)
+    }
+
+    func testAFirstConnectionIsSaidUnderTheNoteOnceTheRowsAreRead() async throws {
+        let (viewModel, _, _) = try linkedApproval()
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(Self.plan([Self.profile]))
+        viewModel.pendingRequest = request
+        XCTAssertFalse(viewModel.hasReadRows)
+        XCTAssertNil(viewModel.approvalCaution?.subtitle, "not before the rows are read")
+
+        await waitUntil { viewModel.hasReadRows }
+        XCTAssertTrue(viewModel.hasReadRows)
+        let caution = try XCTUnwrap(viewModel.approvalCaution)
+        XCTAssertEqual(caution.subtitle, ConnectionsViewModel.firstConnectionText)
+        XCTAssertFalse(caution.subtitle?.contains(request.resolvedAppLabel) ?? true, "the name is in the title only")
+    }
+
+    func testAReloginIsSaidUnderTheNote() async throws {
+        let (viewModel, _, _) = try linkedApproval(existingConnection: MockDashConnectDataSource.sample(.active))
+        viewModel.onURIReceived("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        let caution = try XCTUnwrap(viewModel.approvalCaution)
+        let connectedSince = try XCTUnwrap(viewModel.pendingRequest?.connectedSinceText)
+        XCTAssertEqual(caution.title, ConnectionRequest.alreadyConnectedText)
+        XCTAssertEqual(
+            caution.subtitle, connectedSince + "\n" + ConnectionsViewModel.unknownAppText(returnHost: "yap.pr"),
+            "since when, then where it returns")
+    }
+
+    func testAScannedReloginSaysTheWalletDoesNotKnowTheApp() async throws {
+        let (viewModel, _, _) = try linkedApproval(existingConnection: MockDashConnectDataSource.sample(.active))
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        let caution = try XCTUnwrap(viewModel.approvalCaution)
+        let connectedSince = try XCTUnwrap(viewModel.pendingRequest?.connectedSinceText)
+        XCTAssertEqual(caution.title, ConnectionRequest.alreadyConnectedText)
+        XCTAssertEqual(caution.subtitle, connectedSince + "\n" + ConnectionsViewModel.unknownAppText(returnHost: nil))
+    }
+
     func testANewRequestEndsTheReturnStepWithoutOpeningIt() async throws {
-        let (viewModel, _, opened) = try linkedApproval(knownApp: false)
+        let (viewModel, _, opened) = try linkedApproval()
         viewModel.onURIReceived("dash-key:x")
         await waitUntil { viewModel.pendingRequest != nil }
         viewModel.denyPendingRequest(asksToReturn: true)
