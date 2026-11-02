@@ -744,7 +744,7 @@ extension TxDetailModel {
         }
         // A restored lock we already probed reads as the weaker claim it earns:
         // the network says spent, we could not verify that, and there is
-        // nothing left to try. Bare "Completion unknown" is reserved for locks
+        // a user can retry that same outpoint. "Completion unknown" is for locks
         // nobody has asked about yet.
         if statusRaw == Self.recoveredFromChainStatus, wasProbedAlreadySpent {
             // "Already spent", not "Completed": the network reported the
@@ -759,7 +759,11 @@ extension TxDetailModel {
     /// Whether this transaction's funding lock has already been probed and
     /// answered "already spent" (see `AssetLockProbeStore`).
     private var wasProbedAlreadySpent: Bool {
-        AssetLockProbeStore.shared.contains(transaction.txHashData)
+        let info = transaction.identityFundingLockInfo
+            ?? transaction.platformFundingLockInfo
+            ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
+        guard let info else { return false }
+        return AssetLockProbeStore.shared.contains(transaction.txHashData, vout: info.vout)
     }
 
     /// `AssetLockStatus::RecoveredFromChain` as it crosses the FFI. Owned by
@@ -855,10 +859,6 @@ extension TxDetailModel {
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
         guard let info,
               Self.statusAllowsRetry(info.statusRaw),
-              // Asked once, told "already spent": repeating the probe cannot
-              // change the answer, so the action retires instead of standing
-              // on every restored row forever.
-              !wasProbedAlreadySpent,
               AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw)
         else { return nil }
         return StuckAssetLockRetry(

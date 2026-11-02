@@ -69,8 +69,7 @@ final class InternalTransferRunner: ObservableObject {
     static let shared = InternalTransferRunner()
 
     /// The one lifecycle callers render from, whichever executor is running.
-    /// `submittedUnconfirmed` is route-only — no identity transition lands in
-    /// that state.
+    /// `submittedUnconfirmed` also covers an identity top-up with an unknown result.
     enum Phase: Equatable {
         case idle
         case inFlight
@@ -280,7 +279,7 @@ final class InternalTransferRunner: ObservableObject {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
                     recipientRaw43: pending.operation.recipient.externalRaw43,
-                    expectedDrainContext: context)
+                    expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
             let status = try await service.status(for: pending.operation)
             if status.drainVerdict == .completed {
@@ -378,7 +377,8 @@ final class InternalTransferRunner: ObservableObject {
             identityId: topUp.identityId,
             amountDuffs: request.amountDuffsUnsigned,
             source: .init(spending: topUp.source))
-        phase = outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+        phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
         announce(phase)
     }
 
@@ -403,7 +403,8 @@ final class InternalTransferRunner: ObservableObject {
         case .success: notice = .succeeded
         case .failed(let message): notice = .failed(message)
         case .idle: notice = nil
-        case .inFlight, .submittedUnconfirmed: break
+        case .submittedUnconfirmed: notice = .submitted
+        case .inFlight: break
         }
     }
 

@@ -105,6 +105,11 @@ jobs:
           python3 scripts/test_protocol_compatibility.py
           python3 scripts/test_protocol_compatibility.py --testflight
 
+      - name: Test recovery bookkeeping and uncertain top-up outcomes
+        run: |
+          python3 scripts/test_asset_lock_recovery.py
+          python3 scripts/test_identity_top_up_compatibility.py
+
       # Same key as release-dashpay-testflight.yml so the two workflows share
       # one cached artifact per platform commit.
       - name: Restore release XCFramework cache
