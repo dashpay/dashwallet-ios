@@ -321,10 +321,7 @@ final class ConnectionsViewModel: ObservableObject {
             comment: "DashConnect: a disconnect asked for on a connection that no longer offers one"))
 
     private static let connectionChangedMessage = ConnectionsScreenMessage(
-        kind: .error,
-        text: NSLocalizedString(
-            "This connection changed. Check it and try again.",
-            comment: "DashConnect: a disconnect asked for on a row that is no longer the active wallet's"))
+        kind: .error, text: DashConnectPlatformError.connectionGone.localizedDescription)
 
     private func readShownDetails(_ item: ConnectionSheetItem) {
         detailsReadNumber += 1
@@ -750,12 +747,17 @@ final class ConnectionsViewModel: ObservableObject {
                     self.shownDetailsFailed = false
                     self.readShownDetails(shown)
                 }
-                if case DashConnectPlatformError.disconnectEffectChanged = error {
-                    // Its row may be gone meanwhile: then there is nothing to
-                    // ask again about.
-                    let isStillARow = self.connections.contains { $0.id == connection.id && $0.scope == connection.scope }
-                    self.show(isStillARow ? Self.staleQuestionMessage : Self.connectionChangedMessage, from: connection)
+                // Nothing ran: the sheet says why, and its Disconnect asks
+                // again with what holds now.
+                switch error {
+                case DashConnectPlatformError.disconnectEffectChanged:
+                    self.show(Self.staleQuestionMessage, from: connection)
                     return
+                case DashConnectPlatformError.connectionGone:
+                    self.show(Self.connectionChangedMessage, from: connection)
+                    return
+                default:
+                    break
                 }
                 self.show(ConnectionsScreenMessage(
                     kind: .error,

@@ -1473,6 +1473,11 @@ extension AppConnectV2LoginTests {
         let retried = AppConnect.GrantedAccess.noted(first, plan: plan, sendsEncryptionKey: false)
         XCTAssertEqual(retried.keys, first.keys)
         XCTAssertFalse(retried.receivesMessages)
+
+        let sessionKey = AppConnect.GrantedAccess(keys: first.keys, receivesMessages: false, isSessionKeyLogin: true)
+        XCTAssertTrue(
+            AppConnect.GrantedAccess.noted(sessionKey, plan: plan, sendsEncryptionKey: false).isSessionKeyLogin,
+            "a session key's record stays one")
     }
 
     func testAGrantWhoseGrantedAccessCannotBeReadStillReads() throws {

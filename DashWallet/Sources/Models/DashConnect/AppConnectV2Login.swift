@@ -149,15 +149,16 @@ extension AppConnect {
 
         /// What a v2 grant record notes its approval gave, once its response
         /// is sealed: an encryption key only when a slot carries one
-        /// (`sendsEncryptionKey`). The keys stay as `recorded` noted them: a
-        /// retry, or an approval of a request already recorded, registers
-        /// the keys of the first attempt, with its terms. One this build
-        /// cannot read stays as it was.
+        /// (`sendsEncryptionKey`). The keys, and whether they are a session
+        /// key's, stay as `recorded` noted them: a retry, or an approval of a
+        /// request already recorded, registers the keys of the first attempt,
+        /// with its terms. One this build cannot read stays as it was.
         static func noted(_ recorded: GrantedAccess?, plan: GrantPlan, sendsEncryptionKey: Bool) -> GrantedAccess {
             if let recorded, recorded.isUnreadable { return recorded }
             return GrantedAccess(
                 keys: recorded?.keys ?? keys(of: plan),
-                receivesMessages: sendsEncryptionKey)
+                receivesMessages: sendsEncryptionKey,
+                isSessionKeyLogin: recorded?.isSessionKeyLogin ?? false)
         }
 
         init(from decoder: Decoder) throws {

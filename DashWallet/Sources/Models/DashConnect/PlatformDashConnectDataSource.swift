@@ -94,6 +94,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case registrationPendingOnAnotherIdentity
     case walletChanged
     case disconnectEffectChanged
+    case connectionGone
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -187,6 +188,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "What disconnecting does changed since you were asked. Check it and try again.",
                 comment: "DashConnect: a disconnect confirmed with text that no longer holds")
+        case .connectionGone:
+            return NSLocalizedString(
+                "This connection changed. Check it and try again.",
+                comment: "DashConnect: a disconnect asked for on a row that is no longer the active wallet's")
         case .noFreeKeyId:
             return NSLocalizedString("This identity cannot take another key.", comment: "DashConnect")
         case .earlierApprovalPending:
@@ -3009,7 +3014,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // A row gone since the question: there is nothing it was asked about.
         guard let row = rows(in: stores).first(where: { $0.id == id }) else {
-            throw DashConnectPlatformError.disconnectEffectChanged
+            throw DashConnectPlatformError.connectionGone
         }
         let rowIsOneQR = row.loginKind == .oneQR
         // What can reach Platform (`disconnectEffect`): a confirmed grant of

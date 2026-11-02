@@ -65,7 +65,8 @@ protocol DashConnectDataSource {
     /// `expecting` is what the user was told it does: a disconnect the
     /// records no longer describe so (`DashConnectDisconnectEffect.accepts`)
     /// throws `DashConnectPlatformError.disconnectEffectChanged` before the
-    /// PIN prompt.
+    /// PIN prompt, and one whose row is gone throws
+    /// `DashConnectPlatformError.connectionGone`.
     @discardableResult
     func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
         -> DashConnectDisconnectResult
