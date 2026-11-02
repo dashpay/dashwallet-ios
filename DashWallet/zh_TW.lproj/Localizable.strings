@@ -6563,6 +6563,7 @@
 "Payments unavailable" = "Payments unavailable";
 "Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
 "This contact is not in your contacts any more." = "This contact is not in your contacts any more.";
+"The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
 "Pays from your %@ Dash already on Platform" = "Pays from your %@ Dash already on Platform";
 "Personalize profile" = "Personalize profile";
 "Picture upload is not available in this build." = "Picture upload is not available in this build.";
