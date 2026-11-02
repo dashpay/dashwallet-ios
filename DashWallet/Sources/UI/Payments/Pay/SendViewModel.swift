@@ -834,6 +834,7 @@ final class SendViewModel: ObservableObject {
         // wallet to open, a resync to start, or the amount step to close; a
         // payment that could not go out, or has no step to review it on, is
         // released instead of shown.
+        refreshContactRecipient()
         guard isContactAmountStepVisible,
               contactRecipient?.contactIdentityId == prepared.contactIdentityId,
               contactPaymentCanGoOut,
@@ -867,7 +868,8 @@ final class SendViewModel: ObservableObject {
         // The service's snapshot can be newer than the last change
         // notification this step has handled.
         refreshContactRecipient()
-        guard !isContactPaymentUnavailable else { return false }
+        // The same condition that disables the review's Send.
+        guard contactUnavailableMessage == nil else { return false }
         updateContactReview { $0.confirm() }
         return isSendingToContact
     }
