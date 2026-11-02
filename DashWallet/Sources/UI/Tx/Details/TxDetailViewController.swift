@@ -332,8 +332,9 @@ extension TXDetailViewController {
                     statusBeforeRaw: retry.statusRaw)
             } catch {
                 failure = error
-                // The alert shows only the text; the log and the failure store
-                // keep the typed case so the export can say why.
+                // The alert shows only the text; the log keeps the typed case.
+                // The failure store is written where the network call threw,
+                // not here, so a refusal cannot overwrite the stored reason.
                 AssetLockRetryLog.logFailure(
                     error,
                     event: "single",

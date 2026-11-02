@@ -96,14 +96,18 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
 /// outpoint (`<txid display hex>:<vout>`, the `PersistentAssetLock.outPointHex`
 /// form) so the entry survives a restore that rebuilds the SDK row.
 ///
+/// Written only where the network call that tried the lock threw: the
+/// transfer coordinator's resume calls and the recovery service's identity
+/// top-up. A refusal before that call (no wallet, PIN timeout, wallet
+/// switched) is logged but never stored, so it cannot overwrite the failure
+/// that says why the lock is stuck.
+///
 /// Advisory and bounded: the newest `limit` outpoints are kept, the oldest
 /// recorded entries are evicted first. Losing it costs one line in a log
-/// export, never money. The singleton exists for the same reason
-/// `AssetLockProbeStore.shared` does — the three retry surfaces (transaction
-/// details, the bulk pass, the transfer sheet) all go through
-/// `AssetLockRecoveryService`, which has no injection point for per-launch
-/// stores; tests construct their own instance over a private `UserDefaults`
-/// suite.
+/// export, never money. `shared` is the production instance: the diagnostic
+/// export reads it from a main-actor static with no owner to inject from,
+/// while the coordinator and the service take it by injection, and tests
+/// construct their own over a private `UserDefaults` suite.
 final class AssetLockFailureStore {
 
     /// Outpoint key → last failure. Named so the decode site can spell the
@@ -286,9 +290,10 @@ enum AssetLockRetryLog {
             isFailure: false)
     }
 
-    /// Persist `error` as the lock's last failure, then log it with its typed
-    /// case and detail string.
-    @discardableResult
+    /// Log a failed retry with its typed case and detail. Log only: the
+    /// surfaces that call this (transaction details, the bulk pass) see every
+    /// failure, including refusals that never reached Platform, and storing
+    /// those would overwrite the failure that says why the lock is stuck.
     static func logFailure(
         _ error: Error,
         prefix: String = lockRetryPrefix,
@@ -296,8 +301,27 @@ enum AssetLockRetryLog {
         txidWire: Data,
         vout: UInt32,
         fundingTypeRaw: Int,
+        statusBeforeRaw: Int?
+    ) {
+        write(
+            line(prefix: prefix, event: event, txidWire: txidWire, vout: vout,
+                 fundingTypeRaw: fundingTypeRaw, statusBeforeRaw: statusBeforeRaw,
+                 result: "FAILED \(AssetLockFailureRecord.describe(error).logDescription)"),
+            isFailure: true)
+    }
+
+    /// The network call that tried the lock threw: store `error` as the
+    /// lock's last failure, then log it. Called only at that call.
+    @discardableResult
+    static func recordFailure(
+        _ error: Error,
+        prefix: String = lockRetryPrefix,
+        event: String,
+        txidWire: Data,
+        vout: UInt32,
+        fundingTypeRaw: Int,
         statusBeforeRaw: Int?,
-        store: AssetLockFailureStore = .shared
+        store: AssetLockFailureStore
     ) -> AssetLockFailureRecord {
         let record = store.record(txidWire: txidWire, vout: vout, error: error)
         write(
@@ -306,5 +330,24 @@ enum AssetLockRetryLog {
                  result: "FAILED \(record.logDescription)"),
             isFailure: true)
         return record
+    }
+
+    /// The attempt stopped before its network call (no wallet, PIN timeout,
+    /// drain recipient unknown…): logged as an outcome with its typed case,
+    /// never stored, because it says nothing about why the lock is stuck.
+    static func logRefusal(
+        _ error: Error,
+        prefix: String = lockRetryPrefix,
+        event: String,
+        txidWire: Data,
+        vout: UInt32,
+        fundingTypeRaw: Int,
+        statusBeforeRaw: Int?
+    ) {
+        write(
+            line(prefix: prefix, event: event, txidWire: txidWire, vout: vout,
+                 fundingTypeRaw: fundingTypeRaw, statusBeforeRaw: statusBeforeRaw,
+                 result: "outcome=refused \(AssetLockFailureRecord.describe(error).logDescription)"),
+            isFailure: true)
     }
 }

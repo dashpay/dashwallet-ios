@@ -379,22 +379,55 @@ final class AssetLockDiagnosticsTests: XCTestCase {
 
     // MARK: coordinator resume
 
-    func testRefusalBeforeTheResumeCallIsRecordedAsTheLocksLastFailure() async {
+    func testRefusalBeforeTheResumeCallKeepsTheStoredPlatformFailure() async {
         // A random outpoint has no SDK row, so whatever the test host's wallet
         // state, the resume stops before the PIN prompt: no manager/wallet, or
         // no drain-row identity for the lock.
         let store = AssetLockFailureStore(defaults: defaults)
         let coordinator = ShieldedTransferCoordinator(failureStore: store)
         let txid = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let platformFailure = store.record(
+            txidWire: txid,
+            vout: 7,
+            error: PlatformWalletError.assetLockTooManyInputs("too many inputs: 121 (max 100)"),
+            at: Date(timeIntervalSince1970: 1_755_820_800))
 
         await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 7)
 
-        guard case .failed = coordinator.phase, let reported = coordinator.lastFailure else {
+        guard case .failed = coordinator.phase, coordinator.lastFailure != nil else {
             return XCTFail("expected a refused resume, got \(coordinator.phase)")
         }
-        let recorded = store.failure(txidWire: txid, vout: 7)
-        XCTAssertNotNil(recorded, "a refusal on the direct resume path left no last failure")
-        XCTAssertEqual(recorded?.errorCase, AssetLockFailureRecord.describe(reported).errorCase)
+        // The refusal says nothing about the lock, so the reason it is stuck
+        // stays what Platform said.
+        XCTAssertEqual(store.failure(txidWire: txid, vout: 7), platformFailure)
+    }
+
+    func testRefusalBeforeTheResumeCallStoresNothingForAnUntriedLock() async {
+        let store = AssetLockFailureStore(defaults: defaults)
+        let coordinator = ShieldedTransferCoordinator(failureStore: store)
+        let txid = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+
+        await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 2)
+
+        guard case .failed = coordinator.phase else {
+            return XCTFail("expected a refused resume, got \(coordinator.phase)")
+        }
+        XCTAssertNil(store.failure(txidWire: txid, vout: 2))
+        XCTAssertTrue(store.allFailures().isEmpty)
+    }
+
+    func testRecordFailureStoresTheErrorForTheOutPoint() {
+        let store = AssetLockFailureStore(defaults: defaults)
+        let recorded = AssetLockRetryLog.recordFailure(
+            PlatformWalletError.assetLockTooManyInputs("too many inputs: 121 (max 100)"),
+            event: "resume",
+            txidWire: txidWire,
+            vout: 0,
+            fundingTypeRaw: 5,
+            statusBeforeRaw: 5,
+            store: store)
+        XCTAssertEqual(store.failure(txidWire: txidWire, vout: 0), recorded)
+        XCTAssertEqual(recorded.errorCase, "assetLockTooManyInputs")
     }
 
     // MARK: retry log line

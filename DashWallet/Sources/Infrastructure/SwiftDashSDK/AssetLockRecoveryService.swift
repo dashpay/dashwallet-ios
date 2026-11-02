@@ -33,6 +33,14 @@ import SwiftData
 @MainActor
 struct AssetLockRecoveryService {
 
+    /// Where an identity top-up whose network call threw records the error,
+    /// and what the coordinator routes are handed for theirs.
+    private let failureStore: AssetLockFailureStore
+
+    init(failureStore: AssetLockFailureStore = .shared) {
+        self.failureStore = failureStore
+    }
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.asset-lock-recovery")
@@ -151,7 +159,7 @@ struct AssetLockRecoveryService {
             // terminal phase rather than throwing, so the resume call and
             // the phase check stay one pair — a future route added here
             // can't forget the check.
-            let coordinator = ShieldedTransferCoordinator()
+            let coordinator = ShieldedTransferCoordinator(failureStore: failureStore)
             if fundingTypeRaw == 4 {
                 let recipientAmountDuffs = try Self.coreToPlatformRecipientAmountDuffs(
                     txidWire: txidWire,
@@ -502,10 +510,18 @@ struct AssetLockRecoveryService {
             throw RecoveryError.noIdentity
         }
         try await DWIdentityAuthorizer().authorize()
-        _ = try await wallet.resumeTopUpWithAssetLock(
-            identityId: identityId,
-            outPointTxid: txidWire,
-            outPointVout: vout)
+        do {
+            _ = try await wallet.resumeTopUpWithAssetLock(
+                identityId: identityId,
+                outPointTxid: txidWire,
+                outPointVout: vout)
+        } catch {
+            // The top-up call itself tried the lock, so its error is the
+            // lock's last failure. The refusals above are not stored: they say
+            // nothing about the lock. The caller logs the outcome line.
+            failureStore.record(txidWire: txidWire, vout: vout, error: error)
+            throw error
+        }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
     }
 

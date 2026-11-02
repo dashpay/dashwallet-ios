@@ -271,9 +271,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
-    /// Where `resumeAssetLock` records a failed attempt as the lock's last
-    /// failure. Injected so a test reads what it wrote without touching the
-    /// shared store.
+    /// Where a resume whose network call threw records the error as the
+    /// lock's last failure. Injected so a test reads what it wrote without
+    /// touching the shared store.
     private let failureStore: AssetLockFailureStore
 
     init(failureStore: AssetLockFailureStore = .shared) {
@@ -793,12 +793,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let statusBeforeRaw = ShieldedTxLookup.shared
             .info(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
 
-        // Every attempt past the single-flight gate leaves one outcome line,
-        // and a failed one leaves the lock's last failure. The confirm sheets,
-        // the recovery sheet and the CoinJoin move call this directly, with no
-        // service-level logger behind them, so a refusal before the resume
-        // call is recorded here as well. A cancelled PIN prompt is an outcome,
-        // not a failure of the lock.
+        // Every attempt past the single-flight gate leaves one outcome line.
+        // The confirm sheets, the recovery sheet and the CoinJoin move call
+        // this directly, with no service-level logger behind them, so a
+        // refusal before the resume call is logged here too. Only an error
+        // from the resume call itself is stored as the lock's last failure: a
+        // refusal (no wallet, PIN timeout, wallet switched) says nothing about
+        // the lock and must not overwrite the failure that does. A cancelled
+        // PIN prompt is an outcome, not a failure.
         func logResumeOutcome(_ result: String) {
             AssetLockRetryLog.logOutcome(
                 result,
@@ -809,8 +811,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 fundingTypeRaw: Self.shieldedAssetLockFundingType,
                 statusBeforeRaw: statusBeforeRaw)
         }
-        func logResumeFailure(_ error: Error) {
-            AssetLockRetryLog.logFailure(
+        func recordResumeFailure(_ error: Error) {
+            AssetLockRetryLog.recordFailure(
                 error,
                 prefix: AssetLockRetryLog.shieldPrefix,
                 event: "resume",
@@ -824,7 +826,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
             if case CoordinatorError.authCancelled = error {
                 logResumeOutcome("outcome=cancelled")
             } else {
-                logResumeFailure(error)
+                AssetLockRetryLog.logRefusal(
+                    error,
+                    prefix: AssetLockRetryLog.shieldPrefix,
+                    event: "resume",
+                    txidWire: outPointTxidWire,
+                    vout: outPointVout,
+                    fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                    statusBeforeRaw: statusBeforeRaw)
             }
             handleFailure(error)
         }
@@ -921,7 +930,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 if case PlatformWalletError.shieldedSpendUnconfirmed = error {
                     logResumeOutcome("outcome=submittedUnconfirmed")
                 } else {
-                    logResumeFailure(error)
+                    recordResumeFailure(error)
                 }
                 handleSpendError(error, manager: env.manager)
                 return
@@ -1472,7 +1481,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
-            AssetLockRetryLog.logFailure(
+            AssetLockRetryLog.recordFailure(
                 error,
                 prefix: AssetLockRetryLog.shieldPrefix,
                 event: "resume core→platform",
