@@ -81,8 +81,7 @@ struct ConnectionRow: View {
                         "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
         case .waitingForSecondScan:
-            // Its sheet offers the second code; its login keys are not on
-            // the identity yet.
+            // Its sheet offers the second code.
             EmptyView()
         }
     }

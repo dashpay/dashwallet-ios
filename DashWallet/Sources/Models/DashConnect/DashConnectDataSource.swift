@@ -20,8 +20,21 @@
 import Combine
 import Foundation
 
+/// What the Connections page lists for the active wallet, as published in
+/// one value: its rows and its disconnected apps, under the scope the rows
+/// name.
+struct DashConnectListing: Equatable {
+    /// The wallet, network and endpoint the rows were published for
+    /// (`DAppConnection.scope`); `nil` with no wallet.
+    let scope: String?
+    let rows: [DAppConnection]
+    /// The apps disconnected on that wallet, most recent first; `nil` when
+    /// they cannot be read.
+    let disconnected: [DisconnectedConnection]?
+}
+
 protocol DashConnectDataSource {
-    var connections: AnyPublisher<[DAppConnection], Never> { get }
+    var listing: AnyPublisher<DashConnectListing, Never> { get }
 
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
@@ -72,9 +85,6 @@ protocol DashConnectDataSource {
     func disconnect(id: String, scope: String?, expecting: DashConnectDisconnectEffect) async throws
         -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
-    /// The apps disconnected on the active wallet, most recent first; `nil`
-    /// when they cannot be read.
-    func disconnectedConnections() async -> [DisconnectedConnection]?
     /// What the connection sheet shows for the row `id`, from the grant
     /// records of the active identity; `nil` when there is no active wallet
     /// or `scope` is not its.
@@ -88,8 +98,11 @@ protocol DashConnectDataSource {
 }
 
 extension DashConnectDataSource {
-    /// A source that keeps no history cannot tell: unknown.
-    func disconnectedConnections() async -> [DisconnectedConnection]? { nil }
+    /// The rows `listing` publishes.
+    var connections: AnyPublisher<[DAppConnection], Never> {
+        listing.map(\.rows).eraseToAnyPublisher()
+    }
+
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
 }
 
@@ -223,8 +236,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         self.subject = CurrentValueSubject(restored)
     }
 
-    var connections: AnyPublisher<[DAppConnection], Never> {
-        subject.eraseToAnyPublisher()
+    /// The mock keeps no history: no disconnected apps.
+    var listing: AnyPublisher<DashConnectListing, Never> {
+        subject.map { DashConnectListing(scope: nil, rows: $0, disconnected: []) }.eraseToAnyPublisher()
     }
 
     var connectionsSnapshot: [DAppConnection] {
@@ -325,10 +339,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         persistAndSend(subject.value.filter { $0.id != id })
     }
 
-    /// The mock keeps no history and grants no keys: nothing to list and no
-    /// details beyond the row.
-    func disconnectedConnections() async -> [DisconnectedConnection]? { [] }
-
+    /// The mock grants no keys: no details beyond the row.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard subject.value.contains(where: { $0.id == id }) else { return nil }
         return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)

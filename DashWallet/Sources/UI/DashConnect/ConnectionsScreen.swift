@@ -72,8 +72,6 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
-        // Another identity may have become active while the screen was away.
-        .onAppear { viewModel.refreshConnectionStatus() }
         .alert(item: messageBinding) { message in
             Alert(
                 title: Text(message.title),
@@ -110,9 +108,9 @@ struct ConnectionsScreen: View {
         if viewModel.featureUnavailable {
             title
             ConnectionsUnavailableState()
-        } else if !viewModel.hasReadRows || (!viewModel.hasConnectionsOrHistory && viewModel.isLoadingHistory) {
+        } else if !viewModel.hasReadRows {
             // Not known yet whether anything was connected: no empty state
-            // that the rows or the history replace a moment later.
+            // that the rows and the history replace a moment later.
             title
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity)
@@ -154,18 +152,9 @@ struct ConnectionsScreen: View {
                 onOpen: { viewModel.showConnection($0) },
                 onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
                 onReconnect: showScanner)
-        } else if tab == .disconnected && viewModel.isLoadingHistory {
-            checking
         } else {
             tabNote(Self.emptyTabText(tab))
         }
-    }
-
-    private var checking: some View {
-        SwiftUI.ProgressView()
-            .frame(maxWidth: .infinity)
-            .padding(.top, 20)
-            .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
     }
 
     private func tabNote(_ text: String) -> some View {
@@ -174,7 +163,7 @@ struct ConnectionsScreen: View {
             .foregroundColor(Color.dash.secondaryText)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
-        .padding(.top, 20)
+            .padding(.top, 20)
     }
 
     private static func emptyTabText(_ tab: ConnectionsTab) -> String {

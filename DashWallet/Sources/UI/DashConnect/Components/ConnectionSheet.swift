@@ -354,8 +354,7 @@ struct ConnectionSheet: View {
         case .disconnected:
             reconnectButton
         case .waitingForSecondScan:
-            // Its login keys are not on the identity yet: the second code is
-            // the way forward.
+            // The second code is the way forward.
             EmptyView()
         case .active, .confirming:
             disconnectButton

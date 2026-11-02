@@ -62,8 +62,8 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case disconnected
 
         /// A connection in this status can be disconnected: its keys may
-        /// still be on. A two-QR row waiting for its second code only goes
-        /// back to that state, and a disconnected app has nothing left.
+        /// still be on. A two-QR row waiting for its second code offers that
+        /// code instead, and a disconnected app has nothing left.
         var offersDisconnect: Bool { self == .active || self == .confirming }
     }
 
@@ -73,7 +73,12 @@ struct ConnectionSheetItem: Identifiable, Equatable {
     let status: Status
     /// The page's row, which a disconnect acts on; `nil` for a disconnected app.
     let connection: DAppConnection?
-    let disconnectedAt: Date?
+    /// What was recorded of a disconnected app; `nil` for a row.
+    let entry: DisconnectedConnection?
+    /// The wallet, network and endpoint the item was published for.
+    let scope: String?
+
+    var disconnectedAt: Date? { entry?.disconnectedAt }
 }
 
 @MainActor
@@ -83,17 +88,15 @@ final class ConnectionsViewModel: ObservableObject {
     /// connected or not.
     @Published private(set) var hasReadRows = false
     @Published var selectedTab: ConnectionsTab = .active
-    /// The apps disconnected on this wallet; `nil` until read, or when they
-    /// could not be read (`historyIsUnreadable`).
-    @Published private(set) var history: [DisconnectedConnection]?
-    @Published private(set) var historyIsUnreadable = false
+    /// The apps disconnected on this wallet; `nil` when they could not be
+    /// read (`historyIsUnreadable`).
+    @Published private(set) var history: [DisconnectedConnection]? = []
+    /// The wallet, network and endpoint the rows and the history were
+    /// published for.
+    private var listedScope: String?
     /// What the last action from the connection sheet ended in, shown on
     /// the sheet: an alert of the page cannot appear over it.
     @Published var connectionSheetMessage: ConnectionsScreenMessage?
-    /// The history read running now; one asked for meanwhile
-    /// runs once it ends (`refreshesStatusAgain`).
-    private var statusRead: Task<Void, Never>?
-    private var refreshesStatusAgain = false
     /// The connection whose sheet is up.
     @Published var shownConnection: ConnectionSheetItem?
     /// What that sheet shows beyond the row; `nil` while it is read, or when
@@ -152,7 +155,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// When the shown connection was made.
     var shownConnectedAt: Date? {
         guard let item = shownConnection else { return nil }
-        if item.connection == nil { return history?.first { $0.id == item.id }?.connectedAt }
+        if let entry = item.entry { return entry.connectedAt }
         return shownDetails?.connectedAt
     }
 
@@ -239,25 +242,17 @@ final class ConnectionsViewModel: ObservableObject {
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
         self.openURL = openURL ?? { UIApplication.shared.open($0) }
 
-        self.dataSource.connections
+        // The rows and the history come in one value, under the wallet they
+        // are of: a sheet of another wallet's app closes on its own.
+        self.dataSource.listing
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] rows in
+            .sink { [weak self] listing in
                 guard let self else { return }
-                self.connections = rows.sorted(by: { $0.updatedAt > $1.updatedAt })
+                self.listedScope = listing.scope
+                self.connections = listing.rows.sorted(by: { $0.updatedAt > $1.updatedAt })
+                self.history = listing.disconnected
                 self.hasReadRows = true
                 self.updateShownConnection()
-            }
-            .store(in: &cancellables)
-        // The rows change when an app is approved, confirmed or removed,
-        // which is when the history can change too. The
-        // screen reads them when it appears; the current value the
-        // publisher replays is skipped.
-        self.dataSource.connections
-            .dropFirst()
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.refreshConnectionStatus()
             }
             .store(in: &cancellables)
     }
@@ -278,8 +273,8 @@ final class ConnectionsViewModel: ObservableObject {
         !connections.isEmpty || !(history ?? []).isEmpty || historyIsUnreadable
     }
 
-    /// The disconnected apps are being read for the first time.
-    var isLoadingHistory: Bool { history == nil && !historyIsUnreadable && !featureUnavailable }
+    /// The disconnected apps could not be read.
+    var historyIsUnreadable: Bool { history == nil }
 
     private func item(for connection: DAppConnection) -> ConnectionSheetItem {
         let status: ConnectionSheetItem.Status
@@ -290,46 +285,13 @@ final class ConnectionsViewModel: ObservableObject {
         }
         return ConnectionSheetItem(
             id: connection.id, name: connection.name, url: connection.url, status: status,
-            connection: connection, disconnectedAt: nil)
+            connection: connection, entry: nil, scope: connection.scope)
     }
 
     private func item(for entry: DisconnectedConnection) -> ConnectionSheetItem {
         ConnectionSheetItem(
             id: entry.id, name: entry.name, url: entry.url, status: .disconnected,
-            connection: nil, disconnectedAt: entry.disconnectedAt)
-    }
-
-    /// Reads the disconnected apps again.
-    func refreshConnectionStatus() {
-        guard !featureUnavailable else { return }
-        Task { [weak self] in await self?.readConnectionStatus() }
-    }
-
-    /// One read at a time: a burst of row changes makes one more read, not
-    /// one each. Returns once a read that started after this call has ended.
-    private func readConnectionStatus() async {
-        if let running = statusRead {
-            refreshesStatusAgain = true
-            await running.value
-            return
-        }
-        let read = Task { [weak self] in
-            guard let self else { return }
-            await self.runStatusReads()
-        }
-        statusRead = read
-        await read.value
-    }
-
-    private func runStatusReads() async {
-        repeat {
-            refreshesStatusAgain = false
-            let history = await dataSource.disconnectedConnections()
-            self.history = history
-            historyIsUnreadable = history == nil
-            updateShownConnection()
-        } while refreshesStatusAgain
-        statusRead = nil
+            connection: nil, entry: entry, scope: listedScope)
     }
 
     /// Opens the sheet of `item`, and reads what it shows. Not while a
@@ -367,10 +329,8 @@ final class ConnectionsViewModel: ObservableObject {
             return nil
         }
         guard let effect = dataSource.disconnectEffect(id: connection.id, scope: connection.scope) else {
-            // Not the active wallet's, or gone from it: what the page
-            // shows is read again.
+            // Not the active wallet's, or gone from it.
             connectionSheetMessage = Self.connectionChangedMessage
-            refreshConnectionStatus()
             return nil
         }
         connectionSheetMessage = nil
@@ -415,12 +375,10 @@ final class ConnectionsViewModel: ObservableObject {
     private func readShownDetails(_ item: ConnectionSheetItem) {
         detailsReadNumber += 1
         let number = detailsReadNumber
-        if item.connection == nil {
-            let entry = history?.first { $0.id == item.id }
-            shownDetails = entry.map {
-                ConnectionDetails(appId: $0.id, identityId: $0.identityId, username: $0.username, access: $0.access)
-            }
-            shownDetailsFailed = entry == nil
+        if let entry = item.entry {
+            shownDetails = ConnectionDetails(
+                appId: entry.id, identityId: entry.identityId, username: entry.username, access: entry.access)
+            shownDetailsFailed = false
             return
         }
         Task { [weak self] in
@@ -445,10 +403,12 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Whether the sheet's details have to be read again for `item` after
-    /// `previous`: another app, or a row that changed (its status or kind).
+    /// `previous`: another app, a row that changed (its status or kind), or
+    /// a disconnected app's entry recorded again.
     private static func readsAnew(_ item: ConnectionSheetItem, from previous: ConnectionSheetItem) -> Bool {
         item.id != previous.id || item.connection?.status != previous.connection?.status
             || item.connection?.loginKind != previous.connection?.loginKind
+            || item.disconnectedAt != previous.disconnectedAt
     }
 
     /// The connection's sheet is gone from the screen.
@@ -484,16 +444,16 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Keeps an open sheet in step with the rows: its status and what it
-    /// shows, or closed once it is neither a row nor a disconnected app. Not
-    /// during a disconnect from it: the row goes before the history entry is
-    /// read, and the sheet then shows the app disconnected.
+    /// shows, or closed once it is neither a row nor a disconnected app, or
+    /// is another wallet's. Not during a disconnect from it: the sheet waits
+    /// for the list that shows the app disconnected.
     private func updateShownConnection() {
         guard let shown = shownConnection, !isDisconnecting else { return }
         let current = ConnectionsTab.allCases.lazy.flatMap { self.rows(for: $0) }.first { $0.id == shown.id }
-        // Another wallet's row of the same app is another connection: the
-        // sheet, its question and what it said were about the one before.
-        if let current, let scope = current.connection?.scope, let shownScope = shown.connection?.scope,
-           scope != shownScope {
+        // Another wallet's row or disconnected app of the same app is
+        // another connection: the sheet, its question and what it said were
+        // about the one before.
+        if let current, current.scope != shown.scope {
             hideConnection()
             return
         }
@@ -845,7 +805,6 @@ final class ConnectionsViewModel: ObservableObject {
                     self.shownDetailsFailed = false
                     self.readShownDetails(shown)
                 }
-                self.refreshConnectionStatus()
                 switch error {
                 case DashConnectPlatformError.disconnectEffectChanged:
                     // Nothing ran: the sheet's Disconnect asks again with
@@ -868,12 +827,6 @@ final class ConnectionsViewModel: ObservableObject {
                     from: connection)
                 return
             }
-            // The history is local: read before the disconnect ends, so the
-            // sheet shows the app disconnected rather than closing as its
-            // row goes.
-            let history = await self.dataSource.disconnectedConnections()
-            self.history = history
-            self.historyIsUnreadable = history == nil
             self.isDisconnecting = false
             self.updateShownConnection()
             // What the disconnect did with the DashPay profile keys no

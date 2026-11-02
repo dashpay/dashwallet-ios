@@ -290,7 +290,6 @@ struct DisconnectedConnection: Codable, Equatable, Identifiable {
 protocol DashConnectHistoryStore {
     /// `nil` when the stored entries cannot be read: unknown, not none.
     func load() -> [DisconnectedConnection]?
-    func save(_ entries: [DisconnectedConnection])
     /// Records `entry`, in place of an earlier one of the same app; `false`
     /// when it could not be saved (the stored entries cannot be read, or
     /// writing failed).
@@ -336,13 +335,8 @@ final class UserDefaultsDashConnectHistoryStore: DashConnectHistoryStore {
         return stored.entries.filter { latest[$0.id] == $0 && shown.insert($0.id).inserted }
     }
 
-    /// Entries this build cannot read are written back as they were.
-    func save(_ entries: [DisconnectedConnection]) {
-        write(entries, forgetting: [])
-    }
-
-    /// An entry this build cannot read of the same app goes too: the app has
-    /// one entry, this one.
+    /// Entries this build cannot read are written back as they were, except
+    /// one of the same app: the app has one entry, this one.
     @discardableResult
     func record(_ entry: DisconnectedConnection) -> Bool {
         guard let entries = load() else { return false }
