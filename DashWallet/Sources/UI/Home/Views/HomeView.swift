@@ -1265,10 +1265,8 @@ struct TransactionDetailsSheet: View {
         }
     }
     
-    /// Returns whether a transaction was open to close.
-    @discardableResult
-    private func closeGroupedTransaction() -> Bool {
-        guard let closed = groupedTransaction else { return false }
+    private func closeGroupedTransaction() {
+        guard let closed = groupedTransaction else { return }
         withAnimation(.inSheetPush(reduceMotion: reduceMotion)) {
             groupedTransaction = nil
         }
@@ -1278,7 +1276,6 @@ struct TransactionDetailsSheet: View {
             guard groupedTransaction == nil else { return }
             focusedGroupRow = closed.txHashHexString
         }
-        return true
     }
 }
 
@@ -1292,7 +1289,7 @@ struct TransactionDetailsSheet: View {
 /// The pushed level is backed by an opaque `primaryBackground` run through the bottom
 /// safe area, so the root never shows through it, mid-slide or at rest; content that
 /// paints its own background draws over that fill.
-struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
+private struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     /// The item shown on the pushed level; `nil` shows the root.
@@ -1331,7 +1328,7 @@ struct InSheetPushStack<Item, Root: View, Pushed: View>: View {
 extension Animation {
     /// The timing of an `InSheetPushStack` push or pop, for views outside the stack that
     /// change with it, such as the sheet header's Back button.
-    static func inSheetPush(reduceMotion: Bool) -> Animation {
+    fileprivate static func inSheetPush(reduceMotion: Bool) -> Animation {
         reduceMotion ? .easeInOut(duration: 0.25) : .smooth(duration: 0.35)
     }
 }
