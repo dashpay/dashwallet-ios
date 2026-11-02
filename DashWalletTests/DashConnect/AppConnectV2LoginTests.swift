@@ -1276,16 +1276,24 @@ extension AppConnectV2LoginTests {
         return grant
     }
 
+    /// The identity revision the views in these tests show, below the
+    /// revision a record notes unless a test says otherwise.
+    private static let revision: UInt64 = 5
+
     private static func outcome(
         _ added: [ManagedPlatformWallet.IdentityPubkey],
         keys: [ManagedIdentity.IdentityPublicKeyInfo],
         bindings: [AppConnect.KeyBinding]? = nil,
-        outlivedBy: AppConnect.OwnUpdate? = nil
+        outlivedBy: AppConnect.OwnUpdate? = nil,
+        submittedRevision: UInt64? = nil,
+        identityRevision: UInt64 = revision
     ) -> AppConnect.PendingV2Outcome {
         var pending = pendingUpdate(added)
         pending.outlivedBy = outlivedBy
+        pending.submittedRevision = submittedRevision
         return AppConnect.pendingV2Outcome(
-            of: pending, currentIdentityPublicKeys: keys, bindings: bindings ?? added.map(stored))
+            of: pending, currentIdentityPublicKeys: keys, identityRevision: identityRevision,
+            bindings: bindings ?? added.map(stored))
     }
 
     func testAPendingUpdateLandedOnlyWhenEveryKeyIsThereAsItWasAdded() {
@@ -1356,9 +1364,8 @@ extension AppConnectV2LoginTests {
         let master = Self.key(0, level: .master)
         let laterKey = Self.addedAuthKey(11, data: 0x0B)
         let later = AppConnect.OwnUpdate(added: [laterKey], disabledKeyIds: [3])
-        // A note an earlier build made: the SDK's copy of the identity can
-        // be reloaded while an update is on its way, so the pending one can
-        // still land after the later one.
+        // A note an earlier build made is not used to settle: a record that
+        // notes no revision of its own stays unknown.
         XCTAssertEqual(
             Self.outcome([auth], keys: [master, Self.key(3, disabled: true), Self.onIdentity(laterKey)], outlivedBy: later),
             .unknown)
@@ -1387,6 +1394,97 @@ extension AppConnectV2LoginTests {
             "nor lowers one")
     }
 
+    func testAnAbsentKeyWithTheIdentityAtItsSubmittedRevisionMeansTheUpdateCanNeverLand() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        let encryption = Self.addedEncryptionKey(8, data: 0x08)
+        let master = Self.key(0, level: .master)
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master], submittedRevision: 5, identityRevision: 5), .cannotLand,
+            "Platform applies an update only at one above the identity's revision")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master], submittedRevision: 5, identityRevision: 9), .cannotLand)
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master, Self.onIdentity(auth)], submittedRevision: 5,
+                         identityRevision: 5),
+            .cannotLand, "one key of it absent is enough: an update lands whole")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master], submittedRevision: 6, identityRevision: 5), .unknown,
+            "the identity is below its revision: it may still land")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master], submittedRevision: nil, identityRevision: 9), .unknown,
+            "a record that notes no revision is not settled by one")
+        XCTAssertEqual(
+            Self.outcome([auth, encryption], keys: [master, Self.onIdentity(auth), Self.onIdentity(encryption)],
+                         submittedRevision: 5, identityRevision: 9),
+            .landed, "its keys there settle it whatever the revision")
+    }
+
+    func testAKeyThatIsThereButUnplacedStaysUnknownPastItsSubmittedRevision() {
+        let auth = Self.addedAuthKey(7, data: 0x07)
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [], submittedRevision: 5, identityRevision: 9),
+            .unknown, "the store may not have loaded the key yet")
+        var unreadable = Self.stored(auth)
+        unreadable.hasUnreadableBound = true
+        XCTAssertEqual(
+            Self.outcome([auth], keys: [Self.onIdentity(auth)], bindings: [unreadable], submittedRevision: 5,
+                         identityRevision: 9),
+            .unknown)
+    }
+
+    func testASettleDropsAWaitingRecordWhoseUpdateCanNoLongerLand() {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        var cannotLand = Self.pendingGrant([key], requestHash: "a1")
+        cannotLand.pendingUpdate?.submittedRevision = Self.revision
+        var mayStillLand = Self.pendingGrant([Self.addedAuthKey(8, data: 0x08)], requestHash: "a2")
+        mayStillLand.pendingUpdate?.submittedRevision = Self.revision + 1
+        let unnoted = Self.pendingGrant([Self.addedAuthKey(9, data: 0x09)], requestHash: "a3")
+        var grants = [cannotLand, mayStillLand, unnoted]
+        let settled = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [Self.key(0, level: .master)],
+            identityRevision: Self.revision, bindings: [])
+        XCTAssertEqual(settled.dropped.map(\.key), [cannotLand.key])
+        XCTAssertEqual(grants.map(\.key), [mayStillLand.key, unnoted.key])
+        XCTAssertTrue(grants.allSatisfy(\.isPendingV2))
+    }
+
+    func testAWaitingRecordThatLandedWithALiveKeyIsTold() {
+        let waiting = Self.pendingGrant([Self.addedAuthKey(7, data: 0x07)], requestHash: "a1")
+        var landed = waiting
+        landed.pendingUpdate = nil
+        landed.unconfirmedKeyHash160 = nil
+        let other = Self.grant(sessionKeyId: 4, requestHash: "b1")
+        XCTAssertTrue(AppConnect.landedWithLiveKeys(
+            [landed], among: [waiting.key], in: [Self.onIdentity(Self.addedAuthKey(7, data: 0x07))]))
+        XCTAssertFalse(
+            AppConnect.landedWithLiveKeys([landed], among: [waiting.key], in: [Self.key(7, disabled: true)]),
+            "its key is off")
+        XCTAssertFalse(
+            AppConnect.landedWithLiveKeys([waiting], among: [waiting.key], in: [Self.onIdentity(Self.addedAuthKey(7, data: 0x07))]),
+            "still waiting")
+        XCTAssertFalse(
+            AppConnect.landedWithLiveKeys([other], among: [waiting.key], in: [Self.key(4, level: .high)]),
+            "not one that was waiting")
+    }
+
+    func testARecordKeptForAKeyItHoldsIsDroppedOnceThatKeyIsOff() {
+        let added = Self.addedAuthKey(8, data: 0x08)
+        var record = Self.pendingGrant([added], requestHash: "a1")
+        record.additionalKeyIds = [5]
+        record.pendingUpdate?.submittedRevision = Self.revision
+        var grants = [record]
+        let held = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [Self.key(5, level: .critical)],
+            identityRevision: Self.revision, bindings: [])
+        XCTAssertEqual(held.dropped, [], "it cannot land, but the key it sends again is live")
+        XCTAssertEqual(grants.map(\.key), [record.key])
+        let off = AppConnect.settlePendingV2Registrations(
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [Self.key(5, disabled: true)],
+            identityRevision: Self.revision + 1, bindings: [])
+        XCTAssertEqual(off.dropped.map(\.key), [record.key])
+        XCTAssertEqual(grants, [])
+    }
+
     func testAPendingUpdateWhoseReplacedKeysAreStillOnRetiresNothing() {
         let key = Self.addedAuthKey(7, data: 0x07)
         let old = Self.grant(sessionKeyId: 3, requestHash: "00", connectionId: "c1")
@@ -1396,7 +1494,7 @@ extension AppConnectV2LoginTests {
         let settled = AppConnect.settlePendingV2Registrations(
             in: &grants, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key), Self.key(3)],
-            bindings: [Self.stored(key)])
+            identityRevision: Self.revision, bindings: [Self.stored(key)])
         XCTAssertEqual(settled.confirmed.map(\.key), [pending.key], "its keys are there and need their record")
         XCTAssertNil(grants[0].keyDisabled, "another update added them; the replaced key is still on")
 
@@ -1404,7 +1502,7 @@ extension AppConnectV2LoginTests {
         _ = AppConnect.settlePendingV2Registrations(
             in: &landedOff, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3)],
-            bindings: [Self.stored(key)])
+            identityRevision: Self.revision, bindings: [Self.stored(key)])
         XCTAssertEqual(landedOff.map(\.key), [old.key])
         XCTAssertNil(landedOff[0].keyDisabled)
     }
@@ -1587,7 +1685,7 @@ extension AppConnectV2LoginTests {
             currentIdentityPublicKeys: [
                 Self.onIdentity(landedKey), Self.onIdentity(impossibleKey, data: Data(repeating: 0xEE, count: 20)),
             ],
-            bindings: [Self.stored(landedKey)])
+            identityRevision: Self.revision, bindings: [Self.stored(landedKey)])
 
         XCTAssertEqual(settled.confirmed.map(\.key), [landed.key])
         XCTAssertEqual(settled.dropped.map(\.key), [impossible.key])
@@ -1620,7 +1718,7 @@ extension AppConnectV2LoginTests {
         XCTAssertEqual(
             AppConnect.settlePendingV2Registrations(
                 in: &otherBoundGrants, identityId: "identity",
-                currentIdentityPublicKeys: [Self.onIdentity(added)], bindings: [otherBound]).dropped.map(\.key),
+                currentIdentityPublicKeys: [Self.onIdentity(added)], identityRevision: Self.revision, bindings: [otherBound]).dropped.map(\.key),
             [record.key])
         XCTAssertEqual(
             AppConnect.heldKeyIds(heldBy: record, in: [taken], bindings: [AppConnect.KeyBinding(
@@ -1644,7 +1742,7 @@ extension AppConnectV2LoginTests {
         ] {
             var grants = [record]
             let settled = AppConnect.settlePendingV2Registrations(
-                in: &grants, identityId: "identity", currentIdentityPublicKeys: keys, bindings: [Self.stored(added)])
+                in: &grants, identityId: "identity", currentIdentityPublicKeys: keys, identityRevision: Self.revision, bindings: [Self.stored(added)])
             XCTAssertEqual(settled.dropped, [], why)
             XCTAssertEqual(grants.map(\.key), [record.key], why)
             XCTAssertTrue(grants[0].isPendingV2, why)
@@ -1652,7 +1750,7 @@ extension AppConnectV2LoginTests {
         var grants = [record]
         let settled = AppConnect.settlePendingV2Registrations(
             in: &grants, identityId: "identity",
-            currentIdentityPublicKeys: [Self.key(5, disabled: true), taken], bindings: [])
+            currentIdentityPublicKeys: [Self.key(5, disabled: true), taken], identityRevision: Self.revision, bindings: [])
         XCTAssertEqual(settled.dropped.map(\.key), [record.key], "nothing of it is live any more")
     }
 
@@ -1672,7 +1770,7 @@ extension AppConnectV2LoginTests {
 
         var grants = [record]
         let settled = AppConnect.settlePendingV2Registrations(
-            in: &grants, identityId: "identity", currentIdentityPublicKeys: [conflict], bindings: [Self.stored(keyB)])
+            in: &grants, identityId: "identity", currentIdentityPublicKeys: [conflict], identityRevision: Self.revision, bindings: [Self.stored(keyB)])
         XCTAssertEqual(settled.dropped, [], "it cannot land, but the store gives it B")
         XCTAssertTrue(grants[0].isPendingV2)
 
@@ -1683,7 +1781,7 @@ extension AppConnectV2LoginTests {
         var others = [record]
         XCTAssertEqual(
             AppConnect.settlePendingV2Registrations(
-                in: &others, identityId: "identity", currentIdentityPublicKeys: unplaced, bindings: []).dropped, [])
+                in: &others, identityId: "identity", currentIdentityPublicKeys: unplaced, identityRevision: Self.revision, bindings: []).dropped, [])
     }
 
     func testAWaitingRecordThatHoldsAKeyGetsARowToDisconnectIt() {
@@ -1768,7 +1866,7 @@ extension AppConnectV2LoginTests {
         let settled = AppConnect.settlePendingV2Registrations(
             in: &grants, identityId: "identity",
             currentIdentityPublicKeys: [Self.onIdentity(key, disabled: true), Self.key(3, disabled: true)],
-            bindings: [Self.stored(key)])
+            identityRevision: Self.revision, bindings: [Self.stored(key)])
         XCTAssertEqual(settled.dropped.map(\.key), [pending.key])
         XCTAssertEqual(grants.map(\.key), [old.key])
         XCTAssertEqual(grants[0].keyDisabled, true, "its update turned the replaced grant off")
@@ -1995,6 +2093,7 @@ extension AppConnectV2LoginTests {
         var rereads = 0
         var pauses: [Int] = []
         var dropped = 0
+        var heldReads = 0
     }
 
     private static func register(
@@ -2006,16 +2105,24 @@ extension AppConnectV2LoginTests {
         calls: Calls,
         submit: @escaping () throws -> Void = {},
         views: [View?] = [],
+        identityRevision: UInt64 = revision,
+        heldRevisions: [UInt64] = [revision],
         rowsJudged: Bool = true
     ) async throws -> AppConnectGrant {
         var remaining = views
+        var held = heldRevisions
         return try await PlatformDashConnectDataSource.registerAppConnectV2Grant(
             record, add: add, disable: disable, retiredGrantKeys: retiring, grants: store,
             showRow: { calls.rowShown += 1 },
             submit: { calls.submitted += 1; try submit() },
+            readHeldRevision: {
+                calls.heldReads += 1
+                return held.count > 1 ? held.removeFirst() : held[0]
+            },
             reread: {
                 calls.rereads += 1
-                return remaining.isEmpty ? nil : remaining.removeFirst()
+                guard !remaining.isEmpty, let view = remaining.removeFirst() else { return nil }
+                return (view.keys, identityRevision, view.bindings)
             },
             pause: { calls.pauses.append($0) },
             onDropped: { _ in
@@ -2034,6 +2141,7 @@ extension AppConnectV2LoginTests {
         let grant = try await Self.register(record, add: [key], disable: [3], retiring: [old.key], store: store, calls: calls) {
             let stored = store.grants.first { $0.key == record.key }
             XCTAssertEqual(stored?.pendingUpdate?.addedKeys, [AppConnect.ExpectedKey(key)], "recorded first")
+            XCTAssertEqual(stored?.pendingUpdate?.submittedRevision, Self.revision + 1, "with the revision it is built at")
             XCTAssertTrue(stored?.isUnconfirmed == true)
             XCTAssertEqual(calls.rowShown, 1, "and shown")
             XCTAssertNil(store.grants.first { $0.key == old.key }?.keyDisabled, "the replaced grant waits for the update")
@@ -2054,6 +2162,7 @@ extension AppConnectV2LoginTests {
         let calls = Calls()
         _ = try await Self.register(earlier, add: [], disable: [], retiring: [old.key], store: store, calls: calls)
         XCTAssertEqual(calls.submitted, 0, "nothing to send")
+        XCTAssertEqual(calls.heldReads, 0, "a record that adds nothing notes no revision")
         XCTAssertEqual(store.grants.first { $0.key == old.key }?.keyDisabled, true)
     }
 
@@ -2204,7 +2313,9 @@ extension AppConnectV2LoginTests {
         } catch {
             XCTAssertTrue(error is UpdateFailed)
         }
-        XCTAssertEqual(store.grants, [record], "the next settle drops it, with its rows judged")
+        var noted = record
+        noted.pendingUpdate?.submittedRevision = Self.revision + 1
+        XCTAssertEqual(store.grants, [noted], "the next settle drops it, with its rows judged")
         XCTAssertEqual(calls.dropped, 1)
     }
 
@@ -2222,8 +2333,60 @@ extension AppConnectV2LoginTests {
         }
         XCTAssertEqual(calls.rereads, 3)
         XCTAssertEqual(calls.pauses, [1, 2])
-        XCTAssertEqual(store.grants, [record], "kept until the outcome is known")
+        var noted = record
+        noted.pendingUpdate?.submittedRevision = Self.revision + 1
+        XCTAssertEqual(store.grants, [noted], "kept until the outcome is known")
         XCTAssertEqual(calls.dropped, 0)
+    }
+
+    func testAFailedUpdateThatCanNoLongerLandByItsRevisionDropsItsRecord() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                Self.pendingGrant([key]), add: [key], store: store, calls: calls, submit: { throw UpdateFailed() },
+                views: [([Self.key(0, level: .master)], [])], identityRevision: Self.revision + 1)
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(store.grants, [], "the identity is at the revision it was submitted at, without its key")
+        XCTAssertEqual(calls.rereads, 1)
+        XCTAssertEqual(calls.dropped, 1)
+    }
+
+    func testAFailedSubmitRaisesTheNotedRevisionWhenTheWalletsRevisionMoved() async {
+        let key = Self.addedAuthKey(7, data: 0x07)
+        let record = Self.pendingGrant([key])
+        let store = MemoryGrantStore()
+        let calls = Calls()
+        do {
+            _ = try await Self.register(
+                record, add: [key], store: store, calls: calls,
+                submit: {
+                    XCTAssertEqual(store.grants.first?.pendingUpdate?.submittedRevision, Self.revision + 1)
+                    throw UpdateFailed()
+                },
+                views: [([Self.key(0, level: .master)], [])], identityRevision: Self.revision + 2,
+                heldRevisions: [Self.revision, Self.revision + 2])
+            XCTFail("the failure stands")
+        } catch {
+            XCTAssertTrue(error is UpdateFailed)
+        }
+        XCTAssertEqual(calls.heldReads, 2)
+        XCTAssertEqual(
+            store.grants.first?.pendingUpdate?.submittedRevision, Self.revision + 3,
+            "it may have been built on the update that moved the wallet's revision")
+        XCTAssertEqual(store.grants.map(\.key), [record.key], "the raised revision is the one it is judged by")
+        XCTAssertEqual(calls.dropped, 0)
+
+        let unmoved = MemoryGrantStore()
+        _ = try? await Self.register(
+            record, add: [key], store: unmoved, calls: Calls(), submit: { throw UpdateFailed() },
+            views: [([Self.key(0, level: .master)], [])], identityRevision: Self.revision + 2,
+            heldRevisions: [Self.revision, Self.revision])
+        XCTAssertEqual(unmoved.grants, [], "with the revision unmoved, the same view settles it")
     }
 
     func testAGrantThatCannotBeRecordedIsNotSubmitted() async {
