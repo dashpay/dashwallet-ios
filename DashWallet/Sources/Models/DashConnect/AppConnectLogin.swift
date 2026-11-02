@@ -506,6 +506,52 @@ enum AppConnect {
         return confirmed
     }
 
+    /// The identity revision a registration's update is submitted at, noted
+    /// on its record before it is submitted. The SDK builds an update at one
+    /// above the revision the wallet holds for the identity, and Platform
+    /// applies it only at one above the identity's revision, so once the
+    /// identity is at this revision or past it without the update's keys,
+    /// the update can never land.
+    struct SubmittedRevision {
+        /// The revision the wallet held for the identity before the update
+        /// was built.
+        let held: UInt64
+        /// The revision noted for an earlier submission of the same keys
+        /// under the same ids, which may still land at it: the record stands
+        /// for that one too.
+        var earlier: UInt64? = nil
+
+        /// One above `held`, or `earlier` where that is higher: a read from
+        /// a node that is behind never lowers it. Nil at the largest
+        /// revision, which no update follows, with nothing noted earlier.
+        var value: UInt64? {
+            let own = held == .max ? nil : held + 1
+            guard let earlier else { return own }
+            return max(own ?? earlier, earlier)
+        }
+
+        /// Runs `submit`. When it throws, the wallet's revision is read
+        /// again (`readHeld`): if another update of the identity landed
+        /// meanwhile and moved it so that this one may have been built above
+        /// `value`, `raise` gets one above it before the error is rethrown.
+        /// The record then names the highest, which only makes a settle wait
+        /// longer for the outcome.
+        func submit(
+            _ submit: () async throws -> Void,
+            readHeld: () throws -> UInt64,
+            raise: (UInt64) -> Void
+        ) async throws {
+            do {
+                try await submit()
+            } catch {
+                if let after = try? readHeld(), after < .max, after + 1 > (value ?? .max) {
+                    raise(after + 1)
+                }
+                throw error
+            }
+        }
+    }
+
     /// Granted session keys the given view of the identity does not contain.
     /// Platform never removes a key, it only disables it, so a missing id
     /// means the view is out of date — not that the key is gone. A disconnect
@@ -719,7 +765,9 @@ struct AppConnectGrant: Codable, Equatable {
     /// set with `unconfirmedKeyHash160`. Platform takes an identity update
     /// only at one above the identity's revision, so once the identity is at
     /// this revision or past it without the key live, the update can never
-    /// land.
+    /// land. Noted for a session-key registration without `pendingUpdate`;
+    /// an App Connect v2 update notes its own
+    /// (`PendingV2Update.submittedRevision`) and leaves this `nil`.
     /// `nil` on a record from a build that did not note it.
     var submittedRevision: UInt64? = nil
     /// App Connect v2: the update that registers this grant's keys, from
@@ -746,8 +794,16 @@ struct AppConnectGrant: Codable, Equatable {
         var disabledKeyIds: [UInt32]
         /// The records of those grants (`key`) that are done once it lands.
         var retiredGrantKeys: [String]
+        /// The identity revision the update was submitted at
+        /// (`AppConnect.SubmittedRevision`), set before it is submitted.
+        /// Kept with the update it was noted for. A retry sends the same
+        /// keys under the same ids and keeps the higher of its own and the
+        /// one noted before (`SubmittedRevision.earlier`). `nil` on a record
+        /// from a build that did not note it.
+        var submittedRevision: UInt64? = nil
         /// What an earlier build noted of a later update of this wallet. Read
-        /// back, never used: it proves nothing about this one (`OwnUpdate`).
+        /// back, never used: the update's own `submittedRevision` is what
+        /// settles it against the identity's revision (`OwnUpdate`).
         var outlivedBy: AppConnect.OwnUpdate? = nil
         /// The app's row was a two-QR `.approved` one before this approval
         /// showed it as confirming: it goes back to that if the update never
