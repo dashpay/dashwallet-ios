@@ -519,6 +519,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
+    /// The expiry check of the published rows (set once in `init`).
+    private var expiryChecker: ConnectionExpiryChecker!
+    /// Set while a listing is being published with the check's value: the
+    /// check reporting a change meanwhile is part of that listing.
+    private var publishesListing = false
+    private var expiryObservers = Set<AnyCancellable>()
 
     /// Prefix of the shared profile keys an earlier build let the user keep.
     static let keptSharedProfileKeysPrefix = "DashConnect.keptSharedProfileKeys "
@@ -561,7 +567,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         notificationCenter: NotificationCenter = .default,
         operationGate: DashConnectOperationGate = .shared,
         defaults: UserDefaults = .standard,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        expiryDependencies: ConnectionExpiryChecker.Dependencies? = nil,
+        chainTimePublisher: AnyPublisher<Date?, Never>? = nil,
+        runtimeChanges: AnyPublisher<AnyObject?, Never>? = nil
     ) {
         assert(
             supportedNetwork == .testnet || supportedNetwork == .devnet,
@@ -584,7 +593,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: activeWalletIdHex(), store: self.store, responseStore: self.responseStore,
             historyStore: self.historyStore, endpoint: networkEndpoint())
         self.shownRows = ShownRows(scope: active?.scope)
-        self.subject = CurrentValueSubject(Self.listing(of: active, rows: active?.connections.load() ?? []))
+        self.subject = CurrentValueSubject(
+            Self.listing(of: active, published: active?.published(active?.connections.load() ?? []) ?? [], expiries: .notStarted))
         // The list is loaded once, and the active wallet can change while
         // this data source lives.
         self.walletChangeObserver = notificationCenter
@@ -600,6 +610,59 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 let scopeKey = notification.userInfo?[UserDefaultsDashConnectStore.scopeKeyUserInfoKey] as? String
                 Task { @MainActor in self?.showStoredRows(savedUnder: scopeKey) }
             }
+        let dependencies = expiryDependencies ?? ConnectionExpiryChecker.Dependencies(
+            readKeys: { [weak self] scope in await self?.readConnectionIdentityKeys(scope: scope) ?? .notReady },
+            judge: { [weak self] scope, apps, keys, nowMilliseconds, chainTimeMilliseconds in
+                self?.expiryJudgements(
+                    scope: scope, apps: apps, keys: keys, nowMilliseconds: nowMilliseconds,
+                    chainTimeMilliseconds: chainTimeMilliseconds)
+            },
+            now: now,
+            chainTime: { SwiftDashSDKHost.shared.manager?.spvTipBlockTime },
+            identityId: { DWCurrentUserIdentityInfo.shared.identityId?.toBase58String() },
+            // The continuous clock counts the time the device sleeps; the
+            // check never asks for more than `Policy.longestWait`.
+            sleep: { seconds in
+                let clock = ContinuousClock()
+                try await Task.sleep(until: clock.now.advanced(by: .seconds(max(0, seconds))), clock: clock)
+            })
+        self.expiryChecker = ConnectionExpiryChecker(dependencies: dependencies) { [weak self] expiries in
+            self?.republish(with: expiries)
+        }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let shown = self.subject.value
+            self.expiryChecker.listingChanged(scope: shown.scope, rows: shown.rows)
+        }
+        // The verdicts are of the identity they were read on: a new pick, or
+        // a registration, that changed the identity the app uses starts the
+        // check again. A pick is followed by the registration notification
+        // (`DWCurrentUserIdentityInfo.reconcileRecoveredIdentity`).
+        for name in [Notification.Name.DWDashPayRegistrationStatusUpdated, DWIdentityRegistrationBridge.stateChangedNotification] {
+            notificationCenter.publisher(for: name)
+                .sink { [weak self] _ in
+                    Task { @MainActor in self?.expiryChecker.identityMayHaveChanged() }
+                }
+                .store(in: &expiryObservers)
+        }
+        // The Core tip and the SDK manager running now. Without publishers
+        // handed in, the host's manager is followed as it changes.
+        if let chainTimePublisher { observeChainTime(chainTimePublisher) }
+        if let runtimeChanges { observeRuntimeChanges(runtimeChanges) }
+        if chainTimePublisher == nil || runtimeChanges == nil {
+            Task { @MainActor [weak self] in
+                let managers = SwiftDashSDKHost.shared.$manager
+                if chainTimePublisher == nil {
+                    self?.observeChainTime(managers
+                        .map { $0?.$spvTipBlockTime.eraseToAnyPublisher() ?? Just(nil).eraseToAnyPublisher() }
+                        .switchToLatest()
+                        .eraseToAnyPublisher())
+                }
+                if runtimeChanges == nil {
+                    self?.observeRuntimeChanges(managers.map { $0 as AnyObject? }.eraseToAnyPublisher())
+                }
+            }
+        }
     }
 
     var listing: AnyPublisher<DashConnectListing, Never> {
@@ -4198,7 +4261,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let active = pinnedActiveStores()
         guard shownRows.scope != active?.scope else { return active }
         shownRows.scope = active?.scope
-        subject.send(Self.listing(of: active, rows: active?.connections.load() ?? []))
+        publish(rows: active?.connections.load() ?? [], of: active)
         return active
     }
 
@@ -4218,21 +4281,138 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Publishes `rows`, the rows of the wallet `stores` belongs to, with its
-    /// disconnected apps as stored now, while the published list is that
-    /// wallet's.
+    /// disconnected apps as stored now and the expiry check, while the
+    /// published list is that wallet's.
     @MainActor
     private func show(_ rows: [DAppConnection], of stores: Stores) {
-        if shownRows.scope == stores.scope { subject.send(Self.listing(of: stores, rows: rows)) }
+        guard shownRows.scope == stores.scope else { return }
+        publish(rows: rows, of: stores)
     }
 
-    /// What the page lists for the wallet `stores` belongs to: `rows`, and
-    /// its disconnected apps as stored, most recent first. Nothing without a
-    /// wallet.
-    private static func listing(of stores: Stores?, rows: [DAppConnection]) -> DashConnectListing {
-        guard let stores else { return DashConnectListing(scope: nil, rows: [], disconnected: []) }
+    /// Tells the expiry check the rows, then publishes them with what it
+    /// makes of them, in one value.
+    @MainActor
+    private func publish(rows: [DAppConnection], of stores: Stores?) {
+        let published = stores?.published(rows) ?? []
+        publishesListing = true
+        expiryChecker.listingChanged(scope: stores?.scope, rows: published)
+        publishesListing = false
+        subject.send(Self.listing(of: stores, published: published, expiries: expiryChecker.expiries))
+    }
+
+    /// Publishes the listing shown again with the expiry check as reported.
+    @MainActor
+    private func republish(with expiries: ConnectionExpiries) {
+        guard !publishesListing else { return }
+        let shown = subject.value
+        subject.send(DashConnectListing(
+            scope: shown.scope, rows: shown.rows, disconnected: shown.disconnected,
+            expiries: expiries.holding(for: shown.rows)))
+    }
+
+    /// What the page lists for the wallet `stores` belongs to: `published`
+    /// (its rows as published), its disconnected apps as stored, most recent
+    /// first, and the verdicts of `expiries` that hold for those rows.
+    /// Nothing without a wallet.
+    private static func listing(
+        of stores: Stores?, published: [DAppConnection], expiries: ConnectionExpiries
+    ) -> DashConnectListing {
+        guard let stores else {
+            return DashConnectListing(scope: nil, rows: [], disconnected: [], expiries: .notStarted)
+        }
         return DashConnectListing(
-            scope: stores.scope, rows: stores.published(rows),
-            disconnected: stores.history.load()?.sorted { $0.disconnectedAt > $1.disconnectedAt })
+            scope: stores.scope, rows: published,
+            disconnected: stores.history.load()?.sorted { $0.disconnectedAt > $1.disconnectedAt },
+            expiries: expiries.holding(for: published))
+    }
+
+    // MARK: - Expiry check
+
+    @MainActor
+    func refreshConnectionExpiries(forcesRead: Bool) {
+        expiryChecker.pageShown(forcesRead: forcesRead)
+    }
+
+    @MainActor
+    func stopConnectionExpiryReads() {
+        expiryChecker.pageHidden()
+    }
+
+    @MainActor
+    func connectionExpiriesForegrounded() {
+        expiryChecker.foreground()
+    }
+
+    private func observeRuntimeChanges(_ managers: AnyPublisher<AnyObject?, Never>) {
+        let generations = ManagerGenerations()
+        managers
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] manager in
+                MainActor.assumeIsolated {
+                    self?.expiryChecker.runtimeChanged(generation: generations.generation(of: manager))
+                }
+            }
+            .store(in: &expiryObservers)
+    }
+
+    private func observeChainTime(_ times: AnyPublisher<Date?, Never>) {
+        times
+            .compactMap { $0 }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] tip in
+                MainActor.assumeIsolated { self?.expiryChecker.chainTipChanged(tip) }
+            }
+            .store(in: &expiryObservers)
+    }
+
+    /// `AppConnect.connectionExpiryJudgements` for the wallet `scope` names,
+    /// on its grant records; `nil` while another wallet is active.
+    private func expiryJudgements(
+        scope: String,
+        apps: Set<String>,
+        keys: ConnectionIdentityKeys,
+        nowMilliseconds: Int64,
+        chainTimeMilliseconds: Int64?
+    ) -> [String: AppConnect.ExpiryJudgement]? {
+        guard let stores = pinnedActiveStores(), stores.scope == scope else { return nil }
+        return AppConnect.connectionExpiryJudgements(
+            identityId: keys.identityId, apps: apps, grants: stores.grants.load(), bindings: keys.bindings,
+            currentIdentityPublicKeys: keys.keys, nowMilliseconds: nowMilliseconds,
+            chainTimeMilliseconds: chainTimeMilliseconds)
+    }
+
+    /// The active identity's keys as Platform has them and as the wallet's
+    /// store holds them, for the wallet `scope` names, read in turn with the
+    /// operations that sign: the read reloads the identity copy an approval
+    /// or a disconnect signs against.
+    // TODO(dashconnect-expiry): read the keys without reloading the copy the
+    // SDK signs against (`dash_sdk_identity_fetch`), so the read does not
+    // hold the operation gate; `ManagedIdentity.IdentityPublicKeyInfo` has no
+    // public initializer to build its keys from.
+    private func readConnectionIdentityKeys(scope: String) async -> ConnectionExpiryReadResult {
+        guard let stores = pinnedActiveStores(), stores.scope == scope else { return .notReady }
+        do {
+            let context = try await requireContext(pinnedTo: stores)
+            return try await gated(walletIdHex: stores.walletIdHex) {
+                let identityId = context.identityId.toBase58String()
+                let keys = try await refreshedIdentityPublicKeys(context: context)
+                let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)
+                return .keys(ConnectionIdentityKeys(identityId: identityId, keys: keys, bindings: bindings))
+            }
+        } catch {
+            return Self.expiryReadResult(for: error)
+        }
+    }
+
+    /// What an error of a read of the identity's keys tells the expiry check.
+    static func expiryReadResult(for error: Error) -> ConnectionExpiryReadResult {
+        switch error as? DashConnectPlatformError {
+        case .unsupportedRuntimeNetwork?: return .unavailable
+        case .noIdentity?: return .noIdentity
+        case .noWallet?, .noSDK?, .noModelContainer?, .walletChanged?: return .notReady
+        default: return .failed(error.localizedDescription)
+        }
     }
 
     /// Forgets the disconnected apps `appIds` of the wallet `stores` belongs

@@ -21,8 +21,8 @@ import Combine
 import Foundation
 
 /// What the Connections page lists for the active wallet, as published in
-/// one value: its rows and its disconnected apps, under the scope the rows
-/// name.
+/// one value: its rows, its disconnected apps and the expiry check of its
+/// rows, under the scope the rows name.
 struct DashConnectListing: Equatable {
     /// The wallet, network and endpoint the rows were published for
     /// (`DAppConnection.scope`); `nil` with no wallet.
@@ -31,6 +31,9 @@ struct DashConnectListing: Equatable {
     /// The apps disconnected on that wallet, most recent first; `nil` when
     /// they cannot be read.
     let disconnected: [DisconnectedConnection]?
+    /// The verdicts that hold for `rows`: each told for its row as it is
+    /// published here.
+    let expiries: ConnectionExpiries
 }
 
 protocol DashConnectDataSource {
@@ -95,6 +98,21 @@ protocol DashConnectDataSource {
     /// can be asked on the tap.
     @MainActor
     func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect?
+    /// The Connections page is on screen: reads whether the active rows'
+    /// keys can still sign, and publishes the verdicts in `listing`, now and
+    /// as they can change. Without `forcesRead`, a read made moments ago may
+    /// be judged again instead. Returns at once.
+    @MainActor
+    func refreshConnectionExpiries(forcesRead: Bool)
+    /// The Connections page left the screen: a read running for the check
+    /// is cancelled, and nothing is read until
+    /// `refreshConnectionExpiries(forcesRead:)` is called again.
+    @MainActor
+    func stopConnectionExpiryReads()
+    /// The app came back to the foreground: the check's clocks may have
+    /// moved on while the device slept.
+    @MainActor
+    func connectionExpiriesForegrounded()
 }
 
 extension DashConnectDataSource {
@@ -224,6 +242,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     private let supportedNetwork: DashConnectNetwork
     private let store: any DashConnectStore
     private let subject: CurrentValueSubject<[DAppConnection], Never>
+    /// Whether the check was asked for: the rows are then told, each as
+    /// published, with nothing to judge.
+    private let expiriesChecked = CurrentValueSubject<Bool, Never>(false)
 
     init(
         initial: [DAppConnection] = [],
@@ -238,7 +259,19 @@ final class MockDashConnectDataSource: DashConnectDataSource {
 
     /// The mock keeps no history: no disconnected apps.
     var listing: AnyPublisher<DashConnectListing, Never> {
-        subject.map { DashConnectListing(scope: nil, rows: $0, disconnected: []) }.eraseToAnyPublisher()
+        subject.combineLatest(expiriesChecked)
+            .map { rows, checked in
+                guard checked else {
+                    return DashConnectListing(scope: nil, rows: rows, disconnected: [], expiries: .notStarted)
+                }
+                let byApp = Dictionary(
+                    rows.filter { $0.status == .active }.map { ($0.id, ConnectionExpiry(verdict: .notJudged, row: $0)) },
+                    uniquingKeysWith: { first, _ in first })
+                return DashConnectListing(
+                    scope: nil, rows: rows, disconnected: [],
+                    expiries: ConnectionExpiries(identityId: nil, check: .read, byApp: byApp))
+            }
+            .eraseToAnyPublisher()
     }
 
     var connectionsSnapshot: [DAppConnection] {
@@ -350,6 +383,21 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func disconnectEffect(id: String, scope: String?) -> DashConnectDisconnectEffect? {
         subject.value.contains { $0.id == id && $0.scope == scope } ? .localOnly : nil
     }
+
+    /// The mock grants no keys: nothing of any active row's to judge, for
+    /// every listing it publishes from now on.
+    @MainActor
+    func refreshConnectionExpiries(forcesRead: Bool) {
+        expiriesChecked.send(true)
+    }
+
+    /// The mock reads only when asked: nothing runs to be stopped.
+    @MainActor
+    func stopConnectionExpiryReads() {}
+
+    /// The mock's verdicts do not depend on the clocks.
+    @MainActor
+    func connectionExpiriesForegrounded() {}
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
         guard network == supportedNetwork else {

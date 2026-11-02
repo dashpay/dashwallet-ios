@@ -2265,3 +2265,275 @@ private extension AppConnect.KeyBinding {
         return binding
     }
 }
+
+/// Whether a connected app's keys can still sign (`AppConnect.connectionExpiryJudgements`).
+extension AppConnectV2LoginTests {
+    private static let expiryNow: Int64 = 1_791_676_800_000
+    private static let hour: Int64 = 3_600_000
+
+    private static func identityKey(
+        _ keyId: UInt32,
+        expiresAt: Int64?,
+        disabled: Bool = false,
+        securityLevel: SecurityLevel = .high,
+        purpose: KeyPurpose = .authentication,
+        keyType: KeyType = .ecdsaHash160
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
+        ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: Int32(bitPattern: keyId), purpose: purpose, securityLevel: securityLevel,
+            keyType: keyType, readOnly: false, disabledAt: disabled ? 1 : nil,
+            data: Data(repeating: UInt8(keyId), count: 20), totalBudget: nil, expiresAt: expiresAt)
+    }
+
+    /// The store's record of `keyId`, as `identityKey` builds it.
+    private static func storedKey(
+        _ keyId: UInt32,
+        bound: AppConnect.StoredBound?,
+        expiresAt: Int64? = nil,
+        disabled: Bool = false,
+        sessionKeyShaped: Bool = false
+    ) -> AppConnect.KeyBinding {
+        var binding = AppConnect.KeyBinding(
+            keyId: keyId, data: Data(repeating: UInt8(keyId), count: 20),
+            singleContractId: { if case .singleContract(let id)? = bound { return id } else { return nil } }())
+        binding.isDisabled = disabled
+        binding.isSessionKeyShaped = sessionKeyShaped
+        binding.isTwoQRAuthenticationKeyShaped = true
+        binding.isV2AuthKeyShaped = expiresAt != nil
+        binding.bound = bound
+        binding.expiresAt = expiresAt
+        return binding
+    }
+
+    private static func expiries(
+        apps: Set<String>,
+        grants: [AppConnectGrant],
+        bindings: [AppConnect.KeyBinding] = [],
+        keys: [ManagedIdentity.IdentityPublicKeyInfo],
+        chainTime: Int64?
+    ) -> [String: ConnectionExpiry.Verdict] {
+        AppConnect.connectionExpiryJudgements(
+            identityId: "identity", apps: apps, grants: grants, bindings: bindings, currentIdentityPublicKeys: keys,
+            nowMilliseconds: expiryNow, chainTimeMilliseconds: chainTime
+        ).mapValues(\.verdict)
+    }
+
+    func testEachAppIsJudgedByWhetherAnyOfItsLiveKeysCanStillSign() {
+        let past = Self.expiryNow - 2 * Int64(Self.dayMilliseconds)
+        let future = Self.expiryNow + 2 * Int64(Self.dayMilliseconds)
+        let grants = [
+            Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "expired"),
+            Self.grant(sessionKeyId: 5, additionalKeyIds: [6], appId: "partly"),
+            Self.grant(sessionKeyId: 7, appId: "missing"),
+            Self.grant(sessionKeyId: 8, appId: "off"),
+            Self.grant(sessionKeyId: 9, appId: "forever"),
+        ]
+        let keys = [
+            Self.identityKey(3, expiresAt: past), Self.identityKey(4, expiresAt: past),
+            Self.identityKey(5, expiresAt: past), Self.identityKey(6, expiresAt: future),
+            Self.identityKey(8, expiresAt: past, disabled: true),
+            Self.identityKey(9, expiresAt: nil),
+        ]
+        let expiries = Self.expiries(
+            apps: ["expired", "partly", "missing", "off", "forever", "nothing"], grants: grants,
+            keys: keys, chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["expired"], .expired)
+        XCTAssertEqual(expiries["partly"], .current, "one of its keys still works")
+        XCTAssertEqual(expiries["missing"], .unknown, "the view lacks its key")
+        XCTAssertEqual(expiries["off"], .keysOff, "its keys are off while its record says connected")
+        XCTAssertEqual(expiries["forever"], .current, "a key with no expiry never expires")
+        XCTAssertEqual(expiries["nothing"], .notJudged, "nothing is attributed to it")
+    }
+
+    func testAKeyIsExpiredOnlyOnceTheChainIsPastItByTheMargin() {
+        let expiry = Self.expiryNow - 3 * Self.hour
+        let grants = [Self.grant(sessionKeyId: 3, appId: "app")]
+        let keys = [Self.identityKey(3, expiresAt: expiry)]
+        func verdict(chainTime: Int64?) -> ConnectionExpiry.Verdict? {
+            Self.expiries(apps: ["app"], grants: grants, keys: keys, chainTime: chainTime)["app"]
+        }
+        XCTAssertEqual(verdict(chainTime: expiry + Self.hour), .pastByPhone, "the chain is past it by less than the margin")
+        XCTAssertEqual(verdict(chainTime: expiry + 190 * 60_000), .expired, "the chain is past it by the margin")
+        XCTAssertEqual(verdict(chainTime: nil), .pastByPhone, "without the chain's time it is not told")
+    }
+
+    func testALiveNonExpiringKeyBoundToTheAppKeepsItCurrent() {
+        let app = Self.appId.toBase58String()
+        let grants = [Self.grant(sessionKeyId: 3, appId: app)]
+        let keys = [Self.identityKey(3, expiresAt: Self.expiryNow - Int64(Self.dayMilliseconds)), Self.identityKey(5, expiresAt: nil)]
+        let expiries = Self.expiries(
+            apps: [app], grants: grants,
+            bindings: [
+                Self.storedKey(3, bound: .singleContract(Self.appId), expiresAt: keys[0].expiresAt, sessionKeyShaped: true),
+                Self.storedKey(5, bound: .singleContract(Self.appId)),
+            ],
+            keys: keys, chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries[app], .current, "the legacy authentication key bound to the app has no expiry")
+    }
+
+    func testAnAuthenticationKeyWithNoAppBoundLeavesAnAppPastExpiryUndecided() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let grants = [Self.grant(sessionKeyId: 3, appId: "app")]
+        func verdict(legacyKeyDisabled: Bool) -> ConnectionExpiry.Verdict? {
+            Self.expiries(
+                apps: ["app"], grants: grants,
+                bindings: [
+                    Self.storedKey(3, bound: nil, expiresAt: past, sessionKeyShaped: true),
+                    Self.storedKey(5, bound: nil, disabled: legacyKeyDisabled),
+                ],
+                keys: [Self.identityKey(3, expiresAt: past), Self.identityKey(5, expiresAt: nil, disabled: legacyKeyDisabled)],
+                chainTime: Self.expiryNow)["app"]
+        }
+        XCTAssertEqual(
+            verdict(legacyKeyDisabled: false), .undecided,
+            "a two-QR authentication key with no bound and no record may be the app's")
+        XCTAssertEqual(verdict(legacyKeyDisabled: true), .expired, "the same key turned off cannot sign")
+    }
+
+    func testALiveAuthenticationKeyTheStoreLacksLeavesAnAppPastExpiryUndecided() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let expiries = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+            bindings: [Self.storedKey(3, bound: nil, expiresAt: past, sessionKeyShaped: true)],
+            keys: [Self.identityKey(3, expiresAt: past), Self.identityKey(6, expiresAt: nil)],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["app"], .undecided, "key 6 is in no store record, so whose it is cannot be told")
+    }
+
+    func testASessionKeyBoundToTheAppWithNoRecordIsJudged() {
+        let app = Self.appId.toBase58String()
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let expiries = Self.expiries(
+            apps: [app], grants: [],
+            bindings: [Self.storedKey(4, bound: .singleContract(Self.appId), expiresAt: past, sessionKeyShaped: true)],
+            keys: [Self.identityKey(4, expiresAt: past)],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries[app], .expired, "the key is the app's by its bound")
+    }
+
+    func testAStrayKeyPastItsExpiryByBothClocksDoesNotHoldAnAppBackFromExpired() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        func verdict(strayExpiresAt: Int64?) -> ConnectionExpiry.Verdict? {
+            Self.expiries(
+                apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+                bindings: [
+                    Self.storedKey(3, bound: nil, expiresAt: past, sessionKeyShaped: true),
+                    Self.storedKey(5, bound: nil, expiresAt: strayExpiresAt),
+                ],
+                keys: [Self.identityKey(3, expiresAt: past), Self.identityKey(5, expiresAt: strayExpiresAt)],
+                chainTime: Self.expiryNow)["app"]
+        }
+        XCTAssertEqual(verdict(strayExpiresAt: past), .expired, "the stray key cannot sign either")
+        XCTAssertEqual(verdict(strayExpiresAt: nil), .undecided, "a stray key with no expiry may be the app's")
+        XCTAssertEqual(
+            verdict(strayExpiresAt: Self.expiryNow - 2 * Self.hour), .undecided,
+            "past by the phone, but not by the chain with its margin")
+    }
+
+    func testACurrentAppSaysWhenItsLastExpiringKeyPassesOnThePhone() {
+        let soon = Self.expiryNow + Self.hour
+        let judgements = AppConnect.connectionExpiryJudgements(
+            identityId: "identity", apps: ["expiring", "forever"],
+            grants: [
+                Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "expiring"),
+                Self.grant(sessionKeyId: 5, additionalKeyIds: [6], appId: "forever"),
+            ],
+            bindings: [],
+            currentIdentityPublicKeys: [
+                Self.identityKey(3, expiresAt: soon), Self.identityKey(4, expiresAt: soon + Self.hour),
+                Self.identityKey(5, expiresAt: soon), Self.identityKey(6, expiresAt: nil),
+            ],
+            nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)
+        XCTAssertEqual(judgements["expiring"]?.verdict, .current)
+        XCTAssertEqual(
+            judgements["expiring"]?.rejudgeAtPhoneTime, soon + Self.hour + Int64(AppConnect.clockTolerance * 1000),
+            "its later key, once the phone is past it by the clock tolerance")
+        XCTAssertEqual(judgements["forever"]?.verdict, .current)
+        XCTAssertNil(judgements["forever"]?.rejudgeAtPhoneTime, "a live key with no expiry never passes")
+    }
+
+    func testAnAppHeldByAStrayKeyIsJudgedAgainWhenThatKeyCanNoLongerSign() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        func judgement(strayExpiresAt: Int64) -> AppConnect.ExpiryJudgement? {
+            AppConnect.connectionExpiryJudgements(
+                identityId: "identity", apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+                bindings: [Self.storedKey(5, bound: nil, expiresAt: strayExpiresAt)],
+                currentIdentityPublicKeys: [
+                    Self.identityKey(3, expiresAt: past), Self.identityKey(5, expiresAt: strayExpiresAt),
+                ],
+                nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)["app"]
+        }
+        let ahead = judgement(strayExpiresAt: Self.expiryNow + Self.hour)
+        XCTAssertEqual(ahead?.verdict, .undecided)
+        XCTAssertEqual(
+            ahead?.rejudgeAtPhoneTime, Self.expiryNow + Self.hour + Int64(AppConnect.clockTolerance * 1000),
+            "once the phone is past the stray key's expiry")
+        let pastByPhone = judgement(strayExpiresAt: Self.expiryNow - 2 * Self.hour)
+        XCTAssertEqual(pastByPhone?.verdict, .undecided)
+        XCTAssertEqual(
+            pastByPhone?.rejudgeAtChainTime, Self.expiryNow - 2 * Self.hour + AppConnect.chainTimeMarginMilliseconds,
+            "once the Core tip is past it by the margin")
+    }
+
+    func testAnExpiryNearTheEndOfTimeDoesNotOverflow() {
+        let judgements = AppConnect.connectionExpiryJudgements(
+            identityId: "identity", apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")], bindings: [],
+            currentIdentityPublicKeys: [Self.identityKey(3, expiresAt: Int64.max - 10)],
+            nowMilliseconds: Self.expiryNow, chainTimeMilliseconds: Self.expiryNow)
+        XCTAssertEqual(judgements["app"]?.verdict, .current)
+        XCTAssertEqual(judgements["app"]?.rejudgeAtPhoneTime, Int64.max, "saturated, not wrapped")
+    }
+
+    func testAKeyTheFreshViewShowsLiveCountsWhateverTheStoreSays() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        func verdict(viewDisabled: Bool) -> ConnectionExpiry.Verdict? {
+            Self.expiries(
+                apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+                bindings: [Self.storedKey(5, bound: nil, disabled: true)],
+                keys: [Self.identityKey(3, expiresAt: past), Self.identityKey(5, expiresAt: nil, disabled: viewDisabled)],
+                chainTime: Self.expiryNow)["app"]
+        }
+        XCTAssertEqual(verdict(viewDisabled: false), .undecided, "the store lags: the key is live on Platform")
+        XCTAssertEqual(verdict(viewDisabled: true), .expired)
+    }
+
+    func testAStoredKeyTheFreshViewLacksCannotSign() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let expiries = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+            bindings: [Self.storedKey(5, bound: nil)],
+            keys: [Self.identityKey(3, expiresAt: past)],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["app"], .expired, "key 5 is not on the identity: it holds nothing back")
+    }
+
+    func testAnAppWithNoLiveKeyIsKeysOffEvenBesideAStrayKey() {
+        let expiries = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, appId: "app")],
+            bindings: [Self.storedKey(5, bound: nil)],
+            keys: [Self.identityKey(3, expiresAt: nil, disabled: true), Self.identityKey(5, expiresAt: nil)],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["app"], .keysOff)
+    }
+
+    func testARecordedEncryptionKeyWithNoExpiryDoesNotKeepTheAppCurrent() {
+        let past = Self.expiryNow - Int64(Self.dayMilliseconds)
+        let expiries = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 3, additionalKeyIds: [4], appId: "app")],
+            keys: [
+                Self.identityKey(3, expiresAt: past),
+                Self.identityKey(4, expiresAt: nil, securityLevel: .medium, purpose: .encryption, keyType: .ecdsaSecp256k1),
+            ],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["app"], .expired, "an encryption key cannot sign: only key 3 is judged")
+    }
+
+    func testAnAppWithOnlyEncryptionKeysRecordedIsNotJudged() {
+        let expiries = Self.expiries(
+            apps: ["app"], grants: [Self.grant(sessionKeyId: 4, appId: "app")],
+            keys: [Self.identityKey(4, expiresAt: nil, securityLevel: .medium, purpose: .encryption, keyType: .ecdsaSecp256k1)],
+            chainTime: Self.expiryNow)
+        XCTAssertEqual(expiries["app"], .notJudged)
+    }
+}
+

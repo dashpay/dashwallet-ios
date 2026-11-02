@@ -6817,6 +6817,9 @@
 /* DashConnect connection sheet */
 "App ID" = "App ID";
 
+/* DashConnect */
+"Checking connections" = "Checking connections";
+
 /* Accessibility: a section that is closed */
 "Collapsed" = "Collapsed";
 
@@ -6826,11 +6829,17 @@
 /* DashConnect connection sheet */
 "Connection disconnected" = "Connection disconnected";
 
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
 /* DashConnect */
 "Disconnected apps could not be read." = "Disconnected apps could not be read.";
 
 /* Accessibility: a section that is open */
 "Expanded" = "Expanded";
+
+/* DashConnect connection status */
+"Expired" = "Expired";
 
 /* DashConnect connection sheet */
 "Identity funding limits" = "Identity funding limits";
@@ -6846,6 +6855,9 @@
 
 /* DashConnect: an empty tab */
 "No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
 
 /* DashConnect connection sheet: a key with no spending limit */
 "No limit" = "No limit";
@@ -6880,11 +6892,32 @@
 /* DashConnect connection sheet */
 "What are identity funding limits?" = "What are identity funding limits?";
 
+/* DashConnect connection sheet */
+"Whether this connection has expired could not be checked." = "Whether this connection has expired could not be checked.";
+
+/* DashConnect connection sheet */
+"A key on this identity could not be matched to an app, so whether this connection has expired is not known." = "A key on this identity could not be matched to an app, so whether this connection has expired is not known.";
+
+/* DashConnect */
+"Which connections have expired could not be checked." = "Which connections have expired could not be checked.";
+
+/* DashConnect */
+"Whether some connections have expired is not known yet." = "Whether some connections have expired is not known yet.";
+
 /* DashConnect: what identity funding limits are */
 "Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
 
 /* DashConnect: confirm a disconnect; the app's name */
 "Disconnect %@?" = "Disconnect %@?";
+
+/* DashConnect connection status: every key of the app is off */
+"Keys turned off" = "Keys turned off";
+
+/* DashConnect connection sheet */
+"The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
+
+/* DashConnect connection sheet */
+"The keys' expiry time has passed on this phone; the network has not shown it yet." = "The keys' expiry time has passed on this phone; the network has not shown it yet.";
 
 /* DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation */
 "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too." = "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.";

@@ -39,6 +39,8 @@ struct ConnectionSheet: View {
     /// When the connection was made.
     let connectedAt: Date?
     let isBusy: Bool
+    /// Where the expiry check of the rows is.
+    let expiryCheck: ConnectionExpiries.Check
     /// What the last action from this sheet ended in.
     let message: ConnectionsScreenMessage?
     let onClose: () -> Void
@@ -175,6 +177,11 @@ struct ConnectionSheet: View {
                 Text(statusText)
                     .dashFont(.callout)
                     .foregroundColor(Color.dash.primaryText)
+            }
+            if let expiryNote {
+                Text(expiryNote)
+                    .dashFont(.caption1)
+                    .foregroundColor(Color.dash.tertiaryText)
             }
         }
         .accessibilityElement(children: .combine)
@@ -353,6 +360,15 @@ struct ConnectionSheet: View {
         switch item.status {
         case .disconnected:
             reconnectButton
+        case .expired:
+            // Its live keys are past their expiry by this phone's clock and
+            // the Core tip with its margin, and stay on Platform until a
+            // disconnect, or a renewal of the same connection, turns them
+            // off: both are offered.
+            VStack(spacing: 10) {
+                reconnectButton
+                disconnectButton
+            }
         case .waitingForSecondScan:
             // The second code is the way forward.
             EmptyView()
@@ -422,12 +438,15 @@ struct ConnectionSheet: View {
         }
     }
 
-    /// The connection's record is active.
-    private var isLive: Bool { item.status == .active }
+    /// The connection's record is active, and its keys are not all off.
+    private var isLive: Bool { item.status == .active && item.expiry != .keysOff }
 
     private var statusText: String {
         switch item.status {
+        case .active where item.expiry == .keysOff:
+            return NSLocalizedString("Keys turned off", comment: "DashConnect connection status: every key of the app is off")
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         case .confirming: return NSLocalizedString("Confirming", comment: "DashConnect")
         case .waitingForSecondScan:
             return NSLocalizedString("Waiting for the second code", comment: "DashConnect connection status")
@@ -435,7 +454,34 @@ struct ConnectionSheet: View {
         }
     }
 
-    private var isPast: Bool { item.status == .disconnected }
+    /// What the expiry check told of an active row beyond its status; `nil`
+    /// when it has nothing to add (the keys can still sign, or there is
+    /// nothing to judge), and before a check has ended.
+    var expiryNote: String? {
+        guard item.status == .active else { return nil }
+        switch item.expiry {
+        case .keysOff?:
+            return NSLocalizedString(
+                "The keys this wallet recorded for this connection are already turned off on Platform.",
+                comment: "DashConnect connection sheet")
+        case .pastByPhone?:
+            return NSLocalizedString(
+                "The keys' expiry time has passed on this phone; the network has not shown it yet.",
+                comment: "DashConnect connection sheet")
+        case .undecided?:
+            return NSLocalizedString(
+                "A key on this identity could not be matched to an app, so whether this connection has expired is not known.",
+                comment: "DashConnect connection sheet")
+        case .unknown?, nil:
+            guard expiryCheck == .read || expiryCheck == .failed || expiryCheck == .unavailable else { return nil }
+            return NSLocalizedString(
+                "Whether this connection has expired could not be checked.", comment: "DashConnect connection sheet")
+        case .current?, .notJudged?, .expired?:
+            return nil
+        }
+    }
+
+    private var isPast: Bool { item.status == .disconnected || item.status == .expired }
 
     private var grantedTitle: String {
         String(
@@ -473,8 +519,11 @@ struct ConnectionSheet: View {
             return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
         }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
-        // Whether that time has passed on Platform is not read here.
-        return (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
+        // Past only once the expiry check found every live key past it by
+        // this phone's clock and by the Core tip with its margin.
+        return item.status == .expired
+            ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
+            : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
     }
 
     private static let dateFormatter: DateFormatter = {

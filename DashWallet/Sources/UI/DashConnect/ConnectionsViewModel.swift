@@ -48,6 +48,7 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
 enum ConnectionsTab: CaseIterable {
     case active
     case disconnected
+    case expired
 }
 
 /// A connection as its sheet shows it: a row of the page, or an app
@@ -59,12 +60,15 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case confirming
         /// A two-QR login waiting for the app's second code.
         case waitingForSecondScan
+        /// Active, with every live key past its expiry by this phone's clock
+        /// and by the Core tip with its margin (`ConnectionExpiry.Verdict.expired`).
+        case expired
         case disconnected
 
         /// A connection in this status can be disconnected: its keys may
         /// still be on. A two-QR row waiting for its second code offers that
         /// code instead, and a disconnected app has nothing left.
-        var offersDisconnect: Bool { self == .active || self == .confirming }
+        var offersDisconnect: Bool { self == .active || self == .confirming || self == .expired }
     }
 
     let id: String
@@ -77,6 +81,9 @@ struct ConnectionSheetItem: Identifiable, Equatable {
     let entry: DisconnectedConnection?
     /// The wallet, network and endpoint the item was published for.
     let scope: String?
+    /// What the expiry check told for an active row; `nil` when it told
+    /// nothing for it, and for any other item.
+    var expiry: ConnectionExpiry.Verdict? = nil
 
     var disconnectedAt: Date? { entry?.disconnectedAt }
 }
@@ -94,6 +101,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// The wallet, network and endpoint the rows and the history were
     /// published for.
     private var listedScope: String?
+    /// The expiry check of the rows, as published with them.
+    @Published private(set) var expiries = ConnectionExpiries.notStarted
     /// What the last action from the connection sheet ended in, shown on
     /// the sheet: an alert of the page cannot appear over it.
     @Published var connectionSheetMessage: ConnectionsScreenMessage?
@@ -235,7 +244,8 @@ final class ConnectionsViewModel: ObservableObject {
     init(
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil,
-        openURL: (@MainActor (URL) -> Void)? = nil
+        openURL: (@MainActor (URL) -> Void)? = nil,
+        notificationCenter: NotificationCenter = .default
     ) {
         let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
         self.featureUnavailable = computedFeatureUnavailable
@@ -251,17 +261,29 @@ final class ConnectionsViewModel: ObservableObject {
                 self.listedScope = listing.scope
                 self.connections = listing.rows.sorted(by: { $0.updatedAt > $1.updatedAt })
                 self.history = listing.disconnected
+                self.expiries = listing.expiries
                 self.hasReadRows = true
                 self.updateShownConnection()
             }
             .store(in: &cancellables)
+        // Back in the foreground, the expiry check's clocks may have moved on.
+        notificationCenter.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self, !self.featureUnavailable else { return }
+                self.dataSource.connectionExpiriesForegrounded()
+            }
+            .store(in: &cancellables)
     }
 
-    /// The rows of `tab`. A disconnected app is listed while it is not a row.
+    /// The rows of `tab`. A row moves to Expired only once the check told it
+    /// expired; a disconnected app is listed while it is not a row.
     func rows(for tab: ConnectionsTab) -> [ConnectionSheetItem] {
         switch tab {
         case .active:
-            return connections.map { item(for: $0) }
+            return connections.filter { !isExpired($0) }.map { item(for: $0) }
+        case .expired:
+            return connections.filter(isExpired).map { item(for: $0) }
         case .disconnected:
             let connected = Set(connections.map(\.id))
             return (history ?? []).filter { !connected.contains($0.id) }.map(item(for:))
@@ -276,16 +298,80 @@ final class ConnectionsViewModel: ObservableObject {
     /// The disconnected apps could not be read.
     var historyIsUnreadable: Bool { history == nil }
 
+    /// Where the expiry check of the rows is.
+    var expiryCheck: ConnectionExpiries.Check { expiries.check }
+
+    /// The check ended telling every active row, but not for each whether it
+    /// expired: some are past expiry by the phone alone, or held by a key
+    /// that cannot be matched to an app. Reading again does not tell more.
+    var expiriesAreUndecided: Bool {
+        guard expiries.check == .read, !expiryCheckIsIncomplete else { return false }
+        return connections.contains {
+            guard $0.status == .active, let verdict = expiries.byApp[$0.id]?.verdict else { return false }
+            return verdict == .undecided || verdict == .pastByPhone
+        }
+    }
+
+    /// The expiry check ended without telling every active row: the read
+    /// failed, could not be made on this network, or left a row unknown or
+    /// out. More rows may have expired.
+    var expiryCheckIsIncomplete: Bool {
+        // With no active row there is nothing to check.
+        guard hasActiveRows else { return false }
+        switch expiries.check {
+        case .failed, .unavailable: return true
+        case .read:
+            return connections.contains {
+                $0.status == .active && (expiries.byApp[$0.id]?.verdict ?? .unknown) == .unknown
+            }
+        case .notStarted, .checking: return false
+        }
+    }
+
+    /// Which rows have expired is not known yet: a row is active and no
+    /// check has ended.
+    var isCheckingExpiries: Bool {
+        hasActiveRows && (expiries.check == .notStarted || expiries.check == .checking)
+    }
+
+    private var hasActiveRows: Bool { connections.contains { $0.status == .active } }
+
+    /// The page appeared: the expiry check is made again, and goes on while
+    /// the page is on screen.
+    func checkExpiries() {
+        guard !featureUnavailable else { return }
+        dataSource.refreshConnectionExpiries(forcesRead: false)
+    }
+
+    /// Retry: the identity is read again.
+    func retryExpiryCheck() {
+        guard !featureUnavailable else { return }
+        dataSource.refreshConnectionExpiries(forcesRead: true)
+    }
+
+    /// The page left the screen: the check stops reading.
+    func stopCheckingExpiries() {
+        guard !featureUnavailable else { return }
+        dataSource.stopConnectionExpiryReads()
+    }
+
+    /// An active row the check told expired. A row confirming a renewal
+    /// stays under Active whatever its earlier keys show.
+    private func isExpired(_ connection: DAppConnection) -> Bool {
+        connection.status == .active && expiries.byApp[connection.id]?.verdict == .expired
+    }
+
     private func item(for connection: DAppConnection) -> ConnectionSheetItem {
         let status: ConnectionSheetItem.Status
         switch connection.status {
-        case .active: status = .active
+        case .active: status = isExpired(connection) ? .expired : .active
         case .confirming: status = .confirming
         case .approved: status = .waitingForSecondScan
         }
         return ConnectionSheetItem(
             id: connection.id, name: connection.name, url: connection.url, status: status,
-            connection: connection, entry: nil, scope: connection.scope)
+            connection: connection, entry: nil, scope: connection.scope,
+            expiry: connection.status == .active ? expiries.byApp[connection.id]?.verdict : nil)
     }
 
     private func item(for entry: DisconnectedConnection) -> ConnectionSheetItem {
