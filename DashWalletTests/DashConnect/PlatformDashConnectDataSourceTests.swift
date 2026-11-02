@@ -4763,6 +4763,61 @@ final class AppConnectApprovalTermsTests: XCTestCase {
         var now = AppConnectApprovalTermsTests.now
     }
 
+    /// The terms are checked again after the PIN prompt and the context it
+    /// resolves, so an expiry either outlasts refuses the approval.
+    func testAnExpiryGoneByDuringAuthorizationIsRefused() async throws {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash)])
+        let applied = try XCTUnwrap(AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash, expiresAt: AppConnect.milliseconds(Self.now.addingTimeInterval(60))),
+            to: plan, now: Self.now))
+        struct Declined: Error {}
+        var steps: [String] = []
+        func approve(
+            _ plan: AppConnect.GrantPlan?, promptTakes prompt: TimeInterval, resolveTakes resolve: TimeInterval = 0,
+            declined: Bool = false
+        ) async throws -> String {
+            let clock = Clock()
+            steps = []
+            return try await AppConnect.afterAuthorization(
+                of: plan, now: { clock.now },
+                authorize: {
+                    steps.append("authorize")
+                    clock.now = clock.now.addingTimeInterval(prompt)
+                    if declined { throw Declined() }
+                },
+                resolve: {
+                    steps.append("resolve")
+                    clock.now = clock.now.addingTimeInterval(resolve)
+                    return "context"
+                })
+        }
+
+        do {
+            _ = try await approve(applied, promptTakes: 61)
+            XCTFail("the prompt outlasted the expiry")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .approvalTermsExpired)
+        }
+        do {
+            _ = try await approve(applied, promptTakes: 30, resolveTakes: 31)
+            XCTFail("resolving the context outlasted the expiry")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .approvalTermsExpired)
+            XCTAssertEqual(steps, ["authorize", "resolve"])
+        }
+        do {
+            _ = try await approve(applied, promptTakes: 0, declined: true)
+            XCTFail("a declined prompt goes no further")
+        } catch {
+            XCTAssertTrue(error is Declined)
+            XCTAssertEqual(steps, ["authorize"], "nothing is resolved after a declined prompt")
+        }
+        let context = try await approve(applied, promptTakes: 30)
+        XCTAssertEqual(context, "context", "the expiry is still ahead")
+        let twoQR = try await approve(nil, promptTakes: 61)
+        XCTAssertEqual(twoQR, "context", "a login with no plan has no terms")
+    }
+
     func testAnExpiryGoneByDuringThePINKeepsTheSheetForALaterDate() async {
         let clock = Clock()
         let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])

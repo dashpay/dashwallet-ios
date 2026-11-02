@@ -203,6 +203,14 @@ struct MainMenuScreen: View {
         self.viewModel = viewModel
     }
     #endif
+
+    private var toolsMenuScreen: ToolsMenuScreen {
+        #if DASHPAY
+        return ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel)
+        #else
+        return ToolsMenuScreen(vc: vc)
+        #endif
+    }
     
     
     var body: some View {
@@ -310,7 +318,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel),
+                destination: toolsMenuScreen,
                 isActive: $showTools
             ) {
                 EmptyView()

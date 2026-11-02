@@ -1048,25 +1048,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if let approvedPlan, let failure = AppConnect.termsFailure(of: approvedPlan, now: now()) {
             throw failure
         }
-        do {
-            try await authorize()
-        } catch {
-            Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error.localizedDescription, privacy: .public)")
-            throw error
-        }
-        // The PIN prompt can outlast a wallet or identity switch: sign with
-        // what is active now, and only if it is still the identity that was
-        // shown.
-        do {
-            context = try await contextAfterAuthorization(matching: context)
-        } catch DashConnectPlatformError.walletChanged {
-            throw DashConnectPlatformError.approvalOutOfDate
-        }
-        if let appConnect = request.appConnect, let plan = consent.login.grantPlan {
-            // The PIN prompt can outlast the expiry the user chose (a date
-            // ends at 23:59:59 of its day): checked again before anything
-            // is signed.
-            if let failure = AppConnect.termsFailure(of: plan, now: now()) { throw failure }
+        let shownContext = context
+        context = try await AppConnect.afterAuthorization(
+            of: approvedPlan,
+            now: now,
+            authorize: {
+                do {
+                    try await authorize()
+                } catch {
+                    Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error.localizedDescription, privacy: .public)")
+                    throw error
+                }
+            },
+            resolve: {
+                // The PIN prompt can outlast a wallet or identity switch:
+                // sign with what is active now, and only if it is still the
+                // identity that was shown.
+                do {
+                    return try await contextAfterAuthorization(matching: shownContext)
+                } catch DashConnectPlatformError.walletChanged {
+                    throw DashConnectPlatformError.approvalOutOfDate
+                }
+            })
+        if let appConnect = request.appConnect, let plan = approvedPlan {
             Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
             return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
         }

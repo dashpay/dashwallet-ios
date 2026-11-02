@@ -210,6 +210,22 @@ extension AppConnect {
             ? .approvalTermsExpired : .approvalOutOfDate
     }
 
+    /// `authorize` (the PIN prompt), then `resolve` (the context to sign
+    /// with), then `plan`'s terms checked again at `now()`: the prompt can
+    /// outlast the expiry the user chose (a date ends at 23:59:59 of its
+    /// day). A `nil` plan has no terms to check.
+    static func afterAuthorization<Resolved>(
+        of plan: GrantPlan?,
+        now: () -> Date,
+        authorize: () async throws -> Void,
+        resolve: () async throws -> Resolved
+    ) async throws -> Resolved {
+        try await authorize()
+        let resolved = try await resolve()
+        if let plan, let failure = termsFailure(of: plan, now: now()) { throw failure }
+        return resolved
+    }
+
     /// `plan` with the terms an earlier approval of the same request recorded
     /// (`GrantedAccess`, written before its update was submitted), when they
     /// name its keys one for one. That update may have landed, and a retry
