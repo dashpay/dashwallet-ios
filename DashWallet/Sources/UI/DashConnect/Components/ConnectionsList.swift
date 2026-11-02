@@ -20,18 +20,19 @@
 import DashUIKit
 import SwiftUI
 
-/// The apps of the Connections page, in one card.
+/// The apps of one tab of the Connections page, in one card.
 struct ConnectionsList: View {
     let items: [ConnectionSheetItem]
     let onOpen: (ConnectionSheetItem) -> Void
     let onDisconnect: (ConnectionSheetItem) -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
         VStack(spacing: 2) {
             ForEach(items) { item in
                 ConnectionRow(
                     item: item, onOpen: { onOpen(item) },
-                    onDisconnect: { onDisconnect(item) })
+                    onDisconnect: { onDisconnect(item) }, onReconnect: onReconnect)
             }
         }
         .modifier(MenuViewModifier())

@@ -224,7 +224,7 @@ struct ConnectionSheet: View {
     @ViewBuilder
     private var limitsCard: some View {
         let access = details?.access
-        if access != nil || connectedAt != nil {
+        if access != nil || item.disconnectedAt != nil || connectedAt != nil {
             VStack(alignment: .leading, spacing: 2) {
                 if let access {
                     VStack(alignment: .leading, spacing: 2) {
@@ -351,6 +351,8 @@ struct ConnectionSheet: View {
     @ViewBuilder
     private var actionButton: some View {
         switch item.status {
+        case .disconnected:
+            reconnectButton
         case .waitingForSecondScan:
             // A disconnect only turns a two-QR row back into this state: the
             // second code is the way forward.
@@ -358,6 +360,12 @@ struct ConnectionSheet: View {
         case .active, .confirming:
             disconnectButton
         }
+    }
+
+    private var reconnectButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+            isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onScan)
     }
 
     private var disconnectButton: some View {
@@ -424,20 +432,27 @@ struct ConnectionSheet: View {
         case .confirming: return NSLocalizedString("Confirming", comment: "DashConnect")
         case .waitingForSecondScan:
             return NSLocalizedString("Waiting for the second code", comment: "DashConnect connection status")
+        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
         }
     }
 
+    private var isPast: Bool { item.status == .disconnected }
+
     private var grantedTitle: String {
         String(
-            format: NSLocalizedString(
-                "See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
+            format: isPast
+                ? NSLocalizedString("See what %@ was able to do", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString("See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
     private var withheldTitle: String {
         String(
-            format: NSLocalizedString(
-                "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
+            format: isPast
+                ? NSLocalizedString(
+                    "See what %@ did NOT have access to", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString(
+                    "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
@@ -455,6 +470,9 @@ struct ConnectionSheet: View {
     }
 
     private var dateLine: (title: String, date: Date)? {
+        if let disconnectedAt = item.disconnectedAt {
+            return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
+        }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
         // Whether that time has passed on Platform is not read here.
         return (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
