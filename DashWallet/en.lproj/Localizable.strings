@@ -6712,7 +6712,7 @@
 "The keys this wallet recorded for this connection are already turned off on Platform." = "The keys this wallet recorded for this connection are already turned off on Platform.";
 
 /* DashConnect connection sheet */
-"The keys' expiry time has passed on this phone; the network has not shown it yet." = "The keys' expiry time has passed on this phone; the network has not shown it yet.";
+"The keys' expiry time has passed, but the network has not shown it yet." = "The keys' expiry time has passed, but the network has not shown it yet.";
 
 /* DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation */
 "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too." = "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.";

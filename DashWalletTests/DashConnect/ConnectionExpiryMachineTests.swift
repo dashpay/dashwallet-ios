@@ -22,13 +22,19 @@ final class ConnectionExpiryMachineTests: XCTestCase {
         var judgeAnswers = true
         /// When set, every app is judged by the Core tip time alone.
         var judgeByChain: ((Int64?) -> AppConnect.ExpiryJudgement)?
+        /// When set, every app is judged by the read's keys and the phone
+        /// time the machine judges with.
+        var judgeByKeys: ((ConnectionIdentityKeys, Int64) -> AppConnect.ExpiryJudgement)?
         private(set) var judged = 0
 
         init(policy: Machine.Policy = .standard) {
             machine = Machine(policy: policy) { _, _, _, _, _ in [:] }
-            machine = Machine(policy: policy) { [unowned self] _, apps, _, _, chainTime in
+            machine = Machine(policy: policy) { [unowned self] _, apps, keys, now, chainTime in
                 guard self.judgeAnswers else { return nil }
                 self.judged += 1
+                if let judgeByKeys = self.judgeByKeys {
+                    return Dictionary(uniqueKeysWithValues: apps.map { ($0, judgeByKeys(keys, now)) })
+                }
                 if let judgeByChain = self.judgeByChain {
                     return Dictionary(uniqueKeysWithValues: apps.map { ($0, judgeByChain(chainTime)) })
                 }
@@ -332,6 +338,50 @@ final class ConnectionExpiryMachineTests: XCTestCase {
         XCTAssertEqual(Self.reads(harness.send(.runtime(2))).count, 1)
         harness.end(Self.keys())
         XCTAssertEqual(harness.shownVerdicts, ["a": .expired], "the chain does not go back")
+    }
+
+    /// The identity with one key expiring at `expiresAt`.
+    private static func keys(expiringAt expiresAt: Int64) -> ConnectionExpiryReadResult {
+        .keys(ConnectionIdentityKeys(
+            identityId: "identity",
+            keys: [ManagedIdentity.IdentityPublicKeyInfo(
+                keyId: 3, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
+                disabledAt: nil, data: Data(repeating: 3, count: 20), totalBudget: nil, expiresAt: expiresAt)],
+            bindings: []))
+    }
+
+    /// A shown page whose key is judged `past` from its expiry on, by the
+    /// phone time the machine passes, and `.current` before; read once with
+    /// the phone two minutes after `start`.
+    private func clockHarness(past: ConnectionExpiry.Verdict, expiresAt: Int64) -> Harness {
+        let harness = Harness()
+        harness.judgeByKeys = { keys, now in
+            .init(verdict: now >= (keys.keys.first?.expiresAt ?? .max) ? past : .current)
+        }
+        harness.now = Self.start.addingTimeInterval(120)
+        harness.send(.listing(scope: Self.scope, rows: [Self.row("a")]))
+        harness.send(.shown(forcesRead: false))
+        harness.end(Self.keys(expiringAt: expiresAt))
+        return harness
+    }
+
+    func testARenewedKeyInANewReadIsJudgedCurrent() {
+        let expiresAt = Machine.milliseconds(Self.start) + 60_000
+        let harness = clockHarness(past: .expired, expiresAt: expiresAt)
+        XCTAssertEqual(harness.shownVerdicts, ["a": .expired])
+        harness.send(.shown(forcesRead: true))
+        harness.end(Self.keys(expiringAt: expiresAt + 3_600_000))
+        XCTAssertEqual(harness.shownVerdicts, ["a": .current], "its later expiry is ahead")
+    }
+
+    func testAReadFromThePhonesFutureIsReadAnew() {
+        let harness = readHarness()
+        harness.now = Self.start.addingTimeInterval(-60)
+        XCTAssertEqual(Self.reads(harness.send(.foreground)).count, 1, "back in the foreground")
+        harness.end(Self.keys())
+        harness.send(.hidden)
+        harness.now = Self.start.addingTimeInterval(-120)
+        XCTAssertEqual(Self.reads(harness.send(.shown(forcesRead: false))).count, 1, "the page appearing")
     }
 
     func testComingBackToTheForegroundJudgesAgain() {

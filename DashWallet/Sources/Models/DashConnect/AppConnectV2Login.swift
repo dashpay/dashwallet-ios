@@ -1128,20 +1128,22 @@ extension AppConnect {
 
     /// Core accepts a header up to 2 h ahead of network-adjusted time, which
     /// itself is at most 70 min from real time; a tip past `expiresAt` by this
-    /// much means real time, and so Platform's block time, is past `expiresAt`.
+    /// much means real time, and so Platform's block time, is past
+    /// `expiresAt`, whatever this phone's clock says.
     static let chainTimeMarginMilliseconds: Int64 = (2 * 60 + 70) * 60 * 1_000
 
     /// What `connectionExpiryJudgements` tells of one app: its verdict and
     /// when it can change by the clocks alone.
     struct ExpiryJudgement: Equatable {
         let verdict: ConnectionExpiry.Verdict
-        /// The phone time from which the verdict can change: a `.current`
-        /// app's last live expiring key passes `isUnexpired`, or a key that
-        /// makes the app `.undecided` does. `nil` when no such time is ahead.
+        /// For `.current`: the phone time from which the last of the app's
+        /// keys that can sign passes `isUnexpired`. `nil` when no such time
+        /// is ahead.
         var rejudgeAtPhoneTime: Int64? = nil
-        /// The Core tip time from which the verdict can change: a
-        /// `.pastByPhone` app turns `.expired`, or a key that makes the app
-        /// `.undecided` can no longer sign. `nil` when no such time is ahead.
+        /// The Core tip time from which the verdict can change: every live
+        /// key of a `.current` or `.pastByPhone` app is expired by the tip,
+        /// or a key that makes the app `.undecided` is. `nil` when no such
+        /// time is ahead.
         var rejudgeAtChainTime: Int64? = nil
     }
 
@@ -1149,6 +1151,20 @@ extension AppConnect {
     private static func saturatingSum(_ a: Int64, _ b: Int64) -> Int64 {
         let (sum, overflow) = a.addingReportingOverflow(b)
         return overflow ? (b > 0 ? .max : .min) : sum
+    }
+
+    /// `expiresAt + margin`; `nil` for an expiry past `Int64.max` (a negative
+    /// bit pattern): it is far in the future, as `isUnexpired` reads it.
+    private static func deadline(_ expiresAt: Int64, plus margin: Int64) -> Int64? {
+        expiresAt < 0 ? nil : saturatingSum(expiresAt, margin)
+    }
+
+    /// The deadline (`deadline(_:plus:)`) of the latest of `expiries`;
+    /// `nil` when one has no expiry or one is far in the future.
+    private static func latestDeadline(of expiries: [Int64?], plus margin: Int64) -> Int64? {
+        let deadlines = expiries.map { $0.flatMap { deadline($0, plus: margin) } }
+        guard deadlines.allSatisfy({ $0 != nil }) else { return nil }
+        return deadlines.compactMap { $0 }.max()
     }
 
     /// For each app in `apps` (contract ids, Base58), whether the keys
@@ -1161,14 +1177,18 @@ extension AppConnect {
     /// `.notJudged`.
     ///
     /// Platform rejects an expired key by its block time, which this phone
-    /// does not know. An app is `.expired` only once both this phone's clock
-    /// and the Core tip (`chainTimeMilliseconds`) are past every live key's
-    /// expiry, the tip by `chainTimeMarginMilliseconds`; before that it is
-    /// `.pastByPhone`. A live authentication key whose app cannot be told
-    /// (missing from the store, or stored with no bound, one this build
-    /// cannot read, or a contract group's, and named by no record) that may
-    /// still sign may be the app's: an app with live keys, none of which can
-    /// sign, is then `.undecided`. An app with no live key is `.keysOff`.
+    /// does not know. A key is expired by the Core tip alone: once the tip
+    /// (`chainTimeMilliseconds`) is past its expiry by
+    /// `chainTimeMarginMilliseconds`, whatever this phone's clock says. An
+    /// app whose live keys are all expired so is `.expired`. One whose live
+    /// keys are each expired so or past expiry by this phone's clock
+    /// (`isUnexpired`), not all by the tip, is `.pastByPhone`. Any other app
+    /// with a live key is `.current`. A live authentication key whose app
+    /// cannot be told (missing from the store, or stored with no bound, one
+    /// this build cannot read, or a contract group's, and named by no
+    /// record), and that the tip does not show expired, may be the app's: an
+    /// app with live keys, none of which can sign, is then `.undecided`. An
+    /// app with no live key is `.keysOff`.
     static func connectionExpiryJudgements(
         identityId: String,
         apps: Set<String>,
@@ -1185,20 +1205,20 @@ extension AppConnect {
         let isAuthShaped = { (binding: KeyBinding) in
             binding.isSessionKeyShaped || binding.isV2AuthKeyShaped || binding.isTwoQRAuthenticationKeyShaped
         }
-        // Past its expiry by both clocks: the phone's, and the Core tip's by
-        // the margin.
-        let isExpiredByBothClocks = { (expiresAt: Int64?) -> Bool in
-            guard let expiresAt, !isUnexpired(expiresAt, nowMilliseconds: nowMilliseconds),
-                  let chainTimeMilliseconds else { return false }
-            return chainTimeMilliseconds >= saturatingSum(expiresAt, chainTimeMarginMilliseconds)
+        // Past its expiry by the Core tip, with the margin.
+        let isChainExpired = { (expiresAt: Int64?) -> Bool in
+            guard let chainTimeMilliseconds,
+                  let expiredFrom = expiresAt.flatMap({ deadline($0, plus: chainTimeMarginMilliseconds) })
+            else { return false }
+            return chainTimeMilliseconds >= expiredFrom
         }
-        // The expiries (`nil`: none) of the live authentication keys that may
-        // still sign, that no record names, and whose app the stored bound
-        // does not say.
+        // The expiries (`nil`: none) of the live authentication keys that the
+        // tip does not show expired, that no record names, and whose app the
+        // stored bound does not say.
         let unattributable: [Int64?] = keys.compactMap { key -> Int64?? in
             let keyId = UInt32(bitPattern: key.keyId)
             guard isLiveGrantedKey(key), !storedIds.contains(keyId), !recordedAll.contains(keyId),
-                  !isExpiredByBothClocks(key.expiresAt) else { return nil }
+                  !isChainExpired(key.expiresAt) else { return nil }
             return .some(key.expiresAt)
         } + bindings.compactMap { binding -> Int64?? in
             let viewed = keysById[binding.keyId]
@@ -1207,7 +1227,7 @@ extension AppConnect {
             // and a key the view lacks cannot sign.
             let isLive = viewed.map { $0.disabledAt == nil } ?? false
             guard isLive, isAuthShaped(binding), !recordedAll.contains(binding.keyId),
-                  !isExpiredByBothClocks(expiresAt) else { return nil }
+                  !isChainExpired(expiresAt) else { return nil }
             if !binding.hasUnreadableBound {
                 switch binding.bound {
                 case nil, .contractGroup?: break
@@ -1216,16 +1236,12 @@ extension AppConnect {
             }
             return .some(expiresAt)
         }
-        // When such a key can stop counting: the phone passing its expiry,
-        // then the Core tip passing it by the margin.
+        // When such a key stops counting: the Core tip passing its expiry by
+        // the margin.
         let undecidedUntil = ExpiryJudgement(
             verdict: .undecided,
-            rejudgeAtPhoneTime: unattributable.compactMap { $0 }
-                .filter { isUnexpired($0, nowMilliseconds: nowMilliseconds) && $0 >= 0 }
-                .map { saturatingSum($0, toleranceMilliseconds) }.min(),
-            rejudgeAtChainTime: unattributable.compactMap { $0 }
-                .filter { !isUnexpired($0, nowMilliseconds: nowMilliseconds) }
-                .map { saturatingSum($0, chainTimeMarginMilliseconds) }.min())
+            rejudgeAtChainTime: unattributable
+                .compactMap { $0.flatMap { deadline($0, plus: chainTimeMarginMilliseconds) } }.min())
         // TODO(dashconnect-expiry): a contract-group key no record names is
         // attributable through the group's owner, which this check does not read.
         return Dictionary(uniqueKeysWithValues: apps.map { app in
@@ -1253,27 +1269,29 @@ extension AppConnect {
             let signing = appKeys.filter(isGrantedKeyShaped)
             guard !signing.isEmpty else { return (app, ExpiryJudgement(verdict: .notJudged)) }
             let live = signing.filter { $0.disabledAt == nil }
-            if live.contains(where: { $0.expiresAt == nil || isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }) {
-                // An expiry past `Int64.max` is far in the future: no time ahead.
-                let expiries = live.compactMap(\.expiresAt)
-                let currentUntil = expiries.count == live.count && expiries.allSatisfy({ $0 >= 0 })
-                    ? expiries.max().map { saturatingSum($0, toleranceMilliseconds) } : nil
-                return (app, ExpiryJudgement(verdict: .current, rejudgeAtPhoneTime: currentUntil))
-            }
             guard !live.isEmpty else { return (app, ExpiryJudgement(verdict: .keysOff)) }
-            if !unattributable.isEmpty { return (app, undecidedUntil) }
-            // Every live key has an expiry the phone's clock is past.
-            guard let latest = live.compactMap(\.expiresAt).max() else { return (app, ExpiryJudgement(verdict: .keysOff)) }
-            let expiredFrom = saturatingSum(latest, chainTimeMarginMilliseconds)
-            guard let chainTimeMilliseconds, chainTimeMilliseconds >= expiredFrom else {
-                return (app, ExpiryJudgement(verdict: .pastByPhone, rejudgeAtChainTime: expiredFrom))
+            // The Core tip from which every live key is expired.
+            let expiredFrom = latestDeadline(of: live.map(\.expiresAt), plus: chainTimeMarginMilliseconds)
+            let canSign = live.filter {
+                !isChainExpired($0.expiresAt)
+                    && ($0.expiresAt == nil || isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds))
             }
-            return (app, ExpiryJudgement(verdict: .expired))
+            if !canSign.isEmpty {
+                // Until the phone's clock passes the last of them.
+                let currentUntil = latestDeadline(of: canSign.map(\.expiresAt), plus: toleranceMilliseconds)
+                return (app, ExpiryJudgement(
+                    verdict: .current, rejudgeAtPhoneTime: currentUntil, rejudgeAtChainTime: expiredFrom))
+            }
+            if !unattributable.isEmpty { return (app, undecidedUntil) }
+            if live.allSatisfy({ isChainExpired($0.expiresAt) }) { return (app, ExpiryJudgement(verdict: .expired)) }
+            return (app, ExpiryJudgement(verdict: .pastByPhone, rejudgeAtChainTime: expiredFrom))
         })
     }
 
     /// The unattributed profile keys the wallet's store shows as live and
     /// not yet expired.
+    // TODO(dashconnect-expiry): this goes by the phone's clock (`isUnexpired`),
+    // while the Connections list judges expiry by the Core tip.
     static func storedSharedProfileKeyIds(
         recordedKeyIds: Set<UInt32>,
         bindings: [KeyBinding],
@@ -1288,6 +1306,8 @@ extension AppConnect {
     /// names and whose bound this build cannot read: it may be an
     /// unattributed profile key, so the set a disconnect turns off cannot be
     /// trusted.
+    // TODO(dashconnect-expiry): this goes by the phone's clock (`isUnexpired`),
+    // while the Connections list judges expiry by the Core tip.
     static func hasUnplacedStoredKey(recordedKeyIds: Set<UInt32>, bindings: [KeyBinding], nowMilliseconds: Int64) -> Bool {
         bindings.contains {
             $0.isV2AuthKeyShaped && $0.hasUnreadableBound && !$0.isDisabled
@@ -1304,6 +1324,8 @@ extension AppConnect {
     /// names, in the view or in the store, has no readable stored bound, so
     /// it may be one of them; or the store holds one of them that the view
     /// lacks, so the node is behind.
+    // TODO(dashconnect-expiry): this goes by the phone's clock (`isUnexpired`),
+    // while the Connections list judges expiry by the Core tip.
     static func sharedProfileKeyIdsToDisable(
         recordedKeyIds: Set<UInt32>,
         bindings: [KeyBinding],

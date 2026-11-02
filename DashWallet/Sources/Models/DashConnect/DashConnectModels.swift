@@ -354,17 +354,19 @@ struct KeyFunding: Equatable {
 /// active identity told it, and the row it was told for.
 struct ConnectionExpiry: Equatable {
     enum Verdict: Equatable {
-        /// Every live key of the app is past its expiry on this phone's
-        /// clock, and the Core tip is past it by at least
-        /// `AppConnect.chainTimeMarginMilliseconds`: the app can no longer
-        /// sign, and a disconnect turns the keys off.
+        /// Every live key of the app is past its expiry by the Core tip
+        /// alone: the tip is past it by at least
+        /// `AppConnect.chainTimeMarginMilliseconds`, whatever this phone's
+        /// clock says. The app can no longer sign, and a disconnect turns
+        /// the keys off.
         case expired
-        /// A live key of the app can still sign: it has no expiry, or is
-        /// not past it.
+        /// A live key of the app can still sign: the tip does not show it
+        /// expired, and it has no expiry or this phone's clock is not past
+        /// it.
         case current
-        /// This phone's clock is past every live key's expiry, while the
-        /// Core tip is not known or not past it by the margin: the chain
-        /// does not show it.
+        /// Not every live key is expired by the Core tip, and none can sign
+        /// by this phone's clock: each is past its expiry by the phone, or
+        /// expired by the tip.
         case pastByPhone
         /// Every key attributed to the app is disabled while its row says
         /// connected (turned off elsewhere): reading again tells the same.

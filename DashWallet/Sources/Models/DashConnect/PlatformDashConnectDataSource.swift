@@ -4426,16 +4426,24 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The active identity's keys as Platform has them and as the wallet's
     /// store holds them, for the wallet `scope` names, read in turn with the
     /// operations that sign: the read reloads the identity copy an approval
-    /// or a disconnect signs against.
+    /// or a disconnect signs against. A read cancelled before it reaches
+    /// Platform reads nothing: one cancelled while it waits for its turn at
+    /// the gate still waits, then returns. What it returns then is never
+    /// handed to the check (the checker drops the result of a cancelled
+    /// read).
     // TODO(dashconnect-expiry): read the keys without reloading the copy the
     // SDK signs against (`dash_sdk_identity_fetch`), so the read does not
     // hold the operation gate; `ManagedIdentity.IdentityPublicKeyInfo` has no
     // public initializer to build its keys from.
     private func readConnectionIdentityKeys(scope: String) async -> ConnectionExpiryReadResult {
+        guard !Task.isCancelled else { return .notReady }
         guard let stores = pinnedActiveStores(), stores.scope == scope else { return .notReady }
         do {
             let context = try await requireContext(pinnedTo: stores)
+            guard !Task.isCancelled else { return .notReady }
             return try await gated(walletIdHex: stores.walletIdHex) {
+                // It may have been cancelled while it waited for its turn.
+                guard !Task.isCancelled else { return .notReady }
                 let identityId = context.identityId.toBase58String()
                 let keys = try await refreshedIdentityPublicKeys(context: context)
                 let bindings = try Self.storedKeyBindings(identityId: identityId, modelContainer: context.modelContainer)

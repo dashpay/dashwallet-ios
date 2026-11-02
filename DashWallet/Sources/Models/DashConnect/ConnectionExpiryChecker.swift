@@ -241,7 +241,7 @@ struct ConnectionExpiryMachine {
         case .foreground:
             guard shown else { break }
             switch phase {
-            case .read(let held) where clocks.now.timeIntervalSince(held.at) < policy.freshRead:
+            case .read(let held) where isFresh(held, clocks):
                 judge(held, clocks, &effects)
             case .read:
                 owe(.read, clocks, &effects)
@@ -329,8 +329,7 @@ struct ConnectionExpiryMachine {
         if case .checking = phase { return }
         if case .read(let held) = phase, !forcesRead, pending <= .judge,
            held.key == Key(scope: key.scope, identity: clocks.identityId), held.rows == activeRows {
-            let age = clocks.now.timeIntervalSince(held.at)
-            if age >= 0, age < policy.freshRead {
+            if isFresh(held, clocks) {
                 pending = .none
                 judge(held, clocks, &effects)
                 return
@@ -488,6 +487,13 @@ struct ConnectionExpiryMachine {
         }
         if activeRows.contains(where: { !readFor.contains($0) }) { owe(.read, clocks, &effects) }
         return true
+    }
+
+    /// `held` was read less than `Policy.freshRead` ago; a read from the
+    /// phone's future (its clock was set back) is not fresh.
+    private func isFresh(_ held: Held, _ clocks: Clocks) -> Bool {
+        let age = clocks.now.timeIntervalSince(held.at)
+        return age >= 0 && age < policy.freshRead
     }
 
     /// An app shown expired stays so while its row is unchanged; an earlier
