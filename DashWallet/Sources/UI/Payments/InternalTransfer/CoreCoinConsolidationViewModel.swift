@@ -47,8 +47,8 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
     private var unobservedTxids: [Data] = []
 
     /// Wire-order txids of accepted consolidations whose output is not final
-    /// yet. The re-check waits for them: until then the asset lock cannot
-    /// spend that output.
+    /// yet. The next consolidation and the re-check wait for them: until then
+    /// the asset lock cannot spend that output.
     private var awaitedTxids: [Data] = []
 
     /// How long the wait for the combined coins to become final lasts.
@@ -89,6 +89,9 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
 
         stage = .combining
         do throws(Stop) {
+            // The earlier consolidations settle first, so the new one never
+            // spends an output this model still waits for.
+            try await awaitFinal(binding)
             awaitedTxids += try await consolidate(binding)
             try await awaitFinal(binding)
         } catch {
