@@ -286,60 +286,20 @@ struct ApproveConnectionSheet: View {
                 Text(requestOrigin(plan))
                     .font(.footnote)
                     .foregroundColor(.secondaryText)
-                Text(
-                    String(
-                        format: NSLocalizedString(
-                            "Only approve if you just started signing in on %@.",
-                            comment: "DashConnect App Connect v2: the placeholder is the app's website or name"),
-                        plan.brandHost ?? plan.callbackHost ?? resolvedAppLabel)
-                )
+                Text(AppConnectOriginText.onlyApprove(plan, appLabel: resolvedAppLabel))
                 .font(.footnote)
                 .foregroundColor(.secondaryText)
             }
         }
     }
 
-    /// The profile's warnings. Nothing in a request proves where it came
-    /// from: an app the wallet does not know is named by the request alone,
-    /// and a known app's request that does not return to its website may
-    /// come from a page that is not the app's. A known app's request that
-    /// returns elsewhere is refused before it gets here.
     private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
-        guard let brandHost = plan.brandHost else {
-            return NSLocalizedString(
-                "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
-                comment: "DashConnect App Connect v2")
-        }
-        guard plan.callbackHost == nil else { return nil }
-        return String(
-            format: NSLocalizedString(
-                "This request does not return to %@. It may not come from the app's website.",
-                comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
-            brandHost)
+        AppConnectOriginText.warning(plan)
     }
 
     private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {
-        let requested = Self.ageFormatter.localizedString(
-            for: Date(timeIntervalSince1970: TimeInterval(plan.createdAt) / 1000), relativeTo: Date())
-        guard let host = plan.callbackHost else {
-            return String(
-                format: NSLocalizedString(
-                    "Requested %@",
-                    comment: "DashConnect App Connect v2: the placeholder is a relative time, e.g. 12 seconds ago"),
-                requested)
-        }
-        return String(
-            format: NSLocalizedString(
-                "Requested %1$@ · returns to %2$@",
-                comment: "DashConnect App Connect v2: a relative time (12 seconds ago), then a website (yap.pr)"),
-            requested, host)
+        AppConnectOriginText.origin(plan)
     }
-
-    private static let ageFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
 
     private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {

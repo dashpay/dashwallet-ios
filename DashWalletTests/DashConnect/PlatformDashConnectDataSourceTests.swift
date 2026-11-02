@@ -1757,8 +1757,23 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         lock.withLock { storedApprovedConsents }
     }
 
+    private var storedRecordedAccess: AppConnect.GrantedAccess?
+
+    /// What an earlier approval of the request recorded, as the store reads it.
+    var recordedAccess: AppConnect.GrantedAccess? {
+        get { lock.withLock { storedRecordedAccess } }
+        set { lock.withLock { storedRecordedAccess = newValue } }
+    }
+
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? {
+        recordedAccess
+    }
+
+    /// The disconnected apps the page lists; `nil` reads as unreadable.
+    var history: [DisconnectedConnection]? = []
+
     var listing: AnyPublisher<DashConnectListing, Never> {
-        Just(DashConnectListing(scope: nil, rows: [], disconnected: [], expiries: .notStarted)).eraseToAnyPublisher()
+        Just(DashConnectListing(scope: nil, rows: [], disconnected: history, expiries: .notStarted)).eraseToAnyPublisher()
     }
 
     func refreshConnectionExpiries(forcesRead: Bool) {}
@@ -4207,6 +4222,421 @@ final class AppConnectLoginTests: XCTestCase {
             index = next
         }
         return Data(bytes)
+    }
+}
+
+/// The funding limit and expiry the user sets on the approve sheet, and how
+/// the keys are registered with them.
+@MainActor
+final class AppConnectApprovalTermsTests: XCTestCase {
+    private static let dash = PlatformCreditsFormatter.creditsPerDash
+    private static let now = Date(timeIntervalSince1970: 1_800_000_000)
+    private static let appContract = Data(repeating: 0xA1, count: 32)
+    private static let group = Data(repeating: 0xB2, count: 32)
+    private static let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+
+    private static func binding(
+        _ kind: AppConnectRequest.BindingKind,
+        id: Data,
+        budget: UInt64?,
+        expiresAt: UInt64? = nil,
+        name: String? = nil
+    ) -> AppConnectRequest.AuthBinding {
+        AppConnectRequest.AuthBinding(
+            kind: kind, securityLevel: kind == .contractGroup ? .critical : .high, id: id,
+            totalBudget: budget, expiresAt: expiresAt, documentTypeName: name)
+    }
+
+    private static var profile: AppConnectRequest.AuthBinding {
+        binding(.documentType, id: dashPay, budget: dash / 100, name: "profile")
+    }
+
+    private static func plan(_ bindings: [AppConnectRequest.AuthBinding]) -> AppConnect.GrantPlan {
+        let expiry = AppConnect.milliseconds(now.addingTimeInterval(AppConnect.v2DefaultLifetime))
+        return AppConnect.GrantPlan(
+            appId: appContract,
+            appEphemeralPubKeyHash: Data(repeating: 0x01, count: 20),
+            auth: bindings.enumerated().map {
+                AppConnect.AuthGrant(
+                    bindingIndex: $0.offset, binding: $0.element,
+                    totalBudget: $0.element.totalBudget.map { min($0, AppConnect.v2BudgetCapCredits) },
+                    expiresAt: $0.element.expiresAt ?? expiry)
+            },
+            encryption: [],
+            connectionId: nil,
+            identityHint: nil,
+            createdAt: AppConnect.milliseconds(now),
+            callbackHost: "yap.pr")
+    }
+
+    // MARK: Model
+
+    func testTheProfileKeyGetsItsShareAndTheAppKeyTheRest() {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2), Self.profile])
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: Self.dash / 2),
+            [Self.dash / 2 - Self.dash / 500, Self.dash / 500], "0.002 DASH to the profile key, the rest to the app")
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: 3 * Self.dash / 1000),
+            [3 * Self.dash / 2000, 3 * Self.dash / 2000], "under 0.004 DASH the limit is split in half")
+    }
+
+    func testAppKeysShareTheRestInProportionToWhatTheyAsked() {
+        let plan = Self.plan([
+            Self.binding(.contractGroup, id: Self.group, budget: 3 * Self.dash),
+            Self.binding(.singleContract, id: Self.appContract, budget: Self.dash),
+        ])
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: 2 * Self.dash), [3 * Self.dash / 2, Self.dash / 2])
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: [0, 0, 0]), [4, 3, 3], "evenly when none asked")
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: []), [])
+        XCTAssertEqual(
+            AppConnect.appKeyBudgets(of: 10, requested: [4, 0]), [5, 5],
+            "a key that asked for nothing weighs as much as the smallest ask")
+        XCTAssertEqual(
+            AppConnect.appKeyBudgets(of: 5 * Self.dash, requested: [.max, .max]), [5 * Self.dash / 2, 5 * Self.dash / 2],
+            "asks past the cap are capped, and do not overflow")
+        let shares = AppConnect.appKeyBudgets(of: 5 * Self.dash, requested: [3, 7, 11])
+        XCTAssertEqual(shares.reduce(0, +), 5 * Self.dash, "the shares add up to the limit exactly")
+    }
+
+    func testAProfileKeyAloneTakesItsShare() {
+        let plan = Self.plan([Self.profile])
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: Self.dash), [Self.dash / 500])
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: Self.dash / 1000), [Self.dash / 1000], "a smaller limit")
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, Self.dash / 500)
+    }
+
+    func testTheSmallestLimitGivesEveryKeyABudget() {
+        let plan = Self.plan([
+            Self.binding(.contractGroup, id: Self.group, budget: Self.dash),
+            Self.binding(.singleContract, id: Self.appContract, budget: Self.dash),
+            Self.profile,
+        ])
+        let smallest = try? XCTUnwrap(AppConnect.smallestFundingLimit(for: plan))
+        XCTAssertNotNil(smallest.flatMap { AppConnect.keyBudgets(for: plan, limit: $0) })
+        XCTAssertNil(smallest.flatMap { AppConnect.keyBudgets(for: plan, limit: $0 - 1) })
+    }
+
+    func testAKeyThatWouldGetNothingRefusesTheLimit() {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash), Self.profile])
+        XCTAssertNil(AppConnect.keyBudgets(for: plan, limit: 1))
+    }
+
+    func testTheSheetStartsAtTheRequestedTotalCappedAndTheRequestedExpiry() {
+        let requested = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2), Self.profile])
+        XCTAssertEqual(AppConnect.defaultTerms(for: requested, now: Self.now).fundingLimit, Self.dash / 2 + Self.dash / 100)
+        let large = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: 9 * Self.dash)])
+        XCTAssertEqual(AppConnect.defaultTerms(for: large, now: Self.now).fundingLimit, AppConnect.v2BudgetCapCredits)
+        let none = Self.plan([Self.binding(.singleContract, id: Self.appContract, budget: nil)])
+        XCTAssertEqual(
+            AppConnect.defaultTerms(for: none, now: Self.now).fundingLimit, AppConnect.defaultFundingLimit,
+            "no budget asked: the default limit")
+        XCTAssertEqual(
+            AppConnect.defaultTerms(for: none, now: Self.now).expiresAt,
+            AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2DefaultLifetime)))
+    }
+
+    func testLimitsAndExpiriesStayWithinTheCaps() {
+        XCTAssertFalse(AppConnect.isValidFundingLimit(0))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(1))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(5 * Self.dash))
+        XCTAssertFalse(AppConnect.isValidFundingLimit(5 * Self.dash + 1))
+        XCTAssertEqual(AppConnect.fundingPresets, [Self.dash / 10, Self.dash / 2, 2 * Self.dash, 5 * Self.dash])
+        XCTAssertEqual(AppConnect.expiryPresetDays, [30, 90, 365])
+        XCTAssertFalse(AppConnect.isValidExpiry(AppConnect.milliseconds(Self.now), now: Self.now))
+        XCTAssertTrue(AppConnect.isValidExpiry(AppConnect.expiry(days: 365, from: Self.now), now: Self.now))
+        XCTAssertFalse(AppConnect.isValidExpiry(AppConnect.expiry(days: 366, from: Self.now), now: Self.now))
+    }
+
+    func testApplyingTheTermsGivesEveryKeyItsBudgetAndTheOneExpiry() throws {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash), Self.profile])
+        let expiry = AppConnect.expiry(days: 30, from: Self.now)
+        let applied = try XCTUnwrap(AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: 2 * Self.dash, expiresAt: expiry), to: plan, now: Self.now))
+        XCTAssertEqual(applied.auth.map(\.totalBudget), [2 * Self.dash - Self.dash / 500, Self.dash / 500])
+        XCTAssertEqual(Set(applied.auth.map(\.expiresAt)), [expiry])
+        XCTAssertTrue(AppConnect.hasValidTerms(applied, now: Self.now))
+        XCTAssertFalse(AppConnect.hasValidTerms(Self.plan([Self.binding(.singleContract, id: Self.appContract, budget: nil)]),
+                                                now: Self.now), "a key with no budget")
+        XCTAssertNil(AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: 6 * Self.dash, expiresAt: expiry), to: plan, now: Self.now))
+    }
+
+    // MARK: View model
+
+    private func viewModel(
+        plan: AppConnect.GrantPlan,
+        hasUsername: @escaping @MainActor () -> Bool = { true },
+        history: [DisconnectedConnection]? = []
+    ) -> (ConnectionsViewModel, LoginApprovalSpy) {
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        let spy = LoginApprovalSpy(shown: [request])
+        spy.history = history
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in },
+            hasUsername: hasUsername, now: { Self.now })
+        return (viewModel, spy)
+    }
+
+    func testTheSheetOpensWithDefaultsAndTheUserCanChangeThem() async {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        let (viewModel, _) = viewModel(plan: plan)
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 2)
+        XCTAssertEqual(viewModel.fundingPresets.filter(\.isSelected).map(\.credits), [Self.dash / 2])
+        XCTAssertNil(viewModel.customFundingLimitText, "a preset is in effect")
+        XCTAssertTrue(viewModel.setFundingLimit(Self.dash / 2 + Self.dash / 100))
+        XCTAssertTrue(viewModel.fundingPresets.allSatisfy { !$0.isSelected })
+        XCTAssertEqual(
+            viewModel.customFundingLimitText, PlatformCreditsFormatter.dashString(Self.dash / 2 + Self.dash / 100),
+            "a limit that is none of the presets is the custom row's")
+        XCTAssertEqual(
+            viewModel.credits(fromDash: viewModel.customFundingLimitTyped ?? ""), Self.dash / 2 + Self.dash / 100,
+            "the keypad opens on the custom limit")
+        await waitUntil { viewModel.hasReadRows }
+        XCTAssertTrue(viewModel.pendingIsFirstConnection, "nothing connected and no history")
+        XCTAssertTrue(viewModel.setFundingLimit(2 * Self.dash), "above what the app asked")
+        XCTAssertFalse(viewModel.setFundingLimit(6 * Self.dash))
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, 2 * Self.dash)
+        viewModel.setExpiry(days: 30)
+        XCTAssertEqual(viewModel.approvalTerms?.expiresAt, AppConnect.expiry(days: 30, from: Self.now))
+        XCTAssertEqual(viewModel.expiryPresets.filter(\.isSelected).map(\.days), [30])
+        XCTAssertNil(viewModel.customExpiryText, "a preset is in effect")
+        XCTAssertTrue(viewModel.setExpiry(date: Self.now.addingTimeInterval(45 * 86_400)))
+        XCTAssertEqual(viewModel.customExpiryText, viewModel.approvalExpiryText, "a picked date is the custom row's")
+        XCTAssertFalse(viewModel.setExpiry(date: Self.now.addingTimeInterval(-86_400)), "a day already gone")
+    }
+
+    func testTermsSurviveARebuildAndLockAfterAFailedApproval() async {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        var unresolved = request
+        unresolved.login = .unresolved
+        let access = AppConnect.GrantedAccess(plan: AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 10, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
+            to: plan, now: Self.now)!, receivesMessages: false)
+        let recordedPlan = AppConnect.withRecordedTerms(
+            plan, access: access, recordedFor: plan.appEphemeralPubKeyHash, now: Self.now)
+        let spy = LoginApprovalSpy(shown: [request, unresolved, request])
+        spy.approveFailures = [DashConnectPlatformError.loginUnresolved, DashConnectPlatformError.grantNotRecorded]
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.now })
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.setFundingLimit(Self.dash / 10)
+
+        // The approval cannot tell the login: the sheet is rebuilt without a
+        // plan, then with it again.
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest?.login == .unresolved }
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 10)
+        viewModel.retryPendingRequest()
+        await waitUntil { viewModel.pendingRequest?.login.grantPlan != nil }
+        XCTAssertEqual(viewModel.approvalTerms?.fundingLimit, Self.dash / 10, "what the user chose is kept")
+
+        // A failure after the grant was recorded: the store's record fixes
+        // the terms, read without the network.
+        spy.recordedAccess = access
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approvalTermsLocked }
+        XCTAssertTrue(viewModel.approvalTermsLocked, "an approval that may have landed fixes the terms")
+        XCTAssertEqual(viewModel.approvalTerms?.expiresAt, AppConnect.expiry(days: 30, from: Self.now))
+        XCTAssertFalse(viewModel.setFundingLimit(Self.dash))
+        XCTAssertEqual(viewModel.termsAppliedPlan, recordedPlan, "a retry sends the recorded keys as they were")
+    }
+
+    func testABalanceFailureAfterTheGrantWasRecordedFixesTheTermsToo() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to create document: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2)])
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        let access = AppConnect.GrantedAccess(plan: AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 10, expiresAt: AppConnect.expiry(days: 30, from: Self.now)),
+            to: plan, now: Self.now)!, receivesMessages: false)
+        let spy = LoginApprovalSpy(shown: [request])
+        spy.approveFailures = [Refused()]
+        spy.recordedAccess = access
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.now })
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approveNeedsTopUp && viewModel.approvalTermsLocked }
+        XCTAssertTrue(viewModel.approveNeedsTopUp)
+        XCTAssertTrue(
+            viewModel.approvalTermsLocked,
+            "the keys may be registered (the response's publish ran out of balance): a retry sends them as recorded")
+    }
+
+    func testRecordedTermsNameTheKeysOneForOne() {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash), Self.profile])
+        let expiry = AppConnect.expiry(days: 30, from: Self.now)
+        let applied = AppConnect.applying(
+            AppConnect.ConnectionTerms(fundingLimit: Self.dash / 2, expiresAt: expiry), to: plan, now: Self.now)!
+        let hash = plan.appEphemeralPubKeyHash
+        let recorded = AppConnect.withRecordedTerms(
+            plan, access: AppConnect.GrantedAccess(plan: applied, receivesMessages: false), recordedFor: hash, now: Self.now)
+        XCTAssertTrue(recorded.hasRecordedTerms)
+        XCTAssertEqual(recorded.auth.map(\.totalBudget), applied.auth.map(\.totalBudget))
+        XCTAssertEqual(AppConnect.terms(of: recorded), AppConnect.ConnectionTerms(fundingLimit: Self.dash / 2, expiresAt: expiry))
+        let other = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash)])
+        XCTAssertFalse(
+            AppConnect.withRecordedTerms(
+                other, access: AppConnect.GrantedAccess(plan: applied, receivesMessages: false), recordedFor: hash, now: Self.now).hasRecordedTerms,
+            "another set of keys")
+        XCTAssertFalse(AppConnect.withRecordedTerms(plan, access: nil, recordedFor: hash, now: Self.now).hasRecordedTerms)
+        XCTAssertFalse(
+            AppConnect.withRecordedTerms(
+                plan, access: AppConnect.GrantedAccess(plan: applied, receivesMessages: false), recordedFor: Data(repeating: 0x02, count: 20),
+                now: Self.now).hasRecordedTerms,
+            "terms recorded for another request")
+    }
+
+    func testAShortExpiryTheAppAskedIsNotRaised() {
+        let inAnHour = AppConnect.milliseconds(Self.now.addingTimeInterval(3_600))
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash, expiresAt: inAnHour)])
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).expiresAt, inAnHour)
+    }
+
+    func testTheDefaultExpiryIsTheEarliestTheAppAsked() {
+        let soon = AppConnect.expiry(days: 2, from: Self.now)
+        let late = AppConnect.expiry(days: 300, from: Self.now)
+        let plan = Self.plan([
+            Self.binding(.contractGroup, id: Self.group, budget: Self.dash, expiresAt: soon),
+            Self.binding(.singleContract, id: Self.appContract, budget: Self.dash, expiresAt: late),
+        ])
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).expiresAt, soon)
+    }
+
+    func testABalanceRefusalOffersATopUp() {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
+        }
+        XCTAssertTrue(AppConnect.isInsufficientBalance(Refused()))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.noIdentity))
+    }
+
+    func testTypedAmountsAreReadAndCapped() {
+        let (viewModel, _) = viewModel(plan: Self.plan([Self.profile]))
+        let us = Locale(identifier: "en_US")
+        XCTAssertEqual(viewModel.credits(fromDash: "0.25", locale: us), Self.dash / 4)
+        XCTAssertNil(viewModel.credits(fromDash: "", locale: us))
+        XCTAssertNil(viewModel.fundingLimitError(forDash: "5", locale: us))
+        XCTAssertNotNil(viewModel.fundingLimitError(forDash: "5.01", locale: us))
+    }
+
+    func testALimitTooSmallToShareIsRefusedWithAReason() async {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2), Self.profile])
+        let (viewModel, _) = viewModel(plan: plan)
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        let us = Locale(identifier: "en_US")
+        XCTAssertNotNil(viewModel.fundingLimitError(forDash: "0.00000000001", locale: us), "1 credit for two keys")
+        XCTAssertNotNil(
+            viewModel.fundingLimitError(forDash: "0.100000000005", locale: us), "finer than a credit is said, not cut")
+        XCTAssertNil(viewModel.credits(fromDash: "0.100000000005", locale: us))
+        XCTAssertEqual(viewModel.credits(fromDash: "0.1", locale: us), 10_000_000_000)
+        XCTAssertFalse(viewModel.setFundingLimit(1))
+        XCTAssertNil(viewModel.approveDisabledReason)
+    }
+
+    func testApprovalRegistersTheKeysWithTheUsersTerms() async throws {
+        let plan = Self.plan([Self.binding(.contractGroup, id: Self.group, budget: Self.dash / 2), Self.profile])
+        let (viewModel, spy) = viewModel(plan: plan)
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.setFundingLimit(Self.dash / 10)
+
+        viewModel.approvePendingRequest()
+        await waitUntil { !spy.approvedConsents.isEmpty }
+
+        let approved = try XCTUnwrap(spy.approvedConsents.first?.login.grantPlan)
+        XCTAssertEqual(approved.auth.map(\.totalBudget), [Self.dash / 10 - Self.dash / 500, Self.dash / 500])
+        XCTAssertTrue(AppConnect.hasValidTerms(approved, now: Self.now))
+    }
+
+    func testAnIdentityThatCannotPayTheFeeIsOfferedATopUpWhenPlatformRefuses() async {
+        struct Refused: Error, CustomStringConvertible {
+            var description: String { "Failed to broadcast identity update: Insufficient identity 8tk balance 1 required 9" }
+        }
+        let (viewModel, spy) = viewModel(plan: Self.plan([Self.profile]))
+        spy.approveFailures = [Refused()]
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.approveNeedsTopUp }
+
+        XCTAssertTrue(viewModel.approveNeedsTopUp)
+        XCTAssertEqual(spy.approvedConsents.count, 1, "the approval was sent: no local balance guess stops it")
+    }
+
+    func testTheFirstConnectionCautionNeedsAReadHistory() async {
+        let plan = Self.plan([Self.profile])
+        let (unreadable, _) = viewModel(plan: plan, history: nil)
+        unreadable.onQRScanned("dash-key:x")
+        await waitUntil { unreadable.pendingRequest != nil && unreadable.historyIsUnreadable }
+        XCTAssertTrue(unreadable.historyIsUnreadable)
+        XCTAssertFalse(unreadable.pendingIsFirstConnection, "an earlier connection cannot be ruled out")
+
+        let (read, _) = viewModel(plan: plan)
+        read.onQRScanned("dash-key:x")
+        await waitUntil { read.pendingRequest != nil && read.hasReadRows }
+        XCTAssertTrue(read.pendingIsFirstConnection)
+    }
+
+    func testOnlyAKnownAppsOwnWebsiteIsReturnedToWithoutAUsername() {
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(of: MockDashConnectDataSource.sampleLoginRequest),
+            "a request with no callback, or an app the wallet does not know, is not returned to")
+        let yappr = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+        XCTAssertEqual(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://yap.pr/connect?r=d7")),
+            URL(string: "https://yap.pr/connect?r=d7&ac=failed"),
+            "a known app's own website gets the failure, its query kept")
+        XCTAssertNotNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://www.yap.pr/connect")))
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "https://notyap.pr/connect")),
+            "another website is not returned to")
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: yappr, callback: URL(string: "http://yap.pr/connect")),
+            "nor a page that is not https")
+        XCTAssertNil(
+            ConnectionsViewModel.noUsernameCallback(appId: "unknown", callback: URL(string: "https://yap.pr/connect")),
+            "nor is an app the wallet does not know")
+    }
+
+    func testWithoutAUsernameTheRequestLandsOnTheCreateUsernameState() async {
+        var hasUsername = false
+        let (viewModel, _) = viewModel(plan: Self.plan([Self.profile]), hasUsername: { hasUsername })
+        XCTAssertTrue(viewModel.needsUsername)
+
+        viewModel.onURIReceived("dash-key:x")
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertNil(viewModel.pendingRequest, "nothing is read")
+        XCTAssertTrue(viewModel.needsUsername)
+
+        hasUsername = true
+        viewModel.refreshUsername()
+        XCTAssertFalse(viewModel.needsUsername)
+        viewModel.onQRScanned("dash-key:x")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
     }
 }
 

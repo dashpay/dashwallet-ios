@@ -113,6 +113,9 @@ protocol DashConnectDataSource {
     /// moved on while the device slept.
     @MainActor
     func connectionExpiriesForegrounded()
+    /// What an earlier approval of `loginRequest` recorded it would grant,
+    /// read from this device's store; `nil` when there is none.
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess?
 }
 
 extension DashConnectDataSource {
@@ -122,6 +125,7 @@ extension DashConnectDataSource {
     }
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may

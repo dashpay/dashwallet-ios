@@ -10,9 +10,8 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
-    /// The most budget the wallet grants a key the app proposes a budget
-    /// for. A binding that asks for none gets none, and the sheet says the
-    /// key can spend without a limit.
+    /// The most a connection's funding limit can be; every key's budget comes
+    /// out of it (`AppConnect.keyBudgets`).
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
@@ -52,7 +51,8 @@ extension AppConnect {
         /// derivation, so the key does not depend on what else is granted.
         let bindingIndex: Int
         let binding: AppConnectRequest.AuthBinding
-        /// Set exactly when the binding asked for a budget.
+        /// Set when the binding asked for a budget, and on every key once the
+        /// user's terms are applied (`AppConnect.applying(_:to:now:)`).
         let totalBudget: UInt64?
         /// Block time in milliseconds. Always set.
         let expiresAt: UInt64
@@ -280,7 +280,9 @@ extension AppConnect {
         let appId: Data
         /// `hash160(appEphPub)`: names the request the plan was made for.
         let appEphemeralPubKeyHash: Data
-        let auth: [AuthGrant]
+        /// Set from the request, then from what the user chose on the sheet
+        /// (`AppConnect.applying(_:to:now:)`).
+        var auth: [AuthGrant]
         let encryption: [EncryptionGrant]
         let connectionId: Data?
         let identityHint: Data?
@@ -301,6 +303,10 @@ extension AppConnect {
         /// How the app's contract keeps the current key of each encryption
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
+        /// The keys carry the terms an earlier approval of this request
+        /// recorded (`AppConnect.withRecordedTerms`): a retry has to send them
+        /// as they were, so the user cannot change them.
+        var hasRecordedTerms = false
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {

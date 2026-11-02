@@ -826,6 +826,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             plan.administeredGroupIds = ownership.administeredGroupIds
             plan.currentKeyRules = ownership.currentKeyRules
+            // An earlier approval of this request recorded its terms before it
+            // submitted; its update may have landed, so they are the ones a
+            // retry sends.
+            plan = AppConnect.withRecordedTerms(
+                plan,
+                access: Self.recordedGrantedAccess(
+                    identityId: context.identityId, appId: plan.appId, requestHash: plan.appEphemeralPubKeyHash,
+                    stores: context.stores),
+                recordedFor: plan.appEphemeralPubKeyHash, now: now())
             return (.appConnect(plan), nil)
         } catch let refusal as AppConnect.Refusal {
             return (.refused(refusal), nil)
@@ -833,6 +842,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: App Connect request not checked — \(error.localizedDescription, privacy: .public)")
             return (.unresolved, error.localizedDescription)
         }
+    }
+
+    /// What an earlier approval of a request (`requestHash`) recorded it
+    /// would grant, as the approval would retry it: a record still waiting
+    /// for its update first, then one whose keys were not turned off.
+    private static func recordedGrantedAccess(
+        identityId: Data,
+        appId: Data,
+        requestHash: Data,
+        stores: Stores
+    ) -> AppConnect.GrantedAccess? {
+        let identity = identityId.toBase58String()
+        let app = appId.toBase58String()
+        let hash = requestHash.toHexString()
+        let records = stores.grants.load().filter {
+            $0.identityId == identity && $0.appContractId == app
+                && $0.values.appEphemeralPubKeyHash == hash && $0.grantedAccess != nil && $0.keyDisabled != true
+        }
+        return (records.first(where: \.isPendingV2) ?? records.first)?.grantedAccess
+    }
+
+    func recordedGrantedAccess(for loginRequest: DashKeyRequest) async -> AppConnect.GrantedAccess? {
+        guard let appConnect = loginRequest.appConnect,
+              let context = try? await requireContext(),
+              let requestHash = try? KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey) else { return nil }
+        return Self.recordedGrantedAccess(
+            identityId: context.identityId, appId: loginRequest.contractId, requestHash: requestHash,
+            stores: context.stores)
     }
 
     /// The ids among `contractIds` and `groupIds` of the contracts and the
@@ -1009,7 +1046,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // App Connect.
         let approvedLogin: Bool
         if let appConnect = request.appConnect {
-            guard let plan = consent.login.grantPlan else {
+            // The plan carries the terms the user set on the sheet; whatever
+            // the sheet did, every key needs a budget and an expiry in bounds.
+            guard let plan = consent.login.grantPlan, AppConnect.hasValidTerms(plan, now: now()) else {
                 throw DashConnectPlatformError.approvalOutOfDate
             }
             let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
@@ -2163,6 +2202,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             try await submit()
         } catch {
+            // Settled by what the identity shows, whatever the error says: a
+            // refusal for the balance may follow an earlier attempt of the
+            // same broadcast that can still land, and the record may name a
+            // live key it reuses.
             for attempt in 0 ..< 3 {
                 if attempt > 0 { await pause(attempt) }
                 guard let view = await reread() else { continue }

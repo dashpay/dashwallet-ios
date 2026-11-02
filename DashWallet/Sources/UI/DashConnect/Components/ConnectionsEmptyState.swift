@@ -20,11 +20,18 @@
 import DashUIKit
 import SwiftUI
 
-/// Shown when the feature is available but nothing is connected yet. Explains
-/// what a connection is for, then offers the only way to make one.
+/// The page with nothing to list: either nothing is connected yet, and it
+/// offers the only way to make a connection, or the wallet has no username,
+/// and it offers to create one first.
 struct ConnectionsEmptyState: View {
-    let onScanQR: () -> Void
-    let onMockScan: () -> Void
+    enum Kind {
+        case noApps(onScanQR: () -> Void, onMockScan: () -> Void)
+        /// `onCreateUsername` is `nil` where username creation cannot be
+        /// reached from here: the button is left out.
+        case noUsername(onCreateUsername: (() -> Void)?)
+    }
+
+    let kind: Kind
 
     var body: some View {
         VStack {
@@ -39,26 +46,21 @@ struct ConnectionsEmptyState: View {
                             .frame(width: 40, height: 40)
                     }
                     .frame(width: 80, height: 80)
+                    .accessibilityHidden(true)
 
                     VStack(spacing: 4) {
-                        Text(NSLocalizedString("No apps connected yet", comment: "DashConnect"))
+                        Text(title)
                             .dashFont(.title3Medium)
                             .foregroundColor(Color.dash.primaryText)
 
-                        Text(
-                            NSLocalizedString(
-                                "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts",
-                                comment: "DashConnect"
-                            )
-                        )
-                        .dashFont(.subhead)
-                        .foregroundColor(Color.dash.secondaryText)
+                        Text(message)
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.secondaryText)
                     }
                     .multilineTextAlignment(.center)
                 }
 
-                ScanQRButton(onScanQR: onScanQR, onMockScan: onMockScan)
-                    .padding(.horizontal, 60)
+                action
             }
             .padding(.horizontal, 60)
 
@@ -66,9 +68,52 @@ struct ConnectionsEmptyState: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
+    private var title: String {
+        switch kind {
+        case .noApps:
+            return NSLocalizedString("No apps connected yet", comment: "DashConnect")
+        case .noUsername:
+            return NSLocalizedString("Sign in to apps without passwords", comment: "DashConnect: no username")
+        }
+    }
+
+    private var message: String {
+        switch kind {
+        case .noApps:
+            return NSLocalizedString(
+                "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts",
+                comment: "DashConnect")
+        case .noUsername:
+            return NSLocalizedString(
+                "Apps on the Dash network use your Platform identity instead of accounts and passwords",
+                comment: "DashConnect: no username")
+        }
+    }
+
+    @ViewBuilder
+    private var action: some View {
+        switch kind {
+        case let .noApps(onScanQR, onMockScan):
+            ScanQRButton(onScanQR: onScanQR, onMockScan: onMockScan)
+                .padding(.horizontal, 60)
+        case let .noUsername(onCreateUsername):
+            if let onCreateUsername {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Create username", comment: ""),
+                    fillsWidth: true, size: .large, style: .filledBlue, action: onCreateUsername)
+                    .frame(maxWidth: 200)
+            }
+        }
+    }
 }
 
-#Preview {
-    ConnectionsEmptyState(onScanQR: {}, onMockScan: {})
+#Preview("No apps") {
+    ConnectionsEmptyState(kind: .noApps(onScanQR: {}, onMockScan: {}))
+        .background(Color.primaryBackground)
+}
+
+#Preview("No username") {
+    ConnectionsEmptyState(kind: .noUsername(onCreateUsername: {}))
         .background(Color.primaryBackground)
 }
