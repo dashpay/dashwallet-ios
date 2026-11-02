@@ -79,7 +79,10 @@ struct SelectCoinView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.showHaltedToast)
         .dexOfflineToast(isOnline: viewModel.isOnline)
-        .task { await viewModel.loadCoins() }
+        .task {
+            await viewModel.loadCoins()
+            await viewModel.keepRouteAvailabilityFresh()
+        }
     }
 
     // MARK: - Main Content
