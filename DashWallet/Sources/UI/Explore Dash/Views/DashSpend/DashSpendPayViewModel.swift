@@ -270,7 +270,39 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
-        
+
+        // Purchase stays disabled while `error` is set, so an amount refused
+        // while funds were confirming must be re-checked when they land —
+        // otherwise the user waits as told and nothing changes. Only a funds
+        // verdict already on screen is re-checked: `checkAmountForErrors` ends
+        // in `error = nil`, which would clear an error it does not own
+        // (merchant details that failed to load), and with no error up the
+        // balance drop that follows a successful purchase would flag the
+        // amount just paid. Not during a resync either: the verdict would turn
+        // into the syncing notice.
+        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, !Self.isResyncingWallet, self.canRecheck(fundsVerdictOnly: true) else { return }
+                self.checkAmountForErrors()
+            }
+            .store(in: &cancellableBag)
+
+        // The syncing notice (set by an edit, a merchant load or a network
+        // change during a resync) is cleared when the sync is done, and a
+        // funds verdict skipped meanwhile is judged. A sync that finished while
+        // this screen was not subscribed is caught by the check
+        // `startNetworkMonitoring` makes on every subscription.
+        NotificationCenter.default.publisher(for: .syncStateChangedNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, SyncingActivityMonitor.shared.state == .syncDone,
+                      self.canRecheck(fundsVerdictOnly: false)
+                else { return }
+                self.checkAmountForErrors()
+            }
+            .store(in: &cancellableBag)
+
         repository[provider]?.isUserSignedInPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
@@ -437,9 +469,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return
         }
         
-        guard DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet == false ||
-            SyncingActivityMonitor.shared.state == .syncDone
-        else {
+        guard !Self.isResyncingWallet else {
             error = SendAmountError.syncingChain
             return
         }
@@ -453,20 +483,43 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
         #endif
 
-        guard !canShowInsufficientFunds else {
-            error = SendAmountError.insufficientFunds
+        let state = SwiftDashSDKWalletState.shared
+        let (ceilingDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
+        // The screen shows the whole balance, the gate counts confirmed coins
+        // only — so right after a receive the shortfall is often just time,
+        // and must not read as "Insufficient funds".
+        if let refusal = SendAmountError(refusing: state.sendVerdict(
+            requestedDuffs: requestedDashDuffs,
+            ceilingDuffs: ceilingDuffs,
+            reserveDuffs: reserveDuffs)) {
+            // Re-checked on every balance event while it is up: re-setting the
+            // same refusal would only re-render both panels.
+            if (error as? SendAmountError) != refusal { error = refusal }
             return
         }
 
         error = nil
     }
-    
-    private var canShowInsufficientFunds: Bool {
+
+    /// Whether a wallet or sync event may re-check the error on screen: the
+    /// syncing notice when `fundsVerdictOnly` is false — re-checked like an
+    /// edit would — or a funds verdict, unless an amount was entered that does
+    /// not convert to DASH: it reads as 0, which would clear the verdict.
+    private func canRecheck(fundsVerdictOnly: Bool) -> Bool {
+        guard let shown = error as? SendAmountError else { return false }
+        if shown == .syncingChain { return !fundsVerdictOnly }
+        return shown.isFundsVerdict && (amount == 0 || requestedDashDuffs > 0)
+    }
+
+    private static var isResyncingWallet: Bool {
+        WalletSendService.isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
+    }
+
+    private var requestedDashDuffs: UInt64 {
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
-
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
-
-        return dashAmount.plainDashAmount > allAvailableFunds
+        return dashAmount.plainDashAmount
     }
     
     // MARK: - CTX Integration
