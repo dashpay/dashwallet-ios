@@ -6152,6 +6152,9 @@
 /* DashPay: contact whose payment channel could not be built */
 "Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
 
+/* Send to contact: the contact was removed, or another wallet was opened, while the amount step was open */
+"This contact is not in your contacts any more." = "This contact is not in your contacts any more.";
+
 /* Cached wallet balance availability */
 "Known balance" = "Known balance";
 "Balance unavailable" = "Balance unavailable";

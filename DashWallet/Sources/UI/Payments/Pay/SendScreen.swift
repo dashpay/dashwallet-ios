@@ -386,10 +386,12 @@ struct SendSourceScreen: View {
 /// old single-screen form did — Core → Core into the L1 payment processor,
 /// everything else into `SendConfirmSheet`.
 ///
-/// Also the amount step for a DashPay contact, which the picker opens
-/// directly: same screen, same view model, with the recipient rendered as a
-/// contact and the button executing the send itself (there is no confirmation
-/// after it — `sendToContact` broadcasts in one shot).
+/// Also the amount step for a DashPay contact, which the picker and the
+/// contact profile open directly: same screen, same view model, with the
+/// recipient rendered as a contact. Send opens `ConfirmContactSendSheet` on the
+/// amount the view model fixed for it (`contactReviewDuffs`); once the review
+/// is sent and closed, `onContinueContact` has the host run `sendToContact`,
+/// which broadcasts that amount in one shot.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the step that chose the recipient — the source step for an
@@ -398,8 +400,8 @@ struct ExternalSendAmountScreen: View {
     /// Core → Core: hand (address, amount in duffs) to the hosting
     /// controller, which routes through the L1 payment processor.
     var onContinueCore: (String, UInt64) -> Void
-    /// Contact route: run the pay-to-contact spend on the hosting controller,
-    /// which presents the send-success screen.
+    /// Contact route: the review was sent and has closed. The host runs
+    /// `viewModel.sendToContact()` and shows the outcome.
     var onContinueContact: () -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
@@ -416,7 +418,11 @@ struct ExternalSendAmountScreen: View {
             #if DASHPAY
             if let contact = viewModel.contactRecipient {
                 DashUIKit.NavigationBar(leading: {
-                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                    // Leaving mid-broadcast would hide the outcome — the
+                    // success, or the "don't send it again" notice.
+                    DashUIKit.NavigationBarElement.back.button(action: {
+                        if !isContactSendInFlight { onBack() }
+                    })
                 })
                 SendContactIntro(
                     contact: contact,
@@ -492,16 +498,28 @@ struct ExternalSendAmountScreen: View {
         // presented tears down the presenter mid-dismissal. A cancel dismisses
         // the same way and must not unwind, so the outcome is carried across.
         #if DASHPAY
-        .sheet(isPresented: $showContactConfirm) {
-            if let contact = viewModel.contactRecipient {
+        // The spend starts from `onDismiss`, once the review is gone: it asks
+        // for the PIN, and a prompt cannot present over a sheet that is still
+        // on its way out.
+        .sheet(isPresented: $showContactConfirm, onDismiss: {
+            if viewModel.isSendingToContact {
+                onContinueContact()
+            } else {
+                viewModel.cancelContactReview()
+            }
+        }) {
+            if let contact = viewModel.contactRecipient, let duffs = viewModel.contactReviewDuffs {
                 ConfirmContactSendSheet(
                     contact: contact,
-                    amountText: viewModel.dashDuffsUnsigned.formattedDashAmount,
-                    fiatText: viewModel.fiatAmountString,
+                    amountText: duffs.formattedDashAmount,
+                    fiatText: viewModel.contactReviewFiatText ?? "",
+                    // The contact can be removed, or its channel break, while
+                    // the review is open — or only seem to, for a moment
+                    // during a sync. Send waits rather than the review closing.
+                    unavailableMessage: viewModel.contactUnavailableMessage,
                     onCancel: { showContactConfirm = false },
                     onSend: {
-                        showContactConfirm = false
-                        onContinueContact()
+                        if viewModel.confirmContactReview() { showContactConfirm = false }
                     })
                     .presentationDetents([.medium])
             }
@@ -564,9 +582,9 @@ struct ExternalSendAmountScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            // A contact payment is broadcast by this very tap; every other
-            // route continues to a confirmation first, so only one of them
-            // can honestly say "Send".
+            // A contact payment's review, opened by this tap, is the last
+            // step before the broadcast; every other route continues to a
+            // flow of its own (the L1 payment processor or `SendConfirmSheet`).
             actionButtonText: isContactSend
                 ? NSLocalizedString("Send", comment: "")
                 : NSLocalizedString("Continue", comment: ""),
@@ -582,7 +600,11 @@ struct ExternalSendAmountScreen: View {
             // builds, signs and sends in one irreversible call, so this is the
             // last point at which the user can still read back what they are
             // about to pay.
-            showContactConfirm = true
+            #if DASHPAY
+            if viewModel.beginContactReview() {
+                showContactConfirm = true
+            }
+            #endif
             return
         }
         guard let route = viewModel.route else { return }
@@ -607,6 +629,8 @@ struct ExternalSendAmountScreen: View {
         #endif
     }
 
+    /// From the review's Send on — `isSendingToContact` covers the review's
+    /// exit as well as the broadcast.
     private var isContactSendInFlight: Bool {
         #if DASHPAY
         return viewModel.isSendingToContact
@@ -1022,6 +1046,8 @@ private struct ConfirmContactSendSheet: View {
     let contact: ContactItem
     let amountText: String
     let fiatText: String
+    /// Why Send is disabled; nil when the contact can be paid.
+    let unavailableMessage: String?
     var onCancel: () -> Void
     var onSend: () -> Void
 
@@ -1056,6 +1082,12 @@ private struct ConfirmContactSendSheet: View {
 
             Spacer(minLength: 20)
 
+            if let unavailableMessage {
+                TransferAmountValidationNote(message: unavailableMessage)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+            }
+
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Cancel", comment: ""),
@@ -1065,6 +1097,7 @@ private struct ConfirmContactSendSheet: View {
                     action: onCancel)
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Send", comment: ""),
+                    isEnabled: unavailableMessage == nil,
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,

@@ -94,11 +94,7 @@ class SendAmountModel: BaseAmountModel {
     /// Deduplicating the RESOLVED ceiling instead reacts to whichever half
     /// changed, and still ignores updates that leave it where it was.
     private func observeSendableCeiling() {
-        let state = SwiftDashSDKWalletState.shared
-        SwiftDashSDKWalletState
-            .sendableCeilingPublisher(
-                pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
-                walletSpendable: state.$balance.map { $0?.spendable }.eraseToAnyPublisher())
+        SwiftDashSDKWalletState.shared.sendableCeiling
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
