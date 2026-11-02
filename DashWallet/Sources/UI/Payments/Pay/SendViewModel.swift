@@ -107,6 +107,18 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var contactSendError: String?
     /// Keeps `contactRecipient` current; see `setContactRecipient`.
     private var contactRefresh: AnyCancellable?
+    /// Where the step reads a contact's current state.
+    private var contactLookup: @MainActor (Data) -> ContactItem? = {
+        SwiftDashSDKContactsService.shared.contactItem(for: $0)
+    }
+
+    /// A contact send step that reads contacts from `contactLookup` instead
+    /// of the contacts service.
+    convenience init(contactLookup: @escaping @MainActor (Data) -> ContactItem?) {
+        self.init()
+        self.contactLookup = contactLookup
+    }
+
     /// The contact is not among the active wallet's established contacts any
     /// more — removed, or the active wallet has no such contact. Cleared when
     /// an established snapshot of it comes back: a sync can briefly publish an
@@ -689,20 +701,10 @@ final class SendViewModel: ObservableObject {
         contactRefresh = NotificationCenter.default
             .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self, let id = self.contactRecipient?.contactIdentityId else { return }
-                // `contactItem(for:)` also answers with a pending request,
-                // which is not a payable contact.
-                guard let latest = SwiftDashSDKContactsService.shared.contactItem(for: id),
-                      latest.relationship == .established
-                else {
-                    if !self.isContactRecipientGone { self.isContactRecipientGone = true }
-                    return
-                }
-                if self.isContactRecipientGone { self.isContactRecipientGone = false }
-                // Republished on every save and sync; only a change redraws.
-                if self.contactRecipient != latest { self.contactRecipient = latest }
-            }
+            .sink { [weak self] _ in self?.refreshContactRecipient() }
+        // The caller's snapshot may already be stale — the contact removed or
+        // no longer established before any notification reached this step.
+        refreshContactRecipient()
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
@@ -712,6 +714,29 @@ final class SendViewModel: ObservableObject {
         // Not the user's pick: it is the only legal source, and recording it
         // as a pick would let it survive a later destination change.
         setSourceWithoutClaimingUserIntent(.core)
+    }
+
+    /// Re-read the contact from the contacts service: a contact that is gone,
+    /// or no longer established, keeps the amount step from sending.
+    private func refreshContactRecipient() {
+        guard let id = contactRecipient?.contactIdentityId else { return }
+        guard let latest = Self.establishedContact(contactLookup(id))
+        else {
+            if !isContactRecipientGone { isContactRecipientGone = true }
+            return
+        }
+        if isContactRecipientGone { isContactRecipientGone = false }
+        // Republished on every save and sync; only a change redraws.
+        if contactRecipient != latest { contactRecipient = latest }
+    }
+
+    /// The contact if it is still established, or nil. `contactItem(for:)`
+    /// also answers with a pending request, which is not a contact to pay.
+    /// A broken payment channel is a separate check
+    /// (`isContactPaymentUnavailable`), with its own message.
+    nonisolated static func establishedContact(_ latest: ContactItem?) -> ContactItem? {
+        guard let latest, latest.relationship == .established else { return nil }
+        return latest
     }
 
     /// A contact payment can only be funded from the transparent balance.
@@ -767,6 +792,9 @@ final class SendViewModel: ObservableObject {
     ///   cannot be sent, the PIN prompt was cancelled, or signing failed — the
     ///   reason, if any, is on `amountValidationMessage`.
     func prepareContactReview() async -> Bool {
+        // The service's snapshot can be newer than the last change
+        // notification this step has handled.
+        refreshContactRecipient()
         guard !isPreparingContactPayment, !isSendingToContact,
               let contact = contactRecipient,
               canContinue,
@@ -830,8 +858,26 @@ final class SendViewModel: ObservableObject {
     /// The review's Send. From here the step counts as sending: the review is
     /// still closing, and the broadcast only starts once it has
     /// (`sendToContact`, called by the host).
-    func confirmContactReview() {
+    ///
+    /// - Returns: whether the review was confirmed. The contact can go away
+    ///   while the review is open; the review's Send is disabled then, and a
+    ///   tap that raced it confirms nothing.
+    @discardableResult
+    func confirmContactReview() -> Bool {
+        // The service's snapshot can be newer than the last change
+        // notification this step has handled.
+        refreshContactRecipient()
+        guard !isContactPaymentUnavailable else { return false }
         updateContactReview { $0.confirm() }
+        return isSendingToContact
+    }
+
+    /// Why this contact cannot be paid right now, or nil. Shown on the amount
+    /// step and in the open review, which disables its Send meanwhile.
+    var contactUnavailableMessage: String? {
+        if isContactRecipientGone { return Self.contactGoneMessage }
+        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        return nil
     }
 
     /// Whether the contact amount step is on screen; see
@@ -911,6 +957,9 @@ final class SendViewModel: ObservableObject {
         // Taking the review spends it: a second call finds nothing to send.
         guard let duffs = updateContactReview({ $0.take() }) else { return nil }
         defer { updateContactReview { $0.finish() } }
+        // The service's snapshot can be newer than the last change
+        // notification this step has handled.
+        refreshContactRecipient()
         guard let prepared = preparedContactPayment else { return nil }
         preparedContactPayment = nil
         // The contact went, or another wallet opened, while the review was up;
@@ -1394,8 +1443,7 @@ final class SendViewModel: ObservableObject {
         #if DASHPAY
         // Independent of the amount: a contact that is gone, or a channel that
         // can never carry a payment.
-        if isContactRecipientGone { return Self.contactGoneMessage }
-        if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        if let contactUnavailableMessage { return contactUnavailableMessage }
         // Ahead of `contactSendError`, and NOT cleared when the amount
         // changes: an unknown outcome disables this screen for good, so the
         // reason has to outlive the next keystroke or the button reads as

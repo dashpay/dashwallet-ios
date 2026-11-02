@@ -533,10 +533,13 @@ struct ExternalSendAmountScreen: View {
                     feeDuffs: feeDuffs,
                     totalDuffs: totalDuffs,
                     fiatText: viewModel.contactReviewFiatText ?? "",
+                    // The contact can be removed, or its channel break, while
+                    // the review is open — or only seem to, for a moment
+                    // during a sync. Send waits rather than the review closing.
+                    unavailableMessage: viewModel.contactUnavailableMessage,
                     onCancel: { showContactConfirm = false },
                     onSend: {
-                        viewModel.confirmContactReview()
-                        showContactConfirm = false
+                        if viewModel.confirmContactReview() { showContactConfirm = false }
                     })
                     .onAppear { shownContactReviewID = viewModel.contactReviewID }
                 // No detent here: the sheet is `BottomSheet.selfSizing`, which
@@ -1069,6 +1072,8 @@ private struct ConfirmContactSendSheet: View {
     let feeDuffs: UInt64
     let totalDuffs: UInt64
     let fiatText: String
+    /// Why Send is disabled; nil when the contact can be paid.
+    let unavailableMessage: String?
     var onCancel: () -> Void
     var onSend: () -> Void
 
@@ -1127,6 +1132,12 @@ private struct ConfirmContactSendSheet: View {
                 .modifier(MenuViewModifier())
                 .padding(.top, 20)
 
+                // The card already sits inside this stack's side padding.
+                if let unavailableMessage {
+                    TransferAmountValidationNote(message: unavailableMessage)
+                        .padding(.top, 20)
+                }
+
                 HStack(spacing: 20) {
                     DashUIKit.DashButton(
                         text: NSLocalizedString("Cancel", comment: ""),
@@ -1136,6 +1147,7 @@ private struct ConfirmContactSendSheet: View {
                         action: onCancel)
                     DashUIKit.DashButton(
                         text: NSLocalizedString("Send", comment: ""),
+                        isEnabled: unavailableMessage == nil,
                         fillsWidth: true,
                         size: .large,
                         style: .filledBlue,

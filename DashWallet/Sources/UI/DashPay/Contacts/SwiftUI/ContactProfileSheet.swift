@@ -23,6 +23,9 @@ struct ContactProfileSheet: View {
     @State private var showingPaySheet = false
     /// The open Pay sheet sent a payment, so the history reloads when it closes.
     @State private var paidFromPaySheet = false
+    /// True from Pay's appearance until its onDismiss has run. `showingPaySheet`
+    /// turns false as soon as dismissal starts, while Pay is still on screen.
+    @State private var isPayPresented = false
     /// Set once the profile has asked to close: a contacts change during the
     /// Pay sheet's exit and that sheet's onDismiss can both ask.
     @State private var isClosing = false
@@ -122,6 +125,7 @@ struct ContactProfileSheet: View {
                 Text(errorMessage ?? "")
             }
             .sheet(isPresented: $showingPaySheet, onDismiss: {
+                isPayPresented = false
                 // A contact that vanished while Pay was open (see below) closes
                 // the profile now that nothing is in flight on top of it.
                 if service.contactItem(for: contact.contactIdentityId) == nil {
@@ -135,6 +139,7 @@ struct ContactProfileSheet: View {
                 }
             }) {
                 PayContactSheet(contact: contact, onSent: { paidFromPaySheet = true })
+                    .onAppear { isPayPresented = true }
             }
             .onAppear {
                 aliasText = contact.alias ?? ""
@@ -159,7 +164,7 @@ struct ContactProfileSheet: View {
                     // payment in flight, and its outcome, with it. Pay disables
                     // its own Send for the vanished contact, and its onDismiss
                     // closes the profile once it is gone.
-                    if !showingPaySheet { closeProfile() }
+                    if !showingPaySheet && !isPayPresented { closeProfile() }
                     return
                 }
 
