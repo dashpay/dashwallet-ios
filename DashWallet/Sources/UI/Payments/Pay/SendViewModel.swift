@@ -104,17 +104,12 @@ final class SendViewModel: ObservableObject {
     /// when read (`contactBalanceMissMessage`), so it shows only while the
     /// spendable figure still falls short.
     @Published private var contactBalanceMissDuffs: UInt64?
-    /// "Insufficient balance" while the reviewed amount of a missed send is
-    /// still above the spendable figure. Recomputed on every render, against
-    /// the figure as it reads then; the screen re-renders when the sendable
-    /// ceiling moves (see `init`).
+    /// Why the reviewed amount of a missed send still cannot go — "still
+    /// confirming" when waiting covers it, otherwise "Insufficient balance" —
+    /// or nil once it fits. Recomputed on every render, against the figures as
+    /// they read then; the screen re-renders when they move (see `init`).
     private var contactBalanceMissMessage: String? {
-        contactBalanceMissDuffs.flatMap {
-            TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: source.balanceName,
-                requestedDuffs: $0,
-                spendableDuffs: coreToCoreSpendableDuffs)
-        }
+        contactBalanceMissDuffs.flatMap { coreToCoreShortfallMessage(requestedDuffs: $0) }
     }
 
     /// The amount a contact review shows, from the moment it opens until the
@@ -440,19 +435,16 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // `amountValidationMessage`, the fee-aware ceilings and
-        // `coreSpendableDuffs` read the pooled figure, which lands after the
-        // balance event that redraws this screen (through `coreBalanceDuffs`
-        // above) — so the ceiling can move with nothing here changing, and a
-        // "still confirming" note would outlive the confirmation. Redraw when
-        // the ceiling moves.
-        SwiftDashSDKWalletState.shared.sendableCeiling
+        // The contact and Core → Shielded routes judge their amount on the
+        // pooled figure, which lands after the balance event, and on coins
+        // that confirm without moving the total — so their verdict ("still
+        // confirming" or "Insufficient balance") can change with nothing here
+        // changing. Redraw them on every verdict input.
+        SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
+            .dropFirst()
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self else { return }
-                // Nothing typed, nothing to re-judge: spare the redraw — unless
-                // the route shows the spendable figure on its own.
-                guard self.dashDuffsUnsigned > 0 || self.readsCoreSpendable else { return }
+                guard let self, self.readsCoreSpendable else { return }
                 self.objectWillChange.send()
             }
             .store(in: &cancellables)
@@ -1367,6 +1359,26 @@ final class SendViewModel: ObservableObject {
         return insufficientBalanceMessage
     }
 
+    /// Why `requestedDuffs` cannot go on the Core → Core route, or nil when it
+    /// fits. A contact payment is gated on confirmed coins while the From card
+    /// shows them all, so right after a receive the shortfall can be just
+    /// time — say so rather than "Insufficient balance". A typed address gates
+    /// on the whole balance (no fee reserve), so it never needs this.
+    private func coreToCoreShortfallMessage(requestedDuffs: UInt64) -> String? {
+        let gate = coreToCoreGate
+        if let reserveDuffs = gate.feeReserveDuffs,
+           case .confirming(let duffs) = SwiftDashSDKWalletState.shared.sendVerdict(
+               requestedDuffs: requestedDuffs,
+               ceilingDuffs: gate.ceilingDuffs,
+               reserveDuffs: reserveDuffs) {
+            return SendAmountError.fundsStillConfirming(duffs).errorDescription
+        }
+        return TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: source.balanceName,
+            requestedDuffs: requestedDuffs,
+            spendableDuffs: gate.ceilingDuffs)
+    }
+
     /// "You don't have that much" for the ACTIVE route, named after the balance
     /// it spends. Mirrors `canContinue`'s envelope route by route so a Continue
     /// button disabled on affordability is never left unexplained.
@@ -1376,23 +1388,7 @@ final class SendViewModel: ObservableObject {
 
         switch route {
         case .coreToCore:
-            let gate = coreToCoreGate
-            // A contact payment is gated on confirmed coins while the From
-            // card shows them all, so right after a receive the shortfall can
-            // be just time — say so rather than "Insufficient balance". A
-            // typed address gates on the whole balance (no fee reserve), so it
-            // never needs this.
-            if let reserveDuffs = gate.feeReserveDuffs,
-               case .confirming(let duffs) = SwiftDashSDKWalletState.shared.sendVerdict(
-                   requestedDuffs: dashDuffsUnsigned,
-                   ceilingDuffs: gate.ceilingDuffs,
-                   reserveDuffs: reserveDuffs) {
-                return SendAmountError.fundsStillConfirming(duffs).errorDescription
-            }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: gate.ceilingDuffs)
+            return coreToCoreShortfallMessage(requestedDuffs: dashDuffsUnsigned)
 
         case .coreToShielded:
             // The pool fee rides on top of the amount, so the spendable
