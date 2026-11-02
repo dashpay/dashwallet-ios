@@ -231,6 +231,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Cleared when a transfer starts and on `reset()`.
     private(set) var lastFailure: Error?
 
+    /// The lock to re-check after combining coins when the current failure is
+    /// the asset-lock input limit (`CoreCoinConsolidationSheet`); nil otherwise.
+    var inputLimitCheck: AssetLockInputLimit.Check? {
+        lastFailure.flatMap(AssetLockInputLimit.check(for:))
+    }
+
+    /// The input check for a Core → Shielded lock of `lockValueDuffs`: the
+    /// shield budget, tighter than the network's cap (see
+    /// `AssetLockInputPolicy.shieldInputBudget`).
+    static func shieldInputCheck(lockValueDuffs: UInt64) -> AssetLockInputLimit.Check {
+        AssetLockInputLimit.Check(amountDuffs: lockValueDuffs, inputBudget: AssetLockInputPolicy.shieldInputBudget)
+    }
+
     /// What a resume established beyond its terminal phase. `.submittedUnconfirmed`
     /// has two producers — `alreadyConsumedAssetLockResumePhase` (Platform says
     /// this outpoint is already spent) and `handleSpendError`
@@ -571,8 +584,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         switch result.drainVerdict {
         case .notSent:
-            if let error = result.error { handleFailure(error) }
-            else { handleFailure(CoreShieldedDrainService.ServiceError.unavailable) }
+            if let error = result.error {
+                // More final coins than one lock may spend: the preview warns
+                // of it, and the shared sheet offers to combine them.
+                if case PlatformWalletError.assetLockTooManyInputs = error {
+                    handleFailure(AssetLockInputLimit.TooManyInputsError(
+                        check: .drain(inputBudget: AssetLockInputPolicy.shieldInputBudget)))
+                } else {
+                    handleFailure(error)
+                }
+            } else {
+                handleFailure(CoreShieldedDrainService.ServiceError.unavailable)
+            }
             return
         case .pending:
             phase = .submittedUnconfirmed
@@ -697,6 +720,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        // Before the prompt: a lock over the input limit is never built, so
+        // it asks for nothing (`AssetLockInputPolicy`).
+        let inputCheck = bip44LockValueDuffs.map(Self.shieldInputCheck(lockValueDuffs:))
+        if let inputCheck {
+            do {
+                try AssetLockInputLimit.requireFits(inputCheck)
+            } catch {
+                handleFailure(error)
+                return
+            }
+        }
+
         do {
             try await authorize()
         } catch {
@@ -719,15 +754,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 credits: nil)
             switch funding {
             case .bip44:
-                guard let lockValueDuffs = bip44LockValueDuffs else {
+                guard let lockValueDuffs = bip44LockValueDuffs, let inputCheck else {
                     // Unreachable: the entry guard derives it for every .bip44.
                     throw CoordinatorError.shieldedPoolFeeUnavailable
                 }
-                try await env.manager.shieldedFundFromAssetLock(
-                    walletId: env.walletId,
-                    fundingAccountIndex: 0,
-                    amountDuffs: lockValueDuffs,
-                    recipients: [recipient])
+                try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                    try await env.manager.shieldedFundFromAssetLock(
+                        walletId: env.walletId,
+                        fundingAccountIndex: 0,
+                        amountDuffs: lockValueDuffs,
+                        recipients: [recipient])
+                }
             case .coinJoinDrain:
                 try await env.manager.shieldedFundFromCoinJoinDrain(
                     walletId: env.walletId,
@@ -1337,6 +1374,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        // Before the prompt, as on the shielded route.
+        let inputCheck = AssetLockInputLimit.Check(
+            amountDuffs: lockValueDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        do {
+            try AssetLockInputLimit.requireFits(inputCheck)
+        } catch {
+            handleFailure(error)
+            return
+        }
+
         do {
             try await authorize()
         } catch {
@@ -1353,9 +1400,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(
-                recipientAmountDuffs: recipientAmountDuffs,
-                lockValueDuffs: lockValueDuffs)
+            try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                try await PlatformAddressSyncCoordinator.shared.fundFromCore(
+                    recipientAmountDuffs: recipientAmountDuffs,
+                    lockValueDuffs: lockValueDuffs)
+            }
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
@@ -1702,7 +1751,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
         lastFailure = error
         let message: String
-        if let local = error as? LocalizedError, let description = local.errorDescription {
+        if AssetLockInputLimit.isTooManyInputs(error) {
+            message = AssetLockInputLimit.message
+        } else if let local = error as? LocalizedError, let description = local.errorDescription {
             message = description
         } else {
             message = error.localizedDescription

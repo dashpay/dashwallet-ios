@@ -1118,6 +1118,10 @@ struct SendConfirmSheet: View {
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
 
+    /// The lock `CoreCoinConsolidationSheet` is up for, after the coordinator
+    /// refused it over the asset-lock input limit.
+    @State private var coinConsolidationCheck: AssetLockInputLimit.Check?
+
     private var isCoreDrain: Bool { coreShieldedDrain != nil }
 
     /// An estimate is marked as one wherever the figure is drawn.
@@ -1144,6 +1148,9 @@ struct SendConfirmSheet: View {
                 detailsBody
             }
         }
+        // Nothing was sent: once the sheet closes, Confirm is offered again
+        // for the user to retry.
+        .coreCoinConsolidationSheet(check: $coinConsolidationCheck) { coordinator.reset() }
     }
 
     private static let drainPendingDetail = NSLocalizedString(
@@ -1228,15 +1235,27 @@ struct SendConfirmSheet: View {
                     .padding(.bottom, 16)
 
             case .failed:
-                ButtonsGroup(
-                    orientation: .horizontal,
-                    size: .large,
-                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
-                    positiveButtonAction: tryAgain,
-                    negativeButtonText: NSLocalizedString("Close", comment: ""),
-                    negativeButtonAction: onCancel)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                if let check = coordinator.inputLimitCheck {
+                    ButtonsGroup(
+                        orientation: .horizontal,
+                        size: .large,
+                        positiveButtonText: CoreCoinConsolidationViewModel.combineButtonTitle,
+                        positiveButtonAction: { coinConsolidationCheck = check },
+                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonAction: onCancel)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                } else {
+                    ButtonsGroup(
+                        orientation: .horizontal,
+                        size: .large,
+                        positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                        positiveButtonAction: tryAgain,
+                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonAction: onCancel)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                }
 
             case .signing, .locking, .proving, .broadcasting:
                 ShieldedTransferStepList(currentPhase: coordinator.phase, steps: progressSteps)

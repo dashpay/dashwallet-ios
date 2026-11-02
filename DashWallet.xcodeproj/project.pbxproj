@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
+		A11C00001274000000000003 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
+		A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */; };
+		A11C00001274000000000013 /* CoreCoinConsolidationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */; };
+		A11C00001274000000000022 /* CoreCoinConsolidationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */; };
+		A11C00001274000000000023 /* CoreCoinConsolidationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */; };
+		A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */; };
 		7AAA3D6377574710B6A420AE /* IdentityVerifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */; };
 		C14B59948983452F8113CFCF /* IdentityCreditBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5BAF897476041FCA61DB38A /* IdentityCreditBalance.swift */; };
 		D0ABA907D39E44399DEF9A4F /* ConfirmUsernameRequestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952CB943CE454B259A8DA893 /* ConfirmUsernameRequestSheet.swift */; };
@@ -2220,6 +2227,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A11C00001274000000000001 /* AssetLockInputPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicy.swift; sourceTree = "<group>"; };
+		A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationViewModel.swift; sourceTree = "<group>"; };
+		A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationSheet.swift; sourceTree = "<group>"; };
+		A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicyTests.swift; sourceTree = "<group>"; };
 		C51EA0FFB45F445599AE7057 /* IdentityVerifyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentityVerifyService.swift; sourceTree = "<group>"; };
 		C5BAF897476041FCA61DB38A /* IdentityCreditBalance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentityCreditBalance.swift; sourceTree = "<group>"; };
 		952CB943CE454B259A8DA893 /* ConfirmUsernameRequestSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfirmUsernameRequestSheet.swift; sourceTree = "<group>"; };
@@ -4226,6 +4237,8 @@
 		0529717581A09721B3115957 /* InternalTransfer */ = {
 			isa = PBXGroup;
 			children = (
+				A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */,
+				A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */,
 				C0172000000000000011000 /* Confirm */,
 				C0172000000000000010000 /* Shielded */,
 				C0171F000000000000000000 /* Components */,
@@ -7608,6 +7621,7 @@
 		75D5F3EC191EC270004AB296 /* DashWalletTests */ = {
 			isa = PBXGroup;
 			children = (
+				A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */,
 				47A184E4299CC19A0017E32C /* rates.json */,
 				AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */,
 				75CE50B51B5216F100DBC18C /* Info.plist */,
@@ -7705,6 +7719,7 @@
 		7E31813A79237F4E037063AA /* SwiftDashSDK */ = {
 			isa = PBXGroup;
 			children = (
+				A11C00001274000000000001 /* AssetLockInputPolicy.swift */,
 				2A85F872C9D04B3BF9C2FFF3 /* Voting */,
 				5AEEB0012F9C000000000004 /* Masternodes */,
 				A11E57A70004C0DE0004B004 /* Invitations */,
@@ -10077,6 +10092,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11C00001274000000000022 /* CoreCoinConsolidationSheet.swift in Sources */,
+				A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */,
+				A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */,
 				3825BD7459C4884DD70D9A90 /* WalletProtocolCompatibilityController.swift in Sources */,
 				E64A1C72095A9DD989E8379B /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
 				A976B61C558151C1AC300A54 /* ProtocolCompatibilityBanner.swift in Sources */,
@@ -10970,6 +10988,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */,
 				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
@@ -11068,6 +11087,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11C00001274000000000023 /* CoreCoinConsolidationSheet.swift in Sources */,
+				A11C00001274000000000013 /* CoreCoinConsolidationViewModel.swift in Sources */,
+				A11C00001274000000000003 /* AssetLockInputPolicy.swift in Sources */,
 				E97F36169DF0F8814359881A /* WalletProtocolCompatibilityController.swift in Sources */,
 				104ED77DD2298A025814CF83 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
 				C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */,
