@@ -409,8 +409,7 @@ extension AppConnect {
     /// request whose `cb` is on a host that is not the app's is refused.
     /// The sheet would be branded as the app and return somewhere else, and
     /// the host is the user's main phishing signal. A request without `cb`
-    /// is not refused, the sheet warns instead
-    /// (`ApproveConnectionSheet.originWarning`).
+    /// is not refused.
     ///
     /// The request itself proves nothing about where it came from: anyone
     /// can put the app's id and the app's host in a QR code. What the wallet
@@ -428,6 +427,15 @@ extension AppConnect {
     /// lowercase DNS names: the callback parser takes no other host.
     static func isHost(_ host: String, of brandHost: String) -> Bool {
         host == brandHost || host.hasSuffix("." + brandHost)
+    }
+
+    /// Whether `callback` is an `https` address on `brandHost`, the website
+    /// the wallet knows for the app: the wallet may return there without
+    /// asking. False for an app the wallet does not know (`brandHost` nil).
+    static func returnsToKnownWebsite(_ callback: URL, brandHost: String?) -> Bool {
+        guard callback.scheme?.lowercased() == "https", let host = callback.host?.lowercased(),
+              let brandHost else { return false }
+        return isHost(host, of: brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:

@@ -21,6 +21,22 @@ import DashUIKit
 import SwiftUI
 import UIKit
 
+/// The grabber at the top of the DashConnect approval sheets.
+struct DashConnectSheetGrabber: View {
+    var color: Color = Color.dash.gray300Alpha50
+    /// The room under it, above the sheet's content.
+    var bottomPadding: CGFloat = 24
+
+    var body: some View {
+        Capsule()
+            .fill(color)
+            .frame(width: 36, height: 5)
+            .padding(.top, 6)
+            .padding(.bottom, bottomPadding)
+            .accessibilityHidden(true)
+    }
+}
+
 /// A caption over its value, as the DashConnect sheets list details.
 struct DashConnectDetailLine: View {
     let title: String

@@ -36,11 +36,7 @@ struct ApproveTokenPurchaseSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 20)
+            DashConnectSheetGrabber(color: Color.gray300Alpha50, bottomPadding: 20)
 
             // The detail rows grow with Dynamic Type; without a scroll
             // container the actions can be pushed below the bottom of the

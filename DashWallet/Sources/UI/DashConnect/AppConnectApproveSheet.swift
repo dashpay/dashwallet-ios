@@ -26,7 +26,9 @@ import SwiftUI
 struct AppConnectApproveSheet: View {
     @ObservedObject var viewModel: ConnectionsViewModel
     let request: ConnectionRequest
-    let onTopUp: () -> Void
+    /// Presents the identity top-up; `nil` where this build cannot, and
+    /// the sheet then offers none.
+    let onTopUp: (() -> Void)?
 
     @State private var showsGranted = true
     @State private var showsWithheld = false
@@ -39,33 +41,40 @@ struct AppConnectApproveSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.dash.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 24)
-                .accessibilityHidden(true)
+            DashConnectSheetGrabber()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
-                    if viewModel.pendingIsFirstConnection {
+                    // Approving replaces the app's row; keys an earlier
+                    // sign-in holds on the same connection are turned off in
+                    // the same identity update (`AppConnect.supersededKeyIds`).
+                    if let connectedSince = request.connectedSinceText {
+                        SystemMessageView(
+                            title: ConnectionRequest.alreadyConnectedText,
+                            subtitle: connectedSince,
+                            backgroundColor: Color.dash.yellowAlpha10)
+                    } else if viewModel.pendingIsFirstConnection {
                         SystemMessageView(
                             title: String(
                                 format: NSLocalizedString(
                                     "You have never connected to this app before. Only approve if you trust %@.",
                                     comment: "DashConnect approve sheet: the app's name"),
-                                request.appLabel),
+                                request.resolvedAppLabel),
                             backgroundColor: Color.dash.yellowAlpha10)
                     }
                     detailsCard
-                    termsCard
+                    // A plan of encryption keys only has no limit or expiry
+                    // to set.
+                    if viewModel.approvalHasTerms {
+                        termsCard
+                    }
                     if let granted = viewModel.approvalGrantedLines {
                         DashConnectCollapsibleCard(
                             title: String(
                                 format: NSLocalizedString(
                                     "See what %@ will be able to do", comment: "DashConnect: the app's name"),
-                                request.appLabel),
+                                request.resolvedAppLabel),
                             isExpanded: $showsGranted) {
                                 ForEach(Array(granted.enumerated()), id: \.offset) {
                                     PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
@@ -76,7 +85,7 @@ struct AppConnectApproveSheet: View {
                         title: String(
                             format: NSLocalizedString(
                                 "See what %@ will NOT have access to", comment: "DashConnect: the app's name"),
-                            request.appLabel),
+                            request.resolvedAppLabel),
                         isExpanded: $showsWithheld) {
                             ForEach(DashConnectPermissionText.withheld, id: \.self) {
                                 PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
@@ -125,8 +134,7 @@ struct AppConnectApproveSheet: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(String(
-                format: NSLocalizedString("Approve connection to %@?", comment: "DashConnect"), request.appLabel))
+            Text(request.approvalTitle)
                 .dashFont(.title1)
                 .foregroundColor(Color.dash.primaryText)
             if !request.appUrl.isEmpty {
@@ -163,8 +171,8 @@ struct AppConnectApproveSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    /// Where the request returns and what the wallet cannot vouch for: the
-    /// user's signals that a request did not come from the app.
+    /// The funding limit and the expiry with their Change buttons, under a
+    /// note when an earlier approval fixed them (the buttons are then off).
     @ViewBuilder
     private var termsCard: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -260,7 +268,7 @@ struct AppConnectApproveSheet: View {
 
     private var footer: some View {
         VStack(spacing: 10) {
-            if viewModel.approveNeedsTopUp {
+            if viewModel.approveNeedsTopUp, let onTopUp {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Top up identity", comment: "DashConnect approve sheet"),
                     fillsWidth: true, size: .large, style: .tintedBlue, action: onTopUp)
@@ -275,11 +283,64 @@ struct AppConnectApproveSheet: View {
                 text: NSLocalizedString("Deny", comment: "DashConnect"),
                 isEnabled: !viewModel.isApproving,
                 fillsWidth: true, size: .large, style: .tintedGray,
-                action: viewModel.denyPendingRequest)
+                action: { viewModel.denyPendingRequest(asksToReturn: true) })
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
         .padding(.bottom, 20)
+    }
+}
+
+/// The approve sheet's last step for a request already answered, when it
+/// returns to an app the wallet does not know: whether to open that
+/// address.
+struct DashConnectReturnStep: View {
+    /// Where the return leads, e.g. "yap.pr".
+    let host: String
+    let onOpen: () -> Void
+    let onStay: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            DashConnectSheetGrabber()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(String(
+                        format: NSLocalizedString(
+                            "Return to %@?",
+                            comment: "DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
+                        host))
+                        .dashFont(.title1)
+                        .foregroundColor(Color.dash.primaryText)
+                    Text(NSLocalizedString(
+                        "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.",
+                        comment: "DashConnect: asks before returning to an app the wallet does not know"))
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.secondaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+            }
+
+            VStack(spacing: 10) {
+                DashUIKit.DashButton(
+                    text: String(
+                        format: NSLocalizedString(
+                            "Open %@",
+                            comment: "DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
+                        host),
+                    fillsWidth: true, size: .large, style: .filledBlue, action: onOpen)
+                DashUIKit.DashButton(
+                    text: NSLocalizedString(
+                        "Stay in the wallet", comment: "DashConnect: do not return to an app the wallet does not know"),
+                    fillsWidth: true, size: .large, style: .tintedGray, action: onStay)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 20)
+        }
+        .background(Color.dash.secondaryBackground)
     }
 }
 

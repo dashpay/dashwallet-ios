@@ -41,10 +41,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
             vc: navigationController,
             viewModel: viewModel,
             onCreateUsername: Self.createUsername(on: navigationController, dashPayModel: dashPayModel),
-            onTopUpIdentity: { [weak navigationController] in
-                guard let navigationController else { return }
-                Self.presentTopUp(over: navigationController)
-            }))
+            onTopUpIdentity: Self.topUp(over: navigationController)))
     }
 
     /// A username counts once its registration completed.
@@ -68,12 +65,18 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     }
 
     /// The identity top-up, over the approve sheet: the request stays on
-    /// screen to be approved once the balance is there.
-    private static func presentTopUp(over navigationController: UINavigationController) {
+    /// screen to be approved once the balance is there. `nil` in a build
+    /// without DashPay, which has no top-up.
+    private static func topUp(over navigationController: UINavigationController) -> (() -> Void)? {
         #if DASHPAY
-        var presenter: UIViewController = navigationController
-        while let presented = presenter.presentedViewController { presenter = presented }
-        presenter.present(IdentityCreditGate.makeTopUpController(), animated: true)
+        return { [weak navigationController] in
+            guard let navigationController else { return }
+            var presenter: UIViewController = navigationController
+            while let presented = presenter.presentedViewController { presenter = presented }
+            presenter.present(IdentityCreditGate.makeTopUpController(), animated: true)
+        }
+        #else
+        return nil
         #endif
     }
 

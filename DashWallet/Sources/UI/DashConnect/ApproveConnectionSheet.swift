@@ -30,6 +30,53 @@ enum DashConnectIdentifierFormatting {
     }
 }
 
+/// How the DashConnect approval sheets name a request and say that it signs
+/// in again to an app that is connected.
+extension ConnectionRequest {
+    /// The app's name, trimmed, or "Unknown app" when the request names none.
+    var resolvedAppLabel: String {
+        let trimmed = appLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
+    }
+
+    /// Whether the app is connected already: approving replaces that
+    /// connection.
+    var isRelogin: Bool {
+        existingConnection != nil
+    }
+
+    /// The sheet's title: a sign-in again for an app that is connected.
+    var approvalTitle: String {
+        String(
+            format: isRelogin
+                ? NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
+                : NSLocalizedString("Approve connection to %@?", comment: "DashConnect"),
+            resolvedAppLabel)
+    }
+
+    /// What the sheets say over `connectedSinceText`.
+    static var alreadyConnectedText: String {
+        NSLocalizedString("This connection already exists.", comment: "DashConnect re-login")
+    }
+
+    /// Since when the connection this request replaces has been on, e.g.
+    /// "Connected since 29 Oct 2026"; `nil` for a first connection.
+    var connectedSinceText: String? {
+        existingConnection.map {
+            String(
+                format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
+                Self.connectedSinceFormatter.string(from: $0.updatedAt))
+        }
+    }
+
+    private static let connectedSinceFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+}
+
 struct ApproveConnectionSheet: View {
     let request: ConnectionRequest
     var isLoading: Bool = false
@@ -45,11 +92,7 @@ struct ApproveConnectionSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 20)
+            DashConnectSheetGrabber(color: Color.gray300Alpha50, bottomPadding: 20)
 
             // The permission list and the app label both grow with Dynamic
             // Type; without a scroll container the actions can be pushed below
@@ -58,9 +101,7 @@ struct ApproveConnectionSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(
-                            String(format: titleFormat, resolvedAppLabel)
-                        )
+                        Text(request.approvalTitle)
                         .font(.title2)
                         .foregroundColor(.primaryText)
 
@@ -87,8 +128,8 @@ struct ApproveConnectionSheet: View {
                         .accessibilityElement(children: .combine)
                     }
 
-                    if let existingConnection = request.existingConnection {
-                        reloginNotice(existingConnection)
+                    if let connectedSince = request.connectedSinceText {
+                        reloginNotice(connectedSince)
                     }
 
                     // The one-QR login gives the app a key with limits of its
@@ -114,11 +155,9 @@ struct ApproveConnectionSheet: View {
                         Text(refusal.reason)
                             .font(.footnote)
                             .foregroundColor(.secondaryText)
-                    } else if let plan = request.login.grantPlan {
-                        appConnectPermissions(plan)
                     } else if let terms = request.login.sessionKeyTerms {
                         sessionKeyPermissions(terms)
-                    } else if isRelogin {
+                    } else if request.isRelogin {
                         reloginPermissionsSummary
                     } else {
                         fullPermissions
@@ -195,26 +234,9 @@ struct ApproveConnectionSheet: View {
         .background(Color.primaryBackground)
     }
 
-    private var resolvedAppLabel: String {
-        let trimmed = request.appLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
-    }
-
-    private var isRelogin: Bool {
-        request.existingConnection != nil
-    }
-
     private var isRefused: Bool {
         if case .refused = request.login { return true }
         return false
-    }
-
-    private var titleFormat: String {
-        if isRelogin {
-            return NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
-        } else {
-            return NSLocalizedString("Approve connection to %@?", comment: "DashConnect")
-        }
     }
 
     private var resolvedSubtitle: String {
@@ -263,44 +285,6 @@ struct ApproveConnectionSheet: View {
         }
     }
 
-    /// An App Connect request v2: one line per key the app is given, with
-    /// what it can spend and until when, then how old the request is and
-    /// where the wallet returns. A draft: per-binding toggles and budget and
-    /// lifetime presets are left to the wallet's design.
-    private func appConnectPermissions(_ plan: AppConnect.GrantPlan) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            permissions(
-                granted: DashConnectPermissionText.granted(
-                    AppConnect.GrantedAccess(plan: plan, receivesMessages: !plan.encryption.isEmpty),
-                    appLabel: resolvedAppLabel),
-                withheld: DashConnectPermissionText.withheld
-            )
-
-            VStack(alignment: .leading, spacing: 4) {
-                if let warning = originWarning(plan) {
-                    Text(warning)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primaryText)
-                }
-                Text(requestOrigin(plan))
-                    .font(.footnote)
-                    .foregroundColor(.secondaryText)
-                Text(AppConnectOriginText.onlyApprove(plan, appLabel: resolvedAppLabel))
-                .font(.footnote)
-                .foregroundColor(.secondaryText)
-            }
-        }
-    }
-
-    private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
-        AppConnectOriginText.warning(plan)
-    }
-
-    private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {
-        AppConnectOriginText.origin(plan)
-    }
-
     private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
@@ -336,20 +320,15 @@ struct ApproveConnectionSheet: View {
         }
     }
 
-    private func reloginNotice(_ existingConnection: DAppConnection) -> some View {
+    private func reloginNotice(_ connectedSince: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("This connection already exists.", comment: "DashConnect re-login"))
+            Text(ConnectionRequest.alreadyConnectedText)
                 .font(.subhead)
                 .foregroundColor(.primaryText)
 
-            Text(
-                String(
-                    format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
-                    Self.connectedSinceFormatter.string(from: existingConnection.updatedAt)
-                )
-            )
-            .font(.footnote)
-            .foregroundColor(.secondaryText)
+            Text(connectedSince)
+                .font(.footnote)
+                .foregroundColor(.secondaryText)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
@@ -358,13 +337,6 @@ struct ApproveConnectionSheet: View {
                 .stroke(Color.gray300, lineWidth: 1.5)
         )
     }
-
-    private static let connectedSinceFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
-    }()
 }
 
 /// One thing an app can or cannot do, with its mark.

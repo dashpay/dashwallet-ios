@@ -28,7 +28,8 @@ struct ConnectionsScreen: View {
     private let vc: UINavigationController
     /// Starts the app's username creation; `nil` where it cannot be reached.
     private let onCreateUsername: (() -> Void)?
-    /// Presents the identity top-up over whatever is on screen.
+    /// Presents the identity top-up over whatever is on screen; `nil` where
+    /// it cannot be reached.
     private let onTopUpIdentity: (() -> Void)?
 
     @StateObject private var viewModel: ConnectionsViewModel
@@ -108,6 +109,14 @@ struct ConnectionsScreen: View {
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
+            } else if let url = viewModel.pendingReturn {
+                // The request is answered; the sheet asks before the
+                // browser opens an app the wallet does not know.
+                DashConnectReturnStep(
+                    host: url.host ?? url.absoluteString,
+                    onOpen: { viewModel.openPendingReturn() },
+                    onStay: { viewModel.stayInWallet() })
+                    .approveSheetPresentation(isLoading: false)
             }
         }
         .sheet(isPresented: isTokenPurchaseSheetPresented) {
@@ -306,7 +315,7 @@ struct ConnectionsScreen: View {
     private func approveSheet(for request: ConnectionRequest) -> some View {
         if request.login.grantPlan != nil {
             AppConnectApproveSheet(
-                viewModel: viewModel, request: request, onTopUp: { onTopUpIdentity?() })
+                viewModel: viewModel, request: request, onTopUp: onTopUpIdentity)
                 .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
         } else {
             legacyApproveSheet(for: request)
@@ -320,11 +329,11 @@ struct ConnectionsScreen: View {
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
             onRetry: { viewModel.retryPendingRequest() },
-            onDeny: { viewModel.denyPendingRequest() }
+            onDeny: { viewModel.denyPendingRequest(asksToReturn: true) }
         )
         // The one-QR terms make the sheet longer than the fixed height
         // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil || request.login.grantPlan != nil)
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -342,10 +351,16 @@ struct ConnectionsScreen: View {
 
     private var isApproveSheetPresented: Binding<Bool> {
         Binding(
-            get: { viewModel.pendingRequest != nil },
+            get: { viewModel.pendingRequest != nil || viewModel.pendingReturn != nil },
             set: { isPresented in
-                if !isPresented && !viewModel.isApproving {
-                    viewModel.denyPendingRequest()
+                guard !isPresented else { return }
+                if viewModel.pendingRequest == nil {
+                    // Closing the return step stays in the wallet.
+                    viewModel.stayInWallet()
+                } else if !viewModel.isApproving {
+                    // Closing the sheet declines, and stays in the wallet:
+                    // the sheet is gone and cannot ask about a return.
+                    viewModel.denyPendingRequest(asksToReturn: false)
                 }
             }
         )

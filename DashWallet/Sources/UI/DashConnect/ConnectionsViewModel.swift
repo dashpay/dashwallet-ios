@@ -182,7 +182,7 @@ final class ConnectionsViewModel: ObservableObject {
     }
     @Published private(set) var featureUnavailable: Bool
     /// The wallet has no username: a page with nothing connected offers to
-    /// create one, and a request that arrives is not approved
+    /// create one, and a login request that arrives is not approved
     /// (`answerWithoutUsername`).
     @Published private(set) var needsUsername: Bool
     @Published var pendingRequest: ConnectionRequest? {
@@ -439,7 +439,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// With `asksToDisconnect`, the sheet asks about a disconnect as it
     /// opens: a row's Disconnect goes through the same question.
     func showConnection(_ item: ConnectionSheetItem, asksToDisconnect: Bool = false) {
-        guard !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        guard !isResolvingRequest, pendingRequest == nil, pendingReturn == nil, pendingTokenPurchase == nil else { return }
         isConnectionSheetOnScreen = true
         shownConnection = item
         shownDetails = nil
@@ -485,13 +485,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// resolving is not counted here: a newer scan supersedes it.
     private var isBusySigning: Bool {
         isDisconnecting || isProcessingStateTransition || isApproving || isApprovingPurchase
-            || pendingRequest != nil || pendingTokenPurchase != nil
+            || pendingRequest != nil || pendingReturn != nil || pendingTokenPurchase != nil
     }
 
     /// Whether a scan may start now; otherwise the page says why.
     func mayScan() -> Bool {
         guard isBusySigning else { return true }
-        message = Self.anotherRequestMessage
+        // The return step covers the page, and an alert cannot show over it.
+        if pendingReturn == nil { message = Self.anotherRequestMessage }
         return false
     }
 
@@ -556,7 +557,8 @@ final class ConnectionsViewModel: ObservableObject {
         isConnectionSheetOnScreen = false
         // A request on its way owns the screen: the page cannot show an
         // alert and its sheet at once.
-        if let waiting = messageAfterSheet, !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil {
+        if let waiting = messageAfterSheet, !isResolvingRequest, pendingRequest == nil, pendingReturn == nil,
+           pendingTokenPurchase == nil {
             message = waiting
         }
         messageAfterSheet = nil
@@ -626,11 +628,17 @@ final class ConnectionsViewModel: ObservableObject {
 
     private func receive(_ content: String, byLink: Bool) {
         guard !featureUnavailable else { return }
-        // A request opened from anywhere without a username is not
-        // approved: the page offers to create one, and the app is told the
-        // request did not go through.
+        // Read before the request: the page shows whether to create a
+        // username, and a request needs one unless it is a state transition.
         refreshUsername()
-        guard !needsUsername else {
+        // Without a username only a `dash-st:` request goes on. A key
+        // registration runs: it completes a two-QR login this wallet
+        // approved already, and fails without that approved row
+        // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
+        // is refused once read. Any other request is not approved: the page
+        // offers to create a username, the app is told the request did not
+        // go through, and nothing on screen changes for it.
+        if needsUsername, !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
             answerWithoutUsername(content, byLink: byLink)
             return
         }
@@ -677,6 +685,9 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
 
+        // A new request ends the return step of the one before: its
+        // return is not opened.
+        pendingReturn = nil
         requestGeneration &+= 1
         let generation = requestGeneration
         isResolvingRequest = true
@@ -720,6 +731,11 @@ final class ConnectionsViewModel: ObservableObject {
                             text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
                         )
                     case let .tokenPurchaseApprovalRequired(purchase):
+                        // A token purchase needs a username.
+                        guard !needsUsername else {
+                            sayUsernameIsNeeded()
+                            return
+                        }
                         pendingTokenPurchase = purchase
                     }
                 }
@@ -743,28 +759,34 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    /// A request that came while the wallet has no username: a link from an
+    /// A login request that came while the wallet has no username: a link from an
     /// app on this phone returns to it with `ac=failed`, and a page that
     /// shows connections (so not its create-username state) says why.
     /// Only a callback on the website the wallet knows for the app is opened:
     /// the user never saw this request's sheet, so an unknown app's return
     /// address was not shown to anyone.
     private func answerWithoutUsername(_ content: String, byLink: Bool) {
+        sayUsernameIsNeeded()
+        guard byLink else { return }
+        Task {
+            guard case let .login(request)? = try? await dataSource.parseQR(content),
+                  let url = Self.noUsernameCallback(of: request) else { return }
+            openURL(url)
+        }
+    }
+
+    /// Why a request was not taken without a username.
+    private func sayUsernameIsNeeded() {
         // The create-username page says it by itself; a page that may show
-        // connections says it where the user is looking.
-        if hasConnectionsOrHistory || !hasReadRows {
+        // connections says it where the user is looking. The return step
+        // covers the page, and an alert cannot show over it.
+        if pendingReturn == nil, hasConnectionsOrHistory || !hasReadRows {
             let note = ConnectionsScreenMessage(
                 kind: .error,
                 text: NSLocalizedString(
                     "Create a username to connect apps, then ask the app for a new code.",
                     comment: "DashConnect: a request arrived while the wallet has no username"))
             if shownConnection != nil { connectionSheetMessage = note } else { message = note }
-        }
-        guard byLink else { return }
-        Task {
-            guard case let .login(request)? = try? await dataSource.parseQR(content),
-                  let url = Self.noUsernameCallback(of: request) else { return }
-            openURL(url)
         }
     }
 
@@ -775,9 +797,9 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     static func noUsernameCallback(appId: String, callback: URL?) -> URL? {
-        guard let callback, callback.scheme?.lowercased() == "https", let host = callback.host?.lowercased(),
-              let brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: appId),
-              AppConnect.isHost(host, of: brandHost) else { return nil }
+        guard let callback,
+              AppConnect.returnsToKnownWebsite(
+                callback, brandHost: DashConnectFallbackAppMetadata.brandHost(contractId: appId)) else { return nil }
         return AppConnect.callbackURL(callback, status: .failed)
     }
 
@@ -800,6 +822,8 @@ final class ConnectionsViewModel: ObservableObject {
 
         // A v2 approval registers its keys with the terms the user set.
         if consent.login.grantPlan != nil {
+            // The button is off then; a tap that comes anyway gets the
+            // reason as the sheet's note.
             guard let applied = termsAppliedPlan else {
                 approveError = approveDisabledReason
                 return
@@ -816,7 +840,7 @@ final class ConnectionsViewModel: ObservableObject {
 
             do {
                 _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
-                openCallback(of: pendingLoginRequest, status: .ok)
+                openCallback(of: pendingLoginRequest, plan: consent.login.grantPlan, status: .ok, asksToReturn: true)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
@@ -829,6 +853,15 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingFailureStatus = nil
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
+            } catch DashConnectPlatformError.approvalTermsExpired {
+                // The expiry went by while the PIN prompt was up. Nothing
+                // was signed: the sheet stays, and says why itself
+                // (`approveDisabledReason`): a later date, or for terms an
+                // earlier approval recorded, a new code. Closing the sheet
+                // now is a decline, not a failure, unless an earlier
+                // attempt may have landed (its terms are recorded).
+                if !self.approvalTermsLocked { self.pendingFailureStatus = nil }
+                self.approveError = nil
             } catch DashConnectPlatformError.loginUnresolved {
                 // The wallet could not check which login this network gets.
                 // Nothing was signed. The sheet is rebuilt: when it still
@@ -903,7 +936,10 @@ final class ConnectionsViewModel: ObservableObject {
     /// The pending v2 plan with the user's terms applied, as the sheet lists
     /// it; `nil` for any other request or terms out of bounds.
     var termsAppliedPlan: AppConnect.GrantPlan? {
-        guard let plan = pendingRequest?.login.grantPlan, let approvalTerms else { return nil }
+        guard let plan = pendingRequest?.login.grantPlan else { return nil }
+        // Encryption keys only: no term applies to them, recorded or not.
+        if plan.auth.isEmpty { return plan }
+        guard let approvalTerms else { return nil }
         if plan.hasRecordedTerms { return AppConnect.hasValidTerms(plan, now: now()) ? plan : nil }
         return AppConnect.applying(approvalTerms, to: plan, now: now())
     }
@@ -932,7 +968,8 @@ final class ConnectionsViewModel: ObservableObject {
         // What the app asks for: a response that leaves an encryption slot out
         // is only known once it is sealed.
         return DashConnectPermissionText.granted(
-            AppConnect.GrantedAccess(plan: plan, receivesMessages: !plan.encryption.isEmpty), appLabel: request.appLabel)
+            AppConnect.GrantedAccess(plan: plan, receivesMessages: !plan.encryption.isEmpty),
+            appLabel: request.resolvedAppLabel)
     }
 
     /// How long ago the pending v2 request was made.
@@ -976,6 +1013,12 @@ final class ConnectionsViewModel: ObservableObject {
             decimal: Decimal(limit) / Decimal(PlatformCreditsFormatter.creditsPerDash)))
     }
 
+    /// Whether the pending v2 request has a funding limit and an expiry to
+    /// set: not for a plan of encryption keys only.
+    var approvalHasTerms: Bool {
+        pendingRequest?.login.grantPlan.map { !$0.auth.isEmpty } ?? false
+    }
+
     /// Whether the user may change the funding limit: not for a request of
     /// DashPay profile keys only, whose budget is fixed (`profileKeyShare`).
     var canChangeFundingLimit: Bool {
@@ -1009,6 +1052,8 @@ final class ConnectionsViewModel: ObservableObject {
               let plan = pendingRequest?.login.grantPlan,
               AppConnect.keyBudgets(for: plan, limit: credits) != nil else { return false }
         approvalTerms?.fundingLimit = credits
+        // A note on an attempt with the terms before is out of date.
+        approveError = nil
         return true
     }
 
@@ -1115,6 +1160,8 @@ final class ConnectionsViewModel: ObservableObject {
             return false
         }
         approvalTerms?.expiresAt = expiresAt
+        // A note on an attempt with the terms before is out of date.
+        approveError = nil
         return true
     }
 
@@ -1124,12 +1171,17 @@ final class ConnectionsViewModel: ObservableObject {
             inSameDayAs: Date(timeIntervalSince1970: TimeInterval(rhs) / 1000))
     }
 
-    func denyPendingRequest() {
+    /// Declines the request on screen. `asksToReturn`: the Deny button; a
+    /// sheet closed by the user (`false`) does not go on to ask about a
+    /// return to an app the wallet does not know.
+    func denyPendingRequest(asksToReturn: Bool) {
         guard !isApproving else { return }
         // A refused request never showed where it would return, so its
         // callback is not opened.
         if let pendingLoginRequest, pendingRequest?.login.isApprovable == true {
-            openCallback(of: pendingLoginRequest, status: pendingFailureStatus ?? .declined)
+            openCallback(
+                of: pendingLoginRequest, plan: pendingRequest?.login.grantPlan,
+                status: pendingFailureStatus ?? .declined, asksToReturn: asksToReturn)
         }
         pendingRequest = nil
         pendingLoginRequest = nil
@@ -1138,19 +1190,50 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// Returns to the app that sent an App Connect request, with how it
-    /// ended (`ac=<status>`). Only the callback the sheet showed ("returns
-    /// to <host>") is opened, and only once the user has answered it. A
-    /// known app's request that returns elsewhere is refused before the
-    /// sheet (`AppConnect.callbackRefusal`); for an app the wallet does not
-    /// know, the user's answer to a sheet naming the host, with its
-    /// warning, stands in for the profile's "ask".
+    /// ended (`ac=<status>`): only for a request that came as a link, and
+    /// only once the user has answered it. A known app's request that
+    /// returns elsewhere is refused before the sheet
+    /// (`AppConnect.callbackRefusal`), and one that returns to its website
+    /// is opened. A return to an app the wallet does not know is asked
+    /// about on the sheet first (`pendingReturn`) when `asksToReturn`, and
+    /// is not opened otherwise.
     /// The app treats it as a nudge to look for the response, never as
     /// proof of anything.
-    private func openCallback(of request: DashKeyRequest, status: AppConnect.CallbackStatus) {
+    private func openCallback(
+        of request: DashKeyRequest,
+        plan: AppConnect.GrantPlan?,
+        status: AppConnect.CallbackStatus,
+        asksToReturn: Bool
+    ) {
         guard pendingRequestArrivedByLink,
               let callback = request.appConnect?.callback,
               let url = AppConnect.callbackURL(callback, status: status) else { return }
+        // The app's website as the sheet resolved it; looked up by the
+        // contract only for a request without a plan.
+        let brandHost = plan.map(\.brandHost)
+            ?? DashConnectFallbackAppMetadata.brandHost(contractId: request.contractId.toBase58String())
+        if AppConnect.returnsToKnownWebsite(callback, brandHost: brandHost) {
+            openURL(url)
+        } else if asksToReturn {
+            pendingReturn = url
+        }
+    }
+
+    /// The return to an app the wallet does not know, of a request already
+    /// answered: the approve sheet stays up and asks whether to open it
+    /// (`openPendingReturn`, `stayInWallet`).
+    @Published private(set) var pendingReturn: URL?
+
+    /// Opens the return the sheet asked about, and closes the sheet.
+    func openPendingReturn() {
+        guard let url = pendingReturn else { return }
+        pendingReturn = nil
         openURL(url)
+    }
+
+    /// Closes the sheet without opening the return.
+    func stayInWallet() {
+        pendingReturn = nil
     }
 
     func approvePendingTokenPurchase() {

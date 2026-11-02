@@ -195,6 +195,21 @@ extension AppConnect {
         return plan.auth.isEmpty || isValidFundingLimit(total)
     }
 
+    /// Why an approval refuses `plan` at `now`, or `nil` when its terms are
+    /// valid (`hasValidTerms`):
+    /// - `sessionKeyUnusable` for terms an earlier approval recorded
+    ///   (`hasRecordedTerms`), which the user cannot change: the app has to
+    ///   ask again;
+    /// - `approvalTermsExpired` when a key's expiry has gone by, which the
+    ///   user can change on the sheet;
+    /// - `approvalOutOfDate` for any other term out of bounds.
+    static func termsFailure(of plan: GrantPlan, now: Date) -> DashConnectPlatformError? {
+        guard !hasValidTerms(plan, now: now) else { return nil }
+        if plan.hasRecordedTerms { return .sessionKeyUnusable }
+        return plan.auth.contains { $0.expiresAt <= milliseconds(now) }
+            ? .approvalTermsExpired : .approvalOutOfDate
+    }
+
     /// `plan` with the terms an earlier approval of the same request recorded
     /// (`GrantedAccess`, written before its update was submitted), when they
     /// name its keys one for one. That update may have landed, and a retry

@@ -81,6 +81,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case grantOnAnotherIdentity
     case grantStoreUnavailable
     case approvalOutOfDate
+    /// The terms went out of bounds before the approval signed (an expiry
+    /// gone by while the PIN prompt was up); the approve sheet says why
+    /// itself.
+    case approvalTermsExpired
     case loginUnresolved
     case grantNotRecorded
     case noFreeKeyId
@@ -206,6 +210,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
                 comment: "DashConnect")
+        case .approvalTermsExpired:
+            return NSLocalizedString(
+                "This expiry has passed. Pick another one, then approve.",
+                comment: "DashConnect approve sheet: the chosen expiry is in the past")
         case .loginUnresolved:
             return NSLocalizedString(
                 "This wallet could not check what this sign-in would give the app.",
@@ -1048,9 +1056,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if let appConnect = request.appConnect {
             // The plan carries the terms the user set on the sheet; whatever
             // the sheet did, every key needs a budget and an expiry in bounds.
-            guard let plan = consent.login.grantPlan, AppConnect.hasValidTerms(plan, now: now()) else {
+            guard let plan = consent.login.grantPlan else {
                 throw DashConnectPlatformError.approvalOutOfDate
             }
+            if let failure = AppConnect.termsFailure(of: plan, now: now()) { throw failure }
             let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
             approvedLogin = AppConnect.isAvailable(protocolVersion: protocolVersion)
                 && plan.appEphemeralPubKeyHash == requestHash
@@ -1076,6 +1085,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.approvalOutOfDate
         }
         if let appConnect = request.appConnect, let plan = consent.login.grantPlan {
+            // The PIN prompt can outlast the expiry the user chose (a date
+            // ends at 23:59:59 of its day): checked again before anything
+            // is signed.
+            if let failure = AppConnect.termsFailure(of: plan, now: now()) { throw failure }
             Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
             return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
         }

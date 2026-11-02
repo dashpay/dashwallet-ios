@@ -6518,11 +6518,8 @@
 "Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
 "Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
 "Edit your DashPay profile" = "Edit your DashPay profile";
-"Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
 "Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
 "Registering names or changing your keys" = "Registering names or changing your keys";
-"Requested %1$@ · returns to %2$@" = "Requested %1$@ · returns to %2$@";
-"Requested %@" = "Requested %@";
 "The app asks for a key on a contract group it does not own." = "The app asks for a key on a contract group it does not own.";
 "The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
 "The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
@@ -6543,8 +6540,18 @@
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
 "This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
 "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
-"This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
-"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
+
+/* DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"Return to %@?" = "Return to %@?";
+
+/* DashConnect: asks before returning to an app the wallet does not know */
+"This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website." = "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.";
+
+/* DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"Open %@" = "Open %@";
+
+/* DashConnect: do not return to an app the wallet does not know */
+"Stay in the wallet" = "Stay in the wallet";
 
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
