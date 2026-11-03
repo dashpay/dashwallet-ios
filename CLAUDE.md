@@ -123,7 +123,7 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 
 ## Publicity
 
-The repository is public. Never put customer data, unfixed vulnerability detail, secrets or step-by-step attack detail against keys, PIN or encryption into files, commit messages, PRs, issues or their attachments; describe a support case by its symptom (ADR-0001 rule 2).
+The repository is public. Never put customer data, unfixed vulnerability detail, secrets or step-by-step attack detail against keys, PIN or encryption into files, commit messages, branch names, PRs, issues or their attachments; describe a support case by its symptom (ADR-0001 rule 2).
 
 ## Code Style
 
