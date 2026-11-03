@@ -18,6 +18,8 @@
 import Foundation
 import Moya
 
+private let logger = AppLogger(category: "http-client")
+
 typealias CompletionHandler = (Swift.Result<Response, HTTPClientError>) -> ()
 
 private let acceptableCodes = Array(200..<300)
@@ -176,11 +178,12 @@ extension HTTPClient {
                 // Body left unprinted on purpose: the CTX rates response alone
                 // is ~3000 lines of pretty-printed pairs, and dumping it
                 // synchronously here stalls the UI for about a second and
-                // buries every other line in a diagnostic log. Print the size
+                // buries every other line in a diagnostic log. Log the size
                 // instead; uncomment the body when debugging a specific
                 // endpoint's payload.
-                print("HTTP \(response.statusCode) \(target.path) — \(response.data.count) bytes")
-                // print(try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments))
+                logger.debug(
+                    "HTTP \(response.statusCode) \(target.path, privacy: .public) — \(response.data.count) bytes")
+                // logger.debug("\(String(data: response.data, encoding: .utf8) ?? "<non-utf8>", privacy: .public)")
                 #endif
 
                 // Feed the auth stack's monotone clock from the TLS-protected
@@ -204,7 +207,7 @@ extension HTTPClient {
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
-                DWLogger.log("HTTPClient failure: \(String(describing: error))")
+                logger.warning("HTTPClient failure: \(AppLogMessage.caseName(of: target) ?? "\(Target.self)", privacy: .public): \(error)")
                 completion(.failure(.moya(error)))
             }
         }

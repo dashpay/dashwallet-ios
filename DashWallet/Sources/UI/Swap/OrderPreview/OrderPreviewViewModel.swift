@@ -19,6 +19,8 @@ import Combine
 import CoreData
 import Foundation
 
+private let logger = AppLogger(category: "order-preview-view-model")
+
 private extension Error {
     var isUserAuthenticationCancellation: Bool {
         // `DashSpendError` is not Equatable, so match the case with `if case` instead of `==`.
@@ -336,7 +338,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapProvider: swapProvider
             )
         } catch {
-            setFailure(error.localizedDescription)
+            setFailure(error)
             return nil
         }
     }
@@ -388,7 +390,8 @@ final class OrderPreviewViewModel: ObservableObject {
                     return
                 }
                 guard let point = makeQuotePoint(dashSatoshis: dashSatoshis, quote: newQuote) else {
-                    setFailure(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+                    setFailure(swapFieldError(
+                        .quoteRefreshFailed, NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap")))
                     return
                 }
                 refreshedPoint = point
@@ -400,7 +403,7 @@ final class OrderPreviewViewModel: ObservableObject {
             resetCountdown()
             startCountdown()
         } catch {
-            setFailure(error.localizedDescription)
+            setFailure(error)
         }
     }
 
@@ -452,17 +455,29 @@ final class OrderPreviewViewModel: ObservableObject {
                 swapStatus = .idle
                 return
             }
-            setFailure(error.localizedDescription)
+            setFailure(error)
         }
     }
 
-    private func swapFieldError(_ message: String) -> Error {
-        NSError(domain: "DashDEX", code: 0, userInfo: [NSLocalizedDescriptionKey: message])
+    /// Codes of the failures this screen raises itself, so an exported log tells
+    /// them apart; the message is the user-facing copy.
+    private enum SwapFieldFailure: Int {
+        case depositAddressMissing = 1
+        case memoTooLong = 2
+        case belowMayaMinimum = 3
+        case quoteError = 4
+        case quoteRefreshFailed = 5
+    }
+
+    private static let swapFieldErrorDomain = "DashDEX"
+
+    private func swapFieldError(_ failure: SwapFieldFailure, _ message: String) -> Error {
+        NSError(domain: Self.swapFieldErrorDomain, code: failure.rawValue, userInfo: [NSLocalizedDescriptionKey: message])
     }
 
     private func resolveExecutionData(from quote: SwapQuoteResult) throws -> SwapExecutionData {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
-            throw swapFieldError(NSLocalizedString("Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
+            throw swapFieldError(.depositAddressMissing, NSLocalizedString("Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
         let trimmedMemo = quote.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -473,7 +488,7 @@ final class OrderPreviewViewModel: ObservableObject {
         // Over the 80-byte standardness limit the memo cannot be encoded at all, so refuse the
         // swap rather than broadcast one the network would treat as a plain send.
         if let resolvedMemo, resolvedMemo.utf8.count > MayaDepositRules.maxMemoBytes {
-            throw swapFieldError(SwapKitErrorCopy.mayaMemoTooLongErrorCode)
+            throw swapFieldError(.memoTooLong, SwapKitErrorCopy.mayaMemoTooLongErrorCode)
         }
 
         // Maya's dust floor applies to memo-bearing deposits. Keyed on the memo alone: every
@@ -482,7 +497,7 @@ final class OrderPreviewViewModel: ObservableObject {
         if resolvedMemo != nil, dashSatoshis < MayaDepositRules.minimumDepositDuffs {
             let minimum = Decimal(MayaDepositRules.minimumDepositDuffs) / Decimal(kOneDash)
             let format = NSLocalizedString("The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
-            throw swapFieldError(String(format: format, minimum.formattedDashAmount))
+            throw swapFieldError(.belowMayaMinimum, String(format: format, minimum.formattedDashAmount))
         }
 
         let resolvedExecutionNetwork = quote.executionNetwork?
@@ -515,12 +530,28 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // MARK: - Private: State Mutation
 
+    /// A thrown error: its type and code reach the log, its text only the screen. A quote error
+    /// this screen rethrew also logs the swap code its message carries.
+    private func setFailure(_ error: Error) {
+        let nsError = error as NSError
+        let isQuoteError = nsError.domain == Self.swapFieldErrorDomain
+            && nsError.code == SwapFieldFailure.quoteError.rawValue
+        let swapCode = isQuoteError ? " — code: \(SwapKitErrorCopy.logCode(of: nsError.localizedDescription))" : ""
+        logger.warning("Swap: conversion failed for \(coin.code, privacy: .public): \(error)\(swapCode, privacy: .public)")
+        applyFailure(error.localizedDescription)
+    }
+
     private func setFailure(_ message: String) {
         // Log before mapping: `userFacingErrorMessage` collapses anything unrecognised into a
         // generic "something went wrong", so this is the last point at which the real reason
         // still exists. Without it a "Conversion failed" screenshot has no counterpart in the
         // exported logs and cannot be diagnosed.
-        DWLogger.log("Swap: conversion failed for \(coin.code) — raw: \(message)")
+        logger.warning(
+            "Swap: conversion failed for \(coin.code, privacy: .public) — code: \(SwapKitErrorCopy.logCode(of: message), privacy: .public)")
+        applyFailure(message)
+    }
+
+    private func applyFailure(_ message: String) {
         // Keep Maya failures on the status sheet path so SwiftUI does not try to
         // present a native alert and a bottom sheet for the same event.
         swapStatus = .failed(reason: userFacingErrorMessage(for: message))
@@ -718,10 +749,10 @@ final class OrderPreviewViewModel: ObservableObject {
 
         let firstQuote = try await fetchFreshQuote(dashSatoshis: dashSatoshis)
         if let apiError = firstQuote.error {
-            throw swapFieldError(apiError)
+            throw swapFieldError(.quoteError, apiError)
         }
         guard let firstPoint = makeQuotePoint(dashSatoshis: dashSatoshis, quote: firstQuote) else {
-            throw swapFieldError(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+            throw swapFieldError(.quoteRefreshFailed, NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
         }
         points.append(firstPoint)
 

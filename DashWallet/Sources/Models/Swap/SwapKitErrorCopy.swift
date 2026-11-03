@@ -33,6 +33,23 @@ enum SwapKitErrorCopy {
     static let mayaMemoTooLongErrorCode = "mayaMemoTooLong"
     /// Top-level code for "no provider can carry this pair/amount", lowercased for matching.
     static let noRoutesFoundCode = "noroutesfound"
+    /// Maya's free-text refusal for an amount that cannot cover its outbound fee.
+    static let mayaNotEnoughForFeesPhrase = "not enough asset to pay for fees"
+    /// SwapKit's free-text "No routes found for <sell> -> <buy>" with no code in front.
+    private static let noRoutesFoundPhrase = "No routes found"
+
+    // The app's own swap failure messages. Defined once here so the log can name them by key.
+    static var noRouteAvailableMessage: String {
+        NSLocalizedString("No route available", comment: "SwapKit")
+    }
+
+    static var noVaultAddressMessage: String {
+        NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit")
+    }
+
+    static var walletUnavailableMessage: String {
+        NSLocalizedString("Your wallet isn’t ready yet. Please try again in a moment.", comment: "SwapKit")
+    }
 
     /// A provider-level failure rendered in the same `"<code>: <detail>"` shape the top-level
     /// `error` field uses, so both reach `message(for:coin:)` through one path.
@@ -148,7 +165,7 @@ enum SwapKitErrorCopy {
             // went wrong" and the raw code is dropped here, so a QA log export contains no
             // trace of what actually failed. Record it — an unmapped code is either a new
             // SwapKit error worth adding above, or a real defect.
-            DWLogger.log("SwapKit: unmapped swap error for \(coin.code) — raw: \(rawError ?? "<nil>")")
+            DWLogger.log("SwapKit: unmapped swap error for \(coin.code) — code: \(logCode(of: rawError))")
             return NSLocalizedString(
                 "Something went wrong setting up your swap. Please try again.",
                 comment: "Dash DEX / dex_error_generic"
@@ -180,15 +197,48 @@ enum SwapKitErrorCopy {
         code.hasSuffix("amounttoosmall") || code.hasSuffix("amounttoolow")
     }
 
+    /// A raw SwapKit error as it may be exported: a key for a known message, its
+    /// code, as written, when that is a plain identifier, or only the raw
+    /// text's length. A message can
+    /// quote the request's addresses and values; an identifier limited to
+    /// letters and `_`, at most 30 long, cannot be an address or a txid.
+    static func logCode(of rawError: String?) -> String {
+        guard let rawError else { return "<nil>" }
+        if let key = knownMessageKey(of: rawError) {
+            return key
+        }
+        let code = leadingToken(of: rawError)
+        let isIdentifier = (1...30).contains(code.count)
+            && code.allSatisfy { $0.isASCII && ($0.isLetter || $0 == "_") }
+        return isIdentifier ? code : "<text, \(rawError.count) chars>"
+    }
+
+    /// A stable, locale-independent key for a failure message that carries no
+    /// request data: the app's own messages and SwapKit's / Maya's known refusals.
+    private static func knownMessageKey(of rawError: String) -> String? {
+        switch rawError {
+        case noRouteAvailableMessage: return "noRouteAvailable"
+        case noVaultAddressMessage: return "noVaultAddress"
+        case walletUnavailableMessage: return "walletUnavailable"
+        default:
+            if rawError.contains(mayaNotEnoughForFeesPhrase) { return "mayaNotEnoughForFees" }
+            if rawError.hasPrefix(noRoutesFoundPhrase) { return "noRoutesFound" }
+            return nil
+        }
+    }
+
     /// The SwapKit code carried by a raw error: the leading token before an optional
     /// `": <detail>"`, lowercased, so a bare `validation_error` and `validation_error: <detail>`
     /// both match.
     private static func code(of rawError: String?) -> String {
+        leadingToken(of: rawError).lowercased()
+    }
+
+    private static func leadingToken(of rawError: String?) -> String {
         rawError?
             .components(separatedBy: ":")
             .first?
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
             ?? ""
     }
 }

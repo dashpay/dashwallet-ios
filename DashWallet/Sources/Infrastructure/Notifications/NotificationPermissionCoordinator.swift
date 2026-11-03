@@ -18,6 +18,8 @@
 import Foundation
 import UserNotifications
 
+private let logger = AppLogger(category: "notification-permission-coordinator")
+
 // MARK: - NotificationPermissionState
 
 /// Effective notification permission, derived from two independent facts:
@@ -131,7 +133,8 @@ final class NotificationPermissionCoordinator {
                     self?.onAuthorizationGranted?()
                 }
             }
-            DWLogger.log("NotificationPermissionCoordinator: authorization request result \(granted), error \(String(describing: failure))")
+            logger.info(
+                "NotificationPermissionCoordinator: authorization request result \(granted), error \(failure)")
         }
     }
 }

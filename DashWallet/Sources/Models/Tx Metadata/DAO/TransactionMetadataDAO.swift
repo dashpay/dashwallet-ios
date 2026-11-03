@@ -19,6 +19,8 @@ import Foundation
 import SQLite
 import Combine
 
+private let logger = AppLogger(category: "transaction-metadata-dao")
+
 // MARK: - Metadata Change Event
 
 enum TransactionMetadataChange {
@@ -69,7 +71,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
             try db.run(transactionMetadata)
 
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: create failed: \(error)")
         }
 
         queue.async(flags: .barrier) { [weak self] in
@@ -92,7 +94,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 userInfos.append(userInfo)
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: all failed: \(error)")
         }
 
         return userInfos
@@ -114,7 +116,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 return userInfo
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: get failed: \(error)")
         }
 
         return nil
@@ -130,7 +132,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 userInfos.append(userInfo)
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: getCustomIcons failed: \(error)")
         }
 
         return userInfos
@@ -199,7 +201,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 }
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: update failed: \(error)")
         }
     }
 
@@ -217,7 +219,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 }
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: delete failed: \(error)")
         }
     }
 
@@ -233,7 +235,7 @@ class TransactionMetadataDAOImpl: NSObject, TransactionMetadataDAO, ObservableOb
                 }
             }
         } catch {
-            print(error)
+            logger.error("TransactionMetadataDAO: deleteAll failed: \(error)")
         }
     }
 

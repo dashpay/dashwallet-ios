@@ -20,6 +20,8 @@
 import Foundation
 @preconcurrency import SQLite
 
+private let logger = AppLogger(category: "vote-history-dao")
+
 // MARK: - CastVoteRecord
 
 /// A vote this device cast with one of the wallet's masternodes.
@@ -95,7 +97,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
         do {
             try db.run(query, bindings)
         } catch {
-            DWLogger.log("VoteHistoryDAO: record failed: \(error)")
+            logger.error("VoteHistoryDAO: record failed: \(error)")
         }
     }
 
@@ -125,7 +127,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
                     castCount: Int(row[5] as? Int64 ?? 1))
             }
         } catch {
-            DWLogger.log("VoteHistoryDAO: votes(forContest:) failed: \(error)")
+            logger.error("VoteHistoryDAO: votes(forContest:) failed: \(error)")
             return []
         }
     }
@@ -145,7 +147,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
             }
             return counts
         } catch {
-            DWLogger.log("VoteHistoryDAO: voteCountsByContest failed: \(error)")
+            logger.error("VoteHistoryDAO: voteCountsByContest failed: \(error)")
             return [:]
         }
     }
@@ -154,7 +156,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
         do {
             try db.run("DELETE FROM masternode_vote_history")
         } catch {
-            DWLogger.log("VoteHistoryDAO: deleteAll failed: \(error)")
+            logger.error("VoteHistoryDAO: deleteAll failed: \(error)")
         }
     }
 }

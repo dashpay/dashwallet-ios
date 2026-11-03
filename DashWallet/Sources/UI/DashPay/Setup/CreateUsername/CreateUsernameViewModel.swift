@@ -18,6 +18,8 @@
 import Combine
 import SwiftDashSDK
 
+private let logger = AppLogger(category: "create-username-view-model")
+
 struct CreateUsernameUIState {
     var lengthRule: UsernameValidationRuleResult
     var allowedCharactersRule: UsernameValidationRuleResult
@@ -934,7 +936,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // The registration-activity sink of the Home card re-checks
                 // the invitation once this attempt has ended.
                 if let failure = InvitationClaimFailure.classify(error) {
-                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    logger.error("CreateUsername: invitation claim refused (\(failure, privacy: .public)): \(error)")
                     return .failure(failure.message)
                 }
                 return .failure(
@@ -1004,7 +1006,7 @@ class CreateUsernameViewModel: ObservableObject {
         } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
             return .cancelled
         } catch {
-            DWLogger.log("CreateUsername: purchase failed for '\(name)': \(error.localizedDescription)")
+            logger.error("CreateUsername: purchase failed for '\(name, privacy: .public)': \(error)")
             if let check = AssetLockInputLimit.check(for: error) {
                 return .needsCoinConsolidation(check)
             }
@@ -1014,13 +1016,13 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Human wording for a failed registration — the shared mapping
     /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
-    /// too. The raw text always reaches the log.
+    /// too. The error's type and code always reach the log.
     private static func registrationFailureMessage(
         _ error: Error,
         username: String
     ) -> String {
         let raw = error.localizedDescription
-        DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
+        logger.error("CreateUsername: registration failed for '\(username, privacy: .public)': \(error)")
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 

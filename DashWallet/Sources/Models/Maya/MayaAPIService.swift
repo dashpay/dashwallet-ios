@@ -19,6 +19,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "maya-api-service")
+
 final class MayaAPIService: HTTPClient<MayaEndpoint> {
     static let shared = MayaAPIService()
 
@@ -72,7 +74,7 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
                let body = try? JSONDecoder().decode(MayaSwapQuote.self, from: response.data) {
                 return body.error
             }
-            DWLogger.log("Maya: Address validation request failed: \(error)")
+            logger.warning("Maya: Address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "Maya")
         }
     }

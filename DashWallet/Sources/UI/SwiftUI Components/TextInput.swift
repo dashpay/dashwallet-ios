@@ -134,21 +134,27 @@ struct TextInput: View {
     }
 }
 
-// Preview
-struct TextInput_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(spacing: 20) {
-            TextInput(label: "Username", text: .constant(""))
-            TextInput(label: "Password", text: .constant("password"))
-            TextInput(
-                label: "Email", 
-                text: .constant("user@example.com"), 
-                isError: true,
-                onSubmit: {
-                    print("Submit pressed on email field")
-                }
-            )
-        }
+#Preview("Empty") {
+    TextInput(label: "Username", text: .constant(""))
         .padding()
-    }
+}
+
+#Preview("Filled") {
+    TextInput(label: "Password", text: .constant("password"))
+        .padding()
+}
+
+#Preview("Error") {
+    TextInput(
+        label: "Email",
+        text: .constant("user@example.com"),
+        isError: true,
+        onSubmit: {}
+    )
+    .padding()
+}
+
+#Preview("Long text") {
+    TextInput(label: "Email", text: .constant("a.very.long.email.address.that.does.not.fit@example.com"))
+        .padding()
 }

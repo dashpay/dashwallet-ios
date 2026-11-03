@@ -18,6 +18,8 @@
 import Foundation
 import SQLite
 
+private let logger = AppLogger(category: "explore-database-connection")
+
 // MARK: - ExploreDatabaseConnectionError
 
 enum ExploreDatabaseConnectionError: Error {
@@ -32,6 +34,9 @@ let kExploreDashDatabaseName = "explore.db"
 
 class ExploreDatabaseConnection {
     var db: Connection!
+    /// Set while `db` is the in-memory stand-in: it has no tables, so every
+    /// query on it fails.
+    private var isInMemory = false
 
     #if DEBUG || Testflight
     /// Guards the test-merchant seeding so it runs at most once per session.
@@ -94,11 +99,13 @@ class ExploreDatabaseConnection {
             // No database found - this is expected if we're waiting for v3 download
             // Create an in-memory database to prevent crashes
             db = try Connection(.inMemory)
+            isInMemory = true
             return
         }
 
         do {
             db = try Connection(dbPath)
+            isInMemory = false
 
             // Add test merchant on initial connection for TestFlight builds
             #if DEBUG || Testflight
@@ -108,9 +115,10 @@ class ExploreDatabaseConnection {
             }
             #endif
         } catch {
-            print(error)
+            logger.error("ExploreDatabaseConnection: connect failed: \(error)")
             // Fallback to in-memory database if connection fails
             db = try Connection(.inMemory)
+            isInMemory = true
         }
     }
 
@@ -135,7 +143,7 @@ class ExploreDatabaseConnection {
             return resultItems
         } catch {
             // If query fails (e.g., table doesn't exist in in-memory db), return empty array
-            print("Database query failed: \(error)")
+            logQueryFailure(error)
             return []
         }
     }
@@ -147,8 +155,16 @@ class ExploreDatabaseConnection {
             return try db.prepareRowIterator(query).map { Item(row: $0) }
         } catch {
             // If query fails (e.g., table doesn't exist in in-memory db), return empty array
-            print("Database query failed: \(error)")
+            logQueryFailure(error)
             return []
+        }
+    }
+
+    private func logQueryFailure(_ error: Error) {
+        if isInMemory {
+            logger.debug("ExploreDatabaseConnection: query failed on the in-memory stand-in: \(error)")
+        } else {
+            logger.warning("ExploreDatabaseConnection: query failed: \(error)")
         }
     }
 
@@ -161,10 +177,10 @@ class ExploreDatabaseConnection {
     }
 
     private func insertTestMerchant() {
-        print("🎯 ExploreDatabaseConnection: Adding test merchants...")
+        logger.debug("🎯 ExploreDatabaseConnection: Adding test merchants...")
 
         guard let db = self.db else {
-            print("🎯 ExploreDatabaseConnection: Database not ready yet")
+            logger.debug("🎯 ExploreDatabaseConnection: Database not ready yet")
             return
         }
 
@@ -357,9 +373,10 @@ class ExploreDatabaseConnection {
             }
 
             didInsertTestMerchants = true
-            print("✅ PiggyCards test merchants added successfully (\(piggyCardsTestMerchants.count) merchants)")
+            logger.debug(
+                "✅ PiggyCards test merchants added successfully (\(piggyCardsTestMerchants.count) merchants)")
         } catch {
-            print("🎯 Error adding PiggyCards test merchants: \(error)")
+            logger.warning("🎯 Error adding PiggyCards test merchants: \(error)")
         }
     }
     #endif

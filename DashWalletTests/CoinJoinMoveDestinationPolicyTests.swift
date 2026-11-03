@@ -374,6 +374,17 @@ final class CoinJoinSweepFailureTests: XCTestCase {
         XCTAssertFalse(error.localizedDescription.contains("no peer echo"))
     }
 
+    /// The service's own error without a diagnostic is written as its code,
+    /// not its localized description.
+    func testSweepLogLineOmitsTheServiceDescription() {
+        let error = NSError(
+            domain: "org.dashfoundation.dash.wallet-send-service", code: 4,
+            userInfo: [NSLocalizedDescriptionKey: "No CoinJoin balance to move"])
+        let line = WalletSendService.coinJoinSweepLogLine(for: error)
+        XCTAssertEqual(line, AppLogMessage.errorSummary(error))
+        XCTAssertFalse(line.contains("No CoinJoin balance"))
+    }
+
     /// Nothing left the wallet: the chunk's own error is reported.
     func testNothingMovedIsLeftToTheCaller() {
         XCTAssertNil(failure(accepted: 0, failed: 2, unknown: 0))

@@ -18,6 +18,9 @@
 import CoreLocation
 import Foundation
 import SQLite
+
+private let logger = AppLogger(category: "merchant-dao")
+
 private typealias Expression = SQLite.Expression
 
 // MARK: - MerchantDAO
@@ -171,7 +174,7 @@ class MerchantDAO: PointOfUseDAO {
 
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
-                print(error)
+                logger.error("MerchantDAO: items failed: \(error)")
                 completion(.failure(error))
             }
         }
@@ -308,6 +311,10 @@ class MerchantDAO: PointOfUseDAO {
         #if PIGGYCARDS_ENABLED
         let excludePiggyCards = isPiggyCardsGeoRestricted()
         #endif
+        // Logged once after the loop: a failure here repeats for every merchant on the page.
+        var databaseMissing = false
+        var failedMerchants = 0
+        var firstError: Error?
         for (index, item) in items.enumerated() {
             if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                 // Filter out PiggyCards providers when user is in restricted region
@@ -333,7 +340,7 @@ class MerchantDAO: PointOfUseDAO {
 
                 do {
                     guard let db = self.connection.db else {
-                        print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                        databaseMissing = true
                         continue
                     }
 
@@ -401,9 +408,18 @@ class MerchantDAO: PointOfUseDAO {
                     }
                 } catch {
                     // If we can't fetch providers, just continue with empty providers
-                    print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                    failedMerchants += 1
+                    if firstError == nil { firstError = error }
                 }
             }
+        }
+
+        if databaseMissing {
+            logger.warning("MerchantDAO: database connection is nil; gift card providers not attached")
+        }
+        if let firstError {
+            logger.warning(
+                "MerchantDAO: gift card providers not fetched for \(failedMerchants) merchant(s); first: \(firstError)")
         }
 
         return items
@@ -535,7 +551,7 @@ extension MerchantDAO {
 
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
-                print(error)
+                logger.error("MerchantDAO: allLocations failed: \(error)")
                 completion(.failure(error))
             }
         }
@@ -577,7 +593,7 @@ extension MerchantDAO {
                 items = wSelf.enrichedWithGiftCardProviders(items)
                 completion(.success(items))
             } catch {
-                print(error)
+                logger.error("MerchantDAO: physicalLocations failed: \(error)")
                 completion(.failure(error))
             }
         }
@@ -683,7 +699,7 @@ extension MerchantDAO {
                 self?.cachedTerritories = items
                 completion(.success(items))
             } catch {
-                print(error)
+                logger.error("MerchantDAO: territories failed: \(error)")
                 completion(.failure(error))
             }
         }

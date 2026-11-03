@@ -18,6 +18,9 @@
 import CoreLocation
 import Foundation
 import SQLite
+
+private let logger = AppLogger(category: "atm-dao")
+
 private typealias Expression = SQLite.Expression
 
 class AtmDAO: PointOfUseDAO {
@@ -85,7 +88,7 @@ class AtmDAO: PointOfUseDAO {
                 let items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
-                print(error)
+                logger.error("AtmDAO: items failed: \(error)")
                 completion(.failure(error))
             }
         }
@@ -106,7 +109,7 @@ class AtmDAO: PointOfUseDAO {
                 self?.cachedTerritories = items
                 completion(.success(items))
             } catch {
-                print(error)
+                logger.error("AtmDAO: territories failed: \(error)")
                 completion(.failure(error))
             }
         }

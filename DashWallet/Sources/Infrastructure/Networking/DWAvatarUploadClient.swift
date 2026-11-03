@@ -353,14 +353,15 @@ final class DWAvatarUploadClient: NSObject {
     /// maps a non-2xx into `.statusCode(response)`, which carries it — but
     /// `localizedDescription` renders only "Status Code: 400, Data Length: 78",
     /// which is exactly enough to know something is wrong and nothing about
-    /// what. Pull the body out whenever it is there.
+    /// what. Pull the body out whenever it is there; otherwise write the
+    /// error's type and code, not its description.
     private static func failureDetail(_ error: Error) -> String {
         if let clientError = error as? HTTPClientError,
            case .statusCode(let response) = clientError {
             let body = String(data: response.data, encoding: .utf8) ?? "<non-utf8 body>"
             return "status \(response.statusCode), body \(body)"
         }
-        return error.localizedDescription
+        return AppLogMessage.errorSummary(error)
     }
 
     /// Classify a failed upload. A 4xx other than 429 is Imgur declining the

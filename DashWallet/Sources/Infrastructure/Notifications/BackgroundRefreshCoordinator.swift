@@ -19,6 +19,8 @@ import BackgroundTasks
 import Foundation
 import UIKit
 
+private let logger = AppLogger(category: "background-refresh-coordinator")
+
 // MARK: - BackgroundRefreshTaskHandle
 
 /// The slice of `BGTask` the coordinator touches. `BGTask` has no public
@@ -397,7 +399,7 @@ final class BackgroundRefreshCoordinator {
         } catch {
             // Expected on simulators and when the OS has disabled
             // background refresh for the app; nothing to recover.
-            DWLogger.log("BackgroundRefreshCoordinator: submit failed: \(error)")
+            logger.warning("BackgroundRefreshCoordinator: submit failed: \(error)")
         }
     }
 

@@ -19,6 +19,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "exchange-address-provider")
+
 struct ExchangeAddressLookupContext: Hashable {
     let currencyCode: String
     let chain: String
@@ -351,7 +353,7 @@ class ExchangeAddressProvider {
 
             return try JSONDecoder().decode([UpholdCard].self, from: data)
         } catch {
-            DWLogger.log("Maya Uphold: Failed to fetch/decode cards: \(error)")
+            logger.error("Maya Uphold: Failed to fetch/decode cards: \(error)")
             return []
         }
     }
@@ -386,7 +388,7 @@ class ExchangeAddressProvider {
             DWLogger.log("Maya Uphold: Created card for \(currency): \(card.id)")
             return card.id
         } catch {
-            DWLogger.log("Maya Uphold: Failed to create card for \(currency): \(error)")
+            logger.error("Maya Uphold: Failed to create card for \(currency, privacy: .public): \(error)")
             return nil
         }
     }
@@ -427,7 +429,7 @@ class ExchangeAddressProvider {
             invalidateSessionIfRejected(statusCode)
             return nil
         } catch {
-            DWLogger.log("Maya Uphold: Failed to create address on card \(cardId): \(error)")
+            logger.error("Maya Uphold: Failed to create address on card \(cardId, privacy: .public): \(error)")
             return nil
         }
     }
@@ -573,7 +575,7 @@ class ExchangeAddressProvider {
             DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via direct lookup: \(address)")
             return address
         } catch {
-            DWLogger.log("Maya Coinbase: Direct lookup failed for \(context.currencyCode): \(error)")
+            logger.error("Maya Coinbase: Direct lookup failed for \(context.currencyCode, privacy: .public): \(error)")
             return nil
         }
     }
@@ -602,7 +604,8 @@ class ExchangeAddressProvider {
             DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via account list: \(address)")
             return address
         } catch {
-            DWLogger.log("Maya Coinbase: Account list fallback failed for \(context.currencyCode): \(error)")
+            logger.error(
+                "Maya Coinbase: Account list fallback failed for \(context.currencyCode, privacy: .public): \(error)")
             return nil
         }
     }

@@ -19,6 +19,8 @@ import Combine
 import Foundation
 @preconcurrency import SQLite
 
+private let logger = AppLogger(category: "swap-orders-dao")
+
 // MARK: - SwapOrdersDAO
 
 protocol SwapOrdersDAO {
@@ -71,7 +73,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         do {
             try await save(dto: dto)
         } catch {
-            DWLogger.log("SwapOrdersDAO: create failed: \(error)")
+            logger.error("SwapOrdersDAO: create failed: \(error)")
         }
     }
 
@@ -140,7 +142,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             }
             return order
         } catch {
-            DWLogger.log("SwapOrdersDAO: get failed: \(error)")
+            logger.error("SwapOrdersDAO: get failed: \(error)")
             return nil
         }
     }
@@ -149,7 +151,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         do {
             try await save(dto: dto)
         } catch {
-            DWLogger.log("SwapOrdersDAO: update failed: \(error)")
+            logger.error("SwapOrdersDAO: update failed: \(error)")
         }
     }
 
@@ -162,7 +164,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             cache.removeValue(forKey: id)
             emitUpdate()
         } catch {
-            DWLogger.log("SwapOrdersDAO: delete failed: \(error)")
+            logger.error("SwapOrdersDAO: delete failed: \(error)")
         }
     }
 
@@ -189,7 +191,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             return (try reload(), true)
         } catch {
             aTableReadFailed = true
-            DWLogger.log("SwapOrdersDAO: all failed: \(error)")
+            logger.error("SwapOrdersDAO: all failed: \(error)")
             return (Array(cache.values), isHydrated)
         }
     }
@@ -218,7 +220,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         } catch {
             // Every entry point retries: one line, not one per call.
             if !aTableReadFailed {
-                DWLogger.log("SwapOrdersDAO: hydration failed: \(error)")
+                logger.error("SwapOrdersDAO: hydration failed: \(error)")
             }
             aTableReadFailed = true
         }

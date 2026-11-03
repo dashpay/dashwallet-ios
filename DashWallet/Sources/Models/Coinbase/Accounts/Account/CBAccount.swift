@@ -17,6 +17,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "cb-account")
+
 extension Notification.Name {
     static let accountDidChangeNotification: Notification.Name = .init(rawValue: "accountDidChangeNotification")
 }
@@ -166,7 +168,7 @@ extension CBAccount {
                 throw HTTPClientError.statusCode(r)
             }
         } catch {
-            DWLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
+            logger.error("Tranfer from coinbase: transferToWallet - failure - \(error)")
             throw Coinbase.Error.transactionFailed(.unknown(error))
         }
     }

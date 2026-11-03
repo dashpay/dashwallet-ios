@@ -1,6 +1,8 @@
 import Foundation
 import Network
 
+private let logger = AppLogger(category: "time-utils")
+
 @objc(DWDurationFormatter)
 final class DWDurationFormatter: NSObject {
     @objc(stringFromTimeInterval:)
@@ -160,7 +162,8 @@ class TimeUtils {
         lastTimeWhenSkewChecked = currentTimeMillis
         lastTimeSkew = newSkew
         
-        print("CoinJoin: timeskew: \(currentTimeMillis)-\(networkTime!) = \(newSkew) s; source: \(timeSource)")
+        logger.info(
+            "CoinJoin: timeskew: \(currentTimeMillis)-\(networkTime!) = \(newSkew) s; source: \(timeSource, privacy: .public)")
         return newSkew
     }
 }

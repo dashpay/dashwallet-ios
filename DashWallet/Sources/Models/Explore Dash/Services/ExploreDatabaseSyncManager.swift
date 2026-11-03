@@ -19,6 +19,8 @@ import Firebase
 import Foundation
 import SSZipArchive
 
+private let logger = AppLogger(category: "explore-database-sync-manager")
+
 private let fileName = "explore"
 
 private let timestampKey = "Data-Timestamp"
@@ -223,7 +225,7 @@ extension ExploreDatabaseSyncManager {
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
                         try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
                     } catch {
-                        DWLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
+                        logger.error("ExploreDash: failed to open DB archive: \(error)")
                         self?.syncState = .error(Date(), error)
                     }
                 }

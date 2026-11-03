@@ -27,6 +27,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "bip70-payment-service")
+
 // MARK: - Injected dependencies (implemented in L6 over the real SDK/app surfaces)
 
 /// Build/sign/broadcast over the funded SwiftDashSDK wallet.
@@ -318,7 +320,7 @@ final class BIP70PaymentService {
                 // the caller has nothing to record the purchase against.
                 throw BIP70Error.paymentNotAcknowledged(
                     txHashDisplay: prepared.txHashDisplay,
-                    reason: (error as? BIP70Error)?.errorDescription ?? error.localizedDescription)
+                    reason: AppLogMessage.errorSummary(error))
             }
         }
 
@@ -343,7 +345,8 @@ final class BIP70PaymentService {
                 do {
                     _ = try await wallet.broadcast(prepared)
                 } catch {
-                    DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
+                    logger.error(
+                        "BIP70: background broadcast of \(txidHexDisplay, privacy: .public) ended without acceptance: \(error)")
                 }
             }
         }

@@ -17,6 +17,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "ctx-spend-token-service")
+
 protocol CTXSpendTokenProvider: AnyObject {
     var accessToken: String? { get }
     var refreshToken: String? { get }
@@ -63,7 +65,7 @@ class CTXSpendTokenService {
 
                 DWLogger.log("CTXSpend: Token refresh successful")
             } catch {
-                DWLogger.log("CTXSpend: Token refresh failed: \(error)")
+                logger.error("CTXSpend: Token refresh failed: \(error)")
 
                 // Clear tokens on refresh failure
                 tokenProvider.clearTokensOnRefreshFailure()

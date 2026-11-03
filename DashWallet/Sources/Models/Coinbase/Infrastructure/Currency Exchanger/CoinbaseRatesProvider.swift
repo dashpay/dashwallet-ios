@@ -17,6 +17,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "coinbase-rates-provider")
+
 // MARK: - CoinbaseRatesProvider
 
 final class CoinbaseRatesProvider: RatesProvider {
@@ -60,7 +62,7 @@ extension CoinbaseRatesProvider {
 
             self.updateHandler?(array)
             } catch {
-                DWLogger.log("Coinbase exchange rates request failed: \(error.localizedDescription)")
+                logger.warning("Coinbase exchange rates request failed: \(error)")
             }
         }
     }

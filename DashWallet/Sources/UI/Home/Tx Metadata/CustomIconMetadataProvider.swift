@@ -20,6 +20,8 @@ import Combine
 import UIKit
 import CryptoKit
 
+private let logger = AppLogger(category: "custom-icon-metadata-provider")
+
 class CustomIconMetadataProvider: MetadataProvider, @unchecked Sendable {
     static let shared = CustomIconMetadataProvider()
     
@@ -173,7 +175,8 @@ class CustomIconMetadataProvider: MetadataProvider, @unchecked Sendable {
                     self.metadataUpdated.send(txId)
                 }
             } catch {
-                DWLogger.log("CustomIconMetadataProvider: Failed to fetch icon from URL '\(iconUrl)' for txId \(txId.hexEncodedString()): \(error)")
+                logger.error(
+                    "CustomIconMetadataProvider: Failed to fetch icon from URL '\(iconUrl, privacy: .public)' for txId \(txId.hexEncodedString(), privacy: .public): \(error)")
             }
         }
     }

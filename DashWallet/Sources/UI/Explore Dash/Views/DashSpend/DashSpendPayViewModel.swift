@@ -21,6 +21,8 @@ import Combine
 import UIKit
 #endif
 
+private let logger = AppLogger(category: "dash-spend-pay-view-model")
+
 private let defaultCurrency = kDefaultCurrencyCode
 
 private struct GiftCardOrderMetadata: Codable {
@@ -718,7 +720,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self.checkAmountForErrors()
             }
         } catch {
-            DWLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
+            logger.error(
+                "DashSpend updateMerchantInfo failed for provider \(provider.displayName, privacy: .public): \(error)")
 
             await MainActor.run {
                 self.isLoading = false
