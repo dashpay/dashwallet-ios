@@ -121,23 +121,23 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
     // MARK: utxoReadIsUsable
 
     func testNoAccountsAtAllIsAFailedRead() {
-        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 0, coinJoinBalanceIsZero: nil, utxoCount: 0))
+        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 0, accountBalanceIsZero: nil, utxoCount: 0))
     }
 
     func testWalletWithoutACoinJoinAccountReadsAsEmpty() {
-        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: nil, utxoCount: 0))
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, accountBalanceIsZero: nil, utxoCount: 0))
     }
 
     func testNoUtxosBehindANonZeroBalanceIsAFailedRead() {
-        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: false, utxoCount: 0))
+        XCTAssertFalse(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, accountBalanceIsZero: false, utxoCount: 0))
     }
 
     func testEmptyAccountWithZeroBalanceIsUsable() {
-        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: true, utxoCount: 0))
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, accountBalanceIsZero: true, utxoCount: 0))
     }
 
     func testUtxosBehindABalanceAreUsable() {
-        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, coinJoinBalanceIsZero: false, utxoCount: 104))
+        XCTAssertTrue(CoinJoinShieldPlanner.utxoReadIsUsable(accountCount: 3, accountBalanceIsZero: false, utxoCount: 104))
     }
 
     // MARK: nextStep
