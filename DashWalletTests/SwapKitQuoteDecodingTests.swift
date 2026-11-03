@@ -193,6 +193,36 @@ final class SwapKitErrorCopyTests: XCTestCase {
         XCTAssertEqual(message(nil), genericMessage)
         XCTAssertEqual(message(""), genericMessage)
     }
+
+    func testLogCodeKeepsOnlyAnIdentifierCode() {
+        XCTAssertEqual(
+            SwapKitErrorCopy.logCode(of: "sellAssetAmountTooSmall: amount below 0.1 for XpqA1b2c3"),
+            "sellAssetAmountTooSmall")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: "  noRoutesFound  "), "noRoutesFound")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: nil), "<nil>")
+    }
+
+    func testLogCodeNamesKnownMessagesByKey() {
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: SwapKitErrorCopy.noRouteAvailableMessage), "noRouteAvailable")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: SwapKitErrorCopy.walletUnavailableMessage), "walletUnavailable")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: SwapKitErrorCopy.noVaultAddressMessage), "noVaultAddress")
+        XCTAssertEqual(
+            SwapKitErrorCopy.logCode(of: "No routes found for DASH.DASH -> ARB.USDC-0xaf88d065e77c8cc2239327c5edb3a432268e5831"),
+            "noRoutesFound")
+        XCTAssertEqual(
+            SwapKitErrorCopy.logCode(of: "dash.dash: not enough asset to pay for fees"),
+            "mayaNotEnoughForFees")
+    }
+
+    func testLogCodeNeverWritesMessageTextAddressesOrTxids() {
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: "Api request failed"), "<text, 18 chars>")
+        let address = "XpqAbcdeFghijKLmnoPqrsTUvwxYzAbcde"  // 34 letters, no digits
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: "\(address): insufficient"), "<text, 48 chars>")
+        let txid = String(repeating: "ab", count: 32)
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: txid), "<text, 64 chars>")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: ": \(address)"), "<text, 36 chars>")
+        XCTAssertEqual(SwapKitErrorCopy.logCode(of: "1abc: x"), "<text, 7 chars>")
+    }
 }
 
 // MARK: - Production boundary

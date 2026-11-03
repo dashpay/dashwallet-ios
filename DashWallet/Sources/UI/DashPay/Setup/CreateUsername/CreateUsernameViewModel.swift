@@ -1016,13 +1016,13 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Human wording for a failed registration — the shared mapping
     /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
-    /// too. The raw text always reaches the log.
+    /// too. The error's type and code always reach the log.
     private static func registrationFailureMessage(
         _ error: Error,
         username: String
     ) -> String {
         let raw = error.localizedDescription
-        DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
+        logger.error("CreateUsername: registration failed for '\(username, privacy: .public)': \(error)")
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 

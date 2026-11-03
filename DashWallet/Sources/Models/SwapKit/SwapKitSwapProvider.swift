@@ -362,7 +362,7 @@ final class SwapKitSwapProvider: SwapProvider {
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
             let providerError = quoteResponse.providerErrors?.first
             let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? SwapKitErrorCopy.noRouteAvailableMessage
             return errorResult(msg)
         }
 
@@ -392,7 +392,7 @@ final class SwapKitSwapProvider: SwapProvider {
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
             let providerError = quoteResponse.providerErrors?.first
             let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? SwapKitErrorCopy.noRouteAvailableMessage
             return errorResult(msg)
         }
 
@@ -400,7 +400,7 @@ final class SwapKitSwapProvider: SwapProvider {
         // sourceAddress must be a real wallet address for SwapKit's format check and
         // so any SwapKit refund is returned to this wallet.
         guard let sourceAddress = walletSourceAddress() else {
-            return errorResult(Self.walletUnavailableMessage)
+            return errorResult(SwapKitErrorCopy.walletUnavailableMessage)
         }
         let swapRequest = SwapKitSwapRequest(
             routeId: best.routeId,
@@ -426,7 +426,7 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let vaultAddress = swapResponse.targetAddress ?? swapResponse.inboundAddress else {
-            return errorResult(NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit"))
+            return errorResult(SwapKitErrorCopy.noVaultAddressMessage)
         }
 
         let memo = swapResponse.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -643,7 +643,7 @@ final class SwapKitSwapProvider: SwapProvider {
             let message = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? quoteResponse.message
                 ?? quoteResponse.error
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? SwapKitErrorCopy.noRouteAvailableMessage
             throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
         }
 
@@ -1035,21 +1035,18 @@ final class SwapKitSwapProvider: SwapProvider {
         return address
     }
 
-    private static var walletUnavailableMessage: String {
-        NSLocalizedString("Your wallet isn’t ready yet. Please try again in a moment.", comment: "SwapKit")
-    }
-
     private static func walletUnavailableError() -> Error {
-        NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: walletUnavailableMessage])
+        NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: SwapKitErrorCopy.walletUnavailableMessage])
     }
 
     // MARK: - Private: Helpers
 
 private func errorResult(_ message: String) -> SwapQuoteResult {
         // Every quote/swap failure funnels through here on its way to the UI, which renders a
-        // mapped (often generic) string. Log the raw message at the source so a failure is
-        // diagnosable from an exported log instead of only from a screenshot.
-        DWLogger.log("SwapKit: quote/swap failed — raw: \(message)")
+        // mapped (often generic) string. Log its code at the source so a failure is diagnosable
+        // from an exported log instead of only from a screenshot; not the message text, which
+        // can quote the request's addresses.
+        logger.warning("SwapKit: quote/swap failed — code: \(SwapKitErrorCopy.logCode(of: message), privacy: .public)")
         return SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
     }
 }

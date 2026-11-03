@@ -19,6 +19,8 @@ import Combine
 import DashUIKit
 import Foundation
 
+private let logger = AppLogger(category: "swap-convert-view-model")
+
 @MainActor
 final class SwapConvertViewModel: ObservableObject {
     let coin: SwapCryptoCurrency
@@ -302,12 +304,11 @@ final class SwapConvertViewModel: ObservableObject {
         // Same reason as `OrderPreviewViewModel.setFailure`: the branches below rewrite the raw
         // error into user-facing copy, so record it first or the amount screen's failures leave
         // no trace in an exported log.
-        // `apiError` is SwapKit's error code string, not an `Error`.
-        // swiftlint:disable:next no_raw_error_log
-        DWLogger.log("Swap: quote error on the amount screen for \(coin.code) — raw: \(apiError)")
+        logger.warning(
+            "Swap: quote error on the amount screen for \(coin.code, privacy: .public) — code: \(SwapKitErrorCopy.logCode(of: apiError), privacy: .public)")
         latestQuote = nil
         receiveAmount = nil
-        if apiError.contains("not enough asset to pay for fees") {
+        if apiError.contains(SwapKitErrorCopy.mayaNotEnoughForFeesPhrase) {
             errorMessage = NSLocalizedString(
                 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
                 comment: "Dash DEX / dex_error_no_route"
