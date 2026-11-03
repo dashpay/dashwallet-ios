@@ -252,9 +252,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     /// The persistence scope the running client was started on. Kept apart
     /// from `runningNetwork`, whose devnet scope follows the configured devnet
-    /// name and can change while that client is still up.
+    /// name and can change while that client is still up. Readable so a
+    /// `.syncDone` can be attributed to the client that produced it rather
+    /// than to the network key, which a switch flips before the outgoing
+    /// client's resting snapshot has stopped being delivered.
     @MainActor
-    private var runningScope: String?
+    private(set) var runningScope: String?
 
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
@@ -672,7 +675,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             for: network, scope: scope, dataDir: dataDir, manager: manager)
         let rebuiltForWalletIds = await rebuildChainStoreIfPending(
             for: network, scope: scope, dataDir: dataDir, manager: manager,
-            storeAlreadyCleared: appliedChainResync)
+            storeAlreadyCleared: appliedChainResync != nil)
 
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
@@ -683,9 +686,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // The rebuild marker has the resync marker's contract (below): it
         // survives a failed startSpv and is consumed only once the client
         // that anchors the rebuilt store is running.
+        // The SDK runs the blocking native start off the main actor: opening
+        // the SPV store can take many seconds (a one-time storage migration
+        // took 14 s on a device), and the blocking overload froze the UI for
+        // all of it. The main actor is free for the whole await below.
         do {
-            try SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
-                try manager.startSpv(config: config)
+            try await SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
+                try await manager.startSpv(config: config)
             })
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
@@ -694,14 +701,34 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         // The resync marker survives a failed startSpv (the store is empty
         // either way; the next launch simply re-applies), and is consumed
-        // only once the resynced client is actually running.
-        if appliedChainResync {
-            SPVChainResyncMarker.clear(for: network)
+        // only once the resynced client is actually running — which it is
+        // even when a network switch overtook the start below. Only the
+        // marker this start applied is consumed: the main actor was free for
+        // the whole await, so the Sync Info screen may have armed a new
+        // resync meanwhile, and that one must survive to the next launch.
+        if let appliedChainResync,
+           SPVChainResyncMarker.clear(applied: appliedChainResync, for: network) {
             Self.logger.info("🛰️ SPVCOORD :: chain resync applied on \(network.rawValue, privacy: .public)")
         }
 
+        // Recorded before the overtake check: the client is running either
+        // way, and `performStop` stops a client this coordinator owns.
         runningNetwork = network
         runningScope = scope
+
+        // `prepareForNetworkSwitch()` runs outside the lifecycle queue, so a
+        // switch can land during the start's await (the stop has the same
+        // check after its own await). Its preparation already detached the
+        // subscriptions and cleared the published state; re-attaching here
+        // would publish the outgoing network's progress and balance as the
+        // new network's. The switch's refresh, queued behind this start,
+        // begins with a reset that stops the client just started.
+        if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+            Self.logger.info(
+                "🛰️ SPVCOORD :: network switch prepared during the start of \(network.rawValue, privacy: .public); leaving it to the switch")
+            return .failure(StartError.superseded)
+        }
+
         lastError = nil
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
@@ -718,6 +745,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         guard switchPreparation.isOvertaken(since: preparationsAtStart) else { return false }
         Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
         return true
+    }
+
+    /// `isOvertakenByNetworkSwitch(since:)` without the log line: for a caller
+    /// that only classifies a `superseded` it already received, after the
+    /// start logged the overtake itself.
+    @MainActor
+    func wasOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
+        switchPreparation.isOvertaken(since: preparationsAtStart)
     }
 
     /// Detach every publisher that feeds published state, without touching the
@@ -883,8 +918,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// the arm (the arming save already rewound the row, which normally feeds
     /// the restore); a rewind failure is logged but doesn't retain the marker.
     ///
-    /// Returns true when applied — the caller clears the marker once
-    /// `startSpv` succeeds. Returns false (marker retained) when there is
+    /// Returns the marker that was applied — the caller clears exactly that
+    /// one once `startSpv` succeeds, so a resync armed during the start is
+    /// not consumed with it. Returns nil (marker retained) when there is
     /// nothing pending, the marker was armed by this process (it must wait
     /// for a launch that restores the lowered birth height into Rust), or the
     /// store was not cleared (see `clearChainStoreBeforeStart`).
@@ -894,14 +930,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         scope: String,
         dataDir: String,
         manager: PlatformWalletManager
-    ) async -> Bool {
-        guard let pending = SPVChainResyncMarker.pending(for: network) else { return false }
+    ) async -> SPVChainResyncMarker.Pending? {
+        guard let pending = SPVChainResyncMarker.pending(for: network) else { return nil }
         guard !pending.armedByThisSession else {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
-            return false
+            return nil
         }
         guard await clearChainStoreBeforeStart(scope: scope, dataDir: dataDir, reason: "chain resync") else {
-            return false
+            return nil
         }
 
         do {
@@ -913,7 +949,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         Self.logger.info("🛰️ SPVCOORD :: chain store cleared for resync from height \(pending.fromHeight, privacy: .public)")
-        return true
+        return pending
     }
 
     /// Rebuild the chain store for wallets imported, or recreated from the
@@ -1423,7 +1459,7 @@ enum SPVChainResyncMarker {
     /// process is only applied by a later one (see type doc).
     private static let sessionId = UUID().uuidString
 
-    struct Pending {
+    struct Pending: Equatable {
         let walletId: Data
         let fromHeight: UInt32
         let armedBySessionId: String
@@ -1447,8 +1483,8 @@ enum SPVChainResyncMarker {
     /// `startSpv` of a later app session, and `walletId`'s filter checkpoint
     /// is rewound to `fromHeight`. Overwrites any pending marker for the
     /// network.
-    static func arm(walletId: Data, fromHeight: UInt32, network: Network) {
-        UserDefaults.standard.set(
+    static func arm(walletId: Data, fromHeight: UInt32, network: Network, defaults: UserDefaults = .standard) {
+        defaults.set(
             [
                 "walletId": walletId.hexEncodedString(),
                 "fromHeight": NSNumber(value: fromHeight),
@@ -1467,8 +1503,8 @@ enum SPVChainResyncMarker {
         logger.info("🛰️ SPV-RESYNC :: disarmed for \(network.rawValue, privacy: .public)")
     }
 
-    static func pending(for network: Network) -> Pending? {
-        guard let dict = UserDefaults.standard.dictionary(forKey: key(for: network)),
+    static func pending(for network: Network, defaults: UserDefaults = .standard) -> Pending? {
+        guard let dict = defaults.dictionary(forKey: key(for: network)),
               let walletIdHex = dict["walletId"] as? String,
               let walletId = Data(hexString: walletIdHex),
               let fromHeight = (dict["fromHeight"] as? NSNumber)?.uint32Value,
@@ -1481,8 +1517,24 @@ enum SPVChainResyncMarker {
             armedBySessionId: armedBySessionId)
     }
 
-    static func clear(for network: Network) {
-        UserDefaults.standard.removeObject(forKey: key(for: network))
+    static func clear(for network: Network, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key(for: network))
+    }
+
+    /// Consume `applied`, the marker a start applied, and only that one: a
+    /// start suspends for the whole store open, during which the Sync Info
+    /// screen can arm a new resync for the same network (overwriting the
+    /// marker), and that request must reach the next launch. Returns whether
+    /// the marker was cleared; a different pending marker is left in place.
+    @discardableResult
+    static func clear(applied: Pending, for network: Network, defaults: UserDefaults = .standard) -> Bool {
+        guard let current = pending(for: network, defaults: defaults) else { return false }
+        guard current == applied else {
+            logger.info("🛰️ SPV-RESYNC :: a resync armed during the start stays pending for \(network.rawValue, privacy: .public)")
+            return false
+        }
+        clear(for: network, defaults: defaults)
+        return true
     }
 
     /// Clear every pending marker: the rows and chain data they reference are

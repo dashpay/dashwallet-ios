@@ -67,6 +67,7 @@ struct SDKIdentityProfileSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
                     Divider()
                     infoSection
                     if identityIsLoading {

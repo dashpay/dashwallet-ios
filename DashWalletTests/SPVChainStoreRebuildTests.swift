@@ -323,6 +323,62 @@ final class SPVChainStoreRebuildTests: XCTestCase {
             [walletId(0xA1)])
     }
 
+    // MARK: Async start (the SDK's off-main startSpv)
+
+    func testAFailedAsyncStartKeepsTheAppliedWalletsPending() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+
+        do {
+            try await SPVChainStoreRebuild.finish(
+                walletIds: [walletId(0xA1)], scope: "testnet", directory: directory,
+                afterStarting: {
+                    await Task.yield()
+                    throw Failure()
+                })
+            XCTFail("the start's error must propagate")
+        } catch is Failure {}
+
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
+            [walletId(0xA1)])
+    }
+
+    func testASuccessfulAsyncStartConsumesOnlyTheAppliedWalletsAfterItReturns() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xB2), scope: "testnet", directory: directory)
+        var pendingAcrossTheSuspension: [Data]?
+
+        await SPVChainStoreRebuild.finish(
+            walletIds: [walletId(0xA1)], scope: "testnet", directory: directory,
+            afterStarting: {
+                await Task.yield()
+                pendingAcrossTheSuspension = SPVChainStoreRebuild.pendingWalletIds(
+                    scope: "testnet", directory: self.directory)
+            })
+
+        XCTAssertEqual(pendingAcrossTheSuspension, [walletId(0xA1), walletId(0xB2)])
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
+            [walletId(0xB2)])
+    }
+
+    func testAnAsyncStartWithNothingAppliedLeavesTheMarkerAlone() async throws {
+        try SPVChainStoreRebuild.arm(walletId: walletId(0xA1), scope: "testnet", directory: directory)
+        var started = false
+
+        await SPVChainStoreRebuild.finish(
+            walletIds: [], scope: "testnet", directory: directory,
+            afterStarting: {
+                await Task.yield()
+                started = true
+            })
+
+        XCTAssertTrue(started)
+        XCTAssertEqual(
+            SPVChainStoreRebuild.pendingWalletIds(scope: "testnet", directory: directory),
+            [walletId(0xA1)])
+    }
+
     func testLowerCheckpointsNeverRaisesARow() throws {
         let rows = [Row(1_500_000), Row(100), Row(200_000)]
         var saved: [[UInt32]] = []

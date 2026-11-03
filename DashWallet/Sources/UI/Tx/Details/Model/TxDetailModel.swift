@@ -93,8 +93,15 @@ class TxDetailModel: NSObject {
     /// contact payment. Drives the header avatar and the contact row that
     /// stands in for the counterparty's raw address.
     lazy var contactParty: ContactParty? = swapOrderPlaceholder == nil
-        ? ContactParty(payment: transaction.dashPayPayment)
+        ? ContactParty(payment: transaction.dashPayPayment ?? recentContactPayment)
         : nil
+
+    /// A just-sent contact payment's contact, from the recent-sends registry:
+    /// the payment projection may not list the transaction yet when the
+    /// success screen opens. Only for a transaction that reads as sent —
+    /// without the projection a persisted row can read as received, and the
+    /// header would then contradict a "Sent to" contact row.
+    private var recentContactPayment: DashPayPaymentTxLookup.PaymentInfo?
 
     /// Display model for the contact on the other end of a DashPay payment.
     struct ContactParty: Hashable {
@@ -147,6 +154,10 @@ class TxDetailModel: NSObject {
     @objc(initWithTxidWire:)
     convenience init(txidWire: Data) {
         self.init(transaction: Self.resolve(txidWire: txidWire))
+        if transaction.direction == .sent {
+            recentContactPayment = WalletSendService.shared.recentSends
+                .entry(forTxidWire: txidWire)?.contactPayment
+        }
     }
 
     private static func resolve(txidWire: Data) -> Transaction {
@@ -470,7 +481,9 @@ extension TxDetailModel {
 extension TxDetailModel {
     /// Contact attribution comes from the SDK's DashPay payment history
     /// (`DashPayPaymentTxLookup`), which records the counterparty identity
-    /// and the true direction at send/sync time.
+    /// and the true direction at send/sync time — or, on a success screen
+    /// opened before that history lists the payment, from the recent-sends
+    /// registry (see `contactParty`).
     var hasSourceUser: Bool {
         contactParty?.isOutgoing == false
     }
@@ -737,7 +750,7 @@ extension TxDetailModel {
     /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
     /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
     /// 4 = consumed (transfer complete), 5 = recovered from chain after a
-    /// restore. Nil when the lookup has no entry.
+    /// restore, 6 = Max drain completed. Nil when the lookup has no entry.
     private var shieldedStatusText: String? {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
@@ -769,13 +782,13 @@ extension TxDetailModel {
 
     /// User-facing name of an asset-lock status (shared by the shielded and
     /// platform funding routes).
-    private static func lockStatusText(_ statusRaw: Int) -> String? {
+    static func lockStatusText(_ statusRaw: Int) -> String? {
         switch statusRaw {
         case 0, 1:
             return NSLocalizedString("Broadcasting", comment: "")
         case 2, 3:
             return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
-        case 4:
+        case 4, 6: // Consumed, or a Max drain recorded as completed
             return NSLocalizedString("Completed", comment: "Shielded transfer status")
         case 5:
             // RecoveredFromChain: the lock is final on Core, but whether it
@@ -867,8 +880,8 @@ extension TxDetailModel {
 
     /// Which input of the recovery rows changed.
     enum RecoveryInput {
-        /// What the registry reports changed: an outpoint's first claim or
-        /// last release, the first funding call starting or the last one
+        /// What the registry reports changed: an outpoint's or a Max drain's
+        /// first claim or last release, the first funding call starting or the last one
         /// ending, or a removal's reload starting or ending.
         case inFlightLocks
         /// The lock lookup published a changed snapshot or a new consumed
@@ -912,9 +925,12 @@ extension TxDetailModel {
 
     /// True while a running transfer has claimed an output of this
     /// transaction — for a new lock from the moment the SDK builds it, before
-    /// the lock's row exists or appears in `ShieldedTxLookup`.
+    /// the lock's row exists or appears in `ShieldedTxLookup` — or while the
+    /// Max drain that built its lock holds its claim.
     var isConsumedByRunningTransfer: Bool {
-        ShieldedAssetLocksInFlight.shared.containsTransaction(txidWire: transaction.txHashData)
+        ShieldedAssetLocksInFlight.shared.containsTransaction(
+            txidWire: transaction.txHashData,
+            drainOperation: transaction.shieldedDrainOperation)
     }
 
     /// Non-nil when this transaction is a funding asset lock whose transfer

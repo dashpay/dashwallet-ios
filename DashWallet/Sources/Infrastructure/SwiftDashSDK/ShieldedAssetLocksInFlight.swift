@@ -23,7 +23,10 @@ import Foundation
 /// skip the lock; every resume entry point reads it to refuse a second attempt.
 ///
 /// A fresh transfer's new lock is claimed by the SDK's built-lock callback,
-/// before the lock's row is persisted. The registry also counts the fresh
+/// before the lock's row is persisted. A Max drain's call reports no built
+/// lock, so the drain is claimed by its operation id instead, before the SDK
+/// call: the lock's row carries that id from the moment it is persisted, and
+/// readers pass the id of the row they look at. The registry also counts the fresh
 /// transfers that will build a new lock, from before their authorization
 /// until the transfer's attempt ends, so `hasActivity` covers one that has not
 /// built its lock yet; a bulk recovery pass counts the same way.
@@ -48,6 +51,10 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
 
     private let lock = NSLock()
     private var claims: [OutPoint: Int] = [:]
+    /// Max drains whose lock is still being consumed, by operation id: for
+    /// the drain's SDK call, and for a completed drain until its lock row
+    /// is finished.
+    private var drainClaims: [UUID: Int] = [:]
     /// Fresh transfers that will build or are building a new asset lock, and
     /// bulk recovery passes.
     private var fundingCalls = 0
@@ -58,19 +65,43 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// Production code uses `shared`; tests build their own registries.
     init() {}
 
-    func contains(_ outPoint: OutPoint) -> Bool {
-        lock.withLock { claims[outPoint, default: 0] > 0 }
+    /// Whether `outPoint` is claimed, or its lock was built by a Max drain
+    /// that holds its claim. `drainOperation` is the operation id on the
+    /// lock's row, if any.
+    func contains(_ outPoint: OutPoint, drainOperation: UUID?) -> Bool {
+        lock.withLock { isClaimed(outPoint, drainOperation: drainOperation) }
     }
 
-    /// Whether any output of the transaction is claimed — for callers that act
-    /// on the whole transaction, such as removing it.
-    func containsTransaction(txidWire: Data) -> Bool {
-        lock.withLock { claims.keys.contains { $0.txidWire == txidWire } }
+    /// Whether any output of the transaction is claimed, or its lock was
+    /// built by a Max drain that holds its claim — for callers that act on the whole
+    /// transaction, such as removing it.
+    func containsTransaction(txidWire: Data, drainOperation: UUID?) -> Bool {
+        lock.withLock {
+            claims.keys.contains { $0.txidWire == txidWire } || drainClaimLocked(drainOperation)
+        }
     }
 
-    /// Whether any transfer is building a new asset lock or consuming one.
+    /// Whether any transfer is building a new asset lock or consuming one,
+    /// including a Max drain whose claim outlives its funding call while its
+    /// lock row catches up.
     var hasActivity: Bool {
-        lock.withLock { !claims.isEmpty || fundingCalls > 0 }
+        lock.withLock { !claims.isEmpty || !drainClaims.isEmpty || fundingCalls > 0 }
+    }
+
+    /// Whether the Max drain with this operation id holds a claim.
+    func isDrainClaimed(_ operation: UUID) -> Bool {
+        lock.withLock { drainClaimLocked(operation) }
+    }
+
+    /// Call with `lock` held.
+    private func isClaimed(_ outPoint: OutPoint, drainOperation: UUID?) -> Bool {
+        claims[outPoint, default: 0] > 0 || drainClaimLocked(drainOperation)
+    }
+
+    /// Call with `lock` held.
+    private func drainClaimLocked(_ drainOperation: UUID?) -> Bool {
+        guard let drainOperation else { return false }
+        return drainClaims[drainOperation, default: 0] > 0
     }
 
     /// Whether a removal holds the runtime reload (`beginRemoval`), so no
@@ -92,15 +123,17 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
             comment: "Refused while the wallet reloads after a removed transaction")
     }
 
-    // Only the first claim and the last release change what `contains`
-    // answers, only the first and the last funding call change `hasActivity`,
-    // and only `beginRemoval`/`endRemoval` change `isRemovalInProgress`, so
-    // only those publish. Each operation decides that in the same critical
+    // Only the first claim and the last release of an outpoint or of a
+    // drain's operation id change what `contains` answers, only those and
+    // the first and the last funding call change `hasActivity`, and only
+    // `beginRemoval`/`endRemoval` change `isRemovalInProgress`, so only those
+    // publish. Each operation decides that in the same critical
     // section as its change.
     //
     // Claims and releases are for `ShieldedTransferCoordinator` (`claim` for
     // the tests) only: claims are counted, not owned, so a release from
-    // anywhere else would drop a running transfer's claim. Funding calls are
+    // anywhere else would drop a running transfer's claim (drain claims are
+    // also released by `DrainClaimSettler`). Funding calls are
     // also held by `AssetLockRecoveryService`'s bulk pass, and removals by
     // `UnconfirmedTransactionRemover`.
 
@@ -135,6 +168,29 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
         if wasLast { objectWillChange.send() }
     }
 
+    /// Claims a Max drain by its operation id. The drain also holds a funding
+    /// call while its SDK call runs; the claim can outlive it (a completed
+    /// drain waits for its lock row to catch up), and counts as activity on
+    /// its own, so a removal stays out until the claim ends.
+    @MainActor
+    func claimDrain(_ operation: UUID) {
+        let isFirst = lock.withLock { () -> Bool in
+            drainClaims[operation, default: 0] += 1
+            return drainClaims[operation] == 1
+        }
+        if isFirst { objectWillChange.send() }
+    }
+
+    @MainActor
+    func releaseDrain(_ operation: UUID) {
+        let wasLast = lock.withLock { () -> Bool in
+            guard let count = drainClaims[operation] else { return false }
+            drainClaims[operation] = count > 1 ? count - 1 : nil
+            return count == 1
+        }
+        if wasLast { objectWillChange.send() }
+    }
+
     /// Why `admitResume` refused, or that it claimed the lock.
     enum ResumeAdmission {
         case admitted
@@ -146,11 +202,12 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
 
     /// Claims `outPoint` for a resume, in the same critical section as the
     /// checks that may refuse it, so no removal is admitted in between.
+    /// `drainOperation` is the operation id on the lock's row, if any.
     @MainActor
-    func admitResume(_ outPoint: OutPoint) -> ResumeAdmission {
+    func admitResume(_ outPoint: OutPoint, drainOperation: UUID?) -> ResumeAdmission {
         let admission = lock.withLock { () -> ResumeAdmission in
             if removalHeld { return .walletReloading }
-            if claims[outPoint, default: 0] > 0 { return .claimedElsewhere }
+            if isClaimed(outPoint, drainOperation: drainOperation) { return .claimedElsewhere }
             claims[outPoint] = 1
             return .admitted
         }
@@ -212,7 +269,7 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// The removal admission rule; call with `lock` held.
     private func currentRemovalAdmission() -> RemovalAdmission {
         if removalHeld { return .removalHeld }
-        return claims.isEmpty && fundingCalls == 0 ? .admitted : .transferActive
+        return claims.isEmpty && drainClaims.isEmpty && fundingCalls == 0 ? .admitted : .transferActive
     }
 
     @MainActor

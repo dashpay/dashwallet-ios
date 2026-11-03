@@ -11,7 +11,6 @@ final class InvitationValidationPolicyTests: XCTestCase {
 
     private let inviter = InvitationInviter(username: "alice", displayName: "Alice", avatarURL: nil)
     private let minimum: UInt64 = 300_000
-    private let contested: UInt64 = 25_000_000
 
     private func status(
         amount: UInt64, claimed: Bool = false, isInstant: Bool = true, isChainLocked: Bool = true
@@ -26,24 +25,43 @@ final class InvitationValidationPolicyTests: XCTestCase {
 
     private func verdict(_ status: ManagedPlatformWallet.InvitationClaimStatus) -> InvitationValidation {
         InvitationValidationPolicy.verdict(
-            status: status, inviter: inviter, minimumDuffs: minimum, contestedDuffs: contested)
+            status: status, inviter: inviter, minimumDuffs: minimum)
     }
 
     // MARK: - Tier from the funded amount
 
+    func testValidVerdictCarriesTheFundedAmount() {
+        XCTAssertEqual(verdict(status(amount: 25_000_000)), .valid(amountDuffs: 25_000_000, inviter: inviter))
+        XCTAssertEqual(verdict(status(amount: 3_000_000)).amountDuffs, 3_000_000)
+    }
+
     func testContestedAmountFundsAnyName() {
-        XCTAssertEqual(verdict(status(amount: 25_000_000)).tier, .contested)
-        XCTAssertEqual(verdict(status(amount: 26_000_000)).tier, .contested)
+        let legacy = ContestedUsernameFee.Amounts.legacy.fundingDuffs
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 25_000_000, contestedDuffs: legacy), .contested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 26_000_000, contestedDuffs: legacy), .contested)
     }
 
     func testBelowContestedAmountFundsNonContestedOnly() {
-        XCTAssertEqual(verdict(status(amount: 3_000_000)).tier, .nonContested)
-        XCTAssertEqual(verdict(status(amount: 24_999_999)).tier, .nonContested)
+        let legacy = ContestedUsernameFee.Amounts.legacy.fundingDuffs
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 3_000_000, contestedDuffs: legacy), .nonContested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 24_999_999, contestedDuffs: legacy), .nonContested)
+    }
+
+    /// The contested cost follows the protocol version: on 14 a 0.15 DASH
+    /// voucher pays for a contested name, on 13 it does not.
+    func testTierFollowsTheProtocolsContestedCost() {
+        let reduced = ContestedUsernameFee.Amounts.reduced.fundingDuffs
+        let legacy = ContestedUsernameFee.Amounts.legacy.fundingDuffs
+        XCTAssertEqual(reduced, 15_000_000)
+        XCTAssertEqual(legacy, 25_000_000)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 15_000_000, contestedDuffs: reduced), .contested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 14_999_999, contestedDuffs: reduced), .nonContested)
+        XCTAssertEqual(InvitationValidationPolicy.tier(amountDuffs: 15_000_000, contestedDuffs: legacy), .nonContested)
     }
 
     func testBelowMinimumIsInvalid() {
         XCTAssertEqual(verdict(status(amount: 299_999)), .invalid(.belowMinimum, inviter: inviter))
-        XCTAssertEqual(verdict(status(amount: 300_000)).tier, .nonContested)
+        XCTAssertEqual(verdict(status(amount: 300_000)).amountDuffs, 300_000)
     }
 
     func testClaimedWinsOverAmount() {
@@ -56,8 +74,8 @@ final class InvitationValidationPolicyTests: XCTestCase {
         let waiting = verdict(status(amount: 3_000_000, isInstant: false, isChainLocked: false))
         XCTAssertEqual(waiting, .awaitingChainLock)
         XCTAssertFalse(waiting.isDefinitive)
-        XCTAssertNil(waiting.tier)
-        XCTAssertEqual(verdict(status(amount: 3_000_000, isInstant: false, isChainLocked: true)).tier, .nonContested)
+        XCTAssertNil(waiting.amountDuffs)
+        XCTAssertEqual(verdict(status(amount: 3_000_000, isInstant: false, isChainLocked: true)).amountDuffs, 3_000_000)
     }
 
     // MARK: - Errors: definitive vs undetermined
@@ -104,14 +122,14 @@ final class InvitationValidationPolicyTests: XCTestCase {
     func testOwnUnnamedIdentityResumesInsteadOfRefusing() {
         let status = status(amount: 3_000_000, claimed: true)
         let verdict = InvitationValidationPolicy.verdict(
-            status: status, inviter: inviter, minimumDuffs: minimum, contestedDuffs: contested,
+            status: status, inviter: inviter, minimumDuffs: minimum,
             localIdentityId: status.prospectiveIdentityId)
-        XCTAssertEqual(verdict.tier, .nonContested)
+        XCTAssertEqual(verdict.amountDuffs, 3_000_000)
     }
 
     func testSomeOtherIdentityStillRefuses() {
         let verdict = InvitationValidationPolicy.verdict(
-            status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum, contestedDuffs: contested,
+            status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum,
             localIdentityId: Data(repeating: 9, count: 32))
         XCTAssertEqual(verdict, .alreadyHasOtherIdentity)
         XCTAssertTrue(verdict.isDefinitive)
@@ -197,7 +215,7 @@ final class InvitationValidationPolicyTests: XCTestCase {
                 current = self.state(identity: claimed.prospectiveIdentityId)
                 return claimed
             })
-        XCTAssertEqual(verdict?.tier, .nonContested, "our own claim resumes; it is not \"already claimed\"")
+        XCTAssertEqual(verdict?.amountDuffs, 3_000_000, "our own claim resumes; it is not \"already claimed\"")
     }
 
     @MainActor

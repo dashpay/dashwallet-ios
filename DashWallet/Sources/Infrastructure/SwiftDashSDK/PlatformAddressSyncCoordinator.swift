@@ -2081,6 +2081,11 @@ final class ShieldedTxLookup {
         /// ENUMERATES locks must filter, or it hands another wallet's outpoints
         /// to the SDK, which rightly answers "not tracked by this wallet".
         let walletId: Data
+        /// The Max drain that built this lock, by the operation id on its
+        /// row; nil for a lock no drain built (or a malformed id). Lets
+        /// `ShieldedAssetLocksInFlight` treat the lock of a drain that holds its claim as in
+        /// flight before the drain's SDK call reports its outpoint.
+        let drainOperation: UUID?
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
@@ -2192,7 +2197,8 @@ final class ShieldedTxLookup {
             statusRaw: AssetLockRecoveryService.consumedStatus,
             vout: entry.vout,
             fundingTypeRaw: entry.fundingTypeRaw,
-            walletId: entry.walletId)
+            walletId: entry.walletId,
+            drainOperation: entry.drainOperation)
     }
 
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
@@ -2296,7 +2302,8 @@ final class ShieldedTxLookup {
                     statusRaw: row.statusRaw,
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
-                    walletId: row.walletId)
+                    walletId: row.walletId,
+                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }

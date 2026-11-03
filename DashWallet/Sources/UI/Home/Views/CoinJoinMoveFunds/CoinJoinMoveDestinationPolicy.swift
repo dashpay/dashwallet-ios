@@ -101,3 +101,133 @@ enum CoinJoinMoveDestinationPolicy {
         return shieldedAvailable ? .destinationChoice : .transparentConfirmation
     }
 }
+
+// MARK: - CoinJoin → Shielded input planning
+
+/// Decides how a "move mixed coins to Shielded" attempt gets from the CoinJoin
+/// account's current UTXO set to a single CoinJoin-drain asset lock.
+///
+/// The drain spends every final CoinJoin UTXO as an input of ONE asset lock,
+/// and an asset lock may carry at most `maxAssetLockInputs` inputs: Dash Core
+/// v24 refuses more as non-standard (`assetlocktx-too-many-inputs`,
+/// `MAX_STANDARD_ASSET_LOCK_INPUTS`) and peers drop it silently, and Platform
+/// consensus applies the same cap (`max_asset_lock_transaction_inputs`).
+/// That is the hard limit, but not the binding one: the drain is shielded by
+/// a ShieldFromAssetLock transition whose InstantSend proof embeds the whole
+/// asset-lock transaction, and Platform caps a transition at 20 480 bytes.
+/// That cap is exceeded from about 65 inputs (dashpay/platform#4460: 83 inputs
+/// gave a 23 KB transition), so a 65–100-input drain is accepted by Core and
+/// then stuck as an asset lock Platform cannot consume until the ChainLock
+/// fallback (dashpay/platform#5460) ships in the SDK. An account above
+/// `consolidationThreshold` is therefore first consolidated — its final UTXOs
+/// swept to one fresh address of its own CoinJoin account in ≤500-input
+/// regular transactions, one round per attempt — and drained once few enough
+/// UTXOs are left and final; with 50 or more not final, nothing is
+/// consolidated until fewer are (`Step.blockedByPending`). The
+/// coins never leave the CoinJoin account until the drain, so an interrupted
+/// attempt leaves them in it, on fewer UTXOs, for the next attempt to plan
+/// from.
+///
+/// Pure: the inputs come from `SwiftDashSDKTransactionSender.coinJoinUtxoState(expecting:)`
+/// so `CoinJoinShieldPlannerTests` can pin every branch without a wallet.
+enum CoinJoinShieldPlanner {
+
+    /// Most inputs a single asset lock may carry (Dash Core v24 policy and
+    /// Platform consensus agree on 100). The hard limit — never drain above it.
+    static let maxAssetLockInputs = 100
+
+    /// Most UTXOs drained directly; above this the account is consolidated
+    /// first. Tighter than `maxAssetLockInputs` because the ShieldFromAssetLock
+    /// transition carrying an InstantSend proof outgrows Platform's 20 480-byte
+    /// transition limit at about 65 inputs (see the type doc); 50 leaves
+    /// headroom for input size variance. Revisit once the ChainLock-proof
+    /// fallback (dashpay/platform#5460) is in the SDK the app builds against.
+    static let consolidationThreshold = 50
+
+    /// What the next step towards the drain is.
+    enum Step: Equatable {
+        /// The account holds no spendable UTXO — there is nothing to shield.
+        case nothingToMove
+        /// More UTXOs than one drain may safely spend
+        /// (`consolidationThreshold`): consolidate the final ones first.
+        case consolidate
+        /// Few enough UTXOs, but `pending` of them are not final yet. The
+        /// drain builder spends only final inputs (confirmed or
+        /// InstantSend-locked), so draining now would leave them behind.
+        case awaitFinality(pending: Int)
+        /// More UTXOs than one drain may safely spend, and so many of them
+        /// (`pending`) are not final that consolidating the final ones could
+        /// never get the account under the threshold.
+        case blockedByPending(pending: Int)
+        /// Every UTXO is final and one asset lock can spend them all.
+        case drain
+
+        var isBlockedByPending: Bool {
+            if case .blockedByPending = self { return true }
+            return false
+        }
+    }
+
+    /// The next step for an account with `utxoCount` spendable UTXOs of which
+    /// `finalCount` are final.
+    ///
+    /// The consolidation spends final UTXOs only — an unconfirmed input that
+    /// never locks would leave every coin swept with it behind a transaction
+    /// that cannot confirm. An attempt runs one round, which turns the final
+    /// UTXOs into one output per ≤500 of them, and the next attempt plans
+    /// from those outputs, so it can take more than one round. Every round
+    /// leaves fewer final UTXOs, and the account gets under the threshold
+    /// once the pending UTXOs plus one output fit — reachable only while
+    /// fewer than `consolidationThreshold` are pending, so a round is planned
+    /// only then. The threshold counts pending
+    /// UTXOs as well: one that locks before the drain is built becomes one of
+    /// its inputs.
+    static func nextStep(utxoCount: Int, finalCount: Int) -> Step {
+        guard utxoCount > 0 else { return .nothingToMove }
+        let pending = utxoCount - min(finalCount, utxoCount)
+        if utxoCount > consolidationThreshold {
+            return pending < consolidationThreshold ? .consolidate : .blockedByPending(pending: pending)
+        }
+        return pending > 0 ? .awaitFinality(pending: pending) : .drain
+    }
+
+    /// The finality the drain builder applies (`is_confirmed ||
+    /// is_instantlocked`), recovered from what the SDK exposes per UTXO: a
+    /// mined UTXO carries its block height, and an InstantSend-locked one has
+    /// its txid in the wallet's IS-lock set. Both txid forms are wire order.
+    static func isFinal(height: UInt32, txid: Data, instantLockedTxids: Set<Data>) -> Bool {
+        height > 0 || instantLockedTxids.contains(txid)
+    }
+
+    /// Whether a CoinJoin UTXO read can be planned from. The SDK's account
+    /// readers return `[]` both for "none" and for a failed read, so a failure
+    /// is told apart here: every wallet has at least its BIP44 account, and a
+    /// CoinJoin account whose balance is not zero has UTXOs. A cached balance
+    /// that outlived its coins reads as a failure too, which stops the move
+    /// rather than drain on a guess.
+    ///
+    /// - Parameters:
+    ///   - accountCount: rows `accountBalances` returned.
+    ///   - coinJoinBalanceIsZero: nil when the wallet has no CoinJoin account.
+    ///   - utxoCount: rows `accountUtxos` returned for it, locked ones included.
+    static func utxoReadIsUsable(accountCount: Int, coinJoinBalanceIsZero: Bool?, utxoCount: Int) -> Bool {
+        guard accountCount > 0 else { return false }
+        guard let coinJoinBalanceIsZero else { return true }
+        return utxoCount > 0 || coinJoinBalanceIsZero
+    }
+
+    /// Whether every consolidation transaction in `consolidationTxids` (wire
+    /// order) has produced a final output back in the CoinJoin account.
+    /// `utxos` is the account's current (txid, isFinal) snapshot. An empty
+    /// txid list is trivially settled.
+    static func consolidationSettled(
+        consolidationTxids: [Data],
+        utxos: [(txid: Data, isFinal: Bool)]
+    ) -> Bool {
+        // Polled every second: skip building the set when there is nothing
+        // to look up.
+        guard !consolidationTxids.isEmpty else { return true }
+        let finalTxids = Set(utxos.lazy.filter { $0.isFinal }.map { $0.txid })
+        return consolidationTxids.allSatisfy { finalTxids.contains($0) }
+    }
+}

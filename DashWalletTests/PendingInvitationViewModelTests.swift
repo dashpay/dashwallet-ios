@@ -111,7 +111,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
     }
 
     private var valid: InvitationValidation {
-        .valid(tier: .nonContested, amountDuffs: 3_000_000, inviter: inviter)
+        .valid(amountDuffs: 3_000_000, inviter: inviter)
     }
 
     /// Lets the view model's tasks run until `condition` holds.
@@ -224,7 +224,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         XCTAssertEqual(store.receive(linkB), .stored)
         validator.release()
 
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA, linkB], "the replacement gets its own check")
         XCTAssertTrue(outcomes.isEmpty, "the hidden invitation's verdict is not shown")
         XCTAssertEqual(store.pending?.rawLink, linkB)
@@ -264,7 +264,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         validator.results[linkA] = valid
         let viewModel = makeViewModel()
         XCTAssertEqual(store.receive(linkA), .stored)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls.count, 1)
 
         // A username was registered elsewhere since the cached verdict.
@@ -283,11 +283,11 @@ final class PendingInvitationViewModelTests: XCTestCase {
         validator.results[linkA] = valid
         let viewModel = makeViewModel()
         XCTAssertEqual(store.receive(linkA), .stored)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
 
-        var tier: InvitationTier?
-        viewModel.create { _, proceededTier in tier = proceededTier }
-        XCTAssertEqual(tier, .nonContested)
+        var amount: UInt64?
+        viewModel.create { _, proceededAmount in amount = proceededAmount }
+        XCTAssertEqual(amount, 3_000_000)
         XCTAssertEqual(validator.calls.count, 1)
     }
 
@@ -359,7 +359,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         // A cancelled PIN: the attempt ends and nothing else is posted.
         isRegistering = false
         registrationActivity.send(false)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA])
     }
 
@@ -385,7 +385,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         validator.results[linkA] = valid
         isRegistering = false
         registrationActivity.send(false)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA, linkA])
         XCTAssertTrue(outcomes.isEmpty)
     }
@@ -403,7 +403,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         validator.results[linkA] = valid
         validator.release()
 
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA, linkA], "the overlapped answer is replaced by a fresh one")
         XCTAssertTrue(outcomes.isEmpty)
         XCTAssertNotNil(store.pending)
@@ -426,7 +426,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
 
         isRegistering = false
         registrationActivity.send(false)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
         XCTAssertEqual(validator.calls, [linkA, linkA])
         XCTAssertTrue(outcomes.isEmpty)
     }
@@ -435,7 +435,7 @@ final class PendingInvitationViewModelTests: XCTestCase {
         validator.results[linkA] = valid
         let viewModel = makeViewModel()
         XCTAssertEqual(store.receive(linkA), .stored)
-        await settle { viewModel.cardState == .valid(tier: .nonContested, amountDuffs: 3_000_000) }
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
 
         registrationActivity.send(true)
         registrationActivity.send(false)

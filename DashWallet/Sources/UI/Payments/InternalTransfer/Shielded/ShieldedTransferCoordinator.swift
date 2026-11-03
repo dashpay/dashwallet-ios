@@ -260,6 +260,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
 
+    /// Matches `PersistentAssetLock.fundingTypeRaw` for
+    /// `AssetLockShieldedAddressTopUp` (see
+    /// `rs-platform-wallet-ffi/src/asset_lock_persistence.rs`).
+    private static let shieldedAssetLockFundingType: Int = 5
+
+    /// `PersistentAssetLock.fundingTypeRaw` for `AssetLockAddressTopUp` —
+    /// the Core → Platform address-funding lock (same Rust source).
+    private static let addressAssetLockFundingType: Int = 4
+
     /// Same 0.5 s cadence as `DWIdentityRegistrationCoordinator` — enough
     /// for the four observable transitions (Built → Broadcast → IS/CL →
     /// Consumed) without burning CPU.
@@ -268,15 +277,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
+    /// Where a resume whose network call threw records the error as the
+    /// lock's last failure. Injected so a test reads what it wrote without
+    /// touching the shared store.
+    private let failureStore: AssetLockFailureStore
+
+    init(failureStore: AssetLockFailureStore = .shared) {
+        self.failureStore = failureStore
+    }
+
     /// Outpoint (wire-order txid + vout) of the asset lock the most recent
-    /// `performAssetLock` built, as the SDK reported it, so a failed attempt's
-    /// "Try again" can RESUME the existing lock instead of building a second
-    /// one. Set when that attempt fails, unless its broadcast was definitely
-    /// rejected, and when a resume of a lock is refused (another attempt has
-    /// it, or a removal is reloading the wallet), so "Try again" resumes that
-    /// lock rather than building a new one; cleared on `reset()` and at the
-    /// start of a fresh attempt. A fresh Core → Platform attempt never sets
-    /// it.
+    /// `performAssetLock` or `performWalletDrain` built, as the SDK reported
+    /// it, so a failed attempt's "Try again" can RESUME the existing lock
+    /// instead of building a second one. Set when a fresh attempt fails,
+    /// unless its broadcast was definitely rejected, and when a resume of a
+    /// lock is refused (another attempt has it, or a removal is reloading the
+    /// wallet). A Max drain records the outpoint it reported too, but its
+    /// screens resume a drain from its marker, not from here. Cleared on
+    /// `reset()` and at the start of a fresh attempt. A fresh Core → Platform
+    /// attempt never sets it.
     private(set) var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
 
     /// The lock this coordinator has registered in `ShieldedAssetLocksInFlight`.
@@ -308,6 +327,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// A removed transaction is being dropped and the wallet runtime
         /// reloaded; a transfer started meanwhile would be stopped by it.
         case walletReloading
+        /// A Max drain's lock whose recipient cannot be established.
+        case drainRecipientUnknown
+        /// A Max drain's marker could not be read right now.
+        case drainRecipientUnavailable
+        /// An external Max would now sweep more than the user confirmed.
+        case drainBalanceChanged
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -381,6 +406,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     comment: "A resume was refused because the same transfer is still running")
             case .walletReloading:
                 return ShieldedAssetLocksInFlight.walletReloadingMessage
+            case .drainRecipientUnknown:
+                return NSLocalizedString(
+                    "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.",
+                    comment: "InternalTransfer recovery: drain recipient unknown")
+            case .drainRecipientUnavailable:
+                return NSLocalizedString("Wallet unavailable. Try again.", comment: "Core drain")
+            case .drainBalanceChanged:
+                return NSLocalizedString(
+                    "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.",
+                    comment: "Send: external Max drain, balance grew before confirm")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -508,6 +543,108 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     // MARK: - Public API
 
+    /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
+    /// never the newest asset lock or a timestamp shared with another caller.
+    /// `recipient` is written into that marker before dispatch: the SDK does
+    /// not persist it, and every resume reads it back from there.
+    func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
+        guard beginTransfer() else { return }
+        lastAssetLockOutPoint = nil
+        Self.logger.info("🛡️ SHIELD-TX :: wallet drain external=\(recipient.isExternal)")
+        // As in `performAssetLock`: activity from here on, so a removal cannot
+        // reload the runtime while this drain authorizes and builds its lock.
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            handleFailure(CoordinatorError.walletReloading)
+            return
+        }
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
+        let service = CoreShieldedDrainService()
+        let env: Environment
+        let operation: CoreShieldedDrainOperation
+        do {
+            try await authorize()
+            _ = try service.manager(for: confirmation.context)
+            guard SyncingActivityMonitor.shared.state == .syncDone else {
+                throw CoreShieldedDrainService.ServiceError.requiresSync
+            }
+            guard try await service.pending(confirmation.context) == nil else {
+                throw CoreShieldedDrainFileStore.StoreError.pendingOperation
+            }
+            let manager = try service.manager(for: confirmation.context)
+            guard SyncingActivityMonitor.shared.state == .syncDone else {
+                throw CoreShieldedDrainService.ServiceError.requiresSync
+            }
+            if recipient.isExternal {
+                // The drain sweeps whatever is eligible when it builds. For
+                // the wallet's own address any excess is harmless; for a third
+                // party it is money the user never saw on the confirm sheet.
+                // This re-read refuses growth that happened before it; it does
+                // not bind the SDK's own input selection that follows.
+                // TODO(drain-balance-cap): pass the confirmed candidate balance
+                // as a limit the SDK enforces on the inputs it selects, once
+                // the drain accepts one (dashpay/platform#5607).
+                let preview = try await manager.shieldedWalletDrainPreview(walletId: confirmation.context.walletId)
+                _ = try service.manager(for: confirmation.context)
+                guard Self.drainStillMatches(preview, confirmation) else {
+                    throw CoordinatorError.drainBalanceChanged
+                }
+            }
+            env = try resolveEnvironment()
+            operation = try service.prepare(confirmation.context, recipient: recipient)
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        // The drain reports no built lock, only its outpoint once it returns,
+        // while the lock's row carries the operation id from the moment it is
+        // persisted. Claimed by that id for the whole call, so no surface
+        // offers to finish, and no resume starts on, a lock still waiting for
+        // its proof. A completed drain keeps the claim until the lock's row
+        // reads as no longer pending (`releaseDrainClaim`).
+        var completed = false
+        ShieldedAssetLocksInFlight.shared.claimDrain(operation.id)
+        defer { Self.releaseDrainClaim(operation.id, completed: completed) }
+
+        phase = .locking
+        let result = await env.manager.shieldedFundFromWalletDrain(
+            walletId: env.walletId, operationId: operation.id,
+            recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
+        if let outpoint = result.outpoint {
+            lastAssetLockOutPoint = .init(txidWire: outpoint.txidWire, vout: outpoint.vout)
+        }
+        // Not marked consumed in `ShieldedTxLookup`, unlike a fresh
+        // `performAssetLock`: a drain's `.completed` may rest on an
+        // unauthenticated "already consumed" report, and a consumed mark would
+        // hide the lock from every recovery surface for the session.
+        if case .completed = result.drainVerdict { completed = true }
+        do {
+            try service.settle(operation, outcome: result)
+        } catch {
+            // The result may be successful but cleanup failed. Keep the marker
+            // and resolve it by UUID before allowing another drain.
+            phase = .submittedUnconfirmed
+            await ShieldedTxLookup.shared.refresh(reason: "wallet-drain-settle-failed")
+            NotificationCenter.default.post(name: .swiftDashSDKTransactionProjectionDidChange, object: nil)
+            scheduleShieldedResync(manager: env.manager)
+            return
+        }
+        switch result.drainVerdict {
+        case .notSent:
+            if let error = result.error { handleFailure(error) }
+            else { handleFailure(CoreShieldedDrainService.ServiceError.unavailable) }
+            return
+        case .pending:
+            phase = .submittedUnconfirmed
+        case .completed:
+            phase = .broadcasting
+            phase = .success
+        }
+        await ShieldedTxLookup.shared.refresh(reason: "wallet-drain-settled")
+        NotificationCenter.default.post(name: .swiftDashSDKTransactionProjectionDidChange, object: nil)
+        scheduleShieldedResync(manager: env.manager)
+    }
+
     /// Route 1: BIP44 Core UTXOs → asset-lock → Type 18 shield.
     /// Stages: `.signing → .locking → .proving → .broadcasting → .success`.
     /// The intermediate stages are polled from `PersistentAssetLock.statusRaw`;
@@ -527,6 +664,41 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case coinJoinDrain
     }
 
+    /// Why the transfer must stop after the prompt, before anything is built
+    /// or broadcast, or nil.
+    private func executionRefusal(
+        funding: AssetLockFundingSource,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?,
+        env: Environment
+    ) -> Error? {
+        // After the prompt, so a switch while it was open is caught too; the
+        // sync gate below then reads the pinned wallet's state.
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — the active wallet changed")
+            return CoordinatorError.noWallet
+        }
+
+        // A cancelled task stops here, before anything is built or broadcast.
+        // Reported as a cancel: the caller went away, nothing failed.
+        if Task.isCancelled {
+            Self.logger.error("🛡️ SHIELD-TX :: asset lock refused — task cancelled")
+            return CoordinatorError.authCancelled
+        }
+
+        // Re-check at the execution boundary, not only where the surface was
+        // offered. The drain is whole-account and its value is computed
+        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
+        // was open would lock a UTXO set the user never saw. The BIP44 route
+        // carries an explicit amount and its own screens gate on
+        // `isChainSynced`, so this is the drain's check alone.
+        if case .coinJoinDrain = funding,
+           SyncingActivityMonitor.shared.state != .syncDone {
+            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
+            return CoordinatorError.coinJoinDrainRequiresSync
+        }
+        return nil
+    }
+
     /// `recipientRaw43` nil = the wallet's own default Orchard address (the
     /// internal transfer); an external Send passes the recipient's raw
     /// 43-byte payload. The recipient receives exactly `recipientAmountDuffs`:
@@ -541,7 +713,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Funding-parameterized form of `performAssetLock(recipientAmountDuffs:)`
     /// — same stages, polling, and resume semantics for both funding sources
     /// (a stuck lock resumes by outpoint regardless of what funded it).
-    func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
+    /// - Parameter binding: When set, the transfer fails unless this is still
+    ///   the active wallet and network (the CoinJoin move pins the wallet it
+    ///   was authorized for).
+    func performAssetLock(
+        funding: AssetLockFundingSource,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
@@ -592,16 +771,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // Re-check at the execution boundary, not only where the surface was
-        // offered. The drain is whole-account and its value is computed
-        // SDK-side, so a scan that restarted while the sheet or the PIN prompt
-        // was open would lock a UTXO set the user never saw. The BIP44 route
-        // carries an explicit amount and its own screens gate on
-        // `isChainSynced`, so this is the drain's check alone.
-        if case .coinJoinDrain = funding,
-           SyncingActivityMonitor.shared.state != .syncDone {
-            Self.logger.error("🛡️ SHIELD-TX :: coinjoin drain refused — chain not synced")
-            handleFailure(CoordinatorError.coinJoinDrainRequiresSync)
+        if let refusal = executionRefusal(funding: funding, expecting: binding, env: env) {
+            handleFailure(refusal)
             return
         }
 
@@ -666,23 +837,154 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
+    /// - Parameter binding: as for `performAssetLock(funding:recipientRaw43:expecting:)`.
+    func resumeAssetLock(
+        outPointTxidWire: Data,
+        outPointVout: UInt32,
+        recipientRaw43 recipientOverride: Data? = nil,
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil,
+        expectedDrainContext: CoreShieldedDrainContext? = nil
+    ) async {
+        // Read before the resume moves it, for the outcome lines below.
+        let lockInfo = ShieldedTxLookup.shared
+            .info(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))
+        let statusBeforeRaw = lockInfo?.statusRaw
+        // A lock another attempt is consuming, or a wallet reload, refuses
+        // this resume at the gate and leaves an outcome line. A plain double
+        // tap (phase not idle) does not.
+        guard beginTransfer(
+            consuming: outPointTxidWire, vout: outPointVout,
+            drainOperation: lockInfo?.drainOperation,
+            onRefusal: { refusal in
+                Self.logGateRefusal(
+                    refusal, event: "resume", txidWire: outPointTxidWire, vout: outPointVout,
+                    fundingTypeRaw: Self.shieldedAssetLockFundingType, statusBeforeRaw: statusBeforeRaw)
+            }) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
+
+        // Every attempt past the single-flight gate leaves one outcome line.
+        // The confirm sheets, the recovery sheet and the CoinJoin move call
+        // this directly, with no service-level logger behind them, so a
+        // refusal before the resume call is logged here too. Only an error
+        // from the resume call itself is stored as the lock's last failure: a
+        // refusal (no wallet, PIN timeout, wallet switched) says nothing about
+        // the lock and must not overwrite the failure that does. A cancelled
+        // PIN prompt is an outcome, not a failure.
+        func logResumeOutcome(_ result: String) {
+            AssetLockRetryLog.logOutcome(
+                result,
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw)
+        }
+        func recordResumeFailure(_ error: Error) {
+            AssetLockRetryLog.recordFailure(
+                error,
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw,
+                store: failureStore)
+        }
+        func failBeforeResume(_ error: Error) {
+            if case CoordinatorError.authCancelled = error {
+                logResumeOutcome("outcome=cancelled")
+            } else {
+                AssetLockRetryLog.logRefusal(
+                    error,
+                    prefix: AssetLockRetryLog.shieldPrefix,
+                    event: "resume",
+                    txidWire: outPointTxidWire,
+                    vout: outPointVout,
+                    fundingTypeRaw: Self.shieldedAssetLockFundingType,
+                    statusBeforeRaw: statusBeforeRaw)
+            }
+            handleFailure(error)
+        }
 
         let env: Environment
         do {
             env = try resolveEnvironment()
         } catch {
-            handleFailure(error)
+            failBeforeResume(error)
             return
+        }
+
+        // Every resume of a Max drain's lock is decided here, whichever
+        // surface asked: the SDK pays whatever recipient this call passes and
+        // does not record the drain's own. A drain row pays its marker's
+        // recipient; a caller's explicit recipient must agree with it.
+        // Resolved before the PIN prompt, so a refusal asks for nothing.
+        var recipientRaw43 = recipientOverride
+        var drainContext = expectedDrainContext
+        guard let row = Self.drainRowIdentity(
+            outPointTxidWire: outPointTxidWire, vout: outPointVout,
+            walletId: env.walletId, in: env.modelContainer)
+        else {
+            failBeforeResume(CoordinatorError.drainRecipientUnavailable)
+            return
+        }
+        Self.logger.info("🛡️ SHIELD-TX :: resume drain row=\(String(describing: row), privacy: .public)")
+        // The gate read the drain id from the lookup snapshot, which can lag
+        // the row; the row read here is authoritative.
+        if case .operation(let id) = row,
+           ShieldedAssetLocksInFlight.shared.isDrainClaimed(id) {
+            Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(outPointVout): the Max drain that built the lock still holds it")
+            lastAssetLockOutPoint = .init(txidWire: outPointTxidWire, vout: outPointVout)
+            Self.logGateRefusal(
+                .assetLockInFlight, event: "resume", txidWire: outPointTxidWire, vout: outPointVout,
+                fundingTypeRaw: Self.shieldedAssetLockFundingType, statusBeforeRaw: statusBeforeRaw)
+            handleFailure(CoordinatorError.assetLockInFlight)
+            return
+        }
+        if row != .none {
+            let (lookup, markerContext) = CoreShieldedDrainService().markerLookup()
+            let resolved: Data?
+            switch CoreShieldedDrainResumeTarget.resolve(row: row, marker: lookup) {
+            case .ownWallet: resolved = nil
+            case .external(let raw43): resolved = raw43
+            case .refuse:
+                Self.logger.error("🛡️ SHIELD-TX :: resume refused — drain recipient unknown")
+                failBeforeResume(CoordinatorError.drainRecipientUnknown)
+                return
+            case .retryLater:
+                failBeforeResume(CoordinatorError.drainRecipientUnavailable)
+                return
+            }
+            if let recipientOverride, recipientOverride != (resolved ?? env.shieldedRecipient) {
+                Self.logger.error("🛡️ SHIELD-TX :: resume refused — caller recipient disagrees with the drain marker")
+                failBeforeResume(CoordinatorError.drainRecipientUnknown)
+                return
+            }
+            recipientRaw43 = resolved
+            drainContext = drainContext ?? markerContext
         }
 
         do {
             try await authorize()
         } catch {
-            handleFailure(error)
+            failBeforeResume(error)
             return
+        }
+
+        guard isStillBound(binding, env: env) else {
+            Self.logger.error("🛡️ SHIELD-TX :: resume refused — the active wallet changed")
+            failBeforeResume(CoordinatorError.noWallet)
+            return
+        }
+
+        if let drainContext {
+            do {
+                _ = try CoreShieldedDrainService().manager(for: drainContext)
+            } catch {
+                failBeforeResume(error)
+                return
+            }
         }
 
         // The lock already exists — the SDK re-broadcasts or waits for it if
@@ -694,7 +996,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let terminalPhase: Phase
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: recipientOverride ?? env.shieldedRecipient,
+                recipientRaw43: recipientRaw43 ?? env.shieldedRecipient,
                 credits: nil)
             try await env.manager.shieldedResumeFundFromAssetLock(
                 walletId: env.walletId,
@@ -702,11 +1004,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipients: [recipient])
             terminalPhase = .success
+            logResumeOutcome("outcome=completed")
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
+                // `shieldedSpendUnconfirmed` was accepted by relay, so it is
+                // not a failure of this lock and is not stored as one.
+                if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                    logResumeOutcome("outcome=submittedUnconfirmed")
+                } else {
+                    recordResumeFailure(error)
+                }
                 handleSpendError(error, manager: env.manager)
                 return
             }
+            logResumeOutcome("outcome=alreadyConsumed")
             // A DAPI endpoint reported this exact outpoint as consumed, but
             // rejection responses are not quorum-authenticated. Rust retains
             // the ChainLock proof and records nonterminal consumption-unknown
@@ -740,6 +1051,49 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return .submittedUnconfirmed
         }
         return nil
+    }
+
+    /// What the SDK row for this outpoint says about the Max drain that built
+    /// it. `nil` when the row cannot be read or is missing: unknown is not
+    /// "no drain". Every resume surface found its lock through this store, so
+    /// a missing row is never a legitimate own-address resume. The row must
+    /// belong to the wallet doing the resume: the store holds every wallet's
+    /// locks, and another wallet's row would be read against this wallet's
+    /// marker.
+    private static func drainRowIdentity(
+        outPointTxidWire: Data,
+        vout: UInt32,
+        walletId: Data,
+        in modelContainer: ModelContainer
+    ) -> CoreShieldedDrainRowIdentity? {
+        let outPointHex = outPointTxidWire.reversed().map { String(format: "%02x", $0) }.joined() + ":\(vout)"
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate { row in row.outPointHex == outPointHex && row.walletId == walletId })
+        descriptor.fetchLimit = 1
+        do {
+            guard let row = try modelContainer.mainContext.fetch(descriptor).first else {
+                logger.error("🛡️ SHIELD-TX :: asset-lock row missing for resume")
+                return nil
+            }
+            return CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId)
+        } catch {
+            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
+
+    /// The Orchard payload a drain pays: the marker's external recipient, or
+    /// the wallet's own address.
+    nonisolated static func drainRecipientRaw43(_ recipient: CoreShieldedDrainRecipient, ownAddress: Data) -> Data {
+        recipient.externalRaw43 ?? ownAddress
+    }
+
+    /// Whether a fresh preview still describes what the user confirmed: an
+    /// external drain must not sweep a larger candidate balance than the one
+    /// on the confirm sheet.
+    nonisolated static func drainStillMatches(_ preview: WalletDrainPreview, _ confirmation: CoreShieldedDrainConfirmation) -> Bool {
+        preview.status != .insufficientFunds
+            && preview.candidateBalanceDuffs <= confirmation.candidateBalanceDuffs
     }
 
     /// Starts tracking the new asset lock of a fresh-build attempt: starts the
@@ -1181,7 +1535,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         outPointVout: UInt32,
         recipientAmountDuffs: UInt64
     ) async {
-        guard beginTransfer(consuming: outPointTxidWire, vout: outPointVout) else { return }
+        let statusBeforeRaw = ShieldedTxLookup.shared
+            .platformFundingInfo(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
+        guard beginTransfer(
+            consuming: outPointTxidWire, vout: outPointVout, drainOperation: nil,
+            onRefusal: { refusal in
+                Self.logGateRefusal(
+                    refusal, event: "resume core→platform", txidWire: outPointTxidWire, vout: outPointVout,
+                    fundingTypeRaw: Self.addressAssetLockFundingType, statusBeforeRaw: statusBeforeRaw)
+            }) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1212,6 +1574,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
+            AssetLockRetryLog.recordFailure(
+                error,
+                prefix: AssetLockRetryLog.shieldPrefix,
+                event: "resume core→platform",
+                txidWire: outPointTxidWire,
+                vout: outPointVout,
+                fundingTypeRaw: Self.addressAssetLockFundingType,
+                statusBeforeRaw: statusBeforeRaw,
+                store: failureStore)
             handleFailure(CoordinatorError.transferFailed(error))
             return
         }
@@ -1465,6 +1836,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
             shieldedRecipient: recipient)
     }
 
+    /// Whether a pinned transfer may still run: `binding` (when set) is both
+    /// the environment resolved for it and the host's active wallet now.
+    private func isStillBound(
+        _ binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?, env: Environment
+    ) -> Bool {
+        guard let binding else { return true }
+        return binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding(walletId: env.walletId, network: env.network)
+            && binding == SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current()
+    }
+
     /// Synchronous single-flight gate. Returns `false` when a transfer is
     /// already in progress (or finished and not yet `reset()`), so a fast
     /// double-tap on Confirm can't queue a second transfer. Because the
@@ -1491,23 +1872,32 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// attempt that is already running, such as a transfer waiting minutes for
     /// its ChainLock. A fresh transfer's new lock is claimed from the moment
     /// the SDK builds it, before its row exists, so this also covers it.
-    private func beginTransfer(consuming txidWire: Data, vout: UInt32) -> Bool {
+    /// `onRefusal` receives the error of a refusal by the registry, before
+    /// the failure is shown.
+    private func beginTransfer(
+        consuming txidWire: Data,
+        vout: UInt32,
+        drainOperation: UUID?,
+        onRefusal: (CoordinatorError) -> Void
+    ) -> Bool {
         // A running or finished attempt keeps its claim; the phase gate
         // refuses (and logs) this tap.
         guard phase == .idle else { return beginTransfer() }
         let outPoint = ShieldedAssetLocksInFlight.OutPoint(txidWire: txidWire, vout: vout)
-        switch ShieldedAssetLocksInFlight.shared.admitResume(outPoint) {
+        switch ShieldedAssetLocksInFlight.shared.admitResume(outPoint, drainOperation: drainOperation) {
         case .walletReloading:
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): a removal is reloading the wallet")
             // The caller's `reset()` cleared "Try again"'s outpoint; a refused
             // resume keeps it, so the next tap resumes this lock instead of
             // building a new one.
             lastAssetLockOutPoint = outPoint
+            onRefusal(.walletReloading)
             handleFailure(CoordinatorError.walletReloading)
             return false
         case .claimedElsewhere:
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(vout): the lock is still being consumed by another attempt")
             lastAssetLockOutPoint = outPoint
+            onRefusal(.assetLockInFlight)
             handleFailure(CoordinatorError.assetLockInFlight)
             return false
         case .admitted:
@@ -1517,6 +1907,48 @@ final class ShieldedTransferCoordinator: ObservableObject {
         _ = beginTransfer()
         inFlightOutPoint = outPoint
         return true
+    }
+
+    /// Ends a Max drain's claim. A completed drain's lock row can still read
+    /// as unfinished after the call returns (the SDK can write its final
+    /// status afterwards, or the last refresh was superseded), and the claim
+    /// is all that keeps the recovery surfaces from offering to finish it. So
+    /// the claim of a completed drain is held until `ShieldedTxLookup` shows
+    /// the drain's row (found by its operation id, so a result without an
+    /// outpoint is covered too) finished (`AssetLockStatus.isComplete`), or
+    /// `drainSettleTimeout` passes; nothing is refreshed from here. A row
+    /// missing from the snapshot counts as pending. Any other drain releases
+    /// at once.
+    private static func releaseDrainClaim(_ operation: UUID, completed: Bool) {
+        guard completed else {
+            ShieldedAssetLocksInFlight.shared.releaseDrain(operation)
+            return
+        }
+        DrainClaimSettler(operation: operation, timeout: drainSettleTimeout).start()
+    }
+
+    private static let drainSettleTimeout: TimeInterval = 30
+
+    /// The outcome line of a resume the registry refused. A lock another
+    /// attempt is consuming is not a failure of this lock; a wallet reload is
+    /// a refusal, as the other refusals before the resume call are.
+    private static func logGateRefusal(
+        _ refusal: CoordinatorError,
+        event: String,
+        txidWire: Data,
+        vout: UInt32,
+        fundingTypeRaw: Int,
+        statusBeforeRaw: Int?
+    ) {
+        if case .assetLockInFlight = refusal {
+            AssetLockRetryLog.logOutcome(
+                "outcome=skipped reason=in-flight", prefix: AssetLockRetryLog.shieldPrefix, event: event,
+                txidWire: txidWire, vout: vout, fundingTypeRaw: fundingTypeRaw, statusBeforeRaw: statusBeforeRaw)
+        } else {
+            AssetLockRetryLog.logRefusal(
+                refusal, prefix: AssetLockRetryLog.shieldPrefix, event: event,
+                txidWire: txidWire, vout: vout, fundingTypeRaw: fundingTypeRaw, statusBeforeRaw: statusBeforeRaw)
+        }
     }
 
     private func releaseInFlightOutPoint() {
@@ -1660,7 +2092,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             if phase == .locking {
                 phase = .proving
             }
-        case 4: // Consumed — the ST has landed, FFI is almost back.
+        case 4, 6: // Consumed / DrainCompleted — the ST has landed, FFI is almost back.
             if phase == .locking || phase == .proving {
                 phase = .broadcasting
             }
@@ -1673,3 +2105,66 @@ final class ShieldedTransferCoordinator: ObservableObject {
 /// The outpoint a fresh-build funding call reports for its new asset lock.
 /// Written once on the FFI worker thread, read on the main actor.
 typealias NewAssetLockCapture = OSAllocatedUnfairLock<ShieldedAssetLocksInFlight.OutPoint?>
+
+/// Holds a completed Max drain's claim in `ShieldedAssetLocksInFlight` until
+/// `ShieldedTxLookup` shows the drain's lock (every entry carrying its
+/// operation id) finished — `AssetLockStatus.isComplete` — or the timeout
+/// passes; see
+/// `ShieldedTransferCoordinator.releaseDrainClaim`. A lock missing from the
+/// snapshot counts as pending. Keeps itself alive
+/// through its subscription and timer until it releases.
+@MainActor
+final class DrainClaimSettler {
+    private let operation: UUID
+    private let timeout: TimeInterval
+    private let lookup: ShieldedTxLookup
+    private let registry: ShieldedAssetLocksInFlight
+    private var subscription: AnyCancellable?
+    private var retainedSelf: DrainClaimSettler?
+
+    init(
+        operation: UUID,
+        timeout: TimeInterval,
+        lookup: ShieldedTxLookup = .shared,
+        registry: ShieldedAssetLocksInFlight = .shared
+    ) {
+        self.operation = operation
+        self.timeout = timeout
+        self.lookup = lookup
+        self.registry = registry
+    }
+
+    func start() {
+        retainedSelf = self
+        // Subscribed before the first read, so a change in between is seen.
+        subscription = NotificationCenter.default
+            .publisher(for: .shieldedTxLookupDidChange, object: lookup)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.releaseIfSettled() }
+            }
+        releaseIfSettled()
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
+            MainActor.assumeIsolated { self?.release() }
+        }
+    }
+
+    private func releaseIfSettled() {
+        // Every row carrying the drain's id must be finished (consumed, or
+        // recorded as a completed drain). RecoveredFromChain is not final for
+        // a drain and still offers Retry, so it keeps the claim.
+        let rows = lookup.allEntries().filter { $0.info.drainOperation == operation }
+        guard !rows.isEmpty,
+              rows.allSatisfy({ AssetLockStatus(rawValue: $0.info.statusRaw)?.isComplete == true })
+        else { return }
+        release()
+    }
+
+    private func release() {
+        guard retainedSelf != nil else { return }
+        subscription?.cancel()
+        subscription = nil
+        registry.releaseDrain(operation)
+        retainedSelf = nil
+    }
+}

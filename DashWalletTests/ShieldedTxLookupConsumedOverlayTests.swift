@@ -177,7 +177,7 @@ final class ShieldedTxLookupConsumedOverlayTests: XCTestCase {
     }
 
     private func info(status: Int, fundingType: Int = 5) -> Info {
-        Info(amountDuffs: 1_000, statusRaw: status, vout: 0, fundingTypeRaw: fundingType, walletId: Data(repeating: 1, count: 32))
+        Info(amountDuffs: 1_000, statusRaw: status, vout: 0, fundingTypeRaw: fundingType, walletId: Data(repeating: 1, count: 32), drainOperation: nil)
     }
 
     @MainActor

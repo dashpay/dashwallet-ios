@@ -608,8 +608,8 @@ extension HomeViewController: HomeViewDelegate {
         }
     }
 
-    func homeViewCreateUsername(with invitation: PendingInvitation, tier: InvitationTier) {
-        showCreateUsername(withInvitation: invitation, tier: tier)
+    func homeViewCreateUsername(with invitation: PendingInvitation, amountDuffs: UInt64) {
+        showCreateUsername(withInvitation: invitation, amountDuffs: amountDuffs)
     }
 
     func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation) {

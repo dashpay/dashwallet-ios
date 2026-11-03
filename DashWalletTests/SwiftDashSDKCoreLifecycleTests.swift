@@ -17,6 +17,20 @@ private enum CoreLifecycleTestError: Error {
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
 
+    /// The Core → Shielded pool fee is the shielded fee plus the asset-lock
+    /// base cost, whatever protocol version produced the shielded fee.
+    func testPoolFeeAddsTheAssetLockBaseCost() {
+        typealias Policy = CoreToShieldedAmountPolicy
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 162_851_200), 162_851_200 + Policy.assetLockBaseCostCredits)
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 114_140_000), 114_140_000 + Policy.assetLockBaseCostCredits)
+    }
+
+    /// No estimate, or a sum that overflows, gives no fee: callers fail closed.
+    func testPoolFeeIsNilWithoutAnEstimateOrOnOverflow() {
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: nil))
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: UInt64.max))
+    }
+
     func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
         let id = Data([1])
         var adopted = false
@@ -113,6 +127,23 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(gate.isPending)
     }
 
+    /// A start consumes the preparation before it awaits the SDK's off-main
+    /// `startSpv`. A switch prepared during that await overtakes the start
+    /// (so it must not re-attach the subscriptions the preparation detached)
+    /// and stays pending for the switch's own start.
+    func testPreparationLandingAfterConsumeOvertakesTheStartAndStaysPending() {
+        var gate = NetworkSwitchPreparationGate()
+        let token = gate.startToken()
+        gate.consume()
+
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: token),
+            "the start must not publish the outgoing network's progress or balance")
+        XCTAssertTrue(gate.isPending, "the preparation belongs to the switch's own start")
+    }
+
     /// A runtime refresh takes its token when it resolves its network, before
     /// its reset. A switch prepared during that reset overtakes the refresh,
     /// and the switch's own refresh, queued behind it, does the start.
@@ -131,6 +162,38 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(gate.isOvertaken(since: switchRefreshToken))
         gate.consume()
         XCTAssertFalse(gate.isPending)
+    }
+
+    // MARK: - SPV chain resync marker
+
+    /// The start suspends for the whole store open, during which the Sync
+    /// Info screen can arm a new resync for the same network. Consuming the
+    /// applied marker must not take that new request with it.
+    func testClearingTheAppliedResyncLeavesAResyncArmedDuringTheStartPending() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        let applied = SPVChainResyncMarker.Pending(
+            walletId: Data([0xA1]), fromHeight: 1_000, armedBySessionId: "an earlier launch")
+
+        // Armed during the start, by this session, for the same network.
+        SPVChainResyncMarker.arm(walletId: Data([0xB2]), fromHeight: 2_000, network: .testnet, defaults: defaults)
+
+        XCTAssertFalse(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        let pending = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertEqual(pending.walletId, Data([0xB2]))
+        XCTAssertEqual(pending.fromHeight, 2_000)
+        XCTAssertTrue(pending.armedByThisSession)
+    }
+
+    func testClearingTheAppliedResyncConsumesIt() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        SPVChainResyncMarker.arm(walletId: Data([0xA1]), fromHeight: 1_000, network: .testnet, defaults: defaults)
+        let applied = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+
+        XCTAssertTrue(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        XCTAssertNil(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertFalse(
+            SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults),
+            "nothing pending: nothing to consume")
     }
 
     // MARK: - Devnet start preflight
