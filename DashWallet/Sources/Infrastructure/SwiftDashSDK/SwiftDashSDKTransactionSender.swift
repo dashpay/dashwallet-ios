@@ -25,7 +25,6 @@
 
 import CommonCrypto
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKTransactionSender)
@@ -33,9 +32,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.transaction-sender")
+    private static let logger = AppLogger(category: "swift-sdk-migration.transaction-sender")
 
     // MARK: - CoinJoin sweep constants (documented mirrors; core is the backstop)
 
@@ -382,7 +379,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     firstOther = firstOther ?? error
                 }
                 Self.logger.error(
-                    "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
+                    "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(error)")
             }
         }
         if txids.isEmpty, let firstUnknown {

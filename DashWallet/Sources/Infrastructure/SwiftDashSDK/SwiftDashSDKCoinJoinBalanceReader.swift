@@ -21,15 +21,12 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKCoinJoinBalanceReader)
 final class SwiftDashSDKCoinJoinBalanceReader: NSObject {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.coinjoin-balance")
+    private static let logger = AppLogger(category: "swift-sdk-migration.coinjoin-balance")
 
     /// `AccountTypeTagFFI.CoinJoin` discriminant — see
     /// `platform-wallet-ffi.h` (`ACCOUNT_TYPE_TAG_FFI_COIN_JOIN = 1`).

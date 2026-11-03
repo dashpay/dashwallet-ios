@@ -16,7 +16,6 @@
 #if DASHPAY
 
 import Combine
-import OSLog
 import SwiftDashSDK
 import SwiftUI
 import DashUIKit
@@ -27,9 +26,7 @@ import UIKit
 @MainActor
 final class DashPaySyncInfoViewModel: ObservableObject {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.dashpay-sync-info")
+    private static let logger = AppLogger(category: "swift-sdk-migration.dashpay-sync-info")
 
     /// Whether a DashPay sync pass is currently in flight (mirror of
     /// `PlatformWalletManager.dashPaySyncIsSyncing`).
@@ -80,7 +77,7 @@ final class DashPaySyncInfoViewModel: ObservableObject {
             }
         } catch {
             lastError = error.localizedDescription
-            Self.logger.error("👥 DASHPAY-SYNC-INFO :: dashPaySyncNow threw: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 DASHPAY-SYNC-INFO :: dashPaySyncNow threw: \(error)")
         }
         refreshLoopState()
         refreshLastSync()

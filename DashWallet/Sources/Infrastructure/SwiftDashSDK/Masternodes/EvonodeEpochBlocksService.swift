@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - EvonodeEpochBlocks
@@ -97,9 +96,7 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
     /// Runaway guard on paging (5000 evonodes ≫ any Dash network).
     private static let maxPages = 50
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.evonode-epoch-blocks")
+    private static let logger = AppLogger(category: "swift-sdk-migration.evonode-epoch-blocks")
 
     init() {}
 

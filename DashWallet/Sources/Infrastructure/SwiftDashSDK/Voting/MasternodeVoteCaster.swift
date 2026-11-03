@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - VoteChoice
@@ -104,9 +103,7 @@ struct VoteCastReport {
 @MainActor
 final class MasternodeVoteCaster {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.voting")
+    private static let logger = AppLogger(category: "swift-sdk-migration.voting")
 
     private static let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
 
@@ -246,7 +243,7 @@ final class MasternodeVoteCaster {
                     ?? String(describing: error)
                 outcomes.append(VoteOutcome(node: node, failure: message))
                 Self.logger.error(
-                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public): \(message, privacy: .public)")
+                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public): \(error)")
             }
         }
 

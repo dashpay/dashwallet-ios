@@ -50,7 +50,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - Obj-C facade
@@ -98,8 +97,7 @@ final class SwiftDashSDKPhraseRepairer: NSObject {
 
     // MARK: Plumbing
 
-    private static let logger = Logger(subsystem: "org.dashfoundation.dashwallet",
-                                       category: "swift-sdk-migration.phrase-repair")
+    private static let logger = AppLogger(category: "swift-sdk-migration.phrase-repair")
 
     /// Heap home for the `BOOL *stop` out-pointer handed to the VC's
     /// progress block. Deallocated only when the last closure holding the
@@ -139,7 +137,7 @@ final class SwiftDashSDKPhraseRepairer: NSObject {
             let started = Date()
             let result = await work(.default, progress)
             let elapsed = Date().timeIntervalSince(started)
-            logger.info("🔧 PHRASE-REPAIR :: finished with \(result.count) suggestion(s) in \(String(format: "%.1f", elapsed))s")
+            logger.info("🔧 PHRASE-REPAIR :: finished with \(result.count) suggestion(s) in \(String(format: "%.1f", elapsed), privacy: .public)s")
             DispatchQueue.main.async {
                 completion(result.mapValues { NSNumber(value: $0) })
                 // Strong capture keeps the stop pointer alive past every

@@ -25,7 +25,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -183,9 +182,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Logging
 
-    fileprivate static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.spv-coordinator")
+    fileprivate static let logger = AppLogger(category: "swift-sdk-migration.spv-coordinator")
 
     // MARK: - Published state
 
@@ -314,7 +311,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         do {
             try await performStop(lastError: lastError, clearBalance: true)
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: stop failed during full reset: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: stop failed during full reset: \(error)")
         }
     }
 
@@ -324,7 +321,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         do {
             try await performStop(lastError: nil, clearBalance: false)
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: Core-only stop failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: Core-only stop failed: \(error)")
         }
     }
 
@@ -361,7 +358,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 })
         } catch {
             lastError = error.localizedDescription
-            Self.logger.error("🛰️ SPVCOORD :: restart failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: restart failed: \(error)")
             throw error
         }
     }
@@ -507,7 +504,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         do {
             (manager, wallet) = try await host.start(network: network)
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(error)")
             return .failure(StartError.walletImport(error))
         }
 
@@ -584,7 +581,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         do {
             dataDir = try makeSPVDataDirectory(for: network).path
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: SPV dataDir failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: SPV dataDir failed: \(error)")
             return .failure(StartError.dataDirectory(error))
         }
 
@@ -695,7 +692,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 try await manager.startSpv(config: config)
             })
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(error)")
             return .failure(StartError.spvClient(error))
         }
 
@@ -806,7 +803,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 }
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
             } catch {
-                Self.logger.error("🛰️ SPVCOORD :: stopSpv threw: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🛰️ SPVCOORD :: stopSpv threw: \(error)")
                 // A network switch prepared before or during this stop
                 // detached the outgoing manager's subscriptions; re-attaching
                 // them would publish that network's progress and balance again.
@@ -904,7 +901,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             // intent stay, and the next launch widens and rewinds every
             // wallet again.
             Self.logger.error(
-                "🛰️ SPVCOORD :: coinjoin recovery widen/rewind failed: \(String(describing: error), privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery widen/rewind failed: \(error)")
         }
     }
 
@@ -945,7 +942,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         } catch {
             // The wallet may have been wiped since arming (nothing left to
             // rescan; the store delete was the safe direction regardless).
-            Self.logger.error("🛰️ SPVCOORD :: chain resync rescan arm failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🛰️ SPVCOORD :: chain resync rescan arm failed: \(error)")
         }
 
         Self.logger.info("🛰️ SPVCOORD :: chain store cleared for resync from height \(pending.fromHeight, privacy: .public)")
@@ -993,7 +990,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     _ = try self.rewindToImportFloor(walletIds: [walletId], network: network, manager: manager)
                     return true
                 } catch {
-                    Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
                     DWLogger.log(
                         "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
                     return false
@@ -1006,7 +1002,6 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             })
         guard !imported.isEmpty else { return [] }
 
-        Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported or recovered wallet(s) on \(network.rawValue, privacy: .public)")
         let stillPending = (SPVChainStoreRebuild.pendingWalletIds(scope: scope)?.count ?? 0) - imported.count
         DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) wallets=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
         return imported
@@ -1058,12 +1053,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 try await Self.resetSPVStore(atPath: dataDir)
             }
             if !cleared {
-                Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
                 DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
             }
             return cleared
         } catch {
-            Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) store delete failed: \(String(describing: error), privacy: .public)")
             DWLogger.log(
                 "SPVCOORD \(reason) FAILED scope=\(scope) step=delete codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return false
@@ -1309,7 +1302,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(mapped)
         } catch {
             Self.logger.warning(
-                "🛰️ SPVCOORD :: balance bridge fetch failed: \(String(describing: error), privacy: .public)")
+                "🛰️ SPVCOORD :: balance bridge fetch failed: \(error)")
         }
     }
 
@@ -1451,9 +1444,7 @@ extension SwiftDashSDKSPVCoordinator {
 /// producer.
 enum SPVChainResyncMarker {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.spv-chain-resync")
+    private static let logger = AppLogger(category: "swift-sdk-migration.spv-chain-resync")
 
     /// Stable for the lifetime of this process. A marker armed by this
     /// process is only applied by a later one (see type doc).

@@ -19,7 +19,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import Security
 import SwiftData
 import SwiftDashSDK
@@ -329,9 +328,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let storedUsername: String?
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.platform-data-source")
+    private static let logger = AppLogger(category: "dashconnect.platform-data-source")
 
     /// The pinned TESTNET `loginKeyResponse` contract id. Compile-time
     /// constant, so the length check can never fire at runtime.
@@ -439,13 +436,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             context = try await requireContext()
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: no context — \(error.localizedDescription, privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: no context — \(error)")
             throw error
         }
         do {
             try await authorize()
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error.localizedDescription, privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(error)")
             throw error
         }
         Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
@@ -528,7 +525,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         } catch {
             Self.logger.error(
-                "🔗 DASHCONNECT :: could not confirm registered login keys after approveLogin — \(error.localizedDescription, privacy: .public)"
+                "🔗 DASHCONNECT :: could not confirm registered login keys after approveLogin — \(error)"
             )
             // Conservative fallback: asking for a QR is safer than claiming the
             // registration is already on the identity when we could not verify it.
@@ -771,7 +768,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 ?? ""
             return (decimals, name)
         } catch {
-            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(String(describing: error), privacy: .public); quantity shown as base units")
+            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(error); quantity shown as base units")
             return nil
         }
     }
@@ -833,7 +830,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // than guess: a purchase that did land must not be offered for a
             // retry that would buy the tokens again on the next nonce.
             Self.logger.error(
-                "🔗 DASHCONNECT :: token purchase failed after submission; outcome unknown: \(String(describing: error), privacy: .public)")
+                "🔗 DASHCONNECT :: token purchase failed after submission; outcome unknown: \(error)")
             throw DashConnectTokenPurchaseFailure.outcomeUnknown(error)
         }
     }
@@ -1278,7 +1275,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return DashConnectAppMetadata(name: label, url: fallback.url)
             }
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(String(describing: error), privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(error)")
         }
 
         return fallback

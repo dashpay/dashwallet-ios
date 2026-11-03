@@ -45,16 +45,13 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
 @MainActor
 struct UnconfirmedTransactionRemover {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.unconfirmed-tx-remover")
+    private static let logger = AppLogger(category: "swift-sdk-migration.unconfirmed-tx-remover")
 
     /// What the removal achieved beyond deleting the rows. The rows are gone
     /// in every case; the cases differ in how much of the recovery path behind
@@ -340,7 +337,7 @@ struct UnconfirmedTransactionRemover {
                 logger.notice("🗑️ TX-REMOVE :: filter rescan armed from height \(fromHeight, privacy: .public) (tip \(tip, privacy: .public))")
             } catch {
                 outcome = .rescanUnavailable
-                logger.error("🗑️ TX-REMOVE :: filter rescan arm failed: \(String(describing: error), privacy: .public)")
+                logger.error("🗑️ TX-REMOVE :: filter rescan arm failed: \(error)")
             }
         } else if rescanFromHeight == nil {
             outcome = .rescanUnavailable

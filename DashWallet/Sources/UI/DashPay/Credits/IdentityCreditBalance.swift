@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-import OSLog
 import SwiftUI
 
 #if DASHPAY
@@ -28,7 +27,7 @@ import SwiftUI
 /// anything. Android answers this with `CreditBalanceInfo`; the thresholds
 /// here are its thresholds, so both wallets warn at the same point.
 enum IdentityCreditBalance {
-    private static let logger = Logger(subsystem: "org.dash.wallet", category: "identity-credits")
+    private static let logger = AppLogger(category: "identity-credits")
 
     /// The most expensive single operation, from Android's measurements (July
     /// 2024): a contact request cost 80–90M credits, a profile update 10–100M.
@@ -63,7 +62,7 @@ enum IdentityCreditBalance {
             let credits = try wallet.managedIdentity(identityId: identityId).getBalance()
             return Info(credits: credits)
         } catch {
-            logger.error("💳 CREDITS :: balance read failed: \(String(describing: error), privacy: .public)")
+            logger.error("💳 CREDITS :: balance read failed: \(error)")
             return nil
         }
     }

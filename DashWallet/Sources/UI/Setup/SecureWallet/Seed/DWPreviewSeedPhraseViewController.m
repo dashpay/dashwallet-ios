@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSString *seed = [self.contentView.model debug_seedText];
     [UIPasteboard generalPasteboard].string = seed;
-    NSLog(@"The seed phrase was copied to the clipboard.");
+    DWLog(@"The seed phrase was copied to the clipboard.");
 }
 #endif /* DEBUG */
 

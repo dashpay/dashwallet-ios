@@ -26,7 +26,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -41,9 +40,7 @@ struct AssetLockRecoveryService {
         self.failureStore = failureStore
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.asset-lock-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.asset-lock-recovery")
 
     enum RecoveryError: LocalizedError {
         case notReady
@@ -231,9 +228,7 @@ struct AssetLockRecoveryService {
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
-        /// WHY on screen instead of a bare count. Bulk failures land in OSLog,
-        /// which a diagnostic export never captures (the gap ticket 32004
-        /// found for sends), so the count alone left nothing to diagnose from.
+        /// WHY on screen instead of a bare count.
         var firstFailureMessage: String?
         /// Set when the pass gave up early after repeated failures.
         var stoppedAfterRepeatedFailures = false
@@ -419,7 +414,7 @@ struct AssetLockRecoveryService {
                 let message = (error as? LocalizedError)?.errorDescription
                     ?? error.localizedDescription
                 let stop = Self.apply(.failed(message), to: &outcome, consecutiveFailures: &consecutiveFailures)
-                // File logger, not just OSLog: a bulk pass that fails is
+                // A bulk pass that fails is
                 // exactly what a diagnostic export needs to carry, with the
                 // typed error case so a consensus refusal is searchable.
                 AssetLockRetryLog.logFailure(
@@ -440,7 +435,6 @@ struct AssetLockRecoveryService {
         }
 
         DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) failed=\(outcome.failed)")
-        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) failed=\(outcome.failed, privacy: .public)")
         return outcome
     }
 

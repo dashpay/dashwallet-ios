@@ -4,7 +4,6 @@
 //
 
 import Combine
-import OSLog
 import SwiftUI
 import DashUIKit
 import SwiftDashSDK
@@ -99,7 +98,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         }
     }
 
-    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
+    private static let logger = AppLogger(category: "ShieldedRecovery")
 
     private let outPoint: (txidWire: Data, vout: UInt32)?
     private let coordinator = ShieldedTransferCoordinator()

@@ -17,7 +17,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Small, testable serial task chain used by the wallet runtime. Keeping the
@@ -226,9 +225,7 @@ extension SwiftDashSDKWalletRuntime {
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
 final class SwiftDashSDKWalletRuntime: NSObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-runtime")
+    private static let logger = AppLogger(category: "swift-sdk-migration.wallet-runtime")
 
     private static let seedMigratorDoneKey = "swiftSDKKeyMigration.v1.done"
     private static let seedMigratorDeferredKeys = [
@@ -982,7 +979,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             do {
                 try await SwiftDashSDKSPVCoordinator.shared.restartAsync()
             } catch {
-                Self.logger.error("🧭 RUNTIME :: Core SPV restart failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🧭 RUNTIME :: Core SPV restart failed: \(error)")
             }
         }
     }
@@ -1093,10 +1090,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                     "🧭 RUNTIME :: network switch prepared during the Core start; leaving \(network.rawValue, privacy: .public) to its refresh")
                 return nil
             } catch {
-                Self.logger.error("🧭 RUNTIME :: Core start failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🧭 RUNTIME :: Core start failed: \(error)")
                 let failure = self.lifecycleState.preparationFailure ?? WalletPreparationFailure(error: error)
-                // os_log does not reach the diagnostic export; the file log
-                // does. Only a record the open classified names a category:
+                // Only a record the open classified names a category:
                 // the fallback for anything else (SPV start, devnet preflight)
                 // bridges to OtherError codes and would mislabel the cause.
                 if let classified = self.lifecycleState.preparationFailure {
@@ -1159,7 +1155,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         } catch {
             platformPhase = .degraded(network)
             Self.logger.error(
-                "🧭 RUNTIME :: Platform start failed; Core stays up: \(String(describing: error), privacy: .public)")
+                "🧭 RUNTIME :: Platform start failed; Core stays up: \(error)")
         }
     }
 
@@ -1215,7 +1211,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
             object: nil)
         Self.logger.info(
-            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
+            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId.prefix(8), privacy: .public)")
     }
 
     private func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {

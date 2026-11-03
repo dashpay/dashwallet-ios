@@ -42,7 +42,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -53,9 +52,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 
     @objc public static let shared = DWCurrentUserIdentityInfo()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-info")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-info")
 
     /// v1 pins identityIndex to 0 across the coordinator + bridge +
     /// this helper (dashwallet has exactly one DashPay identity per
@@ -331,12 +328,12 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                 if let walletError = error as? PlatformWalletError {
                     switch walletError {
                     case .persisterStoreTransient, .persisterStoreFatal, .persisterStoreConstraint:
-                        Self.logger.error("🪪 IDENT-INFO :: identity balance persistence failed: \(String(describing: error), privacy: .public)")
+                        Self.logger.error("🪪 IDENT-INFO :: identity balance persistence failed: \(error)")
                         return
                     default: break
                     }
                 }
-                Self.logger.warning("🪪 IDENT-INFO :: identity balance refresh failed: \(String(describing: error), privacy: .public)")
+                Self.logger.warning("🪪 IDENT-INFO :: identity balance refresh failed: \(error)")
             })
     }
 
@@ -484,7 +481,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                 self.nameReadiness.finish(scope, generation: generation, succeeded: !hasUnknownContests)
             } catch {
                 self.nameReadiness.finish(scope, generation: generation, succeeded: false)
-                Self.logger.warning("Name refresh remains unknown: \(error.localizedDescription)")
+                Self.logger.warning("Name refresh remains unknown: \(error)")
             }
             guard self.nameReadiness.isCurrent(scope, generation: generation) else { return }
             self.nameRefreshTasks.removeValue(forKey: scope)
@@ -869,7 +866,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
               let identity = wallet.identities.first(where: { $0.identityId == identityId }) else { return }
         identity.dpnsName = name
         do { try context.save() }
-        catch { Self.logger.warning("Could not persist confirmed DPNS name: \(error.localizedDescription)") }
+        catch { Self.logger.warning("Could not persist confirmed DPNS name: \(error)") }
     }
 
     private static func nilIfEmpty(_ value: String?) -> String? {
@@ -964,7 +961,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         do {
             try context.save()
         } catch {
-            Self.logger.warning("Could not store the main DPNS name: \(error.localizedDescription)")
+            Self.logger.warning("Could not store the main DPNS name: \(error)")
             return false
         }
         setPendingMainName(nil, identityId: identityId)
@@ -988,7 +985,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
 /// names after discovery persistence, then reconcile app state.
 @MainActor
 enum SameSeedIdentityRecoveryPipeline {
-    private static let logger = Logger(subsystem: "org.dash.wallet", category: "IdentityRecovery")
+    private static let logger = AppLogger(category: "IdentityRecovery")
     struct Outcome: Equatable {
         let discoveredCount: Int
         let identityCount: Int
@@ -1044,7 +1041,7 @@ enum SameSeedIdentityRecoveryPipeline {
 
         do { try await refreshNames(identityIds) }
         catch is CancellationError { throw CancellationError() }
-        catch { logger.warning("Identity recovered; name refresh remains pending: \(error.localizedDescription)") }
+        catch { logger.warning("Identity recovered; name refresh remains pending: \(error)") }
         try Task.checkCancellation()
         // Re-read rather than trust the ids we acted on: `knownIdentityIds`
         // came from a different call, and even a discovery result can
@@ -1204,9 +1201,7 @@ enum StartupIdentityRecoveryPolicy {
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-recovery")
 
     private var completedContexts: Set<String> = []
     private var activeContexts: Set<String> = []
@@ -1415,7 +1410,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             Self.logger.warning(
                 """
                 🪪 IDENT-RECOVERY :: failed; will retry after next runtime start: \
-                \(String(describing: error), privacy: .public)
+                \(error)
                 """)
             if error is CancellationError {
                 DWLogger.log("\(logTag) cancelled after \(elapsedMs())ms")

@@ -77,3 +77,11 @@ custom_rules:
     regex: "@objcMembers"
     message: "Explicitly use @objc on each member you want to expose to Objective-C"
     severity: error
+  no_os_logger:
+    name: "os.Logger"
+    regex: "(?<![A-Za-z0-9_])(Logger|os_log|NSLog)(\\(|\\.init\\b)|:\\s*(os\\.)?Logger\\b"
+    match_kinds:
+      - identifier
+      - typeidentifier
+    message: "Use AppLogger: os.Logger, os_log and NSLog lines never reach the \"Share application logs\" export"
+    severity: error

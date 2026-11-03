@@ -29,7 +29,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 import UIKit
@@ -334,9 +333,7 @@ final class SwiftDashSDKHost {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.host")
+    nonisolated private static let logger = AppLogger(category: "swift-sdk-migration.host")
 
     // MARK: - Owned state
 
@@ -441,8 +438,6 @@ final class SwiftDashSDKHost {
         do {
             return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
         } catch {
-            logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
-            // os_log does not reach the diagnostic export; the file log does.
             DWLogger.log("HOST wallet-presence keychain read failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return false
         }
@@ -464,7 +459,6 @@ final class SwiftDashSDKHost {
                 return (walletId: walletId, mnemonic: mnemonic)
             }
         } catch {
-            logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
             DWLogger.log("HOST mnemonic keychain enumeration failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             return []
         }
@@ -743,7 +737,6 @@ final class SwiftDashSDKHost {
             return (existingManager, existingWallet)
         }
 
-        Self.logger.info("🪺 HOST :: starting for \(network.rawValue, privacy: .public)")
         DWLogger.log("HOST starting for \(network.rawValue)")
 
         let handles = try await buildRuntime(for: network)
@@ -758,7 +751,6 @@ final class SwiftDashSDKHost {
             self?.unlockDashPayContactCrypto(manager: handles.manager, wallet: resolvedWallet)
         }
         Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
-        Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
         DWLogger.log("HOST started for \(network.rawValue)")
         return (handles.manager, resolvedWallet)
     }
@@ -830,7 +822,7 @@ final class SwiftDashSDKHost {
             await rows.shutdown()
             throw error
         } catch {
-            Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: wallet bootstrap failed: \(error)")
             await rows.shutdown()
             throw HostError.walletBootstrapFailed(error)
         }
@@ -1116,7 +1108,7 @@ final class SwiftDashSDKHost {
             // duplicate guard and PlatformWalletManager.createWallet.
             walletId = try Wallet(mnemonic: mnemonic, network: network).id
         } catch {
-            Self.logger.error("🪺 HOST :: walletId derivation failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: walletId derivation failed: \(error)")
             throw HostError.walletCreationFailed(error)
         }
 
@@ -1146,7 +1138,6 @@ final class SwiftDashSDKHost {
                     armedRebuildDirectory = directory
                 }
             } catch {
-                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted: \(String(describing: error), privacy: .public)")
                 DWLogger.log("HOST chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
                 throw HostError.walletCreationFailed(error)
             }
@@ -1159,7 +1150,7 @@ final class SwiftDashSDKHost {
         } catch WalletStorageError.mnemonicNotFound {
             previousMnemonic = nil
         } catch {
-            Self.logger.error("🪺 HOST :: existing mnemonic lookup failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: existing mnemonic lookup failed: \(error)")
             throw HostError.mnemonicPersistenceFailed(error)
         }
 
@@ -1217,15 +1208,15 @@ final class SwiftDashSDKHost {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
             throw HostError.mnemonicRoundTripMismatch
         } catch MnemonicFirstWalletCreationError.mnemonicPersistence(let error) {
-            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(error)")
             throw HostError.mnemonicPersistenceFailed(error)
         } catch MnemonicFirstWalletCreationError.walletCreation(let error) {
-            Self.logger.error("🪺 HOST :: createWallet failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: createWallet failed: \(error)")
             throw HostError.walletCreationFailed(error)
         } catch {
             // The transaction exhaustively maps its own failures; keep an
             // explicit fallback so a future case cannot escape untyped.
-            Self.logger.error("🪺 HOST :: wallet creation transaction failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: wallet creation transaction failed: \(error)")
             if let hostError = error as? HostError {
                 throw hostError
             }
@@ -1270,8 +1261,7 @@ final class SwiftDashSDKHost {
             let stepSummary = metrics.steps
                 .map { "\($0.name)=\($0.milliseconds)ms(code \($0.ffiCode))" }
                 .joined(separator: " ")
-            // DWLogger on purpose (os_log doesn't reach diagnostic exports):
-            // this line is the field telemetry for how often the native
+            // This line is the field telemetry for how often the native
             // teardown hits its wedged-pass worst case.
             DWLogger.log(
                 "HOST shutdown: total=\(metrics.totalMilliseconds)ms offMain=\(metrics.ranOffMainThread) \(stepSummary)")
@@ -1292,7 +1282,6 @@ final class SwiftDashSDKHost {
         runningNetwork = nil
         ContestedUsernameFee.shared.runtimeDidStop()
 
-        Self.logger.info("🪺 HOST :: stopped")
         DWLogger.log("HOST stopped")
     }
 
@@ -1388,7 +1377,7 @@ final class SwiftDashSDKHost {
             Self.logger.info(
                 "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
-            Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: SDK init failed: \(error)")
             throw HostError.sdkInitFailed(error)
         }
 
@@ -1411,10 +1400,8 @@ final class SwiftDashSDKHost {
             }
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
             container = cached.value
-            Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.source.rawValue, privacy: .public) for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 2/4 ModelContainer \(cached.source.rawValue) for \(network.rawValue) in \(ms)ms")
         } catch {
-            Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             // Allow-listed `domain:code` pairs only: Core Data errors carry
             // paths and stored values, which never belong in the exported log.
             DWLogger.log(
@@ -1434,10 +1421,9 @@ final class SwiftDashSDKHost {
             let started = CFAbsoluteTimeGetCurrent()
             try newManager.configure(sdk: newSDK, modelContainer: container)
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
-            Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
             DWLogger.log("HOST stage 3/4 manager configured for \(network.rawValue) in \(ms)ms")
         } catch {
-            Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: configure failed: \(error)")
             throw HostError.configureFailed(error)
         }
 
@@ -1581,9 +1567,7 @@ final class SwiftDashSDKHost {
     /// throws only when the resolved seed does not bind to this wallet, which is
     /// worth a log line but not a launch failure.
     ///
-    /// Logged through `DWLogger` rather than `os_log` on purpose: this line has
-    /// to survive into the `app-logs/` group of a diagnostic export, and the
-    /// `os-log.txt` capture is not on this branch. It reports the three states
+    /// The log line reports the three states
     /// that tell apart the ways the drain can fail to happen — no stored
     /// mnemonic for this wallet id (unlock no-ops), an empty queue (nothing was
     /// deferred), and a seed that does not bind (throws).
@@ -1743,7 +1727,6 @@ final class SwiftDashSDKHost {
                 try SPVChainStoreRebuild.arm(
                     walletId: entry.walletId, scope: scope, directory: try chainStoreRebuildDirectory())
             } catch {
-                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted for a recovered wallet: \(String(describing: error), privacy: .public)")
                 DWLogger.log("HOST keychain recovery: chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
             }
             do {
@@ -1764,12 +1747,10 @@ final class SwiftDashSDKHost {
                     birthHeight: Self.importedWalletBirthHeight(for: network))
                 if created.walletId != entry.walletId {
                     try? rows.deleteWallet(walletId: created.walletId)
-                    Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
                     DWLogger.log("HOST keychain recovery: created wallet id did not match its keychain id; discarded")
                     throw HostError.mnemonicRoundTripMismatch
                 }
             } catch {
-                Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
                 DWLogger.log("HOST keychain recovery failed for one entry: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
                 throw error
             }
@@ -1779,7 +1760,6 @@ final class SwiftDashSDKHost {
             DWLogger.log("HOST keychain recovery resolved no active wallet for \(network.networkName) eligible=\(entries.count)")
             return nil
         }
-        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
         DWLogger.log(
             "HOST recovered \(entries.count) wallet(s) from keychain for \(network.networkName) skipped=\(inventory.count - entries.count) birthHeight=\(Self.importedWalletBirthHeight(for: network))")
         return resolved
@@ -1953,14 +1933,14 @@ final class SwiftDashSDKHost {
         do {
             ids = try storedWalletIds()
         } catch {
-            return .unavailable("keychain enumeration failed: \(error)")
+            return .unavailable("keychain enumeration failed: \(AppLogMessage.errorSummary(error))")
         }
         guard ids.contains(sourceWalletId) else { return .deleted }
         let stored: String
         do {
             stored = try readMnemonic(sourceWalletId)
         } catch {
-            return .unavailable("mnemonic read failed: \(error)")
+            return .unavailable("mnemonic read failed: \(AppLogMessage.errorSummary(error))")
         }
         let phrase = Mnemonic.normalizePhrase(stored)
         guard !phrase.isEmpty, Mnemonic.validate(phrase) else {
@@ -1992,7 +1972,7 @@ final class SwiftDashSDKHost {
             return true
         } catch {
             Self.logger.error(
-                "🪺 HOST :: devnet provisioning failed for one phrase: \(String(describing: error), privacy: .public)")
+                "🪺 HOST :: devnet provisioning failed for one phrase: \(error)")
             return false
         }
     }

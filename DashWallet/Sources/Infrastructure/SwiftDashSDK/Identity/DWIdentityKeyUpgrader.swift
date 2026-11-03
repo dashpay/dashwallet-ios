@@ -16,16 +16,13 @@
 //
 
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
 @MainActor
 enum DWIdentityKeyUpgrader {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-key-upgrader")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-key-upgrader")
 
     typealias UpgradeError = DWDashPayIdentityKeys.KeyError
 
@@ -132,9 +129,7 @@ enum DWIdentityKeyUpgrader {
 @MainActor
 enum DWIdentityReloader {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-reloader")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-reloader")
 
     /// Reload the identity persisted at `identityIndex`. Errors are logged,
     /// not thrown — pull-to-refresh has no failure UI, and the stale local
@@ -145,7 +140,7 @@ enum DWIdentityReloader {
             let id = try await wallet.loadIdentity(atIndex: identityIndex)
             Self.logger.info("🪪 RELOAD :: identity at index \(identityIndex, privacy: .public) reloaded (found=\(id != nil, privacy: .public))")
         } catch {
-            Self.logger.error("🪪 RELOAD :: identity reload failed at index \(identityIndex, privacy: .public): \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪪 RELOAD :: identity reload failed at index \(identityIndex, privacy: .public): \(error)")
         }
     }
 

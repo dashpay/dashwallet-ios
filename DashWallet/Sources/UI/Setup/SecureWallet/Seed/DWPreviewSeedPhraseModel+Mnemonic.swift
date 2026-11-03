@@ -11,13 +11,10 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 extension DWPreviewSeedPhraseModel {
-    private static let mnemonicLogger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.preview-seed-phrase-model")
+    private static let mnemonicLogger = AppLogger(category: "swift-sdk-migration.preview-seed-phrase-model")
 
     /// Generate a BIP-39 mnemonic of `newWalletWordCount` words (12 or 24,
     /// per the user's pick; anything else falls back to the 12-word default)
@@ -32,7 +29,7 @@ extension DWPreviewSeedPhraseModel {
             Self.mnemonicLogger.info("generated \(length.rawValue, privacy: .public)-word mnemonic")
             return mnemonic
         } catch {
-            Self.mnemonicLogger.error("generateAndStoreMnemonic failed: \(String(describing: error), privacy: .public)")
+            Self.mnemonicLogger.error("generateAndStoreMnemonic failed: \(error)")
             return nil
         }
     }
@@ -62,7 +59,7 @@ extension DWPreviewSeedPhraseModel {
             }
             return try storage.retrieveMnemonic(for: walletId)
         } catch {
-            Self.mnemonicLogger.error("readStoredMnemonic failed: \(String(describing: error), privacy: .public)")
+            Self.mnemonicLogger.error("readStoredMnemonic failed: \(error)")
             return nil
         }
     }

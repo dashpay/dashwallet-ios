@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Core-chain transaction constants the app needs without DashSync.
@@ -268,9 +267,7 @@ final class UnknownContactPaymentOutcomes {
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
 
-    fileprivate static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-send-service")
+    fileprivate static let logger = AppLogger(category: "swift-sdk-migration.wallet-send-service")
 
     /// `userInfo` key carrying the SDK's own explanation of a broadcast
     /// outcome.
@@ -479,7 +476,7 @@ final class WalletSendService: NSObject {
         }
         let destination = resolved.address
 
-        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination)")
         let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
         do {
             outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
@@ -707,7 +704,7 @@ final class WalletSendService: NSObject {
         do {
             try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
         } catch {
-            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error.localizedDescription, privacy: .public)")
+            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error)")
         }
     }
 
@@ -812,11 +809,9 @@ final class WalletSendService: NSObject {
 
     /// An error's type and code for the exported log. Not its description:
     /// send and builder errors quote txids, outpoints and addresses, which
-    /// lead to the wallet's own addresses (the sender's os.Logger keeps the
-    /// detail, outside the export).
+    /// lead to the wallet's own addresses.
     static func logSummary(of error: Error) -> String {
-        let nsError = error as NSError
-        return "\(type(of: error)) \(nsError.domain) #\(nsError.code)"
+        AppLogMessage.errorSummary(error)
     }
 
     /// A failed sweep for the exported log: `logSummary(of:)` plus what it
@@ -1031,7 +1026,7 @@ private final class SendAuthorizer {
                 description: "Authentication cancelled"
             )
         case .failed, .timedOut:
-            WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed"))")
+            WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed", privacy: .public))")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
                 description: "Authentication failed"

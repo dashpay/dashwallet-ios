@@ -16,7 +16,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -35,7 +34,7 @@ import SwiftData
 /// transition this app sends.
 @MainActor
 final class IdentityVerifyService {
-    private static let logger = Logger(subsystem: "org.dash.wallet", category: "identity-verify")
+    private static let logger = AppLogger(category: "identity-verify")
 
     enum ServiceError: LocalizedError {
         case noIdentity
@@ -310,7 +309,7 @@ final class IdentityVerifyService {
                     limit: Self.lookupPageSize)
             }.value
         } catch {
-            Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🔗 IDENT-VERIFY :: lookup failed: \(error)")
             throw ServiceError.lookupFailed
         }
 

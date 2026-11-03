@@ -714,7 +714,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         NSLocalizedString("Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
 
-    /// Exported-log line (DWLogger reaches "Share logs"; os.Logger does not).
+    /// Exported-log line.
     private static func log(_ message: String) {
         DWLogger.log("🛡️ COINJOIN-SHIELD :: \(message)", className: "CoinJoinMoveFundsViewModel")
     }

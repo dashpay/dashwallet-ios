@@ -26,7 +26,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 extension Notification.Name {
@@ -119,9 +118,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
     @objc public static let stateChangedNotification =
         NSNotification.Name("DWIdentityRegistrationBridgeStateChangedNotification")
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.identity-bridge")
+    private static let logger = AppLogger(category: "swift-sdk-migration.identity-bridge")
 
     // MARK: - Cached @objc state
 

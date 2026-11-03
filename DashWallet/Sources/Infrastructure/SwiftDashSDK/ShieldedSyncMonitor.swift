@@ -19,7 +19,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -28,9 +27,7 @@ final class ShieldedSyncMonitor: ObservableObject {
 
     static let shared = ShieldedSyncMonitor()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.shielded-sync-monitor")
+    private static let logger = AppLogger(category: "swift-sdk-migration.shielded-sync-monitor")
 
     // MARK: - Published state (Shielded Sync Info screen)
 
@@ -257,7 +254,7 @@ final class ShieldedSyncMonitor: ObservableObject {
             let rows = try modelContainer.mainContext.fetch(descriptor)
             notesSynced = rows.map(\.lastSyncedIndex).max() ?? 0
         } catch {
-            Self.logger.warning("🛡️ SHIELD-MON :: sync-state fetch failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🛡️ SHIELD-MON :: sync-state fetch failed: \(error)")
         }
     }
 
