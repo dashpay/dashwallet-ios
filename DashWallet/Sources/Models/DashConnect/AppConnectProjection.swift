@@ -441,11 +441,22 @@ extension AppConnect {
         return keys
     }
 
-    /// Whether Platform's current key, `current`, is what `expected` asks:
-    /// that very key, enabled, or none at all where none may be.
-    static func isCurrent(_ current: CurrentContractKey?, as expected: ExpectedCurrentKey) -> Bool {
-        guard let current else { return expected.mayBeNone }
-        return !current.isDisabled && current.keyId == expected.id && current.data == expected.data
+    /// How Platform's current key, `current`, stands against `expected`.
+    enum CurrentKeyCheck: Equatable {
+        /// That very key, enabled, or none at all where none may be.
+        case matches
+        /// None current yet for a key the identity already shows: the
+        /// node that answered may be behind.
+        case notYet
+        /// Another key is current, or this one is off: no later read that
+        /// says otherwise can be trusted over it, as that one may be behind.
+        case differs
+    }
+
+    static func check(_ current: CurrentContractKey?, against expected: ExpectedCurrentKey) -> CurrentKeyCheck {
+        guard let current else { return expected.mayBeNone ? .matches : .notYet }
+        let isIt = !current.isDisabled && current.keyId == expected.id && current.data == expected.data
+        return isIt ? .matches : .differs
     }
 
     /// Whether another key holds an id one of the intent's keys was to take:

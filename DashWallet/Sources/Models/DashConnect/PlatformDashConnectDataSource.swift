@@ -1325,9 +1325,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Whether each encryption key `intent`'s response carries is the one
     /// Platform names current for the app and its purpose, and no key is
     /// current yet for one it is still to register: the app's verifier
-    /// refuses any other. A node that is behind may not show a key just
-    /// registered, so a "no" stands only once reads a few seconds apart all
-    /// say it. Throws when no read answered.
+    /// refuses any other. Another key current, or this one off, is a "no"
+    /// at once, whatever a later read says. No key current yet for one the
+    /// identity shows may be a node that is behind: it is read again, a key
+    /// one read showed current stays so, and one no read shows current
+    /// throws `appConnectKeysOutOfDate`. Throws the read's failure when no
+    /// read answered, or when an answer cannot be read.
     private func encryptionKeysAreCurrent(
         of intent: AppConnect.ConnectionIntent, in snapshot: AppConnect.IdentitySnapshot, context: Context
     ) async throws -> Bool {
@@ -1335,23 +1338,31 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard !expected.isEmpty else { return true }
         let identityId = context.identityId.toBase58String()
         let purposes = expected.keys.sorted { $0.rawValue < $1.rawValue }
+        let all = expected.flatMap { purpose, keys in keys.map { (purpose, $0) } }
+        var matched = Set<Int>()
+        var answered = false
         var failure: Error?
         for attempt in 0 ... 2 {
             if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
             do {
                 let current = try await Self.readCurrentContractKeys(
                     sdk: context.sdk, identityId: identityId, appId: intent.appId.toBase58String(), purposes: purposes)
-                if expected.allSatisfy({ purpose, keys in keys.allSatisfy { AppConnect.isCurrent(current[purpose], as: $0) } }) {
-                    return true
+                answered = true
+                for (index, (purpose, key)) in all.enumerated() {
+                    switch AppConnect.check(current[purpose], against: key) {
+                    case .differs: return false
+                    case .matches: matched.insert(index)
+                    case .notYet: break
+                    }
                 }
+                if matched.count == all.count { return true }
             } catch {
                 failure = error
-                if Self.isUnreadableAnswer(error) { break }
+                if Self.isUnreadableAnswer(error) { throw Self.failedCurrentKeyRead(error) }
             }
         }
-        // A "no" stands only when every read gave it.
-        if let failure { throw Self.failedCurrentKeyRead(failure) }
-        return false
+        if !answered, let failure { throw Self.failedCurrentKeyRead(failure) }
+        throw DashConnectPlatformError.appConnectKeysOutOfDate
     }
 
     /// Submits what of `intent` is not on the identity yet, and returns once

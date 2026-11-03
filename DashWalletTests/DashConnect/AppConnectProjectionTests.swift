@@ -553,16 +553,19 @@ final class AppConnectProjectionTests: XCTestCase {
             [.decryption: [Expected(id: 7, data: decryption.data, mayBeNone: false)]], "another key under its id is not asked about")
 
         let toRegister = Expected(id: 12, data: added.data, mayBeNone: true)
+        let resent = Expected(id: 7, data: decryption.data, mayBeNone: false)
         let ours = AppConnect.CurrentContractKey(keyId: 12, keyType: nil, data: added.data, isDisabled: false)
         let other = AppConnect.CurrentContractKey(keyId: 5, keyType: nil, data: Data(repeating: 5, count: 33), isDisabled: false)
         let disabledOther = AppConnect.CurrentContractKey(keyId: 5, keyType: nil, data: Data(repeating: 5, count: 33), isDisabled: true)
         let sameIdOtherKey = AppConnect.CurrentContractKey(keyId: 12, keyType: nil, data: Data(repeating: 9, count: 33), isDisabled: false)
-        XCTAssertFalse(AppConnect.isCurrent(disabledOther, as: toRegister), "a disabled current key is still a current key")
-        XCTAssertFalse(AppConnect.isCurrent(sameIdOtherKey, as: toRegister), "another key under its id")
-        XCTAssertTrue(AppConnect.isCurrent(nil, as: toRegister), "none current yet")
-        XCTAssertTrue(AppConnect.isCurrent(ours, as: toRegister), "it landed and the identity read was behind")
-        XCTAssertFalse(AppConnect.isCurrent(other, as: toRegister), "another key became current")
-        XCTAssertFalse(AppConnect.isCurrent(nil, as: Expected(id: 7, data: decryption.data, mayBeNone: false)))
+        let resentOff = AppConnect.CurrentContractKey(keyId: 7, keyType: nil, data: decryption.data, isDisabled: true)
+        XCTAssertEqual(AppConnect.check(nil, against: toRegister), .matches, "none current yet")
+        XCTAssertEqual(AppConnect.check(ours, against: toRegister), .matches, "it landed and the identity read was behind")
+        XCTAssertEqual(AppConnect.check(other, against: toRegister), .differs, "another key became current")
+        XCTAssertEqual(AppConnect.check(disabledOther, against: toRegister), .differs, "a disabled current key is still a current key")
+        XCTAssertEqual(AppConnect.check(sameIdOtherKey, against: toRegister), .differs, "another key under its id")
+        XCTAssertEqual(AppConnect.check(nil, against: resent), .notYet, "the node that answered may be behind")
+        XCTAssertEqual(AppConnect.check(resentOff, against: resent), .differs)
     }
 
     func testAResponseIsResentOnlyWhileItsEncryptionKeysCanBeUsed() {
