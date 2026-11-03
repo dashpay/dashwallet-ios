@@ -110,8 +110,6 @@ struct ConnectionsScreen: View {
         } else {
             ConnectionsList(
                 connections: viewModel.connections,
-                onScanQR: showScanner,
-                onMockScan: mockScan,
                 onDisconnect: viewModel.disconnect
             )
             .padding(.horizontal, 20)
@@ -218,17 +216,11 @@ struct ConnectionsScreen: View {
     )
 }
 
-#Preview("Approved") {
+#Preview("Confirming") {
     ConnectionsScreen(
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
-            dataSource: MockDashConnectDataSource(initial: [.init(
-                id: MockDashConnectDataSource.sample(.approved).id,
-                name: MockDashConnectDataSource.sample(.approved).name,
-                url: MockDashConnectDataSource.sample(.approved).url,
-                status: .approved,
-                updatedAt: MockDashConnectDataSource.sample(.approved).updatedAt
-            )]),
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.confirming)]),
             featureUnavailable: false
         )
     )

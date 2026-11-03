@@ -97,12 +97,12 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(request.appContractId, existing.id)
     }
 
-    func testMakeConnectionRequestCarriesApprovedConnection() async {
+    func testMakeConnectionRequestCarriesAConfirmingConnection() async {
         let existing = DAppConnection(
             id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
             name: "Yappr",
             url: "yap.pr",
-            status: .approved,
+            status: .confirming,
             updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
         )
         let dataSource = PlatformDashConnectDataSource(
@@ -119,6 +119,20 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertNotNil(found?.scope, "a row from the published list names its scope")
         found?.scope = nil
         XCTAssertEqual(found, existing)
+    }
+
+    func testAVersion1LoginQRIsRefusedWhenScanned() async {
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: []),
+            activeWalletIdHex: { "wallet" }
+        )
+        do {
+            _ = try await dataSource.parseQR(MockDashConnectDataSource.sampleLoginQRCode)
+            XCTFail("a v1 login QR was taken")
+        } catch {
+            XCTAssertEqual(error as? AppConnect.Refusal, AppConnect.v1Refusal)
+        }
     }
 
     func testMakeConnectionRequestReturnsNilForUnknownContract() async throws {
@@ -146,76 +160,17 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertNil(connectionRequest.existingConnection)
     }
 
-    func testRealKeyRegistrationFixtureParsesWithNilContractBounds() throws {
+    func testParserRefusesAnIdentityUpdate() throws {
         let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
-        let bytes = try XCTUnwrap(Data(hex: Self.realKeyRegistrationFixtureHex))
-        let expectedIdentityId = try XCTUnwrap(
-            Data(hex: "89fd6ddba75136a4fea02dc7d89ef0ca5bcc32ccf12fb8da6a1a03740567ae72")
-        )
-        let expectedAuthHash160 = try XCTUnwrap(
-            Data(hex: "5e24e38a86e720f61757647996957e322686abb7")
-        )
-        let expectedEncryptionPublicKey = try XCTUnwrap(
-            Data(hex: "035e8cfb0785b54e8902a3dc17bdaad8a5738c6019a18ebc527f79d1c64a27826a")
-        )
-
-        let parsed = try wallet.parseIdentityUpdateTransition(bytes)
-
-        XCTAssertEqual(parsed.identityId, expectedIdentityId)
-        XCTAssertEqual(parsed.disablePublicKeyIds, [])
-        XCTAssertEqual(parsed.addPublicKeys.count, 2)
-
-        let authKey = parsed.addPublicKeys[0]
-        XCTAssertEqual(authKey.keyId, 6)
-        XCTAssertEqual(authKey.purpose, .authentication)
-        XCTAssertEqual(authKey.securityLevel, .high)
-        XCTAssertEqual(authKey.keyType, .ecdsaHash160)
-        XCTAssertNil(authKey.contractBounds)
-        XCTAssertEqual(authKey.pubkeyBytes, expectedAuthHash160)
-
-        let encryptionKey = parsed.addPublicKeys[1]
-        XCTAssertEqual(encryptionKey.keyId, 7)
-        XCTAssertEqual(encryptionKey.purpose, .encryption)
-        XCTAssertEqual(encryptionKey.securityLevel, .medium)
-        XCTAssertEqual(encryptionKey.keyType, .ecdsaSecp256k1)
-        XCTAssertNil(encryptionKey.contractBounds)
-        XCTAssertEqual(encryptionKey.pubkeyBytes, expectedEncryptionPublicKey)
-    }
-
-    func testPlatformWalletParserRoundTripsTaggedAndTaglessIdentityUpdateTransition() throws {
-        let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
-        let taggedBytes = try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))
-        let taglessBytes = try XCTUnwrap(Data(base64Encoded: Self.taglessIdentityUpdateFixtureBase64))
-
-        let tagged = try wallet.parseIdentityUpdateTransition(taggedBytes)
-        let tagless = try wallet.parseIdentityUpdateTransition(taglessBytes)
-
-        XCTAssertEqual(tagged.identityId, Data(repeating: 0x11, count: 32))
-        XCTAssertEqual(tagged.addPublicKeys.map(\.keyId), [17, 18])
-        XCTAssertEqual(tagged.disablePublicKeyIds, [4, 8])
-        XCTAssertEqual(tagged.addPublicKeys[0].purpose, .authentication)
-        XCTAssertEqual(tagged.addPublicKeys[1].purpose, .encryption)
-        XCTAssertEqual(
-            tagged.addPublicKeys[1].contractBounds,
-            .singleContractDocumentType(
-                id: Data(repeating: 0x44, count: 32),
-                documentTypeName: "profile"
-            )
-        )
-
-        XCTAssertEqual(tagless.identityId, tagged.identityId)
-        XCTAssertEqual(tagless.addPublicKeys.map(\.keyId), tagged.addPublicKeys.map(\.keyId))
-        XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
-
+        let bytes = try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))
         let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
             Self.parsed(.identityUpdate(try wallet.parseIdentityUpdateTransition(bytes)))
         }
-        guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
-            return XCTFail("Expected a key-registration transition")
+        XCTAssertThrowsError(try appParser.parse(bytes)) { error in
+            guard case DashConnectPlatformError.unsupportedStateTransition = error else {
+                return XCTFail("Expected an unsupported state transition, got \(error)")
+            }
         }
-        XCTAssertEqual(appTransition.identityId, tagged.identityId)
-        XCTAssertEqual(appTransition.addPublicKeys.map(\.keyId), [17, 18])
-        XCTAssertEqual(appTransition.disablePublicKeyIds, [4, 8])
     }
 
     func testParserMapsATokenPurchaseTransition() throws {
@@ -237,43 +192,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(purchase.tokenContractPosition, 3)
         XCTAssertEqual(purchase.tokenCount, 100)
         XCTAssertEqual(purchase.totalAgreedPrice, 100_000_000)
-    }
-
-    func testParserRejectsContractGroupKeysInsteadOfDroppingTheirRestriction() throws {
-        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            Self.parsed(.identityUpdate(.init(
-                identityId: Data(repeating: 0x21, count: 32),
-                addPublicKeys: [.init(
-                    keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
-                    securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
-                    contractBounds: .contractGroup(id: Data(repeating: 0x23, count: 32)))],
-                disablePublicKeyIds: [])))
-        }
-        XCTAssertThrowsError(try parser.parse(Data([0]))) {
-            XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
-        }
-    }
-
-    func testParserKeepsTheLimitsAScannedKeyRegistrationCarries() throws {
-        let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            Self.parsed(.identityUpdate(.init(
-                identityId: Data(repeating: 0x21, count: 32),
-                addPublicKeys: [
-                    .init(
-                        keyId: 1, keyType: .ecdsaHash160, purpose: .authentication,
-                        securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 20),
-                        totalBudget: 7, expiresAt: 9),
-                    .init(
-                        keyId: 2, keyType: .ecdsaSecp256k1, purpose: .encryption,
-                        securityLevel: .medium, pubkeyBytes: Data(repeating: 0x23, count: 33)),
-                ],
-                disablePublicKeyIds: [])))
-        }
-        guard case let .keyRegistration(transition) = try parser.parse(Data([0])) else {
-            return XCTFail("Expected a key-registration transition")
-        }
-        XCTAssertEqual(transition.addPublicKeys.map(\.totalBudget), [7, nil])
-        XCTAssertEqual(transition.addPublicKeys.map(\.expiresAt), [9, nil])
     }
 
     func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
@@ -464,705 +382,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(request.tokenQuantity(locale: Self.enUS).text, "0.000000000000000001")
     }
 
-    func testBuildLoginKeyResponseDraftProducesExactFieldsAndWipesEphemeralPrivateKey() throws {
-        let loginKey = Data(repeating: 0x11, count: 32)
-        let appContractId = Data(repeating: 0xcd, count: 32)
-        let appEphemeralPubKey = try Secp256k1.compressedPublicKey(privateKey: Data(repeating: 0x01, count: 32))
-        var walletEphemeralPrivateKey = Data(repeating: 0x02, count: 32)
-        let fixedPayload = Data(repeating: 0xaa, count: 60)
-
-        let draft = try PlatformDashConnectDataSource.buildLoginKeyResponseDraft(
-            loginKey: loginKey,
-            appContractId: appContractId,
-            appEphemeralPubKey: appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey,
-            encryptLoginKey: { loginKeyArg, walletPrivArg, appPubArg in
-                XCTAssertEqual(loginKeyArg, loginKey)
-                XCTAssertEqual(walletPrivArg, Data(repeating: 0x02, count: 32))
-                XCTAssertEqual(appPubArg, appEphemeralPubKey)
-                return fixedPayload
-            }
-        )
-
-        XCTAssertEqual(
-            draft.properties["contractId"]?.base as? String,
-            appContractId.toBase58String()
-        )
-        XCTAssertEqual(
-            draft.properties["appEphemeralPubKeyHash"]?.base as? String,
-            try KeyExchangeCrypto.hash160(appEphemeralPubKey).toHexString()
-        )
-        XCTAssertEqual(
-            draft.properties["walletEphemeralPubKey"]?.base as? String,
-            try Secp256k1.compressedPublicKey(privateKey: Data(repeating: 0x02, count: 32)).toHexString()
-        )
-        XCTAssertEqual(
-            draft.properties["encryptedPayload"]?.base as? String,
-            fixedPayload.toHexString()
-        )
-        XCTAssertEqual(draft.properties["keyIndex"]?.base as? Int, LoginKeyDerivation.defaultKeyIndex)
-        XCTAssertEqual(draft.encryptedPayload.count, 60)
-        XCTAssertEqual(walletEphemeralPrivateKey, Data(repeating: 0x00, count: 32))
-    }
-
-    func testValidateKeyRegistrationRejectsTransitionForDifferentIdentity() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: Data(repeating: 0x55, count: 32),
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.validateKeyRegistration(
-                transition,
-                chainKeyPrivateBytes: chainKey,
-                identityId: identityId,
-                appContractId: appContractId
-            )
-        ) { error in
-            guard let error = error as? DashConnectPlatformError,
-                  case .keyRegistrationWrongIdentity = error else {
-                return XCTFail("Expected wrong identity error, got \(error)")
-            }
-        }
-    }
-
-    func testValidateKeyRegistrationRejectsAttackerAddedKey() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        var transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        let attackerPublicKey = try Secp256k1.compressedPublicKey(privateKey: Data(repeating: 0x66, count: 32))
-        transition = DashConnectKeyRegistrationTransition(
-            identityId: transition.identityId,
-            addPublicKeys: [
-                DashConnectKeyRegistrationKey(
-                    keyId: transition.addPublicKeys[0].keyId,
-                    keyType: transition.addPublicKeys[0].keyType,
-                    purpose: transition.addPublicKeys[0].purpose,
-                    securityLevel: transition.addPublicKeys[0].securityLevel,
-                    publicKeyData: try KeyExchangeCrypto.hash160(attackerPublicKey),
-                    contractBounds: transition.addPublicKeys[0].contractBounds
-                ),
-                transition.addPublicKeys[1],
-            ],
-            disablePublicKeyIds: []
-        )
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.validateKeyRegistration(
-                transition,
-                chainKeyPrivateBytes: chainKey,
-                identityId: identityId,
-                appContractId: appContractId
-            )
-        ) { error in
-            guard let error = error as? DashConnectPlatformError,
-                  case .keyRegistrationMismatchedDerivedKey(.authentication) = error else {
-                return XCTFail("Expected mismatched authentication key error, got \(error)")
-            }
-        }
-    }
-
-    func testValidateKeyRegistrationAcceptsNilContractBoundsWhenDerivedKeysMatch() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        XCTAssertEqual(validated.authenticationKey, transition.addPublicKeys[0])
-        XCTAssertEqual(validated.encryptionKey, transition.addPublicKeys[1])
-    }
-
-    func testValidateKeyRegistrationRejectsDerivedKeysForDifferentContract() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let transitionContractId = Data(repeating: 0x44, count: 32)
-        let actualContractId = Data(repeating: 0x55, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: transitionContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.validateKeyRegistration(
-                transition,
-                chainKeyPrivateBytes: chainKey,
-                identityId: identityId,
-                appContractId: actualContractId
-            )
-        ) { error in
-            guard let error = error as? DashConnectPlatformError,
-                  case .keyRegistrationMismatchedDerivedKey = error else {
-                return XCTFail("Expected mismatched derived key error, got \(error)")
-            }
-        }
-    }
-
-    func testValidateKeyRegistrationRejectsAuthenticationKeyUsingRawSecp256k1Encoding() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        var transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        let loginKey = try LoginKeyDerivation.deriveLoginKey(
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-        let authPrivateKey = try KeyExchangeCrypto.deriveAuthPrivateKey(loginKey: loginKey, identityId: identityId)
-        let authPublicKey = try Secp256k1.compressedPublicKey(privateKey: authPrivateKey)
-        transition = DashConnectKeyRegistrationTransition(
-            identityId: transition.identityId,
-            addPublicKeys: [
-                DashConnectKeyRegistrationKey(
-                    keyId: transition.addPublicKeys[0].keyId,
-                    keyType: .ecdsaSecp256k1,
-                    purpose: .authentication,
-                    securityLevel: .high,
-                    publicKeyData: authPublicKey,
-                    contractBounds: nil
-                ),
-                transition.addPublicKeys[1],
-            ],
-            disablePublicKeyIds: []
-        )
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.validateKeyRegistration(
-                transition,
-                chainKeyPrivateBytes: chainKey,
-                identityId: identityId,
-                appContractId: appContractId
-            )
-        ) { error in
-            guard let error = error as? DashConnectPlatformError,
-                  case .keyRegistrationMismatchedDerivedKey(.authentication) = error else {
-                return XCTFail("Expected authentication mismatch error, got \(error)")
-            }
-        }
-    }
-
-    func testValidateKeyRegistrationRejectsAuthenticationKeyUsingRawPublicKeyData() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        var transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-
-        let loginKey = try LoginKeyDerivation.deriveLoginKey(
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-        let authPrivateKey = try KeyExchangeCrypto.deriveAuthPrivateKey(loginKey: loginKey, identityId: identityId)
-        let authPublicKey = try Secp256k1.compressedPublicKey(privateKey: authPrivateKey)
-        transition = DashConnectKeyRegistrationTransition(
-            identityId: transition.identityId,
-            addPublicKeys: [
-                DashConnectKeyRegistrationKey(
-                    keyId: transition.addPublicKeys[0].keyId,
-                    keyType: .ecdsaHash160,
-                    purpose: .authentication,
-                    securityLevel: .high,
-                    publicKeyData: authPublicKey,
-                    contractBounds: nil
-                ),
-                transition.addPublicKeys[1],
-            ],
-            disablePublicKeyIds: []
-        )
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.validateKeyRegistration(
-                transition,
-                chainKeyPrivateBytes: chainKey,
-                identityId: identityId,
-                appContractId: appContractId
-            )
-        ) { error in
-            guard let error = error as? DashConnectPlatformError,
-                  case .keyRegistrationMismatchedDerivedKey(.authentication) = error else {
-                return XCTFail("Expected authentication mismatch error, got \(error)")
-            }
-        }
-    }
-
-    func testPendingApprovedConnectionThrowsWhenNothingAwaitsKeyRegistration() {
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-                in: [
-                    DAppConnection(
-                        id: "A",
-                        name: "Active App",
-                        url: "active.app",
-                        status: .active,
-                        updatedAt: Date(timeIntervalSince1970: 10)
-                    ),
-                    DAppConnection(
-                        id: "B",
-                        name: "Another Active App",
-                        url: "active-two.app",
-                        status: .active,
-                        updatedAt: Date(timeIntervalSince1970: 20)
-                    ),
-                ],
-                boundContractId: nil
-            )
-        ) { error in
-            XCTAssertEqual(error as? DashConnectPlatformError, .noApprovedConnectionAwaitingKeyRegistration)
-        }
-    }
-
-    func testPendingApprovedConnectionErrorTellsUserToScanLoginQrFirst() {
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(in: [], boundContractId: nil)
-        ) { error in
-            XCTAssertEqual(
-                error.localizedDescription,
-                "There is no login awaiting key registration — scan the app's login QR first."
-            )
-        }
-    }
-
-    private static let appAId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
-    private static let appBId = "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234"
-
-    private func approvedPair() -> (appA: DAppConnection, appB: DAppConnection, active: DAppConnection) {
-        (
-            DAppConnection(
-                id: Self.appAId,
-                name: "App A",
-                url: "a.app",
-                status: .approved,
-                updatedAt: Date(timeIntervalSince1970: 10)
-            ),
-            DAppConnection(
-                id: Self.appBId,
-                name: "App B",
-                url: "b.app",
-                status: .approved,
-                // Approved after A, so recency alone would always pick B.
-                updatedAt: Date(timeIntervalSince1970: 30)
-            ),
-            DAppConnection(
-                id: "active",
-                name: "Active",
-                url: "active.app",
-                status: .active,
-                updatedAt: Date(timeIntervalSince1970: 40)
-            )
-        )
-    }
-
-    /// Scanning app A's transition while app B is the newer approval used to
-    /// derive B's keys and reject A. The contract bounds name A, so A wins.
-    func testPendingApprovedConnectionFollowsContractBoundsNotRecency() throws {
-        let (appA, appB, active) = approvedPair()
-        let boundToA = try XCTUnwrap(Data.identifier(fromBase58: Self.appAId))
-
-        let selected = try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-            in: [appA, active, appB],
-            boundContractId: boundToA
-        )
-
-        XCTAssertEqual(selected, appA)
-    }
-
-    func testPendingApprovedConnectionRejectsBoundsMatchingNoApprovedConnection() throws {
-        let (appA, appB, _) = approvedPair()
-        let unrelated = Data(repeating: 0x77, count: 32)
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-                in: [appA, appB],
-                boundContractId: unrelated
-            )
-        ) { error in
-            XCTAssertEqual(error as? DashConnectPlatformError, .noApprovedConnectionAwaitingKeyRegistration)
-        }
-    }
-
-    /// An unbounded transition identifies no app, so with two approvals there is
-    /// nothing to choose on — guessing is what produced the wrong-key failure.
-    func testPendingApprovedConnectionRejectsAmbiguousUnboundedTransition() throws {
-        let (appA, appB, active) = approvedPair()
-
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-                in: [appA, active, appB],
-                boundContractId: nil
-            )
-        ) { error in
-            XCTAssertEqual(error as? DashConnectPlatformError, .ambiguousKeyRegistrationConnection)
-        }
-    }
-
-    func testPendingApprovedConnectionTakesTheOnlyApprovalWhenUnbounded() throws {
-        let (appA, _, active) = approvedPair()
-
-        let selected = try PlatformDashConnectDataSource.pendingApprovedConnectionForKeyRegistration(
-            in: [appA, active],
-            boundContractId: nil
-        )
-
-        XCTAssertEqual(selected, appA)
-    }
-
-    func testMissingKeyRegistrationKeysReturnsEmptyWhenBothKeysAlreadyRegistered() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData
-            ),
-            makeIdentityPublicKeyInfo(
-                keyId: 101,
-                purpose: .encryption,
-                securityLevel: .medium,
-                keyType: .ecdsaSecp256k1,
-                data: validated.encryptionKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.missingKeyRegistrationKeys(
-                validated,
-                currentIdentityPublicKeys: currentKeys
-            ),
-            []
-        )
-    }
-
-    func testHasRegisteredLoginKeysReturnsTrueWhenBothKeysAreRegistered() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData
-            ),
-            makeIdentityPublicKeyInfo(
-                keyId: 101,
-                purpose: .encryption,
-                securityLevel: .medium,
-                keyType: .ecdsaSecp256k1,
-                data: validated.encryptionKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertTrue(
-            PlatformDashConnectDataSource.hasRegisteredLoginKeys(
-                authenticationPublicKeyHash160: validated.authenticationKey.publicKeyData,
-                encryptionPublicKey: validated.encryptionKey.publicKeyData,
-                currentIdentityPublicKeys: currentKeys
-            )
-        )
-    }
-
-    func testMissingKeyRegistrationKeysReturnsOnlyMissingEncryptionKey() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData
-            )
-        ]
-
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.missingKeyRegistrationKeys(
-                validated,
-                currentIdentityPublicKeys: currentKeys
-            ),
-            [validated.encryptionKey]
-        )
-    }
-
-    func testHasRegisteredLoginKeysReturnsFalseWhenAuthenticationKeyIsMissing() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 101,
-                purpose: .encryption,
-                securityLevel: .medium,
-                keyType: .ecdsaSecp256k1,
-                data: validated.encryptionKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertFalse(
-            PlatformDashConnectDataSource.hasRegisteredLoginKeys(
-                authenticationPublicKeyHash160: validated.authenticationKey.publicKeyData,
-                encryptionPublicKey: validated.encryptionKey.publicKeyData,
-                currentIdentityPublicKeys: currentKeys
-            )
-        )
-    }
-
-    func testMissingKeyRegistrationKeysTreatsDisabledMatchingKeyAsMissing() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData,
-                disabledAt: 123
-            ),
-            makeIdentityPublicKeyInfo(
-                keyId: 101,
-                purpose: .encryption,
-                securityLevel: .medium,
-                keyType: .ecdsaSecp256k1,
-                data: validated.encryptionKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.missingKeyRegistrationKeys(
-                validated,
-                currentIdentityPublicKeys: currentKeys
-            ),
-            [validated.authenticationKey]
-        )
-    }
-
-    func testHasRegisteredLoginKeysReturnsFalseWhenEncryptionKeyIsMissing() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertFalse(
-            PlatformDashConnectDataSource.hasRegisteredLoginKeys(
-                authenticationPublicKeyHash160: validated.authenticationKey.publicKeyData,
-                encryptionPublicKey: validated.encryptionKey.publicKeyData,
-                currentIdentityPublicKeys: currentKeys
-            )
-        )
-    }
-
-    func testHasRegisteredLoginKeysReturnsFalseWhenMatchingKeyIsDisabled() throws {
-        let chainKey = Data(repeating: 0x22, count: 32)
-        let identityId = Data(repeating: 0x33, count: 32)
-        let appContractId = Data(repeating: 0x44, count: 32)
-        let transition = try makeValidTransition(
-            identityId: identityId,
-            appContractId: appContractId,
-            chainKey: chainKey,
-            walletIdentityId: identityId
-        )
-        let validated = try PlatformDashConnectDataSource.validateKeyRegistration(
-            transition,
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-
-        let currentKeys = [
-            makeIdentityPublicKeyInfo(
-                keyId: 100,
-                purpose: .authentication,
-                securityLevel: .high,
-                keyType: .ecdsaHash160,
-                data: validated.authenticationKey.publicKeyData,
-                disabledAt: 123
-            ),
-            makeIdentityPublicKeyInfo(
-                keyId: 101,
-                purpose: .encryption,
-                securityLevel: .medium,
-                keyType: .ecdsaSecp256k1,
-                data: validated.encryptionKey.publicKeyData
-            ),
-        ]
-
-        XCTAssertFalse(
-            PlatformDashConnectDataSource.hasRegisteredLoginKeys(
-                authenticationPublicKeyHash160: validated.authenticationKey.publicKeyData,
-                encryptionPublicKey: validated.encryptionKey.publicKeyData,
-                currentIdentityPublicKeys: currentKeys
-            )
-        )
-    }
-
-    private func makeValidTransition(
-        identityId: Data,
-        appContractId: Data,
-        chainKey: Data,
-        walletIdentityId: Data
-    ) throws -> DashConnectKeyRegistrationTransition {
-        let loginKey = try LoginKeyDerivation.deriveLoginKey(
-            chainKeyPrivateBytes: chainKey,
-            identityId: walletIdentityId,
-            appContractId: appContractId
-        )
-        let authPrivateKey = try KeyExchangeCrypto.deriveAuthPrivateKey(loginKey: loginKey, identityId: walletIdentityId)
-        let encryptionPrivateKey = try KeyExchangeCrypto.deriveEncryptionPrivateKey(loginKey: loginKey, identityId: walletIdentityId)
-        let authPublicKey = try Secp256k1.compressedPublicKey(privateKey: authPrivateKey)
-
-        return DashConnectKeyRegistrationTransition(
-            identityId: identityId,
-            addPublicKeys: [
-                DashConnectKeyRegistrationKey(
-                    keyId: 6,
-                    keyType: .ecdsaHash160,
-                    purpose: .authentication,
-                    securityLevel: .high,
-                    publicKeyData: try KeyExchangeCrypto.hash160(authPublicKey),
-                    contractBounds: nil
-                ),
-                DashConnectKeyRegistrationKey(
-                    keyId: 7,
-                    keyType: .ecdsaSecp256k1,
-                    purpose: .encryption,
-                    securityLevel: .medium,
-                    publicKeyData: try Secp256k1.compressedPublicKey(privateKey: encryptionPrivateKey),
-                    contractBounds: nil
-                ),
-            ],
-            disablePublicKeyIds: []
-        )
-    }
-
     private func makeLoginRequest(contractId: Data, label: String) throws -> DashKeyRequest {
         DashKeyRequest(
             appEphemeralPubKey: try Secp256k1.compressedPublicKey(privateKey: Data(repeating: 0x01, count: 32)),
@@ -1188,37 +407,16 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         )
     }
 
-    private func makeIdentityPublicKeyInfo(
-        keyId: UInt32,
-        purpose: KeyPurpose,
-        securityLevel: SecurityLevel,
-        keyType: KeyType,
-        data: Data,
-        disabledAt: UInt64? = nil
-    ) -> ManagedIdentity.IdentityPublicKeyInfo {
-        ManagedIdentity.IdentityPublicKeyInfo(
-            keyId: Int32(bitPattern: keyId),
-            purpose: purpose,
-            securityLevel: securityLevel,
-            keyType: keyType,
-            readOnly: false,
-            disabledAt: disabledAt.map { Int64(bitPattern: $0) },
-            data: data,
-            // Protocol 14 key limits (platform#4798). These fixtures describe
-            // the keys the QR login flow derives, which carry neither.
-            totalBudget: nil,
-            expiresAt: nil
-        )
-    }
-
     private static let taggedIdentityUpdateFixtureBase64 =
         "BgAREREREREREREREREREREREREREREREREREREREREREQcJAgARAAACAAAhAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICQaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqABIAAQIBAUREREREREREREREREREREREREREREREREREREREREREB3Byb2ZpbGUBIQMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA0G7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7uwIECAIDQZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZ"
 
-    private static let taglessIdentityUpdateFixtureBase64 =
-        "ABERERERERERERERERERERERERERERERERERERERERERBwkCABEAAAIAACECAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJBqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoAEgABAgEBREREREREREREREREREREREREREREREREREREREREREQHcHJvZmlsZQEhAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDQbu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7AgQIAgNBmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZk="
 
-    private static let realKeyRegistrationFixtureHex =
-        "0089fd6ddba75136a4fea02dc7d89ef0ca5bcc32ccf12fb8da6a1a03740567ae7201010200060200020000145e24e38a86e720f61757647996957e322686abb7000007000103000021035e8cfb0785b54e8902a3dc17bdaad8a5738c6019a18ebc527f79d1c64a27826a4120dc911df1d1e6cccf8c95ec0d423c928433397933de6dd9ad006bc40dc0334d6d270d50c6d5e2dcdc5560e40487ddfe28bd1066d0729fad4b26f92ae33f12a04b00000000"
+}
+
+private extension AppConnect.GrantPlan {
+    static let sample = AppConnect.GrantPlan(
+        appId: Data(repeating: 0xA1, count: 32), appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
+        auth: [], encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil)
 }
 
 private final class TestDashConnectStore: DashConnectStore {
@@ -1521,7 +719,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
             walletUsername: nil,
             walletIdentityId: identityId,
             existingConnection: nil,
-            login: .twoQR)
+            login: .appConnect(.sample))
     }
 
     private static let connection = DAppConnection(
@@ -1807,39 +1005,6 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertFalse(AppConnect.isReadableBound(boundsKind: 4, boundIds: [app]))
     }
 
-    func testResponseCarriesTheSessionKeyOnlyTheAppCanDecrypt() throws {
-        let sessionPrivateKey = Data(repeating: 0x5a, count: 32)
-        let appEphemeralPrivateKey = Data(repeating: 0x07, count: 32)
-        let appEphemeralPubKey = try Secp256k1.compressedPublicKey(privateKey: appEphemeralPrivateKey)
-        let walletEphemeralPrivateKeyBytes = Data(repeating: 0x09, count: 32)
-        var walletEphemeralPrivateKey = walletEphemeralPrivateKeyBytes
-
-        let values = AppConnect.ResponseValues(try AppConnect.seal(
-            sessionPrivateKey,
-            appEphemeralPubKey: appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey))
-
-        XCTAssertEqual(walletEphemeralPrivateKey, Data(repeating: 0, count: 32), "the ephemeral key is wiped")
-        XCTAssertEqual(
-            values.appEphemeralPubKeyHash,
-            try KeyExchangeCrypto.hash160(appEphemeralPubKey).toHexString())
-        let walletEphemeralPubKey = try Secp256k1.compressedPublicKey(privateKey: walletEphemeralPrivateKeyBytes)
-        XCTAssertEqual(values.walletEphemeralPubKey, walletEphemeralPubKey.toHexString())
-        // 28-byte envelope plus one 32-byte key: the contract's minimum.
-        XCTAssertEqual(values.encryptedPayload.count, 60 * 2)
-
-        let payload = try XCTUnwrap(Self.data(hex: values.encryptedPayload))
-        // The app's side of the exchange: its private key with the wallet's
-        // public key. ECDH is symmetric, so the helper's parameters take the
-        // opposite pair to the one that encrypted.
-        XCTAssertEqual(
-            try KeyExchangeCrypto.decryptLoginKey(
-                payload,
-                walletEphemeralPriv: appEphemeralPrivateKey,
-                appEphemeralPub: walletEphemeralPubKey),
-            sessionPrivateKey)
-    }
-
     func testPropertiesJsonHoldsExactlyTheThreeContractFields() throws {
         let values = AppConnect.ResponseValues(
             appEphemeralPubKeyHash: "aa", walletEphemeralPubKey: "bb", encryptedPayload: "cc")
@@ -1881,10 +1046,10 @@ final class AppConnectLoginTests: XCTestCase {
 
     func testDisconnectOfARowFromAnotherWalletIsRefusedAndTheListMovesToTheActiveWallet() async {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
         let shown = Self.shownRows(dataSource)
-        let other = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .approved)
+        let other = Self.row(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .confirming)
         active.idHex = "wallet-b"
         connections.save([other])
 
@@ -1898,7 +1063,7 @@ final class AppConnectLoginTests: XCTestCase {
 
     func testDisconnectIsRefusedWhenTheNewlyActiveWalletHasARowForTheSameApp() async {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
         let shown = Self.shownRows(dataSource)
         active.idHex = "wallet-b"
@@ -1911,7 +1076,7 @@ final class AppConnectLoginTests: XCTestCase {
 
     func testDisconnectFromAnOldListIsRefusedAfterTheListAlreadyMovedToTheNewWallet() async throws {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let center = NotificationCenter()
         let (dataSource, connections) = makeScopedDataSource(
             active: active, rows: [row], notificationCenter: center)
@@ -1934,13 +1099,14 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(connections.load(), [row], "the new wallet's row for the same app is untouched")
         // The row the new list shows is this wallet's own.
         let current = Self.shownRows(dataSource)
-        try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
+        await Self.expectNotWalletChanged {
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
+        }
     }
 
     func testRemoveDoesNothingForARowPublishedForAnotherWallet() async {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
         let shown = Self.shownRows(dataSource)
         active.idHex = "wallet-b"
@@ -1954,23 +1120,11 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(connections.load(), [], "the list is this wallet's now")
     }
 
-    func testDisconnectOfATwoQRRowTurnsItOffInTheActiveWallet() async throws {
-        let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
-        let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
-        let shown = Self.shownRows(dataSource)
-
-        try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false)
-
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
-        XCTAssertEqual(Self.shownRows(dataSource).map(\.status), [.approved])
-    }
-
     func testARowShownForADevnetAtOtherNodesIsNotActedOnUnderTheSameName() async throws {
         let active = ActiveWallet("wallet-a")
         let endpoint = Endpoint("https://quorums.one.example")
         let center = NotificationCenter()
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(
             active: active, rows: [row], notificationCenter: center, endpoint: endpoint)
         let shown = Self.shownRows(dataSource)
@@ -1982,13 +1136,14 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertEqual(connections.load().map(\.status), [.active])
         let current = Self.shownRows(dataSource)
         XCTAssertNotEqual(current[0].scope, shown[0].scope)
-        try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
-        XCTAssertEqual(connections.load().map(\.status), [.approved])
+        await Self.expectNotWalletChanged {
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
+        }
     }
 
     func testARowWithNoScopeIsNotActedOn() async {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
 
         await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, includingUnrecorded: false) }
@@ -1999,11 +1154,11 @@ final class AppConnectLoginTests: XCTestCase {
 
     func testTheListMovesToTheActiveWalletWhenTheWalletChangeIsAnnounced() async {
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let center = NotificationCenter()
         let (dataSource, connections) = makeScopedDataSource(
             active: active, rows: [row], notificationCenter: center)
-        let other = Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .approved)
+        let other = Self.row(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .confirming)
         active.idHex = "wallet-b"
         connections.save([other])
         let moved = expectation(description: "the active wallet's rows are published")
@@ -2058,7 +1213,7 @@ final class AppConnectLoginTests: XCTestCase {
     func testADisconnectWaitsForAnOperationAnotherDataSourceIsRunning() async throws {
         let gate = DashConnectOperationGate()
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row], operationGate: gate)
         let shown = Self.shownRows(dataSource)
         let otherStarted = expectation(description: "the other operation is running")
@@ -2069,28 +1224,35 @@ final class AppConnectLoginTests: XCTestCase {
                 otherStarted.fulfill()
                 for await _ in release.stream { break }
                 // It wrote a row of its own meanwhile.
-                connections.save([row, Self.twoQRRow(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)])
+                connections.save([row, Self.row(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)])
             }
         }
         await fulfillment(of: [otherStarted], timeout: 2)
 
-        let disconnect = Task { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+        // With no wallet to sign, the disconnect fails once its turn comes;
+        // when it ends is what is checked.
+        let log = OperationLog()
+        let disconnect = Task {
+            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false)
+            await log.add("disconnect ended")
+        }
         try await Task.sleep(nanoseconds: 100_000_000)
-        XCTAssertEqual(connections.load().map(\.status), [.active], "the disconnect has not run yet")
+        let ended = await log.entries
+        XCTAssertEqual(ended, [], "the disconnect waits for the other operation")
 
         release.continuation.yield()
         await other.value
-        try await disconnect.value
+        await disconnect.value
 
-        let rows = connections.load()
-        XCTAssertEqual(rows.count, 2, "the row the other operation wrote is kept")
-        XCTAssertEqual(rows.first { $0.id == row.id }?.status, .approved)
+        let entries = await log.entries
+        XCTAssertEqual(entries, ["disconnect ended"])
+        XCTAssertEqual(connections.load().count, 2, "the row the other operation wrote is kept")
     }
 
     func testAnOperationDoesNotStartForAWalletThatIsNoLongerActiveWhenItsTurnComes() async {
         let gate = DashConnectOperationGate()
         let active = ActiveWallet("wallet-a")
-        let row = Self.twoQRRow(status: .active)
+        let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row], operationGate: gate)
         let shown = Self.shownRows(dataSource)
         let otherStarted = expectation(description: "the other operation is running")
@@ -2141,7 +1303,7 @@ final class AppConnectLoginTests: XCTestCase {
             walletUsername: nil,
             walletIdentityId: "identity-a",
             existingConnection: nil,
-            login: .twoQR,
+            login: .appConnect(.sample),
             scope: "wallet-a devnet-one")
 
         XCTAssertTrue(request.wasResolved(forIdentityId: "identity-a", scope: "wallet-a devnet-one"))
@@ -2160,7 +1322,7 @@ final class AppConnectLoginTests: XCTestCase {
         let (dataSource, _) = makeScopedDataSource(active: active)
 
         do {
-            try await dataSource.disconnect(id: Self.twoQRRow(status: .active).id, scope: nil, includingUnrecorded: false)
+            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, includingUnrecorded: false)
             XCTFail("disconnected with no wallet")
         } catch {
             guard case DashConnectPlatformError.noWallet = error else {
@@ -2175,6 +1337,18 @@ final class AppConnectLoginTests: XCTestCase {
         let subscription = dataSource.connections.sink { rows = $0 }
         subscription.cancel()
         return rows
+    }
+
+    /// The operation is not refused for being another wallet's; it may
+    /// still fail further on, with no wallet to sign in tests.
+    private static func expectNotWalletChanged(
+        _ operation: () async throws -> Void, file: StaticString = #filePath, line: UInt = #line
+    ) async {
+        do {
+            try await operation()
+        } catch DashConnectPlatformError.walletChanged {
+            XCTFail("refused as another wallet's", file: file, line: line)
+        } catch {}
     }
 
     private static func expectWalletChanged(
@@ -2252,7 +1426,7 @@ final class AppConnectLoginTests: XCTestCase {
             defaults.object(forKey: "DashConnect.keptSharedProfileKeys wallet-c t identity-c"), "it runs once")
     }
 
-    private static func twoQRRow(
+    private static func row(
         id: String = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
         status: ConnectionStatus
     ) -> DAppConnection {

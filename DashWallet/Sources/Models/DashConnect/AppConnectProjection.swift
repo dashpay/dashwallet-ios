@@ -15,6 +15,13 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Stored
 
+    /// One encryption slot of an approval: what the key is for, and the
+    /// contract it is bound to.
+    struct ApprovedSlot: Codable, Equatable {
+        let purpose: KeyPurpose
+        let contractId: Data
+    }
+
     /// One key an intent submits, exactly as it is submitted.
     struct IntendedKey: Codable, Equatable {
         let id: UInt32
@@ -52,6 +59,9 @@ extension AppConnect {
         /// The identity's encryption keys the response carries without adding
         /// them, in slot order.
         let sentEncryptionKeyIds: [UInt32]
+        /// The encryption slots the user approved, in the plan's order. Nil
+        /// in a row written before it was kept: a retry of it is refused.
+        let approvedEncryption: [ApprovedSlot]?
         /// The ids of earlier auth keys the same update turns off.
         let disables: [UInt32]
         /// The response, sealed before the submit, so a retry publishes the
@@ -251,12 +261,8 @@ extension AppConnect {
 
     /// Every connection the wallet can show for these identities. An app
     /// with no intent appears when one of its contracts carries a live auth
-    /// key no intent names. Keys whose payload is in `protected` are never
-    /// counted as unrecorded: the two-QR login derives its keys again every
-    /// time, and Platform never re-adds one that was turned off.
-    static func project(
-        _ snapshots: [IdentitySnapshot], intents: [ConnectionIntent], protected: Set<Data> = []
-    ) -> Projection {
+    /// key no intent names.
+    static func project(_ snapshots: [IdentitySnapshot], intents: [ConnectionIntent]) -> Projection {
         let byIdentity = Dictionary(snapshots.map { ($0.identityId, $0) }, uniquingKeysWith: { a, b in
             b.revision >= a.revision ? b : a
         })
@@ -269,10 +275,10 @@ extension AppConnect {
             }.map { IdentityKey(intent.identityId, $0.id) }
         })
 
-        // The contracts each app's intents bind keys to.
-        var contractsOfApp: [Data: Set<Data>] = [:]
+        // The contracts each app's intents on each identity bind keys to.
+        var contractsOfApp: [Data: [Data: Set<Data>]] = [:]
         for intent in intents {
-            contractsOfApp[intent.appId, default: [intent.appId]]
+            contractsOfApp[intent.identityId, default: [:]][intent.appId, default: [intent.appId]]
                 .formUnion(intent.authKeys.compactMap(\.bound).filter { !isProfileBound($0) }.map(contractId(of:)))
         }
 
@@ -281,7 +287,7 @@ extension AppConnect {
         var unplaced: [Data: [UInt32]] = [:]
         for snapshot in snapshots {
             for key in snapshot.keys where isAppConnectAuthKey(key)
-                && !named.contains(IdentityKey(snapshot.identityId, key.id)) && !protected.contains(key.data) {
+                && !named.contains(IdentityKey(snapshot.identityId, key.id)) {
                 guard let bound = key.bound else {
                     // The store does not hold the key's bound yet: whose it
                     // is cannot be told, and it is reported as such.
@@ -292,15 +298,19 @@ extension AppConnect {
                     profile[snapshot.identityId, default: []].append(key.id)
                     continue
                 }
-                // A key bound to a system contract is no app's; one bound to
-                // a contract the intents of several apps bind cannot be
-                // told to be any one of theirs. Neither is shown or offered.
+                // A key bound to a system contract is no app's. One bound to
+                // a contract the intents of several apps bind (on this
+                // identity first) cannot be told to be any one of theirs:
+                // each of them shows it, and a disconnect of any of them
+                // turns it off with the user's confirm.
                 let contract = contractId(of: bound)
                 guard !systemContractIds.contains(contract.toBase58String()) else { continue }
-                let apps = contractsOfApp.filter { $0.value.contains(contract) }.map(\.key)
-                guard apps.count <= 1 else { continue }
-                let app = apps.first ?? contract
-                unrecorded[app, default: [:]][snapshot.identityId, default: []].append(key.id)
+                func binding(_ contracts: [Data: Set<Data>]) -> [Data] { contracts.filter { $0.value.contains(contract) }.map(\.key) }
+                var apps = binding(contractsOfApp[snapshot.identityId] ?? [:])
+                if apps.isEmpty { apps = Array(Set(contractsOfApp.values.flatMap(binding))) }
+                for app in apps.isEmpty ? [contract] : apps {
+                    unrecorded[app, default: [:]][snapshot.identityId, default: []].append(key.id)
+                }
             }
         }
 
@@ -334,9 +344,8 @@ extension AppConnect {
 
     /// The ids for `count` new keys that no key on the identity and no
     /// intent on it holds, so a key that may still land is never given to
-    /// another: above the highest while they fit, then the lowest free ones
-    /// (a `dash-st:` registration picks its own ids). Nil when the ids run
-    /// out.
+    /// another: above the highest while they fit, then the lowest free ones.
+    /// Nil when the ids run out.
     static func newKeyIds(count: Int, snapshot: IdentitySnapshot, intents: [ConnectionIntent]) -> [UInt32]? {
         let taken = Set(snapshot.keys.map(\.id)
             + intents.filter { $0.identityId == snapshot.identityId }.flatMap { $0.keys.map(\.id) })
@@ -356,6 +365,38 @@ extension AppConnect {
         return ids
     }
 
+    /// The keys `intent` turns off that are still on.
+    static func outstandingDisables(of intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> [UInt32] {
+        intent.disables.filter { id in snapshot.keys.contains { $0.id == id && $0.disabledAt == nil } }
+    }
+
+    /// Whether `snapshot` shows all of `intent`: every key it adds, and every
+    /// key it turns off off. Another update may have added the same keys
+    /// without turning the earlier ones off (the same request approved on
+    /// another device), so the added keys alone do not tell.
+    static func hasLanded(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
+        intent.keys.allSatisfy { [.live, .expired, .disabled].contains(presence(of: $0, in: snapshot)) }
+            && outstandingDisables(of: intent, in: snapshot).isEmpty
+    }
+
+    /// Whether the DashPay profile keys no intent names are offered with a
+    /// disconnect of the app on the identity: when its intents there gave it
+    /// a profile key, and when the wallet has no record of the app there
+    /// (after a restore no record says which app was given one). Each is
+    /// turned off only on the user's confirm.
+    static func offersUnrecordedProfileKeys(_ intents: [ConnectionIntent], appId: Data, identityId: Data) -> Bool {
+        let own = intents.filter { $0.appId == appId && $0.identityId == identityId }
+        return own.isEmpty || own.contains { $0.authKeys.contains { $0.bound.map(isProfileBound) ?? false } }
+    }
+
+    /// Whether the encryption keys `intent`'s response carries can still be
+    /// used: those it re-sends are live, and those it adds are not off.
+    static func encryptionKeysUsable(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
+        intent.sentEncryptionKeyIds.allSatisfy { id in
+            snapshot.keys.contains { $0.id == id && isLive($0, at: snapshot.platformTime) }
+        } && intent.keys.allSatisfy { $0.isAuthentication || presence(of: $0, in: snapshot) != .disabled }
+    }
+
     /// Whether a retry of a request may carry on with its intent: its keys
     /// are live or may still land, and the user has not disconnected it.
     static func mayResume(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
@@ -364,12 +405,6 @@ extension AppConnect {
         case .active, .confirming: return true
         case .expired, .disconnected, .neverLanded: return false
         }
-    }
-
-    /// Whether the app's intents gave it a DashPay profile key. Only then are
-    /// the profile keys no intent names offered with its disconnect.
-    static func usesProfileAccess(_ intents: [ConnectionIntent], appId: Data) -> Bool {
-        intents.contains { $0.appId == appId && $0.authKeys.contains { $0.bound.map(isProfileBound) ?? false } }
     }
 
     /// What a disconnect of one app submits on one identity.
@@ -389,8 +424,7 @@ extension AppConnect {
     /// `includeUnrecorded`: also turn off the app's live keys no intent
     /// names; the user confirms that separately.
     static func disconnectPlan(
-        appId: Data, snapshot: IdentitySnapshot, intents: [ConnectionIntent], includeUnrecorded: Bool,
-        protected: Set<Data> = []
+        appId: Data, snapshot: IdentitySnapshot, intents: [ConnectionIntent], includeUnrecorded: Bool
     ) -> DisconnectPlan {
         var plan = DisconnectPlan()
         let own = intents.filter { $0.appId == appId && $0.identityId == snapshot.identityId }
@@ -404,7 +438,7 @@ extension AppConnect {
             if !intent.responseRemoved { plan.deleteResponses.append(intent.id) }
         }
         if includeUnrecorded {
-            let projection = project([snapshot], intents: intents, protected: protected)
+            let projection = project([snapshot], intents: intents)
             let others = projection.connections.first { $0.appId == appId }?.unrecordedKeyIds[snapshot.identityId] ?? []
             plan.disable += others
         }
@@ -440,12 +474,17 @@ extension AppConnect {
         }
     }
 
+    static func approvedSlots(of plan: GrantPlan) -> [ApprovedSlot] {
+        plan.encryption.map { ApprovedSlot(purpose: $0.keyPurpose, contractId: $0.binding.contractId) }
+    }
+
     /// Whether a retry of a request may submit `intent` again under what
     /// the user approved now: the same keys, each with the level, bound and
     /// budget the plan grants, and an expiry no later than the plan's.
     static func isWithinPlan(_ intent: ConnectionIntent, _ plan: GrantPlan) -> Bool {
         let auth = intent.authKeys
-        guard intent.appId == plan.appId, auth.count == plan.auth.count else { return false }
+        guard intent.appId == plan.appId, auth.count == plan.auth.count,
+              intent.approvedEncryption == approvedSlots(of: plan) else { return false }
         return zip(auth, plan.auth).allSatisfy { key, grant in
             key.securityLevel == grant.securityLevel && key.bound == grant.storedBound
                 && key.totalBudget == grant.totalBudget

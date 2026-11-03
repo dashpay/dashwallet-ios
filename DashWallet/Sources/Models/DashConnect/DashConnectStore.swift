@@ -138,8 +138,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                     name: row.label,
                     url: row.url,
                     status: row.status,
-                    updatedAt: row.updatedAt,
-                    loginKind: row.loginKind ?? .twoQR
+                    updatedAt: row.updatedAt
                 )
             )
         }
@@ -164,8 +163,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 label: $0.name,
                 url: $0.url,
                 status: $0.status,
-                updatedAt: $0.updatedAt,
-                loginKind: $0.loginKind == .twoQR ? nil : $0.loginKind
+                updatedAt: $0.updatedAt
             )
         }
 
@@ -191,9 +189,6 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
-        /// Absent for a two-QR connection, which is every row written before
-        /// App Connect existed.
-        let loginKind: DashConnectLoginKind?
     }
 
     private static func base58Decode(_ string: String) -> Data? {

@@ -101,8 +101,8 @@ final class ConnectionsViewModel: ObservableObject {
     private var requestGeneration = 0
 
     /// Whether a request is mid-flight. A newer request may supersede one that
-    /// is still resolving, but nothing may interrupt an approval or a key
-    /// registration, which are already committing to the network.
+    /// is still resolving, but nothing may interrupt an approval, which is
+    /// already committing to the network.
     private var isResolvingRequest = false
 
     init(
@@ -194,11 +194,6 @@ final class ConnectionsViewModel: ObservableObject {
                     defer { isProcessingStateTransition = false }
 
                     switch try await dataSource.handleStateTransition(request) {
-                    case .keyRegistrationCompleted:
-                        message = ConnectionsScreenMessage(
-                            kind: .success,
-                            text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
-                        )
                     case let .tokenPurchaseApprovalRequired(purchase):
                         pendingTokenPurchase = purchase
                     }

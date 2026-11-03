@@ -93,7 +93,7 @@ struct ApproveConnectionSheet: View {
 
                     // An App Connect plan gives the app keys with limits of
                     // their own, so its terms are spelled out on a repeat
-                    // sign-in too, and when it replaces a two-QR connection.
+                    // sign-in too.
                     if request.login == .unresolved {
                         Text(NSLocalizedString(
                             "This wallet could not check what this sign-in would give the app.",
@@ -116,10 +116,6 @@ struct ApproveConnectionSheet: View {
                             .foregroundColor(.secondaryText)
                     } else if let plan = request.login.grantPlan {
                         appConnectPermissions(plan)
-                    } else if isRelogin {
-                        reloginPermissionsSummary
-                    } else {
-                        fullPermissions
                     }
 
                     if request.walletUsername != nil || request.walletIdentityId != nil {
@@ -222,19 +218,6 @@ struct ApproveConnectionSheet: View {
             NSLocalizedString("Unknown app", comment: "DashConnect"),
         ]
         return candidates.first(where: { !$0.isEmpty }) ?? NSLocalizedString("Unknown app", comment: "DashConnect")
-    }
-
-    private var fullPermissions: some View {
-        permissions(
-            granted: [
-                NSLocalizedString("See your username", comment: "DashConnect"),
-                NSLocalizedString("Verify your identity", comment: "DashConnect"),
-            ],
-            withheld: [
-                NSLocalizedString("Your private keys", comment: "DashConnect"),
-                NSLocalizedString("Withdraw funds", comment: "DashConnect"),
-            ]
-        )
     }
 
     /// An App Connect request v2: one line per key the app is given, with
@@ -423,17 +406,6 @@ struct ApproveConnectionSheet: View {
         }
     }
 
-    private var reloginPermissionsSummary: some View {
-        HStack(spacing: 8) {
-            Icon(name: .custom("dashconnect.check.circle", maxHeight: 18))
-                .frame(width: 18, height: 18)
-
-            Text(NSLocalizedString("Same permissions as before", comment: "DashConnect re-login"))
-                .font(.subhead)
-                .foregroundColor(.primaryText)
-        }
-    }
-
     private func reloginNotice(_ existingConnection: DAppConnection) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(NSLocalizedString("This connection already exists.", comment: "DashConnect re-login"))
@@ -532,7 +504,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
     )
 }
 
-#Preview("Approve Re-Login") {
+#Preview("Older Sign-In Refused") {
     ApproveConnectionSheet(
         request: ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -541,7 +513,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
             existingConnection: MockDashConnectDataSource.sample(.active),
-            login: .twoQR
+            login: .refused(AppConnect.v1Refusal)
         ),
         onApprove: {},
         onDeny: {}

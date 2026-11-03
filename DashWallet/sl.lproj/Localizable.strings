@@ -6214,6 +6214,9 @@
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
 "Could not disconnect: %@" = "Could not disconnect: %@";
 
+/* DashConnect App Connect v1 */
+"This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code." = "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.";
+
 /* DashConnect: an approval whose identity update may still land */
 "Confirming" = "Confirming";
 
@@ -6223,8 +6226,6 @@
 /* DashConnect */
 "Turn them off" = "Turn them off";
 
-/* DashConnect App Connect v1 */
-"This app uses an older sign-in that this network no longer takes. Ask the app for a new code." = "This app uses an older sign-in that this network no longer takes. Ask the app for a new code.";
 
 /* DashConnect App Connect v2 */
 "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again." = "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.";
@@ -6361,7 +6362,6 @@
 "Any username that has a number 2–9 or 20 or more characters will be automatically approved" = "Any username that has a number 2–9 or 20 or more characters will be automatically approved";
 "Approve connection to %@?" = "Approve connection to %@?";
 "Approve token purchase?" = "Approve token purchase?";
-"Approved" = "Approved";
 "Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
 "Authentication failed." = "Authentication failed.";
 "Available on test networks only" = "Available on test networks only";
@@ -6371,7 +6371,6 @@
 "Balance unavailable" = "Balance unavailable";
 "Balance:" = "Balance:";
 "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry." = "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.";
-"Base58 identifier (optional)" = "Base58 identifier (optional)";
 "Blocked – %@" = "Blocked – %@";
 "Broadcast" = "Broadcast";
 "Broadcasting…" = "Broadcasting…";
@@ -6418,8 +6417,6 @@
 "Create username" = "Create username";
 "Creating wallet…" = "Creating wallet…";
 "Creating – %@" = "Creating – %@";
-"DashConnect Contract ID" = "DashConnect Contract ID";
-"DashConnect key registration completed." = "DashConnect key registration completed.";
 "DashConnect login is not yet available on mainnet" = "DashConnect login is not yet available on mainnet";
 "Deleting Wallet…" = "Deleting Wallet…";
 "Deny" = "Deny";
@@ -6574,14 +6571,12 @@
 "Results on %@" = "Results on %@";
 "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset." = "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.";
 "Review transaction first" = "Review transaction first";
-"Same permissions as before" = "Same permissions as before";
 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
 "Saved." = "Saved.";
 "Saved. Devnet is reconnecting with the new settings." = "Saved. Devnet is reconnecting with the new settings.";
 "Saved. The values apply when you switch to Devnet." = "Saved. The values apply when you switch to Devnet.";
 "Scan Dash QR" = "Scan Dash QR";
 "Scan invitation QR" = "Scan invitation QR";
-"Scan the QR code to complete the login process" = "Scan the QR code to complete the login process";
 "Search notifications" = "Search notifications";
 "See details" = "See details";
 "See your username" = "See your username";
@@ -6618,10 +6613,8 @@
 "The Dash network will vote on this username." = "The Dash network will vote on this username.";
 "The Dash network will vote on this username. Results by %@." = "The Dash network will vote on this username. Results by %@.";
 "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
-"The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
 "The devnet name cannot contain a slash." = "The devnet name cannot contain a slash.";
 "The devnet name cannot contain spaces." = "The devnet name cannot contain spaces.";
-"The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
 "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another." = "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another.";
 "The masternode list hasn't synced yet. Wait for sync to finish and try again." = "The masternode list hasn't synced yet. Wait for sync to finish and try again.";
 "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes." = "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes.";
@@ -6747,7 +6740,6 @@
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";
-"Your private keys" = "Your private keys";
 "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted." = "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted.";
 "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." = "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.";
 "Your Shielded balance changed. Close this confirmation and tap Max again." = "Your Shielded balance changed. Close this confirmation and tap Max again.";

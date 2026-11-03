@@ -14,8 +14,7 @@ import SwiftDashSDK
 /// projection in `AppConnectProjection.swift`.
 enum AppConnect {
     /// The protocol version that registers the App Connect system contract.
-    /// Below it the contract does not exist and the two-QR login is the only
-    /// one that can work.
+    /// Below it the contract does not exist and no login can work.
     static let minimumProtocolVersion: UInt32 = 14
 
     /// Same id on every network (`docs/protocol/app-connect.md` in
@@ -33,8 +32,6 @@ enum AppConnect {
         /// The network did not say which login it takes, so what approving
         /// would give the app is unknown and there is nothing to approve.
         case unresolved
-        /// Registers no key at approval.
-        case twoQR
         /// An App Connect request v2: registers the keys of this plan.
         case appConnect(GrantPlan)
         /// An App Connect request v2 the wallet will not answer; there is
@@ -49,22 +46,17 @@ enum AppConnect {
         /// Whether the sheet has something to approve.
         var isApprovable: Bool {
             switch self {
-            case .twoQR, .appConnect: return true
+            case .appConnect: return true
             case .unresolved, .refused: return false
             }
         }
     }
 
-    /// The login a `dash-key:` v1 request gets on a network at
-    /// `protocolVersion`. From the version that registers the App Connect
-    /// system contract only a v2 request is answered: a v1 request has no
-    /// way to say what it asks for.
-    static func login(protocolVersion: UInt32) -> Login {
-        guard isAvailable(protocolVersion: protocolVersion) else { return .twoQR }
-        return .refused(Refusal(.unsupported, NSLocalizedString(
-            "This app uses an older sign-in that this network no longer takes. Ask the app for a new code.",
-            comment: "DashConnect App Connect v1")))
-    }
+    /// The answer to a `dash-key:` v1 request: only a v2 request says what
+    /// it asks for, and the wallet answers no other.
+    static var v1Refusal: Refusal { Refusal(.unsupported, NSLocalizedString(
+        "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.",
+        comment: "DashConnect App Connect v1")) }
 
     /// What the wallet's store of identity keys says about one key: its
     /// payload, whether it is disabled there, and the contract it is bound to
@@ -195,14 +187,6 @@ enum AppConnect {
             self.encryptedPayload = encryptedPayload
         }
 
-        init(_ sealed: SealedKey) {
-            self.init(
-                appEphemeralPubKeyHash: sealed.appEphemeralPubKeyHash.toHexString(),
-                walletEphemeralPubKey: sealed.walletEphemeralPublicKey.toHexString(),
-                encryptedPayload: sealed.encryptedPayload.toHexString()
-            )
-        }
-
         /// The document's properties in the form `createDocument` and
         /// delete-by-values take.
         func propertiesJSON() throws -> String {
@@ -217,44 +201,6 @@ enum AppConnect {
         }
     }
 
-    /// A 32-byte key encrypted to an app's ephemeral key, with what the app
-    /// needs to find and open it. The two-QR response carries the login key
-    /// sealed this way.
-    struct SealedKey: Equatable {
-        let appEphemeralPubKeyHash: Data
-        let walletEphemeralPublicKey: Data
-        let encryptedPayload: Data
-    }
-
-    /// Encrypts `key` to the app. `walletEphemeralPrivateKey` is wiped before
-    /// returning.
-    static func seal(
-        _ key: Data,
-        appEphemeralPubKey: Data,
-        walletEphemeralPrivateKey: inout Data,
-        encrypt: (Data, Data, Data) throws -> Data = { key, walletPriv, appPub in
-            try KeyExchangeCrypto.encryptLoginKey(
-                key,
-                walletEphemeralPriv: walletPriv,
-                appEphemeralPub: appPub
-            )
-        }
-    ) throws -> SealedKey {
-        defer { PlatformDashConnectDataSource.zero(&walletEphemeralPrivateKey) }
-
-        let appEphemeralPubKeyHash = try KeyExchangeCrypto.hash160(appEphemeralPubKey)
-        guard appEphemeralPubKeyHash.count == 20 else {
-            throw DashConnectPlatformError.invalidHash160
-        }
-        let walletEphemeralPublicKey = try Secp256k1.compressedPublicKey(privateKey: walletEphemeralPrivateKey)
-        let encryptedPayload = try encrypt(key, walletEphemeralPrivateKey, appEphemeralPubKey)
-
-        return SealedKey(
-            appEphemeralPubKeyHash: appEphemeralPubKeyHash,
-            walletEphemeralPublicKey: walletEphemeralPublicKey,
-            encryptedPayload: encryptedPayload
-        )
-    }
 }
 
 /// Lets one DashConnect operation at a time run for a wallet, across every

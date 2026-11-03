@@ -47,7 +47,7 @@ final class AppConnectProjectionTests: XCTestCase {
     ) -> Intent {
         Intent(
             id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: Data(repeating: 0xEE, count: 20),
-            connectionId: nil, keys: keys, sentEncryptionKeyIds: [], disables: [],
+            connectionId: nil, keys: keys, sentEncryptionKeyIds: [], approvedEncryption: [], disables: [],
             response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
             responseDocumentId: published ? Data(repeating: 0xDD, count: 32) : nil, responseRemoved: !published, createdAt: Date(timeIntervalSince1970: createdAt), closedAt: nil)
     }
@@ -304,25 +304,23 @@ final class AppConnectProjectionTests: XCTestCase {
 
     // MARK: Rows
 
-    func testRowsFollowTheProjectionAndLeaveTwoQRRowsAlone() {
-        let twoQR = DAppConnection(id: "two-qr", name: "Old", url: "", status: .approved, updatedAt: Date(timeIntervalSince1970: 1))
+    func testRowsFollowTheProjection() {
         let gone = DAppConnection(
             id: Self.otherApp.toBase58String(), name: "Gone", url: "", status: .active,
-            updatedAt: Date(timeIntervalSince1970: 1), loginKind: .oneQR)
+            updatedAt: Date(timeIntervalSince1970: 1))
         let confirming = Self.intent([Self.authKey(10)])
         let projection = AppConnect.project([Self.snapshot([])], intents: [confirming])
         let rows = PlatformDashConnectDataSource.rows(
-            [twoQR, gone], after: projection, intents: [], at: Date(timeIntervalSince1970: 2))
-        XCTAssertEqual(rows.map(\.id), ["two-qr", Self.app.toBase58String()])
+            [gone], after: projection, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rows.map(\.id), [Self.app.toBase58String()])
         XCTAssertEqual(rows.last?.status, .confirming)
         XCTAssertEqual(rows.last?.name, "App")
-        XCTAssertEqual(rows.last?.loginKind, .oneQR)
     }
 
     func testAnAppConnectRowHeldByAnotherIdentityStays() {
         let row = DAppConnection(
             id: Self.otherApp.toBase58String(), name: "Elsewhere", url: "", status: .active,
-            updatedAt: Date(timeIntervalSince1970: 1), loginKind: .oneQR)
+            updatedAt: Date(timeIntervalSince1970: 1))
         let elsewhere = Self.intent([Self.authKey(10)], app: Self.otherApp, identity: Self.otherIdentity)
         let rows = PlatformDashConnectDataSource.rows(
             [row], after: AppConnect.project([Self.snapshot([])], intents: []), intents: [elsewhere],
@@ -332,14 +330,18 @@ final class AppConnectProjectionTests: XCTestCase {
 
     // MARK: Retry
 
-    private static func plan(budget: UInt64? = 1000, expiresAt: UInt64 = now + 1000, critical: Bool = false) -> AppConnect.GrantPlan {
+    private static func plan(
+        budget: UInt64? = 1000, expiresAt: UInt64 = now + 1000, critical: Bool = false,
+        encryption: [AppConnectRequest.EncryptionBinding] = []
+    ) -> AppConnect.GrantPlan {
         let binding = AppConnectRequest.AuthBinding(
             kind: .singleContract, securityLevel: critical ? .critical : .high, id: app,
             totalBudget: budget, expiresAt: expiresAt, documentTypeName: nil)
         return AppConnect.GrantPlan(
             appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
             auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: budget, expiresAt: expiresAt)],
-            encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil)
+            encryption: encryption.enumerated().map { AppConnect.EncryptionGrant(bindingIndex: $0.offset, binding: $0.element) },
+            connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil)
     }
 
     func testARetrySubmitsTheIntentOnlyWithinWhatIsApprovedNow() {
@@ -349,6 +351,9 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(expiresAt: Self.now + 10)), "it would outlive what is approved now")
         XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(budget: 500)))
         XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(critical: true)))
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(intent, Self.plan(encryption: [.init(contractId: Self.app, purpose: .encryption)])),
+            "the response would carry slots other than the ones approved now")
     }
 
     // MARK: Fence
@@ -376,23 +381,46 @@ final class AppConnectProjectionTests: XCTestCase {
 
     // MARK: Review fixes
 
-    func testATwoQRKeyIsNeverOfferedForTurningOff() {
-        let twoQR = Self.authKey(20)
-        let snapshot = Self.snapshot([Self.onPlatform(twoQR)])
-        let projection = AppConnect.project([snapshot], intents: [], protected: [twoQR.data])
-        XCTAssertTrue(projection.connections.isEmpty)
-        let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: snapshot, intents: [], includeUnrecorded: true, protected: [twoQR.data])
-        XCTAssertEqual(plan.disable, [])
-    }
-
-    func testAContractSeveralAppsBindIsNoOneAppsForAnUnrecordedKey() {
+    func testAnUnrecordedKeyOnAContractSeveralAppsBindIsOfferedWithEachOfThem() {
         let shared = Data(repeating: 0xC1, count: 32)
         let mine = Self.intent([Self.authKey(10, bound: .singleContract(shared))])
         let theirs = Self.intent([Self.authKey(11, bound: .singleContract(shared))], app: Self.otherApp)
         let stray = Self.onPlatform(Self.authKey(20, bound: .singleContract(shared)))
-        let projection = AppConnect.project([Self.snapshot([stray])], intents: [mine, theirs])
-        XCTAssertTrue(projection.connections.allSatisfy { $0.unrecordedKeyIds.isEmpty }, "no one app's: not offered")
+        let snapshot = Self.snapshot([stray])
+        let projection = AppConnect.project([snapshot], intents: [mine, theirs])
+        for app in [Self.app, Self.otherApp] {
+            XCTAssertEqual(projection.connections.first { $0.appId == app }?.unrecordedKeyIds[Self.identity], [20])
+            XCTAssertEqual(
+                AppConnect.disconnectPlan(appId: app, snapshot: snapshot, intents: [mine, theirs], includeUnrecorded: true).disable,
+                [20])
+        }
+    }
+
+    func testAnUnrecordedKeyOnASharedContractGoesWithTheDisconnectOfAnyAppBindingIt() {
+        let shared = Data(repeating: 0xC1, count: 32)
+        let mine = Self.intent([Self.authKey(10, bound: .singleContract(shared))])
+        var gone = Self.intent([Self.authKey(11, bound: .singleContract(shared))], app: Self.otherApp)
+        gone.closedAt = Date(timeIntervalSince1970: 5)
+        let stray = Self.onPlatform(Self.authKey(20, bound: .singleContract(shared)))
+        let projection = AppConnect.project([Self.snapshot([stray])], intents: [mine, gone])
+        for app in [Self.app, Self.otherApp] {
+            XCTAssertEqual(projection.connections.first { $0.appId == app }?.unrecordedKeyIds[Self.identity], [20])
+        }
+        for app in [Self.app, Self.otherApp] {
+            XCTAssertEqual(
+                AppConnect.disconnectPlan(appId: app, snapshot: Self.snapshot([stray]), intents: [mine, gone], includeUnrecorded: true).disable,
+                [20], "a disconnect of either app turns it off")
+        }
+    }
+
+    func testAnIntentWithNoRecordOfItsSlotsIsNeverResumed() throws {
+        let intent = Self.intent([Self.authKey(10)])
+        let json = try JSONEncoder().encode(intent)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: json) as? [String: Any])
+        object.removeValue(forKey: "approvedEncryption")
+        let older = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: object))
+        XCTAssertNil(older.approvedEncryption)
+        XCTAssertFalse(AppConnect.isWithinPlan(older, Self.plan()))
     }
 
     func testARetryCarriesOnOnlyWhileTheKeysAreLiveOrMayStillLand() {
@@ -408,33 +436,55 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertFalse(AppConnect.mayResume(intent, in: Self.snapshot([Self.onPlatform(key)])), "the user disconnected it")
     }
 
-    func testProfileKeysAreOfferedOnlyWithAnAppThatWasGivenProfileAccess() {
+    func testAnIntentHasLandedOnlyOnceTheKeysItTurnsOffAreOff() {
+        let key = Self.authKey(10), earlier = Self.authKey(5)
+        var intent = Self.intent([key])
+        intent = Intent(
+            id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
+            appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: nil, keys: intent.keys,
+            sentEncryptionKeyIds: [], approvedEncryption: [], disables: [5], response: intent.response, responseDocumentId: nil,
+            responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
+        let addedElsewhere = Self.snapshot([Self.onPlatform(key), Self.onPlatform(earlier)])
+        XCTAssertFalse(AppConnect.hasLanded(intent, in: addedElsewhere), "the earlier key is still on")
+        XCTAssertEqual(AppConnect.outstandingDisables(of: intent, in: addedElsewhere), [5])
+        XCTAssertTrue(AppConnect.hasLanded(
+            intent, in: Self.snapshot([Self.onPlatform(key), Self.onPlatform(earlier, disabledAt: 1)])))
+        XCTAssertFalse(AppConnect.hasLanded(intent, in: Self.snapshot([Self.onPlatform(earlier, disabledAt: 1)])))
+    }
+
+    func testProfileKeysAreOfferedWithAnAppGivenProfileAccessOrOneWithNoRecord() {
         let profile = Self.intent([Self.authKey(10, bound: .documentType(contractId: Self.dashPay, name: "profile"))])
         let plain = Self.intent([Self.authKey(11)], app: Self.otherApp)
-        XCTAssertTrue(AppConnect.usesProfileAccess([profile, plain], appId: Self.app))
-        XCTAssertFalse(AppConnect.usesProfileAccess([profile, plain], appId: Self.otherApp))
+        XCTAssertTrue(AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.app, identityId: Self.identity))
+        XCTAssertFalse(AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.otherApp, identityId: Self.identity))
+        XCTAssertTrue(
+            AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.appGroup, identityId: Self.identity),
+            "an app the wallet holds no record of, as after a restore")
+        XCTAssertTrue(
+            AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.app, identityId: Self.otherIdentity),
+            "no record of the app on that identity")
+    }
+
+    func testAResponseIsResentOnlyWhileItsEncryptionKeysCanBeUsed() {
+        let added = Self.encryptionKey(12)
+        let intent = Self.intent([Self.authKey(10), added])
+        XCTAssertTrue(AppConnect.encryptionKeysUsable(intent, in: Self.snapshot([])), "not landed yet")
+        XCTAssertTrue(AppConnect.encryptionKeysUsable(intent, in: Self.snapshot([Self.onPlatform(added)])))
+        XCTAssertFalse(
+            AppConnect.encryptionKeysUsable(intent, in: Self.snapshot([Self.onPlatform(added, disabledAt: 1)])),
+            "an encryption key it adds was turned off")
     }
 
     func testARowAnotherIdentityHoldsStaysAfterThisOneDisconnected() {
         let row = DAppConnection(
             id: Self.app.toBase58String(), name: "App", url: "", status: .active,
-            updatedAt: Date(timeIntervalSince1970: 1), loginKind: .oneQR)
+            updatedAt: Date(timeIntervalSince1970: 1))
         let closed = Self.intent([Self.authKey(10)])
         let projection = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1)])], intents: [closed])
         let elsewhere = Self.intent([Self.authKey(10)], identity: Self.otherIdentity)
         let rows = PlatformDashConnectDataSource.rows(
             [row], after: projection, intents: [elsewhere], at: Date(timeIntervalSince1970: 2))
         XCTAssertEqual(rows, [row])
-    }
-
-    func testATwoQRRowStaysWhenTheAppsAppConnectApprovalsAreAllOff() {
-        let row = DAppConnection(
-            id: Self.app.toBase58String(), name: "App", url: "", status: .approved, updatedAt: Date(timeIntervalSince1970: 1))
-        let closed = Self.intent([Self.authKey(10)])
-        let projection = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1)])], intents: [closed])
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.rows([row], after: projection, intents: [], at: Date(timeIntervalSince1970: 2)),
-            [row])
     }
 
     func testAFenceKeyCanSpendOneCreditAndNeverExpires() {
@@ -465,21 +515,6 @@ final class AppConnectProjectionTests: XCTestCase {
     func testAKeyAtTheLastIdLeavesTheLowestFreeIds() {
         let last = Self.onPlatform(Self.authKey(UInt32.max))
         XCTAssertEqual(AppConnect.newKeyIds(count: 2, snapshot: Self.snapshot([last]), intents: []), [0, 1])
-    }
-
-    func testATwoQRRowComesBackWhenTheAppConnectSideEndsAndItsKeysAreLive() {
-        let id = Self.app.toBase58String()
-        let row = DAppConnection(
-            id: id, name: "App", url: "u", status: .active, updatedAt: Date(timeIntervalSince1970: 1), loginKind: .oneQR)
-        let closed = Self.intent([Self.authKey(10)])
-        let projection = AppConnect.project(
-            [Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1)])], intents: [closed])
-        let rows = PlatformDashConnectDataSource.rows(
-            [row], after: projection, intents: [], twoQRApps: [id], at: Date(timeIntervalSince1970: 2))
-        XCTAssertEqual(rows.map(\.loginKind), [.twoQR])
-        XCTAssertEqual(rows.first?.name, "App")
-        XCTAssertEqual(PlatformDashConnectDataSource.rows(
-            [row], after: projection, intents: [], at: Date(timeIntervalSince1970: 2)), [])
     }
 
     // MARK: Third review round

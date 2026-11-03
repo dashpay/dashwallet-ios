@@ -66,13 +66,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case authorizationCancelled
     case authorizationFailed
     case randomGenerationFailed(OSStatus)
-    case invalidHash160
     case noAuthenticationKey
     case existingDocumentLookupFailed
-    case noApprovedConnectionAwaitingKeyRegistration
-    case keyRegistrationWrongIdentity
-    case keyRegistrationUnexpectedMutation
-    case keyRegistrationMismatchedDerivedKey(KeyPurpose)
     case tokenPurchaseWrongIdentity
     case tokenPurchaseTokenIdMismatch
     case unsupportedStateTransition(String)
@@ -89,8 +84,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case appConnectKeysUnreadable
     case walletChanged
     case ephemeralKeyGenerationFailed
-    case ambiguousKeyRegistrationConnection
-    case devnetLoginContractNotConfigured
     case loginContractUnavailable
     case tooManyKeysToReplace
     case tooManyKeysToAdd
@@ -117,24 +110,12 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString("Authentication failed", comment: "DashConnect")
         case .randomGenerationFailed(let status):
             return "Failed to generate secure random bytes for DashConnect (\(status))."
-        case .invalidHash160:
-            return "Failed to compute the app ephemeral public key hash."
         case .noAuthenticationKey:
             return "No enabled AUTHENTICATION ECDSA key is available for this identity."
         case .existingDocumentLookupFailed:
-            return "The existing loginKeyResponse document could not be located for replacement."
-        case .noApprovedConnectionAwaitingKeyRegistration:
-            return "There is no login awaiting key registration — scan the app's login QR first."
-        case .keyRegistrationWrongIdentity:
-            return "The scanned key-registration transition targets a different identity."
-        case .keyRegistrationUnexpectedMutation:
-            return "The scanned key-registration transition does more than add the expected login keys."
+            return "The loginKeyResponse document on Platform could not be read."
         case .ephemeralKeyGenerationFailed:
             return "Could not generate an ephemeral DashConnect key."
-        case .ambiguousKeyRegistrationConnection:
-            return "Could not tell which approved app this login belongs to. Scan the app's QR code again."
-        case .keyRegistrationMismatchedDerivedKey(let purpose):
-            return "The scanned key-registration transition adds a \(purpose.name) key we did not derive."
         case .tokenPurchaseWrongIdentity:
             return "The scanned token purchase targets a different identity."
         case .tokenPurchaseTokenIdMismatch:
@@ -189,10 +170,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                     "This wallet cannot approve the scanned request (%@).",
                     comment: "DashConnect: the placeholder is the kind of the scanned state transition"),
                 kindName)
-        case .devnetLoginContractNotConfigured:
-            return NSLocalizedString(
-                "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
-                comment: "DashConnect")
         case .loginContractUnavailable:
             return "The DashConnect login contract is not available on this network."
         case .identityReadBehind:
@@ -239,47 +216,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     }
 }
 
-struct DashConnectLoginKeyResponseDraft: Equatable {
-    let properties: [String: AnyHashable]
-    let walletEphemeralPublicKey: Data
-    let encryptedPayload: Data
-}
-
-struct DashConnectKeyRegistrationKey: Equatable {
-    let keyId: UInt32
-    let keyType: KeyType
-    let purpose: KeyPurpose
-    let securityLevel: SecurityLevel
-    let publicKeyData: Data
-    let contractBounds: ContractBounds?
-    /// Protocol 14 limits the scanned transition put on the key. Carried so
-    /// the rebuilt registration grants exactly what was asked for.
-    var totalBudget: UInt64? = nil
-    var expiresAt: UInt64? = nil
-}
-
-struct DashConnectKeyRegistrationTransition: Equatable {
-    let identityId: Data
-    let addPublicKeys: [DashConnectKeyRegistrationKey]
-    let disablePublicKeyIds: [UInt32]
-}
-
-/// The two keys a `dash-st:` transition was allowed to add, once every check
-/// passed, paired with the app contract id they were derived against.
-struct DashConnectKeyRegistrationValidationResult: Equatable {
-    let appContractId: Data
-    let authenticationKey: DashConnectKeyRegistrationKey
-    let encryptionKey: DashConnectKeyRegistrationKey
-}
-
-private struct DashConnectKeyRegistrationDerivedMaterial {
-    var loginKey: Data
-    var authenticationPrivateKey: Data
-    let authenticationPublicKeyHash160: Data
-    var encryptionPrivateKey: Data
-    let encryptionPublicKey: Data
-}
-
 /// A token direct purchase parsed out of a `dash-st:` transition: what the
 /// approval sheet must show, and what `tokenPurchase(...)` is rebuilt from
 /// after the user approves it.
@@ -297,7 +233,6 @@ struct DashConnectTokenPurchaseTransition: Equatable {
 /// One `dash-st:` payload reduced to app-level types, discriminated by the
 /// kind of state transition it carried.
 enum DashConnectParsedStateTransition: Equatable {
-    case keyRegistration(DashConnectKeyRegistrationTransition)
     case tokenPurchase(DashConnectTokenPurchaseTransition)
 }
 
@@ -324,47 +259,6 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
     func parse(_ transitionBytes: Data) throws -> DashConnectParsedStateTransition {
         let transition = try parseTransition(transitionBytes)
         switch transition.kind {
-        case .identityUpdate(let parsed):
-            return .keyRegistration(
-                DashConnectKeyRegistrationTransition(
-                    identityId: parsed.identityId,
-                    addPublicKeys: try parsed.addPublicKeys.map { key in
-                        DashConnectKeyRegistrationKey(
-                            keyId: key.keyId,
-                            keyType: key.keyType,
-                            purpose: key.purpose,
-                            securityLevel: key.securityLevel,
-                            publicKeyData: key.pubkeyBytes,
-                            contractBounds: try key.contractBounds.map {
-                                switch $0 {
-                                case .singleContract(let id):
-                                    return .singleContract(id: id)
-                                case .singleContractDocumentType(let id, let documentTypeName):
-                                    return .singleContractDocumentType(
-                                        id: id,
-                                        documentTypeName: documentTypeName
-                                    )
-                                case .contractGroup:
-                                    // The wallet layer reports a contract-group bound since the
-                                    // SDK's #4800, and the DPP-layer `ContractBounds` this maps
-                                    // into has no case for it (dashpay/platform#4853). Dropping
-                                    // the bound is not an option here: the value decides which
-                                    // approved app a key registration belongs to, and it is also
-                                    // rebuilt into the `IdentityPubkey` handed back to
-                                    // `updateIdentity(...)`, so a silently weakened bound would
-                                    // mean signing a transition the dApp did not ask for. A key
-                                    // bound to a contract group is never one of the login keys
-                                    // this flow derives, so refuse the transition instead.
-                                    throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-                                }
-                            },
-                            totalBudget: key.totalBudget,
-                            expiresAt: key.expiresAt
-                        )
-                    },
-                    disablePublicKeyIds: parsed.disablePublicKeyIds
-                )
-            )
         case .batch(let batch):
             // The SDK now describes every batch, where it used to refuse all
             // but a lone token direct purchase. The approval sheet and the
@@ -391,7 +285,7 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                     totalAgreedPrice: totalAgreedPrice
                 )
             )
-        case .creditTransfer, .dataContractCreate, .dataContractUpdate, .other:
+        case .identityUpdate, .creditTransfer, .dataContractCreate, .dataContractUpdate, .other:
             throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
         }
     }
@@ -477,15 +371,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         subsystem: "org.dashfoundation.dash",
         category: "dashconnect.platform-data-source")
 
-    /// The pinned TESTNET `loginKeyResponse` contract id. Compile-time
-    /// constant, so the length check can never fire at runtime.
-    static let testnetLoginKeyExchangeContractId: Data = {
-        guard let data = Data.identifier(fromBase58: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P"),
-              data.count == 32 else {
-            fatalError("DashConnect loginKeyResponse contract id must be a 32-byte identifier.")
-        }
-        return data
-    }()
     static let loginKeyExchangeDocumentType = "loginKeyResponse"
 
     private let supportedNetwork: DashConnectNetwork
@@ -604,10 +489,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 appConnect: uri))
         }
 
+        // A `dash-key:` request other than v2. One that parses as v1 is on
+        // the right network and is refused; any other is malformed or newer.
         if DashConnectUri.isKeyUri(trimmed) {
             let request = try DashConnectUri.parseKeyRequest(trimmed)
             try validateNetwork(request.network)
-            return .login(request)
+            throw AppConnect.v1Refusal
         }
 
         if DashConnectUri.isStUri(trimmed) {
@@ -661,7 +548,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             protocolVersion = nil
             unresolvedLoginReason = error.localizedDescription
         }
-        var login = protocolVersion.map(AppConnect.login(protocolVersion:)) ?? .unresolved
+        var login: AppConnect.Login = loginRequest.appConnect == nil ? .refused(AppConnect.v1Refusal) : .unresolved
         if let appConnect = loginRequest.appConnect, let protocolVersion {
             (login, unresolvedLoginReason) = await appConnectLogin(
                 appConnect, protocolVersion: protocolVersion, context: context)
@@ -680,7 +567,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         )
     }
 
-    /// One approval, key registration or disconnect at a time for the active
+    /// One approval or disconnect at a time for the active
     /// wallet, whichever data source it came through. The turn is for the
     /// wallet that was active when it was asked for: if another one is
     /// active when it comes, the operation does not start.
@@ -840,7 +727,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw error
         }
         // The sheet was resolved for one identity of one wallet on one
-        // network, and either login acts for that identity: it has to be
+        // network, and the login acts for that identity: it has to be
         // the active one here, and again after the PIN prompt. The same
         // wallet and identity under another devnet name is not what was
         // shown.
@@ -849,40 +736,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: the approved sign-in was resolved for another identity, wallet or network")
             throw DashConnectPlatformError.approvalOutOfDate
         }
-        // Which login this network can answer is decided before the PIN
-        // prompt: from protocol version 14 the response goes to the App
-        // Connect system contract and the wallet registers the key itself;
-        // below it that contract does not exist and the two-QR flow runs.
-        // A pinned SDK reports its pin (testnet is pinned to 14 in
-        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet gets the App
-        // Connect login.
+        // The sheet showed the plan `makeConnectionRequest` resolved for
+        // this request. The network has to still take App Connect.
+        guard let appConnect = request.appConnect, let plan = consent.login.grantPlan else {
+            throw DashConnectPlatformError.approvalOutOfDate
+        }
         let protocolVersion: UInt32
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
         } catch {
-            // The wallet cannot tell any more whether the login the sheet
-            // offered is the one this network gets. Nothing was signed.
+            // The wallet cannot tell any more whether the network takes the
+            // login the sheet offered. Nothing was signed.
             Self.logger.error("🔗 DASHCONNECT :: protocol version unknown — \(error.localizedDescription, privacy: .public)")
             throw DashConnectPlatformError.loginUnresolved
         }
-        // The sheet showed the login `makeConnectionRequest` resolved. If the
-        // network now gets another one, what was approved is not what would
-        // run.
-        let login = AppConnect.login(protocolVersion: protocolVersion)
-        // A v2 request was approved with the plan the sheet showed. It has
-        // to be the plan for this request, and the network has to still take
-        // App Connect.
-        let approvedLogin: Bool
-        if let appConnect = request.appConnect {
-            guard let plan = consent.login.grantPlan else {
-                throw DashConnectPlatformError.approvalOutOfDate
-            }
-            let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
-            approvedLogin = AppConnect.isAvailable(protocolVersion: protocolVersion)
-                && plan.appEphemeralPubKeyHash == requestHash
-        } else {
-            approvedLogin = consent.login == login
-        }
+        let requestHash = try KeyExchangeCrypto.hash160(appConnect.request.appEphemeralPubKey)
+        let approvedLogin = AppConnect.isAvailable(protocolVersion: protocolVersion)
+            && plan.appEphemeralPubKeyHash == requestHash
         guard approvedLogin else {
             Self.logger.error("🔗 DASHCONNECT :: the network now answers with another login than the one approved")
             throw DashConnectPlatformError.approvalOutOfDate
@@ -901,101 +771,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch DashConnectPlatformError.walletChanged {
             throw DashConnectPlatformError.approvalOutOfDate
         }
-        if let appConnect = request.appConnect, let plan = consent.login.grantPlan {
-            Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
-            return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
-        }
-        Self.logger.info("🔗 DASHCONNECT :: authorized; deriving login key")
-
-        // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
-        var chainKey = try await MainActor.run {
-            try context.wallet.deriveIdentityAuthKeyAtSlot(
-                identityIndex: context.identityIndex,
-                keyId: UInt32(LoginKeyDerivation.defaultKeyIndex),
-                network: context.network
-            ).privateKeyData
-        }
-        defer { Self.zero(&chainKey) }
-
-        var loginKey = try LoginKeyDerivation.deriveLoginKey(
-            chainKeyPrivateBytes: chainKey,
-            identityId: context.identityId,
-            appContractId: request.contractId
-        )
-        defer { Self.zero(&loginKey) }
-
-        var walletEphemeralPrivateKey = try Self.generateEphemeralPrivateKey()
-        let draft = try Self.buildLoginKeyResponseDraft(
-            loginKey: loginKey,
-            appContractId: request.contractId,
-            appEphemeralPubKey: request.appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey
-        )
-
-        let signer = KeychainSigner(modelContainer: context.modelContainer)
-        let propertiesJSON = try Self.makeJSONObjectString(from: draft.properties)
-
-        // Whether this identity already published a login-key response for this
-        // app is a question about state, so it is answered by asking. Matching
-        // substrings in the error text instead would break the moment the SDK
-        // rewords or localizes a message, and "duplicate" also matches unique-
-        // index failures that have nothing to do with this document.
-        // Step markers: everything between `approveLogin started` and the
-        // finish was silent, so a stall anywhere in derive → write → preview
-        // was indistinguishable from a stall in any other step.
-        Self.logger.info("🔗 DASHCONNECT :: writing loginKeyResponse document")
-        try await writeLoginKeyResponseDocument(
-            context: context,
-            appContractId: request.contractId,
-            propertiesJSON: propertiesJSON,
-            signer: signer
-        )
-        Self.logger.info("🔗 DASHCONNECT :: loginKeyResponse document written")
-
-        let preview = await makeConnectionRequest(from: request)
-        Self.logger.info("🔗 DASHCONNECT :: connection preview resolved")
-        let connection: DAppConnection
-        do {
-            var derivedMaterial = try Self.deriveKeyRegistrationMaterial(
-                chainKeyPrivateBytes: chainKey,
-                identityId: context.identityId,
-                appContractId: request.contractId
-            )
-            defer {
-                Self.zero(&derivedMaterial.loginKey)
-                Self.zero(&derivedMaterial.authenticationPrivateKey)
-                Self.zero(&derivedMaterial.encryptionPrivateKey)
-            }
-
-            let currentPublicKeys = try context.wallet
-                .managedIdentity(identityId: context.identityId)
-                .getPublicKeys()
-            // The `dash-st:` registration happens once per (identity, app):
-            // after it, the app stops emitting that QR. So the status reflects
-            // whether the derived login keys are on the identity, not which
-            // step of the flow just ran.
-            if Self.hasRegisteredLoginKeys(
-                authenticationPublicKeyHash160: derivedMaterial.authenticationPublicKeyHash160,
-                encryptionPublicKey: derivedMaterial.encryptionPublicKey,
-                currentIdentityPublicKeys: currentPublicKeys
-            ) {
-                connection = Self.makeConnection(preview: preview, status: .active, updatedAt: now())
-            } else {
-                connection = Self.makeConnection(preview: preview, status: .approved, updatedAt: now())
-            }
-        } catch {
-            Self.logger.error(
-                "🔗 DASHCONNECT :: could not confirm registered login keys after approveLogin — \(error.localizedDescription, privacy: .public)"
-            )
-            // Conservative fallback: asking for a QR is safer than claiming the
-            // registration is already on the identity when we could not verify it.
-            connection = Self.makeConnection(preview: preview, status: .approved, updatedAt: now())
-        }
-
-        await updateRows(in: context.stores) { rows in
-            rows.filter { $0.id != connection.id } + [connection]
-        }
-        return connection
+        Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
+        return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
     }
 
     /// The protocol version a login is chosen by. An SDK pinned to a
@@ -1053,98 +830,26 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return result
     }
 
-    /// The payloads of the two-QR login's keys, and the apps whose two-QR keys
-    /// are live, for every app this read concerns: one with an intent of the
-    /// identity or an App Connect row, and every contract a live App Connect
-    /// key no intent names is bound to. A key the two-QR login registered
-    /// must never be offered for turning off: that login derives the same key
-    /// every time. When they cannot be derived, every such key bound to that
-    /// contract is kept out the same way.
-    private func twoQRKeys(
-        _ snapshot: AppConnect.IdentitySnapshot,
-        intents: [AppConnect.ConnectionIntent],
-        context: Context
-    ) async -> (protected: Set<Data>, liveApps: Set<String>) {
-        // Named as `AppConnect.project` names them: an id held by another key
-        // is that key's.
-        let named = Set(intents.filter { $0.identityId == snapshot.identityId }.flatMap { intent in
-            intent.keys.filter { AppConnect.presence(of: $0, in: snapshot) != .conflicting }.map(\.id)
-        })
-        var candidates: [Data: [Data]] = [:]
-        for intent in intents where intent.identityId == snapshot.identityId {
-            candidates[intent.appId, default: []] += []
-        }
-        for row in rows(in: context.stores) where row.loginKind == .oneQR {
-            if let appId = Self.decodeIdentifier(row.id) { candidates[appId, default: []] += [] }
-        }
-        for key in snapshot.keys where AppConnect.isAppConnectAuthKey(key) && !named.contains(key.id) {
-            guard let bound = key.bound, !AppConnect.isProfileBound(bound) else { continue }
-            candidates[AppConnect.contractId(of: bound), default: []].append(key.data)
-        }
-        let live = Set(snapshot.keys.filter { $0.disabledAt == nil }.map(\.data))
-        var protected: Set<Data> = []
-        var liveApps: Set<String> = []
-        // The chain key is derived once (a keychain read and an FFI call on
-        // the main actor); each app's keys follow from it.
-        var chainKey: Data?
-        do {
-            chainKey = try await MainActor.run {
-                try context.wallet.deriveIdentityAuthKeyAtSlot(
-                    identityIndex: context.identityIndex,
-                    keyId: UInt32(LoginKeyDerivation.defaultKeyIndex),
-                    network: context.network
-                ).privateKeyData
-            }
-        } catch {
-            // Without them no unrecorded key can be told from a two-QR key:
-            // none is offered.
-            Self.logger.error("🔗 DASHCONNECT :: two-QR keys not derived; unrecorded keys are left alone")
-            for key in snapshot.keys where AppConnect.isAppConnectAuthKey(key) && !named.contains(key.id) {
-                protected.insert(key.data)
-            }
-        }
-        defer { if chainKey != nil { Self.zero(&chainKey!) } }
-        for (contract, payloads) in candidates {
-            guard let chainKey,
-                  var material = try? Self.deriveKeyRegistrationMaterial(
-                      chainKeyPrivateBytes: chainKey, identityId: snapshot.identityId, appContractId: contract) else {
-                protected.formUnion(payloads)
-                continue
-            }
-            Self.zero(&material.loginKey)
-            Self.zero(&material.authenticationPrivateKey)
-            Self.zero(&material.encryptionPrivateKey)
-            let derived: Set<Data> = [material.authenticationPublicKeyHash160, material.encryptionPublicKey]
-            protected.formUnion(derived)
-            if !derived.isDisjoint(with: live) { liveApps.insert(contract.toBase58String()) }
-        }
-        return (protected, liveApps)
-    }
-
     /// Puts the App Connect rows of `stores` in step with what `snapshot`
-    /// and the intents show. A two-QR row stays unless the app has an App
-    /// Connect connection to show instead.
+    /// and the intents show.
     private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, context: Context) async {
         let stores = context.stores
         let all = stores.intents.load()
-        let twoQR = await twoQRKeys(snapshot, intents: all, context: context)
-        let projection = AppConnect.project([snapshot], intents: all, protected: twoQR.protected)
+        let projection = AppConnect.project([snapshot], intents: all)
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
         let updatedAt = now()
         await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, intents: elsewhere, twoQRApps: twoQR.liveApps, at: updatedAt)
+            Self.rows(rows, after: projection, intents: elsewhere, at: updatedAt)
         }
     }
 
     /// `rows` with the App Connect connections of `projection`: an app with
     /// live keys or an update that may still land has a row; one whose keys
-    /// are all off, or whose update never landed, has none, unless its
-    /// two-QR keys are live (`twoQRApps`): then it has its two-QR row back.
+    /// are all off, or whose update never landed, has none.
     static func rows(
         _ rows: [DAppConnection],
         after projection: AppConnect.Projection,
         intents elsewhere: [AppConnect.ConnectionIntent],
-        twoQRApps: Set<String> = [],
         at updatedAt: Date
     ) -> [DAppConnection] {
         func shownStatus(_ status: AppConnect.IntentStatus) -> ConnectionStatus? {
@@ -1158,9 +863,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // An App Connect row stands for intents: it stays only while another
         // identity's intents hold it, since this read says nothing of them.
         let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
-        var result = rows.filter {
-            !shownIds.contains($0.id) && ($0.loginKind == .twoQR || heldElsewhere.contains($0.id))
-        }
+        var result = rows.filter { !shownIds.contains($0.id) && heldElsewhere.contains($0.id) }
         for connection in projection.connections {
             let id = connection.appId.toBase58String()
             guard let status = shownStatus(connection.status) else { continue }
@@ -1174,13 +877,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 name: name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : name,
                 url: latest?.appUrl ?? existing?.url ?? fallback.url,
                 status: status,
-                updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
-                loginKind: .oneQR))
-        }
-        for id in twoQRApps.subtracting(shownIds) where !result.contains(where: { $0.id == id }) {
-            guard let existing = rows.first(where: { $0.id == id }) else { continue }
-            result.append(DAppConnection(
-                id: id, name: existing.name, url: existing.url, status: .active, updatedAt: updatedAt, loginKind: .twoQR))
+                updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt))
         }
         return result
     }
@@ -1229,16 +926,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             // A retry: the same keys and response, within what was approved
             // now, and only while the identity still has the encryption keys
-            // the response carries.
-            guard AppConnect.isWithinPlan(earlier, plan) else { throw DashConnectPlatformError.approvalOutOfDate }
-            // Turned off, expired, or never to land: Platform never adds a key
-            // twice, so the app has to ask again.
-            guard AppConnect.mayResume(earlier, in: snapshot) else {
+            // the response carries. Turned off, expired, never to land, or
+            // with no record of its slots: Platform never adds a key twice,
+            // so the app has to ask again.
+            guard AppConnect.mayResume(earlier, in: snapshot), earlier.approvedEncryption != nil else {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
-            guard earlier.sentEncryptionKeyIds.allSatisfy({ id in
-                snapshot.keys.contains { $0.id == id && AppConnect.isLive($0, at: snapshot.platformTime) }
-            }) else {
+            guard AppConnect.isWithinPlan(earlier, plan) else { throw DashConnectPlatformError.approvalOutOfDate }
+            guard AppConnect.encryptionKeysUsable(earlier, in: snapshot) else {
                 throw DashConnectPlatformError.appConnectEncryptionKeyChanged
             }
             intent = earlier
@@ -1285,7 +980,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // Connections opens.
             Self.logger.info("🔗 DASHCONNECT :: identity not read after the approval; its row is refreshed later")
         }
-        return Self.makeConnection(preview: consent, status: .active, updatedAt: now(), loginKind: .oneQR)
+        return DAppConnection(
+            id: consent.appContractId,
+            name: consent.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : consent.appLabel,
+            url: consent.appUrl,
+            status: .active,
+            updatedAt: now())
     }
 
     /// The intent of a new approval: the keys it adds under ids no key or
@@ -1397,6 +1097,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             connectionId: plan.connectionId,
             keys: keys,
             sentEncryptionKeyIds: encryption.compactMap(\.keyId).filter { !added.contains($0) },
+            approvedEncryption: AppConnect.approvedSlots(of: plan),
             disables: superseded,
             response: response,
             responseDocumentId: nil,
@@ -1565,9 +1266,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Submits what of `intent` is not on the identity yet, and returns once
-    /// every key it adds shows. An update that reports a failure may still
-    /// have landed: the identity is read again, and if the keys are not
-    /// there the intent stays, shown as confirming, and the failure stands.
+    /// every key it adds shows and every key it turns off is off. An update
+    /// that reports a failure may still have landed: the identity is read
+    /// again, and if it does not show the intent the intent stays, shown as
+    /// confirming, and the failure stands.
     private func submitIntent(
         _ intent: AppConnect.ConnectionIntent,
         request: AppConnectRequest,
@@ -1576,15 +1278,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         context: Context,
         signer: KeychainSigner
     ) async throws {
-        func allShow(_ snapshot: AppConnect.IdentitySnapshot) -> Bool {
-            intent.keys.allSatisfy { [.live, .expired, .disabled].contains(AppConnect.presence(of: $0, in: snapshot)) }
-        }
-        guard !allShow(snapshot) else {
+        guard !AppConnect.hasLanded(intent, in: snapshot) else {
             await refreshRows(from: snapshot, context: context)
             return
         }
         let missing = intent.keys.filter { AppConnect.presence(of: $0, in: snapshot) == .missing }
-        let disable = intent.disables.filter { id in snapshot.keys.contains { $0.id == id && $0.disabledAt == nil } }
+        let disable = AppConnect.outstandingDisables(of: intent, in: snapshot)
 
         // The private keys of the auth keys to add, derived again from the
         // request, and of the encryption keys, from the wallet.
@@ -1640,7 +1339,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             for attempt in 0 ..< 3 {
                 if attempt > 0 { try? await Task.sleep(nanoseconds: 3_000_000_000) }
                 guard let read = try? await identitySnapshot(context: context).snapshot else { continue }
-                if allShow(read) {
+                if AppConnect.hasLanded(intent, in: read) {
                     Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
                     await refreshRows(from: read, context: context)
                     return
@@ -1795,95 +1494,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
 
         switch parsed {
-        case .keyRegistration(let transition):
-            // Only this branch changes the identity and the rows. Its turn
-            // is the wallet of the context read above, and the context is
-            // resolved again once the turn comes: the wait can outlast a
-            // wallet, network or identity switch.
-            try await gated(walletIdHex: context.stores.walletIdHex) {
-                let current = try await contextAfterAuthorization(matching: context)
-                try await completeKeyRegistration(transition, context: current)
-            }
-            return .keyRegistrationCompleted
         case .tokenPurchase(let purchase):
             return .tokenPurchaseApprovalRequired(
                 try await makeTokenPurchaseRequest(purchase, context: context)
             )
         }
-    }
-
-    /// The key-registration half of a scanned `dash-st:` payload. Verifies
-    /// the parsed transition only adds the exact derived login keys for our
-    /// identity, then rebuilds the equivalent `updateIdentity(...)` call
-    /// through the SDK.
-    private func completeKeyRegistration(
-        _ transition: DashConnectKeyRegistrationTransition,
-        context: Context
-    ) async throws {
-        // The transition was parsed before the connection is chosen:
-        // `DashStRequest` carries no app identifier, but the transition's
-        // keys usually do, in their contract bounds. Picking the most
-        // recently approved connection instead would derive app B's keys for
-        // a QR scanned from app A.
-        let pendingConnection = try Self.pendingApprovedConnectionForKeyRegistration(
-            in: rows(in: context.stores),
-            boundContractId: Self.boundAppContractId(in: transition)
-        )
-        guard let pendingAppContractId = Self.decodeIdentifier(pendingConnection.id) else {
-            throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
-        }
-
-        var derivedMaterial = try await deriveKeyRegistrationMaterial(
-            appContractId: pendingAppContractId, context: context)
-        defer {
-            Self.zero(&derivedMaterial.loginKey)
-            Self.zero(&derivedMaterial.authenticationPrivateKey)
-            Self.zero(&derivedMaterial.encryptionPrivateKey)
-        }
-
-        let validated = try Self.validateKeyRegistration(
-            transition,
-            identityId: context.identityId,
-            appContractId: pendingAppContractId,
-            derivedMaterial: derivedMaterial
-        )
-
-        let currentPublicKeys = try context.wallet
-            .managedIdentity(identityId: context.identityId)
-            .getPublicKeys()
-        let missingKeys = Self.missingKeyRegistrationKeys(
-            validated,
-            currentIdentityPublicKeys: currentPublicKeys
-        )
-
-        guard !missingKeys.isEmpty else {
-            await markActive(pendingConnection, in: context.stores)
-            return
-        }
-
-        try await authorize()
-        // The keys were derived and checked for the identity above.
-        let authorized = try await contextAfterAuthorization(matching: context)
-
-        let signer = KeychainSigner(modelContainer: authorized.modelContainer)
-        try await signer.withAdditionalSigningKeys([
-            (
-                publicKey: validated.authenticationKey.publicKeyData,
-                privateKey: derivedMaterial.authenticationPrivateKey
-            ),
-            (
-                publicKey: validated.encryptionKey.publicKeyData,
-                privateKey: derivedMaterial.encryptionPrivateKey
-            ),
-        ]) {
-            try await authorized.wallet.updateIdentity(
-                identityId: authorized.identityId,
-                addPublicKeys: missingKeys.map(Self.makeManagedIdentityPubkey),
-                signer: signer
-            )
-        }
-
-        await markActive(pendingConnection, in: authorized.stores)
     }
 
     /// The context to go on with after a wait — a PIN prompt, a turn at
@@ -1909,24 +1524,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         context.stores = stores
         return context
-    }
-
-    /// Marks the existing row of a two-QR connection whose keys were
-    /// registered active.
-    private func markActive(_ pendingConnection: DAppConnection, in stores: Stores) async {
-        let activatedAt = now()
-        await updateRows(in: stores) { rows in
-            rows.map { connection in
-                guard connection.id == pendingConnection.id else { return connection }
-                return DAppConnection(
-                    id: connection.id,
-                    name: connection.name,
-                    url: connection.url,
-                    status: .active,
-                    updatedAt: activatedAt
-                )
-            }
-        }
     }
 
     /// Builds the user-facing approval request for a parsed token purchase,
@@ -2139,26 +1736,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard let appId = Self.decodeIdentifier(id) else {
             throw DashConnectPlatformError.loginContractUnavailable
         }
-        let row = rows(in: stores).first { $0.id == id }
-        let openIntents = stores.intents.load().filter { $0.appId == appId && $0.closedAt == nil }
-        // Keys left over from an earlier disconnect of the app are turned off
-        // the App Connect way, whatever row is left.
-        guard !openIntents.isEmpty || row?.loginKind == .oneQR || includingUnrecorded else {
-            // Local-only for a two-QR connection: its `loginKeyResponse`
-            // document stays, and re-approving the same `dash-key:` QR returns
-            // it to `.active` while the identity keys are still registered.
-            let disconnectedAt = now()
-            await updateRows(in: stores) { rows in
-                rows.map { connection in
-                    guard connection.id == id else { return connection }
-                    return DAppConnection(
-                        id: connection.id, name: connection.name, url: connection.url,
-                        status: .approved, updatedAt: disconnectedAt)
-                }
-            }
-            return DashConnectDisconnectResult()
-        }
-
         var context = try await requireContext(pinnedTo: stores)
         // An intent this build cannot read may name keys of the app that are
         // still to land: nothing is turned off until it can be read.
@@ -2232,19 +1809,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ) {
         let snapshot = try await identitySnapshot(context: context).snapshot
         let all = context.stores.intents.load()
-        let protected = await twoQRKeys(snapshot, intents: all, context: context).protected
         var plan = AppConnect.disconnectPlan(
-            appId: appId, snapshot: snapshot, intents: all, includeUnrecorded: includingUnrecorded,
-            protected: protected)
+            appId: appId, snapshot: snapshot, intents: all, includeUnrecorded: includingUnrecorded)
         // The same intents as the plan, so the keys counted are the keys it
         // would turn off.
-        let projection = AppConnect.project([snapshot], intents: all, protected: protected)
+        let projection = AppConnect.project([snapshot], intents: all)
         let unrecordedAppKeys = projection.connections.first { $0.appId == appId }?
             .unrecordedKeyIds[context.identityId] ?? []
-        // DashPay profile keys no intent names are no one app's. They are
-        // offered with the disconnect of an app that was given profile
-        // access.
-        let profileKeys = AppConnect.usesProfileAccess(all, appId: appId)
+        // DashPay profile keys no intent names are no one app's.
+        let profileKeys = AppConnect.offersUnrecordedProfileKeys(all, appId: appId, identityId: context.identityId)
             ? projection.unrecordedProfileKeyIds[context.identityId] ?? []
             : []
         plan.disable = Array(Set(plan.disable).union(includingUnrecorded ? profileKeys : [])).sorted()
@@ -2333,279 +1906,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    static func buildLoginKeyResponseDraft(
-        loginKey: Data,
-        appContractId: Data,
-        appEphemeralPubKey: Data,
-        walletEphemeralPrivateKey: inout Data,
-        encryptLoginKey: (Data, Data, Data) throws -> Data = { loginKey, walletPriv, appPub in
-            try KeyExchangeCrypto.encryptLoginKey(
-                loginKey,
-                walletEphemeralPriv: walletPriv,
-                appEphemeralPub: appPub
-            )
-        }
-    ) throws -> DashConnectLoginKeyResponseDraft {
-        let sealed = try AppConnect.seal(
-            loginKey,
-            appEphemeralPubKey: appEphemeralPubKey,
-            walletEphemeralPrivateKey: &walletEphemeralPrivateKey,
-            encrypt: encryptLoginKey
-        )
-        let values = AppConnect.ResponseValues(sealed)
-
-        return DashConnectLoginKeyResponseDraft(
-            properties: [
-                "contractId": appContractId.toBase58String(),
-                "appEphemeralPubKeyHash": values.appEphemeralPubKeyHash,
-                "walletEphemeralPubKey": values.walletEphemeralPubKey,
-                "encryptedPayload": values.encryptedPayload,
-                "keyIndex": LoginKeyDerivation.defaultKeyIndex,
-            ],
-            walletEphemeralPublicKey: sealed.walletEphemeralPublicKey,
-            encryptedPayload: sealed.encryptedPayload
-        )
-    }
-
-    static func validateKeyRegistration(
-        _ transition: DashConnectKeyRegistrationTransition,
-        chainKeyPrivateBytes: Data,
-        identityId: Data,
-        appContractId: Data
-    ) throws -> DashConnectKeyRegistrationValidationResult {
-        var derivedMaterial = try deriveKeyRegistrationMaterial(
-            chainKeyPrivateBytes: chainKeyPrivateBytes,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-        defer {
-            zero(&derivedMaterial.loginKey)
-            zero(&derivedMaterial.authenticationPrivateKey)
-            zero(&derivedMaterial.encryptionPrivateKey)
-        }
-
-        return try validateKeyRegistration(
-            transition,
-            identityId: identityId,
-            appContractId: appContractId,
-            derivedMaterial: derivedMaterial
-        )
-    }
-
-    /// The two-QR login's keys for the active identity and one app. The
-    /// caller wipes the returned private keys.
-    private func deriveKeyRegistrationMaterial(
-        appContractId: Data,
-        context: Context
-    ) async throws -> DashConnectKeyRegistrationDerivedMaterial {
-        try await deriveKeyRegistrationMaterial(
-            appContractId: appContractId,
-            identityId: context.identityId,
-            identityIndex: context.identityIndex,
-            context: context)
-    }
-
-    /// The same for any identity of the active wallet, by its index.
-    private func deriveKeyRegistrationMaterial(
-        appContractId: Data,
-        identityId: Data,
-        identityIndex: UInt32,
-        context: Context
-    ) async throws -> DashConnectKeyRegistrationDerivedMaterial {
-        // `deriveIdentityAuthKeyAtSlot` is main-actor isolated in the SDK.
-        var chainKey = try await MainActor.run {
-            try context.wallet.deriveIdentityAuthKeyAtSlot(
-                identityIndex: identityIndex,
-                keyId: UInt32(LoginKeyDerivation.defaultKeyIndex),
-                network: context.network
-            ).privateKeyData
-        }
-        defer { Self.zero(&chainKey) }
-        return try Self.deriveKeyRegistrationMaterial(
-            chainKeyPrivateBytes: chainKey,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-    }
-
-    private static func deriveKeyRegistrationMaterial(
-        chainKeyPrivateBytes: Data,
-        identityId: Data,
-        appContractId: Data
-    ) throws -> DashConnectKeyRegistrationDerivedMaterial {
-        var loginKey = try LoginKeyDerivation.deriveLoginKey(
-            chainKeyPrivateBytes: chainKeyPrivateBytes,
-            identityId: identityId,
-            appContractId: appContractId
-        )
-        var authenticationPrivateKey = Data()
-        var encryptionPrivateKey = Data()
-
-        do {
-            authenticationPrivateKey = try KeyExchangeCrypto.deriveAuthPrivateKey(
-                loginKey: loginKey,
-                identityId: identityId
-            )
-            let authenticationPublicKey = try Secp256k1.compressedPublicKey(
-                privateKey: authenticationPrivateKey
-            )
-            let authenticationPublicKeyHash160 = try KeyExchangeCrypto.hash160(authenticationPublicKey)
-
-            encryptionPrivateKey = try KeyExchangeCrypto.deriveEncryptionPrivateKey(
-                loginKey: loginKey,
-                identityId: identityId
-            )
-            let encryptionPublicKey = try Secp256k1.compressedPublicKey(
-                privateKey: encryptionPrivateKey
-            )
-
-            return DashConnectKeyRegistrationDerivedMaterial(
-                loginKey: loginKey,
-                authenticationPrivateKey: authenticationPrivateKey,
-                authenticationPublicKeyHash160: authenticationPublicKeyHash160,
-                encryptionPrivateKey: encryptionPrivateKey,
-                encryptionPublicKey: encryptionPublicKey
-            )
-        } catch {
-            zero(&loginKey)
-            zero(&authenticationPrivateKey)
-            zero(&encryptionPrivateKey)
-            throw error
-        }
-    }
-
-    private static func validateKeyRegistration(
-        _ transition: DashConnectKeyRegistrationTransition,
-        identityId: Data,
-        appContractId: Data,
-        derivedMaterial: DashConnectKeyRegistrationDerivedMaterial
-    ) throws -> DashConnectKeyRegistrationValidationResult {
-        guard transition.identityId == identityId else {
-            throw DashConnectPlatformError.keyRegistrationWrongIdentity
-        }
-        guard transition.disablePublicKeyIds.isEmpty else {
-            throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-        }
-        guard transition.addPublicKeys.count == 2 else {
-            throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-        }
-
-        var authenticationKey: DashConnectKeyRegistrationKey?
-        var encryptionKey: DashConnectKeyRegistrationKey?
-
-        for key in transition.addPublicKeys {
-            switch key.purpose {
-            case .authentication:
-                guard authenticationKey == nil,
-                      key.keyType == .ecdsaHash160,
-                      key.securityLevel == .high,
-                      key.publicKeyData == derivedMaterial.authenticationPublicKeyHash160 else {
-                    throw DashConnectPlatformError.keyRegistrationMismatchedDerivedKey(.authentication)
-                }
-                authenticationKey = key
-            case .encryption:
-                guard encryptionKey == nil,
-                      key.keyType == .ecdsaSecp256k1,
-                      key.securityLevel == .medium,
-                      key.publicKeyData == derivedMaterial.encryptionPublicKey else {
-                    throw DashConnectPlatformError.keyRegistrationMismatchedDerivedKey(.encryption)
-                }
-                encryptionKey = key
-            default:
-                throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-            }
-        }
-
-        guard let authenticationKey, let encryptionKey else {
-            throw DashConnectPlatformError.keyRegistrationUnexpectedMutation
-        }
-
-        return DashConnectKeyRegistrationValidationResult(
-            appContractId: appContractId,
-            authenticationKey: authenticationKey,
-            encryptionKey: encryptionKey
-        )
-    }
-
-    static func hasRegisteredLoginKeys(
-        authenticationPublicKeyHash160: Data,
-        encryptionPublicKey: Data,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> Bool {
-        hasRegisteredAuthenticationKey(
-            authenticationPublicKeyHash160: authenticationPublicKeyHash160,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
-        ) && hasRegisteredEncryptionKey(
-            encryptionPublicKey: encryptionPublicKey,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
-        )
-    }
-
-    static func missingKeyRegistrationKeys(
-        _ validated: DashConnectKeyRegistrationValidationResult,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> [DashConnectKeyRegistrationKey] {
-        let hasAuthenticationKey = hasRegisteredAuthenticationKey(
-            authenticationPublicKeyHash160: validated.authenticationKey.publicKeyData,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
-        )
-        let hasEncryptionKey = hasRegisteredEncryptionKey(
-            encryptionPublicKey: validated.encryptionKey.publicKeyData,
-            currentIdentityPublicKeys: currentIdentityPublicKeys
-        )
-
-        var missingKeys: [DashConnectKeyRegistrationKey] = []
-        if !hasAuthenticationKey {
-            missingKeys.append(validated.authenticationKey)
-        }
-        if !hasEncryptionKey {
-            missingKeys.append(validated.encryptionKey)
-        }
-        return missingKeys
-    }
-
-    private static func makeConnection(
-        preview: ConnectionRequest,
-        status: ConnectionStatus,
-        updatedAt: Date,
-        loginKind: DashConnectLoginKind = .twoQR
-    ) -> DAppConnection {
-        DAppConnection(
-            id: preview.appContractId,
-            name: preview.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : preview.appLabel,
-            url: preview.appUrl,
-            status: status,
-            updatedAt: updatedAt,
-            loginKind: loginKind
-        )
-    }
-
-    private static func hasRegisteredAuthenticationKey(
-        authenticationPublicKeyHash160: Data,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> Bool {
-        currentIdentityPublicKeys.contains {
-            $0.purpose == .authentication
-                && $0.securityLevel == .high
-                && $0.keyType == .ecdsaHash160
-                && $0.disabledAt == nil
-                && $0.data == authenticationPublicKeyHash160
-        }
-    }
-
-    private static func hasRegisteredEncryptionKey(
-        encryptionPublicKey: Data,
-        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
-    ) -> Bool {
-        currentIdentityPublicKeys.contains {
-            $0.purpose == .encryption
-                && $0.securityLevel == .medium
-                && $0.keyType == .ecdsaSecp256k1
-                && $0.disabledAt == nil
-                && $0.data == encryptionPublicKey
-        }
-    }
-
     /// The stores fixed to one wallet; `nil` with no wallet.
     private static func pinnedStores(
         walletIdHex: String?,
@@ -2661,81 +1961,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let sorted = Stores.stored(change(rows(in: stores))).sorted(by: { $0.updatedAt > $1.updatedAt })
         stores.connections.save(sorted)
         if shownRows.scope == stores.scope { subject.send(stores.published(sorted)) }
-    }
-
-    /// The contract every bounded key in the transition points at, or `nil`
-    /// when the transition carries no bounds — or carries bounds that disagree,
-    /// which names no single app and so identifies nothing.
-    static func boundAppContractId(
-        in transition: DashConnectKeyRegistrationTransition
-    ) -> Data? {
-        let boundIds = transition.addPublicKeys.compactMap { key -> Data? in
-            switch key.contractBounds {
-            case .singleContract(let id):
-                return id
-            case .singleContractDocumentType(let id, _):
-                return id
-            case nil:
-                return nil
-            }
-        }
-
-        guard let first = boundIds.first, boundIds.allSatisfy({ $0 == first }) else {
-            return nil
-        }
-        return first
-    }
-
-    static func pendingApprovedConnectionForKeyRegistration(
-        in connections: [DAppConnection],
-        boundContractId: Data?
-    ) throws -> DAppConnection {
-        let approved = connections.filter { $0.status == .approved }
-        guard !approved.isEmpty else {
-            throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
-        }
-
-        // The transition names its app whenever its keys are bounded. That is
-        // an exact answer, so it wins over any ordering heuristic.
-        if let boundContractId {
-            guard let match = approved.first(where: {
-                Self.decodeIdentifier($0.id) == boundContractId
-            }) else {
-                throw DashConnectPlatformError.noApprovedConnectionAwaitingKeyRegistration
-            }
-            return match
-        }
-
-        // Unbounded transitions are valid but anonymous. Recency is only safe
-        // when there is nothing to confuse it with: with two apps approved,
-        // guessing wrong derives the wrong keys and rejects a legitimate scan.
-        guard approved.count == 1 else {
-            throw DashConnectPlatformError.ambiguousKeyRegistrationConnection
-        }
-        return approved[0]
-    }
-
-    /// The `loginKeyResponse` contract id for the network this data source
-    /// serves. Testnet is pinned; devnet reads the user-entered id from
-    /// `DevnetConfiguration` and throws a normal, user-visible error when it
-    /// is absent or not a 32-byte base58 identifier — never a crash on
-    /// user input.
-    private func loginKeyExchangeContractId() throws -> Data {
-        switch supportedNetwork {
-        case .testnet:
-            return Self.testnetLoginKeyExchangeContractId
-        case .devnet:
-            guard let raw = DevnetConfiguration.dashConnectContractId,
-                  let data = Data.identifier(fromBase58: raw),
-                  data.count == 32 else {
-                throw DashConnectPlatformError.devnetLoginContractNotConfigured
-            }
-            return data
-        case .mainnet:
-            // Unreachable through the app (mainnet gets the mock data
-            // source); fail closed rather than publish against a guess.
-            throw DashConnectPlatformError.loginContractUnavailable
-        }
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
@@ -2918,96 +2143,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return context.storedUsername
     }
 
-    /// Publishes the login-key response, replacing the existing document when
-    /// this identity already has one for this app.
-    private func writeLoginKeyResponseDocument(
-        context: Context,
-        appContractId: Data,
-        propertiesJSON: String,
-        signer: KeychainSigner
-    ) async throws {
-        func replace(documentId: Data) async throws {
-            let signingKeyId = try selectDocumentSigningKeyId(
-                wallet: context.wallet,
-                identityId: context.identityId
-            )
-            _ = try await context.wallet.replaceDocument(
-                ownerIdentityId: context.identityId,
-                contractId: try loginKeyExchangeContractId(),
-                documentType: Self.loginKeyExchangeDocumentType,
-                documentId: documentId,
-                propertiesJSON: propertiesJSON,
-                signingKeyId: signingKeyId,
-                signer: signer
-            )
-        }
-
-        if let existingDocumentId = try await findLoginKeyResponseDocumentId(
-            ownerIdentityId: context.identityId,
-            appContractId: appContractId,
-            sdk: context.sdk
-        ) {
-            try await replace(documentId: existingDocumentId)
-            return
-        }
-
-        do {
-            _ = try await context.wallet.createDocument(
-                ownerIdentityId: context.identityId,
-                contractId: try loginKeyExchangeContractId(),
-                documentType: Self.loginKeyExchangeDocumentType,
-                propertiesJSON: propertiesJSON,
-                signer: signer
-            )
-        } catch {
-            // The document can appear between the lookup and the create. Ask
-            // once more: if it is there now, the create lost that race and a
-            // replace is correct; if it is not, this failure is something else
-            // and has to surface.
-            guard let racedDocumentId = try? await findLoginKeyResponseDocumentId(
-                ownerIdentityId: context.identityId,
-                appContractId: appContractId,
-                sdk: context.sdk
-            ) else {
-                throw error
-            }
-
-            try await replace(documentId: racedDocumentId)
-        }
-    }
-
-    /// `nil` means no such document exists; a failed lookup throws. The
-    /// create-or-replace branch is decided on this result, so "absent" and
-    /// "could not tell" must not collapse into the same value.
-    private func findLoginKeyResponseDocumentId(
-        ownerIdentityId: Data,
-        appContractId: Data,
-        sdk: SDK
-    ) async throws -> Data? {
-        let whereClause = """
-        [["$ownerId","==","\(ownerIdentityId.toBase58String())"],["contractId","==","\(appContractId.toBase58String())"]]
-        """
-
-        let response = try await sdk.documentList(
-            dataContractId: try loginKeyExchangeContractId().toBase58String(),
-            documentType: Self.loginKeyExchangeDocumentType,
-            whereClause: whereClause,
-            limit: 1
-        )
-
-        guard let documents = response["documents"] as? [[String: Any]] else {
-            throw DashConnectPlatformError.existingDocumentLookupFailed
-        }
-
-        guard let id = documents.first?["$id"] as? String else { return nil }
-
-        guard let identifier = Self.decodeIdentifier(id), identifier.count == 32 else {
-            throw DashConnectPlatformError.existingDocumentLookupFailed
-        }
-
-        return identifier
-    }
-
     private func selectDocumentSigningKeyId(
         wallet: ManagedPlatformWallet,
         identityId: Data
@@ -3064,35 +2199,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    private static func makeManagedIdentityPubkey(
-        from key: DashConnectKeyRegistrationKey
-    ) -> ManagedPlatformWallet.IdentityPubkey {
-        ManagedPlatformWallet.IdentityPubkey(
-            keyId: key.keyId,
-            keyType: key.keyType,
-            purpose: key.purpose,
-            securityLevel: key.securityLevel,
-            pubkeyBytes: key.publicKeyData,
-            contractBounds: key.contractBounds.map {
-                switch $0 {
-                case .singleContract(let id):
-                    return .singleContract(id: id)
-                case .singleContractDocumentType(let id, let documentTypeName):
-                    return .singleContractDocumentType(id: id, documentTypeName: documentTypeName)
-                }
-            },
-            totalBudget: key.totalBudget,
-            expiresAt: key.expiresAt
-        )
-    }
-
     /// A random 32-byte value is a valid secp256k1 scalar with overwhelming
     /// probability, so this exits on the first pass in practice. The bound is
     /// for the other failure mode: if `Secp256k1` is failing for a reason that
     /// has nothing to do with the candidate, an unbounded loop would hang
     /// `approveLogin` forever instead of surfacing an error.
     private static let ephemeralKeyGenerationAttempts = 8
-
     private static func generateEphemeralPrivateKey() throws -> Data {
         for _ in 0 ..< ephemeralKeyGenerationAttempts {
             var candidate = try randomBytes(count: 32)
@@ -3125,15 +2237,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return base64
         }
         return nil
-    }
-
-    private static func makeJSONObjectString(from properties: [String: AnyHashable]) throws -> String {
-        let dictionary = Dictionary(uniqueKeysWithValues: properties.map { ($0.key, $0.value.base) })
-        let data = try JSONSerialization.data(withJSONObject: dictionary, options: [.sortedKeys])
-        guard let string = String(data: data, encoding: .utf8) else {
-            throw CocoaError(.coderInvalidValue)
-        }
-        return string
     }
 
     /// Every key this wallet derives for one encryption grant

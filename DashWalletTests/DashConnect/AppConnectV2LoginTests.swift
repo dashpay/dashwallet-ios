@@ -776,9 +776,8 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(AppConnect.Refusal(.invalid("label")).status, .invalid)
     }
 
-    func testOnlyAGrantPlanOrAKnownLoginCanBeApproved() throws {
+    func testOnlyAGrantPlanCanBeApproved() throws {
         XCTAssertTrue(AppConnect.Login.appConnect(try Self.vectorPlan()).isApprovable)
-        XCTAssertTrue(AppConnect.Login.twoQR.isApprovable)
         XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
         XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
     }

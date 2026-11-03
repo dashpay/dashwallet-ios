@@ -23,17 +23,14 @@ import SwiftDashSDK
 enum DashConnectQr: Equatable {
     case login(DashKeyRequest)
     /// A `dash-st:` payload — a serialized state transition whose kind is
-    /// only known once the wallet parses it (key registration or token
-    /// purchase).
+    /// only known once the wallet parses it (a token purchase is the only
+    /// one it takes).
     case stateTransition(DashStRequest)
 }
 
 /// What the wallet did — or still needs the user to do — with a scanned
 /// `dash-st:` state transition.
 enum DashConnectStAction: Equatable {
-    /// Key registration was validated and published (or the derived keys
-    /// were already on the identity).
-    case keyRegistrationCompleted
     /// The payload is a token purchase; nothing was signed or sent yet — it
     /// awaits explicit user approval via `approveTokenPurchase(_:)`.
     case tokenPurchaseApprovalRequired(DashConnectTokenPurchaseRequest)
@@ -143,19 +140,10 @@ extension DashConnectTokenPurchaseRequest {
     }
 }
 
-/// Lifecycle of an app connection.
-///
-/// `approved` means the wallet knows about the app, but it may not be ready to
-/// sign in yet: either the required login keys are not on the identity yet, or
-/// the user locally turned the connection off from the wallet UI.
-///
-/// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`. For an App
-/// Connect connection it means an approval's keys are live on an identity of
-/// this wallet, whether or not its response was published; `confirming` means
-/// its identity update may still land.
+/// Lifecycle of an app connection. `active` means an approval's keys are
+/// live on an identity of this wallet, whether or not its response was
+/// published; `confirming` means its identity update may still land.
 enum ConnectionStatus: String, Codable, CaseIterable {
-    case approved
     /// An App Connect approval whose identity update may still land.
     case confirming
     case active
@@ -178,14 +166,6 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     }
 }
 
-/// Which login made a connection. It decides what turning it off means:
-/// an App Connect connection (`oneQR`) has keys on the identity to turn
-/// off, a two-QR connection does not (see `DashConnectDataSource.disconnect`).
-enum DashConnectLoginKind: String, Codable {
-    case twoQR
-    case oneQR
-}
-
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
     let id: String
@@ -193,7 +173,6 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
-    var loginKind: DashConnectLoginKind = .twoQR
     /// Names the wallet and network a data source published this row for;
     /// `nil` on a row that was built or read from a store. Not stored. It
     /// goes back with a disconnect or a remove, so a row picked from a list
