@@ -153,13 +153,17 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(projection.connections[0].unrecordedKeyIds, [Self.identity: [20]])
     }
 
-    func testAProfileKeyNoIntentNamesIsNoAppsAndADisabledOneIsNotShown() {
+    func testAProfileKeyNoIntentNamesStandsAsAConnectionOfItsOwnAndADisabledOneIsNotShown() {
         let profile = Self.authKey(20, bound: .documentType(contractId: Self.dashPay, name: "profile"))
         let off = Self.authKey(21, bound: .singleContract(Self.otherApp))
-        let projection = AppConnect.project(
-            [Self.snapshot([Self.onPlatform(profile), Self.onPlatform(off, disabledAt: 1)])], intents: [])
-        XCTAssertTrue(projection.connections.isEmpty)
+        let snapshot = Self.snapshot([Self.onPlatform(profile), Self.onPlatform(off, disabledAt: 1)])
+        let projection = AppConnect.project([snapshot], intents: [])
+        XCTAssertEqual(projection.connections.map(\.appId), [Self.dashPay], "it can be turned off with no other row left")
+        XCTAssertEqual(projection.connections.first?.unrecordedKeyIds, [Self.identity: [20]])
         XCTAssertEqual(projection.unrecordedProfileKeyIds, [Self.identity: [20]])
+        XCTAssertEqual(
+            AppConnect.disconnectPlan(appId: Self.dashPay, snapshot: snapshot, intents: [], includeUnrecorded: true).disable,
+            [20])
     }
 
     func testAKeyAStoreCannotBindIsNotGuessedToBeAnApps() {
@@ -512,6 +516,53 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertTrue(AppConnect.hasLanded(
             intent, in: Self.snapshot([Self.onPlatform(key), Self.onPlatform(earlier, disabledAt: 1)])))
         XCTAssertFalse(AppConnect.hasLanded(intent, in: Self.snapshot([Self.onPlatform(earlier, disabledAt: 1)])))
+    }
+
+    func testAResponseIsReleasedOnlyWhileEveryAuthKeyCanSign() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let intent = Self.intent([a, b])
+        XCTAssertTrue(AppConnect.authKeysUsable(intent, in: Self.snapshot([Self.onPlatform(a)])), "one may still land")
+        XCTAssertFalse(
+            AppConnect.authKeysUsable(intent, in: Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, disabledAt: 1)])),
+            "one of two is off")
+        let expired = Self.authKey(11, expiresAt: Self.now - 1)
+        XCTAssertFalse(AppConnect.authKeysUsable(Self.intent([a, expired]), in: Self.snapshot([Self.onPlatform(expired)])))
+    }
+
+    func testTheResponsesEncryptionKeysAreListedByPurpose() {
+        let added = Self.encryptionKey(12)
+        var intent = Self.intent([Self.authKey(10), added])
+        intent = Intent(
+            id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
+            appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: nil, keys: intent.keys,
+            sentEncryptionKeyIds: [7], approvedEncryption: [], disables: [], response: intent.response,
+            responseDocumentId: nil, responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
+        let decryption = AppConnect.PlatformKey(
+            id: 7, purpose: .decryption, securityLevel: .medium, keyType: .ecdsaSecp256k1, data: Data(repeating: 7, count: 33),
+            readOnly: false, bound: .singleContract(Self.app), boundKnown: true, totalBudget: nil, expiresAt: nil, disabledAt: nil)
+        typealias Expected = AppConnect.ExpectedCurrentKey
+        XCTAssertEqual(
+            AppConnect.expectedCurrentEncryptionKeys(of: intent, in: Self.snapshot([decryption, Self.onPlatform(added)])),
+            [.encryption: [Expected(id: 12, data: added.data, mayBeNone: false)], .decryption: [Expected(id: 7, data: decryption.data, mayBeNone: false)]])
+        XCTAssertEqual(
+            AppConnect.expectedCurrentEncryptionKeys(of: intent, in: Self.snapshot([decryption])),
+            [.encryption: [Expected(id: 12, data: added.data, mayBeNone: true)], .decryption: [Expected(id: 7, data: decryption.data, mayBeNone: false)]])
+        XCTAssertEqual(
+            AppConnect.expectedCurrentEncryptionKeys(
+                of: intent, in: Self.snapshot([decryption, Self.onPlatform(added, data: Data(repeating: 9, count: 33))])),
+            [.decryption: [Expected(id: 7, data: decryption.data, mayBeNone: false)]], "another key under its id is not asked about")
+
+        let toRegister = Expected(id: 12, data: added.data, mayBeNone: true)
+        let ours = AppConnect.CurrentContractKey(keyId: 12, keyType: nil, data: added.data, isDisabled: false)
+        let other = AppConnect.CurrentContractKey(keyId: 5, keyType: nil, data: Data(repeating: 5, count: 33), isDisabled: false)
+        let disabledOther = AppConnect.CurrentContractKey(keyId: 5, keyType: nil, data: Data(repeating: 5, count: 33), isDisabled: true)
+        let sameIdOtherKey = AppConnect.CurrentContractKey(keyId: 12, keyType: nil, data: Data(repeating: 9, count: 33), isDisabled: false)
+        XCTAssertFalse(AppConnect.isCurrent(disabledOther, as: toRegister), "a disabled current key is still a current key")
+        XCTAssertFalse(AppConnect.isCurrent(sameIdOtherKey, as: toRegister), "another key under its id")
+        XCTAssertTrue(AppConnect.isCurrent(nil, as: toRegister), "none current yet")
+        XCTAssertTrue(AppConnect.isCurrent(ours, as: toRegister), "it landed and the identity read was behind")
+        XCTAssertFalse(AppConnect.isCurrent(other, as: toRegister), "another key became current")
+        XCTAssertFalse(AppConnect.isCurrent(nil, as: Expected(id: 7, data: decryption.data, mayBeNone: false)))
     }
 
     func testAResponseIsResentOnlyWhileItsEncryptionKeysCanBeUsed() {

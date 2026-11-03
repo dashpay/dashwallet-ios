@@ -264,6 +264,8 @@ extension AppConnect {
             && key.expiresAt != nil && key.disabledAt == nil
     }
 
+    private static let dashPayContractIdData = Data.identifier(fromBase58: dashPayContractId)
+
     static func isProfileBound(_ bound: StoredBound) -> Bool {
         guard case .documentType(let contractId, let name) = bound else { return false }
         return contractId.toBase58String() == dashPayContractId && name == "profile"
@@ -305,7 +307,14 @@ extension AppConnect {
                     continue
                 }
                 if isProfileBound(bound) {
+                    // No app can be told to hold it. It is offered with any
+                    // app's disconnect, and stands as a connection of its
+                    // own, so it can be turned off whatever other rows there
+                    // are.
                     profile[snapshot.identityId, default: []].append(key.id)
+                    if let dashPay = dashPayContractIdData {
+                        unrecorded[dashPay, default: [:]][snapshot.identityId, default: []].append(key.id)
+                    }
                     continue
                 }
                 // A key bound to a system contract is no app's. One bound to
@@ -395,6 +404,48 @@ extension AppConnect {
         intent.sentEncryptionKeyIds.allSatisfy { id in
             snapshot.keys.contains { $0.id == id && isLive($0, at: snapshot.platformTime) }
         } && intent.keys.allSatisfy { $0.isAuthentication || presence(of: $0, in: snapshot) != .disabled }
+    }
+
+    /// Whether every auth key `intent`'s response carries can still sign:
+    /// none is off or expired. One that is not there yet may still land.
+    static func authKeysUsable(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
+        intent.authKeys.allSatisfy { ![.disabled, .expired].contains(presence(of: $0, in: snapshot)) }
+    }
+
+    /// A key Platform must name current for the app for a response to hold.
+    struct ExpectedCurrentKey: Equatable {
+        let id: UInt32
+        let data: Data
+        /// A key the intent registers that the read does not show: none may
+        /// be current yet, or this one already (the read may be behind).
+        let mayBeNone: Bool
+    }
+
+    /// What Platform's current encryption key for the app must be, by
+    /// purpose, for `intent`'s response to hold: each key it re-sends or
+    /// added that `snapshot` shows live, and for a key it registers that
+    /// `snapshot` does not show, that key or none.
+    static func expectedCurrentEncryptionKeys(of intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> [KeyPurpose: [ExpectedCurrentKey]] {
+        var keys: [KeyPurpose: [ExpectedCurrentKey]] = [:]
+        for key in intent.keys where !key.isAuthentication {
+            switch presence(of: key, in: snapshot) {
+            case .live: keys[key.purpose, default: []].append(ExpectedCurrentKey(id: key.id, data: key.data, mayBeNone: false))
+            case .missing: keys[key.purpose, default: []].append(ExpectedCurrentKey(id: key.id, data: key.data, mayBeNone: true))
+            case .conflicting, .expired, .disabled: continue
+            }
+        }
+        for id in intent.sentEncryptionKeyIds {
+            guard let key = snapshot.keys.first(where: { $0.id == id }), isLive(key, at: snapshot.platformTime) else { continue }
+            keys[key.purpose, default: []].append(ExpectedCurrentKey(id: id, data: key.data, mayBeNone: false))
+        }
+        return keys
+    }
+
+    /// Whether Platform's current key, `current`, is what `expected` asks:
+    /// that very key, enabled, or none at all where none may be.
+    static func isCurrent(_ current: CurrentContractKey?, as expected: ExpectedCurrentKey) -> Bool {
+        guard let current else { return expected.mayBeNone }
+        return !current.isDisabled && current.keyId == expected.id && current.data == expected.data
     }
 
     /// Whether another key holds an id one of the intent's keys was to take:

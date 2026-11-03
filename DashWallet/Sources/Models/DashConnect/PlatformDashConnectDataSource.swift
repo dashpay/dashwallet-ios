@@ -934,7 +934,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
             guard AppConnect.isWithinPlan(earlier, plan) else { throw DashConnectPlatformError.approvalOutOfDate }
+            guard AppConnect.authKeysUsable(earlier, in: snapshot) else {
+                throw DashConnectPlatformError.sessionKeyUnusable
+            }
+            // Checked before the update too: a refusal after it would leave
+            // the connection's earlier keys off and the new ones undelivered.
             guard AppConnect.encryptionKeysUsable(earlier, in: snapshot) else {
+                throw DashConnectPlatformError.appConnectEncryptionKeyChanged
+            }
+            if earlier.responseDocumentId == nil, !AppConnect.hasLanded(earlier, in: snapshot),
+               try await !encryptionKeysAreCurrent(of: earlier, in: snapshot, context: context) {
                 throw DashConnectPlatformError.appConnectEncryptionKeyChanged
             }
             intent = earlier
@@ -951,23 +960,43 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // the update ends, the user can turn the connection off.
         await refreshRows(from: snapshot, context: context)
 
-        let landed = try await submitIntent(
-            intent, request: request, plan: plan, snapshot: snapshot, context: context, signer: signer)
+        try await submitIntent(intent, request: request, plan: plan, snapshot: snapshot, context: context, signer: signer)
         guard stores.intents.load().first(where: { $0.id == intent.id })?.closedAt == nil else {
             throw DashConnectPlatformError.sessionKeyUnusable
         }
         // The response carries the keys' secrets. Keys that were there before
         // this update (an earlier try, another device) are released only
         // while they hold no more than the sheet showed; a key this update
-        // added holds what the plan grants. No encryption key it carries may
-        // have been turned off meanwhile: the identity is read again for it,
-        // and the last read the wallet has stands in when that read fails.
+        // added holds what the plan grants. No key it carries may have been
+        // turned off meanwhile, and each encryption key must still be the
+        // app's current one. The identity is read again for it, until a read
+        // shows the update (a node may be behind); when none does, nothing is
+        // published, and a retry takes it up.
         if intent.responseDocumentId == nil {
-            let current = (try? await identitySnapshot(context: context).snapshot) ?? landed ?? snapshot
-            guard AppConnect.landedKeysWithinPlan(intent, plan, in: current) else {
+            var shown: AppConnect.IdentitySnapshot?
+            var readFailure: Error?
+            for attempt in 0 ... 2 where shown == nil {
+                if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
+                do {
+                    let read = try await identitySnapshot(context: context).snapshot
+                    readFailure = nil
+                    if AppConnect.hasLanded(intent, in: read) { shown = read }
+                } catch {
+                    Self.logger.error("🔗 DASHCONNECT :: identity not read before publishing — \(error.localizedDescription, privacy: .public)")
+                    readFailure = error
+                }
+            }
+            guard let current = shown else {
+                if let readFailure { throw readFailure }
+                Self.logger.error("🔗 DASHCONNECT :: no read shows the identity update before publishing")
+                throw DashConnectPlatformError.identityReadBehind
+            }
+            guard AppConnect.landedKeysWithinPlan(intent, plan, in: current),
+                  AppConnect.authKeysUsable(intent, in: current) else {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
-            guard AppConnect.encryptionKeysUsable(intent, in: current) else {
+            guard AppConnect.encryptionKeysUsable(intent, in: current),
+                  try await encryptionKeysAreCurrent(of: intent, in: current, context: context) else {
                 throw DashConnectPlatformError.appConnectEncryptionKeyChanged
             }
         }
@@ -1180,30 +1209,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let sdk = context.sdk
         let purposes = Set(plan.encryption.map(\.keyPurpose)).sorted { $0.rawValue < $1.rawValue }
         func readCurrentKeys() async throws -> [KeyPurpose: AppConnect.CurrentContractKey] {
-            let response = try await DashConnectPlatformQueries.identityContractKeys(
-                sdk: sdk, identityId: identityId, contractId: appId, purposes: purposes)
-            var keys: [KeyPurpose: AppConnect.CurrentContractKey] = [:]
-            for purpose in purposes {
-                keys[purpose] = try AppConnect.currentContractKey(from: response, identityId: identityId, purpose: purpose)
-            }
-            return keys
-        }
-        // An answer this build cannot read reads the same on every try.
-        func isUnreadableAnswer(_ error: Error) -> Bool {
-            if let sdkError = error as? SDKError, case .serializationError = sdkError { return true }
-            return false
-        }
-        func failedRead(_ error: Error) -> Error {
-            Self.logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(error.localizedDescription, privacy: .public)")
-            guard isUnreadableAnswer(error) else { return DashConnectPlatformError.appConnectKeysUnreadable }
-            return AppConnect.Refusal(.unsupported, NSLocalizedString(
-                "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
-                comment: "DashConnect App Connect v2"))
-        }
-        // A node one block behind has usually caught up within a second; one
-        // that has not gets longer.
-        func pause(_ attempt: Int) async {
-            try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000)
+            try await Self.readCurrentContractKeys(sdk: sdk, identityId: identityId, appId: appId, purposes: purposes)
         }
 
         var derived: [[AppConnect.DerivedEncryptionKey]] = []
@@ -1223,12 +1229,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         var firstRead: [KeyPurpose: AppConnect.CurrentContractKey]?
         var failure: Error?
-        for attempt in 0 ... 2 where firstRead == nil && !(failure.map(isUnreadableAnswer) ?? false) {
-            if attempt > 0 { await pause(attempt) }
+        for attempt in 0 ... 2 where firstRead == nil && !(failure.map(Self.isUnreadableAnswer) ?? false) {
+            if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
             do { firstRead = try await readCurrentKeys() } catch { failure = error }
         }
         guard let currentKeys = firstRead else {
-            throw failedRead(failure ?? DashConnectPlatformError.appConnectKeysUnreadable)
+            throw Self.failedCurrentKeyRead(failure ?? DashConnectPlatformError.appConnectKeysUnreadable)
         }
         func states(_ currentKeys: [KeyPurpose: AppConnect.CurrentContractKey]) throws -> [AppConnect.EncryptionKeyState] {
             try plan.encryption.enumerated().map { index, grant in
@@ -1250,14 +1256,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let keyStates: [AppConnect.EncryptionKeyState]
         do {
             keyStates = try await AppConnect.settle(
-                currentKeys: currentKeys, states: states, reread: readCurrentKeys, pause: pause,
-                isFinal: isUnreadableAnswer)
+                currentKeys: currentKeys, states: states, reread: readCurrentKeys, pause: Self.pauseForLaggingNode,
+                isFinal: Self.isUnreadableAnswer)
         } catch let error as DashConnectPlatformError {
             throw error
         } catch let refusal as AppConnect.Refusal {
             throw refusal
         } catch {
-            throw failedRead(error)
+            throw Self.failedCurrentKeyRead(error)
         }
         var slots: [EncryptionSlotKey] = []
         for (index, state) in keyStates.enumerated() {
@@ -1282,12 +1288,77 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return slots
     }
 
+    /// The current key Platform names for `identityId`, the app and each
+    /// purpose.
+    private static func readCurrentContractKeys(
+        sdk: SDK, identityId: String, appId: String, purposes: [KeyPurpose]
+    ) async throws -> [KeyPurpose: AppConnect.CurrentContractKey] {
+        let response = try await DashConnectPlatformQueries.identityContractKeys(
+            sdk: sdk, identityId: identityId, contractId: appId, purposes: purposes)
+        var keys: [KeyPurpose: AppConnect.CurrentContractKey] = [:]
+        for purpose in purposes {
+            keys[purpose] = try AppConnect.currentContractKey(from: response, identityId: identityId, purpose: purpose)
+        }
+        return keys
+    }
+
+    /// An answer this build cannot read reads the same on every try.
+    private static func isUnreadableAnswer(_ error: Error) -> Bool {
+        if let sdkError = error as? SDKError, case .serializationError = sdkError { return true }
+        return false
+    }
+
+    private static func failedCurrentKeyRead(_ error: Error) -> Error {
+        logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(error.localizedDescription, privacy: .public)")
+        guard isUnreadableAnswer(error) else { return DashConnectPlatformError.appConnectKeysUnreadable }
+        return AppConnect.Refusal(.unsupported, NSLocalizedString(
+            "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
+            comment: "DashConnect App Connect v2"))
+    }
+
+    /// A node one block behind has usually caught up within a second; one
+    /// that has not gets longer.
+    private static func pauseForLaggingNode(_ attempt: Int) async {
+        try? await Task.sleep(nanoseconds: attempt == 1 ? 1_000_000_000 : 3_000_000_000)
+    }
+
+    /// Whether each encryption key `intent`'s response carries is the one
+    /// Platform names current for the app and its purpose, and no key is
+    /// current yet for one it is still to register: the app's verifier
+    /// refuses any other. A node that is behind may not show a key just
+    /// registered, so a "no" stands only once reads a few seconds apart all
+    /// say it. Throws when no read answered.
+    private func encryptionKeysAreCurrent(
+        of intent: AppConnect.ConnectionIntent, in snapshot: AppConnect.IdentitySnapshot, context: Context
+    ) async throws -> Bool {
+        let expected = AppConnect.expectedCurrentEncryptionKeys(of: intent, in: snapshot)
+        guard !expected.isEmpty else { return true }
+        let identityId = context.identityId.toBase58String()
+        let purposes = expected.keys.sorted { $0.rawValue < $1.rawValue }
+        var failure: Error?
+        for attempt in 0 ... 2 {
+            if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
+            do {
+                let current = try await Self.readCurrentContractKeys(
+                    sdk: context.sdk, identityId: identityId, appId: intent.appId.toBase58String(), purposes: purposes)
+                if expected.allSatisfy({ purpose, keys in keys.allSatisfy { AppConnect.isCurrent(current[purpose], as: $0) } }) {
+                    return true
+                }
+            } catch {
+                failure = error
+                if Self.isUnreadableAnswer(error) { break }
+            }
+        }
+        // A "no" stands only when every read gave it.
+        if let failure { throw Self.failedCurrentKeyRead(failure) }
+        return false
+    }
+
     /// Submits what of `intent` is not on the identity yet, and returns once
     /// every key it adds shows and every key it turns off is off. An update
     /// that reports a failure may still have landed: the identity is read
     /// again, and if it does not show the intent the intent stays, shown as
-    /// confirming, and the failure stands. Returns the read that showed the
-    /// intent there when that was not this update's own answer, else nil.
+    /// confirming, and the failure stands.
     private func submitIntent(
         _ intent: AppConnect.ConnectionIntent,
         request: AppConnectRequest,
@@ -1295,10 +1366,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         snapshot: AppConnect.IdentitySnapshot,
         context: Context,
         signer: KeychainSigner
-    ) async throws -> AppConnect.IdentitySnapshot? {
+    ) async throws {
         guard !AppConnect.hasLanded(intent, in: snapshot) else {
             await refreshRows(from: snapshot, context: context)
-            return snapshot
+            return
         }
         let missing = intent.keys.filter { AppConnect.presence(of: $0, in: snapshot) == .missing }
         let disable = AppConnect.outstandingDisables(of: intent, in: snapshot)
@@ -1360,14 +1431,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 if AppConnect.hasLanded(intent, in: read) {
                     Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
                     await refreshRows(from: read, context: context)
-                    return read
+                    return
                 }
                 if attempt == 2 { await refreshRows(from: read, context: context) }
             }
             throw error
         }
         Self.logger.info("🔗 DASHCONNECT :: identity updated")
-        return nil
     }
 
     /// Publishes the response `intent` sealed, unless it is already there.
@@ -1799,7 +1869,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // A key turned off is checked on the read after the update; one that
         // still shows live means that read is behind, or a new key landed.
         let ownIntents = stores.intents.load().filter { $0.appId == appId && $0.identityId == context.identityId }
-        guard ownIntents.allSatisfy({ $0.closedAt != nil }) else {
+        let stillOn = plan.disable.contains { id in after.keys.contains { $0.id == id && $0.disabledAt == nil } }
+        guard ownIntents.allSatisfy({ $0.closedAt != nil }), !stillOn else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
         // The app's intents on another identity of this wallet can only be
@@ -1845,7 +1916,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // A fence an earlier try added and could not turn off yet.
         let fences = try await liveFenceKeyIds(snapshot: snapshot, intents: all, context: context)
         plan.disable = Array(Set(plan.disable).union(fences)).sorted()
-        return (plan, snapshot, appKeysOff, unrecordedAppKeys.count + profileKeys.count,
+        return (plan, snapshot, appKeysOff, Set(unrecordedAppKeys).union(profileKeys).count,
                 projection.unplacedKeyIds[context.identityId]?.count ?? 0)
     }
 
