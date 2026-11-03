@@ -926,10 +926,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             // A retry: the same keys and response, within what was approved
             // now, and only while the identity still has the encryption keys
-            // the response carries. Turned off, expired, never to land, or
-            // with no record of its slots: Platform never adds a key twice,
-            // so the app has to ask again.
-            guard AppConnect.mayResume(earlier, in: snapshot), earlier.approvedEncryption != nil else {
+            // the response carries. Turned off, expired, never to land, with
+            // no record of its slots, or another connection's: Platform never
+            // adds a key twice, so the app has to ask again.
+            guard AppConnect.mayResume(earlier, in: snapshot), earlier.approvedEncryption != nil,
+                  earlier.connectionId == plan.connectionId else {
                 throw DashConnectPlatformError.sessionKeyUnusable
             }
             guard AppConnect.isWithinPlan(earlier, plan) else { throw DashConnectPlatformError.approvalOutOfDate }
@@ -955,13 +956,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard stores.intents.load().first(where: { $0.id == intent.id })?.closedAt == nil else {
             throw DashConnectPlatformError.sessionKeyUnusable
         }
-        // The response carries the keys' secret. Keys that were there before
+        // The response carries the keys' secrets. Keys that were there before
         // this update (an earlier try, another device) are released only
         // while they hold no more than the sheet showed; a key this update
-        // added holds what the plan grants.
-        if intent.responseDocumentId == nil,
-           !AppConnect.landedKeysWithinPlan(intent, plan, in: landed ?? snapshot) {
-            throw DashConnectPlatformError.sessionKeyUnusable
+        // added holds what the plan grants. No encryption key it carries may
+        // have been turned off meanwhile: the identity is read again for it,
+        // and the last read the wallet has stands in when that read fails.
+        if intent.responseDocumentId == nil {
+            let current = (try? await identitySnapshot(context: context).snapshot) ?? landed ?? snapshot
+            guard AppConnect.landedKeysWithinPlan(intent, plan, in: current) else {
+                throw DashConnectPlatformError.sessionKeyUnusable
+            }
+            guard AppConnect.encryptionKeysUsable(intent, in: current) else {
+                throw DashConnectPlatformError.appConnectEncryptionKeyChanged
+            }
         }
         try await publishResponse(of: intent, responseContractId: responseContractId, context: context, signer: signer)
         if let read = try? await identitySnapshot(context: context).snapshot {
@@ -1827,10 +1835,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let projection = AppConnect.project([snapshot], intents: all)
         let unrecordedAppKeys = projection.connections.first { $0.appId == appId }?
             .unrecordedKeyIds[context.identityId] ?? []
-        // DashPay profile keys no intent names are no one app's.
-        let profileKeys = AppConnect.offersUnrecordedProfileKeys(all, appId: appId, identityId: context.identityId)
-            ? projection.unrecordedProfileKeyIds[context.identityId] ?? []
-            : []
+        // DashPay profile keys no intent names are no one app's: no record
+        // proves which app was given one, on this device or another. A
+        // disconnect turns off everything that may be the app's, so they
+        // are offered with any app's, on the user's confirm.
+        let profileKeys = projection.unrecordedProfileKeyIds[context.identityId] ?? []
         plan.disable = Array(Set(plan.disable).union(includingUnrecorded ? profileKeys : [])).sorted()
         let appKeysOff = plan.disable.count + plan.fence.count
         // A fence an earlier try added and could not turn off yet.

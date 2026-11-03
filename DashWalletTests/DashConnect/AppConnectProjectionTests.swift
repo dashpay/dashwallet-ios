@@ -332,7 +332,7 @@ final class AppConnectProjectionTests: XCTestCase {
 
     private static func plan(
         budget: UInt64? = 1000, expiresAt: UInt64 = now + 1000, critical: Bool = false,
-        encryption: [AppConnectRequest.EncryptionBinding] = []
+        encryption: [AppConnectRequest.EncryptionBinding] = [], connectionId: Data? = nil
     ) -> AppConnect.GrantPlan {
         let binding = AppConnectRequest.AuthBinding(
             kind: .singleContract, securityLevel: critical ? .critical : .high, id: app,
@@ -341,7 +341,7 @@ final class AppConnectProjectionTests: XCTestCase {
             appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
             auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: budget, expiresAt: expiresAt)],
             encryption: encryption.enumerated().map { AppConnect.EncryptionGrant(bindingIndex: $0.offset, binding: $0.element) },
-            connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil)
+            connectionId: connectionId, identityHint: nil, createdAt: 0, callbackHost: nil)
     }
 
     func testARetrySubmitsTheIntentOnlyWithinWhatIsApprovedNow() {
@@ -354,6 +354,15 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertFalse(
             AppConnect.isWithinPlan(intent, Self.plan(encryption: [.init(contractId: Self.app, purpose: .encryption)])),
             "the response would carry slots other than the ones approved now")
+        let otherConnection = Intent(
+            id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
+            appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: Data(repeating: 0xC0, count: 16),
+            keys: intent.keys, sentEncryptionKeyIds: [], approvedEncryption: [], disables: [], response: intent.response,
+            responseDocumentId: nil, responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
+        XCTAssertFalse(AppConnect.isWithinPlan(otherConnection, Self.plan()), "another connection's intent")
+        XCTAssertFalse(
+            AppConnect.isWithinPlan(intent, Self.plan(connectionId: Data(repeating: 0xC0, count: 16))),
+            "an intent with no connection under a plan with one")
     }
 
     // MARK: Fence
@@ -503,19 +512,6 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertTrue(AppConnect.hasLanded(
             intent, in: Self.snapshot([Self.onPlatform(key), Self.onPlatform(earlier, disabledAt: 1)])))
         XCTAssertFalse(AppConnect.hasLanded(intent, in: Self.snapshot([Self.onPlatform(earlier, disabledAt: 1)])))
-    }
-
-    func testProfileKeysAreOfferedWithAnAppGivenProfileAccessOrOneWithNoRecord() {
-        let profile = Self.intent([Self.authKey(10, bound: .documentType(contractId: Self.dashPay, name: "profile"))])
-        let plain = Self.intent([Self.authKey(11)], app: Self.otherApp)
-        XCTAssertTrue(AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.app, identityId: Self.identity))
-        XCTAssertFalse(AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.otherApp, identityId: Self.identity))
-        XCTAssertTrue(
-            AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.appGroup, identityId: Self.identity),
-            "an app the wallet holds no record of, as after a restore")
-        XCTAssertTrue(
-            AppConnect.offersUnrecordedProfileKeys([profile, plain], appId: Self.app, identityId: Self.otherIdentity),
-            "no record of the app on that identity")
     }
 
     func testAResponseIsResentOnlyWhileItsEncryptionKeysCanBeUsed() {

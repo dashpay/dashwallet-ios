@@ -389,16 +389,6 @@ extension AppConnect {
             && outstandingDisables(of: intent, in: snapshot).isEmpty
     }
 
-    /// Whether the DashPay profile keys no intent names are offered with a
-    /// disconnect of the app on the identity: when its intents there gave it
-    /// a profile key, and when the wallet has no record of the app there
-    /// (after a restore no record says which app was given one). Each is
-    /// turned off only on the user's confirm.
-    static func offersUnrecordedProfileKeys(_ intents: [ConnectionIntent], appId: Data, identityId: Data) -> Bool {
-        let own = intents.filter { $0.appId == appId && $0.identityId == identityId }
-        return own.isEmpty || own.contains { $0.authKeys.contains { $0.bound.map(isProfileBound) ?? false } }
-    }
-
     /// Whether the encryption keys `intent`'s response carries can still be
     /// used: those it re-sends are live, and those it adds are not off.
     static func encryptionKeysUsable(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
@@ -510,7 +500,7 @@ extension AppConnect {
     /// budget the plan grants, and an expiry no later than the plan's.
     static func isWithinPlan(_ intent: ConnectionIntent, _ plan: GrantPlan) -> Bool {
         let auth = intent.authKeys
-        guard intent.appId == plan.appId, auth.count == plan.auth.count,
+        guard intent.appId == plan.appId, intent.connectionId == plan.connectionId, auth.count == plan.auth.count,
               intent.approvedEncryption == approvedSlots(of: plan) else { return false }
         return zip(auth, plan.auth).allSatisfy { key, grant in
             key.securityLevel == grant.securityLevel && key.bound == grant.storedBound
