@@ -55,7 +55,9 @@ struct ConnectionRow: View {
                 ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
                     .fixedSize(horizontal: true, vertical: false)
 
-                if connection.status == .active {
+                // A confirming connection may get its keys yet: turning it
+                // off makes sure it never does.
+                if connection.status != .approved {
                     activeSwitch
                 }
             }
@@ -86,12 +88,13 @@ struct ConnectionRow: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
-    /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. What turning it off does
-    /// depends on the login that made the connection (see
-    /// `DashConnectDataSource.disconnect`): a one-QR connection has the app's
-    /// key disabled on the identity and its row removed; a two-QR connection
-    /// is downgraded to `.approved` locally and the app keeps its keys.
+    /// Always reads as on: the row shows it for an active or a confirming
+    /// connection, and only the off direction is reachable from here. What
+    /// turning it off does depends on the login that made the connection (see
+    /// `DashConnectDataSource.disconnect`): an App Connect connection has the
+    /// app's keys turned off on the identity and its row removed; a two-QR
+    /// connection is downgraded to `.approved` locally and the app keeps its
+    /// keys.
     private var activeSwitch: some View {
         ZStack {
             SwitchView(isOn: .constant(true))

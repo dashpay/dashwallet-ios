@@ -150,13 +150,14 @@ extension DashConnectTokenPurchaseRequest {
 /// the user locally turned the connection off from the wallet UI.
 ///
 /// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`. For a one-QR
-/// connection it means the app holds a session key on an identity of this
-/// wallet that this wallet has not disabled: the row is made once the key is
-/// seen on the identity, before its response is published, and stays
-/// whether or not the publish is confirmed.
+/// wallet has already published the matching `loginKeyResponse`. For an App
+/// Connect connection it means an approval's keys are live on an identity of
+/// this wallet, whether or not its response was published; `confirming` means
+/// its identity update may still land.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
+    /// An App Connect approval whose identity update may still land.
+    case confirming
     case active
 
     init(from decoder: Decoder) throws {
@@ -178,8 +179,8 @@ enum ConnectionStatus: String, Codable, CaseIterable {
 }
 
 /// Which login made a connection. It decides what turning it off means:
-/// a one-QR connection has a session key on the identity to disable, a
-/// two-QR connection does not (see `DashConnectDataSource.disconnect`).
+/// an App Connect connection (`oneQR`) has keys on the identity to turn
+/// off, a two-QR connection does not (see `DashConnectDataSource.disconnect`).
 enum DashConnectLoginKind: String, Codable {
     case twoQR
     case oneQR
@@ -200,14 +201,19 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
-/// What a disconnect did with the active identity's DashPay profile keys
-/// that no grant record names, besides turning off the app's own keys.
+/// What a disconnect left on the active identity besides the app's keys it
+/// turned off.
 struct DashConnectDisconnectResult: Equatable {
-    /// How many of them it turned off.
-    var profileKeysTurnedOff = 0
-    /// They could not be told apart, so none was turned off; the app's own
-    /// keys were.
-    var profileKeysUnchecked = false
+    /// How many of the app's keys it turned off.
+    var keysTurnedOff = 0
+    /// Live keys no approval of this wallet names that a disconnect turns
+    /// off only when the user asks: keys bound to the app's contracts, given
+    /// on another device or before a restore, and DashPay profile keys no
+    /// app can be told to hold.
+    var unrecordedKeysLeft = 0
+    /// Live App Connect keys whose app the wallet could not tell yet: its key
+    /// store does not hold their bound. None of them was turned off.
+    var keysNotChecked = 0
 }
 
 /// A pending request derived from a scanned login QR code.
@@ -275,17 +281,5 @@ extension ConnectionRequest {
     /// identity, wallet and network an approval is about to run for.
     func wasResolved(forIdentityId identityId: String, scope: String) -> Bool {
         walletIdentityId == identityId && self.scope == scope
-    }
-}
-
-extension AppConnect.SessionKeyTerms {
-    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
-    var budgetText: String {
-        PlatformCreditsFormatter.dashString(budgetCredits)
-    }
-
-    /// The lifetime in whole days.
-    var lifetimeDays: Int {
-        Int(lifetime / (24 * 60 * 60))
     }
 }

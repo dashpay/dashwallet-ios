@@ -192,7 +192,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let status: ConnectionStatus
         let updatedAt: Date
         /// Absent for a two-QR connection, which is every row written before
-        /// the one-QR login existed.
+        /// App Connect existed.
         let loginKind: DashConnectLoginKind?
     }
 
