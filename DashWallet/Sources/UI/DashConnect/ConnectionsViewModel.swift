@@ -424,14 +424,24 @@ final class ConnectionsViewModel: ObservableObject {
                         kind: .question,
                         text: String.localizedStringWithFormat(text, result.unrecordedKeysLeft),
                         unrecordedKeysOf: connection)
-                } else if result.keysNotChecked > 0 {
-                    self.message = ConnectionsScreenMessage(
-                        kind: .success,
-                        text: String.localizedStringWithFormat(
+                } else if result.keysOnAnotherIdentity || result.keysNotChecked > 0 {
+                    var texts: [String] = []
+                    if result.keysNotChecked > 0 {
+                        texts.append(String.localizedStringWithFormat(
                             NSLocalizedString(
                                 "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.",
                                 comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
                             result.keysNotChecked))
+                    }
+                    if result.keysOnAnotherIdentity {
+                        texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
+                    }
+                    // Nothing turned off here and the app still has keys
+                    // elsewhere: as when its approval on another identity is
+                    // open, that is not a success.
+                    self.message = ConnectionsScreenMessage(
+                        kind: result.keysOnAnotherIdentity && result.keysTurnedOff == 0 ? .error : .success,
+                        text: texts.joined(separator: "\n\n"))
                 }
             } catch {
                 self.message = ConnectionsScreenMessage(

@@ -530,7 +530,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             )
         }
 
-        let existingConnection = rows(in: context.stores).first { $0.id == fallback.appContractId }
+        // A row there only for keys another identity's read saw is no
+        // connection of this identity.
+        let me = context.identityId.toBase58String()
+        let ownIntent = context.stores.intents.load().contains {
+            $0.appId.toBase58String() == fallback.appContractId && $0.identityId == context.identityId && $0.closedAt == nil
+        }
+        let existingConnection = rows(in: context.stores).first {
+            $0.id == fallback.appContractId && ($0.seenOn.isEmpty || $0.seenOn.contains(me) || ownIntent)
+        }
 
         // Which login this network gets is settled here, so the sheet can
         // show what the app is given. With the version unknown the request
@@ -839,19 +847,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
         let updatedAt = now()
         await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, intents: elsewhere, at: updatedAt)
+            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt)
         }
     }
 
-    /// `rows` with the App Connect connections of `projection`: an app with
-    /// live keys or an update that may still land has a row; one whose keys
-    /// are all off, or whose update never landed, has none.
+    /// `rows` with the App Connect connections of `projection`, the read of
+    /// `identityId`: an app with live keys or an update that may still land
+    /// has a row; one whose keys are all off, or whose update never landed,
+    /// has none, unless another identity's intents hold it or its last read
+    /// saw keys there no approval names (`seenOn`).
     static func rows(
         _ rows: [DAppConnection],
         after projection: AppConnect.Projection,
+        of identityId: Data,
         intents elsewhere: [AppConnect.ConnectionIntent],
         at updatedAt: Date
     ) -> [DAppConnection] {
+        let me = identityId.toBase58String()
         func shownStatus(_ status: AppConnect.IntentStatus) -> ConnectionStatus? {
             switch status {
             case .active, .expired: return .active
@@ -863,7 +875,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // An App Connect row stands for intents: it stays only while another
         // identity's intents hold it, since this read says nothing of them.
         let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
-        var result = rows.filter { !shownIds.contains($0.id) && heldElsewhere.contains($0.id) }
+        var result: [DAppConnection] = rows.compactMap { row in
+            guard !shownIds.contains(row.id) else { return nil }
+            var seenOn = row.seenOn
+            seenOn.remove(me)
+            if heldElsewhere.contains(row.id) { return DAppConnection(row, seenOn: seenOn) }
+            // Live keys seen on another identity: that is the access left.
+            guard !seenOn.isEmpty else { return nil }
+            return DAppConnection(row, status: .active, seenOn: seenOn, at: row.status == .active ? row.updatedAt : updatedAt)
+        }
         for connection in projection.connections {
             let id = connection.appId.toBase58String()
             guard var status = shownStatus(connection.status) else { continue }
@@ -872,13 +892,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let latest = connection.intents.first
             let fallback = DashConnectFallbackAppMetadata.resolve(contractId: id, unauthenticatedLabel: "")
             let name = latest?.appLabel ?? existing?.name ?? fallback.name
+            var seenOn = existing?.seenOn ?? []
+            seenOn.remove(me)
+            if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
             result.removeAll { $0.id == id }
             result.append(DAppConnection(
                 id: id,
                 name: name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : name,
                 url: latest?.appUrl ?? existing?.url ?? fallback.url,
                 status: status,
-                updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt))
+                updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
+                seenOn: seenOn))
         }
         return result
     }
@@ -1976,7 +2000,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return DashConnectDisconnectResult(
             keysTurnedOff: planned.appKeysOff,
             unrecordedKeysLeft: includingUnrecorded ? 0 : planned.unrecordedLeft,
-            keysNotChecked: planned.unplaced)
+            keysNotChecked: planned.unplaced,
+            // Keys a read of another identity saw stay, and so does the row.
+            keysOnAnotherIdentity: rows(in: stores).first { $0.id == id }?.seenOn
+                .subtracting([context.identityId.toBase58String()]).isEmpty == false)
     }
 
     /// What a disconnect of `appId` submits on the active identity, from a

@@ -172,11 +172,32 @@ enum ConnectionStatus: String, Codable, CaseIterable {
 
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
+    init(id: String, name: String, url: String, status: ConnectionStatus, updatedAt: Date, seenOn: Set<String> = []) {
+        self.id = id
+        self.name = name
+        self.url = url
+        self.status = status
+        self.updatedAt = updatedAt
+        self.seenOn = seenOn
+    }
+
+    /// `row` with another status, as of `updatedAt`, and `seenOn`.
+    init(_ row: DAppConnection, status: ConnectionStatus? = nil, seenOn: Set<String>, at updatedAt: Date? = nil) {
+        self.init(
+            id: row.id, name: row.name, url: row.url, status: status ?? row.status,
+            updatedAt: updatedAt ?? row.updatedAt, seenOn: seenOn)
+        scope = row.scope
+    }
+
     let id: String
     let name: String
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
+    /// The identities (Base58) whose last read showed the app live keys no
+    /// approval of this wallet names. The wallet reads one identity at a
+    /// time, so access seen on another stays known until that one is read.
+    let seenOn: Set<String>
     /// Names the wallet and network a data source published this row for;
     /// `nil` on a row that was built or read from a store. Not stored. It
     /// goes back with a disconnect or a remove, so a row picked from a list
@@ -197,6 +218,10 @@ struct DashConnectDisconnectResult: Equatable {
     /// Live App Connect keys whose app the wallet could not tell yet: its key
     /// store does not hold their bound. None of them was turned off.
     var keysNotChecked = 0
+    /// A read of another identity of this wallet saw keys of the app no
+    /// approval names. They can be turned off only while that identity is
+    /// the active one.
+    var keysOnAnotherIdentity = false
 }
 
 /// A pending request derived from a scanned login QR code.

@@ -315,7 +315,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let confirming = Self.intent([Self.authKey(10)])
         let projection = AppConnect.project([Self.snapshot([])], intents: [confirming])
         let rows = PlatformDashConnectDataSource.rows(
-            [gone], after: projection, intents: [], at: Date(timeIntervalSince1970: 2))
+            [gone], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
         XCTAssertEqual(rows.map(\.id), [Self.app.toBase58String()])
         XCTAssertEqual(rows.last?.status, .confirming)
         XCTAssertEqual(rows.last?.name, "App")
@@ -327,15 +327,42 @@ final class AppConnectProjectionTests: XCTestCase {
         let undelivered = AppConnect.project([snapshot], intents: [Self.intent([key])])
         XCTAssertEqual(undelivered.connections.first?.isUndelivered, true)
         XCTAssertEqual(
-            PlatformDashConnectDataSource.rows([], after: undelivered, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            PlatformDashConnectDataSource.rows([], after: undelivered, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
             [.undelivered])
         let delivered = AppConnect.project([snapshot], intents: [Self.intent([key], published: true)])
         XCTAssertEqual(delivered.connections.first?.isUndelivered, false)
         XCTAssertEqual(
-            PlatformDashConnectDataSource.rows([], after: delivered, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            PlatformDashConnectDataSource.rows([], after: delivered, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
             [.active])
         let restored = AppConnect.project([Self.snapshot([Self.onPlatform(key)])], intents: [])
         XCTAssertEqual(restored.connections.first?.isUndelivered, false, "keys no intent names are not judged undelivered")
+    }
+
+    func testAccessSeenOnAnotherIdentityKeepsTheRowUntilThatIdentityIsReadAgain() {
+        let stray = Self.onPlatform(Self.authKey(20))
+        let onA = AppConnect.project([Self.snapshot([stray])], intents: [])
+        let rowsA = PlatformDashConnectDataSource.rows([], after: onA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 1))
+        XCTAssertEqual(rowsA.first?.seenOn, [Self.identity.toBase58String()])
+        let onB = AppConnect.project([Self.snapshot([], identity: Self.otherIdentity)], intents: [])
+        let rowsB = PlatformDashConnectDataSource.rows(rowsA, after: onB, of: Self.otherIdentity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rowsB.map(\.id), [Self.app.toBase58String()], "B's read says nothing of A")
+        XCTAssertEqual(rowsB.first?.status, .active)
+        let againA = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(20), disabledAt: 1)])], intents: [])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows(rowsB, after: againA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 3)),
+            [], "A read again shows the key off")
+    }
+
+    func testARowAnotherIdentityHoldsKeepsWhatOtherIdentitiesSaw() {
+        let a = Self.identity.toBase58String(), b = Self.otherIdentity.toBase58String()
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 1), seenOn: [a, b])
+        let elsewhere = Self.intent([Self.authKey(10)], identity: Self.otherIdentity)
+        let rows = PlatformDashConnectDataSource.rows(
+            [row], after: AppConnect.project([Self.snapshot([])], intents: []), of: Self.identity, intents: [elsewhere],
+            at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rows.map(\.seenOn), [[b]], "only the identity read now is dropped")
     }
 
     func testAnAppConnectRowHeldByAnotherIdentityStays() {
@@ -344,7 +371,7 @@ final class AppConnectProjectionTests: XCTestCase {
             updatedAt: Date(timeIntervalSince1970: 1))
         let elsewhere = Self.intent([Self.authKey(10)], app: Self.otherApp, identity: Self.otherIdentity)
         let rows = PlatformDashConnectDataSource.rows(
-            [row], after: AppConnect.project([Self.snapshot([])], intents: []), intents: [elsewhere],
+            [row], after: AppConnect.project([Self.snapshot([])], intents: []), of: Self.identity, intents: [elsewhere],
             at: Date(timeIntervalSince1970: 2))
         XCTAssertEqual(rows, [row])
     }
@@ -557,7 +584,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let projection = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1)])], intents: [closed])
         let elsewhere = Self.intent([Self.authKey(10)], identity: Self.otherIdentity)
         let rows = PlatformDashConnectDataSource.rows(
-            [row], after: projection, intents: [elsewhere], at: Date(timeIntervalSince1970: 2))
+            [row], after: projection, of: Self.identity, intents: [elsewhere], at: Date(timeIntervalSince1970: 2))
         XCTAssertEqual(rows, [row])
     }
 

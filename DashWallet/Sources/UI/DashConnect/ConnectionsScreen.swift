@@ -40,6 +40,15 @@ struct ConnectionsScreen: View {
                 DashUIKit.NavigationBar(
                     leading: {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    },
+                    trailing: {
+                        // The empty state has its own scan button; a list
+                        // needs one too, for a new code after a request that
+                        // could not be completed.
+                        if !viewModel.featureUnavailable && !viewModel.connections.isEmpty {
+                            DashUIKit.NavigationBarElement.plus.button(action: showScanner)
+                                .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
+                        }
                     }
                 )
 

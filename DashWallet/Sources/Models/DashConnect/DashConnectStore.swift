@@ -138,7 +138,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                     name: row.label,
                     url: row.url,
                     status: row.status,
-                    updatedAt: row.updatedAt
+                    updatedAt: row.updatedAt,
+                    seenOn: Set(row.seenOn ?? [])
                 )
             )
         }
@@ -163,7 +164,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 label: $0.name,
                 url: $0.url,
                 status: $0.status,
-                updatedAt: $0.updatedAt
+                updatedAt: $0.updatedAt,
+                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted()
             )
         }
 
@@ -189,6 +191,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
+        /// Absent in rows written before it was kept.
+        let seenOn: [String]?
     }
 
     private static func base58Decode(_ string: String) -> Data? {

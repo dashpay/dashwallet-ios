@@ -59,6 +59,22 @@ final class DashConnectStoreTests: XCTestCase {
         )
     }
 
+    func testWhereAccessWasSeenRoundTripsAndAnOlderRowReadsWithNone() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let row = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "Yappr", url: "yap.pr", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10), seenOn: ["identity-a"])
+        store.save([row])
+        XCTAssertEqual(store.load().first?.seenOn, ["identity-a"])
+
+        let older: [[String: Any]] = [
+            ["contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", "label": "Yappr", "url": "yap.pr",
+             "status": "active", "updatedAt": 1_773_132_300_000],
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: older), forKey: try XCTUnwrap(store.storageKey))
+        XCTAssertEqual(store.load().map(\.seenOn), [[]])
+    }
+
     func testARowOfTheRemovedApprovedStatusIsDroppedAndTheOthersKept() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let payload: [[String: Any]] = [

@@ -6214,6 +6214,9 @@
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
 "Could not disconnect: %@" = "Could not disconnect: %@";
 
+/* DashConnect */
+"Connect an app" = "Connect an app";
+
 /* DashConnect: keys are on the identity, but the app never got its response */
 "Not delivered" = "Not delivered";
 
