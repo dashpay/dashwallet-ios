@@ -37,4 +37,5 @@ The repository is public, so whatever is written under `docs/` is published from
 - Moving the loose documentation files from the repository root into `docs/` is a follow-up PR.
 - ADRs for past decisions are not written retroactively; a past decision gets one when it is next
   revisited.
-- Nothing is enforced automatically; the PR template and review carry the rule.
+- Little is enforced automatically: the gitleaks pre-commit hook (`.githooks/`, enabled per clone) catches
+  secrets; the PR template and review carry the rest.
