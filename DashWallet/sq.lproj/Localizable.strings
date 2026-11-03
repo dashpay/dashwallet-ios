@@ -6210,24 +6210,67 @@
 /* DashPay Invitations */
 "“%@” has been registered. Send a contact request to the person who invited you?" = "„%@“ u regjistrua. Të dërgohet një kërkesë kontakti te personi që ju ftoi?";
 
-/* DashPay username registration recovery */
-"Act as you in this app without asking each time" = "Act as you in this app without asking each time";
 "App contract" = "App contract";
 "Could not check username availability. Please try again." = "Could not check username availability. Please try again.";
 "Could not disconnect: %@" = "Could not disconnect: %@";
+
+/* DashConnect */
+"Connect an app" = "Connect an app";
+
+/* DashConnect: keys are on the identity, but the app never got its response */
+"Not delivered" = "Not delivered";
+
+/* DashConnect App Connect v1 */
+"This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code." = "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.";
+
+/* DashConnect: an approval whose identity update may still land */
+"Confirming" = "Confirming";
+
+/* DashConnect */
+"Leave them" = "Leave them";
+
+/* DashConnect */
+"Turn them off" = "Turn them off";
+
+
+/* DashConnect App Connect v2 */
+"This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again." = "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.";
+
+/* DashConnect App Connect v2 */
+"This app asks for more keys than one approval can add. Ask the app to ask for fewer." = "This app asks for more keys than one approval can add. Ask the app to ask for fewer.";
+
+/* DashConnect */
+"This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again." = "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.";
+
+/* DashConnect */
+"This wallet could not save the approval, so nothing was sent. Try again." = "This wallet could not save the approval, so nothing was sent. Try again.";
+
+/* DashConnect: after a disconnect that left keys no approval of this wallet names */
+"Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
+
+/* DashConnect: a disconnect of an app whose keys no approval of this wallet names */
+"This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?" = "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?";
+
+/* DashConnect: turning off unrecorded keys while another request is in progress */
+"Finish the request on screen, then disconnect the app again." = "Finish the request on screen, then disconnect the app again.";
+
+/* DashConnect */
+"The network answered with an older copy of your identity. Try again in a moment." = "The network answered with an older copy of your identity. Try again in a moment.";
+
+/* DashConnect: title of the question after a disconnect */
+"Keys left on your identity" = "Keys left on your identity";
+
+/* DashConnect: after a disconnect that found keys whose app is not known yet */
+"Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them." = "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.";
 "Finish username registration" = "Finish username registration";
 "Identity is still loading" = "Identity is still loading";
 "Loading identity…" = "Loading identity…";
 "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused." = "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.";
 "Retry loading identity" = "Retry loading identity";
-"Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
 "The active wallet or identity changed. Please try again." = "The active wallet or identity changed. Please try again.";
 "The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
-"The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
-"The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
-"This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
 "This identity cannot take another key." = "This identity cannot take another key.";
 "This identity has no credits. Use Top Up in My Profile, then return to finish registration." = "This identity has no credits. Use Top Up in My Profile, then return to finish registration.";
@@ -6298,8 +6341,6 @@
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
-"A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again." = "A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again.";
-"A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it." = "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.";
 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
 "Account" = "Account";
 "Account Information" = "Account Information";
@@ -6327,7 +6368,6 @@
 "Any username that has a number 2–9 or 20 or more characters will be automatically approved" = "Any username that has a number 2–9 or 20 or more characters will be automatically approved";
 "Approve connection to %@?" = "Approve connection to %@?";
 "Approve token purchase?" = "Approve token purchase?";
-"Approved" = "Approved";
 "Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
 "Authentication failed." = "Authentication failed.";
 "Available on test networks only" = "Available on test networks only";
@@ -6337,7 +6377,6 @@
 "Balance unavailable" = "Balance unavailable";
 "Balance:" = "Balance:";
 "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry." = "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.";
-"Base58 identifier (optional)" = "Base58 identifier (optional)";
 "Blocked – %@" = "Blocked – %@";
 "Broadcast" = "Broadcast";
 "Broadcasting…" = "Broadcasting…";
@@ -6384,8 +6423,6 @@
 "Create username" = "Create username";
 "Creating wallet…" = "Creating wallet…";
 "Creating – %@" = "Creating – %@";
-"DashConnect Contract ID" = "DashConnect Contract ID";
-"DashConnect key registration completed." = "DashConnect key registration completed.";
 "DashConnect login is not yet available on mainnet" = "DashConnect login is not yet available on mainnet";
 "Deleting Wallet…" = "Deleting Wallet…";
 "Deny" = "Deny";
@@ -6540,14 +6577,12 @@
 "Results on %@" = "Results on %@";
 "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset." = "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.";
 "Review transaction first" = "Review transaction first";
-"Same permissions as before" = "Same permissions as before";
 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set." = "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.";
 "Saved." = "Saved.";
 "Saved. Devnet is reconnecting with the new settings." = "Saved. Devnet is reconnecting with the new settings.";
 "Saved. The values apply when you switch to Devnet." = "Saved. The values apply when you switch to Devnet.";
 "Scan Dash QR" = "Scan Dash QR";
 "Scan invitation QR" = "Scan invitation QR";
-"Scan the QR code to complete the login process" = "Scan the QR code to complete the login process";
 "Search notifications" = "Search notifications";
 "See details" = "See details";
 "See your username" = "See your username";
@@ -6584,10 +6619,8 @@
 "The Dash network will vote on this username." = "The Dash network will vote on this username.";
 "The Dash network will vote on this username. Results by %@." = "The Dash network will vote on this username. Results by %@.";
 "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
-"The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
 "The devnet name cannot contain a slash." = "The devnet name cannot contain a slash.";
 "The devnet name cannot contain spaces." = "The devnet name cannot contain spaces.";
-"The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
 "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another." = "The masternode list doesn't carry an evonode's Platform P2P port, so it must be confirmed here. 26656 is the standard port — change it only if this node uses another.";
 "The masternode list hasn't synced yet. Wait for sync to finish and try again." = "The masternode list hasn't synced yet. Wait for sync to finish and try again.";
 "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes." = "The masternode should return to the valid list within a few blocks. Refresh its details in a few minutes.";
@@ -6713,7 +6746,6 @@
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";
-"Your private keys" = "Your private keys";
 "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted." = "Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.\nIf your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted.";
 "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." = "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.";
 "Your Shielded balance changed. Close this confirmation and tap Max again." = "Your Shielded balance changed. Close this confirmation and tap Max again.";
@@ -6813,8 +6845,4 @@
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
 
-/* DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off */
-"Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
 
-/* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */
-"Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off." = "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off.";

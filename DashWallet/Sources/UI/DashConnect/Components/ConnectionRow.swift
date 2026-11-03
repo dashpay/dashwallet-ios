@@ -20,16 +20,10 @@
 import DashUIKit
 import SwiftUI
 
-/// One connected app: its name and url, the current status, and — once the
-/// connection is live — the switch that lets this wallet forget it.
-///
-/// An approved connection is not usable yet, so the row carries the prompt to
-/// finish the login underneath itself rather than leaving the list to know
-/// which rows need it.
+/// One connected app: its name and url, the current status, and the switch
+/// that turns it off.
 struct ConnectionRow: View {
     let connection: DAppConnection
-    let onPrimaryAction: () -> Void
-    let onMockScan: () -> Void
     let onDisconnect: () -> Void
 
     private enum Layout {
@@ -48,25 +42,19 @@ struct ConnectionRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 12) {
-                identity
+        HStack(spacing: 12) {
+            identity
 
-                ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
-                    .fixedSize(horizontal: true, vertical: false)
+            ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
+                .fixedSize(horizontal: true, vertical: false)
 
-                if connection.status == .active {
-                    activeSwitch
-                }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if connection.status == .approved {
-                ScanToCompleteBanner(onScanQR: onPrimaryAction, onMockScan: onMockScan)
-            }
+            // A confirming connection may get its keys yet: turning it off
+            // makes sure it never does.
+            activeSwitch
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var identity: some View {
@@ -86,12 +74,9 @@ struct ConnectionRow: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
-    /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. What turning it off does
-    /// depends on the login that made the connection (see
-    /// `DashConnectDataSource.disconnect`): a one-QR connection has the app's
-    /// key disabled on the identity and its row removed; a two-QR connection
-    /// is downgraded to `.approved` locally and the app keeps its keys.
+    /// Always reads as on: only the off direction is reachable from here.
+    /// Turning it off turns the app's keys off on the identity and removes
+    /// the row (see `DashConnectDataSource.disconnect`).
     private var activeSwitch: some View {
         ZStack {
             SwitchView(isOn: .constant(true))
@@ -119,8 +104,6 @@ struct ConnectionRow: View {
                     status: status,
                     updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
                 ),
-                onPrimaryAction: {},
-                onMockScan: {},
                 onDisconnect: {}
             )
         }

@@ -23,7 +23,7 @@ import UIKit
 
 // MARK: - DevnetSettingsViewModel
 
-/// Settings → Devnet Settings. Edits the three user-editable devnet values
+/// Settings → Devnet Settings. Edits the two user-editable devnet values
 /// (`DevnetConfiguration`) and, when the wallet is already running on
 /// devnet, restarts the runtime so a changed quorum URL / devnet name takes
 /// effect immediately (the SDK reads them only at build/SPV-start time).
@@ -31,7 +31,6 @@ import UIKit
 final class DevnetSettingsViewModel: ObservableObject {
     @Published var quorumURL: String
     @Published var devnetName: String
-    @Published var dashConnectContractId: String
     @Published var statusMessage: String?
     /// Why the typed devnet name was refused, shown under the field. Nil
     /// while the name is usable — including while it is empty, which is how
@@ -53,7 +52,6 @@ final class DevnetSettingsViewModel: ObservableObject {
         let name = DevnetConfiguration.devnetName ?? ""
         quorumURL = quorum
         devnetName = name
-        dashConnectContractId = DevnetConfiguration.dashConnectContractId ?? ""
         initialQuorumURL = quorum
         initialDevnetName = name
     }
@@ -71,7 +69,6 @@ final class DevnetSettingsViewModel: ObservableObject {
         devnetNameError = nil
 
         let newQuorumURL = quorumURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        let newContractId = dashConnectContractId.trimmingCharacters(in: .whitespacesAndNewlines)
         let networkValuesChanged =
             newQuorumURL != initialQuorumURL || trimmedName != initialDevnetName
         let willBeConfigured = !newQuorumURL.isEmpty && !trimmedName.isEmpty
@@ -87,8 +84,6 @@ final class DevnetSettingsViewModel: ObservableObject {
                 "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.",
                 comment: "Devnet")
         } else if !networkValuesChanged {
-            // The contract id is read per DashConnect approval; no runtime
-            // restart is needed for it.
             statusMessage = NSLocalizedString("Saved.", comment: "Devnet")
         } else {
             statusMessage = NSLocalizedString(
@@ -113,7 +108,6 @@ final class DevnetSettingsViewModel: ObservableObject {
             ) {
                 DevnetConfiguration.setQuorumURL(newQuorumURL)
                 DevnetConfiguration.setDevnetName(trimmedName)
-                DevnetConfiguration.setDashConnectContractId(newContractId)
             }
             self?.isApplying = false
         }
@@ -164,15 +158,6 @@ struct DevnetSettingsScreen: View {
                             "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.",
                             comment: "Devnet"),
                         error: viewModel.devnetNameError)
-
-                    field(
-                        title: NSLocalizedString("DashConnect Contract ID", comment: "Devnet"),
-                        placeholder: NSLocalizedString("Base58 identifier (optional)", comment: "Devnet"),
-                        text: $viewModel.dashConnectContractId,
-                        keyboard: .default,
-                        helper: NSLocalizedString(
-                            "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.",
-                            comment: "Devnet"))
 
                     DashButton(
                         text: NSLocalizedString("Save", comment: ""),

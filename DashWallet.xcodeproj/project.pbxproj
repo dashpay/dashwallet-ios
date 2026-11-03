@@ -1177,10 +1177,10 @@
 		AA0031032FD0000000000013 /* IconName+DashIconSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031012FD0000000000011 /* IconName+DashIconSource.swift */; };
 		AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */; };
 		AA03A0012FF3000000000001 /* KeyExchangeCryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */; };
-		AA03A0022FF3000000000002 /* LoginKeyDerivationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */; };
 		AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */; };
 		AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */; };
 		AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */; };
+		AA06A0F12FF60000000000F1 /* AppConnectProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */; };
 		AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */; };
 		AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */; };
 		AA22BB33CC44DD55EE66FF78 /* BuyReceiveFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */; };
@@ -3363,10 +3363,10 @@
 		AA0031012FD0000000000011 /* IconName+DashIconSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconName+DashIconSource.swift"; sourceTree = "<group>"; };
 		AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeAddressLookupContextTests.swift; sourceTree = "<group>"; };
 		AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyExchangeCryptoTests.swift; path = DashConnect/KeyExchangeCryptoTests.swift; sourceTree = "<group>"; };
-		AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LoginKeyDerivationTests.swift; path = DashConnect/LoginKeyDerivationTests.swift; sourceTree = "<group>"; };
 		AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectDataSourceTests.swift; path = DashConnect/DashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectStoreTests.swift; path = DashConnect/DashConnectStoreTests.swift; sourceTree = "<group>"; };
 		AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectV2LoginTests.swift; path = DashConnect/AppConnectV2LoginTests.swift; sourceTree = "<group>"; };
+		AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectProjectionTests.swift; path = DashConnect/AppConnectProjectionTests.swift; sourceTree = "<group>"; };
 		AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectEncryptionRotationTests.swift; path = DashConnect/AppConnectEncryptionRotationTests.swift; sourceTree = "<group>"; };
 		AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlatformDashConnectDataSourceTests.swift; path = DashConnect/PlatformDashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
@@ -7573,10 +7573,10 @@
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
 				7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */,
 				AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */,
-				AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */,
 				AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */,
 				AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */,
 				AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */,
+				AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */,
 				AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */,
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
@@ -10907,10 +10907,10 @@
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
 				8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */,
 				AA03A0012FF3000000000001 /* KeyExchangeCryptoTests.swift in Sources */,
-				AA03A0022FF3000000000002 /* LoginKeyDerivationTests.swift in Sources */,
 				AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */,
 				AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */,
 				AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */,
+				AA06A0F12FF60000000000F1 /* AppConnectProjectionTests.swift in Sources */,
 				AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */,
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
