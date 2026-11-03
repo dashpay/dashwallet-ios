@@ -2165,9 +2165,10 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - A non-failed internal Withdrawal is projected as Pending until its
-    ///   matching Core receipt appears, then dropped so the receipt becomes the
-    ///   single authoritative history row. Failed attempts remain visible. A withdrawal to an EXTERNAL Core address
+    /// - A Pending or Confirmed internal Withdrawal is projected as Pending
+    ///   until its matching Core receipt appears, then replaced by that receipt.
+    ///   Failed and Unknown rows retain their current status; Unknown can still
+    ///   be matched to a receipt. A withdrawal to an EXTERNAL Core address
     ///   produces no wallet-side Core transaction, so it always stays and
     ///   renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
@@ -2369,8 +2370,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return items
     }
 
-    /// A definitive failure has no payout to wait for. In particular, a later
-    /// receipt to a reused destination must never consume that failed attempt.
+    /// While the stored status is Failed, a receipt to a reused destination must
+    /// not consume that attempt. A later SDK scan can correct its status from
+    /// chain evidence; the next refresh then resumes normal receipt matching.
     private static func ownWithdrawalHistoryItem(
         row: PersistentShieldedActivity,
         amountCredits: UInt64,

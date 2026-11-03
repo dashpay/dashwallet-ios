@@ -36,6 +36,7 @@ final class ShieldedWithdrawalHistoryTests: XCTestCase {
             let item = try XCTUnwrap(fixture.items.first)
             XCTAssertEqual(fixture.items.count, 1)
             XCTAssertEqual(item.kind, .withdrawal)
+            XCTAssertEqual(item.title, "Internal Transfer")
             XCTAssertEqual(item.status, .failed)
             XCTAssertFalse(item.isAwaitingTransparentReceipt)
             XCTAssertEqual(fixture.balance, ShieldedWithdrawalHistoryFixture.originalCredits)
@@ -146,6 +147,63 @@ final class ShieldedWithdrawalHistoryTests: XCTestCase {
         XCTAssertEqual(fixture.items.count, 2)
         XCTAssertTrue(fixture.items.allSatisfy { $0.status == .failed && !$0.isAwaitingTransparentReceipt })
         XCTAssertEqual(fixture.items.first?.isExternalDestination, true)
+        XCTAssertEqual(fixture.items.first?.title, "Sent")
+    }
+
+    func testUnknownAndUnrecognizedStatusNeverClaimConfirmationOrAwaitingReceipt() throws {
+        for kind in [3, 5, 7] {
+            for status in [3, 99] {
+                let fixture = try fixture()
+                let row = try fixture.insertActivity(id: 1, kind: kind, status: status)
+                let item = ShieldedActivityItem(row: row, isAwaitingTransparentReceipt: true)
+                XCTAssertEqual(item.status, .unknown)
+                XCTAssertEqual(item.trailingStatusText, "Unknown")
+                XCTAssertFalse(item.isAwaitingTransparentReceipt)
+                XCTAssertEqual(fixture.items.first?.status, .unknown)
+                XCTAssertEqual(fixture.items.first?.trailingStatusText, "Unknown")
+            }
+        }
+    }
+
+    func testUnknownOwnWithdrawalRetainsDestinationTagAndCanMatchReceipt() throws {
+        for kind in [5, 7] {
+            for status in [3, 99] {
+                let fixture = try fixture()
+                try fixture.insertActivity(id: 1, kind: kind, status: status)
+                let item = try XCTUnwrap(fixture.items.first)
+                XCTAssertEqual(item.status, .unknown)
+                XCTAssertFalse(item.isAwaitingTransparentReceipt)
+                XCTAssertEqual(item.title, "Internal Transfer")
+                XCTAssertTrue(fixture.destinationTagged)
+                try fixture.insertReceipt()
+                XCTAssertTrue(fixture.items.isEmpty)
+                XCTAssertTrue(fixture.destinationTagged)
+            }
+        }
+    }
+
+    func testSDKCorrectionFromFailedToConfirmedRestoresReceiptMatching() throws {
+        for kind in [5, 7] {
+            let fixture = try fixture()
+            let row = try fixture.insertActivity(id: 1, kind: kind, status: 2)
+            XCTAssertEqual(fixture.items.first?.status, .failed)
+            XCTAssertFalse(fixture.destinationTagged)
+            // A scan can correct a height-less Failed row after observing its
+            // commitments on chain. Persist the corrected SDK snapshot directly.
+            row.status = 1
+            row.hasBlockHeight = true
+            row.blockHeight = 100
+            try fixture.container.mainContext.save()
+            try fixture.reload()
+            XCTAssertEqual(fixture.items.first?.entryId, row.entryId)
+            XCTAssertEqual(fixture.items.first?.blockHeight, 100)
+            XCTAssertEqual(fixture.items.first?.status, .pending)
+            XCTAssertEqual(fixture.items.first?.isAwaitingTransparentReceipt, true)
+            XCTAssertTrue(fixture.destinationTagged)
+            try fixture.insertReceipt()
+            XCTAssertTrue(fixture.items.isEmpty)
+            XCTAssertTrue(fixture.destinationTagged)
+        }
     }
 
     func testSavedFailureSurvivesStoreReopen() throws {

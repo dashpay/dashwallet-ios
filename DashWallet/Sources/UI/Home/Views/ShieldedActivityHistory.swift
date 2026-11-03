@@ -25,8 +25,8 @@
 //
 //  Kinds whose Core leg is already a history row are not projected twice:
 //  ShieldFromAssetLock is always omitted because its Core asset-lock spend
-//  renders via `Transaction.isShieldedTransfer`. A non-failed internal Withdrawal
-//  is temporarily projected as Pending until its Core receipt appears, then
+//  renders via `Transaction.isShieldedTransfer`. A Pending or Confirmed internal
+//  Withdrawal is shown as Pending until its Core receipt appears, then
 //  matched by destination, amount, and time and replaced by that receipt.
 //
 
@@ -64,6 +64,7 @@ struct ShieldedActivityItem: Identifiable {
         case pending = 0
         case confirmed = 1
         case failed = 2
+        case unknown = 3
     }
 
     let entryId: Data
@@ -122,8 +123,8 @@ struct ShieldedActivityItem: Identifiable {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
     }
 
-    /// Projects persisted activity for display, giving definitive failure precedence
-    /// over an outstanding Core-receipt flag.
+    /// Projects the current persisted status. Only Pending and Confirmed entries
+    /// can be shown as awaiting a Core receipt; Failed and Unknown remain explicit.
     init(
         row: PersistentShieldedActivity,
         kindOverride: Kind? = nil,
@@ -134,8 +135,8 @@ struct ShieldedActivityItem: Identifiable {
     ) {
         self.destinationAddress = destinationAddress
         self.isExternalDestination = isExternalDestination
-        let storedStatus = Status(rawValue: row.status) ?? .confirmed
-        let awaitingReceipt = isAwaitingTransparentReceipt && storedStatus != .failed
+        let storedStatus = Status(rawValue: row.status) ?? .unknown
+        let awaitingReceipt = isAwaitingTransparentReceipt && (storedStatus == .pending || storedStatus == .confirmed)
         self.isAwaitingTransparentReceipt = awaitingReceipt
         let effectiveKind = kindOverride ?? Kind(rawValue: row.kindTag) ?? .shieldedSpend
         entryId = row.entryId
@@ -160,7 +161,7 @@ struct ShieldedActivityItem: Identifiable {
     // MARK: Display
 
     var title: String {
-        if isAwaitingTransparentReceipt {
+        if isAwaitingTransparentReceipt || (kind == .withdrawal && !isExternalDestination) {
             return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch kind {
@@ -297,6 +298,7 @@ struct ShieldedActivityItem: Identifiable {
         switch status {
         case .pending: return NSLocalizedString("Pending", comment: "")
         case .failed: return NSLocalizedString("Failed", comment: "")
+        case .unknown: return NSLocalizedString("Unknown", comment: "")
         case .confirmed: return nil
         }
     }
