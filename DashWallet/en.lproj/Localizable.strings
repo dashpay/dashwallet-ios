@@ -218,11 +218,23 @@
 /* Core drain preview */
 "Checking available funds and fees…" = "Checking available funds and fees…";
 
+/* Asset-lock input limit */
+"Combine coins" = "Combine coins";
+
+/* Asset-lock input limit */
+"Combining coins…" = "Combining coins…";
+
+/* Asset-lock input limit */
+"Combining the coins in this wallet won't make this transfer fit. Try a smaller amount." = "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.";
+
 /* DashConnect token purchase */
 "Contract %@" = "Contract %@";
 
 /* Dash DEX / tx history row title */
 "Converting · %@" = "Converting · %@";
+
+/* Asset-lock input limit */
+"Couldn't combine your coins. Please try again." = "Couldn't combine your coins. Please try again.";
 
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
@@ -338,6 +350,9 @@
 /* Core drain input limit preview */
 "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
 
+/* Asset-lock input limit */
+"This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again." = "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.";
+
 /* InternalTransfer recovery: drain recipient unknown */
 "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe." = "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.";
 
@@ -352,6 +367,9 @@
 
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
+
+/* Asset-lock input limit */
+"Too many coins for one transfer" = "Too many coins for one transfer";
 
 /* Core drain recovery success */
 "Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
@@ -3120,6 +3138,15 @@
 
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
+
+/* Asset-lock input limit */
+"Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
+
+/* Asset-lock input limit */
+"Your coins are combined. You can try again now." = "Your coins are combined. You can try again now.";
+
+/* Asset-lock input limit */
+"Your coins are still being combined. Please try again in a few minutes." = "Your coins are still being combined. Please try again in a few minutes.";
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Your history, organized";
