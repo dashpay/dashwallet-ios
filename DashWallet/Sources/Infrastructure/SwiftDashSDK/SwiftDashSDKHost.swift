@@ -709,14 +709,7 @@ final class SwiftDashSDKHost {
         case WalletStorageError.mnemonicNotFound:
             return (.notFound, nil)
         case SwiftDashSDKWalletDeletionError.invalidMnemonic,
-             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
-             KeyWalletError.invalidMnemonic,
-             KeyWalletError.invalidInput:
-            // The resolver derives ids by constructing a wallet from the
-            // stored phrase; these two `KeyWalletError` cases are that
-            // construction refusing material that passed word validation.
-            // Its other cases (allocation, network, state) say nothing about
-            // the keys and stay a store failure.
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork:
             return (.unclassifiable, nil)
         case HostError.mnemonicRoundTripMismatch:
             return (.idMismatch, nil)
@@ -1114,7 +1107,7 @@ final class SwiftDashSDKHost {
         do {
             // This is the same deterministic id contract used by addWallet's
             // duplicate guard and PlatformWalletManager.createWallet.
-            walletId = try Wallet(mnemonic: mnemonic, network: network).id
+            walletId = try Mnemonic.walletId(for: mnemonic, network: network)
         } catch {
             Self.logger.error("🪺 HOST :: walletId derivation failed: \(String(describing: error), privacy: .public)")
             throw HostError.walletCreationFailed(error)
