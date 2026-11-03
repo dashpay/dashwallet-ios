@@ -2152,6 +2152,10 @@
 		C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */; };
 		E64A1C72095A9DD989E8379B /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
 		E97F36169DF0F8814359881A /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */; };
+		2277460A914F0ECDB760DE7B /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
+		AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */; };
+		6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */; };
+		74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -4052,6 +4056,9 @@
 		4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SwiftDashSDKProtocolCompatibilityClient.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKProtocolCompatibilityClient.swift; sourceTree = "<group>"; };
 		DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityTests.swift; path = DashWalletTests/WalletProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
 		E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolCompatibilityBanner.swift; path = DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift; sourceTree = "<group>"; };
+		0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryFixture.swift; sourceTree = "<group>"; };
+		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
+		17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -4849,6 +4856,7 @@
 		2A307CB322E6FA7F00A18347 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */,
 				C9F451FF2A0CE63C00825057 /* Home Balance View */,
 				C9F451FE2A0CE60400825057 /* Home Header View */,
 				2A2CD70B22F97A9D008C7BC9 /* Shortcuts */,
@@ -7636,6 +7644,7 @@
 		75D5F3EC191EC270004AB296 /* DashWalletTests */ = {
 			isa = PBXGroup;
 			children = (
+				E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */,
 				A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */,
 				47A184E4299CC19A0017E32C /* rates.json */,
 				AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */,
@@ -9276,6 +9285,7 @@
 		13453DF717FD229A1586CECD /* DashPayRecoveryUITests */ = {
 			isa = PBXGroup;
 			children = (
+				17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */,
 				C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */,
 				4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */,
 			);
@@ -10112,6 +10122,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2277460A914F0ECDB760DE7B /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000022 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */,
 				A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */,
@@ -11010,6 +11021,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */,
 				A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */,
 				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
@@ -11113,6 +11125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000023 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000013 /* CoreCoinConsolidationViewModel.swift in Sources */,
 				A11C00001274000000000003 /* AssetLockInputPolicy.swift in Sources */,
@@ -12152,6 +12165,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */,
 				A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */,
 				21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */,
 			);
