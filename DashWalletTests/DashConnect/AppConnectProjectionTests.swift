@@ -69,7 +69,7 @@ final class AppConnectProjectionTests: XCTestCase {
             ("all there", [Self.onPlatform(a), Self.onPlatform(b)], .active(expiresAt: Self.now + 1000)),
             ("one there, one missing", [Self.onPlatform(a)], .active(expiresAt: Self.now + 1000)),
             ("one id taken by another key", [Self.onPlatform(a, data: Data(repeating: 9, count: 20))], .neverLanded),
-            ("taken id wins over a live key", [Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))], .neverLanded),
+            ("a live key wins over a taken id", [Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))], .active(expiresAt: Self.now + 1000)),
             ("all off", [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)], .disconnected),
             ("one off, one missing", [Self.onPlatform(a, disabledAt: 1)], .confirming),
             ("expired by Platform time", [Self.onPlatform(expired), Self.onPlatform(b, disabledAt: 1)], .expired),
@@ -421,6 +421,59 @@ final class AppConnectProjectionTests: XCTestCase {
         let older = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: object))
         XCTAssertNil(older.approvedEncryption)
         XCTAssertFalse(AppConnect.isWithinPlan(older, Self.plan()))
+    }
+
+    func testALiveKeyOfAnIntentWithATakenIdStaysActionableButIsNotResumed() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let intent = Self.intent([a, b])
+        let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
+        let projection = AppConnect.project([snapshot], intents: [intent])
+        XCTAssertEqual(projection.connections.first?.status, .active(expiresAt: Self.now + 1000), "the app keeps a row")
+        XCTAssertFalse(AppConnect.mayResume(intent, in: snapshot), "its update never lands as a whole")
+        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false)
+        XCTAssertEqual(plan.disable, [10])
+        XCTAssertEqual(plan.fence, [])
+    }
+
+    func testARetryIsRefusedWhenALandedKeyWasGivenMoreSince() {
+        let key = Self.authKey(10)
+        let intent = Self.intent([key])
+        let raised = AppConnect.PlatformKey(
+            id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: key.data,
+            readOnly: false, bound: key.bound, boundKnown: true, totalBudget: 5000, expiresAt: Self.now + 1000,
+            disabledAt: nil)
+        XCTAssertTrue(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([])))
+        XCTAssertTrue(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([Self.onPlatform(key)])))
+        XCTAssertFalse(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([raised])))
+        let longer = AppConnect.PlatformKey(
+            id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: key.data,
+            readOnly: false, bound: key.bound, boundKnown: true, totalBudget: 1000, expiresAt: Self.now + 9000,
+            disabledAt: nil)
+        XCTAssertFalse(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([longer])))
+        let lowered = AppConnect.PlatformKey(
+            id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: key.data,
+            readOnly: false, bound: key.bound, boundKnown: true, totalBudget: 500, expiresAt: Self.now + 1000,
+            disabledAt: nil)
+        XCTAssertTrue(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([lowered])), "less than approved")
+        let uncapped = AppConnect.PlatformKey(
+            id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, data: key.data,
+            readOnly: false, bound: key.bound, boundKnown: true, totalBudget: nil, expiresAt: Self.now + 1000,
+            disabledAt: nil)
+        XCTAssertFalse(AppConnect.landedKeysWithinPlan(intent, Self.plan(), in: Self.snapshot([uncapped])), "no cap is more")
+        XCTAssertTrue(AppConnect.landedKeysWithinPlan(intent, Self.plan(budget: nil), in: Self.snapshot([uncapped])))
+    }
+
+    func testAnExpiredKeyOfAnIntentWithATakenIdKeepsTheConnection() {
+        let a = Self.authKey(10, expiresAt: Self.now - 1), b = Self.authKey(11)
+        let intent = Self.intent([a, b])
+        let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
+        XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .expired)
+        XCTAssertFalse(AppConnect.mayResume(intent, in: snapshot))
+        XCTAssertEqual(
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
+            [10])
+        let off = Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
+        XCTAssertEqual(AppConnect.status(of: intent, in: off), .neverLanded, "nothing enabled is left")
     }
 
     func testARetryCarriesOnOnlyWhileTheKeysAreLiveOrMayStillLand() {

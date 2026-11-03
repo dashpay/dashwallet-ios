@@ -950,8 +950,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // the update ends, the user can turn the connection off.
         await refreshRows(from: snapshot, context: context)
 
-        try await submitIntent(intent, request: request, plan: plan, snapshot: snapshot, context: context, signer: signer)
+        let landed = try await submitIntent(
+            intent, request: request, plan: plan, snapshot: snapshot, context: context, signer: signer)
         guard stores.intents.load().first(where: { $0.id == intent.id })?.closedAt == nil else {
+            throw DashConnectPlatformError.sessionKeyUnusable
+        }
+        // The response carries the keys' secret. Keys that were there before
+        // this update (an earlier try, another device) are released only
+        // while they hold no more than the sheet showed; a key this update
+        // added holds what the plan grants.
+        if intent.responseDocumentId == nil,
+           !AppConnect.landedKeysWithinPlan(intent, plan, in: landed ?? snapshot) {
             throw DashConnectPlatformError.sessionKeyUnusable
         }
         try await publishResponse(of: intent, responseContractId: responseContractId, context: context, signer: signer)
@@ -1269,7 +1278,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// every key it adds shows and every key it turns off is off. An update
     /// that reports a failure may still have landed: the identity is read
     /// again, and if it does not show the intent the intent stays, shown as
-    /// confirming, and the failure stands.
+    /// confirming, and the failure stands. Returns the read that showed the
+    /// intent there when that was not this update's own answer, else nil.
     private func submitIntent(
         _ intent: AppConnect.ConnectionIntent,
         request: AppConnectRequest,
@@ -1277,10 +1287,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         snapshot: AppConnect.IdentitySnapshot,
         context: Context,
         signer: KeychainSigner
-    ) async throws {
+    ) async throws -> AppConnect.IdentitySnapshot? {
         guard !AppConnect.hasLanded(intent, in: snapshot) else {
             await refreshRows(from: snapshot, context: context)
-            return
+            return snapshot
         }
         let missing = intent.keys.filter { AppConnect.presence(of: $0, in: snapshot) == .missing }
         let disable = AppConnect.outstandingDisables(of: intent, in: snapshot)
@@ -1342,13 +1352,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 if AppConnect.hasLanded(intent, in: read) {
                     Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
                     await refreshRows(from: read, context: context)
-                    return
+                    return read
                 }
                 if attempt == 2 { await refreshRows(from: read, context: context) }
             }
             throw error
         }
         Self.logger.info("🔗 DASHCONNECT :: identity updated")
+        return nil
     }
 
     /// Publishes the response `intent` sealed, unless it is already there.

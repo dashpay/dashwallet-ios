@@ -8,9 +8,11 @@ import SwiftDashSDK
 /// identity and those intents; nothing computed is stored.
 ///
 /// Platform takes an identity update whole or not at all, and refuses one
-/// that adds a key id the identity already holds. So an intent's keys either
-/// all appear as submitted, or one of their ids is held by another key and the
-/// update can never land. Nothing else settles an intent: a key that is absent
+/// that adds a key id the identity already holds. So an intent's update
+/// either lands as submitted, or one of its ids is held by another key and it
+/// can never land. Keys of the intent can still show next to such a conflict
+/// (another device submitted the same keys with a different one): those are
+/// access the app has. Nothing else settles an intent: a key that is absent
 /// may still arrive, whatever the revision or the time.
 extension AppConnect {
     // MARK: Stored
@@ -170,22 +172,23 @@ extension AppConnect {
 
     enum IntentStatus: Equatable {
         /// An auth key is live; `expiresAt` is the earliest expiry among them.
+        /// It may sit next to an id another key holds.
         case active(expiresAt: UInt64?)
         /// No auth key is there yet and none is taken: the update may land.
         case confirming
-        /// Every auth key is there and none is live; some expired.
+        /// No auth key is live, some are expired but still enabled, and none
+        /// may still land.
         case expired
         /// Every auth key is off.
         case disconnected
-        /// Another key holds one of its ids: the update never landed and
-        /// never will.
+        /// Another key holds one of its ids and none of its auth keys is
+        /// enabled: the update never landed and never will.
         case neverLanded
     }
 
     static func status(of intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> IntentStatus {
-        // One key of the update held by another, encryption keys included,
-        // and the whole update never lands.
-        if intent.keys.contains(where: { presence(of: $0, in: snapshot) == .conflicting }) { return .neverLanded }
+        // A live key of the intent is access the app has, whatever else of
+        // the update shows.
         let auth = intent.authKeys.map { ($0, presence(of: $0, in: snapshot)) }
         let live = auth.filter { $0.1 == .live }
         if !live.isEmpty {
@@ -193,6 +196,13 @@ extension AppConnect {
                 snapshot.keys.first { $0.id == key.id }?.expiresAt
             }
             return .active(expiresAt: expiries.min())
+        }
+        // One key of the update held by another, encryption keys included,
+        // and the rest of it never lands. An expired key that is still
+        // enabled can be revived by an authorized limits update, so it is
+        // access the app has.
+        if hasConflict(intent, in: snapshot) {
+            return auth.contains(where: { $0.1 == .expired }) ? .expired : .neverLanded
         }
         if auth.contains(where: { $0.1 == .missing }) { return .confirming }
         if auth.contains(where: { $0.1 == .expired }) { return .expired }
@@ -397,10 +407,17 @@ extension AppConnect {
         } && intent.keys.allSatisfy { $0.isAuthentication || presence(of: $0, in: snapshot) != .disabled }
     }
 
+    /// Whether another key holds an id one of the intent's keys was to take:
+    /// then the intent's update never lands as a whole.
+    static func hasConflict(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
+        intent.keys.contains { presence(of: $0, in: snapshot) == .conflicting }
+    }
+
     /// Whether a retry of a request may carry on with its intent: its keys
-    /// are live or may still land, and the user has not disconnected it.
+    /// are live or may still land, none of its ids is held by another key,
+    /// and the user has not disconnected it.
     static func mayResume(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
-        guard intent.closedAt == nil else { return false }
+        guard intent.closedAt == nil, !hasConflict(intent, in: snapshot) else { return false }
         switch status(of: intent, in: snapshot) {
         case .active, .confirming: return true
         case .expired, .disconnected, .neverLanded: return false
@@ -431,8 +448,7 @@ extension AppConnect {
         for intent in own {
             let auth = intent.authKeys.map { ($0, presence(of: $0, in: snapshot)) }
             plan.disable += auth.filter { [.live, .expired].contains($0.1) }.map(\.0.id)
-            if status(of: intent, in: snapshot) != .neverLanded,
-               let missing = auth.first(where: { $0.1 == .missing })?.0.id {
+            if !hasConflict(intent, in: snapshot), let missing = auth.first(where: { $0.1 == .missing })?.0.id {
                 plan.fence.append(missing)
             }
             if !intent.responseRemoved { plan.deleteResponses.append(intent.id) }
@@ -476,6 +492,17 @@ extension AppConnect {
 
     static func approvedSlots(of plan: GrantPlan) -> [ApprovedSlot] {
         plan.encryption.map { ApprovedSlot(purpose: $0.keyPurpose, contractId: $0.binding.contractId) }
+    }
+
+    /// Whether the auth keys of `intent` that are on the identity hold no more
+    /// than `plan` grants now: an authorized limits update may have raised
+    /// a key's budget or lifetime after it landed. No budget means no cap.
+    static func landedKeysWithinPlan(_ intent: ConnectionIntent, _ plan: GrantPlan, in snapshot: IdentitySnapshot) -> Bool {
+        intent.authKeys.count == plan.auth.count && zip(intent.authKeys, plan.auth).allSatisfy { intended, grant in
+            guard let key = snapshot.keys.first(where: { isSameKey($0, as: intended) }) else { return true }
+            let budgetWithin = grant.totalBudget.map { cap in key.totalBudget.map { $0 <= cap } ?? false } ?? true
+            return budgetWithin && (key.expiresAt ?? .max) <= grant.expiresAt
+        }
     }
 
     /// Whether a retry of a request may submit `intent` again under what
