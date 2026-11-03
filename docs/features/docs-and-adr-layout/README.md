@@ -1,6 +1,6 @@
 # Docs folder layout and the decision log
 
-**Status:** in review ([#1308](https://github.com/dashpay/dashwallet-ios/pull/1308)) · **Owner:** romchornyi
+**Owner:** romchornyi · Introduced in [#1308](https://github.com/dashpay/dashwallet-ios/pull/1308)
 
 ## Why
 
