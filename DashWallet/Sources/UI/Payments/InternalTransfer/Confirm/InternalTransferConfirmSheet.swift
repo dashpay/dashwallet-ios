@@ -145,6 +145,9 @@ struct InternalTransferConfirmSheet: View {
                 change.maxShieldableCredits,
                 change.submittedAmountWasMax)
         }
+        // Over the asset-lock input limit: nothing was started, so the
+        // summary stays for Confirm once the coins are combined.
+        .coreCoinConsolidationSheet(check: $viewModel.coinConsolidationCheck)
     }
 
     /// Authorize, then leave — in that order.

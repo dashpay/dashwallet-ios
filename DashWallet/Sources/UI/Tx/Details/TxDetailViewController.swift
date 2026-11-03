@@ -111,6 +111,19 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
+    /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
+    /// An escape that rises from a controller this one presented is left to the default
+    /// handling, so it closes that controller and not this screen. Returns whether it acted;
+    /// when it did not, the default handling runs.
+    var onAccessibilityEscape: (() -> Bool)?
+
+    override func accessibilityPerformEscape() -> Bool {
+        guard let onAccessibilityEscape, presentedViewController == nil, onAccessibilityEscape() else {
+            return super.accessibilityPerformEscape()
+        }
+        return true
+    }
 
     enum Section: CaseIterable {
         case header
@@ -789,6 +802,9 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     private let makeModel: () -> TxDetailModel
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
+    /// VoiceOver's escape gesture on the detail, returning whether it acted; `nil` or
+    /// `false` leaves the gesture to the default handling.
+    var onAccessibilityEscape: (() -> Bool)? = nil
     
     /// See `TXDetailViewController.contactReturn`.
     var contactReturn: TXDetailViewController.ContactReturn? = nil
@@ -796,9 +812,11 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     init(tx: Transaction,
          navigateBack: Binding<Bool>,
          onDismissed: (() -> Void)? = nil,
-         contactReturn: TXDetailViewController.ContactReturn? = nil) {
+         contactReturn: TXDetailViewController.ContactReturn? = nil,
+         onAccessibilityEscape: (() -> Bool)? = nil) {
         self.init(makeModel: { .init(transaction: tx) }, navigateBack: navigateBack,
-                  onDismissed: onDismissed, contactReturn: contactReturn)
+                  onDismissed: onDismissed, contactReturn: contactReturn,
+                  onAccessibilityEscape: onAccessibilityEscape)
     }
 
     init(model: TxDetailModel,
@@ -806,22 +824,24 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
          onDismissed: (() -> Void)? = nil,
          contactReturn: TXDetailViewController.ContactReturn? = nil) {
         self.init(makeModel: { model }, navigateBack: navigateBack,
-                  onDismissed: onDismissed, contactReturn: contactReturn)
+                  onDismissed: onDismissed, contactReturn: contactReturn, onAccessibilityEscape: nil)
     }
 
     init(swapOrder: BuySwapOrderItem, navigateBack: Binding<Bool>) {
         self.init(makeModel: { .init(swapOrder: swapOrder) }, navigateBack: navigateBack,
-                  onDismissed: nil, contactReturn: nil)
+                  onDismissed: nil, contactReturn: nil, onAccessibilityEscape: nil)
     }
 
     private init(makeModel: @escaping () -> TxDetailModel,
                  navigateBack: Binding<Bool>,
                  onDismissed: (() -> Void)?,
-                 contactReturn: TXDetailViewController.ContactReturn?) {
+                 contactReturn: TXDetailViewController.ContactReturn?,
+                 onAccessibilityEscape: (() -> Bool)?) {
         self.makeModel = makeModel
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
         self.contactReturn = contactReturn
+        self.onAccessibilityEscape = onAccessibilityEscape
     }
 
     func makeCoordinator() -> Coordinator {
@@ -831,11 +851,13 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> TXDetailViewController {
         let vc = TXDetailViewController(model: makeModel())
         vc.contactReturn = contactReturn
+        vc.onAccessibilityEscape = onAccessibilityEscape
         return vc
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
         uiViewController.contactReturn = contactReturn
+        uiViewController.onAccessibilityEscape = onAccessibilityEscape
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false
