@@ -1,4 +1,3 @@
-import CryptoKit
 import XCTest
 @testable import dashpay
 
@@ -334,13 +333,6 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(
             parsed.callback?.absoluteString,
             "https://yap.pr/connect?r=d77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
-    }
-
-    func testARequestsDigestCoversItsWholeBody() throws {
-        let request = try DashConnectUri.parseAppConnectRequest(AppConnectVector.requestUri)
-        XCTAssertEqual(request.digest, Data(SHA256.hash(data: AppConnectVector.requestBytes)))
-        XCTAssertEqual(try DashConnectUri.parseAppConnectRequest(AppConnectVector.requestUri).digest, request.digest)
-        XCTAssertNotEqual(try DashConnectUri.parseAppConnectRequest(AppConnectVector.renewUri).digest, request.digest)
     }
 
     func testParsesThePublishedRenewRequest() throws {

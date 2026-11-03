@@ -48,9 +48,6 @@ extension AppConnect {
         let appUrl: String
         /// `hash160(appEphPub)` of the request.
         let requestHash: Data
-        /// SHA-256 of the whole request (`AppConnectUri.digest`). Absent in a
-        /// row written before it was kept.
-        var requestDigest: Data? = nil
         let connectionId: Data?
         /// The keys the update adds, auth and encryption.
         let keys: [IntendedKey]

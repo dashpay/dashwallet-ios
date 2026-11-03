@@ -560,6 +560,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if let appConnect = loginRequest.appConnect, let protocolVersion {
             (login, unresolvedLoginReason) = await appConnectLogin(
                 appConnect, protocolVersion: protocolVersion, context: context)
+            // A request this wallet already took is spent (it is answered
+            // at most once): the sheet says so before any PIN is asked.
+            if let plan = login.grantPlan, context.stores.intents.load().contains(where: {
+                $0.appId == plan.appId && $0.requestHash == plan.appEphemeralPubKeyHash
+            }) {
+                login = .refused(Self.spentRequest(after: nil))
+            }
         }
 
         return ConnectionRequest(
@@ -939,44 +946,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 "This sign-in request has expired. Ask the app for a new one.",
                 comment: "DashConnect App Connect v2"))
         }
-        // A request is answered at most once, by any identity of the wallet.
-        // One this identity answered already is done; any other is spent: a
-        // sealed response is never published by a later attempt, as what it
-        // was sealed for may no longer hold. The app asks again.
-        if let earlier = stores.intents.load().first(where: {
+        // A request is answered at most once, by any identity of the wallet:
+        // approving it again is refused, whether the first attempt answered
+        // it or stopped. A sealed response is never published by a later
+        // attempt, as what it was sealed for may no longer hold. The app asks
+        // again.
+        guard !stores.intents.load().contains(where: {
             $0.appId == plan.appId && $0.requestHash == plan.appEphemeralPubKeyHash
-        }) {
-            // The same key in a request that differs in anything else is
-            // another request: the one answered is not it.
-            guard earlier.identityId == context.identityId, earlier.closedAt == nil,
-                  earlier.requestDigest == uri.digest else {
-                if earlier.requestDigest != uri.digest {
-                    Self.logger.error("🔗 DASHCONNECT :: another request reuses an answered request's key; refused")
-                }
-                throw Self.spentRequest(after: nil)
-            }
-            if earlier.responseDocumentId == nil {
-                // A publish can land without confirming. A lookup that fails
-                // says nothing, and the approval can be tried again.
-                guard let published = try await Self.findAppConnectResponse(
-                    ownerIdentityId: context.identityId, appEphemeralPubKeyHash: earlier.requestHash,
-                    responseContractId: responseContractId, sdk: context.sdk) else {
-                    throw Self.spentRequest(after: nil)
-                }
-                recordResponse(published.documentId, of: earlier.id, in: stores)
-                if let read = try? await identitySnapshot(context: context).snapshot {
-                    await refreshRows(from: read, context: context)
-                }
-            }
-            return Self.connection(consent: consent, at: now())
+        }) else {
+            throw Self.spentRequest(after: nil)
         }
         let request = uri.request
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
-        var intent = try await newAppConnectIntent(
+        let intent = try await newAppConnectIntent(
             request: request, plan: plan, consent: consent, snapshot: snapshot,
             currentPublicKeys: currentPublicKeys, context: context)
-        intent.requestDigest = uri.digest
         updateIntents(in: stores) { $0.append(intent) }
         guard stores.intents.load().contains(where: { $0.id == intent.id }) else {
             throw DashConnectPlatformError.grantNotRecorded
@@ -1053,23 +1038,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // may be behind); when none does, nothing is published. A read that
         // already showed the update is the one checked: what it saw stands,
         // as a later read may be behind and show less.
-        var shown = landed
-        var readFailure: Error?
-        for attempt in 0 ... 2 where shown == nil {
-            if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
-            do {
-                let read = try await identitySnapshot(context: context).snapshot
-                readFailure = nil
-                if AppConnect.hasLanded(intent, in: read) { shown = read }
-            } catch {
-                Self.logger.error("🔗 DASHCONNECT :: identity not read before publishing — \(error.localizedDescription, privacy: .public)")
-                readFailure = error
-            }
-        }
-        guard let current = shown else {
-            if let readFailure { throw readFailure }
-            Self.logger.error("🔗 DASHCONNECT :: no read shows the identity update before publishing")
-            throw DashConnectPlatformError.identityReadBehind
+        let current: AppConnect.IdentitySnapshot
+        if let landed {
+            current = landed
+        } else {
+            current = try await readShowingUpdate(of: intent, context: context)
         }
         guard AppConnect.landedKeysWithinPlan(intent, plan, in: current),
               AppConnect.authKeysUsable(intent, in: current) else {
@@ -1114,6 +1087,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard !found.isEmpty else { return }
         Self.logger.info("🔗 DASHCONNECT :: \(found.count, privacy: .public) response(s) published without confirming were found")
         for (id, documentId) in found { recordResponse(documentId, of: id, in: context.stores) }
+    }
+
+    /// A read of the identity that shows `intent`'s update (`hasLanded`). A
+    /// node may be behind: reads a few seconds apart are tried, and when none
+    /// shows it `identityReadBehind`, or the read's failure, is thrown.
+    private func readShowingUpdate(
+        of intent: AppConnect.ConnectionIntent, context: Context
+    ) async throws -> AppConnect.IdentitySnapshot {
+        var readFailure: Error?
+        for attempt in 0 ... 2 {
+            if attempt > 0 { await Self.pauseForLaggingNode(attempt) }
+            do {
+                let read = try await identitySnapshot(context: context).snapshot
+                readFailure = nil
+                if AppConnect.hasLanded(intent, in: read) { return read }
+            } catch {
+                Self.logger.error("🔗 DASHCONNECT :: identity not read while looking for the update — \(error.localizedDescription, privacy: .public)")
+                readFailure = error
+            }
+        }
+        if let readFailure { throw readFailure }
+        Self.logger.error("🔗 DASHCONNECT :: no read shows the identity update")
+        throw DashConnectPlatformError.identityReadBehind
     }
 
     /// The error of a request that cannot be approved again: what stopped
@@ -1547,15 +1543,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         } catch {
             // The update may have landed without confirming. Its keys
             // decide; nothing else does.
-            for attempt in 0 ..< 3 {
-                if attempt > 0 { try? await Task.sleep(nanoseconds: 3_000_000_000) }
-                guard let read = try? await identitySnapshot(context: context).snapshot else { continue }
-                if AppConnect.hasLanded(intent, in: read) {
-                    Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
-                    return read
-                }
-            }
-            throw error
+            guard let read = try? await readShowingUpdate(of: intent, context: context) else { throw error }
+            Self.logger.info("🔗 DASHCONNECT :: the identity update landed without confirming")
+            return read
         }
         Self.logger.info("🔗 DASHCONNECT :: identity updated")
         return nil
