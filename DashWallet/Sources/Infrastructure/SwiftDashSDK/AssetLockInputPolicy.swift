@@ -6,15 +6,12 @@
 //  (`max_asset_lock_transaction_inputs`). Dash Core v23.1.7+ drops a larger
 //  one as non-standard without a reject, so it never gets InstantSend-locked,
 //  and Platform refuses it if an older node mines it (dashpay/platform#5513).
-//  The SDK the app builds against refuses only a whole-balance drain over the
-//  cap; a fixed amount held in many small coins is broadcast and lost to the
-//  network. So every Core-funded asset-lock route checks the coins first and,
-//  when they would need too many inputs, offers to combine them
-//  (`CoreCoinConsolidationSheet`) instead of building the lock.
-//
-//  TODO(dashpay/platform#5712): the SDK refuses a fixed-amount lock over the
-//  cap once that PR is in the pinned SDK; this pre-check approximates its coin
-//  selection until then.
+//  The SDK refuses to build such a lock — a drain or a fixed amount — before
+//  broadcast (`PlatformWalletError.assetLockTooManyInputs`, dashpay/platform#5712),
+//  and every Core-funded asset-lock route shows that refusal as an offer to
+//  combine the coins (`CoreCoinConsolidationSheet`). Where the amount is known
+//  up front, the route also checks the coins itself first, so a lock no
+//  selection could fit is refused before the PIN prompt.
 //
 //  The policy is pure — its inputs are passed in — so
 //  `AssetLockInputPolicyTests` can pin it without a wallet. `AssetLockInputLimit`
@@ -33,9 +30,10 @@ import SwiftDashSDK
 /// largest first, until they cover the amount plus the lowest fee any
 /// selection of that many inputs could pay (`minimumFeeDuffs`). Then no
 /// selection within the budget exists when the count is over it, so a refusal
-/// is never one the SDK would have built within the cap. On the pinned SDK
-/// the refusal (`PlatformWalletError.assetLockTooManyInputs`) covers only a
-/// whole-balance drain.
+/// is never one the SDK would have built within the cap. A lock it lets
+/// through can still need more inputs — BranchAndBound may pick a change-free
+/// set of many small coins — and the SDK's own refusal
+/// (`PlatformWalletError.assetLockTooManyInputs`) catches that.
 enum AssetLockInputPolicy {
 
     enum Verdict: Equatable {
