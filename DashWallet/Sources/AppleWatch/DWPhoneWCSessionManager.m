@@ -131,13 +131,13 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
         [self.session sendMessage:msg
             replyHandler:^(NSDictionary<NSString *, id> *_Nonnull replyMessage) {
-                NSLog(@"received response from balance update notification to watch: %@", replyMessage);
+                DWLog(@"received response from balance update notification to watch");
             }
             errorHandler:^(NSError *_Nonnull error) {
-                NSLog(@"got an error sending a balance update notification to watch");
+                DWLog(@"got an error sending a balance update notification to watch");
             }];
 
-        NSLog(@"sent a balance update notification to watch: %@", msg);
+        DWLog(@"sent a balance update notification to watch");
     }
 }
 
@@ -146,7 +146,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 - (void)session:(WCSession *)session
     didReceiveMessage:(NSDictionary<NSString *, id> *)message
          replyHandler:(void (^)(NSDictionary<NSString *, id> *replyMessage))replyHandler {
-    NSLog(@"DWPhoneWCSessionManager didReceiveMessage %@", message);
+    DWLog(@"DWPhoneWCSessionManager didReceiveMessage");
 
     if ([message[AW_SESSION_REQUEST_TYPE] integerValue] == AWSessionRquestTypeFetchData) {
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
@@ -163,7 +163,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                 NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
                 DWPaymentURIBuilder *req = [[DWPaymentURIBuilder alloc] initWithAddress:receiveAddress
                                                                                  amount:[message[AW_SESSION_QR_CODE_BITS_KEY] integerValue]];
-                NSLog(@"watch requested a qr code amount %lld", req.amount);
+                DWLog(@"watch requested a qr code amount %lld", req.amount);
 
                 NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
                 UIImage *image = nil;

@@ -27,7 +27,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -179,9 +178,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
 
     public static let shared = SwiftDashSDKWalletState()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-state")
+    private static let logger = AppLogger(category: "swift-sdk-migration.wallet-state")
 
     /// Latest wallet balance from SwiftDashSDK. `nil` until the first
     /// publication arrives, which `SwiftDashSDKSPVCoordinator`'s balance bridge
@@ -621,7 +618,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                 let context = ModelContext(container)
                 return try context.fetch(descriptor).reduce(UInt64(0)) { $0 + $1.balance }
             } catch {
-                Self.logger.warning("💰 WALLET :: platformPaymentCredits fetch failed: \(String(describing: error), privacy: .public)")
+                Self.logger.warning("💰 WALLET :: platformPaymentCredits fetch failed: \(error)")
                 return nil
             }
         }.value
@@ -629,7 +626,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         guard let total, !Task.isCancelled else { return }
         if platformPaymentCredits != total {
             platformPaymentCredits = total
-            Self.logger.info("💰 WALLET :: platformPaymentCredits=\(total, privacy: .public) credits")
+            Self.logger.debug("💰 WALLET :: platformPaymentCredits=\(total) credits")
         }
     }
 
@@ -705,10 +702,10 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
                     self.hasLoggedPooledSpendableOutage = false
                     if self.pooledSpendableDuffs != duffs {
                         self.pooledSpendableDuffs = duffs
-                        Self.logger.info("💰 WALLET :: pooledSpendableDuffs=\(duffs, privacy: .public)")
+                        Self.logger.debug("💰 WALLET :: pooledSpendableDuffs=\(duffs)")
                     }
                 case .failure(let error):
-                    self.markPooledSpendableUnavailable(reason: String(describing: error))
+                    self.markPooledSpendableUnavailable(reason: AppLogMessage.errorSummary(error))
                 }
             }
 
@@ -759,7 +756,7 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
         let duffs = SwiftDashSDKCoinJoinBalanceReader.coinJoinSpendableDuffs()
         if coinJoinBalanceDuffs != duffs {
             coinJoinBalanceDuffs = duffs
-            Self.logger.info("💰 WALLET :: coinJoinBalanceDuffs=\(duffs, privacy: .public)")
+            Self.logger.debug("💰 WALLET :: coinJoinBalanceDuffs=\(duffs)")
         }
     }
 

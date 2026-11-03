@@ -17,7 +17,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -40,7 +39,7 @@ extension ObservedTransaction {
             decoded = try TransactionDecoder.decode(row.transactionData, network: network)
         } catch {
             TransactionObserver.logger.error(
-                "🅾 OBSERVER :: decode failed for \(row.txidHex, privacy: .public): \(String(describing: error), privacy: .public)")
+                "🅾 OBSERVER :: decode failed for \(row.txidHex, privacy: .public): \(error)")
             return nil
         }
         if decoded.txid != row.txid {
@@ -81,9 +80,7 @@ extension ObservedTransaction {
 /// rows on every Core SPV batch and SwiftData posts
 /// `NSManagedObjectContextDidSave`; each save triggers a bounded rescan.
 public final class TransactionObserver {
-    static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "crowdnode-observer")
+    static let logger = AppLogger(category: "crowdnode-observer")
 
     /// `firstSeen` is stamped from the device clock when the SDK first sees a
     /// tx, and responses always postdate the request we broadcast — so a small
@@ -190,7 +187,7 @@ public final class TransactionObserver {
             }
             return ids
         } catch {
-            logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
+            logger.error("🅾 OBSERVER :: txid snapshot failed: \(error)")
             return nil
         }
     }
@@ -310,7 +307,7 @@ public final class TransactionObserver {
             }
             return observed
         } catch {
-            logger.error("🅾 OBSERVER :: PersistentTransaction fetch failed: \(String(describing: error), privacy: .public)")
+            logger.error("🅾 OBSERVER :: PersistentTransaction fetch failed: \(error)")
             return []
         }
     }

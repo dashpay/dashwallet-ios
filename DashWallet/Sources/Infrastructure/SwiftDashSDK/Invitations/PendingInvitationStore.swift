@@ -52,7 +52,6 @@
 import Combine
 import CryptoKit
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// The network + wallet an invitation belongs to. Explicit on every stored
@@ -285,9 +284,7 @@ final class PendingInvitationStore: ObservableObject {
         return wipeAllScopes()
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.invitations")
+    private static let logger = AppLogger(category: "swift-sdk-migration.invitations")
 
     /// Keychain account prefix; every stored invitation lives under it.
     static let keychainPrefix = "invitation.pending."
@@ -464,7 +461,7 @@ final class PendingInvitationStore: ObservableObject {
             rawLink: trimmed, receivedAt: Date(), fromOnboarding: scope.isUnbound, scope: scope)
         writeMetadata(invitation)
         pending = invitation
-        Self.logger.info("🎟️ INVITE :: stored pending invitation (scope \(scope.storageKey, privacy: .public))")
+        Self.logger.info("🎟️ INVITE :: stored pending invitation (scope \(scope.storageKey))")
         return .stored
     }
 

@@ -40,7 +40,6 @@
 import Combine
 import CoreData
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -49,9 +48,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     static let shared = SwiftDashSDKContactsService()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.contacts-service")
+    private static let logger = AppLogger(category: "swift-sdk-migration.contacts-service")
 
     /// Posted after every published-snapshot rebuild. New typed name —
     /// consumers migrate here from the legacy
@@ -175,7 +172,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             profileRows = try context.fetch(FetchDescriptor<PersistentDashpayContactProfile>(
                 predicate: PersistentDashpayContactProfile.predicate(ownerIdentityId: ownerId)))
         } catch {
-            Self.logger.error("👥 CONTACTS :: SwiftData fetch failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: SwiftData fetch failed: \(error)")
             return
         }
 
@@ -286,7 +283,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 identityId: ownerId)
             Self.logger.info("👥 CONTACTS :: payments projection — \(payments.count, privacy: .public) row(s)")
         } catch {
-            Self.logger.error("👥 CONTACTS :: payments projection failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: payments projection failed: \(error)")
         }
         // The projection may have upserted payment rows; keep the tx-list
         // classification overlay in step.
@@ -365,7 +362,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             let summary = try await manager.dashPaySyncNow()
             Self.logger.info("👥 CONTACTS :: syncNow — \(summary.success, privacy: .public) ok, \(summary.errors, privacy: .public) failed")
         } catch {
-            Self.logger.error("👥 CONTACTS :: syncNow failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: syncNow failed: \(error)")
         }
         // A pass may have recorded new payment entries Rust-side;
         // pull them into SwiftData so the profile sheet sees them.
@@ -393,7 +390,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 autoAcceptProof: nil,
                 signer: signer)
         } catch {
-            Self.logger.error("👥 CONTACTS :: sendContactRequest failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: sendContactRequest failed: \(error)")
             throw ServiceError.sdk(error)
         }
 
@@ -448,7 +445,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
         } catch let error as ServiceError {
             throw error
         } catch {
-            Self.logger.error("👥 CONTACTS :: incoming-request lookup failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: incoming-request lookup failed: \(error)")
             throw ServiceError.sdk(error)
         }
 
@@ -459,7 +456,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
         do {
             _ = try await wallet.acceptContactRequest(request, signer: signer)
         } catch {
-            Self.logger.error("👥 CONTACTS :: acceptContactRequest failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: acceptContactRequest failed: \(error)")
             throw ServiceError.sdk(error)
         }
         Self.logger.info("👥 CONTACTS :: accepted request from \(senderId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
@@ -503,7 +500,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 ourIdentityId: ownerId,
                 contactIdentityId: senderId)
         } catch {
-            Self.logger.error("👥 CONTACTS :: ignoreContactSender failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: ignoreContactSender failed: \(error)")
             throw ServiceError.sdk(error)
         }
         Self.logger.info("👥 CONTACTS :: ignored sender \(senderId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
@@ -685,7 +682,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 hidden: hidden,
                 signer: signer)
         } catch {
-            Self.logger.error("👥 CONTACTS :: contact-meta write failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: contact-meta write failed: \(error)")
             throw ServiceError.sdk(error)
         }
         Self.logger.info("👥 CONTACTS :: contact meta saved — outcome \(String(describing: outcome), privacy: .public)")
@@ -726,7 +723,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     result[id] = eligible
                 }
             } catch {
-                Self.logger.error("👥 CONTACTS :: key eligibility query failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
+                Self.logger.error("👥 CONTACTS :: key eligibility query failed for \(base58.prefix(8), privacy: .public)…: \(error)")
             }
         }
         return result
@@ -790,7 +787,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             refresh()
             return label
         } catch {
-            Self.logger.error("👥 CONTACTS :: dpnsGetUsername failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: dpnsGetUsername failed for \(base58.prefix(8), privacy: .public)…: \(error)")
             return nil
         }
     }
@@ -857,7 +854,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             }
             return missing
         } catch {
-            Self.logger.error("👥 CONTACTS :: platform DashPay-key re-check failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: platform DashPay-key re-check failed: \(error)")
             return nil
         }
     }
@@ -933,7 +930,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             }
             return upgraded
         } catch {
-            Self.logger.error("👥 CONTACTS :: DashPay key upgrade failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: DashPay key upgrade failed: \(error)")
             throw ServiceError.sdk(error)
         }
     }

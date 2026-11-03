@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKWalletCreator)
@@ -26,9 +25,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-creator")
+    private static let logger = AppLogger(category: "swift-sdk-migration.wallet-creator")
 
     // MARK: - Network
 
@@ -151,7 +148,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             // Refresh the app-owned runtime now that wallet material is ready.
             SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()
         } catch {
-            logger.error("\(label, privacy: .public) threw: \(String(describing: error), privacy: .public)")
+            logger.error("\(label, privacy: .public) threw: \(error)")
         }
     }
 

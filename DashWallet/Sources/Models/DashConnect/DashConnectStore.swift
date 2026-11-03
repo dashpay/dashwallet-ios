@@ -18,8 +18,6 @@
 //
 
 import Foundation
-import os
-
 protocol DashConnectStore {
     func load() -> [DAppConnection]
     func save(_ connections: [DAppConnection])
@@ -55,9 +53,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         self.decoder = decoder
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.store")
+    private static let logger = AppLogger(category: "dashconnect.store")
 
     /// `nil` until a wallet identifier exists. Connections are wallet-scoped,
     /// so a shared placeholder scope would let one wallet's rows be saved and
@@ -148,7 +144,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
         } catch {
             Self.logger.error(
-                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error)")
         }
     }
 

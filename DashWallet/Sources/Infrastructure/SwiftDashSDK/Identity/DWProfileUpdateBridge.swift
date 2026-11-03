@@ -21,7 +21,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import UIKit
 
@@ -32,9 +31,7 @@ public final class DWProfileUpdateBridge: NSObject {
 
     @objc public static let shared = DWProfileUpdateBridge()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.profile-bridge")
+    private static let logger = AppLogger(category: "swift-sdk-migration.profile-bridge")
 
     /// JPEG compression quality used to encode the cropped avatar
     /// before handing the bytes to the SDK. The SDK doesn't care
@@ -87,7 +84,7 @@ public final class DWProfileUpdateBridge: NSObject {
                 Self.logger.info("🪪 PROFILE-BRIDGE :: profile update completed")
                 completion(nil)
             } catch {
-                Self.logger.error("🪪 PROFILE-BRIDGE :: profile update failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("🪪 PROFILE-BRIDGE :: profile update failed: \(error)")
                 completion(Self.nsError(from: error))
             }
         }

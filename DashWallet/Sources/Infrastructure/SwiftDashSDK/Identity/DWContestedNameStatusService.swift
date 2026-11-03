@@ -45,7 +45,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @MainActor
@@ -55,9 +54,7 @@ public final class DWContestedNameStatusService: NSObject {
 
     public static let shared = DWContestedNameStatusService()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.contested-name")
+    nonisolated private static let logger = AppLogger(category: "swift-sdk-migration.contested-name")
 
     /// UserDefaults key prefixes. A suffix is added for the active
     /// Platform network: contested submissions and their deadlines must

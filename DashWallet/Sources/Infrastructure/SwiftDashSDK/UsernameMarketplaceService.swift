@@ -21,7 +21,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -57,9 +56,7 @@ extension DpnsNameStateRow: Identifiable {
 @MainActor
 struct UsernameMarketplaceService {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.username-marketplace")
+    private static let logger = AppLogger(category: "swift-sdk-migration.username-marketplace")
 
     enum ServiceError: LocalizedError {
         case noIdentity
@@ -434,7 +431,7 @@ struct UsernameMarketplaceService {
         do {
             _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
         } catch {
-            Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(error)")
         }
         var endTime: Date?
         if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
@@ -513,7 +510,7 @@ struct UsernameMarketplaceService {
             if text.contains("not found") || text.contains("no contest") {
                 return .fresh
             }
-            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
+            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(error)")
             return .unknown
         }
     }

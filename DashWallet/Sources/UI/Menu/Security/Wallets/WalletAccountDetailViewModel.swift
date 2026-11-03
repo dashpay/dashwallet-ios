@@ -26,7 +26,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -96,9 +95,7 @@ struct WalletAccountDetail: Equatable {
 
 @MainActor
 final class WalletAccountDetailViewModel: ObservableObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "wallet-account-detail")
+    private static let logger = AppLogger(category: "wallet-account-detail")
 
     /// Nil until `reload()` finds the account; the screen shows an
     /// unavailable state then.

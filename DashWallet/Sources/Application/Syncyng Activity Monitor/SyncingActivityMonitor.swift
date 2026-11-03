@@ -17,7 +17,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 private let kMaxProgressDelta = 0.1 // 10%
@@ -435,7 +434,7 @@ extension SyncingActivityMonitor {
             """)
     }
 
-    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "sync-state")
+    private static let logger = AppLogger(category: "sync-state")
 
     /// Map SwiftDashSDK's per-phase progress to the snapshot fields the
     /// existing UI consumers expect. The phase priority order

@@ -12,7 +12,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // Cached BIP-39 wordlist membership sets, composed once from the SDK's
@@ -34,9 +33,7 @@ private let dwAllLanguagesWordSet: Set<String> = MnemonicLanguage.allCases
         union.formUnion(Mnemonic.wordList(language: language))
     }
 
-private let dwRecoverLogger = Logger(
-    subsystem: "org.dashfoundation.dash",
-    category: "recover-wipe")
+private let dwRecoverLogger = AppLogger(category: "recover-wipe")
 
 extension DWRecoverModel {
     /// The plain-"wipe" gate: empty means "zero SDK balance AND the chain is
@@ -62,7 +59,7 @@ extension DWRecoverModel {
         do {
             return try SwiftDashSDKHost.persistedWalletIdCount() == 1
         } catch {
-            dwRecoverLogger.error("plain-wipe gate: wallet-id count failed; refusing: \(String(describing: error), privacy: .public)")
+            dwRecoverLogger.error("plain-wipe gate: wallet-id count failed; refusing: \(error)")
             return false
         }
     }
@@ -85,7 +82,7 @@ extension DWRecoverModel {
         do {
             return try SwiftDashSDKHost.persistedWalletIdCount() > 1
         } catch {
-            dwRecoverLogger.error("wallet-id count failed: \(String(describing: error), privacy: .public)")
+            dwRecoverLogger.error("wallet-id count failed: \(error)")
             return false
         }
     }
@@ -105,7 +102,7 @@ extension DWRecoverModel {
         do {
             return try SwiftDashSDKHost.allStoredMnemonicsMatch(phrase: phrase)
         } catch {
-            dwRecoverLogger.error("wipe-with-phrase: keychain read failed; refusing: \(String(describing: error), privacy: .public)")
+            dwRecoverLogger.error("wipe-with-phrase: keychain read failed; refusing: \(error)")
             return false
         }
     }

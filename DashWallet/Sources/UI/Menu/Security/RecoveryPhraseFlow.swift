@@ -20,7 +20,6 @@
 import Combine
 import DashUIKit
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftUI
 import UIKit
@@ -125,9 +124,7 @@ enum RecoveryPhraseInventory {
         let network: RecoveryPhraseWalletNetwork
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "recovery-phrase-inventory")
+    private static let logger = AppLogger(category: "recovery-phrase-inventory")
 
     @MainActor
     static func load() throws -> [RecoveryPhraseWalletDescriptor] {
@@ -333,9 +330,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
         #endif
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "recovery-phrase-flow")
+    private static let logger = AppLogger(category: "recovery-phrase-flow")
 
     @Published private(set) var navigationEvent: NavigationEvent?
     @Published private(set) var alertState: AlertState?
@@ -402,7 +397,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
                 mnemonic: material.mnemonic,
                 contextLabel: descriptor.contextLabel)))
         } catch {
-            Self.logger.error("Selected recovery phrase read failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("Selected recovery phrase read failed: \(error)")
             pickerRetryDescriptor = descriptor
             pickerAlertState = Self.readErrorAlert(for: error)
         }
@@ -534,7 +529,7 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
     }
 
     private func showReadError(_ error: Error, retry: RetryRequest) {
-        Self.logger.error("Recovery phrase read failed: \(String(describing: error), privacy: .public)")
+        Self.logger.error("Recovery phrase read failed: \(error)")
         retryRequest = retry
         alertState = Self.readErrorAlert(for: error)
     }

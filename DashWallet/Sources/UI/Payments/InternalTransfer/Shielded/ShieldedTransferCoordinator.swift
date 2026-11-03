@@ -38,7 +38,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -261,9 +260,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case alreadyConsumed
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.shielded-transfer")
+    private static let logger = AppLogger(category: "swift-sdk-migration.shielded-transfer")
 
     /// Matches `PersistentAssetLock.fundingTypeRaw` for
     /// `AssetLockShieldedAddressTopUp` (see
@@ -1027,7 +1024,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             }
             return CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId)
         } catch {
-            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(String(describing: error), privacy: .public)")
+            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(error)")
             return nil
         }
     }
@@ -1800,7 +1797,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private func beginTransfer() -> Bool {
         guard phase == .idle else {
             // Logged so a tap that starts nothing is visible in the export.
-            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
+            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(AppLogMessage.caseName(of: self.phase) ?? "-", privacy: .public)")
             return false
         }
         lastFailure = nil
@@ -1823,7 +1820,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private func handleFailure(_ error: Error) {
-        Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        Self.logger.error("🛡️ SHIELD-TX :: failure \(error)")
         lastFailure = error
         let message: String
         if AssetLockInputLimit.isTooManyInputs(error) {
@@ -1951,7 +1948,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             }
             advancePhaseForAssetLockStatus(row.statusRaw)
         } catch {
-            Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(error)")
         }
     }
 

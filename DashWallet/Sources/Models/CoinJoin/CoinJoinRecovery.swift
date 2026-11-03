@@ -36,7 +36,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWCoinJoinRecovery)
@@ -44,9 +43,7 @@ final class CoinJoinRecovery: NSObject {
 
     @objc static let shared = CoinJoinRecovery()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.coinjoin-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.coinjoin-recovery")
 
     /// Wide gap limit applied for the recovery scan. DashSync used 400
     /// (`SEQUENCE_GAP_LIMIT_INITIAL_COINJOIN`); we use a narrower window here.
@@ -136,7 +133,7 @@ final class CoinJoinRecovery: NSObject {
             do {
                 try intent.finish(scope: networkTag(network))
             } catch {
-                Self.logger.error("🪙 CJRECOV :: could not clear the rescan intent for \(self.networkTag(network), privacy: .public): \(String(describing: error), privacy: .public)")
+                Self.logger.error("🪙 CJRECOV :: could not clear the rescan intent for \(self.networkTag(network), privacy: .public): \(error)")
             }
         }
         guard !defaults.bool(forKey: recoveredKey(network)) else { return }

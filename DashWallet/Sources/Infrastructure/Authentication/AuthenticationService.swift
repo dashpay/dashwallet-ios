@@ -24,7 +24,6 @@
 
 import Foundation
 import LocalAuthentication
-import os.log
 import UIKit
 
 // MARK: - Protocol
@@ -71,9 +70,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// biometric re-enable window. Same literal (`PIN_UNLOCK_TIME_KEY`).
     private static let pinUnlockTimeKey = "PIN_UNLOCK_TIME"
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "authentication")
+    private static let logger = AppLogger(category: "authentication")
 
     private let secureTimeService: SecureTimeService
     private let userDefaults: UserDefaults

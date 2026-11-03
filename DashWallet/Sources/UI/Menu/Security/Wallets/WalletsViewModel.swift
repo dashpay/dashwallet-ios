@@ -25,7 +25,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftData
 import SwiftDashSDK
 
@@ -48,9 +47,7 @@ struct WalletRow: Identifiable, Equatable {
 
 @MainActor
 final class WalletsViewModel: ObservableObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "wallets-screen")
+    private static let logger = AppLogger(category: "wallets-screen")
 
     @Published private(set) var rows: [WalletRow] = []
     /// True while a switch (or an auto-switch before removing the active
@@ -148,7 +145,7 @@ final class WalletsViewModel: ObservableObject {
                 // directly so the list is fresh even if delivery order lags.
                 reload()
             } catch {
-                Self.logger.error("switchWallet failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("switchWallet failed: \(error)")
             }
         }
     }
@@ -203,7 +200,7 @@ final class WalletsViewModel: ObservableObject {
                 targetName: targetName,
                 previousId: previousId,
                 message: error.localizedDescription))
-            DWLogger.log("🔁 WALLETOP [\(opID)] switch FAILED after \(ms)ms: \(error.localizedDescription)")
+            DWLogger.log("🔁 WALLETOP [\(opID)] switch FAILED after \(ms)ms: \(AppLogMessage.errorSummary(error))")
             throw error
         }
         if thenFinish {
@@ -232,7 +229,7 @@ final class WalletsViewModel: ObservableObject {
         do {
             return try Mnemonic.generate(wordCount: length.wordCount)
         } catch {
-            Self.logger.error("mnemonic generation failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("mnemonic generation failed: \(error)")
             errorMessage = NSLocalizedString("Could not generate a recovery phrase.", comment: "Wallets")
             return nil
         }
@@ -299,8 +296,7 @@ final class WalletsViewModel: ObservableObject {
             // blocking overlay with no owner.
             state.finish()
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
-            DWLogger.log("🔁 WALLETOP [\(opID)] add FAILED after \(ms)ms: \(error.localizedDescription)")
-            Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log("🔁 WALLETOP [\(opID)] add FAILED after \(ms)ms: \(AppLogMessage.errorSummary(error))")
             errorMessage = error.localizedDescription
             return nil
         }
@@ -329,7 +325,7 @@ final class WalletsViewModel: ObservableObject {
                 if case .addingWallet = state.phase {
                     state.finish()
                 }
-                Self.logger.error("post-add switch failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("post-add switch failed: \(error)")
                 // The wallet was added but the switch failed; leave it on
                 // device — the overlay's blocking card owns recovery (Retry /
                 // Switch Back). The list still gains the new wallet, and the
@@ -365,7 +361,7 @@ final class WalletsViewModel: ObservableObject {
             try context.save()
             reload()
         } catch {
-            Self.logger.error("rename save failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("rename save failed: \(error)")
             errorMessage = error.localizedDescription
         }
     }
@@ -384,7 +380,7 @@ final class WalletsViewModel: ObservableObject {
             guard let target = entries.first(where: { $0.walletId == walletId }) else { return false }
             return SwiftDashSDKHost.allMnemonicsMatch(phrase: target.mnemonic, in: entries)
         } catch {
-            Self.logger.error("last-wallet proof failed; refusing global reset: \(String(describing: error), privacy: .public)")
+            Self.logger.error("last-wallet proof failed; refusing global reset: \(error)")
             return false
         }
     }
@@ -405,7 +401,7 @@ final class WalletsViewModel: ObservableObject {
             let derivedId = try Wallet(mnemonic: trimmed, network: network).id
             return derivedId == expected
         } catch {
-            Self.logger.error("walletId derivation from mnemonic failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("walletId derivation from mnemonic failed: \(error)")
             return false
         }
     }
@@ -439,7 +435,7 @@ final class WalletsViewModel: ObservableObject {
         do {
             mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
         } catch {
-            Self.logger.error("removeWallet mnemonic read failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("removeWallet mnemonic read failed: \(error)")
             errorMessage = error.localizedDescription
             return
         }
@@ -457,7 +453,7 @@ final class WalletsViewModel: ObservableObject {
                     thenFinish: false)
             } catch {
                 switchInProgress = false
-                Self.logger.error("pre-remove auto-switch failed: \(String(describing: error), privacy: .public)")
+                Self.logger.error("pre-remove auto-switch failed: \(error)")
                 // The overlay's blocking card owns recovery, and its Retry
                 // resumes ONLY the switch — the removal never started and is
                 // re-initiated by the user from the Wallets screen.
@@ -481,13 +477,12 @@ final class WalletsViewModel: ObservableObject {
                 mnemonic: mnemonic)
         } catch {
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
-            Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
             // Dismissable overlay card, not a local alert: after an
             // active-wallet removal the tab rebuild has already destroyed
             // this screen, so only the overlay window can still surface the
             // failure. The wiper leaves wallet state retryable by design.
             state.fail(.failedWalletRemoval(message: error.localizedDescription))
-            DWLogger.log("🔁 WALLETOP [\(opID)] remove FAILED after \(ms)ms: \(error.localizedDescription)")
+            DWLogger.log("🔁 WALLETOP [\(opID)] remove FAILED after \(ms)ms: \(AppLogMessage.errorSummary(error))")
             reload()
             return
         }

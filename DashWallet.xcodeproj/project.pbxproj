@@ -2059,6 +2059,7 @@
 		F264E9A940EF10070D2F941E /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC11A0747AD00DA7524204A /* libPods-WatchApp.a */; };
 		F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
 		F4202BDB27E7066201C23A58 /* DWIdentityRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D826C39F49D5CD6EC19C8C8E /* DWIdentityRegistrationCoordinator.swift */; };
+		9CF7E38ADBDD66CB317E0DD5 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2693039F322E5326196F0 /* AppLogger.swift */; };
 		F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
 		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
@@ -2071,6 +2072,7 @@
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		FBE008F4BBBA9CC7BF299B93 /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
+		9CE54A8994E0E12E6391BED4 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2693039F322E5326196F0 /* AppLogger.swift */; };
 		FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
 		FF0000022DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
@@ -2136,6 +2138,7 @@
 		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
 		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
 		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
+		D8347606677417243367A4CA /* AppLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB875070A5292690CD7B554 /* AppLoggerTests.swift */; };
 		BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000011 /* WalletPreparationFailureTests.swift */; };
 		BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000013 /* HostRecoveryTests.swift */; };
 		BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */; };
@@ -2259,6 +2262,7 @@
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
 		5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayContactAddressReadiness.swift; sourceTree = "<group>"; };
 		0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapMenuStyles.swift; sourceTree = "<group>"; };
+		51E2693039F322E5326196F0 /* AppLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
 		C017200000000000000CA1 /* ShieldedRecoverySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoverySheet.swift; sourceTree = "<group>"; };
 		C017200000000000000DA1 /* ShieldedTransferStepList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTransferStepList.swift; sourceTree = "<group>"; };
@@ -4039,6 +4043,7 @@
 		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
+		9BB875070A5292690CD7B554 /* AppLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLoggerTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000011 /* WalletPreparationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPreparationFailureTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000013 /* HostRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostRecoveryTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformProtocolVersionTests.swift; sourceTree = "<group>"; };
@@ -6624,6 +6629,7 @@
 				59C18FCF827D815007BAEB01 /* MainThreadStallMonitor.swift */,
 				E70A780D1543343311C16402 /* Authentication */,
 				7FA744C4A6023E26A3B5B860 /* DWLogger.h */,
+				51E2693039F322E5326196F0 /* AppLogger.swift */,
 				0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */,
 				9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */,
 			);
@@ -7653,6 +7659,7 @@
 				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
 				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
 				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
+				9BB875070A5292690CD7B554 /* AppLoggerTests.swift */,
 				BABA10000000000000000011 /* WalletPreparationFailureTests.swift */,
 				BABA10000000000000000013 /* HostRecoveryTests.swift */,
 				BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */,
@@ -11000,6 +11007,7 @@
 				6FAE60AB81526ADAE67D1BE7 /* BIP70PaymentService+App.swift in Sources */,
 				06E16A070A3C48883BBDA137 /* BIP70InteractiveCoordinator.swift in Sources */,
 				3B9C0EAAC6DE69DBF8271920 /* BIP70PaymentOutputFactory.swift in Sources */,
+				9CF7E38ADBDD66CB317E0DD5 /* AppLogger.swift in Sources */,
 				F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */,
 				197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */,
 				47B81672DEBF6B7B565F0AC8 /* HomeUsernameRow.swift in Sources */,
@@ -11024,6 +11032,7 @@
 				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
 				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
 				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
+				D8347606677417243367A4CA /* AppLoggerTests.swift in Sources */,
 				BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */,
 				BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */,
 				BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */,
@@ -12139,6 +12148,7 @@
 				6A41B9080AA4477194582230 /* CreateInstantUsernameSheet.swift in Sources */,
 				4EBBA2659FFA168700F2242C /* UsernameFundingPrivacyScreen.swift in Sources */,
 				4836792999634AC6B1D00392 /* VerifyIdentityOfferSheet.swift in Sources */,
+				9CE54A8994E0E12E6391BED4 /* AppLogger.swift in Sources */,
 				FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */,
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				C0F1E5ED0A14B2C3D4E5F601 /* ContestedUsernameFee.swift in Sources */,

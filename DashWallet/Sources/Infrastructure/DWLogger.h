@@ -83,6 +83,22 @@ NSString *DWCurrentThreadName(void);
  */
 + (void)log:(NSString *)message className:(NSString *)className;
 
+/** @fn logDebug:className:
+ *  @brief Debug level: written only in DEBUG builds
+ */
++ (void)logDebug:(NSString *)message className:(NSString *)className;
+
+/** @fn logWarning:className:
+ *  @brief Warning level
+ */
++ (void)logWarning:(NSString *)message className:(NSString *)className;
+
+/** @fn logError:className:
+ *  @brief Error level: written synchronously, so the line is in the file
+ *  before the call returns
+ */
++ (void)logError:(NSString *)message className:(NSString *)className;
+
 /** @fn logVersionInfo
  *  @brief Logs the app version at startup.
  */

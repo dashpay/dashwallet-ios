@@ -15,6 +15,7 @@ import SwiftUI
 
 @MainActor
 enum PinPromptPresenter {
+    private static let logger = AppLogger(category: "pin-prompt")
 
     /// Owns only this request's cancellation, so a timed-out gate never
     /// dismisses another caller's prompt.
@@ -26,7 +27,7 @@ enum PinPromptPresenter {
     static func present(service: AuthenticationServiceProtocol = AuthenticationService.shared) async -> PinPromptResult {
         guard !Task.isCancelled else { return .cancelled }
         guard let anchor = topPresentedController() else {
-            NSLog("🔐 PINPROMPT :: no presentation anchor — resolving .failed")
+            logger.error("🔐 PINPROMPT :: no presentation anchor — resolving .failed")
             return .failed
         }
 
@@ -96,11 +97,11 @@ enum PinPromptPresenter {
                         guard retriesLeft > 0,
                               host.presentingViewController == nil,
                               let retryAnchor = topPresentedController() else {
-                            NSLog("🔐 PINPROMPT :: presentation rejected — resolving .failed")
+                            logger.error("🔐 PINPROMPT :: presentation rejected — resolving .failed")
                             resume(.failed)
                             return
                         }
-                        NSLog("🔐 PINPROMPT :: presentation rejected — retrying on a fresh anchor")
+                        logger.warning("🔐 PINPROMPT :: presentation rejected — retrying on a fresh anchor")
                         present(from: retryAnchor)
                         verifyPresented(retriesLeft: retriesLeft - 1)
                     }
@@ -163,11 +164,9 @@ enum PinPromptPresenter {
             }
         }
 
-        NSLog(
-            "🔐 PINPROMPT :: anchor scan exhausted — windows=%ld scenes=%ld appWindow=%@",
-            windows.count,
-            scenes.count,
-            (UIApplication.shared.delegate?.window ?? nil) == nil ? "nil" : "set")
+        let appWindow = (UIApplication.shared.delegate?.window ?? nil) == nil ? "nil" : "set"
+        logger.error(
+            "🔐 PINPROMPT :: anchor scan exhausted — windows=\(windows.count) scenes=\(scenes.count) appWindow=\(appWindow, privacy: .public)")
         return nil
     }
 
