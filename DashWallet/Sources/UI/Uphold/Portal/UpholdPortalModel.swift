@@ -19,6 +19,8 @@ import Foundation
 import Combine
 import AuthenticationServices
 
+private let logger = AppLogger(category: "uphold-portal-model")
+
 private let kWithdrawalsCapability = "crypto_withdrawals"
 private let kProfileUrl = "https://wallet.uphold.com/dashboard/settings/profile"
 
@@ -190,7 +192,7 @@ final class UpholdPortalModel: BaseIntegrationModel {
                     requirements[capability.key] = capability.requirements
                 }
             } catch {
-                DWLogger.log("Error obtaining capabilities: \(error)")
+                logger.error("Error obtaining capabilities: \(error)")
             }
         }
     }

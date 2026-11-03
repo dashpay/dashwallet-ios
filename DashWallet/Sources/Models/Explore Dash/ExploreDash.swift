@@ -18,6 +18,8 @@
 import CoreLocation
 import Foundation
 
+private let logger = AppLogger(category: "explore-dash")
+
 typealias TerritoryDataSource = (@escaping (Result<[Territory], any Error>) -> Void) -> ()
 
 // In meters
@@ -61,7 +63,7 @@ public class ExploreDashObjcWrapper: NSObject {
             }
             #endif
         } catch {
-            print(error)
+            logger.error("ExploreDash: configure failed: \(error)")
             // Do something
         }
     }

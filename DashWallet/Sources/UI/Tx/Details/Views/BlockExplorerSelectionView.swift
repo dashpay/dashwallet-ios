@@ -77,7 +77,5 @@ enum BlockExplorer: String, CaseIterable, Identifiable {
 }
 
 #Preview {
-    BlockExplorerSelectionView { explorer in
-        print("Selected explorer: \(explorer)")
-    }
+    BlockExplorerSelectionView { _ in }
 } 

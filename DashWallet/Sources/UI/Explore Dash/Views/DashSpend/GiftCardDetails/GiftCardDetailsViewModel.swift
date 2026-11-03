@@ -19,6 +19,8 @@ import Foundation
 import Combine
 import UIKit
 
+private let logger = AppLogger(category: "gift-card-details-view-model")
+
 struct GiftCardDetailsCardItem: Identifiable {
     let id: String
     let formattedPrice: String
@@ -364,7 +366,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             } else {
                 pollInterval = min(pollInterval * 2, maxPollInterval)
             }
-            DWLogger.log("DashSpend: Failed to fetch gift card info (attempt \(attempt)): \(error)")
+            logger.warning("DashSpend: Failed to fetch gift card info (attempt \(attempt)): \(error)")
         }
     }
 

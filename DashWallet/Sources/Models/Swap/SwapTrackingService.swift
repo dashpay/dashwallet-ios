@@ -17,6 +17,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "swap-tracking-service")
+
 // MARK: - ObjC bridge (called from AppDelegate.m at app launch)
 
 @objc
@@ -390,7 +392,7 @@ final class SwapTrackingService {
                 : sellAnswer(for: order)
         } catch {
             // Transient network error — no authoritative status this cycle; may still age out below.
-            DWLogger.log("SwapTrackingService: poll error for \(order.id): \(error)")
+            logger.warning("SwapTrackingService: poll error for \(order.id, privacy: .public): \(error)")
         }
 
         // "Not started" after the provider has already reported progress is the tracker not
@@ -799,7 +801,7 @@ final class SwapTrackingService {
                 ordersNamingTheirPayout.insert(Self.payoutIdentityKey(for: order))
                 DWLogger.log("SwapTrackingService: order \(order.id) \(outcome)")
             } catch {
-                DWLogger.log("SwapTrackingService: order \(order.id) late payout not saved: \(error)")
+                logger.error("SwapTrackingService: order \(order.id, privacy: .public) late payout not saved: \(error)")
             }
         }
     }
@@ -842,7 +844,8 @@ final class SwapTrackingService {
                     return true
                 }
             } catch {
-                DWLogger.log("SwapTrackingService: order \(order.id) wallet evidence not saved: \(error)")
+                logger.error(
+                    "SwapTrackingService: order \(order.id, privacy: .public) wallet evidence not saved: \(error)")
             }
         }
     }
@@ -954,7 +957,7 @@ final class SwapTrackingService {
                     asks[key] = nil
                 }
             } catch {
-                DWLogger.log("SwapTrackingService: order \(order.id) payout hash not saved: \(error)")
+                logger.error("SwapTrackingService: order \(order.id, privacy: .public) payout hash not saved: \(error)")
             }
         }
         if !NSDictionary(dictionary: asks).isEqual(to: stored) {
@@ -1109,7 +1112,7 @@ final class SwapTrackingService {
             let balances = try await SwapKitAPIService.shared.balance(chain: chain, address: address)
             return Self.depositLookup(of: order.fromAsset, in: balances)
         } catch {
-            DWLogger.log("SwapTrackingService: deposit lookup failed for \(order.id): \(error)")
+            logger.warning("SwapTrackingService: deposit lookup failed for \(order.id, privacy: .public): \(error)")
             return .unknown
         }
     }

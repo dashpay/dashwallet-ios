@@ -1593,8 +1593,8 @@ final class SwiftDashSDKHost {
             DWLogger.log(
                 "DashPay unlock: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) unlocked=\(unlocked) tookMs=\(ms)")
         } catch {
-            DWLogger.log(
-                "DashPay unlock FAILED: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) error=\(String(describing: error))")
+            Self.logger.error(
+                "DashPay unlock FAILED: wallet=\(idTag, privacy: .public) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending, privacy: .public) error=\(error)")
         }
 
         // A single unlock at load time is not enough: it schedules the drain
@@ -1638,8 +1638,8 @@ final class SwiftDashSDKHost {
                         "DashPay unlock: wallet=\(idTag) draining \(status.pendingAccountBuilds) deferred build(s); unlocked=\(unlocked) tookMs=\(ms)")
                     drained = true
                 } catch {
-                    DWLogger.log(
-                        "DashPay unlock: wallet=\(idTag) re-unlock failed: \(String(describing: error))")
+                    Self.logger.error(
+                        "DashPay unlock: wallet=\(idTag, privacy: .public) re-unlock failed: \(error)")
                     return
                 }
                 // Let `draining` publish before the next element is considered,

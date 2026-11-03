@@ -69,7 +69,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         if isSyncObserverRegistered {
             SyncingActivityMonitor.shared.remove(observer: self)
         }
-        print("☠️ \(String(describing: self))")
     }
 
     override func loadView() {

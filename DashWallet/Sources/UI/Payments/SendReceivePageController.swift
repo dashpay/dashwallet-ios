@@ -87,7 +87,6 @@ extension SendReceivePageController: UIPageViewControllerDelegate {
 
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController],
                             transitionCompleted completed: Bool) {
-        print("pageViewController", finished, completed, previousViewControllers)
         guard finished else { return }
 
         if let vc = previousViewControllers.first, !completed {

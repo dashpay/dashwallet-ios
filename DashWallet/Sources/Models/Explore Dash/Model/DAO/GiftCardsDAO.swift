@@ -19,6 +19,8 @@ import Foundation
 import SQLite
 import Combine
 
+private let logger = AppLogger(category: "gift-cards-dao")
+
 // MARK: - GiftCardsDAO
 
 protocol GiftCardsDAO {
@@ -100,7 +102,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
             self.giftCardTxId = dto.txId
             updateAllCardsSubject()
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: create failed: \(error)")
         }
     }
     
@@ -113,7 +115,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
             cacheSet(results.first, forKey: key)
             return results.first
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: get failed: \(error)")
         }
         
         return nil
@@ -157,7 +159,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 updateAllCardsSubject()
             }
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: updateCardDetails failed: \(error)")
         }
     }
     
@@ -189,7 +191,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 updateAllCardsSubject()
             }
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: updateBarcode failed: \(error)")
         }
     }
 
@@ -220,7 +222,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                 updateAllCardsSubject()
             }
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: updateRedeemUrl failed: \(error)")
         }
     }
     
@@ -234,7 +236,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
             try await execute(deleteQuery)
             updateAllCardsSubject()
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: delete failed: \(error)")
         }
     }
     
@@ -242,7 +244,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         do {
             return try await prepare(GiftCard.table)
         } catch {
-            print(error)
+            logger.error("GiftCardsDAO: all failed: \(error)")
         }
         
         return []

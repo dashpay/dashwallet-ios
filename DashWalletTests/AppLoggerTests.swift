@@ -14,6 +14,23 @@ private enum SampleError: Error {
     case failed(path: String)
 }
 
+private enum StoreError: Error {
+    case error(message: String, code: Int32)
+}
+
+private final class SampleResponse {
+    let statusCode: Int
+    let body = "token=secret"
+
+    init(statusCode: Int) {
+        self.statusCode = statusCode
+    }
+}
+
+private enum ClientError: Error {
+    case statusCode(SampleResponse)
+}
+
 final class AppLoggerTests: XCTestCase {
     func testLiteralIsKept() {
         let message: AppLogMessage = "plain line"
@@ -106,6 +123,27 @@ final class AppLoggerTests: XCTestCase {
         let line = contents.joined().split(separator: "\n").first { $0.contains(marker) }
         XCTAssertNotNil(line)
         XCTAssertTrue(line?.contains("app-logger-test - ERROR export check") ?? false)
+    }
+
+    func testPayloadCodeIsKeptWithoutItsMessage() {
+        let summary = AppLogMessage.errorSummary(StoreError.error(message: "UNIQUE constraint failed: orders.id", code: 19))
+        XCTAssertTrue(summary.hasSuffix(" code=19"))
+        XCTAssertFalse(summary.contains("UNIQUE"))
+    }
+
+    func testPayloadStatusCodeIsKeptWithoutTheBody() {
+        let summary = AppLogMessage.errorSummary(ClientError.statusCode(SampleResponse(statusCode: 401)))
+        XCTAssertTrue(summary.hasSuffix(" statusCode=401"))
+        XCTAssertFalse(summary.contains("secret"))
+    }
+
+    func testOptionalErrorIsWrittenAsTypeAndCodeOnly() {
+        let error: Error? = SampleError.failed(path: "/var/mobile/secret.sqlite")
+        let message: AppLogMessage = "failed: \(error)"
+        XCTAssertEqual(message.text, "failed: \(AppLogMessage.errorSummary(SampleError.failed(path: "")))")
+        let none: Error? = nil
+        let empty: AppLogMessage = "failed: \(none)"
+        XCTAssertEqual(empty.text, "failed: nil")
     }
 
     func testPrivateErrorIsRedacted() {

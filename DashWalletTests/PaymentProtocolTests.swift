@@ -746,7 +746,9 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         await assertThrowsBIP70(
             try await svc.confirmAndSend(c),
-            .paymentNotAcknowledged(txHashDisplay: w.prepared.txHashDisplay, reason: "Unexpected response from h."))
+            .paymentNotAcknowledged(
+                txHashDisplay: w.prepared.txHashDisplay,
+                reason: AppLogMessage.errorSummary(BIP70Error.unexpectedResponse(host: "h"))))
         XCTAssertFalse(w.calls.contains("broadcast"))
         t.postShouldThrow = nil
         _ = try await svc.confirmAndSend(c) // guard was released: the retry goes through

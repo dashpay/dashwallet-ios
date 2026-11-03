@@ -22,6 +22,8 @@ import SwiftData
 import SwiftDashSDK
 import UIKit
 
+private let logger = AppLogger(category: "swift-sdk-migration.wallet-source")
+
 private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 private let maxShortcutsCount = 4
@@ -2108,7 +2110,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             return SwiftDashSDKWalletTransactionSnapshot(
                 walletId: walletId, transactions: rows.map { wrap($0, walletId: walletId) })
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: ranged fetch failed (\(error))")
+            logger.error("SwiftDashSDKWalletSource: ranged fetch failed (\(error))")
             return nil
         }
     }
@@ -2718,7 +2720,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 updatedAfter: .distantPast, limit: limit)
                 .map { wrap($0, walletId: walletId) }
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: scoped fetch failed (\(error)); falling back to the full wallet pass")
+            logger.warning(
+                "SwiftDashSDKWalletSource: scoped fetch failed (\(error)); falling back to the full wallet pass")
             return fetchAndWrap(in: context, walletId: walletId, minFirstSeen: minFirstSeen, limit: limit)
         }
     }
@@ -2842,7 +2845,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 hasOlderHistory: hasOlderHistory,
                 maxLastUpdated: rows.map(\.lastUpdated).max())
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: timeline page fetch failed (\(error)); falling back to the full wallet pass")
+            logger.warning(
+                "SwiftDashSDKWalletSource: timeline page fetch failed (\(error)); falling back to the full wallet pass")
             return WalletTimelineWindow(
                 walletId: walletId,
                 transactions: fetchAndWrap(in: context, walletId: walletId),
@@ -2874,7 +2878,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 maxLastUpdated: rows.map(\.lastUpdated).max(),
                 isCompleteWindow: stamp == .distantPast)
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: timeline delta fetch failed (\(error)); falling back to the full wallet pass")
+            logger.warning(
+                "SwiftDashSDKWalletSource: timeline delta fetch failed (\(error)); falling back to the full wallet pass")
             return WalletTimelineDelta(
                 transactions: fetchAndWrap(in: context, walletId: walletId, minFirstSeen: dayStart),
                 maxLastUpdated: nil,
@@ -2915,7 +2920,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             let hasMasternodes = try !context.fetch(masternodeDescriptor).isEmpty
             return (hasRewards, hasMasternodes)
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: filter-gate probe failed (\(error))")
+            logger.error("SwiftDashSDKWalletSource: filter-gate probe failed (\(error))")
             return nil
         }
     }
@@ -3029,7 +3034,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         do {
             rows = try context.fetch(descriptor)
         } catch {
-            DWLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
+            logger.error("HomeViewModel: PersistentTransaction fetch failed: \(error)")
             return []
         }
         return rows.map { row -> Transaction in

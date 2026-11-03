@@ -18,6 +18,8 @@
 import BackgroundTasks
 import Combine
 
+private let logger = AppLogger(category: "crowd-node")
+
 // MARK: - CrowdNodeObjcWrapper
 
 @objc
@@ -133,7 +135,7 @@ public final class CrowdNode {
     init() {
         masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
-        print("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
+        logger.debug("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
@@ -359,7 +361,7 @@ extension CrowdNode {
                 // when the server returns 0.
                 refreshBalance(seedFromCache: false)
             } catch {
-                DWLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
+                logger.error("Failure while restoring linked CrowdNode account: \(error)")
             }
         } else {
             // Nothing recovered by either scan, so the stored address is
@@ -693,7 +695,7 @@ extension CrowdNode {
             refreshBalance()
         }
         catch {
-            DWLogger.log("CrowdNode error: \(error)")
+            logger.error("CrowdNode error: \(error)")
             signUpState = SignUpState.error
             apiError = error
         }
@@ -948,7 +950,7 @@ extension CrowdNode {
     private func handleError(error: CrowdNode.Error) {
         apiError = error
         notifyIfNeeded(message: error.errorDescription)
-        DWLogger.log("CrowdNode error: \(error.errorDescription)")
+        logger.error("CrowdNode error: \(error)")
     }
 
     private func notifyIfNeeded(message: String) {
@@ -985,7 +987,7 @@ extension CrowdNode {
                     prefs.crowdNodeWithdrawalLimitPerDay = perDay
                 }
             } catch {
-                DWLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
+                logger.error("CrowdNode refreshWithdrawalLimits error: \(error)")
             }
         }
     }
@@ -999,7 +1001,7 @@ extension CrowdNode {
                     prefs.feePercentage = value.fee / 100
                 }
             } catch {
-                DWLogger.log("CrowdNode refreshFees error: \(error.localizedDescription)")
+                logger.error("CrowdNode refreshFees error: \(error)")
             }
         }
     }
@@ -1178,7 +1180,7 @@ extension CrowdNode {
             } catch {
                 // Legacy parity: log only — the 20s web poll (checkAddressStatus)
                 // is the fallback that completes linking.
-                DWLogger.log("CrowdNode: error forwarding confirmation tx: \(error)")
+                logger.error("CrowdNode: error forwarding confirmation tx: \(error)")
             }
         }
     }

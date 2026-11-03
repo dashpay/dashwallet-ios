@@ -25,8 +25,8 @@ import SwiftDashSDK
 ///
 /// Privacy follows `os.Logger`: an interpolated integer, float or `Bool` is
 /// written as is; any other value is written as `<private>` unless marked
-/// `privacy: .public`. An interpolated `Error` is written as its type and
-/// code only (`errorSummary(_:)`), never its description.
+/// `privacy: .public`. An interpolated `Error`, optional or not, is written as
+/// its type and code only (`errorSummary(_:)`), never its description.
 struct AppLogger: Sendable {
     let category: String
 
@@ -83,7 +83,8 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
     static let redacted = "<private>"
 
     /// An error's type, enum case name and code, a consensus rejection's code
-    /// and kind, and the same for the errors it wraps. Not its description:
+    /// and kind, an integer `code` / `statusCode` in its payload, and the same
+    /// for the errors it wraps. Not its description:
     /// error texts quote txids, outpoints, addresses, file paths and stored
     /// values.
     static func errorSummary(_ error: Error) -> String {
@@ -99,10 +100,28 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
         if case .consensusRejection(let consensus, _)? = error as? PlatformWalletError {
             summary += " consensus code=\(consensus.code) kind=\(consensus.kind)"
         }
+        summary += payloadCodes(of: error)
         if depth < maxWrappedErrors, let wrapped = wrappedError(of: error) {
             summary += " ← " + errorSummary(wrapped, depth: depth + 1)
         }
         return summary
+    }
+
+    private static let payloadCodeLabels: Set<String> = ["code", "statusCode"]
+
+    /// The integer `code` / `statusCode` an enum case carries in its payload,
+    /// directly or as a property of the payload value: a SQLite result code,
+    /// an HTTP response's status. A Swift enum's `NSError` code is only its
+    /// case index.
+    private static func payloadCodes(of error: Error) -> String {
+        let mirror = Mirror(reflecting: error)
+        guard mirror.displayStyle == .enum, let payload = mirror.children.first?.value else { return "" }
+        let codes = Mirror(reflecting: payload).children.compactMap { child -> String? in
+            guard let label = child.label, payloadCodeLabels.contains(label),
+                  let value = child.value as? any BinaryInteger else { return nil }
+            return "\(label)=\(value)"
+        }
+        return codes.isEmpty ? "" : " " + codes.joined(separator: " ")
     }
 
     /// The error an enum case carries in its payload, or an `NSError`'s
@@ -172,6 +191,12 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
 
         mutating func appendInterpolation(_ error: some Error, privacy: AppLogPrivacy = .public) {
             append(privacy) { AppLogMessage.errorSummary(error) }
+        }
+
+        /// An optional error, such as a `URLSession` completion's: its summary,
+        /// or "nil".
+        mutating func appendInterpolation(_ error: (some Error)?, privacy: AppLogPrivacy = .public) {
+            append(privacy) { error.map { AppLogMessage.errorSummary($0) } ?? "nil" }
         }
 
         mutating func appendInterpolation<T>(_ value: T, privacy: AppLogPrivacy = .private) {

@@ -22,6 +22,8 @@ import Foundation
 import SwiftDashSDK
 import UIKit
 
+private let logger = AppLogger(category: "swift-sdk-migration.evonode-epoch-blocks-monitor")
+
 // MARK: - EvonodeEpochBlocksMonitor
 
 /// The one refresh policy for "blocks my evonodes proposed this epoch",
@@ -213,7 +215,7 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
                 // context — only a live one marks the retry state.
                 guard let self, self.generation == generation, !Task.isCancelled else { return }
                 self.lastFetchFailed = true
-                DWLogger.log("EvonodeEpochBlocksMonitor: fetch failed: \(error)")
+                logger.warning("EvonodeEpochBlocksMonitor: fetch failed: \(error)")
             }
             self?.finish()
         }

@@ -91,9 +91,7 @@ struct TextIntro: View {
     TextIntro(
         icon: .custom("zenledger_large"),
         buttonLabel: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
-        action: {
-            print("hello")
-        },
+        action: {},
         inProgress: .constant(false)
     ) {
         FeatureTopText(

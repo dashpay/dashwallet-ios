@@ -18,6 +18,8 @@
 import SwiftUI
 import DashUIKit
 
+private let logger = AppLogger(category: "zen-ledger-info-sheet")
+
 struct ZenLedgerInfoSheet: View {
     @ObservedObject private var viewModel = ZenLedgerViewModel()
     @State private var showAlert: Bool = false
@@ -129,7 +131,7 @@ struct ZenLedgerInfoSheet: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             } catch {
-                DWLogger.log("ZenLedger error: \(error)")
+                logger.error("ZenLedger error: \(error)")
                 errorAlert = true
                 showAlert = true
             }

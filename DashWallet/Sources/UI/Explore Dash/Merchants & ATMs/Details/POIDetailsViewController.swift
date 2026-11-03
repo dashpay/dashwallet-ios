@@ -19,6 +19,8 @@ import MapKit
 import UIKit
 import SwiftUI
 
+private let logger = AppLogger(category: "poi-details-view-controller")
+
 // MARK: - POIDetailsViewController
 
 class POIDetailsViewController: UIViewController {
@@ -421,7 +423,7 @@ extension POIDetailsViewController {
             return false
         } catch {
             // Network or other transient error - show error but don't log out
-            DWLogger.log("PiggyCards: Token refresh failed with error: \(error.localizedDescription)")
+            logger.error("PiggyCards: Token refresh failed with error: \(error)")
             await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Connection Error", comment: "DashSpend"), textBlock1: NSLocalizedString("Unable to verify your session. Please check your internet connection and try again.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
             return false
         }

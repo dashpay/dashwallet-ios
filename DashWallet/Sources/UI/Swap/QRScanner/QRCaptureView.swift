@@ -20,6 +20,8 @@
 import AVFoundation
 import SwiftUI
 
+private let logger = AppLogger(category: "qr-capture-view")
+
 /// UIView whose backing layer is an AVCaptureVideoPreviewLayer.
 class QRCapturePreviewView: UIView {
     override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
@@ -123,7 +125,7 @@ struct QRCaptureView: UIViewRepresentable {
                 device.unlockForConfiguration()
             } catch {
                 #if DEBUG
-                DWLogger.log("Maya QR Scanner: Torch toggle failed: \(error.localizedDescription)")
+                logger.error("Maya QR Scanner: Torch toggle failed: \(error)")
                 #endif
             }
         }

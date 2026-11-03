@@ -19,6 +19,8 @@ import Foundation
 import SwiftJWT
 import CryptorECC
 
+private let logger = AppLogger(category: "topper")
+
 struct TopperClaims: Claims {
     let jti: String
     let sub: String
@@ -71,7 +73,7 @@ class Topper {
     func refreshPaymentMethods() {
         URLSession.shared.dataTask(with: URL(string: Topper.supportedPaymentMethodsUrl)!) { [weak self] data, _, error in
             guard let data = data, error == nil else {
-                DWLogger.log("Failed to get supported assets from Topper: \(String(describing: error))")
+                logger.error("Failed to get supported assets from Topper: \(error)")
                 return
             }
             
@@ -80,7 +82,7 @@ class Topper {
                 let paymentMethods = root.paymentMethods.filter { $0.type == "credit-card" && $0.billingAsset == "USD" }
                 self?.supportedPaymentMethods = paymentMethods
             } catch {
-                DWLogger.log("Failed to decode supported assets from Topper: \(String(describing: error))")
+                logger.error("Failed to decode supported assets from Topper: \(error)")
             }
         }.resume()
     }
@@ -88,13 +90,13 @@ class Topper {
     func refreshSupportedAssets() {
         URLSession.shared.dataTask(with: URL(string: Topper.supportedAssetsUrl)!) { [weak self] data, _, error in
             if error != nil || data == nil {
-                DWLogger.log("Topper: request failed. \(String(describing: error))")
+                logger.error("Topper: request failed. \(error)")
             } else {
                 do {
                     let root = try JSONDecoder().decode(SupportedTopperAssets.self, from: data!)
                     self?.supportedAssets = Set(root.assets.source.map { $0.code })
                 } catch {
-                    DWLogger.log("Topper: failed to decode JSON. \(error)")
+                    logger.error("Topper: failed to decode JSON. \(error)")
                 }
             }
         }.resume()
@@ -125,7 +127,7 @@ class Topper {
             var jwt = JWT(header: header, claims: claims)
             return try jwt.sign(using: JWTSigner.es256(privateKey: privateKeyData))
         } catch {
-            DWLogger.log("Topper: failed to generate a JWT token. \(error)")
+            logger.error("Topper: failed to generate a JWT token. \(error)")
             return ""
         }
     }

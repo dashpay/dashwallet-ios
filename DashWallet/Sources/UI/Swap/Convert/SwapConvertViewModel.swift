@@ -302,6 +302,8 @@ final class SwapConvertViewModel: ObservableObject {
         // Same reason as `OrderPreviewViewModel.setFailure`: the branches below rewrite the raw
         // error into user-facing copy, so record it first or the amount screen's failures leave
         // no trace in an exported log.
+        // `apiError` is SwapKit's error code string, not an `Error`.
+        // swiftlint:disable:next no_raw_error_log
         DWLogger.log("Swap: quote error on the amount screen for \(coin.code) — raw: \(apiError)")
         latestQuote = nil
         receiveAmount = nil

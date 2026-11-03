@@ -22,6 +22,8 @@ import SwiftUI
 import DashUIKit
 import UIKit
 
+private let logger = AppLogger(category: "enter-address-hosting-controller")
+
 class EnterAddressHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
     #if DEBUG
@@ -197,7 +199,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
                 try await Coinbase.shared.signIn(with: self)
                 viewModel.onCoinbaseLoginCompleted()
             } catch {
-                DWLogger.log("Maya: Coinbase login failed: \(error)")
+                logger.error("Maya: Coinbase login failed: \(error)")
             }
         }
     }

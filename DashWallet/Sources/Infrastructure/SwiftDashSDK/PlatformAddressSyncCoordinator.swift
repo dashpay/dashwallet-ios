@@ -2083,7 +2083,7 @@ final class ShieldedTxLookup {
         let assetLockCount: Int
         let typesSeen: [Int]
         let uncoveredTxids: [String]
-        let errorDescription: String?
+        let errorSummary: String?
         let workerRanOffMain: Bool
     }
 
@@ -2184,9 +2184,9 @@ final class ShieldedTxLookup {
             return
         }
 
-        if let errorDescription = result.errorDescription {
+        if let errorSummary = result.errorSummary {
             DWLogger.log(
-                "🛡️ SHIELD-TX-REFRESH [\(refreshID)] failed in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain): \(errorDescription)")
+                "🛡️ SHIELD-TX-REFRESH [\(refreshID)] failed in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain): \(errorSummary)")
             return
         }
 
@@ -2255,7 +2255,7 @@ final class ShieldedTxLookup {
                 assetLockCount: rows.count,
                 typesSeen: Set(rows.map { $0.fundingTypeRaw }).sorted(),
                 uncoveredTxids: uncoveredTxids,
-                errorDescription: nil,
+                errorSummary: nil,
                 workerRanOffMain: workerRanOffMain)
         } catch {
             return SnapshotBuildResult(
@@ -2263,7 +2263,7 @@ final class ShieldedTxLookup {
                 assetLockCount: 0,
                 typesSeen: [],
                 uncoveredTxids: [],
-                errorDescription: String(describing: error),
+                errorSummary: AppLogMessage.errorSummary(error),
                 workerRanOffMain: workerRanOffMain)
         }
     }

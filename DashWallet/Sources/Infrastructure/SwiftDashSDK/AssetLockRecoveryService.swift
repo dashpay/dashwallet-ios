@@ -354,7 +354,7 @@ struct AssetLockRecoveryService {
             // do and hides the reason, so it gets its own state.
             outcome.authFailureMessage = (error as? LocalizedError)?.errorDescription
                 ?? error.localizedDescription
-            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(outcome.authFailureMessage ?? "")")
+            DWLogger.log("LOCK-RETRY bulk aborted — authentication failed: \(AppLogMessage.errorSummary(error))")
             return outcome
         }
 

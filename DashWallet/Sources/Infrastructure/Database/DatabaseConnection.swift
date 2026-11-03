@@ -19,6 +19,8 @@ import Foundation
 import SQLite
 import SQLiteMigrationManager
 
+private let logger = AppLogger(category: "database-connection")
+
 private let kDatabaseName = "store.db"
 
 // MARK: - DatabaseConnection
@@ -30,14 +32,14 @@ class DatabaseConnection: NSObject {
 
     override init() {
         let databaseURL = DatabaseConnection.storeURL()
-        print("SQLite: ", databaseURL.path)
+        logger.debug("SQLite: \(databaseURL.path, privacy: .public)")
         do {
             db = try Connection(databaseURL.path)
             migrationManager = SQLiteMigrationManager(db: db,
                                                       migrations: DatabaseConnection.migrations(),
                                                       bundle: DatabaseConnection.migrationsBundle())
         } catch {
-            print("DatabaseConnection", error)
+            logger.error("DatabaseConnection: \(error)")
         }
 
         super.init()

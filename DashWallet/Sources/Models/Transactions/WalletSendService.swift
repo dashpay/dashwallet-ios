@@ -456,7 +456,8 @@ final class WalletSendService: NSObject {
         guard amount > 0 else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "No CoinJoin balance to move"
+                description: "No CoinJoin balance to move",
+                diagnostic: "no CoinJoin balance"
             )
         }
 
@@ -466,7 +467,8 @@ final class WalletSendService: NSObject {
         guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "Could not resolve a destination address for the CoinJoin sweep"
+                description: "Could not resolve a destination address for the CoinJoin sweep",
+                diagnostic: "no destination address"
             )
         }
         // The address must be the pinned wallet's own; the sweep itself
@@ -500,7 +502,8 @@ final class WalletSendService: NSObject {
             Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "CoinJoin sweep produced no transactions"
+                description: "CoinJoin sweep produced no transactions",
+                diagnostic: "no transactions produced"
             )
         }
         // Tag every sweep tx's txid so the home screen groups them into the
@@ -816,7 +819,8 @@ final class WalletSendService: NSObject {
 
     /// A failed sweep for the exported log: `logSummary(of:)` plus what it
     /// says without a txid — the diagnostic `coinJoinSweepFailure` attached,
-    /// a send error's reason, or this service's own description.
+    /// or a send error's reason. Not this service's own description, which is
+    /// UI copy; its code is already in the summary.
     static func coinJoinSweepLogLine(for error: Error) -> String {
         let nsError = error as NSError
         let detail: String?
@@ -824,8 +828,6 @@ final class WalletSendService: NSObject {
             detail = diagnostic
         } else if error is SwiftDashSDKTransactionSender.SendError {
             detail = sweepChunkFailureReason(error)
-        } else if nsError.domain == errorDomain {
-            detail = nsError.localizedDescription
         } else {
             detail = nil
         }

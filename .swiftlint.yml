@@ -85,3 +85,17 @@ custom_rules:
       - typeidentifier
     message: "Use AppLogger: os.Logger, os_log and NSLog lines never reach the \"Share application logs\" export"
     severity: error
+  no_print:
+    name: "print"
+    included: "DashWallet/Sources/.*\\.swift"
+    regex: "(?<![A-Za-z0-9_.])(Swift\\.)?(print|debugPrint|dump)\\("
+    match_kinds:
+      - identifier
+    message: "Use AppLogger: print() goes to stdout only and never reaches the \"Share application logs\" export"
+    severity: error
+  no_raw_error_log:
+    name: "Raw error in log"
+    included: "DashWallet/Sources/.*\\.swift"
+    regex: "DWLogger\\.log\\w*\\([^\\n]*(\\.localizedDescription|String\\((describing|reflecting): *\\w*[eE]rr|\\\\\\((\\w*[eE]rror|err)\\))"
+    message: "Use AppLogger with \\(error), or AppLogMessage.errorSummary(error): an error's text quotes txids, addresses and paths"
+    severity: error

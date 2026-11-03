@@ -18,6 +18,8 @@
 import Combine
 import UIKit
 
+private let logger = AppLogger(category: "settings-menu-view-model")
+
 enum SettingsMenuNavigationDestination {
     case currencySelector
     case network
@@ -403,7 +405,7 @@ class SettingsMenuViewModel: ObservableObject {
                 SwiftDashSDKWalletRuntime.SwitchError.devnetNotConfigured.localizedDescription
             return false
         } catch {
-            DWLogger.log("SettingsMenuViewModel: network switch failed: \(error)")
+            logger.error("SettingsMenuViewModel: network switch failed: \(error)")
             return false
         }
     }

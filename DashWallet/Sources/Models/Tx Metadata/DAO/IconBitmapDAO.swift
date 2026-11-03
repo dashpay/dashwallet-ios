@@ -19,6 +19,8 @@ import Foundation
 import SQLite
 import Combine
 
+private let logger = AppLogger(category: "icon-bitmap-dao")
+
 #if !swift(>=5.9)
 // Provide `withLock` helper for older Swift toolchains to use scoped locking.
 extension NSLock {
@@ -74,7 +76,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
             cacheLock.withLock { cache[key] = bitmap }
             updateBitmapsSubject()
         } catch {
-            print("IconBitmapDAO addBitmap error: \(error)")
+            logger.error("IconBitmapDAO: addBitmap failed: \(error)")
         }
     }
     
@@ -90,7 +92,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
             }
             return bitmap
         } catch {
-            print("IconBitmapDAO getBitmap error: \(error)")
+            logger.error("IconBitmapDAO: getBitmap failed: \(error)")
         }
         
         return nil
@@ -107,7 +109,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
             cacheLock.withLock { cache.removeAll() }
             updateBitmapsSubject()
         } catch {
-            print("IconBitmapDAO clear error: \(error)")
+            logger.error("IconBitmapDAO: clear failed: \(error)")
         }
     }
     
@@ -123,7 +125,7 @@ class IconBitmapDAOImpl: NSObject, IconBitmapDAO {
             }
             updateBitmapsSubject()
         } catch {
-            print("IconBitmapDAO loadAllBitmaps error: \(error)")
+            logger.error("IconBitmapDAO: loadAllBitmaps failed: \(error)")
         }
     }
     

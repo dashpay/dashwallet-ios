@@ -19,6 +19,8 @@ import Foundation
 import SQLite
 import SQLiteMigrationManager
 
+private let logger = AppLogger(category: "notified-event-store")
+
 // MARK: - NotifiedEventStoring
 
 /// Persisted dedup and badge truth for posted notifications.
@@ -154,7 +156,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
             }
             return inserted
         } catch {
-            DWLogger.log("NotifiedEventStore: markIfNew(\(id)) failed: \(error)")
+            logger.error("NotifiedEventStore: markIfNew(\(id, privacy: .public)) failed: \(error)")
             // Nothing was recorded. Admit the id once per process (see
             // `admittedWithoutRecord`); a repeat is a duplicate, not a new event.
             return admittedWithoutRecord.insert(id).inserted
@@ -175,7 +177,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
                 S.colCreatedAt <- stamp,
                 S.colSeenAt <- stamp))
         } catch {
-            DWLogger.log("NotifiedEventStore: consume(\(id)) failed: \(error)")
+            logger.error("NotifiedEventStore: consume(\(id, privacy: .public)) failed: \(error)")
         }
     }
 
@@ -189,7 +191,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
         do {
             try connection.run(S.table.filter(S.colId == id).delete())
         } catch {
-            DWLogger.log("NotifiedEventStore: unmark(\(id)) failed: \(error)")
+            logger.error("NotifiedEventStore: unmark(\(id, privacy: .public)) failed: \(error)")
         }
     }
 
@@ -198,7 +200,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
         do {
             return try connection.scalar(S.table.filter(S.colSeenAt == nil).count)
         } catch {
-            DWLogger.log("NotifiedEventStore: unseenCount failed: \(error)")
+            logger.error("NotifiedEventStore: unseenCount failed: \(error)")
             return 0
         }
     }
@@ -210,7 +212,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
                 .filter(S.colTopic == topic.rawValue && S.colSeenAt == nil)
                 .update(S.colSeenAt <- epochSeconds(now())))
         } catch {
-            DWLogger.log("NotifiedEventStore: markAllSeen(\(topic.rawValue)) failed: \(error)")
+            logger.error("NotifiedEventStore: markAllSeen(\(topic.rawValue, privacy: .public)) failed: \(error)")
         }
         pruneExpired()
     }
@@ -222,7 +224,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
                 .filter(S.colSeenAt == nil)
                 .update(S.colSeenAt <- epochSeconds(now())))
         } catch {
-            DWLogger.log("NotifiedEventStore: markAllSeen failed: \(error)")
+            logger.error("NotifiedEventStore: markAllSeen failed: \(error)")
         }
         pruneExpired()
     }
@@ -236,7 +238,7 @@ actor NotifiedEventStore: NotifiedEventStoring {
         do {
             try connection.run(S.table.filter(S.colCreatedAt < cutoff).delete())
         } catch {
-            DWLogger.log("NotifiedEventStore: prune failed: \(error)")
+            logger.error("NotifiedEventStore: prune failed: \(error)")
         }
     }
 

@@ -19,6 +19,8 @@ import Foundation
 import UIKit
 import UserNotifications
 
+private let logger = AppLogger(category: "inactivity-reminder-scheduler")
+
 // MARK: - InactivityReminderActionHandling
 
 /// The inactivity notification's category actions, dispatched back from
@@ -204,7 +206,7 @@ final class InactivityReminderScheduler {
             try await client.add(request)
             DWLogger.log("InactivityReminderScheduler: reminder scheduled in \(Int(Self.reminderDelay))s")
         } catch {
-            DWLogger.log("InactivityReminderScheduler: scheduling failed: \(error)")
+            logger.error("InactivityReminderScheduler: scheduling failed: \(error)")
         }
     }
 

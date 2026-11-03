@@ -19,6 +19,8 @@ import SwiftUI
 import DashUIKit
 import SDWebImageSwiftUI
 
+private let logger = AppLogger(category: "dash-spend-pay-screen")
+
 struct DashSpendPayScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @StateObject private var viewModel: DashSpendPayViewModel
@@ -247,7 +249,7 @@ struct DashSpendPayScreen: View {
                 errorMessage = error.localizedDescription
                 showErrorDialog = true
 
-                DWLogger.log("Gift card purchase failed with error: \(error)")
+                logger.error("Gift card purchase failed with error: \(error)")
             }
         }
     }

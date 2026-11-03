@@ -19,6 +19,8 @@
 
 import Foundation
 
+private let logger = AppLogger(category: "swap-kit-swap-provider")
+
 /// `SwapProvider` backed by `SwapKitAPIService`.
 ///
 /// Strategy mirrors Android's `SwapKitApiAggregator`:
@@ -261,7 +263,7 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.quote(request)
             return response.error
         } catch {
-            DWLogger.log("SwapKit: address validation request failed: \(error)")
+            logger.warning("SwapKit: address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
         }
     }
@@ -474,7 +476,8 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
             // that draws conclusions from "not observed" can tell it from a real answer.
-            DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
+            logger.warning(
+                "SwapKit: track request failed (deposit=\(depositAddress ?? "nil", privacy: .public)): \(error)")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }
@@ -544,7 +547,7 @@ final class SwapKitSwapProvider: SwapProvider {
         } catch {
             classificationUsable = false
             clearClassification()
-            DWLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
+            logger.warning("SwapKit: classification fetch failed: \(error) — Buy will show error state")
         }
     }
 

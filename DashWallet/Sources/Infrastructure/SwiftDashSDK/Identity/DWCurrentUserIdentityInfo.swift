@@ -1415,7 +1415,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             if error is CancellationError {
                 DWLogger.log("\(logTag) cancelled after \(elapsedMs())ms")
             } else {
-                DWLogger.log("\(logTag) failed after \(elapsedMs())ms: \(String(describing: error))")
+                DWLogger.log("\(logTag) failed after \(elapsedMs())ms: \(AppLogMessage.errorSummary(error))")
             }
         }
     }

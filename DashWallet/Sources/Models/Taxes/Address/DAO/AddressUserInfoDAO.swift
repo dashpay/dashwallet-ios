@@ -18,6 +18,8 @@
 import Foundation
 import SQLite
 
+private let logger = AppLogger(category: "address-user-info-dao")
+
 // MARK: - AddressUserInfoDAO
 
 protocol AddressUserInfoDAO {
@@ -44,7 +46,7 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
                                                         AddressUserInfo.txCategoryColumn <- dto.taxCategory.rawValue)
             try db.run(userInfo)
         } catch {
-            print(error)
+            logger.error("AddressUserInfoDAO: create failed: \(error)")
         }
 
         cache[dto.address] = dto
@@ -63,7 +65,7 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
                 userInfos.append(userInfo)
             }
         } catch {
-            print(error)
+            logger.error("AddressUserInfoDAO: all failed: \(error)")
         }
 
         return userInfos
@@ -84,7 +86,7 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
                 return userInfo
             }
         } catch {
-            print(error)
+            logger.error("AddressUserInfoDAO: get failed: \(error)")
         }
 
         return nil
@@ -106,7 +108,7 @@ class AddressUserInfoDAOImpl: NSObject, AddressUserInfoDAO {
             try db.run(AddressUserInfo.table.delete())
             cache = [:]
         } catch {
-            print(error)
+            logger.error("AddressUserInfoDAO: deleteAll failed: \(error)")
         }
     }
 

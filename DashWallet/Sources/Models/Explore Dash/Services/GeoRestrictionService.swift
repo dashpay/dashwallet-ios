@@ -25,6 +25,8 @@ import CoreLocation
 import StoreKit
 import Combine
 
+private let logger = AppLogger(category: "geo-restriction-service")
+
 /// UserDefaults key for thread-safe geo-restriction check
 private let kGeoRestrictionPiggyCardsRestrictedKey = "geo_restriction_piggycards_restricted"
 
@@ -182,7 +184,7 @@ class GeoRestrictionService {
                 return countryCode
             }
         } catch {
-            DWLogger.log("GeoRestrictionService: IP geolocation error: \(error.localizedDescription)")
+            logger.warning("GeoRestrictionService: IP geolocation error: \(error)")
         }
 
         return nil

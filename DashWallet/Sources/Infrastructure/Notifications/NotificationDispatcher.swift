@@ -18,6 +18,8 @@
 import Foundation
 import UserNotifications
 
+private let logger = AppLogger(category: "notification-dispatcher")
+
 /// The only component that turns an `AppNotification` into a scheduled
 /// `UNNotificationRequest`. Every feature posts through here, so permission
 /// gating, dedup, grouping, and the badge number are applied in one place.
@@ -134,7 +136,7 @@ final class NotificationDispatcher {
                 DWLogger.log("NotificationDispatcher: posted \(notification.id) (topic \(notification.topic.rawValue))")
                 return true
             } catch {
-                DWLogger.log("NotificationDispatcher: failed to post \(notification.id): \(error)")
+                logger.error("NotificationDispatcher: failed to post \(notification.id, privacy: .public): \(error)")
                 // Roll the dedup mark back: nothing was delivered, so a retry
                 // post must be able to reach the center. (The mark stays
                 // before `add` above — it is the concurrent-duplicate guard.)
