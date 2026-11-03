@@ -226,6 +226,16 @@ struct ConnectionsScreen: View {
     )
 }
 
+#Preview("Not Delivered") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.undelivered)]),
+            featureUnavailable: false
+        )
+    )
+}
+
 #Preview("Active") {
     ConnectionsScreen(
         vc: UINavigationController(),

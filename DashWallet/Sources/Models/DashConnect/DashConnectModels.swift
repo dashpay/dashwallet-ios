@@ -141,12 +141,16 @@ extension DashConnectTokenPurchaseRequest {
 }
 
 /// Lifecycle of an app connection. `active` means an approval's keys are
-/// live on an identity of this wallet, whether or not its response was
-/// published; `confirming` means its identity update may still land.
+/// live on an identity of this wallet; `undelivered` means they are live but
+/// the app never got its response; `confirming` means an identity update may
+/// still land.
 enum ConnectionStatus: String, Codable, CaseIterable {
     /// An App Connect approval whose identity update may still land.
     case confirming
     case active
+    /// The app's keys are live, but its response was never published: the
+    /// app holds keys it cannot use. Only a disconnect or a new QR helps.
+    case undelivered
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

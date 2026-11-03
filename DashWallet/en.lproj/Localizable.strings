@@ -6103,6 +6103,9 @@
 "App contract" = "App contract";
 "Could not disconnect: %@" = "Could not disconnect: %@";
 
+/* DashConnect: keys are on the identity, but the app never got its response */
+"Not delivered" = "Not delivered";
+
 /* DashConnect App Connect v1 */
 "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code." = "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.";
 

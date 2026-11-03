@@ -47,7 +47,7 @@ final class AppConnectProjectionTests: XCTestCase {
     ) -> Intent {
         Intent(
             id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: Data(repeating: 0xEE, count: 20),
-            connectionId: nil, keys: keys, sentEncryptionKeyIds: [], approvedEncryption: [], disables: [],
+            connectionId: nil, keys: keys, sentEncryptionKeyIds: [], disables: [],
             response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
             responseDocumentId: published ? Data(repeating: 0xDD, count: 32) : nil, responseRemoved: !published, createdAt: Date(timeIntervalSince1970: createdAt), closedAt: nil)
     }
@@ -321,6 +321,23 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(rows.last?.name, "App")
     }
 
+    func testAConnectionWhoseResponseWasNeverPublishedShowsAsNotDelivered() {
+        let key = Self.authKey(10)
+        let snapshot = Self.snapshot([Self.onPlatform(key)])
+        let undelivered = AppConnect.project([snapshot], intents: [Self.intent([key])])
+        XCTAssertEqual(undelivered.connections.first?.isUndelivered, true)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([], after: undelivered, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            [.undelivered])
+        let delivered = AppConnect.project([snapshot], intents: [Self.intent([key], published: true)])
+        XCTAssertEqual(delivered.connections.first?.isUndelivered, false)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([], after: delivered, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            [.active])
+        let restored = AppConnect.project([Self.snapshot([Self.onPlatform(key)])], intents: [])
+        XCTAssertEqual(restored.connections.first?.isUndelivered, false, "keys no intent names are not judged undelivered")
+    }
+
     func testAnAppConnectRowHeldByAnotherIdentityStays() {
         let row = DAppConnection(
             id: Self.otherApp.toBase58String(), name: "Elsewhere", url: "", status: .active,
@@ -346,27 +363,6 @@ final class AppConnectProjectionTests: XCTestCase {
             auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: budget, expiresAt: expiresAt)],
             encryption: encryption.enumerated().map { AppConnect.EncryptionGrant(bindingIndex: $0.offset, binding: $0.element) },
             connectionId: connectionId, identityHint: nil, createdAt: 0, callbackHost: nil)
-    }
-
-    func testARetrySubmitsTheIntentOnlyWithinWhatIsApprovedNow() {
-        let intent = Self.intent([Self.authKey(10)])
-        XCTAssertTrue(AppConnect.isWithinPlan(intent, Self.plan()))
-        XCTAssertTrue(AppConnect.isWithinPlan(intent, Self.plan(expiresAt: Self.now + 5000)), "a later expiry now still covers it")
-        XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(expiresAt: Self.now + 10)), "it would outlive what is approved now")
-        XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(budget: 500)))
-        XCTAssertFalse(AppConnect.isWithinPlan(intent, Self.plan(critical: true)))
-        XCTAssertFalse(
-            AppConnect.isWithinPlan(intent, Self.plan(encryption: [.init(contractId: Self.app, purpose: .encryption)])),
-            "the response would carry slots other than the ones approved now")
-        let otherConnection = Intent(
-            id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
-            appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: Data(repeating: 0xC0, count: 16),
-            keys: intent.keys, sentEncryptionKeyIds: [], approvedEncryption: [], disables: [], response: intent.response,
-            responseDocumentId: nil, responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
-        XCTAssertFalse(AppConnect.isWithinPlan(otherConnection, Self.plan()), "another connection's intent")
-        XCTAssertFalse(
-            AppConnect.isWithinPlan(intent, Self.plan(connectionId: Data(repeating: 0xC0, count: 16))),
-            "an intent with no connection under a plan with one")
     }
 
     // MARK: Fence
@@ -426,29 +422,18 @@ final class AppConnectProjectionTests: XCTestCase {
         }
     }
 
-    func testAnIntentWithNoRecordOfItsSlotsIsNeverResumed() throws {
-        let intent = Self.intent([Self.authKey(10)])
-        let json = try JSONEncoder().encode(intent)
-        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: json) as? [String: Any])
-        object.removeValue(forKey: "approvedEncryption")
-        let older = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: object))
-        XCTAssertNil(older.approvedEncryption)
-        XCTAssertFalse(AppConnect.isWithinPlan(older, Self.plan()))
-    }
-
-    func testALiveKeyOfAnIntentWithATakenIdStaysActionableButIsNotResumed() {
+    func testALiveKeyOfAnIntentWithATakenIdStaysActionable() {
         let a = Self.authKey(10), b = Self.authKey(11)
         let intent = Self.intent([a, b])
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         let projection = AppConnect.project([snapshot], intents: [intent])
         XCTAssertEqual(projection.connections.first?.status, .active(expiresAt: Self.now + 1000), "the app keeps a row")
-        XCTAssertFalse(AppConnect.mayResume(intent, in: snapshot), "its update never lands as a whole")
         let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false)
         XCTAssertEqual(plan.disable, [10])
         XCTAssertEqual(plan.fence, [])
     }
 
-    func testARetryIsRefusedWhenALandedKeyWasGivenMoreSince() {
+    func testAResponseIsNotReleasedForALandedKeyGivenMoreThanApproved() {
         let key = Self.authKey(10)
         let intent = Self.intent([key])
         let raised = AppConnect.PlatformKey(
@@ -481,25 +466,11 @@ final class AppConnectProjectionTests: XCTestCase {
         let intent = Self.intent([a, b])
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .expired)
-        XCTAssertFalse(AppConnect.mayResume(intent, in: snapshot))
         XCTAssertEqual(
             AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
             [10])
         let off = Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: off), .neverLanded, "nothing enabled is left")
-    }
-
-    func testARetryCarriesOnOnlyWhileTheKeysAreLiveOrMayStillLand() {
-        let key = Self.authKey(10)
-        var intent = Self.intent([key])
-        XCTAssertTrue(AppConnect.mayResume(intent, in: Self.snapshot([])))
-        XCTAssertTrue(AppConnect.mayResume(intent, in: Self.snapshot([Self.onPlatform(key)])))
-        XCTAssertFalse(AppConnect.mayResume(intent, in: Self.snapshot([Self.onPlatform(key, disabledAt: 1)])))
-        XCTAssertFalse(AppConnect.mayResume(
-            Self.intent([Self.authKey(10, expiresAt: Self.now - 1)]),
-            in: Self.snapshot([Self.onPlatform(Self.authKey(10, expiresAt: Self.now - 1))])))
-        intent.closedAt = Date(timeIntervalSince1970: 5)
-        XCTAssertFalse(AppConnect.mayResume(intent, in: Self.snapshot([Self.onPlatform(key)])), "the user disconnected it")
     }
 
     func testAnIntentHasLandedOnlyOnceTheKeysItTurnsOffAreOff() {
@@ -508,7 +479,7 @@ final class AppConnectProjectionTests: XCTestCase {
         intent = Intent(
             id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
             appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: nil, keys: intent.keys,
-            sentEncryptionKeyIds: [], approvedEncryption: [], disables: [5], response: intent.response, responseDocumentId: nil,
+            sentEncryptionKeyIds: [], disables: [5], response: intent.response, responseDocumentId: nil,
             responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
         let addedElsewhere = Self.snapshot([Self.onPlatform(key), Self.onPlatform(earlier)])
         XCTAssertFalse(AppConnect.hasLanded(intent, in: addedElsewhere), "the earlier key is still on")
@@ -535,7 +506,7 @@ final class AppConnectProjectionTests: XCTestCase {
         intent = Intent(
             id: intent.id, identityId: intent.identityId, appId: intent.appId, appLabel: intent.appLabel,
             appUrl: intent.appUrl, requestHash: intent.requestHash, connectionId: nil, keys: intent.keys,
-            sentEncryptionKeyIds: [7], approvedEncryption: [], disables: [], response: intent.response,
+            sentEncryptionKeyIds: [7], disables: [], response: intent.response,
             responseDocumentId: nil, responseRemoved: true, createdAt: intent.createdAt, closedAt: nil)
         let decryption = AppConnect.PlatformKey(
             id: 7, purpose: .decryption, securityLevel: .medium, keyType: .ecdsaSecp256k1, data: Data(repeating: 7, count: 33),
@@ -609,7 +580,6 @@ final class AppConnectProjectionTests: XCTestCase {
             totalBudget: nil, expiresAt: nil, disabledAt: nil)
         let snapshot = Self.snapshot([other])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .neverLanded)
-        XCTAssertFalse(AppConnect.mayResume(intent, in: snapshot))
         XCTAssertEqual(
             AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).fence,
             [])

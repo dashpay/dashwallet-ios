@@ -255,6 +255,7 @@ final class ConnectionsViewModel: ObservableObject {
                 // instead of Approve; when it can again, the note says why
                 // the approval did not go through.
                 let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.pendingFailureStatus = nil
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
@@ -296,9 +297,10 @@ final class ConnectionsViewModel: ObservableObject {
 
     func denyPendingRequest() {
         guard !isApproving else { return }
-        // A refused request never showed where it would return, so its
-        // callback is not opened.
-        if let pendingLoginRequest, pendingRequest?.login.isApprovable == true {
+        // A request refused when it was read never showed where it would
+        // return, so its callback is not opened. One that failed on approval
+        // did, and the app is told.
+        if let pendingLoginRequest, pendingRequest?.login.isApprovable == true || pendingFailureStatus == .failed {
             openCallback(of: pendingLoginRequest, status: pendingFailureStatus ?? .declined)
         }
         pendingRequest = nil

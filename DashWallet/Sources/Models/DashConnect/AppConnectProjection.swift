@@ -17,13 +17,6 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Stored
 
-    /// One encryption slot of an approval: what the key is for, and the
-    /// contract it is bound to.
-    struct ApprovedSlot: Codable, Equatable {
-        let purpose: KeyPurpose
-        let contractId: Data
-    }
-
     /// One key an intent submits, exactly as it is submitted.
     struct IntendedKey: Codable, Equatable {
         let id: UInt32
@@ -61,13 +54,10 @@ extension AppConnect {
         /// The identity's encryption keys the response carries without adding
         /// them, in slot order.
         let sentEncryptionKeyIds: [UInt32]
-        /// The encryption slots the user approved, in the plan's order. Nil
-        /// in a row written before it was kept: a retry of it is refused.
-        let approvedEncryption: [ApprovedSlot]?
         /// The ids of earlier auth keys the same update turns off.
         let disables: [UInt32]
-        /// The response, sealed before the submit, so a retry publishes the
-        /// same values and a disconnect deletes them by those values.
+        /// The response, sealed before the submit, so a disconnect deletes it
+        /// by its values.
         let response: ResponseValues
         /// Set once the response is known to be on Platform.
         var responseDocumentId: Data?
@@ -220,6 +210,9 @@ extension AppConnect {
         /// names: granted on another device, or before a restore. Keyed by
         /// identity.
         let unrecordedKeyIds: [Data: [UInt32]]
+        /// The app's live access comes only from approvals whose response
+        /// was never published: it holds keys it never got.
+        var isUndelivered = false
 
         var id: Data { appId }
     }
@@ -336,13 +329,20 @@ extension AppConnect {
         let apps = Set(intents.map(\.appId)).union(unrecorded.keys)
         let connections: [ProjectedConnection] = apps.compactMap { app in
             let own = intents.filter { $0.appId == app }.sorted { $0.createdAt > $1.createdAt }
-            var statuses = own.compactMap { intent in byIdentity[intent.identityId].map { status(of: intent, in: $0) } }
+            let ownStatuses = own.compactMap { intent in byIdentity[intent.identityId].map { (intent, status(of: intent, in: $0)) } }
+            var statuses = ownStatuses.map(\.1)
             let others = unrecorded[app] ?? [:]
             if !others.isEmpty { statuses.append(.active(expiresAt: nil)) }
             // An app this read says nothing about (its intents are on
             // identities not read) has no connection here.
             guard let best = statuses.min(by: { rank($0) < rank($1) }) else { return nil }
-            return ProjectedConnection(appId: app, status: best, intents: own, unrecordedKeyIds: others)
+            let delivering = ownStatuses.compactMap { intent, status -> ConnectionIntent? in
+                guard case .active = status else { return nil }
+                return intent
+            }
+            let isUndelivered = others.isEmpty && !delivering.isEmpty && delivering.allSatisfy { $0.responseDocumentId == nil }
+            return ProjectedConnection(
+                appId: app, status: best, intents: own, unrecordedKeyIds: others, isUndelivered: isUndelivered)
         }
         return Projection(
             connections: connections.sorted { $0.appId.lexicographicallyPrecedes($1.appId) },
@@ -465,17 +465,6 @@ extension AppConnect {
         intent.keys.contains { presence(of: $0, in: snapshot) == .conflicting }
     }
 
-    /// Whether a retry of a request may carry on with its intent: its keys
-    /// are live or may still land, none of its ids is held by another key,
-    /// and the user has not disconnected it.
-    static func mayResume(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
-        guard intent.closedAt == nil, !hasConflict(intent, in: snapshot) else { return false }
-        switch status(of: intent, in: snapshot) {
-        case .active, .confirming: return true
-        case .expired, .disconnected, .neverLanded: return false
-        }
-    }
-
     /// What a disconnect of one app submits on one identity.
     struct DisconnectPlan: Equatable {
         /// The app's auth keys still enabled: live or expired. Platform still
@@ -542,10 +531,6 @@ extension AppConnect {
         }
     }
 
-    static func approvedSlots(of plan: GrantPlan) -> [ApprovedSlot] {
-        plan.encryption.map { ApprovedSlot(purpose: $0.keyPurpose, contractId: $0.binding.contractId) }
-    }
-
     /// Whether the auth keys of `intent` that are on the identity hold no more
     /// than `plan` grants now: an authorized limits update may have raised
     /// a key's budget or lifetime after it landed. No budget means no cap.
@@ -554,20 +539,6 @@ extension AppConnect {
             guard let key = snapshot.keys.first(where: { isSameKey($0, as: intended) }) else { return true }
             let budgetWithin = grant.totalBudget.map { cap in key.totalBudget.map { $0 <= cap } ?? false } ?? true
             return budgetWithin && (key.expiresAt ?? .max) <= grant.expiresAt
-        }
-    }
-
-    /// Whether a retry of a request may submit `intent` again under what
-    /// the user approved now: the same keys, each with the level, bound and
-    /// budget the plan grants, and an expiry no later than the plan's.
-    static func isWithinPlan(_ intent: ConnectionIntent, _ plan: GrantPlan) -> Bool {
-        let auth = intent.authKeys
-        guard intent.appId == plan.appId, intent.connectionId == plan.connectionId, auth.count == plan.auth.count,
-              intent.approvedEncryption == approvedSlots(of: plan) else { return false }
-        return zip(auth, plan.auth).allSatisfy { key, grant in
-            key.securityLevel == grant.securityLevel && key.bound == grant.storedBound
-                && key.totalBudget == grant.totalBudget
-                && (key.expiresAt ?? .max) <= grant.expiresAt
         }
     }
 
