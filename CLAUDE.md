@@ -114,6 +114,17 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 6. **No debug residue in commits:** no session tags in log lines (à la `CJTEST`), no plan-diary comments ("Row #17 stage A", "M5/M6"), no stale line-number cross-references in doc comments. Use `TODO(label)` and link docs instead.
 7. **Legacy compatibility stays bounded and honest.** Do not restore staged DashSync/SDK paths. Only the frozen key migrator may read the old `org.dashfoundation.dash` keychain layout. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
 
+## Architecture decisions
+
+- Before changing an area, read the Accepted ADRs for it in the decision log, [`docs/adr/README.md`](docs/adr/README.md).
+- Never silently contradict an Accepted ADR: name it and propose superseding it with a new ADR.
+- An ADR you draft stays Proposed until a human Reviewer who is not its author approves the PR; your own approval never counts. After that approval, setting Accepted is a status-only change (ADR-0001 rule 3).
+- Record a significant decision as an ADR in the same PR that makes it (threshold and "not needed" cases: ADR-0001).
+
+## Publicity
+
+The repository is public. Never put customer data, unfixed vulnerability detail, secrets or step-by-step attack detail against keys, PIN or encryption into files, commit messages, PRs, issues or their attachments; describe a support case by its symptom (ADR-0001 rule 2).
+
 ## Code Style
 
 - **Swift**: SwiftFormat / SwiftLint (configs in `.swiftformat`, `.swiftlint.yml`). Avoid wholesale `@objcMembers` exposure (enforced by a custom SwiftLint rule).
