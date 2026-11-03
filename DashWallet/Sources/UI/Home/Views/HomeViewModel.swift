@@ -2984,7 +2984,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 if producing.typedKind == .coinJoin || ownerType == coinJoinAccountType {
                     kindOrDepositMixing.insert(producing.txid)
                 }
-                if ownerType == standardAccountType {
+                if ownerType == PersistentAccount.standardAccountType {
                     depositsToStandard.insert(producing.txid)
                 }
             }
@@ -3059,7 +3059,6 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
     // PersistentAccount.accountType discriminants (stable across releases).
     private static let coinJoinAccountType: UInt32 = 1 // 0=Standard(BIP44/BIP32), 1=CoinJoin
-    private static let standardAccountType: UInt32 = 0
 
     /// CoinJoin-mixing classification cache for the per-row (scoped) fetch
     /// paths, keyed by txid and stamped with the row's `lastUpdated` — the
@@ -3126,9 +3125,14 @@ class SwiftDashSDKWalletSource: TransactionSource {
         }
         let spendsCoinJoin = p.inputs.contains { ownerAccountType($0) == coinJoinAccountType }
         guard spendsCoinJoin else { return false }
-        let depositsToStandard = p.outputs.contains { ownerAccountType($0) == standardAccountType }
+        let depositsToStandard = p.outputs.contains { ownerAccountType($0) == PersistentAccount.standardAccountType }
         return !depositsToStandard
     }
+}
+
+extension PersistentAccount {
+    /// `accountType` of a Standard (BIP44 or BIP32) account. Stable across releases.
+    static let standardAccountType: UInt32 = 0
 }
 
 #if DEBUG
