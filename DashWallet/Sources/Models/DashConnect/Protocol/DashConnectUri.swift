@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 enum DashConnectUriError: LocalizedError, Equatable {
@@ -409,7 +410,9 @@ enum DashConnectUri {
         }
         let callback = try parameters["cb"].map(parseCallback)
 
-        return AppConnectUri(request: try AppConnectRequest.decode(body), network: network, callback: callback)
+        return AppConnectUri(
+            request: try AppConnectRequest.decode(body), network: network, callback: callback,
+            digest: Data(SHA256.hash(data: body)))
     }
 
     /// `+` is a space and each well-formed `%XX` a byte; a `%` that is not

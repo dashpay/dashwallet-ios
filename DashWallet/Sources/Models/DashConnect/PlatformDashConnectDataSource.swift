@@ -946,7 +946,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if let earlier = stores.intents.load().first(where: {
             $0.appId == plan.appId && $0.requestHash == plan.appEphemeralPubKeyHash
         }) {
-            guard earlier.identityId == context.identityId, earlier.closedAt == nil else {
+            // The same key in a request that differs in anything else is
+            // another request: the one answered is not it.
+            guard earlier.identityId == context.identityId, earlier.closedAt == nil,
+                  earlier.requestDigest == uri.digest else {
+                if earlier.requestDigest != uri.digest {
+                    Self.logger.error("🔗 DASHCONNECT :: another request reuses an answered request's key; refused")
+                }
                 throw Self.spentRequest(after: nil)
             }
             if earlier.responseDocumentId == nil {
@@ -967,9 +973,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let request = uri.request
         let signer = KeychainSigner(modelContainer: context.modelContainer)
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
-        let intent = try await newAppConnectIntent(
+        var intent = try await newAppConnectIntent(
             request: request, plan: plan, consent: consent, snapshot: snapshot,
             currentPublicKeys: currentPublicKeys, context: context)
+        intent.requestDigest = uri.digest
         updateIntents(in: stores) { $0.append(intent) }
         guard stores.intents.load().contains(where: { $0.id == intent.id }) else {
             throw DashConnectPlatformError.grantNotRecorded

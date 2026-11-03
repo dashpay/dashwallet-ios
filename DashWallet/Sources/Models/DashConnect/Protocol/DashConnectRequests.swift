@@ -25,6 +25,9 @@ struct AppConnectUri: Equatable {
     /// The `cb` return URL: absolute `https`, no credentials. Checked for
     /// form only; whether its host belongs to the app is not decided here.
     let callback: URL?
+    /// SHA-256 of the request's bytes: two requests are the same request
+    /// only when every field is.
+    var digest = Data()
 }
 
 struct DashStRequest: Equatable {
