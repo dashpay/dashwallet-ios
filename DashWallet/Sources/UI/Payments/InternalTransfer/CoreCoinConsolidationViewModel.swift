@@ -249,7 +249,7 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
             throw Stop(message: Self.stillCombiningMessage)
         }
         guard let result else {
-            Self.log("the active wallet changed while waiting for finality")
+            Self.log("the active wallet changed, or its coins could not be read, while waiting for finality")
             throw Stop(message: Self.genericFailureMessage)
         }
         let waitedSeconds = Int(Date().timeIntervalSince(waitStart).rounded())

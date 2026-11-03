@@ -493,15 +493,22 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Snapshot of the BIP44 account-0 spendable UTXOs with their finality —
     /// the same shape as `coinJoinUtxoState(expecting:)`, read off the
     /// account the Core consolidation spends and pays back into. Nil when the
-    /// active wallet is not `binding` or no manager is bound; `isLocked` rows
-    /// are left out, as coin selection never spends them.
+    /// active wallet is not `binding`, no manager is bound, or the read can't
+    /// be told apart from a failed one (`CoinJoinShieldPlanner.utxoReadIsUsable`:
+    /// every wallet has this account, and one with a balance has UTXOs);
+    /// `isLocked` rows are left out, as coin selection never spends them.
     @MainActor
     static func bip44UtxoState(expecting binding: CoinJoinWalletBinding) -> CoinJoinUtxoState? {
         let host = SwiftDashSDKHost.shared
         guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
         let walletId = binding.walletId
-        let utxos = bip44AccountBalance(in: manager.accountBalances(for: walletId))
-            .map { manager.accountUtxos(for: walletId, balance: $0) } ?? []
+        let balances = manager.accountBalances(for: walletId)
+        guard let bip44 = bip44AccountBalance(in: balances) else { return nil }
+        let utxos = manager.accountUtxos(for: walletId, balance: bip44)
+        let balanceIsZero = bip44.confirmed == 0 && bip44.unconfirmed == 0 && bip44.immature == 0 && bip44.locked == 0
+        guard CoinJoinShieldPlanner.utxoReadIsUsable(
+            accountCount: balances.count, accountBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
+        else { return nil }
         let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
         let entries = utxos
             .filter { !$0.isLocked }
