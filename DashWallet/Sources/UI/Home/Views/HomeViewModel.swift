@@ -2192,7 +2192,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         walletId: Data,
         coreTransactions: [Transaction] = [],
         ownShieldedRaw43: Data? = nil,
-        recordWithdrawalDestination: (String) -> Void = { ShieldedWithdrawalStore.shared.record(address: $0) }
+        withdrawalStore: ShieldedWithdrawalStore = .shared
     ) -> [ShieldedActivityItem] {
         let context = ModelContext(container)
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
@@ -2221,6 +2221,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
         let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
 
+        var failedWithdrawalDestinations: Set<String> = []
+        var nonFailedWithdrawalDestinations: Set<String> = []
+        let observeDestination: (String, Bool) -> Void = { address, failed in
+            if failed {
+                failedWithdrawalDestinations.insert(address)
+            } else {
+                nonFailedWithdrawalDestinations.insert(address)
+            }
+        }
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
             let reconstructedAmountCredits = projectedShieldedAmountCredits(
@@ -2235,7 +2244,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
                     if let item = ownWithdrawalHistoryItem(
                         row: row, amountCredits: reconstructedAmountCredits, address: address,
-                        coreTransactions: coreTransactions, recordDestination: recordWithdrawalDestination) {
+                        coreTransactions: coreTransactions, observeDestination: observeDestination) {
                         items.append(item)
                     }
                     continue
@@ -2298,7 +2307,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     if isOwnAddress {
                         if let item = ownWithdrawalHistoryItem(
                             row: row, amountCredits: reconstructedAmountCredits, address: address,
-                            coreTransactions: coreTransactions, recordDestination: recordWithdrawalDestination) {
+                            coreTransactions: coreTransactions, observeDestination: observeDestination) {
                             items.append(item)
                         }
                         continue
@@ -2354,6 +2363,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     amountCreditsOverride: reconstructedAmountCredits))
             }
         }
+        withdrawalStore.reconcile(
+            walletIdHex: walletId.map { String(format: "%02x", $0) }.joined(),
+            failed: failedWithdrawalDestinations, nonFailed: nonFailedWithdrawalDestinations)
         return items
     }
 
@@ -2364,14 +2376,14 @@ class SwiftDashSDKWalletSource: TransactionSource {
         amountCredits: UInt64,
         address: String,
         coreTransactions: [Transaction],
-        recordDestination: (String) -> Void
+        observeDestination: (String, Bool) -> Void
     ) -> ShieldedActivityItem? {
         let failed = row.status == ShieldedActivityItem.Status.failed.rawValue
+        observeDestination(address, failed)
         let item = ShieldedActivityItem(
             row: row, kindOverride: .withdrawal, amountCreditsOverride: amountCredits,
             destinationAddress: address, isAwaitingTransparentReceipt: !failed)
         guard !failed else { return item }
-        recordDestination(address)
         return hasMatchingCoreReceipt(for: item, address: address, in: coreTransactions) ? nil : item
     }
 

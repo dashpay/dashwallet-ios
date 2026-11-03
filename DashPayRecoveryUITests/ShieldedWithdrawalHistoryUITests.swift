@@ -24,6 +24,7 @@ final class ShieldedWithdrawalHistoryUITests: XCTestCase {
         return app.descendants(matching: .any)["shielded-\(key)-0"].firstMatch
     }
 
+    /// Waits for the production row to expose its projected status to accessibility.
     private func assertStatus(_ value: String, id: UInt8 = 1, file: StaticString = #filePath, line: UInt = #line) {
         let element = row(id)
         XCTAssertTrue(element.waitForExistence(timeout: 5), file: file, line: line)
@@ -47,8 +48,10 @@ final class ShieldedWithdrawalHistoryUITests: XCTestCase {
     func testInjectedRejectionRemainsFailedAfterRelaunchAndLaterSmallerPayout() {
         app.buttons["recordPending"].tap()
         assertStatus("Pending")
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: yes")
         app.buttons["injectFailure"].tap()
         assertStatus("Failed")
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: no")
         // SwiftUI localizes numeric interpolation (including grouping separators).
         XCTAssertEqual(app.staticTexts["fixtureBalance"].label.filter(\.isNumber), "10000000000")
         XCTAssertEqual(app.staticTexts["fixtureReceipts"].label, "Core receipts: 0")
@@ -60,11 +63,14 @@ final class ShieldedWithdrawalHistoryUITests: XCTestCase {
         app.terminate()
         app.launch()
         assertStatus("Failed")
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: no")
         app.buttons["recordSmaller"].tap()
         assertStatus("Pending", id: 2)
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: yes")
         app.buttons["recordReceipt"].tap()
         assertStatus("Failed")
         XCTAssertFalse(row(2).exists)
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: yes")
         XCTAssertEqual(app.staticTexts["fixtureReceipts"].label, "Core receipts: 1")
         capture("Earlier failure survives later receipt to same address")
     }
@@ -72,9 +78,11 @@ final class ShieldedWithdrawalHistoryUITests: XCTestCase {
     func testRestoredFailureCannotBecomePendingOrDisappearAfterReceipt() {
         app.buttons["recordRestoredFailure"].tap()
         assertStatus("Failed", id: 3)
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: no")
         app.buttons["recordReceipt"].tap()
         app.buttons["reloadHistory"].tap()
         assertStatus("Failed", id: 3)
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: no")
         capture("Restored failure preserved")
     }
 
@@ -85,6 +93,7 @@ final class ShieldedWithdrawalHistoryUITests: XCTestCase {
         capture("Confirmed withdrawal awaiting Core receipt")
         app.buttons["recordReceipt"].tap()
         XCTAssertFalse(row(1).exists)
+        XCTAssertEqual(app.staticTexts["fixtureDestinationTagged"].label, "Destination tagged: yes")
         XCTAssertEqual(app.staticTexts["fixtureReceipts"].label, "Core receipts: 1")
     }
 }

@@ -6,8 +6,18 @@ import SwiftDashSDK
 #if targetEnvironment(simulator)
 @MainActor
 final class ShieldedWithdrawalHistoryTests: XCTestCase {
+    /// Every fixture exercises the real store in its own removable defaults domain.
+    private func isolatedDefaults() throws -> UserDefaults {
+        let suite = "shielded-history-tests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        return defaults
+    }
+
     private func fixture() throws -> ShieldedWithdrawalHistoryFixture {
-        try ShieldedWithdrawalHistoryFixture(container: ShieldedWithdrawalHistoryFixture.makeContainer())
+        try ShieldedWithdrawalHistoryFixture(
+            container: ShieldedWithdrawalHistoryFixture.makeContainer(),
+            withdrawalStore: ShieldedWithdrawalStore(defaults: isolatedDefaults()))
     }
 
     func testFailedWithdrawalNeverAwaitsReceiptEvenWhenCallerRequestsIt() throws {
@@ -37,16 +47,9 @@ final class ShieldedWithdrawalHistoryTests: XCTestCase {
             let fixture = try fixture()
             try fixture.insertActivity(id: 1, kind: kind, status: 2)
             try fixture.insertReceipt()
-            let context = fixture.container.mainContext
-            let receipts = try context.fetch(FetchDescriptor<PersistentTransaction>())
-                .map { Transaction(persistentTransaction: $0, walletId: ShieldedWithdrawalHistoryFixture.walletId) }
-            var tags: [String] = []
-            let items = SwiftDashSDKWalletSource.fetchShieldedActivity(
-                container: fixture.container, walletId: ShieldedWithdrawalHistoryFixture.walletId,
-                coreTransactions: receipts, recordWithdrawalDestination: { tags.append($0) })
-            XCTAssertEqual(items.count, 1)
-            XCTAssertEqual(items.first?.status, .failed)
-            XCTAssertTrue(tags.isEmpty, "A failed withdrawal cannot identify a future receipt as its payout")
+            XCTAssertEqual(fixture.items.count, 1)
+            XCTAssertEqual(fixture.items.first?.status, .failed)
+            XCTAssertFalse(fixture.destinationTagged, "A failed withdrawal cannot identify a future receipt as its payout")
         }
     }
 
@@ -85,6 +88,56 @@ final class ShieldedWithdrawalHistoryTests: XCTestCase {
         XCTAssertEqual(fixture.receiptCount, 0)
     }
 
+    func testPendingToFailedRetractsDestinationTagForLiveAndRestoredWithdrawals() throws {
+        for kind in [5, 7] {
+            let fixture = try fixture()
+            try fixture.insertActivity(id: 1, kind: kind)
+            XCTAssertTrue(fixture.destinationTagged)
+            try fixture.setStatus(2)
+            XCTAssertFalse(fixture.destinationTagged)
+            try fixture.insertReceipt()
+            XCTAssertFalse(fixture.destinationTagged, "An unrelated receipt must not revive a rejected withdrawal's tag")
+            XCTAssertEqual(fixture.items.first?.status, .failed)
+        }
+    }
+
+    func testNonFailedAttemptSharingDestinationKeepsItsTag() throws {
+        for kind in [5, 7] {
+            for otherStatus in [0, 1] {
+                let fixture = try fixture()
+                try fixture.insertActivity(id: 1, kind: kind)
+                try fixture.insertActivity(id: 2, status: otherStatus, amount: 5_000_000_000)
+                try fixture.setStatus(2)
+                XCTAssertTrue(fixture.destinationTagged)
+                try fixture.insertReceipt()
+                XCTAssertTrue(fixture.destinationTagged)
+                XCTAssertEqual(fixture.items.count, 1)
+                XCTAssertEqual(fixture.items.first?.status, .failed)
+            }
+        }
+    }
+
+    func testReconciliationPreservesUnobservedTagsAndOtherWallets() throws {
+        let defaults = try isolatedDefaults()
+        let store = ShieldedWithdrawalStore(defaults: defaults)
+        let wallet = ShieldedWithdrawalHistoryFixture.walletIdHex
+        let otherWallet = String(repeating: "72", count: 32)
+        let address = ShieldedWithdrawalHistoryFixture.address
+        store.reconcile(walletIdHex: wallet, failed: [], nonFailed: ["unobserved-destination"])
+        store.reconcile(walletIdHex: otherWallet, failed: [], nonFailed: [address])
+        let fixture = try ShieldedWithdrawalHistoryFixture(
+            container: ShieldedWithdrawalHistoryFixture.makeContainer(), withdrawalStore: store)
+        try fixture.insertActivity(id: 1)
+        XCTAssertTrue(store.contains(address, walletIdHex: wallet))
+        try fixture.setStatus(2)
+        // A new instance checks persisted defaults, not only the first store's cache.
+        let reopenedStore = ShieldedWithdrawalStore(defaults: defaults)
+        XCTAssertFalse(reopenedStore.contains(address, walletIdHex: wallet))
+        XCTAssertTrue(reopenedStore.contains("unobserved-destination", walletIdHex: wallet))
+        XCTAssertTrue(reopenedStore.contains(address, walletIdHex: otherWallet))
+        XCTAssertFalse(reopenedStore.contains("unobserved-destination", walletIdHex: otherWallet))
+    }
+
     func testExternalWithdrawalAndPlatformUnshieldKeepFailureStatus() throws {
         let fixture = try fixture()
         let externalScript = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x45), count: 20) + [0x88, 0xac])
@@ -100,15 +153,27 @@ final class ShieldedWithdrawalHistoryTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let url = directory.appendingPathComponent("history.store")
+        let defaults = try isolatedDefaults()
         do {
-            let fixture = try ShieldedWithdrawalHistoryFixture(container: ShieldedWithdrawalHistoryFixture.makeContainer(url: url))
-            try fixture.insertActivity(id: 1)
-            try fixture.setStatus(2)
+            let fixture = try ShieldedWithdrawalHistoryFixture(
+                container: ShieldedWithdrawalHistoryFixture.makeContainer(url: url),
+                withdrawalStore: ShieldedWithdrawalStore(defaults: defaults))
+            let row = try fixture.insertActivity(id: 1)
+            XCTAssertTrue(fixture.destinationTagged)
+            // Simulate termination after the SDK persists Failed but before a
+            // history refresh retracts the previous Pending destination tag.
+            row.status = 2
+            try fixture.container.mainContext.save()
+            XCTAssertTrue(fixture.withdrawalStore.contains(
+                ShieldedWithdrawalHistoryFixture.address, walletIdHex: ShieldedWithdrawalHistoryFixture.walletIdHex))
         }
-        let reopened = try ShieldedWithdrawalHistoryFixture(container: ShieldedWithdrawalHistoryFixture.makeContainer(url: url))
+        let reopened = try ShieldedWithdrawalHistoryFixture(
+                container: ShieldedWithdrawalHistoryFixture.makeContainer(url: url),
+                withdrawalStore: ShieldedWithdrawalStore(defaults: defaults))
         XCTAssertEqual(reopened.items.count, 1)
         XCTAssertEqual(reopened.items.first?.status, .failed)
         XCTAssertEqual(reopened.balance, ShieldedWithdrawalHistoryFixture.originalCredits)
+        XCTAssertFalse(reopened.destinationTagged)
     }
 }
 #endif

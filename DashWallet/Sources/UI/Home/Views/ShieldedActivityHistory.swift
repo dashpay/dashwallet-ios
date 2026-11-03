@@ -122,6 +122,8 @@ struct ShieldedActivityItem: Identifiable {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
     }
 
+    /// Projects persisted activity for display, giving definitive failure precedence
+    /// over an outstanding Core-receipt flag.
     init(
         row: PersistentShieldedActivity,
         kindOverride: Kind? = nil,

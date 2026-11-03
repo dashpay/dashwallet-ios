@@ -6,18 +6,22 @@ import SwiftUI
 import UIKit
 
 /// Isolated persistence-boundary fault injection. Uses no wallet runtime, seed,
-/// network or production store; every displayed status comes from the production reader.
+/// network or production data; every displayed status comes from the production reader.
 @MainActor
 final class ShieldedWithdrawalHistoryFixture: ObservableObject {
     static let walletId = Data(repeating: 0x71, count: 32)
     static let script = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x31), count: 20) + [0x88, 0xac])
     static let originalCredits: UInt64 = 10_000_000_000
+    static let walletIdHex = walletId.map { String(format: "%02x", $0) }.joined()
     let container: ModelContainer
+    let withdrawalStore: ShieldedWithdrawalStore
     @Published var items: [ShieldedActivityItem] = []
     @Published var balance: UInt64 = 0
     @Published var receiptCount = 0
+    @Published var destinationTagged = false
     @Published var error: String?
 
+    /// Creates the real SDK schema without CloudKit, in memory or at an isolated restartable URL.
     static func makeContainer(url: URL? = nil) throws -> ModelContainer {
         let config: ModelConfiguration
         if let url {
@@ -28,8 +32,10 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
         return try ModelContainer(for: DashModelContainer.schema, configurations: [config])
     }
 
-    init(container: ModelContainer) throws {
+    /// Seeds only a new store; reopening preserves both activity state and destination tags.
+    init(container: ModelContainer, withdrawalStore: ShieldedWithdrawalStore) throws {
         self.container = container
+        self.withdrawalStore = withdrawalStore
         if try container.mainContext.fetchCount(FetchDescriptor<PersistentWallet>()) == 0 {
             let wallet = PersistentWallet(walletId: Self.walletId)
             let account = PersistentAccount(wallet: wallet, accountType: 0, accountIndex: 0, accountTypeName: "BIP44")
@@ -54,6 +60,7 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
         ScriptAddressCodec.address(forScript: script, network: WalletEnvironment.isMainnet ? .mainnet : .testnet)!
     }
 
+    /// Persists an SDK-shaped outcome and immediately projects it through the production reader.
     @discardableResult
     func insertActivity(id: UInt8, kind: Int = 5, status: Int = 0, amount: UInt64 = ShieldedWithdrawalHistoryFixture.originalCredits,
                         counterparty: Data = ShieldedWithdrawalHistoryFixture.script) throws -> PersistentShieldedActivity {
@@ -69,6 +76,7 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
         return row
     }
 
+    /// Injects a status update into the existing activity instead of replacing its identity.
     func setStatus(_ status: Int, id: UInt8 = 1) throws {
         let key = Data(repeating: id, count: 32)
         let row = try container.mainContext.fetch(FetchDescriptor<PersistentShieldedActivity>(
@@ -79,6 +87,7 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
         try reload()
     }
 
+    /// Persists an owned Core output at the same destination used by the shielded attempts.
     func insertReceipt(id: UInt8 = 0x70, amountDuffs: UInt64 = 5_000_000) throws {
         let transaction = PersistentTransaction(txid: Data(repeating: id, count: 32), transactionData: Data(),
             context: 2, blockHeight: 100, direction: 0, netAmount: Int64(amountDuffs), firstSeen: 1_800_000_001)
@@ -94,19 +103,22 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
         try reload()
     }
 
+    /// Re-reads saved models and reconciles the real destination store before publishing UI state.
     func reload() throws {
         let context = ModelContext(container)
         let receipts = try context.fetch(FetchDescriptor<PersistentTransaction>())
         items = SwiftDashSDKWalletSource.fetchShieldedActivity(
             container: container, walletId: Self.walletId,
             coreTransactions: receipts.map { Transaction(persistentTransaction: $0, walletId: Self.walletId) },
-            recordWithdrawalDestination: { _ in })
+            withdrawalStore: withdrawalStore)
             .sorted { $0.id < $1.id }
         balance = try context.fetch(FetchDescriptor<PersistentShieldedNote>(
             predicate: PersistentShieldedNote.unspentPredicate(walletId: Self.walletId))).reduce(0) { $0 + $1.value }
         receiptCount = receipts.count
+        destinationTagged = withdrawalStore.contains(Self.address, walletIdHex: Self.walletIdHex)
     }
 
+    /// Keeps fixture failures visible to UI tests instead of silently losing an injection.
     func perform(_ operation: () throws -> Void) {
         do { try operation() } catch { self.error = String(describing: error) }
     }
@@ -114,14 +126,19 @@ final class ShieldedWithdrawalHistoryFixture: ObservableObject {
 
 @objc(DWShieldedHistoryUITestFixture)
 final class DWShieldedHistoryUITestFixture: NSObject {
+    /// Opts into an isolated, UUID-scoped fixture before real wallet initialization.
     @MainActor @objc static func makeViewControllerIfRequested() -> UIViewController? {
         guard let run = ProcessInfo.processInfo.environment["SHIELDED_HISTORY_UI_TEST"],
               let id = UUID(uuidString: run) else { return nil }
         do {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent("shielded-history-\(id.uuidString)")
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            let fixture = try ShieldedWithdrawalHistoryFixture(container:
-                ShieldedWithdrawalHistoryFixture.makeContainer(url: directory.appendingPathComponent("history.store")))
+            guard let defaults = UserDefaults(suiteName: "shielded-history-\(id.uuidString)") else {
+                throw CocoaError(.fileWriteUnknown)
+            }
+            let fixture = try ShieldedWithdrawalHistoryFixture(
+                container: ShieldedWithdrawalHistoryFixture.makeContainer(url: directory.appendingPathComponent("history.store")),
+                withdrawalStore: ShieldedWithdrawalStore(defaults: defaults))
             return UIHostingController(rootView: ShieldedHistoryFixtureView(fixture: fixture))
         } catch {
             return UIHostingController(rootView: Text("Fixture setup failed: \(error)"))
@@ -139,6 +156,8 @@ private struct ShieldedHistoryFixtureView: View {
                 VStack {
                     Text("Shielded credits: \(fixture.balance)").accessibilityIdentifier("fixtureBalance")
                     Text("Core receipts: \(fixture.receiptCount)").accessibilityIdentifier("fixtureReceipts")
+                    Text("Destination tagged: \(fixture.destinationTagged ? "yes" : "no")")
+                        .accessibilityIdentifier("fixtureDestinationTagged")
                     ForEach(fixture.items) { item in
                         ShieldedActivityHistoryRow(item: item, icon: AnyView(Image(systemName: "shield.fill"))) { selected = item }
                     }
