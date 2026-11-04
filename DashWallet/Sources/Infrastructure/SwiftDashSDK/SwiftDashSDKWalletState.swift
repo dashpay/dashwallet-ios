@@ -33,10 +33,7 @@ import SwiftDashSDK
 
 // MARK: - WalletBalance
 
-/// Wallet balance snapshot. Defined locally rather than re-exporting
-/// SwiftDashSDK's `KeyWalletTypes.Balance` because that struct references
-/// an internal `FFIBalance` type, which makes it unusable as a `public`
-/// property type from this module. The four fields map directly to
+/// Wallet balance snapshot. The four fields map directly to
 /// `SPVWalletEventsHandler.onBalanceUpdated`'s callback parameters.
 public struct WalletBalance: Equatable, Sendable {
     public let confirmed: UInt64

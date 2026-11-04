@@ -25,6 +25,7 @@
 		E012FFCC6C3142B4B5869B72 /* ShieldedRecoveryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */; };
 		4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */; };
 		525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */; };
+		7A34000230A5000000000002 /* DashModelContainer+Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A34000130A5000000000001 /* DashModelContainer+Testing.swift */; };
 		C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */; };
 		BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */; };
 		FA87A306BF0E476385DA1C66 /* ShieldedBalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */; };
@@ -1024,6 +1025,7 @@
 		7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */; };
 		7A33000230A3000000000002 /* ContactPaymentReviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */; };
 		7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */; };
+		7A33000230A4000000000002 /* KeyToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A33000130A4000000000001 /* KeyToolsTests.swift */; };
 		7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */; };
 		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		BABA1000000000000000001F /* AssetLockDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */; };
@@ -2253,6 +2255,7 @@
 		F2ADF29244E649D8BE05FD93 /* ShieldedRecoveryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryController.swift; sourceTree = "<group>"; };
 		930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceControllerTests.swift; sourceTree = "<group>"; };
 		17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceReaderTests.swift; sourceTree = "<group>"; };
+		7A34000130A5000000000001 /* DashModelContainer+Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DashModelContainer+Testing.swift"; sourceTree = "<group>"; };
 		6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeBalancePresentationTests.swift; sourceTree = "<group>"; };
 		D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBalanceControllerTests.swift; sourceTree = "<group>"; };
 		9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedBalanceController.swift; sourceTree = "<group>"; };
@@ -3334,6 +3337,7 @@
 		7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledSendableBalanceTests.swift; sourceTree = "<group>"; };
 		7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPaymentReviewTests.swift; sourceTree = "<group>"; };
 		7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeOwnershipTests.swift; sourceTree = "<group>"; };
+		7A33000130A4000000000001 /* KeyToolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyToolsTests.swift; sourceTree = "<group>"; };
 		7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicyTests.swift; sourceTree = "<group>"; };
 		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockDiagnosticsTests.swift; sourceTree = "<group>"; };
@@ -7682,6 +7686,7 @@
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				930BFA9B069540D4A5CAD79A /* ShieldedBalanceControllerTests.swift */,
 				17921340EDF4455B62461AF8 /* PlatformBalanceReaderTests.swift */,
+				7A34000130A5000000000001 /* DashModelContainer+Testing.swift */,
 				6F9884169298187E321C8804 /* HomeBalancePresentationTests.swift */,
 				D71029F5975636F1DCFFFF85 /* PlatformBalanceControllerTests.swift */,
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
@@ -7697,6 +7702,7 @@
 				7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */,
 				7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */,
 				7A30002130A2000000000021 /* CrowdNodeOwnershipTests.swift */,
+				7A33000130A4000000000001 /* KeyToolsTests.swift */,
 				7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */,
 				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */,
@@ -11056,6 +11062,7 @@
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				4C9AC6D2EC13450DAC68FC90 /* ShieldedBalanceControllerTests.swift in Sources */,
 				525045ECC4BF30BBCB09E13C /* PlatformBalanceReaderTests.swift in Sources */,
+				7A34000230A5000000000002 /* DashModelContainer+Testing.swift in Sources */,
 				C693C63758228F630D39F00E /* HomeBalancePresentationTests.swift in Sources */,
 				BCC98012E278206FC08FA8E3 /* PlatformBalanceControllerTests.swift in Sources */,
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
@@ -11071,6 +11078,7 @@
 				7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */,
 				7A33000230A3000000000002 /* ContactPaymentReviewTests.swift in Sources */,
 				7A30002230A2000000000022 /* CrowdNodeOwnershipTests.swift in Sources */,
+				7A33000230A4000000000002 /* KeyToolsTests.swift in Sources */,
 				7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */,
 				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				BABA1000000000000000001F /* AssetLockDiagnosticsTests.swift in Sources */,
