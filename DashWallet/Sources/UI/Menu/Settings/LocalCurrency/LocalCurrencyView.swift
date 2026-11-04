@@ -173,7 +173,8 @@ private struct LocalCurrencyScrollContentView: View {
                     // One VoiceOver element per row, read as "US Dollar, USD",
                     // its price, and whether it is the current currency.
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text("\(item.name), \(item.code)"))
+                    // Name and code come from the rates data, not app copy.
+                    .accessibilityLabel(Text(verbatim: "\(item.name), \(item.code)"))
                     .accessibilityValue(Text(item.priceString ?? ""))
                     .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
                     .id(item.code)
