@@ -580,7 +580,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             await env.manager.shieldedFundFromWalletDrain(
                 walletId: env.walletId, operationId: operation.id,
                 recipientRaw43: Self.drainRecipientRaw43(operation.recipient, ownAddress: env.shieldedRecipient))
-        }, succeeded: { $0.drainVerdict != .notSent })
+        }, succeeded: { $0.drainVerdict == .completed })
         if let outpoint = result.outpoint {
             lastAssetLockOutPoint = (outpoint.txidWire, outpoint.vout)
         }
