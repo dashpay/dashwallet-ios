@@ -861,6 +861,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.identityRegistration(AssetLockInputLimit.TooManyInputsError(check: inputCheck))
         }
 
+        // The shielded route proves at the end of this flow. Confirming it
+        // before the PIN prompt lets any proving-key build start while the
+        // prompt is up: the warm-up runs on the main actor, so it could not
+        // start during the synchronous key derivation below.
+        let shieldedProofTiming = currentFundingSource == .shielded
+            ? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
+            : nil
+
         // PIN / biometric gate. Throws on cancel / failure; the
         // controller stays at `.idle` so the UI doesn't show
         // "Processing payment" for a cancellation.
@@ -881,13 +889,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(error.localizedDescription)
             throw error
         }
-
-        // The shielded route proves at the end of this flow. Confirming it
-        // here starts any proving-key build now, so key derivation and the
-        // existing-identity lookup below overlap it.
-        let shieldedProofTiming = currentFundingSource == .shielded
-            ? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
-            : nil
 
         // Step 1: pre-derive identity public keys + persist privates
         // to Keychain. Synchronous on the FFI side; the resolver
