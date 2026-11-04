@@ -330,6 +330,7 @@ jobs:
           set -euo pipefail
           xcodebuild -version
           swift --version
+          echo "e2e check for #1311 (fork PR, do not merge)"
 
       # Rust comes from platform's own pin (rust-toolchain.toml at the platform
       # commit), the version cargo uses inside the platform checkout anyway.
