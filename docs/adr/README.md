@@ -1,8 +1,9 @@
 # Decision log
 
 The architecture decision records (ADRs) of dashwallet-ios, governed by
-[ADR-0001](0001-record-architecture-decisions-as-adrs.md). This index lists log numbers
-only and is kept by hand. The notes below summarize ADR-0001; where they disagree, ADR-0001 wins.
+[ADR-0001](0001-record-architecture-decisions-as-adrs.md). It lists every log ADR under its log
+number, never a feature-local number, and is kept by hand. The notes below summarize ADR-0001;
+where they disagree, ADR-0001 wins.
 
 | # | Title | Area | Status | Superseded by |
 |---|---|---|---|---|
@@ -28,9 +29,10 @@ Full rules: [ADR-0001, rules 3 and 5](0001-record-architecture-decisions-as-adrs
 
 ## Superseding
 
-An Accepted ADR is never edited. To change a decision, write a new ADR that names the old one. In
-the old ADR only the status line changes, to `Superseded by ADR-NNNN`; in its row here, Status reads
-`Superseded` and "Superseded by" links the new ADR. See
+An Accepted ADR is never edited, except for a redaction that the publicity rule requires (ADR-0001
+rule 2). To change a decision, write a new ADR that names the old one. In the old ADR only the
+status line changes, to `Superseded by ADR-NNNN`; in its row here, Status reads `Superseded` and
+"Superseded by" links the new ADR. See
 [ADR-0001, rule 3](0001-record-architecture-decisions-as-adrs.md).
 
 ## Number collisions

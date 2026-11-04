@@ -28,7 +28,7 @@ The resulting layout of the docs folder:
 | Path | Holds | Lifecycle |
 |---|---|---|
 | `docs/README.md` | the docs folder guide: what is required (ADRs for significant decisions, for everyone), what is optional (feature summaries), where architecture docs and reviews go, and the publicity rule in short | edited as the layout changes |
-| `docs/adr/` | the decision log: `NNNN-*.md` files and the index `README.md` (`# \| Title \| Area \| Status \| Superseded by`) | new entries; an existing ADR changes only its status line (ADR-0001 rule 3) |
+| `docs/adr/` | the decision log: `NNNN-*.md` files and the index `README.md` (`# \| Title \| Area \| Status \| Superseded by`) | new entries; an existing Accepted ADR changes only in its status line when superseded (ADR-0001 rule 3) or by a redaction that the publicity rule requires (ADR-0001 rule 2) |
 | `docs/architecture/` | architecture docs | living, edited as the code changes |
 | `docs/features/<name>/README.md` | one summary per feature: what changed, why, and links to its ADRs; the pipeline's working drafts are not committed | written in the feature PR |
 | `docs/review/` | review captures (already exists) | unchanged |

@@ -29,7 +29,7 @@ feature PR and follow the same rules as any other ADR.
 | Path | Holds | Lifecycle |
 |---|---|---|
 | `docs/README.md` | this guide | edited as the layout changes |
-| `docs/adr/` | the decision log: `NNNN-*.md` files and the index `README.md` | new entries; an existing ADR changes only its status line (ADR-0001 rule 3) |
+| `docs/adr/` | the decision log: `NNNN-*.md` files and the index `README.md` | new entries; an existing Accepted ADR changes only in its status line when superseded (ADR-0001 rule 3) or by a redaction that the publicity rule requires (ADR-0001 rule 2) |
 | `docs/architecture/` | architecture docs | living, edited as the code changes |
 | `docs/features/<name>/README.md` | one summary per feature | written in the feature PR |
 | `docs/review/` | review captures | unchanged |

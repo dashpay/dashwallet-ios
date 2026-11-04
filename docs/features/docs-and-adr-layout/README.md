@@ -28,7 +28,7 @@ The repository is public, so whatever is written under `docs/` is published from
 - A significant decision gets an ADR in the same PR, with the next log number, status Proposed,
   its alternatives and consequences, and a row in the index.
 - An ADR becomes Accepted only after a Reviewer who is not its author approves the PR.
-- An Accepted ADR is never edited; a new ADR supersedes it.
+- An Accepted ADR is never edited, except for a redaction that the publicity rule requires; a new ADR supersedes it.
 - Nothing in the repository or on its PRs holds customer data, unfixed vulnerability detail, secrets or
   step-by-step attack detail against keys, PIN or encryption.
 
