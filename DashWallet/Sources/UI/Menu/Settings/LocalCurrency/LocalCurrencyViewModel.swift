@@ -74,16 +74,26 @@ class LocalCurrencyViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func applyFilter(_ query: String) {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else {
+    /// Every word of the query must appear in the code or the name, ignoring
+    /// case and diacritics, so "states united" finds United States and "real"
+    /// finds Brazilian Real whatever the accents.
+    func applyFilter(_ query: String) {
+        let tokens = Self.searchKey(query)
+            .split(whereSeparator: { $0.isWhitespace })
+            .map(String.init)
+        guard !tokens.isEmpty else {
             filteredItems = allItems
             return
         }
-        let lowercased = trimmed.lowercased()
-        filteredItems = allItems.filter {
-            $0.code.lowercased().contains(lowercased) || $0.name.lowercased().contains(lowercased)
+        filteredItems = allItems.filter { item in
+            let code = Self.searchKey(item.code)
+            let name = Self.searchKey(item.name)
+            return tokens.allSatisfy { code.contains($0) || name.contains($0) }
         }
+    }
+
+    private static func searchKey(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
     }
 }
 

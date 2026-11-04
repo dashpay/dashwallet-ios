@@ -54,6 +54,8 @@ protocol TransferAmountViewModelProtocol: ObservableObject {
     /// Fiat value of `receiveAmount`, shown after it as `… ≈ <fiat>`.
     var receiveFiat: String? { get }
     var currencyOptions: [DashUIKit.CurrencyOption] { get }
+    /// The fiat currency of this transfer's amount (not necessarily the app's).
+    var fiatCurrencyCode: String { get }
 
     func setInput(_ raw: String)
     func setMax()
@@ -203,6 +205,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     }
 
     var currencyOptions: [DashUIKit.CurrencyOption] { [.dash, .fiat(model.localCurrencyCode)] }
+    var fiatCurrencyCode: String { model.localCurrencyCode }
 
     // MARK: Private
 

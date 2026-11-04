@@ -158,15 +158,25 @@ private struct LocalCurrencyScrollContentView: View {
         } else {
             LazyVStack(spacing: 2) {
                 ForEach(filteredItems) { item in
-                    LocalCurrencyCellView(
-                        item: item,
-                        isSelected: item.code == selectedCurrencyCode,
-                        searchQuery: searchQuery
-                    )
-                    .onTapGesture {
+                    let isSelected = item.code == selectedCurrencyCode
+                    Button {
                         select(item.code)
                         onSelect(item.code)
+                    } label: {
+                        LocalCurrencyCellView(
+                            item: item,
+                            isSelected: isSelected,
+                            searchQuery: searchQuery
+                        )
                     }
+                    .buttonStyle(.plain)
+                    // One VoiceOver element per row, read as "US Dollar, USD",
+                    // its price, and whether it is the current currency.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("\(item.name), \(item.code)"))
+                    .accessibilityValue(Text(item.priceString ?? ""))
+                    .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+                    .id(item.code)
                 }
             }
             .padding(filteredItems.isEmpty ? 0 : 6)
@@ -178,17 +188,26 @@ private struct LocalCurrencyScrollContentView: View {
     }
 
     var body: some View {
-        ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
-            VStack {
-                Rectangle()
-                    .opacity(0)
-                    .frame(height: headerHeight)
+        ScrollViewReader { proxy in
+            ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
+                VStack {
+                    Rectangle()
+                        .opacity(0)
+                        .frame(height: headerHeight)
 
-                // Currency list
-                currencyContent
+                    // Currency list
+                    currencyContent
+                }
+            } onScrollChanged: { offset in
+                onScrollChanged(offset)
             }
-        } onScrollChanged: { offset in
-            onScrollChanged(offset)
+            .onAppear {
+                // Open on the current currency, as the list is ~160 rows long.
+                // Deferred a runloop so the rows exist before scrolling to one.
+                DispatchQueue.main.async {
+                    proxy.scrollTo(selectedCurrencyCode, anchor: .center)
+                }
+            }
         }
     }
 }
