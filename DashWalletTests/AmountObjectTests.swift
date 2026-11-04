@@ -519,3 +519,6 @@ final class PastedAmountParserTests: XCTestCase {
         )
     }
 }
+
+// E2E check for PR #1311: this must fail the test build. Do not merge.
+let brokenOnPurpose: Int = "not an int"
