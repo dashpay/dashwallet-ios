@@ -38,13 +38,32 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     static let shared = SwapOrdersDAOImpl()
     private nonisolated(unsafe) let allOrdersSubject = CurrentValueSubject<[SwapOrder], Never>([])
     private var cache: [String: SwapOrder] = [:]
-    // `lazy` so the bootstrap Task is created on first access (after init), avoiding a
-    // "self captured before all members were initialized" error. First read/write awaits it.
-    private lazy var hydration: Task<Void, Never> = Task { [weak self] in
-        await self?.bootstrap()
-    }
+    /// Whether the cache has been filled from the table: the first read can fail, and until
+    /// one succeeds the cache holds only the rows written or read one by one since.
+    private var isHydrated = false
+    /// Whether a read of the table has failed: subscribers may then have gone without
+    /// the orders, and the first read to succeed is published for them.
+    private var aTableReadFailed = false
 
     private init() {}
+
+    #if DEBUG
+    /// Stands in for the read of the whole table, so a test can make a read fail. Nothing
+    /// else is replaced: single-row reads and writes still go to the database.
+    private var readingAll: (@Sendable () throws -> [SwapOrder])?
+
+    /// `cached` are rows as single-row reads or writes leave them in the cache before
+    /// the table has been read.
+    init(readingAll: @escaping @Sendable () throws -> [SwapOrder], cached: [SwapOrder] = []) {
+        self.readingAll = readingAll
+        cache = Dictionary(uniqueKeysWithValues: cached.map { ($0.id, $0) })
+    }
+    #endif
+
+    /// The last published snapshot, for synchronous readers (the Home timeline rebuild runs
+    /// off the main actor and cannot await). Until a read of the table succeeds it is the
+    /// cache as of the last write: the orders written or read one by one since launch.
+    nonisolated var currentOrders: [SwapOrder] { allOrdersSubject.value }
 
     // MARK: - Protocol
 
@@ -57,8 +76,24 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func save(dto: SwapOrder) async throws {
-        await hydration.value
+        hydrate()
+        try store(dto)
+    }
 
+    /// Changes the row `id` as it is now: read, changed and written with nothing in
+    /// between, so this write undoes nothing another writer stored. (A `save` of a row
+    /// read earlier still replaces what an `amend` stored in between.) `change` returns
+    /// false to leave the row alone. Returns whether the row was written.
+    @discardableResult
+    func amend(id: String, _ change: @Sendable (inout SwapOrder) -> Bool) async throws -> Bool {
+        hydrate()
+        let rows: [SwapOrder] = try read(SwapOrder.table.filter(SwapOrder.colId == id))
+        guard var order = rows.first, change(&order) else { return false }
+        try store(order)
+        return true
+    }
+
+    private func store(_ dto: SwapOrder) throws {
         let insert = SwapOrder.table.insert(
             or: .replace,
             SwapOrder.colId <- dto.id,
@@ -75,7 +110,16 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             SwapOrder.colOutboundTxHash <- dto.outboundTxHash,
             SwapOrder.colTimestamp <- dto.timestamp,
             SwapOrder.colFinalisedAt <- dto.finalisedAt,
-            SwapOrder.colLastChecked <- dto.lastChecked
+            SwapOrder.colLastChecked <- dto.lastChecked,
+            SwapOrder.colFromAmount <- dto.fromAmount,
+            SwapOrder.colDepositDeadline <- dto.depositDeadline,
+            SwapOrder.colDepositSeenAt <- dto.depositSeenAt,
+            SwapOrder.colProviderDeniedAt <- dto.providerDeniedAt,
+            SwapOrder.colDepositMemo <- dto.depositMemo,
+            SwapOrder.colOwnerWalletId <- dto.ownerWalletId,
+            SwapOrder.colOwnerNetwork <- dto.ownerNetwork,
+            SwapOrder.colPayoutNamedAt <- dto.payoutNamedAt,
+            SwapOrder.colPayoutCandidates <- dto.payoutCandidates
         )
         try execute(insert)
         cache[dto.id] = dto
@@ -83,7 +127,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func get(byId id: String) async -> SwapOrder? {
-        await hydration.value
+        hydrate()
 
         let query = SwapOrder.table.filter(SwapOrder.colId == id)
         do {
@@ -110,7 +154,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     func delete(byId id: String) async {
-        await hydration.value
+        hydrate()
 
         do {
             let deleteQuery = SwapOrder.table.filter(SwapOrder.colId == id).delete()
@@ -122,26 +166,41 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         }
     }
 
+    /// The stored orders, or what the cache holds of them when the read fails — only
+    /// some, or none, while no read of the table has succeeded. Not for deciding
+    /// between orders: `allIfComplete()`.
     func all() async -> [SwapOrder] {
-        await hydration.value
+        await allKnown().orders
+    }
 
+    /// Every stored order, or nil while that cannot be vouched for: this read failed and
+    /// none before it succeeded, so the cache may hold only some of the rows. For a
+    /// reader that decides between orders — which of them a wallet transaction pays
+    /// out — and so must not take the few it was given for all there are.
+    func allIfComplete() async -> [SwapOrder]? {
+        let known = await allKnown()
+        return known.complete ? known.orders : nil
+    }
+
+    /// The stored orders as `all()` returns them, and whether they are all of them
+    /// (`allIfComplete()`), from one read.
+    func allKnown() async -> (orders: [SwapOrder], complete: Bool) {
         do {
-            let orders: [SwapOrder] = try read(SwapOrder.table)
-            cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
-            return orders
+            return (try reload(), true)
         } catch {
+            aTableReadFailed = true
             DWLogger.log("SwapOrdersDAO: all failed: \(error)")
-            return Array(cache.values)
+            return (Array(cache.values), isHydrated)
         }
     }
 
     nonisolated func observeAll() -> AnyPublisher<[SwapOrder], Never> {
-        Task { await hydration.value }
+        Task { await hydrate() }
         return allOrdersSubject.eraseToAnyPublisher()
     }
 
     nonisolated func observeActive() -> AnyPublisher<[SwapOrder], Never> {
-        Task { await hydration.value }
+        Task { await hydrate() }
         return allOrdersSubject
             .map { $0.filter { $0.status.isActive } }
             .eraseToAnyPublisher()
@@ -149,14 +208,45 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
 
     // MARK: - Private
 
-    private func bootstrap() async {
+    /// Fills the cache from the table while no read of it has succeeded: the first one
+    /// can fail, and the snapshot would otherwise stay without the stored orders until
+    /// something read the whole table.
+    private func hydrate() {
+        guard !isHydrated else { return }
         do {
-            let orders: [SwapOrder] = try read(SwapOrder.table)
-            cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
-            emitUpdate()
+            try reload()
         } catch {
-            DWLogger.log("SwapOrdersDAO: bootstrap failed: \(error)")
+            // Every entry point retries: one line, not one per call.
+            if !aTableReadFailed {
+                DWLogger.log("SwapOrdersDAO: hydration failed: \(error)")
+            }
+            aTableReadFailed = true
         }
+    }
+
+    /// Reads the whole table into the cache and publishes it when it differs from the
+    /// last snapshot — and, unchanged or not, when it is the first read to succeed after
+    /// one that failed: subscribers that could not have all the orders wait for it.
+    /// Otherwise an unchanged read publishes nothing, as subscribers read the table in
+    /// answer to a publication.
+    @discardableResult
+    private func reload() throws -> [SwapOrder] {
+        let orders = try readAll()
+        cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
+        let isFirst = !isHydrated
+        isHydrated = true
+        let published = Dictionary(uniqueKeysWithValues: allOrdersSubject.value.map { ($0.id, $0) })
+        if (isFirst && aTableReadFailed) || published != cache {
+            emitUpdate()
+        }
+        return orders
+    }
+
+    private func readAll() throws -> [SwapOrder] {
+        #if DEBUG
+        if let readingAll { return try readingAll() }
+        #endif
+        return try read(SwapOrder.table)
     }
 
     private func emitUpdate() {

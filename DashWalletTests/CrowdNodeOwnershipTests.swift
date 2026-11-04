@@ -17,26 +17,17 @@ import XCTest
 
 @MainActor
 final class CrowdNodeOwnershipTests: XCTestCase {
+    private struct LookupFailure: Error {}
 
     // Fixtures: the same hash160 encoded for two networks, plus a mainnet
     // P2SH — the address forms a real wallet can meet.
     private let mainnetAddress = "XhpXm8bjSKVGaXAKeGRNHDRg9W1o22PLJG"
-    /// The 20 payload bytes of `mainnetAddress`, spelled out rather than as a
-    /// hex literal: a bare 40-character hex string trips the repo's secret
-    /// scanner, and a hash160 of a throwaway test address is not a secret.
-    private let mainnetHash160Bytes: [UInt8] = [
-        0x4e, 0x3d, 0x1f, 0x8b, 0x2c, 0x9a, 0x0e, 0x7d, 0x5b, 0x6a,
-        0x3c, 0x1f, 0x8e, 0x2d, 0x4b, 0x6a, 0x9c, 0x0f, 0x7e, 0x3d,
-    ]
-    private var mainnetHash160: String {
-        mainnetHash160Bytes.map { String(format: "%02x", $0) }.joined()
-    }
     private let mainnetP2SHAddress = "7h9dhRvmgdg3cUng5kAsT3sn8mdd9eYYCz"
     private let testnetAddress = "yTT8n5gAss9LvG5sD7jmKEr2RnWAXScspP"
 
-    private func lookup(hash160: String?, path: String?) -> CrowdNodeMessageSigner.OwnershipLookup {
+    private func lookup(isP2PKH: Bool, path: String?) -> CrowdNodeMessageSigner.OwnershipLookup {
         CrowdNodeMessageSigner.OwnershipLookup(
-            hash160OfAddress: { _ in hash160 },
+            isP2PKH: { _ in isP2PKH },
             derivationPath: { _ in path })
     }
 
@@ -45,7 +36,7 @@ final class CrowdNodeOwnershipTests: XCTestCase {
     func testScanFindingTheKeyProvesOwnership() {
         let owns = CrowdNodeMessageSigner.ownsAddress(
             mainnetAddress,
-            using: lookup(hash160: mainnetHash160, path: "m/44'/5'/0'/0/7"))
+            using: lookup(isP2PKH: true, path: "m/44'/5'/0'/0/7"))
         XCTAssertEqual(owns, true)
     }
 
@@ -59,7 +50,7 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         // answering `false` tore a live link down.
         let owns = CrowdNodeMessageSigner.ownsAddress(
             mainnetAddress,
-            using: lookup(hash160: mainnetHash160, path: nil))
+            using: lookup(isP2PKH: true, path: nil))
         XCTAssertNil(owns)
     }
 
@@ -73,35 +64,32 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         // the running network, so no derivation index could ever produce it.
         let owns = CrowdNodeMessageSigner.ownsAddress(
             mainnetP2SHAddress,
-            using: lookup(hash160: nil, path: "m/44'/5'/0'/0/7"))
+            using: lookup(isP2PKH: false, path: "m/44'/5'/0'/0/7"))
         XCTAssertEqual(owns, false)
     }
 
     // MARK: which addresses reach the scan at all
 
-    func testMainnetP2PKHAddressDecodesToItsHash160() {
-        XCTAssertEqual(
-            CrowdNodeMessageSigner.hash160(ofAddress: mainnetAddress, network: .mainnet),
-            mainnetHash160)
+    func testMainnetP2PKHAddressIsAccepted() {
+        XCTAssertTrue(CrowdNodeMessageSigner.isP2PKH(mainnetAddress, network: .mainnet))
     }
 
     func testP2SHAddressIsRejectedOutright() {
         // CrowdNode account addresses are BIP44 receive addresses; a P2SH
         // address is not one and cannot be message-signed either.
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(ofAddress: mainnetP2SHAddress, network: .mainnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH(mainnetP2SHAddress, network: .mainnet))
     }
 
     func testAddressOfAnotherNetworkIsRejected() {
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(ofAddress: testnetAddress, network: .mainnet))
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(ofAddress: mainnetAddress, network: .testnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH(testnetAddress, network: .mainnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH(mainnetAddress, network: .testnet))
     }
 
     func testMalformedAddressIsRejected() {
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(ofAddress: "", network: .mainnet))
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(ofAddress: "not an address", network: .mainnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH("", network: .mainnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH("not an address", network: .mainnet))
         // Valid base58, broken checksum.
-        XCTAssertNil(CrowdNodeMessageSigner.hash160(
-            ofAddress: "XhpXm8bjSKVGaXAKeGRNHDRg9W1o22PLJH", network: .mainnet))
+        XCTAssertFalse(CrowdNodeMessageSigner.isP2PKH("XhpXm8bjSKVGaXAKeGRNHDRg9W1o22PLJH", network: .mainnet))
     }
 
     // MARK: what the restore does with each verdict
@@ -186,8 +174,27 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         XCTAssertEqual(
             CrowdNodeMessageSigner.ownership(
                 of: mainnetAddress,
-                using: lookup(hash160: mainnetHash160, path: nil)),
+                using: lookup(isP2PKH: true, path: nil)),
             .notFoundWithinBound)
+    }
+
+    func testAWalletThatCannotAnswerIsUnavailableNotExhausted() {
+        let failing = CrowdNodeMessageSigner.OwnershipLookup(
+            isP2PKH: { _ in true },
+            derivationPath: { _ in throw LookupFailure() })
+        XCTAssertEqual(
+            CrowdNodeMessageSigner.ownership(of: mainnetAddress, using: failing),
+            .walletUnavailable)
+    }
+
+    func testForeignAddressIsRefusedBeforeTheWalletLookup() {
+        let lookup = CrowdNodeMessageSigner.OwnershipLookup(
+            isP2PKH: { _ in false },
+            derivationPath: { _ in
+                XCTFail("a foreign address must not reach the wallet's lookup")
+                return nil
+            })
+        XCTAssertEqual(CrowdNodeMessageSigner.ownership(of: mainnetP2SHAddress, using: lookup), .foreign)
     }
 
     func testOnlyAWalletThatWasUpProducesACheckedVerdict() {
@@ -203,11 +210,11 @@ final class CrowdNodeOwnershipTests: XCTestCase {
         // about trust or about destruction.
         XCTAssertEqual(
             CrowdNodeMessageSigner.ownership(
-                of: mainnetAddress, using: lookup(hash160: mainnetHash160, path: "m/44'/5'/0'/0/7")),
+                of: mainnetAddress, using: lookup(isP2PKH: true, path: "m/44'/5'/0'/0/7")),
             .owned)
         XCTAssertEqual(
             CrowdNodeMessageSigner.ownsAddress(
-                mainnetAddress, using: lookup(hash160: mainnetHash160, path: "m/44'/5'/0'/0/7")),
+                mainnetAddress, using: lookup(isP2PKH: true, path: "m/44'/5'/0'/0/7")),
             true)
         XCTAssertNil(CrowdNodeMessageSigner.ownsAddress(mainnetAddress, using: nil))
     }

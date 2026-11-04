@@ -100,6 +100,11 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: Test protocol observation and update guidance
+        run: |
+          python3 scripts/test_protocol_compatibility.py
+          python3 scripts/test_protocol_compatibility.py --testflight
+
       # Same key as release-dashpay-testflight.yml so the two workflows share
       # one cached artifact per platform commit.
       - name: Restore release XCFramework cache

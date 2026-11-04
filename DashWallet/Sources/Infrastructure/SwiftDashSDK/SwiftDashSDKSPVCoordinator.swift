@@ -244,6 +244,21 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private var switchPreparation = NetworkSwitchPreparationGate()
 
+    /// The persistence scopes whose `stopSpv()` failed in this process:
+    /// `clearChainStoreBeforeStart` leaves such a scope's store delete to a
+    /// later launch (see `SPVChainStoreRebuild.StoreClearGate`).
+    @MainActor
+    private var storeClearGate = SPVChainStoreRebuild.StoreClearGate()
+
+    /// The persistence scope the running client was started on. Kept apart
+    /// from `runningNetwork`, whose devnet scope follows the configured devnet
+    /// name and can change while that client is still up. Readable so a
+    /// `.syncDone` can be attributed to the client that produced it rather
+    /// than to the network key, which a switch flips before the outgoing
+    /// client's resting snapshot has stopped being delivered.
+    @MainActor
+    private(set) var runningScope: String?
+
     @MainActor
     var isRunning: Bool { runningNetwork != nil }
 
@@ -561,6 +576,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.dataDirectory(HostUnsupportedNetwork(network: network)))
         }
 
+        // The scope the data directory is built from. A devnet's scope
+        // follows the configured devnet name, which can change across the
+        // awaits below; everything keyed by scope here uses this one.
+        let scope = network.persistenceScope
         let dataDir: String
         do {
             dataDir = try makeSPVDataDirectory(for: network).path
@@ -648,8 +667,15 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // run before startSpv so the delete never races the sync loop's
         // segment writes. See `SPVChainResyncMarker` for why this only
         // happens on the launch after the marker was armed.
+        //
+        // Then the wallets imported, or recreated from the Keychain, since the last
+        // start: the store may be anchored above their history. Before
+        // startSpv for the same reason.
         let appliedChainResync = await applyPendingChainResyncIfNeeded(
-            for: network, dataDir: dataDir, manager: manager)
+            for: network, scope: scope, dataDir: dataDir, manager: manager)
+        let rebuiltForWalletIds = await rebuildChainStoreIfPending(
+            for: network, scope: scope, dataDir: dataDir, manager: manager,
+            storeAlreadyCleared: appliedChainResync != nil)
 
         // A start that began after the preparation consumes it.
         if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
@@ -657,8 +683,17 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
         switchPreparation.consume()
 
+        // The rebuild marker has the resync marker's contract (below): it
+        // survives a failed startSpv and is consumed only once the client
+        // that anchors the rebuilt store is running.
+        // The SDK runs the blocking native start off the main actor: opening
+        // the SPV store can take many seconds (a one-time storage migration
+        // took 14 s on a device), and the blocking overload froze the UI for
+        // all of it. The main actor is free for the whole await below.
         do {
-            try manager.startSpv(config: config)
+            try await SPVChainStoreRebuild.finish(walletIds: rebuiltForWalletIds, scope: scope, afterStarting: {
+                try await manager.startSpv(config: config)
+            })
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: startSpv failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.spvClient(error))
@@ -666,13 +701,34 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         // The resync marker survives a failed startSpv (the store is empty
         // either way; the next launch simply re-applies), and is consumed
-        // only once the resynced client is actually running.
-        if appliedChainResync {
-            SPVChainResyncMarker.clear(for: network)
+        // only once the resynced client is actually running — which it is
+        // even when a network switch overtook the start below. Only the
+        // marker this start applied is consumed: the main actor was free for
+        // the whole await, so the Sync Info screen may have armed a new
+        // resync meanwhile, and that one must survive to the next launch.
+        if let appliedChainResync,
+           SPVChainResyncMarker.clear(applied: appliedChainResync, for: network) {
             Self.logger.info("🛰️ SPVCOORD :: chain resync applied on \(network.rawValue, privacy: .public)")
         }
 
+        // Recorded before the overtake check: the client is running either
+        // way, and `performStop` stops a client this coordinator owns.
         runningNetwork = network
+        runningScope = scope
+
+        // `prepareForNetworkSwitch()` runs outside the lifecycle queue, so a
+        // switch can land during the start's await (the stop has the same
+        // check after its own await). Its preparation already detached the
+        // subscriptions and cleared the published state; re-attaching here
+        // would publish the outgoing network's progress and balance as the
+        // new network's. The switch's refresh, queued behind this start,
+        // begins with a reset that stops the client just started.
+        if isOvertakenByNetworkSwitch(since: preparationsAtStart) {
+            Self.logger.info(
+                "🛰️ SPVCOORD :: network switch prepared during the start of \(network.rawValue, privacy: .public); leaving it to the switch")
+            return .failure(StartError.superseded)
+        }
+
         lastError = nil
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
@@ -689,6 +745,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         guard switchPreparation.isOvertaken(since: preparationsAtStart) else { return false }
         Self.logger.info("🛰️ SPVCOORD :: start superseded by a network switch preparation")
         return true
+    }
+
+    /// `isOvertakenByNetworkSwitch(since:)` without the log line: for a caller
+    /// that only classifies a `superseded` it already received, after the
+    /// start logged the overtake itself.
+    @MainActor
+    func wasOvertakenByNetworkSwitch(since preparationsAtStart: Int) -> Bool {
+        switchPreparation.isOvertaken(since: preparationsAtStart)
     }
 
     /// Detach every publisher that feeds published state, without touching the
@@ -731,8 +795,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         detachManagerSubscriptions()
 
         if let manager = SwiftDashSDKHost.shared.manager {
+            var stopAttempted = false
             do {
-                if try manager.isSpvRunning() {
+                // `isSpvRunning()` turns false once background sync has failed,
+                // while the SDK holds the client until it is stopped, so a
+                // client this coordinator started is stopped either way.
+                if try (runningNetwork != nil || manager.isSpvRunning()) {
+                    stopAttempted = true
                     try await manager.stopSpv()
                 }
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
@@ -746,6 +815,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 }
                 self.lastError = error.localizedDescription
                 state = .error
+                // A failed `isSpvRunning()` query leaves no client behind.
+                // Any throw from `stopSpv()` counts, including one the SDK
+                // raises before the native stop: the two are not told apart.
+                if stopAttempted,
+                   let stopping = runningScope ?? SwiftDashSDKHost.shared.runningNetwork?.persistenceScope {
+                    storeClearGate.recordFailedStop(scope: stopping)
+                }
                 throw StartError.stopSpv(error)
             }
         }
@@ -758,6 +834,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         runningNetwork = nil
+        runningScope = nil
         coinJoinRecoveryWidenedNetwork = nil
         coinJoinRecoveryWalletIds = []
         coinJoinRecoveryScanTip = nil
@@ -807,17 +884,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             // completion cannot finish the intent, and the next start rewinds
             // again.
             if CoinJoinRecovery.shared.isResetRescanPending(for: network) {
-                let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
-                for wallet in manager.wallets.values {
-                    try manager.spvRescanFilters(walletId: wallet.walletId, fromHeight: floor)
-                }
-                // The rescan API lowers only the in-memory checkpoint. Lower
-                // the persisted one too, so the durable acknowledgement below
-                // can be met only by a checkpoint the persister writes AFTER
-                // this scan — never by a surviving pre-reset row that already
-                // sat at the tip. A failed save throws: fail closed, keep the
-                // intent, and let the next launch try again.
-                try persistLoweredCheckpoints(for: Array(manager.wallets.keys), floor: floor)
+                // The persisted checkpoint is lowered with the in-memory one,
+                // so the durable acknowledgement below can be met only by a
+                // checkpoint the persister writes AFTER this scan — never by a
+                // surviving pre-reset row that already sat at the tip. A
+                // failed save throws: fail closed, keep the intent, and let
+                // the next launch try again.
+                let floor = try rewindToImportFloor(
+                    walletIds: Array(manager.wallets.keys), network: network, manager: manager)
                 Self.logger.info(
                     "🛰️ SPVCOORD :: reset rescan intent pending on \(network.rawValue, privacy: .public) — filter checkpoints rewound to \(floor, privacy: .public) for \(manager.wallets.count, privacy: .public) wallet(s)")
             }
@@ -844,30 +918,26 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// the arm (the arming save already rewound the row, which normally feeds
     /// the restore); a rewind failure is logged but doesn't retain the marker.
     ///
-    /// Returns true when applied — the caller clears the marker once
-    /// `startSpv` succeeds. Returns false (marker retained) when there is
+    /// Returns the marker that was applied — the caller clears exactly that
+    /// one once `startSpv` succeeds, so a resync armed during the start is
+    /// not consumed with it. Returns nil (marker retained) when there is
     /// nothing pending, the marker was armed by this process (it must wait
-    /// for a launch that restores the lowered birth height into Rust), or
-    /// the store delete failed (retried next launch).
+    /// for a launch that restores the lowered birth height into Rust), or the
+    /// store was not cleared (see `clearChainStoreBeforeStart`).
     @MainActor
     private func applyPendingChainResyncIfNeeded(
         for network: Network,
+        scope: String,
         dataDir: String,
         manager: PlatformWalletManager
-    ) async -> Bool {
-        guard let pending = SPVChainResyncMarker.pending(for: network) else { return false }
+    ) async -> SPVChainResyncMarker.Pending? {
+        guard let pending = SPVChainResyncMarker.pending(for: network) else { return nil }
         guard !pending.armedByThisSession else {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
-            return false
+            return nil
         }
-
-        isApplyingChainResync = true
-        defer { isApplyingChainResync = false }
-        do {
-            try await Self.resetSPVStore(atPath: dataDir)
-        } catch {
-            Self.logger.error("🛰️ SPVCOORD :: chain resync store delete failed: \(String(describing: error), privacy: .public)")
-            return false
+        guard await clearChainStoreBeforeStart(scope: scope, dataDir: dataDir, reason: "chain resync") else {
+            return nil
         }
 
         do {
@@ -879,21 +949,125 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         Self.logger.info("🛰️ SPVCOORD :: chain store cleared for resync from height \(pending.fromHeight, privacy: .public)")
-        return true
+        return pending
     }
 
-    /// Potentially large directory deletion is never performed on MainActor.
-    /// The caller resumes on MainActor before rewinding the filter checkpoint
-    /// and starting SPV.
+    /// Rebuild the chain store for wallets imported, or recreated from the
+    /// Keychain, since the last start (see
+    /// `SPVChainStoreRebuild`): rewind the imported wallets' filter
+    /// checkpoints to the import floor and delete the network's SPV store, so
+    /// the upcoming `startSpv` anchors at the lowest birth height now loaded.
+    /// A wallet added beside a running one is walked by the live filter scan,
+    /// from the old anchor, before the start that reaches this method; without
+    /// the rewind that scan's checkpoint would hide everything below the
+    /// anchor for good.
+    ///
+    /// Returns the wallet ids the rebuild was applied for — the caller drops
+    /// them from the marker once `startSpv` succeeds. A wallet that is not
+    /// loaded, or whose rewind failed, is left out and stays pending. Returns
+    /// none (marker retained) when nothing is pending, no pending wallet was
+    /// rewound, or the store was not cleared (see
+    /// `clearChainStoreBeforeStart`); the imported wallets then sync on the
+    /// old store, without their older history, until a later start applies
+    /// the rebuild.
+    ///
+    /// The scope's one-time wide CoinJoin scan is left as it is: the rebuilt
+    /// scan walks the wallets at whatever gap that scan's own state gives
+    /// this start — the default one on a scope where it already completed,
+    /// also when it completed on the old store while the rebuild was
+    /// deferred.
+    @MainActor
+    private func rebuildChainStoreIfPending(
+        for network: Network,
+        scope: String,
+        dataDir: String,
+        manager: PlatformWalletManager,
+        storeAlreadyCleared: Bool
+    ) async -> [Data] {
+        let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
+        let imported = await SPVChainStoreRebuild.apply(
+            scope: scope,
+            isLoaded: { manager.wallets[$0] != nil },
+            rewind: { walletId in
+                do {
+                    _ = try self.rewindToImportFloor(walletIds: [walletId], network: network, manager: manager)
+                    return true
+                } catch {
+                    Self.logger.error("🛰️ SPVCOORD :: chain store rebuild rewind failed: \(String(describing: error), privacy: .public)")
+                    DWLogger.log(
+                        "SPVCOORD chain store rebuild FAILED scope=\(scope) step=rewind codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                    return false
+                }
+            },
+            clearStore: {
+                if storeAlreadyCleared { return true }
+                return await self.clearChainStoreBeforeStart(
+                    scope: scope, dataDir: dataDir, reason: "chain store rebuild")
+            })
+        guard !imported.isEmpty else { return [] }
+
+        Self.logger.info("🛰️ SPVCOORD :: chain store rebuilt for \(imported.count, privacy: .public) imported or recovered wallet(s) on \(network.rawValue, privacy: .public)")
+        let stillPending = (SPVChainStoreRebuild.pendingWalletIds(scope: scope)?.count ?? 0) - imported.count
+        DWLogger.log("SPVCOORD chain store rebuilt scope=\(scope) wallets=\(imported.count) stillPending=\(stillPending) floor=\(floor)")
+        return imported
+    }
+
+    /// Rewind `walletIds`' filter checkpoints to `network`'s import floor, in
+    /// memory and on disk, and return that floor. The rescan API lowers only
+    /// the in-memory checkpoint; without the persisted one a launch that
+    /// interrupts the scan would resume above the range it was meant to walk.
+    /// Before `startSpv` only (see `persistLoweredCheckpoints`).
+    @MainActor
+    private func rewindToImportFloor(
+        walletIds: [Data],
+        network: Network,
+        manager: PlatformWalletManager
+    ) throws -> UInt32 {
+        let floor = SwiftDashSDKHost.importedWalletBirthHeight(for: network)
+        for walletId in walletIds {
+            try manager.spvRescanFilters(walletId: walletId, fromHeight: floor)
+        }
+        try persistLoweredCheckpoints(for: walletIds, floor: floor)
+        return floor
+    }
+
+    /// Empty the SPV store at `dataDir` (see `SPVChainStoreRebuild.emptyStore`).
+    /// Never performed on MainActor.
     private nonisolated static func resetSPVStore(atPath dataDir: String) async throws {
         try await Task.detached(priority: .userInitiated) {
             let fileManager = FileManager()
-            let dir = URL(fileURLWithPath: dataDir, isDirectory: true)
-            if fileManager.fileExists(atPath: dir.path) {
-                try fileManager.removeItem(at: dir)
-            }
-            try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+            try SPVChainStoreRebuild.emptyStore(
+                at: URL(fileURLWithPath: dataDir, isDirectory: true),
+                movingInto: fileManager.temporaryDirectory
+                    .appendingPathComponent("spv-store-trash", isDirectory: true),
+                fileManager: fileManager)
         }.value
+    }
+
+    /// Clear `scope`'s chain store at `dataDir` ahead of `startSpv`, for the
+    /// birth-height resync and the import rebuild alike. Returns false, with
+    /// the store untouched, when this scope's SPV stop failed earlier in this
+    /// process (see `storeClearGate`) or the store could not be moved
+    /// away.
+    @MainActor
+    private func clearChainStoreBeforeStart(scope: String, dataDir: String, reason: String) async -> Bool {
+        do {
+            let cleared = try await storeClearGate.clear(scope: scope) {
+                isApplyingChainResync = true
+                defer { isApplyingChainResync = false }
+                try await Self.resetSPVStore(atPath: dataDir)
+            }
+            if !cleared {
+                Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) deferred to next launch — an SPV stop failed this session")
+                DWLogger.log("SPVCOORD \(reason) deferred scope=\(scope) reason=stop-failed")
+            }
+            return cleared
+        } catch {
+            Self.logger.error("🛰️ SPVCOORD :: \(reason, privacy: .public) store delete failed: \(String(describing: error), privacy: .public)")
+            DWLogger.log(
+                "SPVCOORD \(reason) FAILED scope=\(scope) step=delete codes=\(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            return false
+        }
     }
 
     /// After a widened recovery scan has completed on the network, mark
@@ -952,18 +1126,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             throw StartError.runtimeNotRunning
         }
         let context = container.mainContext
+        var rows: [PersistentWallet] = []
         for walletId in walletIds {
             var descriptor = FetchDescriptor<PersistentWallet>(predicate: #Predicate { $0.walletId == walletId })
             descriptor.fetchLimit = 1
             guard let row = try context.fetch(descriptor).first else {
                 throw StartError.runtimeNotRunning
             }
-            if row.syncedHeight > floor {
-                row.syncedHeight = floor
-            }
+            rows.append(row)
         }
-        if context.hasChanges {
-            try context.save()
+        try SPVChainStoreRebuild.lowerCheckpoints(of: rows, to: floor, checkpoint: \.syncedHeight) {
+            if context.hasChanges {
+                try context.save()
+            }
         }
     }
 
@@ -1284,7 +1459,7 @@ enum SPVChainResyncMarker {
     /// process is only applied by a later one (see type doc).
     private static let sessionId = UUID().uuidString
 
-    struct Pending {
+    struct Pending: Equatable {
         let walletId: Data
         let fromHeight: UInt32
         let armedBySessionId: String
@@ -1308,8 +1483,8 @@ enum SPVChainResyncMarker {
     /// `startSpv` of a later app session, and `walletId`'s filter checkpoint
     /// is rewound to `fromHeight`. Overwrites any pending marker for the
     /// network.
-    static func arm(walletId: Data, fromHeight: UInt32, network: Network) {
-        UserDefaults.standard.set(
+    static func arm(walletId: Data, fromHeight: UInt32, network: Network, defaults: UserDefaults = .standard) {
+        defaults.set(
             [
                 "walletId": walletId.hexEncodedString(),
                 "fromHeight": NSNumber(value: fromHeight),
@@ -1328,8 +1503,8 @@ enum SPVChainResyncMarker {
         logger.info("🛰️ SPV-RESYNC :: disarmed for \(network.rawValue, privacy: .public)")
     }
 
-    static func pending(for network: Network) -> Pending? {
-        guard let dict = UserDefaults.standard.dictionary(forKey: key(for: network)),
+    static func pending(for network: Network, defaults: UserDefaults = .standard) -> Pending? {
+        guard let dict = defaults.dictionary(forKey: key(for: network)),
               let walletIdHex = dict["walletId"] as? String,
               let walletId = Data(hexString: walletIdHex),
               let fromHeight = (dict["fromHeight"] as? NSNumber)?.uint32Value,
@@ -1342,8 +1517,24 @@ enum SPVChainResyncMarker {
             armedBySessionId: armedBySessionId)
     }
 
-    static func clear(for network: Network) {
-        UserDefaults.standard.removeObject(forKey: key(for: network))
+    static func clear(for network: Network, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key(for: network))
+    }
+
+    /// Consume `applied`, the marker a start applied, and only that one: a
+    /// start suspends for the whole store open, during which the Sync Info
+    /// screen can arm a new resync for the same network (overwriting the
+    /// marker), and that request must reach the next launch. Returns whether
+    /// the marker was cleared; a different pending marker is left in place.
+    @discardableResult
+    static func clear(applied: Pending, for network: Network, defaults: UserDefaults = .standard) -> Bool {
+        guard let current = pending(for: network, defaults: defaults) else { return false }
+        guard current == applied else {
+            logger.info("🛰️ SPV-RESYNC :: a resync armed during the start stays pending for \(network.rawValue, privacy: .public)")
+            return false
+        }
+        clear(for: network, defaults: defaults)
+        return true
     }
 
     /// Clear every pending marker: the rows and chain data they reference are

@@ -70,6 +70,7 @@ struct SDKIdentityProfileSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
                     Divider()
                     infoSection
                     if identityIsLoading {
@@ -525,6 +526,10 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    /// Set instead of `errorMessage` when a transparent top-up would need
+    /// more inputs than one asset lock may carry: the lock to re-check once
+    /// `CoreCoinConsolidationSheet` has combined the coins.
+    @Published var inputLimitCheck: AssetLockInputLimit.Check?
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
 
@@ -594,6 +599,13 @@ final class IdentityTopUpViewModel: ObservableObject {
             isProcessing = false
             stepLabel = nil
         }
+        // Before the prompt: a lock over the input limit is never built.
+        let inputCheck = AssetLockInputLimit.Check(
+            amountDuffs: amountDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        if source == .transparent, AssetLockInputLimit.verdict(for: inputCheck) == .needsConsolidation {
+            inputLimitCheck = inputCheck
+            return nil
+        }
         do {
             try await authorizer.authorize()
         } catch {
@@ -603,10 +615,12 @@ final class IdentityTopUpViewModel: ObservableObject {
         do {
             switch source {
             case .transparent:
-                return try await wallet.topUpIdentityWithFunding(
-                    identityId: identityId,
-                    amountDuffs: amountDuffs,
-                    accountIndex: 0)
+                return try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId,
+                        amountDuffs: amountDuffs,
+                        accountIndex: 0)
+                }
 
             case .platform:
                 let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
@@ -640,7 +654,11 @@ final class IdentityTopUpViewModel: ObservableObject {
             }
             return nil
         } catch {
-            errorMessage = error.localizedDescription
+            if let check = AssetLockInputLimit.check(for: error) {
+                inputLimitCheck = check
+            } else {
+                errorMessage = error.localizedDescription
+            }
             return nil
         }
     }
@@ -919,6 +937,7 @@ struct IdentityTopUpSheet: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .coreCoinConsolidationSheet(check: $viewModel.inputLimitCheck)
     }
 
     /// Shared chip chrome for the preset and Custom amount buttons.

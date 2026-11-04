@@ -199,7 +199,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(tagless.disablePublicKeyIds, tagged.disablePublicKeyIds)
 
         let appParser = PlatformWalletDashConnectStateTransitionParser { bytes in
-            .identityUpdate(try wallet.parseIdentityUpdateTransition(bytes))
+            Self.parsed(.identityUpdate(try wallet.parseIdentityUpdateTransition(bytes)))
         }
         guard case let .keyRegistration(appTransition) = try appParser.parse(taglessBytes) else {
             return XCTFail("Expected a key-registration transition")
@@ -214,14 +214,9 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         let contractId = Data(repeating: 0x22, count: 32)
         let tokenId = Data(repeating: 0x23, count: 32)
         let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            .tokenPurchase(ManagedPlatformWallet.ParsedTokenPurchaseTransition(
-                ownerId: ownerId,
-                dataContractId: contractId,
-                tokenId: tokenId,
-                tokenContractPosition: 3,
-                tokenCount: 100,
-                totalAgreedPrice: 100_000_000
-            ))
+            Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId)
+            ])))
         }
 
         guard case let .tokenPurchase(purchase) = try parser.parse(Data([0x00])) else {
@@ -237,17 +232,77 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 
     func testParserRejectsContractGroupKeysInsteadOfDroppingTheirRestriction() throws {
         let parser = PlatformWalletDashConnectStateTransitionParser { _ in
-            .identityUpdate(.init(
+            Self.parsed(.identityUpdate(.init(
                 identityId: Data(repeating: 0x21, count: 32),
                 addPublicKeys: [.init(
                     keyId: 1, keyType: .ecdsaSecp256k1, purpose: .authentication,
                     securityLevel: .high, pubkeyBytes: Data(repeating: 0x22, count: 33),
                     contractBounds: .contractGroup(id: Data(repeating: 0x23, count: 32)))],
-                disablePublicKeyIds: []))
+                disablePublicKeyIds: [])))
         }
         XCTAssertThrowsError(try parser.parse(Data([0]))) {
             XCTAssertEqual($0 as? DashConnectPlatformError, .keyRegistrationUnexpectedMutation)
         }
+    }
+
+    func testParserRefusesABatchThatIsNotALoneCompleteTokenPurchase() {
+        let ownerId = Data(repeating: 0x21, count: 32)
+        let contractId = Data(repeating: 0x22, count: 32)
+        let tokenId = Data(repeating: 0x23, count: 32)
+        let purchase = Self.tokenRow(contractId: contractId, tokenId: tokenId)
+        let refused: [(String, ManagedPlatformWallet.ParsedStateTransition)] = [
+            ("two rows", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [purchase, purchase])))),
+            ("no rows", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [])))),
+            ("another token action", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, action: "Transfer")
+            ])))),
+            ("an incomplete row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, complete: false)
+            ])))),
+            ("an incomplete transition", Self.parsed(
+                .batch(.init(ownerId: ownerId, transitions: [purchase])), complete: false)),
+            ("a missing price", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                Self.tokenRow(contractId: contractId, tokenId: tokenId, amount: nil)
+            ])))),
+            ("a document row", Self.parsed(.batch(.init(ownerId: ownerId, transitions: [
+                .document(.init(
+                    dataContractId: contractId, documentType: "note",
+                    documentId: Data(repeating: 0x24, count: 32), action: "Delete",
+                    amount: nil, recipientId: nil, complete: true, details: nil))
+            ])))),
+            ("another kind", Self.parsed(.other)),
+        ]
+        for (name, transition) in refused {
+            let parser = PlatformWalletDashConnectStateTransitionParser { _ in transition }
+            XCTAssertThrowsError(try parser.parse(Data([0])), name) {
+                XCTAssertEqual(
+                    $0 as? DashConnectPlatformError,
+                    .unsupportedStateTransition("TestKind"),
+                    name)
+            }
+        }
+    }
+
+    private static func parsed(
+        _ kind: ManagedPlatformWallet.ParsedStateTransitionKind,
+        complete: Bool = true
+    ) -> ManagedPlatformWallet.ParsedStateTransition {
+        .init(
+            kindName: "TestKind", ownerId: nil, isSigned: false, userFeeIncrease: 0,
+            complete: complete, serialized: Data(), details: nil, kind: kind)
+    }
+
+    private static func tokenRow(
+        contractId: Data,
+        tokenId: Data,
+        action: String = "DirectPurchase",
+        amount: UInt64? = 100_000_000,
+        complete: Bool = true
+    ) -> ManagedPlatformWallet.ParsedBatchedTransition {
+        .token(.init(
+            dataContractId: contractId, tokenId: tokenId, tokenContractPosition: 3,
+            action: action, amount: amount, recipientId: nil, tokenCount: 100,
+            complete: complete, details: complete ? nil : "note"))
     }
 
     func testTokenPurchasePriceConvertsCreditsToDash() {

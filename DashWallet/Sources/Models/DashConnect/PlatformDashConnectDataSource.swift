@@ -70,6 +70,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     case keyRegistrationMismatchedDerivedKey(KeyPurpose)
     case tokenPurchaseWrongIdentity
     case tokenPurchaseTokenIdMismatch
+    case unsupportedStateTransition(String)
     case ephemeralKeyGenerationFailed
     case ambiguousKeyRegistrationConnection
     case devnetLoginContractNotConfigured
@@ -117,6 +118,8 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return "The scanned token purchase targets a different identity."
         case .tokenPurchaseTokenIdMismatch:
             return "The scanned token purchase names a token that does not belong to the contract and position it would buy from."
+        case .unsupportedStateTransition(let kindName):
+            return "This wallet cannot approve the scanned request (\(kindName))."
         case .devnetLoginContractNotConfigured:
             return NSLocalizedString(
                 "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.",
@@ -230,7 +233,8 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
     }
 
     func parse(_ transitionBytes: Data) throws -> DashConnectParsedStateTransition {
-        switch try parseTransition(transitionBytes) {
+        let transition = try parseTransition(transitionBytes)
+        switch transition.kind {
         case .identityUpdate(let parsed):
             return .keyRegistration(
                 DashConnectKeyRegistrationTransition(
@@ -270,19 +274,40 @@ struct PlatformWalletDashConnectStateTransitionParser: DashConnectStateTransitio
                     disablePublicKeyIds: parsed.disablePublicKeyIds
                 )
             )
-        case .tokenPurchase(let parsed):
+        case .batch(let batch):
+            // The SDK now describes every batch, where it used to refuse all
+            // but a lone token direct purchase. The approval sheet and the
+            // rebuild in `approveTokenPurchase` still cover exactly that one
+            // case, so everything else is refused here: more than one row
+            // would be signed without being shown, and an incomplete summary
+            // (a note, group-action info) carries fields the rebuild drops.
+            guard transition.complete,
+                  batch.transitions.count == 1,
+                  case .token(let row) = batch.transitions[0],
+                  row.action == Self.tokenDirectPurchaseAction,
+                  row.complete,
+                  let tokenCount = row.tokenCount,
+                  let totalAgreedPrice = row.amount else {
+                throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
+            }
             return .tokenPurchase(
                 DashConnectTokenPurchaseTransition(
-                    ownerId: parsed.ownerId,
-                    dataContractId: parsed.dataContractId,
-                    tokenId: parsed.tokenId,
-                    tokenContractPosition: parsed.tokenContractPosition,
-                    tokenCount: parsed.tokenCount,
-                    totalAgreedPrice: parsed.totalAgreedPrice
+                    ownerId: batch.ownerId,
+                    dataContractId: row.dataContractId,
+                    tokenId: row.tokenId,
+                    tokenContractPosition: row.tokenContractPosition,
+                    tokenCount: tokenCount,
+                    totalAgreedPrice: totalAgreedPrice
                 )
             )
+        case .creditTransfer, .dataContractCreate, .dataContractUpdate, .other:
+            throw DashConnectPlatformError.unsupportedStateTransition(transition.kindName)
         }
     }
+
+    /// rs-dpp's action name for a token direct purchase, as the SDK reports
+    /// it on a batch row.
+    private static let tokenDirectPurchaseAction = "DirectPurchase"
 }
 
 final class PlatformDashConnectDataSource: DashConnectDataSource {
