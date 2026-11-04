@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-03
-- **Deciders:** romchornyi (author). Team agreement comes through the review of #1308 by llbartekll and jeanpierreroma.
+- **Deciders:** romchornyi (author). Team agreement: approval of #1308 by llbartekll.
 
 ## Context
 
