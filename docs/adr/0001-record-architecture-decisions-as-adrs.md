@@ -1,6 +1,6 @@
 # 0001 — Record architecture decisions as ADRs
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-03
 - **Deciders:** romchornyi (author). Team agreement: approval of #1308 by llbartekll.
 

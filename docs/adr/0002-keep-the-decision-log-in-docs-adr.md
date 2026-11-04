@@ -1,6 +1,6 @@
 # 0002 — Keep the decision log in docs/adr
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-03
 - **Deciders:** romchornyi (author)
 

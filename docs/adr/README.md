@@ -7,8 +7,8 @@ where they disagree, ADR-0001 wins.
 
 | # | Title | Area | Status | Superseded by |
 |---|---|---|---|---|
-| [0001](0001-record-architecture-decisions-as-adrs.md) | Record architecture decisions as ADRs | process | Proposed | |
-| [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | process | Proposed | |
+| [0001](0001-record-architecture-decisions-as-adrs.md) | Record architecture decisions as ADRs | process | Accepted | |
+| [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | process | Accepted | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
