@@ -32,6 +32,7 @@ import Foundation
 import OSLog
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 enum MnemonicFirstWalletCreationError: Error {
     case mnemonicPersistence(Error)
@@ -339,6 +340,10 @@ final class SwiftDashSDKHost {
 
     // MARK: - Owned state
 
+    let protocolCompatibility = WalletProtocolCompatibilityController(
+        foregroundNotification: UIApplication.willEnterForegroundNotification,
+        log: { DWLogger.log($0) })
+
     private(set) var sdk: SDK?
     private(set) var manager: PlatformWalletManager?
     private(set) var wallet: ManagedPlatformWallet?
@@ -413,43 +418,13 @@ final class SwiftDashSDKHost {
 
     // MARK: - Platform protocol version
 
-    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
-    ///
-    /// **Testnet is pinned to the protocol testnet has activated** (14; check
-    /// `current` in an evonode's getStatus before bumping). Below it the
-    /// client builds transitions the network refuses — at 13, every
-    /// `ShieldFromAssetLock` (version 1 only at v14) failed with 10603 and
-    /// left its asset lock unspent. An explicit pin, rather than auto-detect,
-    /// keeps a shielded build from running before the SDK has ratcheted up to
-    /// the network version. A pinned SDK never ratchets
-    /// (`refreshProtocolVersion()` is a no-op while pinned), so the pin has to
-    /// be bumped by hand on the next testnet activation.
-    ///
-    /// **Mainnet and devnet use `0` — auto-detect.** The SDK seeds at its
-    /// per-network `min_protocol_version` floor (13 on mainnet) and moves up
-    /// only when a proved response carries a newer version, so it follows a
-    /// mainnet activation to any protocol the linked SDK carries without an
-    /// app release. The floor must not sit
-    /// above the network: a client ahead of the network misreads its proofs (a
-    /// v13 pin while mainnet ran v12 failed with "compacted address balance
-    /// proof contains trailing bytes"). Devnet's floor is 14, built from the
-    /// linked SDK's v14, which a devnet cut from another release may not run.
-    /// TODO(protocol-refresh): the app never calls `refreshProtocolVersion()`,
-    /// so until the first proved read an auto-detect SDK builds transitions at
-    /// its floor.
-    ///
-    /// **Regtest** returns `0` only to keep the switch exhaustive;
-    /// `makeRuntime` rejects it before an SDK is built.
-    ///
-    /// The pin only names a version; its rules come from the linked SDK.
-    /// platform v4.2-dev carries a pre-release v14 whose `ShieldFromAssetLock`
-    /// is still version 0. Testnet runs 5.0.0-rc.4; link that release, or a
-    /// later commit with the same `v14.rs`.
+    /// Use the SDK's automatic protocol selection on every supported network.
+    /// It starts at the network's minimum version and advances after verified
+    /// responses, up to the SDK's supported maximum. The advisory query runs
+    /// independently; operation preparation does not wait for it.
+    /// Regtest is rejected by `makeRuntime` before an SDK is built.
     static func platformVersion(for network: Network) -> UInt32 {
-        switch network {
-        case .testnet: return 14
-        case .mainnet, .devnet, .regtest: return 0
-        }
+        0
     }
 
     // MARK: - Wallet presence
@@ -618,31 +593,6 @@ final class SwiftDashSDKHost {
         return persistedMnemonics().contains { Mnemonic.normalizePhrase($0.mnemonic) == typed }
     }
 
-    /// Throwaway key-wallet stack (manager + wallet) for path-based key
-    /// derivation, built from the persisted mnemonic of the host's active
-    /// wallet. Separate from the running `PlatformWalletManager` — key
-    /// derivation lives in the `WalletManager`/`Wallet` FFI surface, which
-    /// the runtime handles don't expose. The instances derive keys locally
-    /// (no networking, no persistence); drop them when done.
-    ///
-    /// Consumers: the masternode Owner/Voting key deriver and CrowdNode
-    /// message signing. Returns nil when no wallet is bound/running or the
-    /// mnemonic can't be read (logged).
-    func derivationWallet() -> (manager: WalletManager, wallet: Wallet, walletId: Data)? {
-        guard let hostWalletId = wallet?.walletId, let network = runningNetwork else {
-            Self.logger.warning("🪺 HOST :: derivationWallet — no bound wallet/network")
-            return nil
-        }
-        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
-              let manager = try? WalletManager(network: network),
-              let walletId = try? manager.addWallet(mnemonic: mnemonic),
-              let derivationWallet = (try? manager.getWallet(id: walletId)) ?? nil else {
-            Self.logger.error("🪺 HOST :: derivationWallet — key-wallet bootstrap failed")
-            return nil
-        }
-        return (manager: manager, wallet: derivationWallet, walletId: walletId)
-    }
-
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {
@@ -734,14 +684,7 @@ final class SwiftDashSDKHost {
         case WalletStorageError.mnemonicNotFound:
             return (.notFound, nil)
         case SwiftDashSDKWalletDeletionError.invalidMnemonic,
-             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
-             KeyWalletError.invalidMnemonic,
-             KeyWalletError.invalidInput:
-            // The resolver derives ids by constructing a wallet from the
-            // stored phrase; these two `KeyWalletError` cases are that
-            // construction refusing material that passed word validation.
-            // Its other cases (allocation, network, state) say nothing about
-            // the keys and stay a store failure.
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork:
             return (.unclassifiable, nil)
         case HostError.mnemonicRoundTripMismatch:
             return (.idMismatch, nil)
@@ -1139,7 +1082,7 @@ final class SwiftDashSDKHost {
         do {
             // This is the same deterministic id contract used by addWallet's
             // duplicate guard and PlatformWalletManager.createWallet.
-            walletId = try Wallet(mnemonic: mnemonic, network: network).id
+            walletId = try Mnemonic.walletId(for: mnemonic, network: network)
         } catch {
             Self.logger.error("🪺 HOST :: walletId derivation failed: \(String(describing: error), privacy: .public)")
             throw HostError.walletCreationFailed(error)
@@ -1284,6 +1227,7 @@ final class SwiftDashSDKHost {
     /// invariant doesn't hold here.
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        protocolCompatibility.detach()
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
         drainWatch?.cancel()
@@ -2028,6 +1972,9 @@ final class SwiftDashSDKHost {
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
         ContestedUsernameFee.shared.runtimeDidStart()
+        protocolCompatibility.attach(
+            client: SwiftDashSDKProtocolCompatibilityClient(sdk: handles.sdk),
+            network: String(describing: handles.network))
     }
 
     // MARK: - ModelContainer

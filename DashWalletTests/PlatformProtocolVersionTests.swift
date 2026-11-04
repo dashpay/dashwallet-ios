@@ -5,10 +5,8 @@
 //  The Platform protocol version `SwiftDashSDKHost` builds the SDK with, per
 //  network.
 //
-//  These pin the per-network choice only. Whether the linked SDK's protocol 14
-//  is the one testnet runs depends on the platform commit it was built from
-//  (`.platform-ref` in CI, the sibling `../platform` checkout locally), which
-//  no app-side test can observe.
+//  Zero enables SDK auto-detection; verified network responses determine the
+//  effective version. Live proof verification is covered by integration tests.
 //
 
 import XCTest
@@ -17,13 +15,12 @@ import SwiftDashSDK
 
 @MainActor
 final class PlatformProtocolVersionTests: XCTestCase {
-    /// A change here is deliberate: bump testnet together with the pin when
-    /// testnet activates a new protocol. `0` is auto-detect. Regtest is left
-    /// out: `makeRuntime` rejects it, so its value is never used.
+    /// All supported networks follow verified protocol upgrades without an app pin.
+    /// Regtest is omitted because `makeRuntime` rejects it.
     func testPlatformVersionPerNetwork() {
         let expected: [Network: UInt32] = [
             .mainnet: 0,
-            .testnet: 14,
+            .testnet: 0,
             .devnet: 0,
         ]
         for (network, version) in expected {

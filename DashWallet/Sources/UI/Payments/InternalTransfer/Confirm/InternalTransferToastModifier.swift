@@ -41,7 +41,7 @@ private struct InternalTransferToastModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
-                if let notice = runner.notice {
+                if let notice = runner.notice, notice.coinConsolidationCheck == nil {
                     DashUIKit.Toast(
                         style: style(for: notice),
                         message: message(for: notice),
@@ -60,6 +60,11 @@ private struct InternalTransferToastModifier: ViewModifier {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            // The input-limit outcome is the shared sheet, not a toast: it
+            // offers to combine the coins, which the user retries after.
+            .coreCoinConsolidationSheet(check: Binding(
+                get: { runner.notice?.coinConsolidationCheck },
+                set: { if $0 == nil, runner.notice?.coinConsolidationCheck != nil { runner.notice = nil } }))
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
                 guard let remaining = runner.notice?.remainingDisplayTime(
@@ -92,7 +97,7 @@ private struct InternalTransferToastModifier: ViewModifier {
         case .started: return .loading
         case .busy, .drainPending: return .warning
         case .succeeded, .submitted: return .success
-        case .failed: return .error
+        case .failed, .needsCoinConsolidation: return .error
         }
     }
 
@@ -116,10 +121,12 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "Internal transfer accepted but not yet confirmed")
         case .drainPending:
             return NSLocalizedString(
-                "Transfer status is pending. Open Core to Shielded and tap Max to check or resume it.",
+                "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
                 comment: "A wallet drain has an unresolved outcome")
         case .failed(let reason):
             return reason
+        case .needsCoinConsolidation:
+            return AssetLockInputLimit.message
         }
     }
 }

@@ -15,21 +15,24 @@ with tempfile.TemporaryDirectory(prefix="core-drain-tests-") as temporary:
     package = Path(temporary)
     sources = package / "Sources/CoreDrainHarness"
     tests = package / "Tests/CoreDrainHarnessTests"
+    sdk_stubs = package / "Sources/SwiftDashSDK"
     sources.mkdir(parents=True)
     tests.mkdir(parents=True)
+    sdk_stubs.mkdir(parents=True)
     source = repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/CoreShieldedDrainStore.swift"
     test = repository / "DashWalletTests/CoreShieldedDrainStoreTests.swift"
     (sources / source.name).symlink_to(source)
     durability = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift"
     (sources / durability.name).symlink_to(durability)
     (tests / test.name).symlink_to(test)
-    write_recovery_harness(repository, sources, tests)
+    write_recovery_harness(repository, sources, tests, sdk_stubs)
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9
 import PackageDescription
 let package = Package(name: "CoreDrainHarness", platforms: [.macOS("15.0"), .iOS("18.0")],
     products: [.library(name: "CoreDrainHarness", targets: ["CoreDrainHarness"])], targets: [
-    .target(name: "CoreDrainHarness"),
-    .testTarget(name: "CoreDrainHarnessTests", dependencies: ["CoreDrainHarness"])
+    .target(name: "SwiftDashSDK"),
+    .target(name: "CoreDrainHarness", dependencies: ["SwiftDashSDK"]),
+    .testTarget(name: "CoreDrainHarnessTests", dependencies: ["CoreDrainHarness", "SwiftDashSDK"])
 ])
 ''')
     if args.ios_simulator:

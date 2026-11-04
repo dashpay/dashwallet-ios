@@ -60,6 +60,11 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     @Published private(set) var platformShieldCapacityChange:
         InternalTransferRunner.PlatformShieldCapacityChange?
 
+    /// Set when the runner refused the transfer before the PIN prompt because
+    /// its asset lock would need too many inputs: the sheet stays up and
+    /// offers `CoreCoinConsolidationSheet` for this lock.
+    @Published var coinConsolidationCheck: AssetLockInputLimit.Check?
+
     private let runner: InternalTransferRunner
     private var cancellables = Set<AnyCancellable>()
 
@@ -137,10 +142,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     }
 
     var coreDrainFeeDetails: String? {
-        guard let drain = request?.coreShieldedDrain else { return nil }
-        let coreFee = drain.estimatedL1FeeDuffs.map { $0.dashAmount.formattedDashAmount } ?? "—"
-        let poolFee = InternalTransferSummaryFigures.networkFeeFiat(credits: drain.poolFeeCredits) ?? "—"
-        return String(format: NSLocalizedString("Estimated Core fee: %@\nShielded pool fee: %@", comment: "Drain fee breakdown"), coreFee, poolFee)
+        request?.coreShieldedDrain?.feeBreakdownText
     }
 
     var coreDrainExplanation: String? {
@@ -176,12 +178,21 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
     /// Runs the auth gate, then hands the transfer off. Returns whether the
     /// sheet has finished with the user: it stays open when the PIN prompt was
-    /// backed out of, so Confirm can simply be tapped again — everything else,
-    /// including a refusal because another transfer is still running, is
-    /// announced by a toast on the surface behind it.
+    /// backed out of, so Confirm can simply be tapped again, and when the
+    /// coins need combining first — everything else, including a refusal
+    /// because another transfer is still running, is announced by a toast on
+    /// the surface behind it.
     func confirm() async -> Bool {
         guard case .transfer(let request) = mode else { return false }
-        return await runner.start(request) != .notAuthorized
+        switch await runner.start(request) {
+        case .started, .busy:
+            return true
+        case .notAuthorized:
+            return false
+        case .needsCoinConsolidation(let check):
+            coinConsolidationCheck = check
+            return false
+        }
     }
 
     // MARK: - Request accessors
