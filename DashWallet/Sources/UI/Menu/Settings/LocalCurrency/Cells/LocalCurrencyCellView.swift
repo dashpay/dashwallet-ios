@@ -104,16 +104,17 @@ struct LocalCurrencyCellView: View {
 
     /// Builds a SwiftUI Text with the first occurrence of `query` highlighted in dashBlue.
     private func highlightedText(_ text: String, query: String) -> Text {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty,
-              let range = text.range(of: trimmed, options: [.caseInsensitive, .diacriticInsensitive]) else {
-            return Text(text)
-        }
-        let before = String(text[..<range.lowerBound])
-        let match  = String(text[range])
-        let after  = String(text[range.upperBound...])
+        let ranges = LocalCurrencyViewModel.matchRanges(of: query, in: text)
+        guard !ranges.isEmpty else { return Text(text) }
 
-        return Text("\(before)\(Text(match).foregroundColor(.dash.blue))\(after)")
+        var result = Text("")
+        var cursor = text.startIndex
+        for range in ranges {
+            result = result + Text(text[cursor..<range.lowerBound])
+                + Text(text[range]).foregroundColor(.dash.blue)
+            cursor = range.upperBound
+        }
+        return result + Text(text[cursor...])
     }
 }
 

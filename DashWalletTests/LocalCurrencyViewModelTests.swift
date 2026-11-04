@@ -22,6 +22,7 @@ final class LocalCurrencyViewModelTests: XCTestCase {
         CurrencyItem(code: "EUR", name: "Euro", flagName: nil, priceString: nil),
         CurrencyItem(code: "BRL", name: "Brazilian Réal", flagName: nil, priceString: nil),
         CurrencyItem(code: "AED", name: "United Arab Emirates Dirham", flagName: nil, priceString: nil),
+        CurrencyItem(code: "INR", name: "Indian Rupee", flagName: nil, priceString: nil),
     ]
 
     override func setUp() {
@@ -87,6 +88,38 @@ final class LocalCurrencyViewModelTests: XCTestCase {
         viewModel.applyFilter("eur")
 
         XCTAssertEqual(viewModel.filteredItems.map(\.code), ["EUR"])
+    }
+
+    func testCodeMatchIsLocaleIndependent() {
+        // "inr" must find INR whatever the device locale (Turkish folds "I"
+        // to a dotless "ı"); the search uses a fixed locale.
+        let viewModel = LocalCurrencyViewModel(allItems: items, selectedCurrencyCode: "USD")
+
+        viewModel.applyFilter("inr")
+
+        XCTAssertEqual(viewModel.filteredItems.map(\.code), ["INR"])
+    }
+
+    // MARK: - Highlight
+
+    private func highlighted(_ query: String, in text: String) -> [String] {
+        LocalCurrencyViewModel.matchRanges(of: query, in: text).map { String(text[$0]) }
+    }
+
+    func testEveryMatchingWordIsHighlighted() {
+        XCTAssertEqual(highlighted("emirates united", in: "United Arab Emirates Dirham"), ["United", "Emirates"])
+    }
+
+    func testHighlightIgnoresCaseAndAccents() {
+        XCTAssertEqual(highlighted("real", in: "Brazilian Réal"), ["Réal"])
+    }
+
+    func testOverlappingMatchesMerge() {
+        XCTAssertEqual(highlighted("dol dollar", in: "US Dollar"), ["Dollar"])
+    }
+
+    func testNoQueryHighlightsNothing() {
+        XCTAssertTrue(highlighted("  ", in: "Euro").isEmpty)
     }
 
     func testBlankQueryShowsEverything() {

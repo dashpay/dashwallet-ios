@@ -92,8 +92,42 @@ class LocalCurrencyViewModel: ObservableObject {
         }
     }
 
+    /// Fixed locale: the codes and names come from the rates data, and a
+    /// device locale must not change how they match (Turkish folds "I" to
+    /// a dotless "ı", so "inr" would miss INR).
+    nonisolated private static let searchLocale = Locale(identifier: "en_US_POSIX")
+
     private static func searchKey(_ text: String) -> String {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: searchLocale)
+    }
+
+    /// Where each word of `query` occurs in `text`, matched the way the
+    /// filter matches (case and diacritics ignored), sorted and merged so
+    /// the cell can highlight every matching word.
+    nonisolated static func matchRanges(of query: String, in text: String) -> [Range<String.Index>] {
+        let tokens = query.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        var ranges: [Range<String.Index>] = []
+        for token in tokens {
+            var searchStart = text.startIndex
+            while searchStart < text.endIndex,
+                  let range = text.range(of: token,
+                                         options: [.caseInsensitive, .diacriticInsensitive],
+                                         range: searchStart..<text.endIndex,
+                                         locale: searchLocale) {
+                ranges.append(range)
+                searchStart = range.upperBound
+            }
+        }
+        // Merge overlaps ("dol" and "dollar" in the same name).
+        var merged: [Range<String.Index>] = []
+        for range in ranges.sorted(by: { $0.lowerBound < $1.lowerBound }) {
+            if let last = merged.last, range.lowerBound <= last.upperBound {
+                merged[merged.count - 1] = last.lowerBound..<max(last.upperBound, range.upperBound)
+            } else {
+                merged.append(range)
+            }
+        }
+        return merged
     }
 }
 

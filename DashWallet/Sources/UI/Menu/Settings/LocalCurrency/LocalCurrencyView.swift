@@ -116,6 +116,8 @@ private struct LocalCurrencyScrollContentView: View {
         static let noResultsMinHeight: CGFloat = 150
     }
 
+    private static let topID = "LocalCurrencyScrollContentView.top"
+
     let headerHeight: CGFloat
     let onScrollChanged: (CGPoint) -> Void
     var filteredItems: [CurrencyItem]
@@ -195,6 +197,7 @@ private struct LocalCurrencyScrollContentView: View {
                     Rectangle()
                         .opacity(0)
                         .frame(height: headerHeight)
+                        .id(Self.topID)
 
                     // Currency list
                     currencyContent
@@ -209,6 +212,11 @@ private struct LocalCurrencyScrollContentView: View {
                     proxy.scrollTo(selectedCurrencyCode, anchor: .center)
                 }
             }
+            .onChange(of: searchQuery) { _ in
+                // Results start at the top; left scrolled down to the
+                // selected currency they would sit out of view.
+                proxy.scrollTo(Self.topID, anchor: .top)
+            }
         }
     }
 }
@@ -222,11 +230,10 @@ private struct LocalCurrencyTopOverlayView: View {
         VStack {
             header
 
-            if scrollOffset > -20 {
-                DashUIKit.SearchBar(text: $searchQuery)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .padding(.horizontal, 20)
-            }
+            // Pinned, not hidden on scroll: the list opens scrolled to the
+            // selected currency, and search must be there from the start.
+            DashUIKit.SearchBar(text: $searchQuery)
+                .padding(.horizontal, 20)
         }
         .padding(.bottom, 6)
         .background(toolbarBackground)
