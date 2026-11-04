@@ -227,8 +227,8 @@ NS_ASSUME_NONNULL_BEGIN
     // UIApplicationDidBecomeActiveNotification itself.
 
     // Retired CrowdNode data: retried on every activation until done. It
-    // touches only UserDefaults and WebKit storage, so it is safe while the
-    // migration runs; once done it costs two flag reads.
+    // touches only UserDefaults, so it is safe while the migration runs;
+    // once done it costs one flag read.
     [DWRetiredCrowdNodeDefaults removeAllOnce];
 
     // Check geo-restriction for PiggyCards (if available)

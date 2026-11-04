@@ -123,33 +123,6 @@ final class RetiredCrowdNodeDefaultsTests: XCTestCase {
         XCTAssertFalse(defaults.bool(forKey: RetiredCrowdNodeDefaults.doneKey))
     }
 
-    func testWebDomainMatchesTheServiceAndItsSubdomainsOnly() {
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("crowdnode.io"))
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain(".crowdnode.io"))
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("app.crowdnode.io"))
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("test.crowdnode.io"))
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("App.CrowdNode.io"))
-        XCTAssertTrue(RetiredCrowdNodeDefaults.isWebDomain("app.crowdnode.io."))
-        XCTAssertFalse(RetiredCrowdNodeDefaults.isWebDomain("mycrowdnode.io"))
-        XCTAssertFalse(RetiredCrowdNodeDefaults.isWebDomain("crowdnode.io.example.com"))
-    }
-
-    func testWebsiteDataGoesOnlyInTheForegroundWithProtectedDataUntilDone() {
-        XCTAssertTrue(RetiredCrowdNodeDefaults.shouldRemoveWebsiteData(
-            defaults: defaults, isProtectedDataAvailable: true, isActive: true))
-        XCTAssertFalse(RetiredCrowdNodeDefaults.shouldRemoveWebsiteData(
-            defaults: defaults, isProtectedDataAvailable: true, isActive: false))
-        XCTAssertFalse(RetiredCrowdNodeDefaults.shouldRemoveWebsiteData(
-            defaults: defaults, isProtectedDataAvailable: false, isActive: true))
-        // The defaults pass being done doesn't stand in for the website data.
-        RetiredCrowdNodeDefaults.removeAllOnce(from: defaults, isProtectedDataAvailable: true)
-        XCTAssertTrue(RetiredCrowdNodeDefaults.shouldRemoveWebsiteData(
-            defaults: defaults, isProtectedDataAvailable: true, isActive: true))
-        defaults.set(true, forKey: RetiredCrowdNodeDefaults.websiteDataDoneKey)
-        XCTAssertFalse(RetiredCrowdNodeDefaults.shouldRemoveWebsiteData(
-            defaults: defaults, isProtectedDataAvailable: true, isActive: true))
-    }
-
     func testSecondRunIsHarmless() {
         defaults.set(1, forKey: "crowdNodeInfoShownKey")
 

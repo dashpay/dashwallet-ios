@@ -16,11 +16,10 @@
 //
 
 import UIKit
-import WebKit
 
-/// Removes the UserDefaults the app's CrowdNode integration wrote, and the
-/// cookies and website data its web screens left. The app no longer reads
-/// any of them.
+/// Removes the UserDefaults the app's CrowdNode integration wrote. The app no
+/// longer reads any of them. The cookies and website data its web screens
+/// left stay, as on Android: nothing in the app opens the site any more.
 ///
 /// Runs once, recorded by a done flag. Before the first unlock after a reboot
 /// UserDefaults can read back empty, and a flag written then would skip the
@@ -29,9 +28,6 @@ import WebKit
 @objc(DWRetiredCrowdNodeDefaults)
 final class RetiredCrowdNodeDefaults: NSObject {
     static let doneKey = "retiredCrowdNodeDefaultsRemoved"
-    /// Set only once WebKit reports the removal done, so an app killed
-    /// mid-removal tries again on a later activation.
-    static let websiteDataDoneKey = "retiredCrowdNodeWebsiteDataRemoved"
 
     /// Keys stored as written, not per wallet. The names are copied byte for
     /// byte: the online-state key starts with a Cyrillic "с" (U+0441), and
@@ -61,30 +57,10 @@ final class RetiredCrowdNodeDefaults: NSObject {
         "crowdNodeFruitlessRestoreTxCountKey",
     ]
 
-    /// Called on every activation; each part retries until it is recorded
-    /// as done.
+    /// Called on every activation; retries until it is recorded as done.
     @MainActor @objc
     static func removeAllOnce() {
-        let application = UIApplication.shared
-        let defaults = UserDefaults.standard
-        removeAllOnce(from: defaults, isProtectedDataAvailable: application.isProtectedDataAvailable)
-        if shouldRemoveWebsiteData(defaults: defaults,
-                                   isProtectedDataAvailable: application.isProtectedDataAvailable,
-                                   isActive: application.applicationState == .active) {
-            removeWebsiteData {
-                defaults.set(true, forKey: websiteDataDoneKey)
-            }
-        }
-    }
-
-    /// Website data goes only while the app is in the foreground: removing
-    /// it starts WebKit's processes, which a background launch (refresh,
-    /// push) shouldn't pay for, and iOS may suspend it before WebKit reports
-    /// back. Until a removal is reported done, a later activation tries again.
-    static func shouldRemoveWebsiteData(defaults: UserDefaults,
-                                        isProtectedDataAvailable: Bool,
-                                        isActive: Bool) -> Bool {
-        isProtectedDataAvailable && isActive && !defaults.bool(forKey: websiteDataDoneKey)
+        removeAllOnce(from: .standard, isProtectedDataAvailable: UIApplication.shared.isProtectedDataAvailable)
     }
 
     /// Removes the defaults unless already recorded as done or protected data
@@ -95,36 +71,6 @@ final class RetiredCrowdNodeDefaults: NSObject {
         removeAll(from: defaults)
         defaults.set(true, forKey: doneKey)
         return true
-    }
-
-    /// The service's hosts are this domain or its subdomains on every network.
-    private static let webDomain = "crowdnode.io"
-
-    /// `crowdnode.io` or a subdomain, in any letter case; a leading dot
-    /// (cookie domain form) and a trailing root dot are ignored, and a name
-    /// merely ending in the same letters doesn't match.
-    static func isWebDomain(_ host: String) -> Bool {
-        var name = host.lowercased()
-        if name.hasPrefix(".") { name.removeFirst() }
-        if name.hasSuffix(".") { name.removeLast() }
-        return name == webDomain || name.hasSuffix("." + webDomain)
-    }
-
-    @MainActor
-    private static func removeWebsiteData(completion: @escaping () -> Void) {
-        let cookies = HTTPCookieStorage.shared
-        for cookie in cookies.cookies ?? [] where isWebDomain(cookie.domain) {
-            cookies.deleteCookie(cookie)
-        }
-        let store = WKWebsiteDataStore.default()
-        store.fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            let retired = records.filter { isWebDomain($0.displayName) }
-            guard !retired.isEmpty else {
-                completion()
-                return
-            }
-            store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), for: retired, completionHandler: completion)
-        }
     }
 
     /// One wallet's keys, for the wiper's per-wallet deletion; the bare
