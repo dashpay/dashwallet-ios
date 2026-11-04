@@ -4,10 +4,13 @@ The architecture decision records (ADRs) of dashwallet-ios, governed by
 [ADR-0001](0001-record-architecture-decisions-as-adrs.md). This index lists log numbers
 only and is kept by hand. The notes below summarize ADR-0001; where they disagree, ADR-0001 wins.
 
-| # | Title | Status | Superseded by |
-|---|---|---|---|
-| [0001](0001-record-architecture-decisions-as-adrs.md) | Record architecture decisions as ADRs | Proposed | |
-| [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | Proposed | |
+| # | Title | Area | Status | Superseded by |
+|---|---|---|---|---|
+| [0001](0001-record-architecture-decisions-as-adrs.md) | Record architecture decisions as ADRs | process | Proposed | |
+| [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | process | Proposed | |
+
+Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
+Area is added to this list in the PR that first needs it.
 
 ## Adding an ADR
 
@@ -17,8 +20,9 @@ only and is kept by hand. The notes below summarize ADR-0001; where they disagre
   the PR that carries it.
 - Follow the shape of ADR-0001: Status, Date and Deciders lines, then Context, Decision drivers,
   Considered options, Decision outcome, Consequences and Links. Considered options and
-  Consequences are required.
-- Add its row to the table above in the same PR.
+  Consequences are required. Decision outcome opens with one sentence, `**Chosen:** …`, that
+  states the decision on its own.
+- Add its row to the table above in the same PR, with one Area from the list under it.
 
 Full rules: [ADR-0001, rules 3 and 5](0001-record-architecture-decisions-as-adrs.md).
 

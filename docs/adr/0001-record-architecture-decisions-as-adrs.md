@@ -95,7 +95,8 @@ The status that the pipeline wrote into a draft does not count.
 ### Rule 5 — Shape, and who writes ADRs
 
 - File: `docs/adr/NNNN-<decision-in-kebab-case>.md`. The title states the decision, not the problem.
-- Body: the Status, Date and Deciders lines, then Context, Decision drivers, Considered options, Decision outcome, Consequences and Links. Considered options and Consequences are required. Feature ADRs use the same shape, so promotion is a copy, not a rewrite. Links are relative to the file (`../README.md`), so they work on GitHub and in a local checkout, and point only at what is in the repository.
+- Body: the Status, Date and Deciders lines, then Context, Decision drivers, Considered options, Decision outcome, Consequences and Links. Considered options and Consequences are required. Decision outcome opens with one sentence, `**Chosen:** …`, that states the decision on its own. Feature ADRs use the same shape, so promotion is a copy, not a rewrite. Links are relative to the file (`../README.md`), so they work on GitHub and in a local checkout, and point only at what is in the repository.
+- Index row: number, title, Area, Status and Superseded by. Area is one value from the fixed list under the index table; a new value is added to that list in the PR that first needs it.
 - Every Developer writes ADRs for their significant decisions, whether or not they use the feature-spec pipeline. Feature summaries are optional.
 - Past decisions get an ADR when they are next revisited; no retroactive backlog is required.
 

@@ -116,7 +116,7 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 
 ## Architecture decisions
 
-- Before changing an area, read the Accepted ADRs for it in the decision log, [`docs/adr/README.md`](docs/adr/README.md).
+- Before changing an area, read the index of the decision log, [`docs/adr/README.md`](docs/adr/README.md), and open only the Accepted ADRs whose Area matches the files you touch.
 - Never silently contradict an Accepted ADR: name it and propose superseding it with a new ADR.
 - An ADR you draft stays Proposed until a human Reviewer who is not its author approves the PR; your own approval never counts. After that approval, setting Accepted is a status-only change (ADR-0001 rule 3).
 - Record a significant decision as an ADR in the same PR that makes it (threshold and "not needed" cases: ADR-0001).
