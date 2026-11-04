@@ -150,7 +150,10 @@ final class ShieldedProverWarmup {
 
     /// Call when the user confirms an operation that builds an Orchard proof.
     /// Starts the warm-up if nothing has yet, so authorization and any
-    /// pre-proof network work overlap the key build.
+    /// pre-proof network work overlap the key build. The build starts at the
+    /// caller's next suspension, as the warm-up runs on the main actor, so
+    /// call this before the await (such as the PIN prompt) that precedes the
+    /// work it should overlap.
     func beginProofOperation(_ operation: ShieldedProofOperation) -> ShieldedProofTiming {
         let readyAtConfirm = isReady
         request(.confirmedOperation)

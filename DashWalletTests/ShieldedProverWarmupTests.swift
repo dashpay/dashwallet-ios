@@ -195,6 +195,17 @@ final class ShieldedProverWarmupTests: XCTestCase {
                 + "confirm_to_call_ms=1000 call_ms=3700 succeeded=false")
     }
 
+    /// Callers rely on this order: synchronous main-actor work right after
+    /// confirming does not overlap the build, an await before it does.
+    func testConfirmingStartsTheBuildOnlyOnceTheCallerSuspends() async {
+        let warmup = makeWarmup()
+        _ = warmup.beginProofOperation(.identityFromShieldedPool)
+        XCTAssertEqual(backend.prepareCount, 0, "the build waits for the caller to suspend")
+
+        await drain()
+        XCTAssertEqual(backend.prepareCount, 1)
+    }
+
     func testProofTimingJudgesACallThatReportsFailureInItsResult() async {
         backend.isReady = true
         let warmup = makeWarmup()
