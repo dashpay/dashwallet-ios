@@ -163,9 +163,9 @@ struct SecurityMenuScreen: View {
             viewModel.authenticate { authenticated in
                 if authenticated {
                     #if SNAPSHOT
-                    let controller = DWDemoAdvancedSecurityViewController()
+                    let controller = AdvancedSecurityHostingController.demo()
                     #else
-                    let controller = DWAdvancedSecurityViewController()
+                    let controller = AdvancedSecurityHostingController.live()
                     #endif
                     self.vc.pushViewController(controller, animated: true)
                 }
