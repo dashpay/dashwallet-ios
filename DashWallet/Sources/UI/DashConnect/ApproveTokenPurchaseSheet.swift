@@ -35,114 +35,118 @@ struct ApproveTokenPurchaseSheet: View {
     var onDeny: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 20)
+        // No title in the bar: the intro block below names the request. The
+        // close button denies, as a swipe-down does through the presenter's
+        // binding; both are blocked while an approval is in flight.
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isLoading),
+            isCloseButtonEnabled: !isLoading,
+            onClose: onDeny
+        ) {
+            VStack(spacing: 0) {
+                // The detail rows grow with Dynamic Type; without a scroll
+                // container the actions can be pushed below the bottom of the
+                // sheet, leaving the user unable to approve or deny. The actions
+                // stay pinned under the scroll area.
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(NSLocalizedString("Approve token purchase?", comment: "DashConnect token purchase"))
+                                .font(.title2)
+                                .foregroundColor(.primaryText)
 
-            // The detail rows grow with Dynamic Type; without a scroll
-            // container the actions can be pushed below the bottom of the
-            // sheet, leaving the user unable to approve or deny. The actions
-            // stay pinned under the scroll area.
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(NSLocalizedString("Approve token purchase?", comment: "DashConnect token purchase"))
-                            .font(.title2)
-                            .foregroundColor(.primaryText)
+                            Text(resolvedSubtitle)
+                                .font(.subhead)
+                                .foregroundColor(.secondaryText)
+                        }
 
-                        Text(resolvedSubtitle)
-                            .font(.subhead)
-                            .foregroundColor(.secondaryText)
-                    }
-
-                    detailBox {
-                        DashConnectDetailRow(
-                            label: tokenQuantityLabel,
-                            value: request.tokenQuantity.text
-                        )
-                        DashConnectDetailRow(
-                            label: NSLocalizedString("Token ID", comment: "DashConnect token purchase"),
-                            value: DashConnectIdentifierFormatting.truncateMiddle(request.tokenId.toBase58String())
-                        )
-                        DashConnectDetailRow(
-                            label: NSLocalizedString("Maximum price", comment: "DashConnect token purchase"),
-                            value: request.totalPriceDashText
-                        )
-                    }
-
-                    // The figure above is a ceiling, not a quote: it is passed
-                    // to `tokenPurchase` as `expectedTotalCost`, and Platform
-                    // settles at the price in force when the purchase lands,
-                    // which can be lower. Saying "Total price" would promise an
-                    // exactness the protocol does not give.
-                    Text(NSLocalizedString(
-                        "You pay up to this amount. The final price may be lower.",
-                        comment: "DashConnect token purchase"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 20)
-
-                    detailBox {
-                        if let walletUsername = request.walletUsername {
+                        detailBox {
                             DashConnectDetailRow(
-                                label: NSLocalizedString("Username", comment: "DashConnect"),
-                                value: walletUsername
+                                label: tokenQuantityLabel,
+                                value: request.tokenQuantity.text
+                            )
+                            DashConnectDetailRow(
+                                label: NSLocalizedString("Token ID", comment: "DashConnect token purchase"),
+                                value: DashConnectIdentifierFormatting.truncateMiddle(request.tokenId.toBase58String())
+                            )
+                            DashConnectDetailRow(
+                                label: NSLocalizedString("Maximum price", comment: "DashConnect token purchase"),
+                                value: request.totalPriceDashText
                             )
                         }
-                        DashConnectDetailRow(
-                            label: NSLocalizedString("Identity", comment: "DashConnect"),
-                            value: DashConnectIdentifierFormatting.truncateMiddle(request.walletIdentityId)
-                        )
+
+                        // The figure above is a ceiling, not a quote: it is passed
+                        // to `tokenPurchase` as `expectedTotalCost`, and Platform
+                        // settles at the price in force when the purchase lands,
+                        // which can be lower. Saying "Total price" would promise an
+                        // exactness the protocol does not give.
+                        Text(NSLocalizedString(
+                            "You pay up to this amount. The final price may be lower.",
+                            comment: "DashConnect token purchase"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+
+                        detailBox {
+                            if let walletUsername = request.walletUsername {
+                                DashConnectDetailRow(
+                                    label: NSLocalizedString("Username", comment: "DashConnect"),
+                                    value: walletUsername
+                                )
+                            }
+                            DashConnectDetailRow(
+                                label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                value: DashConnectIdentifierFormatting.truncateMiddle(request.walletIdentityId)
+                            )
+                        }
+
+                        Text(NSLocalizedString(
+                            "Approving pays the total price from this identity's Platform credits.",
+                            comment: "DashConnect token purchase"
+                        ))
+                        .font(.footnote)
+                        .foregroundColor(.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                }
+
+                VStack(spacing: 8) {
+                    if let errorText {
+                        Text(errorText)
+                            .font(.footnote)
+                            .foregroundColor(Color.dash.errorText)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 4)
                     }
 
-                    Text(NSLocalizedString(
-                        "Approving pays the total price from this identity's Platform credits.",
-                        comment: "DashConnect token purchase"
-                    ))
-                    .font(.footnote)
-                    .foregroundColor(.secondaryText)
+                    DashButton(
+                        text: NSLocalizedString("Approve", comment: "DashConnect"),
+                        style: .filledBlue,
+                        size: .large,
+                        stretch: true,
+                        isEnabled: !isLoading,
+                        isLoading: isLoading,
+                        action: onApprove
+                    )
+
+                    DashButton(
+                        text: NSLocalizedString("Deny", comment: "DashConnect"),
+                        style: .tintedBlue,
+                        size: .large,
+                        stretch: true,
+                        isEnabled: !isLoading,
+                        action: onDeny
+                    )
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
-
-            VStack(spacing: 8) {
-                if let errorText {
-                    Text(errorText)
-                        .font(.footnote)
-                        .foregroundColor(Color.dash.errorText)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.bottom, 4)
-                }
-
-                DashButton(
-                    text: NSLocalizedString("Approve", comment: "DashConnect"),
-                    style: .filledBlue,
-                    size: .large,
-                    stretch: true,
-                    isEnabled: !isLoading,
-                    isLoading: isLoading,
-                    action: onApprove
-                )
-
-                DashButton(
-                    text: NSLocalizedString("Deny", comment: "DashConnect"),
-                    style: .tintedBlue,
-                    size: .large,
-                    stretch: true,
-                    isEnabled: !isLoading,
-                    action: onDeny
-                )
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 20)
+            .background(Color.primaryBackground)
         }
-        .background(Color.primaryBackground)
     }
 
     /// The requesting app's stored name when a connection for the purchase's

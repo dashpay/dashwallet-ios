@@ -26,6 +26,9 @@ import SwiftUI
 /// One contest: who is competing for the name, how the masternode vote stands,
 /// and the controls to add this wallet's own votes.
 struct ContestDetailScreen: View {
+    /// The UIKit stack this screen is pushed on: back pops it, and contender
+    /// details are pushed onto it.
+    let vc: UINavigationController
     let contest: DPNSContest
     @ObservedObject var viewModel: VotingViewModel
 
@@ -116,6 +119,46 @@ struct ContestDetailScreen: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(current.displayTitle)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                })
+
+            contestList
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationBarHidden(true)
+        .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
+        .sheet(item: $pendingChoice) { choice in
+            CastVoteSheet(
+                contest: current,
+                choice: choice,
+                viewModel: viewModel)
+                .presentationDragIndicator(.hidden)
+        }
+        .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
+            VotingKeysFlow(
+                start: .addKey,
+                continuesToVote: request.choice != nil,
+                viewModel: viewModel,
+                onFinish: { continueToVote in
+                    voteAfterKeyFlow = continueToVote ? request.choice : nil
+                    keyFlow = nil
+                })
+        }
+    }
+
+    private var contestList: some View {
         List {
             if isClosed {
                 Section {
@@ -176,6 +219,7 @@ struct ContestDetailScreen: View {
             Section(NSLocalizedString("Requesting this name", comment: "Voting")) {
                 ForEach(current.contenders) { contender in
                     ContenderRow(
+                        vc: vc,
                         contender: contender,
                         normalizedLabel: contest.normalizedLabel,
                         votingEndsAt: current.endTime,
@@ -238,26 +282,7 @@ struct ContestDetailScreen: View {
                 }
             }
         }
-        .navigationTitle(current.displayTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
         .refreshable { await viewModel.refreshContest(normalizedLabel: contest.normalizedLabel) }
-        .sheet(item: $pendingChoice) { choice in
-            CastVoteSheet(
-                contest: current,
-                choice: choice,
-                viewModel: viewModel)
-        }
-        .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
-            VotingKeysFlow(
-                start: .addKey,
-                continuesToVote: request.choice != nil,
-                viewModel: viewModel,
-                onFinish: { continueToVote in
-                    voteAfterKeyFlow = continueToVote ? request.choice : nil
-                    keyFlow = nil
-                })
-        }
     }
 
     /// Open the cast sheet for the vote that sent the user to the key flow.
@@ -273,6 +298,8 @@ struct ContestDetailScreen: View {
 // MARK: - ContenderRow
 
 private struct ContenderRow: View {
+    /// The UIKit stack the contender details are pushed on.
+    let vc: UINavigationController
     let contender: DPNSContender
     /// Passed through to the details screen, which shows the stored form and
     /// looks this contender's published link up by it.
@@ -286,16 +313,18 @@ private struct ContenderRow: View {
     var body: some View {
         HStack {
             // The name opens this contender; the button votes. Two controls in
-            // one row, so the link wraps only the text — wrapping the row would
+            // one row, so the push wraps only the text — wrapping the row would
             // swallow the button's tap.
-            NavigationLink {
-                ContenderDetailScreen(
+            Button {
+                let screen = ContenderDetailScreen(
+                    vc: vc,
                     contender: contender,
                     normalizedLabel: normalizedLabel,
                     votingEndsAt: votingEndsAt,
                     canVote: canVote,
                     voteTitle: voteTitle,
                     onVote: onVote)
+                vc.pushViewController(UIHostingController(rootView: screen), animated: true)
             } label: {
                 HStack(spacing: 6) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -308,9 +337,6 @@ private struct ContenderRow: View {
                             .foregroundColor(isLeading ? .green : Color.dash.secondaryText)
                             .fontWeight(isLeading ? .semibold : .regular)
                     }
-                    // No chevron of our own: the List already draws the
-                    // disclosure for a NavigationLink row, and two read as a
-                    // glitch.
                 }
                 .contentShape(Rectangle())
             }
@@ -323,6 +349,13 @@ private struct ContenderRow: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
+
+            // The disclosure a List draws for a navigation row, at the row's
+            // trailing edge. Decorative: the name is the control.
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundColor(Color(UIColor.tertiaryLabel))
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 2)
     }
@@ -389,6 +422,8 @@ extension VoteChoice: Identifiable {
 /// result is due. The vote control comes along so the decision can be made
 /// where the evidence is.
 private struct ContenderDetailScreen: View {
+    /// The UIKit stack this screen is pushed on; back pops it.
+    let vc: UINavigationController
     let contender: DPNSContender
     let normalizedLabel: String
     let votingEndsAt: Date?
@@ -396,7 +431,6 @@ private struct ContenderDetailScreen: View {
     let voteTitle: String
     let onVote: () -> Void
 
-    @Environment(\.dismiss) private var dismiss
     /// What the link lookup has to say. Reading, a link, nothing published, or
     /// a failure — four answers, because collapsing the last two tells a voter
     /// this contender published no proof when in truth the query did not run.
@@ -423,7 +457,11 @@ private struct ContenderDetailScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button(action: { dismiss() }) })
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                })
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -462,10 +500,15 @@ private struct ContenderDetailScreen: View {
                             style: .filledBlue,
                             action: {
                                 // The cast sheet belongs to the screen behind
-                                // this one; step back rather than stack a
-                                // second presentation on top of it.
-                                dismiss()
-                                onVote()
+                                // this one; step back first, and open it once
+                                // the pop has finished so it is not presented
+                                // mid-transition.
+                                vc.popViewController(animated: true)
+                                if let coordinator = vc.transitionCoordinator {
+                                    coordinator.animate(alongsideTransition: nil) { _ in onVote() }
+                                } else {
+                                    onVote()
+                                }
                             })
                             .padding(.horizontal, 20)
                     }

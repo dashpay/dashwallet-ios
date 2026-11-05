@@ -22,6 +22,6 @@ struct StorageExplorerUnavailableView: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("Storage Explorer")
+        .storageExplorerPage("Storage Explorer")
     }
 }

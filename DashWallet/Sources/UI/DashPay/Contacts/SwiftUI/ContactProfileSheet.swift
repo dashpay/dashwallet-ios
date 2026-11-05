@@ -42,12 +42,14 @@ struct ContactProfileSheet: View {
     /// A payment absent here (H1 loss, or a received tx not yet synced)
     /// renders as a non-tappable row instead of a broken tx-detail push.
     @State private var resolvedByTxid: [String: Transaction] = [:]
-    /// Tapped payment's txid (display hex, Hashable) — drives the
-    /// tx-detail push via the NavigationStack-native
-    /// `navigationDestination(item:)`. The resolved `Transaction` is
-    /// looked up from `resolvedByTxid` in the destination builder
-    /// (`Transaction` itself isn't `Hashable`).
+    /// Tapped payment's txid (display hex) — drives the tx-detail push
+    /// inside the bottom sheet and the header's back button; clearing it
+    /// pops back to the profile. The resolved `Transaction` is looked up
+    /// from `resolvedByTxid` in the destination builder.
     @State private var selectedPaymentId: String? = nil
+    /// The payment the pushed tx detail renders. Not cleared on pop, so the
+    /// outgoing page keeps its content while the pop animates.
+    @State private var detailPaymentId: String? = nil
     /// Transient confirmation shown at the bottom of the sheet — a saved edit
     /// or a copied identity id. One slot, so a second message replaces the
     /// first instead of stacking.
@@ -65,7 +67,17 @@ struct ContactProfileSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // Untitled on the profile itself; the pushed tx detail gets the
+        // "Transaction" title and a back button that pops it.
+        DashUIKit.BottomSheet(
+            title: selectedPaymentId == nil
+                ? "" : NSLocalizedString("Transaction", comment: "DashPay Contacts"),
+            showBackButton: Binding(
+                get: { selectedPaymentId != nil },
+                set: { _ in }),
+            onBackButtonPressed: { selectedPaymentId = nil },
+            onClose: { closeProfile() }
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
@@ -90,30 +102,30 @@ struct ContactProfileSheet: View {
                     .padding(.top, 24)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(item: $selectedPaymentId) { paymentId in
-                // Reuse the standard tx-detail screen. The SwiftUI
-                // NavigationStack supplies the back button (nav bar left
-                // visible), so we don't drive TXDetailVCWrapper's own
-                // programmatic pop.
-                if let tx = resolvedByTxid[paymentId] {
-                    // This contact's row leads back to this profile, not to
-                    // another one stacked on top.
-                    TXDetailVCWrapper(
-                        tx: tx,
-                        navigateBack: .constant(false),
-                        contactReturn: .init(identityId: contact.contactIdentityId,
-                                             goBack: { selectedPaymentId = nil }))
-                        .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
-                        .navigationBarTitleDisplayMode(.inline)
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Done", comment: "")) { closeProfile() }
-                        .foregroundColor(.dash.blue)
-                }
-            }
+            .background(
+                // Reuse the standard tx-detail screen, pushed inside the
+                // sheet's navigation view. The sheet header owns the back
+                // button, so the pushed page hides its own bar and the pop
+                // is driven by clearing `selectedPaymentId`.
+                NavigationLink(
+                    isActive: Binding(
+                        get: { selectedPaymentId != nil },
+                        set: { if !$0 { selectedPaymentId = nil } }),
+                    destination: {
+                        if let paymentId = detailPaymentId,
+                           let tx = resolvedByTxid[paymentId] {
+                            // This contact's row leads back to this profile,
+                            // not to another one stacked on top.
+                            TXDetailVCWrapper(
+                                tx: tx,
+                                navigateBack: .constant(false),
+                                contactReturn: .init(identityId: contact.contactIdentityId,
+                                                     goBack: { selectedPaymentId = nil }))
+                                .navigationBarHidden(true)
+                        }
+                    },
+                    label: { SwiftUI.EmptyView() })
+                    .opacity(0))
             .alert(
                 NSLocalizedString("Error", comment: ""),
                 isPresented: Binding(
@@ -702,7 +714,10 @@ struct ContactProfileSheet: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture {
-            if resolvedTx != nil { selectedPaymentId = payment.id }
+            if resolvedTx != nil {
+                detailPaymentId = payment.id
+                selectedPaymentId = payment.id
+            }
         }
     }
 

@@ -11,8 +11,10 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
+import UIKit
 
 // MARK: - AddMasternodeScreen
 
@@ -22,24 +24,33 @@ import SwiftUI
 /// then the user tracks it (with an optional label) and can attach keys,
 /// with the key that found the node already filled into its field.
 struct AddMasternodeScreen: View {
+    let vc: UINavigationController
     @StateObject private var viewModel = AddMasternodeViewModel()
-    @Environment(\.dismiss) private var dismiss
     @State private var showScanner = false
     /// Fires after the node is tracked and this screen closes, so the list
     /// refreshes immediately.
     let onTracked: () -> Void
 
     var body: some View {
-        List {
-            if viewModel.trackedRecord == nil {
-                findSection
-                resultsSection
-            } else {
-                keysSection
-            }
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(NSLocalizedString("Add masternode", comment: "Add masternode"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                })
+
+            list
         }
-        .navigationTitle(NSLocalizedString("Add masternode", comment: "Add masternode"))
-        .navigationBarTitleDisplayMode(.inline)
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .navigationBarHidden(true)
         .sheet(isPresented: $showScanner) {
             QRScannerRepresentable(
                 onScanned: { value in
@@ -49,6 +60,17 @@ struct AddMasternodeScreen: View {
                 },
                 onCancel: { showScanner = false })
                 .ignoresSafeArea()
+        }
+    }
+
+    private var list: some View {
+        List {
+            if viewModel.trackedRecord == nil {
+                findSection
+                resultsSection
+            } else {
+                keysSection
+            }
         }
     }
 
@@ -243,7 +265,7 @@ struct AddMasternodeScreen: View {
                     viewModel.saveLabelIfChanged()
                     if viewModel.saveKeys() {
                         onTracked()
-                        dismiss()
+                        vc.popViewController(animated: true)
                     }
                 } label: {
                     Text(NSLocalizedString("Done", comment: ""))

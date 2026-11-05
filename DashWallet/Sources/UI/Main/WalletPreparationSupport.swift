@@ -1,3 +1,4 @@
+import DashUIKit
 import MessageUI
 import SwiftUI
 
@@ -99,7 +100,14 @@ struct WalletPreparationSupportView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                central: {
+                    Text("Help")
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                },
+                trailing: { DashUIKit.NavigationBarElement.close.button { dismiss() } })
             Form {
                 Section {
                     Text(viewModel.guidance)
@@ -124,25 +132,19 @@ struct WalletPreparationSupportView: View {
                     Text("Review and send the message in your mail app, or choose a sharing option.")
                 }
             }
-            .navigationTitle(Text("Help"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .sheet(item: $viewModel.draft) { draft in
+            if draft.useMail {
+                WalletPreparationMailView(draft: draft, onFinish: viewModel.finishMail)
+            } else {
+                ActivityView(activityItems: draft.activityItems)
             }
-            .sheet(item: $viewModel.draft) { draft in
-                if draft.useMail {
-                    WalletPreparationMailView(draft: draft, onFinish: viewModel.finishMail)
-                } else {
-                    ActivityView(activityItems: draft.activityItems)
-                }
-            }
-            .alert("Couldn't prepare the support message", isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text("Try again or copy the support address and write to us from your mail app.")
-            }
+        }
+        .alert("Couldn't prepare the support message", isPresented: $viewModel.showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Try again or copy the support address and write to us from your mail app.")
         }
     }
 }

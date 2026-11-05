@@ -17,8 +17,10 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
+import UIKit
 
 // MARK: - EvonodeStatusScreen
 
@@ -27,35 +29,49 @@ import SwiftUI
 /// status" button; the request itself is sent when this screen appears and
 /// again on Refresh — never on its own.
 struct EvonodeStatusScreen: View {
+    let vc: UINavigationController
     @StateObject private var viewModel: EvonodeStatusViewModel
 
-    init(masternode: PlatformMasternode) {
+    init(vc: UINavigationController, masternode: PlatformMasternode) {
+        self.vc = vc
         _viewModel = StateObject(wrappedValue: EvonodeStatusViewModel(masternode: masternode))
     }
 
     var body: some View {
-        content
-            .navigationTitle(NSLocalizedString("Node status", comment: "Evonode status"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task { await viewModel.request() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc.popViewController(animated: true)
                     }
-                    .disabled(viewModel.isLoading)
-                    .accessibilityLabel(NSLocalizedString("Refresh", comment: ""))
-                }
+                },
+                central: {
+                    Text(NSLocalizedString("Node status", comment: "Evonode status"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                },
+                trailing: {
+                    DashUIKit.NavigationBarCircleButton(
+                        .system("arrow.clockwise"),
+                        accessibilityLabel: Text(NSLocalizedString("Refresh", comment: "")),
+                        action: { Task { await viewModel.request() } })
+                        .disabled(viewModel.isLoading)
+                })
+
+            content
+        }
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .navigationBarHidden(true)
+        .task {
+            // The user reached this screen by tapping "Request status" —
+            // that tap is the request. Re-appearing (back from a pushed
+            // screen) keeps the last answer; Refresh asks again.
+            if viewModel.phase == .idle {
+                await viewModel.request()
             }
-            .task {
-                // The user reached this screen by tapping "Request status" —
-                // that tap is the request. Re-appearing (back from a pushed
-                // screen) keeps the last answer; Refresh asks again.
-                if viewModel.phase == .idle {
-                    await viewModel.request()
-                }
-            }
+        }
     }
 
     // MARK: Bodies

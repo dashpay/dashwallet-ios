@@ -31,10 +31,16 @@ struct VotingNodeSelectionSheet: View {
     let nodes: [VoterNode]
     @Binding var selectedNodeIDs: Set<Data>
 
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
-        NavigationView {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Vote with", comment: "Voting"),
+            showBackButton: .constant(false),
+            // The vote button keys off this selection, so an empty one would
+            // leave the user on a screen whose primary action silently does
+            // nothing.
+            isCloseButtonEnabled: !selectedNodeIDs.isEmpty,
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
             List {
                 Section {
                     ForEach(nodes) { node in
@@ -63,17 +69,6 @@ struct VotingNodeSelectionSheet: View {
                     }
                 } footer: {
                     Text(footerText)
-                }
-            }
-            .navigationTitle(NSLocalizedString("Vote with", comment: "Voting"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "")) { dismiss() }
-                        // The vote button keys off this selection, so an empty
-                        // one would leave the user on a screen whose primary
-                        // action silently does nothing.
-                        .disabled(selectedNodeIDs.isEmpty)
                 }
             }
         }
