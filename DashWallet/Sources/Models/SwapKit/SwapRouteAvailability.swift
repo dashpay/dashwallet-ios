@@ -53,7 +53,7 @@ enum LiveRouteState: Equatable {
     /// routes (or only found the amount too small) means the provider can carry the coin, and a
     /// flavour that failed inconclusively leaves the question open. Only when every flavour that
     /// spoke said halt or no-route is the answer conclusive. A flavour that is not listed has no
-    /// opinion.
+    /// opinion; one listed without a code failed without saying why, which is inconclusive.
     ///
     /// A top-level `noRoutesFound` with no provider errors counts as a conclusive no-route here,
     /// unlike on the amount screens: SwapKit also answers it for an amount far below a route's
@@ -64,9 +64,9 @@ enum LiveRouteState: Equatable {
             return .available
         }
 
-        let states = (response.providerErrors ?? []).compactMap { error -> LiveRouteState? in
+        let states = (response.providerErrors ?? []).map { error -> LiveRouteState in
             guard let code = error.errorCode?.trimmingCharacters(in: .whitespacesAndNewlines), !code.isEmpty else {
-                return nil
+                return .unknown
             }
             if SwapKitErrorCopy.isBelowMinimum(code) { return .available }
             if SwapKitErrorCopy.isHalted(code) { return .halted }
@@ -159,13 +159,16 @@ extension RouteProvider {
 ///   fires a burst of ~200 requests.
 /// - NEAR is checked on a couple of liquid sentinel coins first. If two of them have no route and
 ///   none routes, NEAR is treated as down for every coin of that direction and no per-coin NEAR
-///   probes run; if one routes, every NEAR-capable coin is probed on its own. Halted or
-///   inconclusive sentinels keep the previous verdict.
+///   probes run; if one routes, every NEAR-capable coin is probed on its own. A halted or
+///   inconclusive sentinel counts toward neither, and a round that settles neither keeps the
+///   previous verdict.
 /// - Maya is probed per coin: its halts are per chain, so one coin says nothing about the next.
 ///
 /// Answers age in two steps: after `probeAfter` (`nearDownProbeAfter` for a NEAR outage) a refresh
 /// asks again, but the last conclusive answer keeps being read until the new one arrives or
 /// `forgetAfter` passes — so a label does not flip back to the static guess between the two.
+/// A refresh drops what passed `forgetAfter` in its direction and reports it on `changes`, so a
+/// row halted by a forgotten answer comes back even when the re-check stores nothing.
 /// Inconclusive answers (`.unknown`) are never stored: they would only block the next attempt.
 @MainActor
 final class SwapRouteAvailability {
@@ -179,8 +182,8 @@ final class SwapRouteAvailability {
         case down
     }
 
-    /// Liquid NEAR-capable coins on different chains. The third is asked only when one of the first
-    /// two gave no conclusive answer.
+    /// Liquid NEAR-capable coins on different chains. The third is asked only when the first two
+    /// settled neither outcome: neither routes and they are not both a no-route.
     static let nearSentinels = ["BTC.BTC", "ETH.ETH", "SOL.SOL"]
 
     /// Emits the direction whose availability changed.
@@ -310,6 +313,7 @@ final class SwapRouteAvailability {
             refreshing.remove(direction)
             refreshWaiters.removeValue(forKey: direction)?.forEach { $0.resume() }
         }
+        forgetExpired(direction)
 
         var probeNearPerCoin = false
         if assets.contains(where: { capable($0).contains(.near) }) {
@@ -367,8 +371,8 @@ final class SwapRouteAvailability {
 
     /// Re-asks the sentinels once the last verdict is due (2 minutes after an outage, 10 after
     /// "up"), bypassing their cached answers. They are asked until one routes or two give a
-    /// conclusive no; the third only stands in for an inconclusive one. Two conclusive no-routes
-    /// and none routing → NEAR is down. Fewer keeps the previous verdict.
+    /// conclusive no, so the third stands in for a halted or an inconclusive one. Two conclusive
+    /// no-routes and none routing → NEAR is down. Fewer keeps the previous verdict.
     private func resolveNearVerdict(direction: SwapDirection, probe: @escaping Probe) async -> NearVerdict? {
         if let verdict = readableVerdict(direction), !isDue(verdict) {
             return verdict.verdict
@@ -378,12 +382,7 @@ final class SwapRouteAvailability {
         }
 
         var noRoutes = 0
-        var inconclusive = 0
-        for (index, sentinel) in Self.nearSentinels.enumerated() where noRoutes < 2 {
-            // The third sentinel only stands in for one that gave no conclusive answer.
-            if index >= 2, inconclusive == 0 {
-                break
-            }
+        for sentinel in Self.nearSentinels where noRoutes < 2 {
             if Task.isCancelled {
                 return readableVerdict(direction)?.verdict
             }
@@ -396,8 +395,6 @@ final class SwapRouteAvailability {
             // Only a no-route says something about NEAR as a whole; a halt is about that chain.
             if state == .noRoute {
                 noRoutes += 1
-            } else if state == .unknown {
-                inconclusive += 1
             }
         }
 
@@ -454,6 +451,21 @@ final class SwapRouteAvailability {
     }
 
     // MARK: Ageing
+
+    /// Drops the answers and the NEAR verdict of `direction` that passed `forgetAfter`, and reports
+    /// the direction when anything was dropped.
+    private func forgetExpired(_ direction: SwapDirection) {
+        let expired = entries.filter { $0.key.direction == direction && readableEntry($0.key) == nil }.map { $0.key }
+        expired.forEach { entries.removeValue(forKey: $0) }
+        var forgot = !expired.isEmpty
+        if nearVerdicts[direction] != nil, readableVerdict(direction) == nil {
+            nearVerdicts.removeValue(forKey: direction)
+            forgot = true
+        }
+        if forgot {
+            changes.send(direction)
+        }
+    }
 
     private func readableEntry(_ key: Key) -> Entry? {
         guard let entry = entries[key], now().timeIntervalSince(entry.checkedAt) < forgetAfter else { return nil }

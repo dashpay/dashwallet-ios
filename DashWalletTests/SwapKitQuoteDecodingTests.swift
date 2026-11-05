@@ -292,6 +292,36 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertEqual(LiveRouteState.classify(blip), .unknown)
     }
 
+    /// A provider that failed without saying why is as inconclusive as one that named an upstream
+    /// failure: the top-level no-route beside it is not that provider's verdict.
+    func testTopLevelNoRouteBesideACodelessProviderErrorIsUnknown() {
+        for code in [nil, "", "  "] as [String?] {
+            let codeless = response(providerErrors: [providerError(code, message: "Quote failed")],
+                                    error: "noRoutesFound")
+            XCTAssertEqual(LiveRouteState.classify(codeless), .unknown, "code \(String(describing: code))")
+            XCTAssertEqual(LiveRouteState.classifyPerProvider(codeless, requested: [.near]), [.near: .unknown],
+                           "code \(String(describing: code))")
+        }
+    }
+
+    /// One Maya flavour failing without a code outranks the other flavour's halt.
+    func testACodelessFlavourOutranksTheOthersHalt() {
+        let mixed = response(providerErrors: [
+            SwapKitProviderError(provider: "MAYACHAIN", errorCode: nil, message: nil),
+            SwapKitProviderError(provider: "MAYACHAIN_STREAMING", errorCode: "swapHalted", message: nil),
+        ], error: "noRoutesFound")
+        XCTAssertEqual(LiveRouteState.classify(mixed), .unknown)
+    }
+
+    /// A route still wins over a codeless error beside it.
+    func testARouteOutranksACodelessProviderError() throws {
+        let recorded = try JSONDecoder().decode(SwapKitQuoteResponse.self,
+                                                from: loadFixture(named: "swapkit_quote_response"))
+        let routed = SwapKitQuoteResponse(quoteId: nil, routes: recorded.routes, providerErrors: [providerError(nil)],
+                                          error: nil, message: nil)
+        XCTAssertEqual(LiveRouteState.classify(routed), .available)
+    }
+
     func testProviderNoRouteIsNoRoute() {
         XCTAssertEqual(LiveRouteState.classify(response(providerErrors: [providerError("noRoutesFound")])), .noRoute)
     }
@@ -399,16 +429,75 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertEqual(SwapKitSwapProvider.addressCheck(both, requested: [.near, .maya]), .refused("invalidDestinationAddress"))
     }
 
+    /// One Maya flavour refusing does not hide what the other flavour said: Maya counts as refused
+    /// only when every flavour that spoke refused. A route from the other flavour already passes
+    /// before any refusal is read, so "can carry it" here is the other flavour's below-minimum.
+    func testAddressCheckJudgesEachMayaFlavourOnItsOwn() {
+        let refusal = pe("MAYACHAIN", "validation_error")
+        let otherCarries = response(providerErrors: [refusal, pe("MAYACHAIN_STREAMING", "sellAssetAmountTooSmall")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(otherCarries, requested: [.maya]), .pass)
+
+        let otherUnsure = response(providerErrors: [refusal, pe("MAYACHAIN_STREAMING", "apiRequestFailed")],
+                                   error: "noRoutesFound")
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(otherUnsure, requested: [.maya]), .pass)
+
+        let otherRefusal = pe("MAYACHAIN_STREAMING", "isSanctionedAddress")
+        let refusalFirst = response(providerErrors: [refusal, otherRefusal])
+        let otherFirst = response(providerErrors: [otherRefusal, refusal])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(refusalFirst, requested: [.maya]), .refused("validation_error"),
+                       "both refuse: the first refusal in SwapKit's order is the one shown")
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(otherFirst, requested: [.maya]),
+                       .refused("isSanctionedAddress"))
+
+        let otherNoRoute = response(providerErrors: [refusal, pe("MAYACHAIN_STREAMING", "noRoutesFound")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(otherNoRoute, requested: [.maya]), .refused("validation_error"),
+                       "nothing usable is left, so the refusal is what the holder hears")
+    }
+
+    /// NEAR has one flavour: its refusal still takes NEAR out, and Maya decides.
+    func testAddressCheckANearRefusalStillRemovesNear() {
+        let mayaCarries = response(providerErrors: [pe("NEAR", "invalidDestinationAddress"),
+                                                    pe("MAYACHAIN", "sellAssetAmountTooSmall")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(mayaCarries, requested: [.near, .maya]), .pass)
+        let mayaHalted = response(providerErrors: [pe("NEAR", "invalidDestinationAddress"),
+                                                   pe("MAYACHAIN", "swapHalted")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(mayaHalted, requested: [.near, .maya]),
+                       .refused("invalidDestinationAddress"))
+    }
+
+    /// A Maya flavour that failed without a code beside the other flavour's halt: Maya is
+    /// inconclusive, not halted, so the holder goes on instead of hearing "can't be swapped".
+    func testAddressCheckPassesACodelessProviderError() {
+        let codeless = response(providerErrors: [
+            SwapKitProviderError(provider: "MAYACHAIN", errorCode: nil, message: "Quote failed"),
+            pe("MAYACHAIN_STREAMING", "swapHalted"),
+        ], error: "noRoutesFound")
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(codeless, requested: [.maya]), .pass)
+    }
+
     /// An upstream failure is not the user's to fix on this screen.
     func testAddressCheckPassesAnUpstreamFailure() {
         XCTAssertEqual(SwapKitSwapProvider.addressCheck(response(error: "apiRequestFailed"), requested: [.near, .maya]), .pass)
         XCTAssertEqual(SwapKitSwapProvider.addressCheck(response(providerErrors: [pe("NEAR", "apiRequestFailed")]), requested: [.near]), .pass)
     }
 
-    /// Without a classification no providers were named; availability is not judged.
-    func testAddressCheckWithoutRequestedProvidersOnlyRefusesRequestErrors() {
-        XCTAssertEqual(SwapKitSwapProvider.addressCheck(response(error: "noRoutesFound"), requested: []), .pass)
-        XCTAssertEqual(SwapKitSwapProvider.addressCheck(response(error: "isSanctionedAddress"), requested: []), .refused("isSanctionedAddress"))
+    /// Without a classification the address check still asks only what the real Sell quote asks
+    /// (NEAR), never every SwapKit provider.
+    @MainActor
+    func testAddressCheckWithoutAClassificationAsksNear() {
+        let request = SwapKitSwapProvider().addressCheckRequest(destination: "0xabc", toAsset: "ETH.ETH")
+        XCTAssertEqual(request.providers, [SwapKitConstants.providerNear])
+        XCTAssertEqual(request.destinationAddress, "0xabc")
+    }
+
+    /// A provider the swap never uses does not decide the address: NEAR's own answer does, even
+    /// when it leaves nothing usable and so the refusals are read.
+    func testAddressCheckIgnoresAProviderOutsideNearAndMaya() {
+        let thorRefuses = pe("THORCHAIN", "invalidDestinationAddress")
+        let nearNoRoute = response(providerErrors: [thorRefuses, pe("NEAR", "noRoutesFound")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(nearNoRoute, requested: [.near]), .confirmNoRoute([.near]))
+        let nearHalted = response(providerErrors: [thorRefuses, pe("NEAR", "swapHalted")])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(nearHalted, requested: [.near]), .unavailable)
     }
 
     // MARK: Address check after the address-free re-check (AC-05)

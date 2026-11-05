@@ -289,8 +289,9 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Codes SwapKit uses to refuse the coin itself, whatever the provider.
     private static let refusedCoinCodes: Set<String> = ["blacklistasset", "invalidasset"]
 
-    /// Pure decision for `validateAddress`, internal for the tests. `requested` empty means the
-    /// quote let SwapKit pick providers (no classification), so availability is not judged.
+    /// Pure decision for `validateAddress`, internal for the tests. `requested` is the providers
+    /// the quote named (`addressCheckRequest`), never empty: `sellQuoteProviders` always names NEAR
+    /// or Maya.
     static func addressCheck(_ response: SwapKitQuoteResponse, requested: Set<RouteProvider>) -> AddressCheck {
         if response.routes?.isEmpty == false {
             return .pass
@@ -305,34 +306,52 @@ final class SwapKitSwapProvider: SwapProvider {
             return .refused(top)
         }
 
-        // A provider's refusal only counts for that provider: another one may still accept it.
-        var refusedBy: [RouteProvider: String] = [:]
-        for error in response.providerErrors ?? [] {
+        // A refusal only counts for the SwapKit provider (a Maya flavour, say) that gave it: another
+        // one may still accept the request. A refusal from any other provider, or from none named,
+        // is ignored. When several refuse, the first in SwapKit's order is shown.
+        let errors = response.providerErrors ?? []
+        var refusedBy: Set<String> = []
+        var firstRefusal: String?
+        for error in errors {
             guard let raw = code(error.errorCode),
                   requestCodes.contains(raw.lowercased()) || refusedCoinCodes.contains(raw.lowercased()) else { continue }
-            if let name = error.provider, let provider = RouteProvider(swapKitProvider: name) {
-                refusedBy[provider] = raw
-            } else if requested.isEmpty {
-                return .refused(raw)
-            }
+            guard let name = error.provider, RouteProvider(swapKitProvider: name) != nil else { continue }
+            refusedBy.insert(name.uppercased())
+            firstRefusal = firstRefusal ?? raw
         }
 
-        guard !requested.isEmpty else {
-            return refusedBy.values.first.map { .refused($0) } ?? .pass
-        }
         // The quote asked every usable provider at once; each one is judged on its own answer.
-        var states = LiveRouteState.classifyPerProvider(response, requested: requested)
-        for provider in refusedBy.keys {
-            states[provider] = nil
-        }
+        let states = judgedWithoutRefusals(LiveRouteState.classifyPerProvider(response, requested: requested),
+                                           errors: errors, refusedBy: refusedBy)
         if states.values.contains(where: { $0.isUsable }) {
             return .pass
         }
-        if let refusal = refusedBy.values.first {
+        if let refusal = firstRefusal {
             return .refused(refusal)
         }
         let noRoute = Set(states.filter { $0.value == .noRoute }.map { $0.key })
         return noRoute.isEmpty ? .unavailable : .confirmNoRoute(noRoute)
+    }
+
+    /// `states` with each provider whose flavours (SwapKit provider names) are partly in
+    /// `refusedBy` judged on the other flavours' errors alone, and left out when every flavour
+    /// that spoke refused.
+    private static func judgedWithoutRefusals(
+        _ states: [RouteProvider: LiveRouteState],
+        errors: [SwapKitProviderError],
+        refusedBy: Set<String>
+    ) -> [RouteProvider: LiveRouteState] {
+        var judged = states
+        for provider in states.keys {
+            let spoke = errors.filter { $0.provider.flatMap { RouteProvider(swapKitProvider: $0) } == provider }
+            let rest = spoke.filter { !refusedBy.contains($0.provider?.uppercased() ?? "") }
+            guard rest.count < spoke.count else { continue }
+            judged[provider] = rest.isEmpty
+                ? nil
+                : LiveRouteState.classify(SwapKitQuoteResponse(quoteId: nil, routes: nil, providerErrors: rest,
+                                                               error: nil, message: nil))
+        }
+        return judged
     }
 
     /// A nominal Sell quote to the entered address. Its real use is the last check before the
@@ -344,19 +363,7 @@ final class SwapKitSwapProvider: SwapProvider {
     /// and reports what is wrong with it.
     func validateAddress(destination: String, toAsset: String) async -> String? {
         if !classificationBuilt { await buildClassification() }
-        // Without a classification there is nothing to judge availability by: let SwapKit pick
-        // providers, as this check always did.
-        let providers = classificationUsable ? sellQuoteProviders(for: toAsset) : nil
-        let request = SwapKitQuoteRequest(
-            sellAsset: SwapKitConstants.dashAsset,
-            buyAsset: toAsset,
-            sellAmount: "1",  // nominal; one DASH is far above every route floor
-            slippage: SwapKitConstants.defaultSlippagePercent,
-            sourceAddress: nil,
-            destinationAddress: destination,
-            providers: providers,
-            affiliateFee: nil
-        )
+        let request = addressCheckRequest(destination: destination, toAsset: toAsset)
 
         let response: SwapKitQuoteResponse
         do {
@@ -371,7 +378,7 @@ final class SwapKitSwapProvider: SwapProvider {
             response = decoded
         }
 
-        let requested = Set((providers ?? []).compactMap { RouteProvider(swapKitProvider: $0) })
+        let requested = Set((request.providers ?? []).compactMap { RouteProvider(swapKitProvider: $0) })
         recordQuoteOutcome(response, requested: requested, asset: toAsset, direction: .sell)
 
         let check = Self.addressCheck(response, requested: requested)
@@ -406,6 +413,21 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             return Self.addressReCheckMessage(reAsked, coin: coin)
         }
+    }
+
+    /// The nominal quote `validateAddress` sends: the providers the real Sell quote would ask
+    /// (`sellQuoteProviders`), so no provider the swap can't use decides the address.
+    func addressCheckRequest(destination: String, toAsset: String) -> SwapKitQuoteRequest {
+        SwapKitQuoteRequest(
+            sellAsset: SwapKitConstants.dashAsset,
+            buyAsset: toAsset,
+            sellAmount: "1",  // nominal; one DASH is far above every route floor
+            slippage: SwapKitConstants.defaultSlippagePercent,
+            sourceAddress: nil,
+            destinationAddress: destination,
+            providers: sellQuoteProviders(for: toAsset),
+            affiliateFee: nil
+        )
     }
 
     /// What the address screen says after the providers that answered "no route" were asked again
@@ -1007,7 +1029,7 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Providers the live probes have ruled out for this coin are left out, so a halted Maya leg
     /// cannot crowd the answer of a working NEAR one. When the probes ruled out every provider, the
     /// static set is sent anyway and SwapKit's own answer reaches the user.
-    private func sellQuoteProviders(for toAsset: String) -> [String]? {
+    private func sellQuoteProviders(for toAsset: String) -> [String] {
         guard classificationUsable else {
             return [SwapKitConstants.providerNear]
         }
@@ -1219,22 +1241,5 @@ private func errorResult(_ message: String) -> SwapQuoteResult {
         // diagnosable from an exported log instead of only from a screenshot.
         DWLogger.log("SwapKit: quote/swap failed — raw: \(message)")
         return SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
-    }
-}
-
-private extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        guard size > 0, !isEmpty else { return [self] }
-        var result: [[Element]] = []
-        result.reserveCapacity((count + size - 1) / size)
-
-        var index = startIndex
-        while index < endIndex {
-            let nextIndex = self.index(index, offsetBy: size, limitedBy: endIndex) ?? endIndex
-            result.append(Array(self[index..<nextIndex]))
-            index = nextIndex
-        }
-
-        return result
     }
 }

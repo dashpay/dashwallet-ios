@@ -35,7 +35,7 @@ unknown answers out of the store is what makes "unknown never halts" hold by con
 ## Consequences
 
 **Positive**
-- The picker, the address screen and the quote paths read one truth; a no-route the address screen confirms shows as halted when the Wallet holder goes back.
+- The picker, the address screen and the quote paths read one truth; a no-route the address screen confirms shows as halted when the Wallet holder goes back, when the published token lists name the coin.
 - One place enforces the in-flight cap and the NEAR verdict for both directions.
 - Testable with an injected clock and an injected probe.
 

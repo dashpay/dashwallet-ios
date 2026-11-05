@@ -18,7 +18,7 @@ chain, so one Maya coin says nothing about the next.
 
 ## Considered options
 
-1. **Sentinel coins first** — BTC and ETH are asked first, SOL only in place of one that gave no conclusive answer, not in place of a halted one; two conclusive no-routes and none routing → NEAR is down for that direction; one routing → every NEAR-capable coin is checked on its own; a halted sentinel counts toward neither; a round with neither outcome keeps the previous verdict and is retried after 2 min.
+1. **Sentinel coins first** — BTC and ETH are asked first, SOL whenever those two settle neither outcome (an inconclusive or a halted one beside them); two conclusive no-routes and none routing → NEAR is down for that direction; one routing → every NEAR-capable coin is checked on its own; a halted sentinel counts toward neither; a round with neither outcome keeps the previous verdict and is retried after 2 min.
 2. **Always check NEAR per coin** — no verdict, each coin's NEAR state is its own answer.
 3. **Infer the outage from the per-coin checks** — stop checking NEAR once the first K per-coin answers in display order are all no-route.
 

@@ -21,9 +21,9 @@ the address screen reported every refusal as a connection problem.
   and the quote paths read: a conclusive answer is re-checked after 10 minutes and forgotten after
   30, an inconclusive one is never stored and is re-asked after 2 minutes. See
   [ADR-0007](../../adr/0007-keep-live-swap-route-answers-in-one-shared-in-memory-store.md).
-- **NEAR outages cost a few checks.** NEAR is checked on sentinel coins (BTC, ETH, SOL in place of
-  an inconclusive one) first; if none routes, NEAR is down for that direction and no per-coin NEAR
-  checks are sent. Maya is checked per coin, since its halts are per chain. See
+- **NEAR outages cost a few checks.** NEAR is checked on sentinel coins first: BTC and ETH, and SOL
+  whenever those two settle neither outcome. Two "no route" answers and none routing → NEAR is down
+  for that direction and no per-coin NEAR checks are sent. Maya is checked per coin, since its halts are per chain. See
   [ADR-0008](../../adr/0008-detect-a-near-outage-from-sentinel-coins.md).
 - **The address screen names the real problem.** A refused address gets the address copy; a "no
   route" is re-checked without the address and, when confirmed, says "<coin> can't be swapped at the
@@ -34,7 +34,7 @@ the address screen reported every refusal as a connection problem.
 
 ## What it guarantees
 
-- A coin no provider can route right now is shown halted and cannot be picked.
+- A coin no provider can route right now is shown halted and cannot be picked, when the published token lists name it.
 - An inconclusive answer never halts a coin; the coin keeps its published label.
 - At most two checks are in flight; checks run only while the picker is open; no address leaves the
   device in a check.

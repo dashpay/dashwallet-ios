@@ -239,18 +239,42 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(label("AVAX.AVAX", capable: [.near]), .near)
     }
 
-    /// The third sentinel stands in only for an inconclusive one, not for a halted one: a halt is
-    /// a conclusive answer about that chain, so the round ends without a verdict.
-    func testAHaltedSentinelIsNotStoodInFor() async {
+    /// A halted sentinel counts toward neither outcome, so SOL is asked in its place: halted beside
+    /// one no-route settles nothing on its own.
+    func testAHaltedSentinelIsStoodInFor() async {
         script.set(.halted, .near, "BTC.BTC")
         script.set(.noRoute, .near, "ETH.ETH")
         script.set(.noRoute, .near, "SOL.SOL")
 
         await refresh(["AVAX.AVAX": [.near]])
 
-        XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH"])
-        XCTAssertNil(store.nearVerdict(for: .sell))
-        XCTAssertEqual(label("AVAX.AVAX", capable: [.near]), .near)
+        XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "SOL.SOL"])
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+    }
+
+    func testAHaltedSentinelStoodInForByARoutingSOLMeansUp() async {
+        script.set(.halted, .near, "BTC.BTC")
+        script.set(.noRoute, .near, "ETH.ETH")
+
+        await refresh(["AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+        XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "SOL.SOL", "AVAX.AVAX"])
+    }
+
+    /// Two halted chains do not freeze an old outage: SOL routing shows the recovery.
+    func testTwoHaltedSentinelsDoNotHideARecovery() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        await refresh(["AVAX.AVAX": [.near]])
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+
+        clock += 121
+        script.set(.halted, .near, "BTC.BTC")
+        script.set(.halted, .near, "ETH.ETH")
+        script.set(.available, .near, "SOL.SOL")
+        await refresh(["AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
     }
 
     /// No sentinel routes, but fewer than two answered conclusively: NEAR is not declared down, no
@@ -325,6 +349,55 @@ final class SwapRouteAvailabilityTests: XCTestCase {
 
         XCTAssertNil(store.state(of: .maya, for: "ETH.USDT", direction: .sell))
         XCTAssertEqual(label("ETH.USDT", capable: both), .multiple)
+    }
+
+    /// A forgotten answer is reported, so the picker re-renders a halted row even when the re-check
+    /// is inconclusive and stores nothing.
+    func testAForgottenAnswerIsReported() async {
+        script.set(.halted, .maya, "ETH.USDT")
+        await refresh(["ETH.USDT": [.maya]])
+        XCTAssertEqual(store.state(of: .maya, for: "ETH.USDT", direction: .sell), .halted)
+
+        var reported: [SwapDirection] = []
+        let cancellable = store.changes.sink { reported.append($0) }
+        defer { cancellable.cancel() }
+        clock += 1801
+        script.set(.unknown, .maya, "ETH.USDT")
+        await refresh(["ETH.USDT": [.maya]])
+
+        XCTAssertEqual(reported, [.sell])
+        XCTAssertNil(store.state(of: .maya, for: "ETH.USDT", direction: .sell))
+    }
+
+    func testAForgottenNearOutageIsReported() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        await refresh(["AVAX.AVAX": [.near]])
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+
+        var reported: [SwapDirection] = []
+        let cancellable = store.changes.sink { reported.append($0) }
+        defer { cancellable.cancel() }
+        clock += 1801
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.unknown, .near, $0) }
+        await refresh(["AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(reported, [.sell])
+        XCTAssertNil(store.nearVerdict(for: .sell))
+        XCTAssertEqual(label("AVAX.AVAX", capable: [.near]), .near)
+    }
+
+    /// Nothing aged out: a refresh that learns nothing new reports nothing.
+    func testARefreshWithNothingForgottenReportsNothing() async {
+        script.set(.halted, .maya, "ETH.USDT")
+        await refresh(["ETH.USDT": [.maya]])
+
+        var reported: [SwapDirection] = []
+        let cancellable = store.changes.sink { reported.append($0) }
+        defer { cancellable.cancel() }
+        clock += 601
+        await refresh(["ETH.USDT": [.maya]])
+
+        XCTAssertTrue(reported.isEmpty)
     }
 
     /// A NEAR outage is re-checked after two minutes — with real requests, not the sentinels'
