@@ -103,6 +103,27 @@ final class AdvancedSecurityTests: XCTestCase {
         XCTAssertEqual(viewModel.securityLevel, .medium) // 5 min lock, no limit
     }
 
+    func testUnsetLimitReadsAsAlwaysRequiringPIN() {
+        let store = StoreSpy()
+        store.spendingLimit = AuthenticationService.spendingLimitNotSet
+        store.spendingConfirmationEnabled = true
+        let viewModel = AdvancedSecurityViewModel(store: store)
+
+        XCTAssertFalse(viewModel.descriptionShowsAmount)
+        XCTAssertEqual(viewModel.spendingLimitDescription,
+                       NSLocalizedString("PIN is always required to make a payment", comment: ""))
+        XCTAssertEqual(viewModel.spendingLimitValueText, NSLocalizedString("None", comment: ""))
+    }
+
+    func testOffStopLockTimerKeepsItsValueText() {
+        let store = StoreSpy()
+        store.lockTimerInterval = 120
+        let viewModel = AdvancedSecurityViewModel(store: store)
+
+        XCTAssertNil(viewModel.lockTimerIndex)
+        XCTAssertFalse(viewModel.lockTimerValueText.isEmpty)
+    }
+
     func testResetToDefault() {
         let store = StoreSpy()
         let viewModel = AdvancedSecurityViewModel(store: store)

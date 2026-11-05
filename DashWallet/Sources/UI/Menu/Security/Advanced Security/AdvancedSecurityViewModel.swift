@@ -109,6 +109,10 @@ final class AdvancedSecurityViewModel: ObservableObject {
             : NSLocalizedString("Logout after", comment: "Logout after 5 min")
     }
 
+    /// The stored lock timer, spelled out, including a value that is not a
+    /// slider stop.
+    var lockTimerValueText: String { Self.lockTimerText(store.lockTimerInterval) }
+
     static func lockTimerText(_ seconds: Int) -> String {
         switch seconds {
         case 0: return NSLocalizedString("Immediately", comment: "")
@@ -135,7 +139,9 @@ final class AdvancedSecurityViewModel: ObservableObject {
     /// The sentence under the limit slider. When `descriptionShowsAmount`,
     /// the view appends the limit amount after it.
     var spendingLimitDescription: String {
-        if storedLimit == 0 {
+        // With no limit stored there is no biometric allowance either, so
+        // every payment asks for the PIN, as with a zero limit.
+        if (storedLimit ?? 0) == 0 {
             return NSLocalizedString("PIN is always required to make a payment", comment: "")
         }
         switch store.biometry {
@@ -143,6 +149,13 @@ final class AdvancedSecurityViewModel: ObservableObject {
         case .faceID: return NSLocalizedString("You can authenticate with Face ID for payments below", comment: "")
         case .none: return NSLocalizedString("You can authenticate with biometrics for payments below", comment: "")
         }
+    }
+
+    /// The stored limit, spelled out, including a value that is not a slider
+    /// stop; "None" when no limit is stored.
+    var spendingLimitValueText: String {
+        guard let storedLimit else { return NSLocalizedString("None", comment: "") }
+        return Int64(clamping: storedLimit).formattedDashAmount
     }
 
     /// Whether the description ends with the limit amount.

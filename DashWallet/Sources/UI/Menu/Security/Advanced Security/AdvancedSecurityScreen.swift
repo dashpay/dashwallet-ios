@@ -80,6 +80,7 @@ struct AdvancedSecurityScreen: View {
                         stopCount: AdvancedSecurityViewModel.lockTimerIntervals.count,
                         selectedIndex: viewModel.lockTimerIndex,
                         accessibilityLabel: viewModel.lockTimerTitle,
+                        unselectedValueText: viewModel.lockTimerValueText,
                         valueText: { AdvancedSecurityViewModel.lockTimerText(AdvancedSecurityViewModel.lockTimerIntervals[$0]) },
                         onSelect: { viewModel.selectLockTimer(at: $0) },
                         leadingLabel: { Text(AdvancedSecurityViewModel.lockTimerText(AdvancedSecurityViewModel.lockTimerIntervals[0])) },
@@ -112,6 +113,7 @@ struct AdvancedSecurityScreen: View {
                         stopCount: AdvancedSecurityViewModel.spendingLimits.count,
                         selectedIndex: viewModel.spendingLimitIndex,
                         accessibilityLabel: viewModel.spendingLimitTitle,
+                        unselectedValueText: viewModel.spendingLimitValueText,
                         valueText: { Int64(clamping: AdvancedSecurityViewModel.spendingLimits[$0]).formattedDashAmount },
                         onSelect: { viewModel.selectSpendingLimit(at: $0) },
                         leadingLabel: {
@@ -247,7 +249,7 @@ final class AdvancedSecurityHostingController: UIHostingController<AdvancedSecur
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.navigationController?.popViewController(animated: true)
+                _ = self?.navigationController?.popViewController(animated: true)
             }
         }
     }

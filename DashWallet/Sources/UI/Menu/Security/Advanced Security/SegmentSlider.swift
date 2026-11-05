@@ -32,6 +32,8 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
     /// The selected stop, `nil` when the current value isn't one of them.
     let selectedIndex: Int?
     let accessibilityLabel: String
+    /// What VoiceOver reads while `selectedIndex` is `nil`.
+    let unselectedValueText: String
     let valueText: (Int) -> String
     let onSelect: (Int) -> Void
     @ViewBuilder let leadingLabel: Leading
@@ -73,7 +75,9 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
                             .animation(.easeInOut(duration: 0.15), value: selectedIndex)
                     }
                 }
-                .frame(maxHeight: .infinity)
+                // Full width, so the hit area reaches the last stop: the track
+                // is inset, and offsets don't widen the layout.
+                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
@@ -86,9 +90,13 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
-        .accessibilityValue(Text(selectedIndex.map(valueText) ?? ""))
+        .accessibilityValue(Text(verbatim: selectedIndex.map(valueText) ?? unselectedValueText))
         .accessibilityAdjustableAction { direction in
-            let current = selectedIndex ?? 0
+            guard let current = selectedIndex else {
+                // Nothing selected yet: either direction lands on the first stop.
+                onSelect(0)
+                return
+            }
             switch direction {
             case .increment where current < stopCount - 1:
                 onSelect(current + 1)
