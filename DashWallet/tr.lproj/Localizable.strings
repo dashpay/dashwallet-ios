@@ -6820,6 +6820,9 @@
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";
 "Preparing logs…" = "Preparing logs…";
 
+/* SwapKit */
+"The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
+
 /* Usernames: request details, failed instant username */
 "The instant username “%@” could not be registered, so you have no username to use while the vote runs." = "The instant username “%@” could not be registered, so you have no username to use while the vote runs.";
 

@@ -344,6 +344,9 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* SwapKit */
+"The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
+
 /* Core drain */
 "The wallet or network changed. Select Max again." = "The wallet or network changed. Select Max again.";
 
