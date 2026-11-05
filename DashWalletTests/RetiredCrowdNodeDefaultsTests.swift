@@ -99,6 +99,28 @@ final class RetiredCrowdNodeDefaultsTests: XCTestCase {
         }
     }
 
+    /// A per-wallet name is removed only with a wallet id after the
+    /// underscore: lowercase hex, as the old code wrote it.
+    func testLeavesAPerWalletNameWithANonHexSuffix() {
+        let walletKey = "crowdNodeAccountAddressKey_0a1b2c3d"
+        let others = [
+            "crowdNodeAccountAddressKey_backup",
+            "crowdNodeAccountAddressKey_",
+            "crowdNodeAccountAddressKey_0A1B2C3D",
+            "lastWithdrawalBlockKey_aa01_extra",
+        ]
+        for key in [walletKey] + others {
+            defaults.set(1, forKey: key)
+        }
+
+        RetiredCrowdNodeDefaults.removeAll(from: defaults)
+
+        XCTAssertNil(defaults.object(forKey: walletKey))
+        for key in others {
+            XCTAssertNotNil(defaults.object(forKey: key), key)
+        }
+    }
+
     func testRunsOnceWithProtectedDataAndRecordsIt() {
         defaults.set(1, forKey: "crowdNodeInfoShownKey")
 

@@ -328,15 +328,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             DWAppGroupOptions.sharedInstance().restoreToDefaults()
         }
 
-        // These stores use UserDefaults + locks and are safe on this queue.
-        // The retired CrowdNode keys go here too, so a wipe doesn't depend on
-        // the activation cleanup having run.
-        RetiredCrowdNodeDefaults.removeAll(from: .standard)
-        CoinJoinRecovery.shared.resetForWipe()
-        CoinJoinWithdrawalStore.shared.resetForWipe()
-        ShieldedWithdrawalStore.shared.resetForWipe()
-        AssetLockProbeStore.shared.resetForWipe()
-        SPVChainResyncMarker.resetForWipe()
+        resetUserDefaultsStoresForWipe()
         // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
         // Without this a contested submission outlived the wallet that made it:
@@ -940,6 +932,19 @@ final class SwiftDashSDKWalletWiper: NSObject {
         guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+    }
+
+    /// The full wipe's reset of the app stores kept in UserDefaults. These
+    /// stores use UserDefaults + locks and are safe on the wipe queue. The
+    /// retired CrowdNode keys go here too, so a wipe doesn't depend on the
+    /// activation cleanup having run.
+    static func resetUserDefaultsStoresForWipe() {
+        RetiredCrowdNodeDefaults.removeAll(from: .standard)
+        CoinJoinRecovery.shared.resetForWipe()
+        CoinJoinWithdrawalStore.shared.resetForWipe()
+        ShieldedWithdrawalStore.shared.resetForWipe()
+        AssetLockProbeStore.shared.resetForWipe()
+        SPVChainResyncMarker.resetForWipe()
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust

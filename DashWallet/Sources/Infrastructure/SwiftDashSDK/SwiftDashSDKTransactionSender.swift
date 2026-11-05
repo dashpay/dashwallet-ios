@@ -607,8 +607,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Size-based fee estimate for a P2PKH send at the relay-minimum
     /// 1 duff/byte: base 10 + 148/input + 34 × 2 outputs (dest + change).
     /// Mirrors the legacy `chain.fee(forTxSize: tx.size + TX_OUTPUT_SIZE)`.
-    private static func estimatedFee(inputCount: Int) -> UInt64 {
+    static func estimatedFee(inputCount: Int) -> UInt64 {
         UInt64(10 + inputCount * 148 + 2 * 34)
+    }
+
+    /// `estimatedFee` for `inputCount` inputs plus a +50 % margin, so the
+    /// Max reserve never under-reserves.
+    static func maxSendFeeReserve(forInputCount inputCount: Int) -> UInt64 {
+        let base = estimatedFee(inputCount: inputCount)
+        return base + base / 2
     }
 
     /// Fee reserve for a "Max" / all-funds core send, sized from the BIP44
@@ -655,8 +662,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 total + manager.accountUtxos(for: walletId, balance: balance).count
             }
             guard count > 0 else { return nil }
-            let base = estimatedFee(inputCount: count)
-            return base + base / 2 // +50 % margin — must never under-reserve
+            return maxSendFeeReserve(forInputCount: count)
         }
 
         let dynamic: UInt64?

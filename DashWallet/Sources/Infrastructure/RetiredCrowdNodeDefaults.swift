@@ -88,8 +88,16 @@ final class RetiredCrowdNodeDefaults: NSObject {
         }
         let prefixes = perWalletKeys.map { "\($0)_" }
         for key in defaults.dictionaryRepresentation().keys
-            where prefixes.contains(where: { key.hasPrefix($0) }) {
+            where prefixes.contains(where: { isWalletIdHex(key, after: $0) }) {
             defaults.removeObject(forKey: key)
         }
+    }
+
+    /// Whether `key` is `prefix` followed by a wallet id: lowercase hex, as
+    /// the old code wrote it (`%02x` per byte).
+    private static func isWalletIdHex(_ key: String, after prefix: String) -> Bool {
+        guard key.hasPrefix(prefix) else { return false }
+        let suffix = key.dropFirst(prefix.count)
+        return !suffix.isEmpty && suffix.allSatisfy { ("0"..."9").contains($0) || ("a"..."f").contains($0) }
     }
 }

@@ -1854,6 +1854,9 @@
 		CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */; };
 		CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */; };
 		B22765F5EC05E5EE8186D9E2 /* RetiredCrowdNodeDefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4466DE8A4A8417FA6C235BE /* RetiredCrowdNodeDefaultsTests.swift */; };
+		3E5F7A9C1B3D5F7092B4D6F8 /* MaxSendFeeReserveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1C3E5F9B2D4F6081A3C5E7 /* MaxSendFeeReserveTests.swift */; };
+		5D1E7C3A9F2B4E6081C3A5D7 /* CoinbaseDepositFailedErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2F4D6A1C3E5F7092A4B6C8 /* CoinbaseDepositFailedErrorTests.swift */; };
+		6E2A8C4B1D3F5A7092C4E6B8 /* WiperRemovesCrowdNodeKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C3E5A7B2D4F6081B3D5F7A9 /* WiperRemovesCrowdNodeKeysTests.swift */; };
 		59CF738341C10A1296F632DC /* ShortcutActionTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5926ED1241DB3E76CB54FC /* ShortcutActionTypeTests.swift */; };
 		CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */; };
 		CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
@@ -3709,6 +3712,9 @@
 		CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransactionMetadataTests.swift; sourceTree = "<group>"; };
 		CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransferAmountTests.swift; sourceTree = "<group>"; };
 		D4466DE8A4A8417FA6C235BE /* RetiredCrowdNodeDefaultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetiredCrowdNodeDefaultsTests.swift; sourceTree = "<group>"; };
+		7A1C3E5F9B2D4F6081A3C5E7 /* MaxSendFeeReserveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaxSendFeeReserveTests.swift; sourceTree = "<group>"; };
+		8B2F4D6A1C3E5F7092A4B6C8 /* CoinbaseDepositFailedErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseDepositFailedErrorTests.swift; sourceTree = "<group>"; };
+		9C3E5A7B2D4F6081B3D5F7A9 /* WiperRemovesCrowdNodeKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiperRemovesCrowdNodeKeysTests.swift; sourceTree = "<group>"; };
 		AB5926ED1241DB3E76CB54FC /* ShortcutActionTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutActionTypeTests.swift; sourceTree = "<group>"; };
 		CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveWalletStateUITailTests.swift; sourceTree = "<group>"; };
 		CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsAPI.swift; sourceTree = "<group>"; };
@@ -7312,6 +7318,9 @@
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				D4466DE8A4A8417FA6C235BE /* RetiredCrowdNodeDefaultsTests.swift */,
+				7A1C3E5F9B2D4F6081A3C5E7 /* MaxSendFeeReserveTests.swift */,
+				8B2F4D6A1C3E5F7092A4B6C8 /* CoinbaseDepositFailedErrorTests.swift */,
+				9C3E5A7B2D4F6081B3D5F7A9 /* WiperRemovesCrowdNodeKeysTests.swift */,
 				AB5926ED1241DB3E76CB54FC /* ShortcutActionTypeTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
 				7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */,
@@ -10605,6 +10614,9 @@
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				B22765F5EC05E5EE8186D9E2 /* RetiredCrowdNodeDefaultsTests.swift in Sources */,
+				3E5F7A9C1B3D5F7092B4D6F8 /* MaxSendFeeReserveTests.swift in Sources */,
+				5D1E7C3A9F2B4E6081C3A5D7 /* CoinbaseDepositFailedErrorTests.swift in Sources */,
+				6E2A8C4B1D3F5A7092C4E6B8 /* WiperRemovesCrowdNodeKeysTests.swift in Sources */,
 				59CF738341C10A1296F632DC /* ShortcutActionTypeTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
 				7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */,
