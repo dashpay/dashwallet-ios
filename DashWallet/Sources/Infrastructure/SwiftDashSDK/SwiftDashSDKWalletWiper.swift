@@ -130,10 +130,11 @@ enum SwiftDashSDKStoredWalletNetworkResolver {
         }
         var ids: [Network: Data] = [:]
         for network in storableNetworks {
-            ids[network] = try SwiftDashSDK.Wallet(
-                mnemonic: mnemonic,
-                network: network
-            ).id
+            do {
+                ids[network] = try Mnemonic.walletId(for: mnemonic, network: network)
+            } catch {
+                throw SwiftDashSDKWalletDeletionError.invalidMnemonic
+            }
         }
         return ids
     }
@@ -944,6 +945,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
+        AssetLockFailureStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
     }
 

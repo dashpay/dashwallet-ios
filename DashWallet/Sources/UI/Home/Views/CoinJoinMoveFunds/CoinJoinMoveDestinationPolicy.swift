@@ -199,21 +199,22 @@ enum CoinJoinShieldPlanner {
         height > 0 || instantLockedTxids.contains(txid)
     }
 
-    /// Whether a CoinJoin UTXO read can be planned from. The SDK's account
+    /// Whether an account's UTXO read can be planned from. The SDK's account
     /// readers return `[]` both for "none" and for a failed read, so a failure
-    /// is told apart here: every wallet has at least its BIP44 account, and a
-    /// CoinJoin account whose balance is not zero has UTXOs. A cached balance
-    /// that outlived its coins reads as a failure too, which stops the move
-    /// rather than drain on a guess.
+    /// is told apart here: every wallet has at least its BIP44 account, and an
+    /// account whose balance is not zero has UTXOs. A cached balance that
+    /// outlived its coins reads as a failure too, which stops the caller
+    /// rather than plan on a guess.
     ///
     /// - Parameters:
     ///   - accountCount: rows `accountBalances` returned.
-    ///   - coinJoinBalanceIsZero: nil when the wallet has no CoinJoin account.
+    ///   - accountBalanceIsZero: the read account's balance; nil when the
+    ///     wallet has no such account.
     ///   - utxoCount: rows `accountUtxos` returned for it, locked ones included.
-    static func utxoReadIsUsable(accountCount: Int, coinJoinBalanceIsZero: Bool?, utxoCount: Int) -> Bool {
+    static func utxoReadIsUsable(accountCount: Int, accountBalanceIsZero: Bool?, utxoCount: Int) -> Bool {
         guard accountCount > 0 else { return false }
-        guard let coinJoinBalanceIsZero else { return true }
-        return utxoCount > 0 || coinJoinBalanceIsZero
+        guard let accountBalanceIsZero else { return true }
+        return utxoCount > 0 || accountBalanceIsZero
     }
 
     /// Whether every consolidation transaction in `consolidationTxids` (wire

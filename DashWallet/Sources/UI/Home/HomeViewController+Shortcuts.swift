@@ -310,7 +310,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     private func showSendToContact() {
         #if DASHPAY
         // Row #18: open the SwiftUI contacts screen; paying happens
-        // from a contact's profile sheet (WalletSendService.sendToContact).
+        // from a contact's profile sheet (WalletSendService.prepareContactPayment + broadcastContactPayment).
         let controller = UIHostingController(rootView: ContactsScreen())
         present(controller, animated: true)
         #endif

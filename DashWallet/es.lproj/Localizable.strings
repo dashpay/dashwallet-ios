@@ -6,6 +6,9 @@
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ puesto a la venta por %2$@ DASH";
 
+/* Send amount fits the balance once incoming funds confirm */
+"%@ DASH is still confirming. Wait a few minutes or enter a smaller amount." = "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount.";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -575,8 +578,16 @@
 /* Core drain preview */
 "Checking available funds and fees…" = "Checking available funds and fees…";
 
+"Combine coins" = "Combine coins";
+
+"Combining coins…" = "Combining coins…";
+
+"Combining the coins in this wallet won't make this transfer fit. Try a smaller amount." = "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.";
+
 /* Dash DEX / tx history row title */
 "Converting · %@" = "Converting · %@";
+
+"Couldn't combine your coins. Please try again." = "Couldn't combine your coins. Please try again.";
 
 /* Drain fee breakdown */
 "Estimated Core fee: %@\nShielded pool fee: %@" = "Estimated Core fee: %@\nShielded pool fee: %@";
@@ -2149,8 +2160,12 @@
 /* Core drain input limit preview */
 "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
 
+"This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again." = "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.";
+
 /* InternalTransfer recovery: drain recipient unknown */
 "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe." = "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.";
+
+"Too many coins for one transfer" = "Too many coins for one transfer";
 
 /* Core drain recovery success */
 "Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
@@ -4870,6 +4885,12 @@
 /* Usernames */
 "Buy username" = "Comprar nombre de usuario";
 
+"Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
+
+"Your coins are combined. You can try again now." = "Your coins are combined. You can try again now.";
+
+"Your coins are still being combined. Please try again in a few minutes." = "Your coins are still being combined. Please try again in a few minutes.";
+
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "No se pudo registrar tu nombre de usuario temporal “%@”. Puedes registrar otro nombre de usuario más adelante.";
 
@@ -6161,6 +6182,8 @@
 "Paying privately takes at least %@ Dash in your shielded balance. Funds move there in seconds, then rest a few hours before they can pay for a username." = "Paying privately takes at least %@ Dash in your shielded balance. Funds move there in seconds, then rest a few hours before they can pay for a username.";
 "Payments unavailable" = "Payments unavailable";
 "Payments unavailable — ask them to send you a new contact request." = "Payments unavailable — ask them to send you a new contact request.";
+"This contact is not in your contacts any more." = "This contact is not in your contacts any more.";
+"The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
 "Pays from your %@ Dash already on Platform" = "Pays from your %@ Dash already on Platform";
 "Personalize profile" = "Personalize profile";
 "Picture upload is not available in this build." = "Picture upload is not available in this build.";

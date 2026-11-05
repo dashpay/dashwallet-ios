@@ -89,6 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
         self.recoveryFixture = recoveryFixture;
         return YES;
     }
+    UIViewController *historyFixture = [DWShieldedHistoryUITestFixture makeViewControllerIfRequested];
+    if (historyFixture != nil) {
+        self.recoveryFixture = historyFixture;
+        return YES;
+    }
     UIViewController *settingsFixture = [DWSettingsRowsUITestFixture makeViewControllerIfRequested];
     if (settingsFixture != nil) {
         self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
