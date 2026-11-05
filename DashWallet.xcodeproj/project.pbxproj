@@ -974,7 +974,6 @@
 		7A30000230A1000000000097 /* InSheetPushStackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000096 /* InSheetPushStackTests.swift */; };
 		7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */; };
 		7A33000230A3000000000002 /* ContactPaymentReviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */; };
-		7A33000230A4000000000002 /* KeyToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A33000130A4000000000001 /* KeyToolsTests.swift */; };
 		7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */; };
 		7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */; };
 		BABA1000000000000000001F /* AssetLockDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */; };
@@ -3181,7 +3180,6 @@
 		7A30000130A1000000000096 /* InSheetPushStackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InSheetPushStackTests.swift; sourceTree = "<group>"; };
 		7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PooledSendableBalanceTests.swift; sourceTree = "<group>"; };
 		7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPaymentReviewTests.swift; sourceTree = "<group>"; };
-		7A33000130A4000000000001 /* KeyToolsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyToolsTests.swift; sourceTree = "<group>"; };
 		7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveDestinationPolicyTests.swift; sourceTree = "<group>"; };
 		7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StuckAssetLockRetryTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockDiagnosticsTests.swift; sourceTree = "<group>"; };
@@ -7379,7 +7377,6 @@
 				7A30000130A1000000000096 /* InSheetPushStackTests.swift */,
 				7A32000130A3000000000001 /* PooledSendableBalanceTests.swift */,
 				7A33000130A3000000000001 /* ContactPaymentReviewTests.swift */,
-				7A33000130A4000000000001 /* KeyToolsTests.swift */,
 				7A31000130A2000000000001 /* CoinJoinMoveDestinationPolicyTests.swift */,
 				7A30001130A1000000000011 /* StuckAssetLockRetryTests.swift */,
 				BABA1000000000000000001E /* AssetLockDiagnosticsTests.swift */,
@@ -10696,7 +10693,6 @@
 				7A30000230A1000000000097 /* InSheetPushStackTests.swift in Sources */,
 				7A32000230A3000000000002 /* PooledSendableBalanceTests.swift in Sources */,
 				7A33000230A3000000000002 /* ContactPaymentReviewTests.swift in Sources */,
-				7A33000230A4000000000002 /* KeyToolsTests.swift in Sources */,
 				7A31000230A2000000000002 /* CoinJoinMoveDestinationPolicyTests.swift in Sources */,
 				7A30001230A1000000000012 /* StuckAssetLockRetryTests.swift in Sources */,
 				BABA1000000000000000001F /* AssetLockDiagnosticsTests.swift in Sources */,
