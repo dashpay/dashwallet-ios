@@ -258,7 +258,7 @@ private struct LocalCurrencyTopOverlayView: View {
 
     private var title: some View {
         Text(NSLocalizedString("Local Currency", comment: "Settings"))
-            .dashFont(.subheadMedium)
+            .font(.system(.subheadline, weight: .medium))
             .foregroundColor(.dash.primaryText)
     }
 

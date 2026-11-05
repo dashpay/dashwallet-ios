@@ -102,7 +102,7 @@ struct LocalCurrencyCellView: View {
             .frame(width: Layout.checkboxSize, height: Layout.checkboxSize)
     }
 
-    /// Builds a SwiftUI Text with the first occurrence of `query` highlighted in dashBlue.
+    /// Builds a SwiftUI Text with every match of each word of `query` highlighted in dashBlue.
     private func highlightedText(_ text: String, query: String) -> Text {
         let ranges = LocalCurrencyViewModel.matchRanges(of: query, in: text)
         guard !ranges.isEmpty else { return Text(text) }
