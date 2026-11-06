@@ -1304,6 +1304,9 @@
 /* AboutDash */
 "Contact support" = "Contact support";
 
+/* Wallet preparation support */
+"Contact Support" = "Contact Support";
+
 /* No comment provided by engineer. */
 "Contacts" = "Kontak";
 
@@ -1474,6 +1477,9 @@
 
 /* Wallet preparation failure */
 "Couldn't open your wallet data" = "Couldn't open your wallet data";
+
+/* Wallet preparation support */
+"Couldn't prepare the support message" = "Couldn't prepare the support message";
 
 /* Remove never-accepted transaction: explorer unreachable */
 "Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Tidak dapat menghubungi penjelajah blok untuk memastikan transaksi tidak ada di blockchain. Periksa koneksi Anda lalu coba lagi.";
@@ -2637,6 +2643,9 @@
 /* No comment provided by engineer. */
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "Di bagian pembayaran pada kasir Anda, pilih \"kartu hadiah\" dan masukkan nomor kartu dan pin Anda.";
 
+/* Wallet preparation support */
+"Include diagnostic report" = "Include diagnostic report";
+
 /* No comment provided by engineer. */
 "Income" = "Pemasukan";
 
@@ -3332,6 +3341,9 @@
 /* Username marketplace: contest tallies card title */
 "Network vote so far" = "Pemungutan suara jaringan sejauh ini";
 
+/* Wallet preparation support */
+"Never share your recovery phrase or private keys with anyone, including support." = "Never share your recovery phrase or private keys with anyone, including support.";
+
 /* (List of) New (notifications) */
 "New" = "Baru";
 
@@ -3712,6 +3724,9 @@
 
 /* Voting */
 "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
+
+/* Wallet preparation support */
+"Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
 
 /* Voting */
 "Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight." = "Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight.";
@@ -4120,6 +4135,9 @@
 
 /* Wallet preparation */
 "Preparing your wallet…" = "Preparing your wallet…";
+
+/* Wallet preparation support */
+"Preview diagnostic report" = "Preview diagnostic report";
 
 /* Masternode keys */
 "Previously used at: " = "Sebelumnya digunakan pada: ";
@@ -4615,6 +4633,9 @@
 
 /* Asset-lock retry in progress */
 "Retrying transfer…" = "Mencoba transfer lagi…";
+
+/* Wallet preparation support */
+"Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
 
 /* AboutDash */
 "Review app" = "Review app";
@@ -6241,6 +6262,9 @@
 
 /* PIN lockout */
 "Try again in %@" = "Try again in %@";
+
+/* Wallet preparation support */
+"Try again or copy the support address and write to us from your mail app." = "Try again or copy the support address and write to us from your mail app.";
 
 /* Alert title */
 "Turn device passcode on" = "Aktifkan kode sandi perangkat";
