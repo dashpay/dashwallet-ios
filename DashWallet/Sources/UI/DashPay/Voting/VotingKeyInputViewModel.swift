@@ -76,7 +76,7 @@ final class VotingKeyInputViewModel: ObservableObject {
         let registry = registry ?? MasternodeVoterRegistry()
         self.tracker = tracker ?? { SwiftDashSDKHost.shared.manager }
         self.votableProTxHashes = votableProTxHashes
-            ?? { Set(registry.votableNodes().nodes.map(\.proTxHash)) }
+            ?? { Set(registry.votableNodes().map(\.proTxHash)) }
     }
 
     private var trimmedKey: String {
