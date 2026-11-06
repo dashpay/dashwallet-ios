@@ -2073,6 +2073,26 @@ final class AppConnectLoginTests: XCTestCase {
         XCTAssertFalse(AppConnect.holdsLiveSessionKey(appContractId: app, bindings: [authenticationKey()]))
     }
 
+    func testAContractTheNetworkProvesAbsentHasNoOwnerSoTheRequestIsRefused() async throws {
+        let owner = Data(repeating: 0xC3, count: 32)
+        let read = try await PlatformDashConnectDataSource.contractOwner { ["ownerId": owner.toBase58String()] }
+        XCTAssertEqual(read, owner)
+
+        do {
+            let absent = try await PlatformDashConnectDataSource.contractOwner {
+                throw SDKError.notFound("no contract")
+            }
+            XCTAssertNil(absent)
+        } catch {
+            XCTFail("An absent contract must read as no owner, not throw: \(error)")
+        }
+
+        do {
+            _ = try await PlatformDashConnectDataSource.contractOwner { throw SDKError.timeout("slow") }
+            XCTFail("A failed read is not an absent contract")
+        } catch SDKError.timeout {}
+    }
+
     func testOnlyAWholeSingleContractBoundNamesTheApp() {
         let app = Data(repeating: 0xA1, count: 32)
         XCTAssertEqual(AppConnect.singleContractId(boundsKind: 1, boundIds: [app]), app)

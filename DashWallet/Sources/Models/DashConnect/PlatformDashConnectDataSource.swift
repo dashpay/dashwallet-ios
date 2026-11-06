@@ -704,6 +704,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    /// The owner of the contract `read` returns. A contract the network
+    /// proves absent has none, so rule 3 refuses the request instead of the
+    /// sheet offering to try again; any other failure to read throws.
+    static func contractOwner(_ read: () async throws -> [String: Any]) async throws -> Data? {
+        let contract: [String: Any]
+        do {
+            contract = try await read()
+        } catch SDKError.notFound {
+            return nil
+        }
+        return (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(decodeIdentifier)
+    }
+
     /// The ids among `contractIds` and `groupIds` of the contracts and the
     /// contract groups whose owner is the owner of `contractId`, which is
     /// itself among the contracts returned. One the network proves absent
@@ -789,7 +802,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 let name = grant.binding.documentTypeName ?? ""
                 guard contractOwners[id] == nil,
                       !AppConnect.allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") else { continue }
-                contractOwners[id] = ownerId(of: try await sdk.dataContractGetOffMain(id: id.toBase58String()))
+                contractOwners[id] = try await Self.contractOwner {
+                    try await sdk.dataContractGetOffMain(id: id.toBase58String())
+                }
             }
         }
         // A contract whose config this build cannot read says nothing of its
