@@ -6653,6 +6653,9 @@
 "Requested %@" = "Requested %@";
 "The app asks for a key on a contract group it does not own." = "The app asks for a key on a contract group it does not own.";
 "The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
+"The app asks for a key on a document type its contract does not define." = "The app asks for a key on a document type its contract does not define.";
+"The app's contract does not exist on this network." = "The app's contract does not exist on this network.";
+"This version of the wallet cannot read the document types of the app's contract. Update the wallet." = "This version of the wallet cannot read the document types of the app's contract. Update the wallet.";
 "The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
 "The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
 "The app's contract keeps no current key bound to it for the encryption it asks for." = "The app's contract keeps no current key bound to it for the encryption it asks for.";

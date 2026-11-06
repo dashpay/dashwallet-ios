@@ -293,6 +293,91 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(refusal(owner: Data(repeating: 0x0B, count: 32))?.status, .invalid)
     }
 
+    func testAnAppContractTheNetworkProvesAbsentIsRefused() async throws {
+        let plan = try Self.vectorPlan()
+        let absent = try await PlatformDashConnectDataSource.appConnectOwnership(
+            plan,
+            readContract: { _ in throw SDKError.notFound("no contract") },
+            readGroup: { _ in throw SDKError.notFound("no group") })
+        XCTAssertEqual(absent.refusal?.status, .invalid)
+
+        do {
+            _ = try await PlatformDashConnectDataSource.appConnectOwnership(
+                plan,
+                readContract: { _ in throw SDKError.timeout("slow") },
+                readGroup: { _ in throw SDKError.timeout("slow") })
+            XCTFail("A failed read is not an absent contract")
+        } catch SDKError.timeout {}
+    }
+
+    func testABindingContractTheNetworkProvesAbsentHasNoOwnerSoTheRequestIsRefused() async throws {
+        let other = Data(repeating: 0x0C, count: 32)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
+            .init(kind: .singleContract, securityLevel: .high, id: other,
+                  totalBudget: nil, expiresAt: nil, documentTypeName: nil),
+        ]), now: Self.now)
+        func ownership(_ otherRead: @escaping () throws -> [String: Any]) async throws -> AppConnect.Refusal? {
+            try await PlatformDashConnectDataSource.appConnectOwnership(
+                plan,
+                readContract: { id in
+                    id == Self.appId
+                        ? ["ownerId": Self.appOwner.toBase58String(), "config": [:] as [String: Any]]
+                        : try otherRead()
+                },
+                readGroup: { _ in throw SDKError.notFound("no group") }).refusal
+        }
+        let absent = try await ownership { throw SDKError.notFound("no contract") }
+        XCTAssertEqual(absent?.status, .invalid)
+
+        do {
+            _ = try await ownership { throw SDKError.timeout("slow") }
+            XCTFail("A failed read is not an absent contract")
+        } catch SDKError.timeout {}
+    }
+
+    func testADocumentTypeTheContractDoesNotDefineIsRefused() async throws {
+        let other = Data(repeating: 0x0C, count: 32)
+        func binding(_ id: Data, _ name: String) -> AppConnectRequest.AuthBinding {
+            .init(kind: .documentType, securityLevel: .high, id: id,
+                  totalBudget: nil, expiresAt: nil, documentTypeName: name)
+        }
+        func contract(_ schemas: [String: Any]?) -> [String: Any] {
+            var contract: [String: Any] = ["ownerId": Self.appOwner.toBase58String(), "config": [:] as [String: Any]]
+            contract["documentSchemas"] = schemas
+            return contract
+        }
+        func refusal(
+            _ bindings: [AppConnectRequest.AuthBinding],
+            other otherSchemas: [String: Any]? = ["note": [:] as [String: Any]]
+        ) async throws -> AppConnect.Refusal? {
+            let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: bindings), now: Self.now)
+            return try await PlatformDashConnectDataSource.appConnectOwnership(
+                plan,
+                readContract: { id in
+                    contract(id == Self.appId ? ["post": [:] as [String: Any]] : otherSchemas)
+                },
+                readGroup: { _ in throw SDKError.notFound("no group") }).refusal
+        }
+
+        // On the app's own contract, which is never read twice.
+        let onApp = try await refusal([binding(Self.appId, "post")])
+        XCTAssertNil(onApp)
+        let undefinedOnApp = try await refusal([binding(Self.appId, "comment")])
+        XCTAssertEqual(undefinedOnApp?.status, .invalid)
+        // On another contract of the app's owner.
+        let onOther = try await refusal([binding(other, "note")])
+        XCTAssertNil(onOther)
+        let undefinedOnOther = try await refusal([binding(other, "post")])
+        XCTAssertEqual(undefinedOnOther?.status, .invalid)
+        // A contract whose document types this build cannot read is not
+        // proof the type is missing.
+        let unreadable = try await refusal([binding(other, "note")], other: nil)
+        XCTAssertEqual(unreadable?.status, .unsupported)
+        // DashPay `profile` is allowlisted and never looked up.
+        let profile = try await refusal([binding(Self.dashpayContractId, "profile")])
+        XCTAssertNil(profile)
+    }
+
     func testASystemContractIsNeverTheAppNorABindingTarget() throws {
         let dpns = try XCTUnwrap(Data.identifier(fromBase58: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
         // A request naming DPNS as its app, where DPNS's owner would pass as

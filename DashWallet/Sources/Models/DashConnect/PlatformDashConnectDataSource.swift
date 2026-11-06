@@ -689,7 +689,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
                     comment: "DashConnect App Connect v2"))), nil)
             }
-            let ownership = try await appConnectOwnership(plan, sdk: context.sdk)
+            let sdk = context.sdk
+            let ownership = try await Self.appConnectOwnership(
+                plan,
+                readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
+                readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
             if let refusal = ownership.refusal {
                 return (.refused(refusal), nil)
             }
@@ -702,19 +706,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: App Connect request not checked — \(error.localizedDescription, privacy: .public)")
             return (.unresolved, error.localizedDescription)
         }
-    }
-
-    /// The owner of the contract `read` returns. A contract the network
-    /// proves absent has none, so rule 3 refuses the request instead of the
-    /// sheet offering to try again; any other failure to read throws.
-    static func contractOwner(_ read: () async throws -> [String: Any]) async throws -> Data? {
-        let contract: [String: Any]
-        do {
-            contract = try await read()
-        } catch SDKError.notFound {
-            return nil
-        }
-        return (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(decodeIdentifier)
     }
 
     /// The ids among `contractIds` and `groupIds` of the contracts and the
@@ -760,15 +751,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return (contracts, groups)
     }
 
-    /// Reads the owners wallet rule 3 compares from Platform. A group the
+    /// Reads the owners and document types wallet rule 3 compares from
+    /// Platform through `readContract` and `readGroup`. An app contract the
+    /// network proves absent refuses the request; a contract or group the
     /// network proves absent counts as not the app's; any other failure to
-    /// read throws, so the sheet offers to try again. The reads run off the
-    /// main actor (`dataContractGetOffMain`; `getContractGroupInfo` is
-    /// nonisolated), so the sheet stays responsive while they wait. Also
+    /// read throws, so the sheet offers to try again. The caller's reads run
+    /// off the main actor (`dataContractGetOffMain`; `getContractGroupInfo`
+    /// is nonisolated), so the sheet stays responsive while they wait. Also
     /// returns the groups that have administrators, for the sheet.
-    private func appConnectOwnership(
+    static func appConnectOwnership(
         _ plan: AppConnect.GrantPlan,
-        sdk: SDK
+        readContract: (Data) async throws -> [String: Any],
+        readGroup: (Data) async throws -> [String: Any]
     ) async throws -> (
         refusal: AppConnect.Refusal?,
         administeredGroupIds: Set<Data>,
@@ -777,7 +771,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         func ownerId(of contract: [String: Any]) -> Data? {
             (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
         }
-        let app = try await sdk.dataContractGetOffMain(id: plan.appId.toBase58String())
+        let app: [String: Any]
+        do {
+            app = try await readContract(plan.appId)
+        } catch SDKError.notFound {
+            return (AppConnect.Refusal(.invalid, NSLocalizedString(
+                "The app's contract does not exist on this network.", comment: "DashConnect App Connect v2")), [], [:])
+        }
         guard let appOwnerId = ownerId(of: app) else {
             return (AppConnect.Refusal(.invalid, NSLocalizedString(
                 "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
@@ -785,13 +785,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         var groupOwners: [Data: Data] = [:]
         var administeredGroupIds: Set<Data> = []
         var contractOwners: [Data: Data] = [plan.appId: appOwnerId]
+        var contracts: [Data: [String: Any]] = [plan.appId: app]
         for grant in plan.auth {
             let id = grant.binding.id
             switch grant.binding.kind {
             case .contractGroup:
                 guard groupOwners[id] == nil else { continue }
                 do {
-                    let info = try await sdk.getContractGroupInfo(contractGroupId: id.toBase58String())
+                    let info = try await readGroup(id)
                     groupOwners[id] = (info["ownerId"] as? String).flatMap(Self.decodeIdentifier)
                     // Read as administered unless the proof shows none.
                     if (info["adminIds"] as? [Any])?.isEmpty != true { administeredGroupIds.insert(id) }
@@ -802,9 +803,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 let name = grant.binding.documentTypeName ?? ""
                 guard contractOwners[id] == nil,
                       !AppConnect.allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") else { continue }
-                contractOwners[id] = try await Self.contractOwner {
-                    try await sdk.dataContractGetOffMain(id: id.toBase58String())
+                // A contract the network proves absent has no owner, so
+                // rule 3 refuses the request; any other failure throws.
+                let contract: [String: Any]
+                do {
+                    contract = try await readContract(id)
+                } catch SDKError.notFound {
+                    continue
                 }
+                contracts[id] = contract
+                contractOwners[id] = ownerId(of: contract)
             }
         }
         // A contract whose config this build cannot read says nothing of its
@@ -833,6 +841,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             contractOwners: contractOwners,
             appBoundedKeyPurposes: Set(currentKeyRules.keys),
             appUnreadableKeyPurposes: unreadableKeyPurposes)
+            ?? AppConnect.documentTypeRefusal(for: plan, contracts: contracts)
         return (refusal, administeredGroupIds, currentKeyRules)
     }
 

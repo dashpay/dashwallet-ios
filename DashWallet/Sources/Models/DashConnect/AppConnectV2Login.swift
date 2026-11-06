@@ -307,6 +307,29 @@ extension AppConnect {
         return nil
     }
 
+    /// Wallet rule 3 for a document-type binding: the type has to be one its
+    /// contract defines, which Platform checks again when the key is added.
+    /// `contracts` holds the contracts preflight read; a binding whose
+    /// contract is not among them (the allowlisted DashPay `profile`) is not
+    /// checked here. A contract whose document types this build cannot read
+    /// asks for an update rather than proving the type missing.
+    static func documentTypeRefusal(for plan: GrantPlan, contracts: [Data: [String: Any]]) -> Refusal? {
+        for grant in plan.auth where grant.binding.kind == .documentType {
+            guard let contract = contracts[grant.binding.id] else { continue }
+            guard let schemas = contract["documentSchemas"] as? [String: Any] else {
+                return Refusal(.unsupported, NSLocalizedString(
+                    "This version of the wallet cannot read the document types of the app's contract. Update the wallet.",
+                    comment: "DashConnect App Connect v2"))
+            }
+            guard schemas[grant.binding.documentTypeName ?? ""] != nil else {
+                return Refusal(.invalid, NSLocalizedString(
+                    "The app asks for a key on a document type its contract does not define.",
+                    comment: "DashConnect App Connect v2"))
+            }
+        }
+        return nil
+    }
+
     // MARK: Keys
 
     /// The DIP-13 leaf of binding `bindingIndex`'s auth key:
