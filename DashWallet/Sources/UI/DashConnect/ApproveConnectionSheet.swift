@@ -445,7 +445,8 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(granted, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(granted.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: text)
                 }
             }
@@ -455,7 +456,8 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(withheld, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(withheld.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: text)
                 }
             }
