@@ -347,6 +347,15 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(parsed.request.encryptionBindings, [])
     }
 
+    func testRefusesAMainnetAppConnectUri() throws {
+        let mainnetUri = AppConnectVector.renewUri.replacingOccurrences(of: "?n=t&", with: "?n=m&")
+        XCTAssertNotEqual(mainnetUri, AppConnectVector.renewUri)
+
+        XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(mainnetUri)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+        }
+    }
+
     func testAVersion1UriIsUnsupportedByTheAppConnectParserAndViceVersa() throws {
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(try validKeyUri())) { error in
             XCTAssertEqual(error as? AppConnectRequestError, .unsupported("URI version 1"))

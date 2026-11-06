@@ -241,6 +241,11 @@ enum DashConnectUri {
         guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
             throw AppConnectRequestError.invalid("unknown network")
         }
+        // The DIP defines this request for testnet and devnets only. Refused
+        // here, so it does not rest on DashConnect being off on mainnet.
+        guard network != .mainnet else {
+            throw AppConnectRequestError.invalid("request v2 is not defined for mainnet")
+        }
         // Before the decode, as for the other two formats: its cost is
         // quadratic in the encoded length.
         guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
