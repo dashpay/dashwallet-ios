@@ -1,4 +1,4 @@
-# 0008 — Detect a NEAR outage from sentinel coins before per-coin checks
+# 0012 — Detect a NEAR outage from sentinel coins before per-coin checks
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (the rule was set by the owner on 2026-11-02 and is implemented in PR #1297)
@@ -45,5 +45,5 @@ provider-wide verdict.
 ## Links
 
 - Feature summary: [docs/features/swap-live-routes/README.md](../features/swap-live-routes/README.md)
-- Related ADR: [0006 — Probe live routes with address-free quotes forced to one provider](0006-probe-live-swap-routes-with-address-free-forced-quotes.md)
-- Related ADR: [0007 — Keep live route answers in one shared in-memory store with two-step ageing](0007-keep-live-swap-route-answers-in-one-shared-in-memory-store.md)
+- Related ADR: [0010 — Probe live routes with address-free quotes forced to one provider](0010-probe-live-swap-routes-with-address-free-forced-quotes.md)
+- Related ADR: [0011 — Keep live route answers in one shared in-memory store with two-step ageing](0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md)

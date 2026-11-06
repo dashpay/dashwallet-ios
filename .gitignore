@@ -71,3 +71,7 @@ DWUpholdMainnetConstants__Release.m
 # Claude Code local settings
 .claude/settings.local.json
 DashWallet/Uphold-Info.plist
+
+# SDD per-developer files
+.claude/*.local.md
+.worktrees/

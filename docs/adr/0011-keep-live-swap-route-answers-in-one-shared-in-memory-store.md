@@ -1,4 +1,4 @@
-# 0007 — Keep live route answers in one shared in-memory store with two-step ageing
+# 0011 — Keep live route answers in one shared in-memory store with two-step ageing
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (implemented in PR #1297)
@@ -6,7 +6,7 @@
 
 ## Context
 
-Route checks (ADR-0006) produce one answer per direction, provider and coin. Three places read those
+Route checks (ADR-0010) produce one answer per direction, provider and coin. Three places read those
 answers: the coin picker (labels and halted rows), the address screen (it also writes what its own
 quote learned) and the quote paths (which providers a Sell quote asks). Every swap flow builds its own
 `SwapKitSwapProvider` (`SwapBackend.makeProvider()`), so answers kept on the provider would die with
@@ -49,5 +49,5 @@ unknown answers out of the store is what makes "unknown never halts" hold by con
 ## Links
 
 - Feature summary: [docs/features/swap-live-routes/README.md](../features/swap-live-routes/README.md)
-- Related ADR: [0006 — Probe live routes with address-free quotes forced to one provider](0006-probe-live-swap-routes-with-address-free-forced-quotes.md)
-- Related ADR: [0008 — Detect a NEAR outage from sentinel coins before per-coin checks](0008-detect-a-near-outage-from-sentinel-coins.md)
+- Related ADR: [0010 — Probe live routes with address-free quotes forced to one provider](0010-probe-live-swap-routes-with-address-free-forced-quotes.md)
+- Related ADR: [0012 — Detect a NEAR outage from sentinel coins before per-coin checks](0012-detect-a-near-outage-from-sentinel-coins.md)

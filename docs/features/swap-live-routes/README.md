@@ -16,15 +16,15 @@ the address screen reported every refusal as a connection problem.
 - **Live labels.** While the picker is on screen, each coin is checked with a small quote per
   provider and direction, with no address in it. Both providers route → "Multiple", one → that
   provider, none → the existing halted row and toast. Buy follows the same rule; Buy routes through
-  NEAR only. See [ADR-0006](../../adr/0006-probe-live-swap-routes-with-address-free-forced-quotes.md).
+  NEAR only. See [ADR-0010](../../adr/0010-probe-live-swap-routes-with-address-free-forced-quotes.md).
 - **One shared store.** The answers live in one in-memory store that the picker, the address screen
   and the quote paths read: a conclusive answer is re-checked after 10 minutes and forgotten after
   30, an inconclusive one is never stored and is re-asked after 2 minutes. See
-  [ADR-0007](../../adr/0007-keep-live-swap-route-answers-in-one-shared-in-memory-store.md).
+  [ADR-0011](../../adr/0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md).
 - **NEAR outages cost a few checks.** NEAR is checked on sentinel coins first: BTC and ETH, and SOL
   whenever those two settle neither outcome. Two "no route" answers and none routing → NEAR is down
   for that direction and no per-coin NEAR checks are sent. Maya is checked per coin, since its halts are per chain. See
-  [ADR-0008](../../adr/0008-detect-a-near-outage-from-sentinel-coins.md).
+  [ADR-0012](../../adr/0012-detect-a-near-outage-from-sentinel-coins.md).
 - **The address screen names the real problem.** A refused address gets the address copy; a "no
   route" is re-checked without the address and, when confirmed, says "<coin> can't be swapped at the
   moment"; "check your connection" is shown only when no response came back; an answer the wallet

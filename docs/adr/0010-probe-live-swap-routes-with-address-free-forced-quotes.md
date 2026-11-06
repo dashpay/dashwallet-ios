@@ -1,4 +1,4 @@
-# 0006 — Probe live routes with address-free quotes forced to one provider
+# 0010 — Probe live routes with address-free quotes forced to one provider
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (the approach was approved by the owner on 2026-11-02 and is implemented in PR #1297)
@@ -51,5 +51,5 @@ defect in place: the Wallet holder still picks a dead coin and types an address 
 ## Links
 
 - Feature summary: [docs/features/swap-live-routes/README.md](../features/swap-live-routes/README.md)
-- Related ADR: [0007 — Keep live route answers in one shared in-memory store with two-step ageing](0007-keep-live-swap-route-answers-in-one-shared-in-memory-store.md)
-- Related ADR: [0008 — Detect a NEAR outage from sentinel coins before per-coin checks](0008-detect-a-near-outage-from-sentinel-coins.md)
+- Related ADR: [0011 — Keep live route answers in one shared in-memory store with two-step ageing](0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md)
+- Related ADR: [0012 — Detect a NEAR outage from sentinel coins before per-coin checks](0012-detect-a-near-outage-from-sentinel-coins.md)
