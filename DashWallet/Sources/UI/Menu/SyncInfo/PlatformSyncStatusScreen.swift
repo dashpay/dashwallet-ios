@@ -339,7 +339,9 @@ struct PlatformSyncStatusScreen: View {
                 .disabled(!coordinator.isRunning)
             }
             if !coordinator.canClearLocalState && !coordinator.isSyncing && !coordinator.isClearing {
-                Text("Start Platform sync before clearing its local state")
+                Text(NSLocalizedString(
+                    "Start Platform sync before clearing its local state",
+                    comment: "Sync diagnostics - why the Clear button is disabled"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

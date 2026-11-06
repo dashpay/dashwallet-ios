@@ -73,11 +73,11 @@ struct ShieldedSyncInfoScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .alert(Text("Sync Now"), isPresented: Binding(
+        .alert(Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics")), isPresented: Binding(
             get: { syncRequestError != nil },
             set: { if !$0 { syncRequestError = nil } }
         )) {
-            Button("OK", role: .cancel) { syncRequestError = nil }
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { syncRequestError = nil }
         } message: {
             Text(syncRequestError ?? "")
         }
@@ -90,7 +90,7 @@ struct ShieldedSyncInfoScreen: View {
             if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text("Shielded sync is not running")
+                Text(NSLocalizedString("Shielded sync is not running", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
