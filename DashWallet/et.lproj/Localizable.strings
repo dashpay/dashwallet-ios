@@ -620,8 +620,16 @@
 /* Core drain preview */
 "Checking available funds and fees…" = "Checking available funds and fees…";
 
+"Combine coins" = "Combine coins";
+
+"Combining coins…" = "Combining coins…";
+
+"Combining the coins in this wallet won't make this transfer fit. Try a smaller amount." = "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.";
+
 /* Dash DEX / tx history row title */
 "Converting · %@" = "Converting · %@";
+
+"Couldn't combine your coins. Please try again." = "Couldn't combine your coins. Please try again.";
 
 /* Drain fee breakdown */
 "Estimated Core fee: %@\nShielded pool fee: %@" = "Estimated Core fee: %@\nShielded pool fee: %@";
@@ -2349,8 +2357,12 @@
 /* Core drain input limit preview */
 "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
 
+"This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again." = "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.";
+
 /* InternalTransfer recovery: drain recipient unknown */
 "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe." = "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.";
+
+"Too many coins for one transfer" = "Too many coins for one transfer";
 
 /* Core drain recovery success */
 "Transfer completed. Your funds are now in Shielded." = "Transfer completed. Your funds are now in Shielded.";
@@ -5163,6 +5175,12 @@
 
 /* Usernames */
 "Buy username" = "Osta kasutajanimi";
+
+"Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
+
+"Your coins are combined. You can try again now." = "Your coins are combined. You can try again now.";
+
+"Your coins are still being combined. Please try again in a few minutes." = "Your coins are still being combined. Please try again in a few minutes.";
 
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Sinu ajutist kasutajanime „%@“ ei õnnestunud registreerida. Saad hiljem registreerida mõne teise kasutajanime.";

@@ -163,17 +163,17 @@ struct MasternodeKeyUsage {
         resolveAddressIndexes(family: family, targets: targets).map
     }
 
-    /// The address join plus whether it was made against the complete pool.
+    /// The address join plus whether the wallet has a provider account of
+    /// this family.
     ///
-    /// `poolIsLive == false` means the derivation-wallet fallback answered,
-    /// and that pool is only gap-limit deep — so an address that is genuinely
-    /// ours but sits at a deeper index is simply not in `map`. Callers that
-    /// present the result as "these are all of them" must say so; a caller
-    /// that only labels known rows can ignore it.
+    /// `hasProviderPool == false` means the running wallet has no provider
+    /// account to join against, so an address that is genuinely ours is
+    /// missing from `map`. Callers that present the result as "these are all
+    /// of them" must say so. A caller that only labels known rows can ignore it.
     static func resolveAddressIndexes(
         family: MNKey,
         targets: Set<String>
-    ) -> (map: [String: UInt32], poolIsLive: Bool) {
+    ) -> (map: [String: UInt32], hasProviderPool: Bool) {
         guard !targets.isEmpty,
               let deriver = MasternodeProviderKeyDeriver(key: family) else { return ([:], true) }
         var map: [String: UInt32] = [:]
@@ -183,6 +183,6 @@ struct MasternodeKeyUsage {
                   targets.contains(address) else { continue }
             map[address] = index
         }
-        return (map, deriver.poolIsLive)
+        return (map, deriver.hasProviderPool)
     }
 }

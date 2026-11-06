@@ -272,6 +272,10 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// The Core asset lock `CoreCoinConsolidationSheet` is up for: the
+    /// registration or purchase was refused over the input limit, before
+    /// anything was sent.
+    @State private var coinConsolidationCheck: AssetLockInputLimit.Check? = nil
     /// Set for a submission stopped before anything was sent, whose alert
     /// must not read "Registration failed".
     @State private var registrationRefusalTitle: String? = nil
@@ -719,6 +723,8 @@ struct CreateUsernameView: View {
         } message: {
             Text(registrationErrorMessage ?? "")
         }
+        // Nothing was sent; the user submits again once the coins are combined.
+        .coreCoinConsolidationSheet(check: $coinConsolidationCheck)
     }
 
     /// Label, field and the rules the field is judged by, in one card.
@@ -1228,6 +1234,9 @@ struct CreateUsernameView: View {
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
+            case .needsCoinConsolidation(let check):
+                viewModel.refreshRegistrationRecoveryState()
+                coinConsolidationCheck = check
             case .submittedForVoting:
                 // A purchase never enters a vote; the outcome enum is
                 // shared with registration, this arm is unreachable.
@@ -1612,6 +1621,10 @@ struct CreateUsernameView: View {
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
+            case .needsCoinConsolidation(let check):
+                viewModel.refreshRegistrationRecoveryState()
+                screenLockedAfterAuth = false
+                coinConsolidationCheck = check
             }
         }
     }
