@@ -179,12 +179,17 @@ final class CrowdNodeOwnershipTests: XCTestCase {
     }
 
     func testAWalletThatCannotAnswerIsUnavailableNotExhausted() {
-        let failing = CrowdNodeMessageSigner.OwnershipLookup(
-            isP2PKH: { _ in true },
-            derivationPath: { _ in throw LookupFailure() })
-        XCTAssertEqual(
-            CrowdNodeMessageSigner.ownership(of: mainnetAddress, using: failing),
-            .walletUnavailable)
+        // A wallet without BIP-44 account 0 throws `notFound`. The scan never
+        // ran, so that must not count as a checked miss.
+        let failures: [Error] = [LookupFailure(), PlatformWalletError.notFound("no BIP-44 account 0")]
+        for failure in failures {
+            let failing = CrowdNodeMessageSigner.OwnershipLookup(
+                isP2PKH: { _ in true },
+                derivationPath: { _ in throw failure })
+            let verdict = CrowdNodeMessageSigner.ownership(of: mainnetAddress, using: failing)
+            XCTAssertEqual(verdict, .walletUnavailable, "\(failure)")
+            XCTAssertFalse(verdict.wasChecked)
+        }
     }
 
     func testForeignAddressIsRefusedBeforeTheWalletLookup() {
