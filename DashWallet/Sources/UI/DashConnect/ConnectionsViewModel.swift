@@ -294,9 +294,10 @@ final class ConnectionsViewModel: ObservableObject {
 
     func denyPendingRequest() {
         guard !isApproving else { return }
-        // A refused request never showed where it would return, so its
-        // callback is not opened.
-        if let pendingLoginRequest, pendingRequest?.login.isApprovable == true {
+        // A request refused before the sheet never showed where it would
+        // return, so its callback is not opened. One refused or failed at
+        // Approve did, and the app hears how it ended.
+        if let pendingLoginRequest, pendingRequest?.login.isApprovable == true || pendingFailureStatus != nil {
             openCallback(of: pendingLoginRequest, status: pendingFailureStatus ?? .declined)
         }
         pendingRequest = nil
