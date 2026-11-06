@@ -684,9 +684,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             var plan = try AppConnect.grantPlan(for: uri, now: now())
             plan.brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: plan.appId.toBase58String())
-            if let refusal = AppConnect.callbackRefusal(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
-                return (.refused(refusal), nil)
-            }
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
