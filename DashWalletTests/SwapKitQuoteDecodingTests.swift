@@ -535,6 +535,59 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertFalse(message?.contains("connection") ?? true)
     }
 
+    /// The re-check changes only the address: same amount as the address quote, forced to the one
+    /// provider, no address at all (a different amount could change a no-route on its own).
+    func testTheReCheckAsksAtTheAddressQuotesAmountWithoutAnAddress() {
+        let addressQuote = SwapKitSwapProvider().addressCheckRequest(destination: "0xabc", toAsset: "ETH.ETH")
+        for provider in [RouteProvider.near, .maya] {
+            let reCheck = SwapKitSwapProvider.addressReCheckRequest(asset: "ETH.ETH", provider: provider)
+            XCTAssertEqual(reCheck.sellAmount, addressQuote.sellAmount, "\(provider)")
+            XCTAssertEqual(reCheck.buyAsset, "ETH.ETH")
+            XCTAssertNil(reCheck.destinationAddress)
+            XCTAssertNil(reCheck.sourceAddress)
+            XCTAssertEqual(reCheck.providers, provider.swapKitProviders)
+        }
+    }
+
+    /// A below-minimum on the re-check is about the amount, not the address: the holder goes on to
+    /// the amount screen. A real route still means the address is what to fix.
+    func testABelowMinimumReCheckDoesNotBlameTheAddress() throws {
+        let coin = try reCheckedCoin()
+        let belowMinimum = SwapKitSwapProvider.addressReCheckState(
+            response(providerErrors: [providerError("sellAssetAmountTooSmall")]))
+        XCTAssertEqual(belowMinimum, .unknown)
+        XCTAssertNil(SwapKitSwapProvider.addressReCheckMessage([belowMinimum], coin: coin))
+
+        let routed = try JSONDecoder().decode(SwapKitQuoteResponse.self,
+                                              from: loadFixture(named: "swapkit_quote_response"))
+        XCTAssertEqual(SwapKitSwapProvider.addressReCheckState(routed), .available)
+        let noRoute = response(providerErrors: [providerError("noRoutesFound")])
+        XCTAssertEqual(SwapKitSwapProvider.addressReCheckState(noRoute), .noRoute)
+        XCTAssertEqual(SwapKitSwapProvider.addressReCheckState(nil), .unknown, "no answer is inconclusive")
+    }
+
+    /// The address screen's no-route re-check as `validateAddress` runs it: one request per
+    /// no-route provider at the address quote's amount without an address; a below-minimum lets
+    /// the holder continue while the picker's store still records the route as available.
+    func testTheNoRouteReCheckReadsTheAnswerForTheAddressAndTheStoreApart() async {
+        let store = SwapRouteAvailability()
+        var sent: [SwapKitQuoteRequest] = []
+        let belowMinimum = response(providerErrors: [providerError("sellAssetAmountTooSmall")])
+
+        let reAsked = await SwapKitSwapProvider.reCheckNoRoute([.near], asset: "ETH.ETH", store: store) { request in
+            sent.append(request)
+            return belowMinimum
+        }
+
+        XCTAssertEqual(reAsked, [.unknown], "a below-minimum does not blame the address")
+        XCTAssertEqual(store.state(of: .near, for: "ETH.ETH", direction: .sell), .available)
+        XCTAssertEqual(sent.count, 1)
+        XCTAssertEqual(sent.first?.sellAmount, SwapKitSwapProvider.addressCheckAmount)
+        XCTAssertNil(sent.first?.destinationAddress)
+        XCTAssertNil(sent.first?.sourceAddress)
+        XCTAssertEqual(sent.first?.providers, RouteProvider.near.swapKitProviders)
+    }
+
     func testAReCheckForAnUnknownCoinStillGivesAnAnswer() {
         XCTAssertEqual(SwapKitSwapProvider.addressReCheckMessage([.available], coin: nil), "validation_error")
         XCTAssertNil(SwapKitSwapProvider.addressReCheckMessage([.unknown], coin: nil))

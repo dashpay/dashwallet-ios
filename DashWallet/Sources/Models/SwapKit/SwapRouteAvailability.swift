@@ -57,8 +57,9 @@ enum LiveRouteState: Equatable {
     ///
     /// A top-level `noRoutesFound` with no provider errors counts as a conclusive no-route here,
     /// unlike on the amount screens: SwapKit also answers it for an amount far below a route's
-    /// floor, but the probes this classifies are sized at ~$50 (`SwapKitSwapProvider.probeAmount`),
-    /// well above every floor measured (the DASH → BTC minimum was 0.175 DASH on 2026-08-28).
+    /// floor, but the probes this classifies are sized at ~$50 (`SwapKitSwapProvider.probeAmount`)
+    /// and the address screen's no-route re-check at 1 DASH (`addressCheckAmount`), both well above
+    /// every floor measured (the DASH → BTC minimum was 0.175 DASH on 2026-08-28).
     static func classify(_ response: SwapKitQuoteResponse) -> LiveRouteState {
         if response.routes?.isEmpty == false {
             return .available
@@ -221,6 +222,10 @@ final class SwapRouteAvailability {
     private let now: () -> Date
 
     private var entries: [Key: Entry] = [:]
+    /// Orders the answers: each stored answer carries the sequence number taken when it was asked
+    /// (a probe) or learned (`record`), so an older probe that returns late does not overwrite it.
+    private var sequence = 0
+    private var storedSequence: [Key: Int] = [:]
     /// When a key last got an inconclusive answer, which is not stored as an answer. It is not
     /// asked again before `nearDownProbeAfter`, so an upstream outage is not polled every tick.
     private var inconclusiveAt: [Key: Date] = [:]
@@ -289,7 +294,7 @@ final class SwapRouteAvailability {
     /// An inconclusive one is dropped.
     func record(_ state: LiveRouteState, provider: RouteProvider, asset: String, direction: SwapDirection) {
         guard state != .unknown else { return }
-        store(state, for: Key(direction, provider, asset))
+        store(state, for: Key(direction, provider, asset), asked: nextSequence())
     }
 
     // MARK: Probing
@@ -372,7 +377,9 @@ final class SwapRouteAvailability {
     /// Re-asks the sentinels once the last verdict is due (2 minutes after an outage, 10 after
     /// "up"), bypassing their cached answers. They are asked until one routes or two give a
     /// conclusive no, so the third stands in for a halted or an inconclusive one. Two conclusive
-    /// no-routes and none routing → NEAR is down. Fewer keeps the previous verdict.
+    /// no-routes and none routing → NEAR is down. Fewer keeps the previous verdict. A route after
+    /// a "down" verdict also drops the other sentinels' no-routes stored before this round, so
+    /// their coins are asked again.
     private func resolveNearVerdict(direction: SwapDirection, probe: @escaping Probe) async -> NearVerdict? {
         if let verdict = readableVerdict(direction), !isDue(verdict) {
             return verdict.verdict
@@ -381,6 +388,7 @@ final class SwapRouteAvailability {
             return readableVerdict(direction)?.verdict
         }
 
+        let roundStart = sequence
         var noRoutes = 0
         for sentinel in Self.nearSentinels where noRoutes < 2 {
             if Task.isCancelled {
@@ -389,6 +397,9 @@ final class SwapRouteAvailability {
             let state = await probeOne(Key(direction, .near, sentinel), asset: sentinel, force: true, probe: probe)
             if state == .available {
                 inconclusiveRoundAt[direction] = nil
+                if readableVerdict(direction)?.verdict == .down {
+                    forgetSentinelNoRoutes(direction: direction, storedBefore: roundStart)
+                }
                 setNearVerdict(.up, direction: direction)
                 return .up
             }
@@ -407,6 +418,18 @@ final class SwapRouteAvailability {
         return .down
     }
 
+    /// When NEAR recovers, the sentinels' no-routes stored before this round (`roundStart`) come
+    /// from the outage, not from their own coins: drop them so this refresh asks those coins again
+    /// instead of waiting ten minutes. A no-route measured in this round is the coin's own answer.
+    private func forgetSentinelNoRoutes(direction: SwapDirection, storedBefore roundStart: Int) {
+        for sentinel in Self.nearSentinels {
+            let key = Key(direction, .near, sentinel)
+            if entries[key]?.state == .noRoute, storedSequence[key, default: 0] <= roundStart {
+                entries.removeValue(forKey: key)
+            }
+        }
+    }
+
     private func setNearVerdict(_ verdict: NearVerdict, direction: SwapDirection) {
         let previous = readableVerdict(direction)
         let since = previous?.verdict == verdict ? previous?.since ?? now() : now()
@@ -419,7 +442,9 @@ final class SwapRouteAvailability {
 
     /// One probe under the in-flight limit. Unless `force`d, an answer that is not yet due is
     /// reused — checked again after waiting for a permit, since another writer may have answered
-    /// meanwhile. A cancelled task gets `.unknown` without a request.
+    /// meanwhile. A cancelled task gets `.unknown` without a request. When the key got an answer
+    /// asked after this one while the request was in flight, the probe's answer is returned but
+    /// not stored.
     private func probeOne(_ key: Key, asset: String, force: Bool, probe: Probe) async -> LiveRouteState {
         if !force, !isDue(key) {
             return readableEntry(key)?.state ?? .unknown
@@ -432,19 +457,29 @@ final class SwapRouteAvailability {
         if !force, !isDue(key) {
             return readableEntry(key)?.state ?? .unknown
         }
+        let asked = nextSequence()
         let state = await probe(asset, key.provider, key.direction)
+        guard storedSequence[key, default: -1] < asked else {
+            return state
+        }
         if state == .unknown {
             inconclusiveAt[key] = now()
         } else {
             inconclusiveAt[key] = nil
-            store(state, for: key)
+            store(state, for: key, asked: asked)
         }
         return state
     }
 
-    private func store(_ state: LiveRouteState, for key: Key) {
+    private func nextSequence() -> Int {
+        sequence += 1
+        return sequence
+    }
+
+    private func store(_ state: LiveRouteState, for key: Key, asked: Int) {
         let previous = self.state(of: key.provider, for: key.asset, direction: key.direction)
         entries[key] = Entry(state: state, checkedAt: now())
+        storedSequence[key] = asked
         if previous != self.state(of: key.provider, for: key.asset, direction: key.direction) {
             changes.send(key.direction)
         }

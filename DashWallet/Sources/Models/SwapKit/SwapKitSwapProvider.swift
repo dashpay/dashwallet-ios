@@ -402,17 +402,60 @@ final class SwapKitSwapProvider: SwapProvider {
             guard let coin else { return NSLocalizedString("No route available", comment: "SwapKit") }
             return SwapKitErrorCopy.unavailableNowMessage(coin: coin)
         case .confirmNoRoute(let noRouteProviders):
-            // Ask again without the address, the way the picker probes: if a provider routes
-            // there, the address is what to fix.
-            var reAsked: [LiveRouteState] = []
-            for provider in [RouteProvider.near, .maya] where noRouteProviders.contains(provider) {
-                reAsked.append(await routeAvailability.probeNow(asset: toAsset, provider: provider, direction: .sell) { [weak self] asset, provider, direction in
-                    guard let self else { return .unknown }
-                    return await self.probeRoute(asset: asset, provider: provider, direction: direction)
-                })
-            }
+            let reAsked = await Self.reCheckNoRoute(noRouteProviders, asset: toAsset, store: routeAvailability)
             return Self.addressReCheckMessage(reAsked, coin: coin)
         }
+    }
+
+    /// The amount of the address quote, and of its re-check without the address.
+    nonisolated static let addressCheckAmount = "1"  // one DASH is far above every route floor
+
+    /// The re-check of a no-route on the address screen: the address quote's amount, forced to
+    /// `provider`, with no address — so only the address differs from the quote it confirms.
+    nonisolated static func addressReCheckRequest(asset: String, provider: RouteProvider) -> SwapKitQuoteRequest {
+        probeRequest(asset: asset, provider: provider, direction: .sell, amount: addressCheckAmount)
+    }
+
+    /// Asks each of `noRouteProviders` (NEAR, then Maya) again through `quote` at the address
+    /// quote's amount without the address: if a provider routes there, the address is what to fix.
+    /// Returns each answer as read for the address (`addressReCheckState`); `store` records the
+    /// usual classification (`LiveRouteState.classify`).
+    static func reCheckNoRoute(
+        _ noRouteProviders: Set<RouteProvider>,
+        asset: String,
+        store: SwapRouteAvailability,
+        quote: (SwapKitQuoteRequest) async -> SwapKitQuoteResponse? = addressReCheckResponse
+    ) async -> [LiveRouteState] {
+        var reAsked: [LiveRouteState] = []
+        for provider in [RouteProvider.near, .maya] where noRouteProviders.contains(provider) {
+            var reCheck = LiveRouteState.unknown
+            await store.probeNow(asset: asset, provider: provider, direction: .sell) { asset, provider, _ in
+                let response = await quote(addressReCheckRequest(asset: asset, provider: provider))
+                reCheck = addressReCheckState(response)
+                return response.map(LiveRouteState.classify) ?? .unknown
+            }
+            reAsked.append(reCheck)
+        }
+        return reAsked
+    }
+
+    /// Sends a re-check request; nil when no SwapKit answer came back.
+    private static func addressReCheckResponse(_ request: SwapKitQuoteRequest) async -> SwapKitQuoteResponse? {
+        do {
+            return try await SwapKitAPIService.shared.quote(request)
+        } catch {
+            return decodedQuoteResponse(from: error)
+        }
+    }
+
+    /// What a re-check answer says about the address: a route → `.available`; a below-minimum is
+    /// about the amount, so `.unknown` here (the amount screen quotes the real amount); otherwise
+    /// as `LiveRouteState.classify`. No answer → `.unknown`.
+    nonisolated static func addressReCheckState(_ response: SwapKitQuoteResponse?) -> LiveRouteState {
+        guard let response else { return .unknown }
+        if response.routes?.isEmpty == false { return .available }
+        let state = LiveRouteState.classify(response)
+        return state == .available ? .unknown : state
     }
 
     /// The nominal quote `validateAddress` sends: the providers the real Sell quote would ask
@@ -421,7 +464,7 @@ final class SwapKitSwapProvider: SwapProvider {
         SwapKitQuoteRequest(
             sellAsset: SwapKitConstants.dashAsset,
             buyAsset: toAsset,
-            sellAmount: "1",  // nominal; one DASH is far above every route floor
+            sellAmount: Self.addressCheckAmount,
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: destination,

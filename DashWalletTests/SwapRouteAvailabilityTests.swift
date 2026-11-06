@@ -420,6 +420,38 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "BTC.BTC", "AVAX.AVAX"])
     }
 
+    /// When NEAR recovers, the other sentinels' no-routes from the outage are asked again in the
+    /// same refresh instead of keeping those coins halted for ten minutes.
+    func testARecoveryAsksTheOtherSentinelsAgain() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        await refresh(["ETH.ETH": [.near], "AVAX.AVAX": [.near]])
+        XCTAssertEqual(store.state(of: .near, for: "ETH.ETH", direction: .sell), .noRoute)
+
+        clock += 121
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.available, .near, $0) }
+        await refresh(["ETH.ETH": [.near], "AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+        XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "BTC.BTC", "ETH.ETH", "AVAX.AVAX"])
+        XCTAssertEqual(store.state(of: .near, for: "ETH.ETH", direction: .sell), .available)
+    }
+
+    /// A recovery keeps a sentinel's no-route measured in the same round: that coin is not asked
+    /// a second time in the refresh.
+    func testARecoveryKeepsANoRouteFromItsOwnRound() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        await refresh(["BTC.BTC": [.near], "AVAX.AVAX": [.near]])
+
+        clock += 121
+        script.set(.available, .near, "ETH.ETH")
+        script.set(.available, .near, "AVAX.AVAX")
+        await refresh(["BTC.BTC": [.near], "AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+        XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "BTC.BTC", "ETH.ETH", "AVAX.AVAX"])
+        XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .noRoute)
+    }
+
     /// Re-confirming an outage does not bury a coin's own answer given after the outage began.
     func testAReConfirmedOutageKeepsANewerPerCoinAnswer() async {
         SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
@@ -591,6 +623,25 @@ final class SwapRouteAvailabilityTests: XCTestCase {
 
         XCTAssertEqual(label("ARB.USDT", capable: both), .near)
         XCTAssertEqual(reported, [.sell], "an unchanged answer is not reported again")
+    }
+
+    /// A picker probe still in flight when the address screen records a newer answer for the same
+    /// coin does not overwrite it when it returns.
+    func testAProbeThatReturnsAfterANewerAnswerIsDropped() async {
+        script.set(.noRoute, .maya, "ETH.USDT")
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["ETH.USDT"], direction: .sell, capable: { _ in [.maya] }, probe: probe)
+        }
+        await waitUntil { self.script.calls.count == 1 }
+
+        store.record(.available, provider: .maya, asset: "ETH.USDT", direction: .sell)
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(store.state(of: .maya, for: "ETH.USDT", direction: .sell), .available)
     }
 
     // MARK: Load

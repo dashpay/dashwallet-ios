@@ -33,7 +33,7 @@ provider-wide verdict.
 
 **Positive**
 - A NEAR outage costs at most three checks per direction per two minutes.
-- Recovery shows up while the picker is open; a coin whose own conclusive NEAR answer is newer than the outage keeps that answer.
+- Recovery shows up while the picker is open; a coin whose own conclusive NEAR answer is newer than the outage keeps that answer. When a sentinel routes after a "down" verdict, the other sentinels' no-routes from the outage are dropped, so their coins are asked again in the same refresh.
 
 **Negative**
 - The sentinel list is hard-coded (`SwapRouteAvailability.nearSentinels`); if NEAR stops listing these coins, rounds end inconclusive and NEAR stays in the labels from the published lists.
