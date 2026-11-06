@@ -113,12 +113,37 @@ def steps_with_uses(path, root):
     return found
 
 
-def check_file(path, text):
-    """Return the findings for one workflow or action file; ParseError if it is not YAML."""
+def compose(text):
+    """The YAML node tree of `text`; ParseError if it is not YAML or any mapping repeats a key.
+
+    `child()` reads only the first of two equal keys, so a duplicate would hide the second value.
+    """
     try:
         root = yaml.compose(text)
     except yaml.YAMLError as error:
         raise ParseError(str(error).replace("\n", " "))
+    pending, seen = [root], set()
+    while pending:
+        node = pending.pop()
+        if node is None or id(node) in seen:
+            continue
+        seen.add(id(node))
+        if isinstance(node, yaml.MappingNode):
+            keys = set()
+            for key_node, value_node in node.value:
+                key = scalar(key_node)
+                if key is not None and key in keys:
+                    raise ParseError("duplicate key '{}' at line {}".format(key, line_of(key_node)))
+                keys.add(key)
+                pending += [key_node, value_node]
+        elif isinstance(node, yaml.SequenceNode):
+            pending += node.value
+    return root
+
+
+def check_file(path, text):
+    """Return the findings for one workflow or action file; ParseError if it is not YAML."""
+    root = compose(text)
     findings = []
     for step in steps_with_uses(path, root):
         uses_node = child(step, "uses")
@@ -156,7 +181,7 @@ def triggers(root):
 
 def is_release_only(text):
     """True for a workflow no PR check runs that holds release or store credentials."""
-    root = yaml.compose(text)
+    root = compose(text)
     if triggers(root) & {"pull_request", "pull_request_target"}:
         return False
     if any(name != "GITHUB_TOKEN" for name in SECRET_REF.findall(text)):
@@ -198,7 +223,7 @@ def step_name(step):
 
 def job_steps(text):
     """[(job id, line of its `steps:` key, [(name, first line, last line)])] for a workflow."""
-    root, lines = yaml.compose(text), text.splitlines()
+    root, lines = compose(text), text.splitlines()
     jobs = child(root, "jobs")
     found = []
     for key, job in (jobs.value if isinstance(jobs, yaml.MappingNode) else []):
@@ -262,7 +287,7 @@ EXPRESSION = re.compile(r"\$\{\{.*?\}\}")
 
 def shellcheck_findings(path, text):
     """workflow_lint.shellcheck findings for the bash run: blocks of a composite action."""
-    root = yaml.compose(text)
+    root = compose(text)
     if scalar(child(child(root, "runs"), "using")) != "composite":
         return []
     findings = []
@@ -397,6 +422,17 @@ jobs:
       - name: Tag
         run: git tag v1
 """
+
+DUPLICATE_KEY_FIXTURES = [
+    # (name, path, file text) — each must raise ParseError
+    ("duplicate with: in an action step", ".github/actions/a/action.yml",
+     "runs:\n  using: composite\n  steps:\n"
+     "    - uses: actions/checkout@{0}\n      with:\n        persist-credentials: false\n"
+     "      with:\n        persist-credentials: true\n".format(SHA)),
+    ("duplicate on:", ".github/workflows/w.yml",
+     "on: workflow_dispatch\non: pull_request\njobs:\n  build:\n    runs-on: ubuntu-24.04\n"
+     "    steps:\n      - run: echo\n"),
+]
 
 CLASSIFIER_FIXTURES = [
     # (name, workflow text, release-only?)
@@ -582,7 +618,14 @@ def self_test():
         print("FAIL malformed YAML: expected a parse error, got none")
     except ParseError:
         pass
-    total = len(SELF_TEST_FIXTURES) + 2 + expected_total
+    for name, path, text in DUPLICATE_KEY_FIXTURES:
+        try:
+            check_file(path, text)
+            failures += 1
+            print("FAIL {}: expected a parse error, got none".format(name))
+        except ParseError:
+            pass
+    total = len(SELF_TEST_FIXTURES) + 2 + expected_total + len(DUPLICATE_KEY_FIXTURES)
     if failures:
         print("\n{}/{} fixtures failed".format(failures, total))
         return 1
