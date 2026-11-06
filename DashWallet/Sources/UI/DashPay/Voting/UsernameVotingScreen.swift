@@ -50,14 +50,6 @@ struct UsernameVotingScreen: View {
                 onAddKey: { keyFlowStart = .addKey },
                 onShowKeys: { keyFlowStart = .keyList })
 
-            if viewModel.nodeListMayBeIncomplete {
-                VotingBanner(
-                    text: NSLocalizedString(
-                        "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
-                        comment: "Voting"),
-                    tone: .warning)
-            }
-
             if let loadError = viewModel.loadError {
                 VotingBanner(text: loadError, tone: .error)
             }

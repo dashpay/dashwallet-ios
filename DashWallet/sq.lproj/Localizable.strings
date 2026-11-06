@@ -4946,9 +4946,6 @@
 /* CoinJoin */
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
 
-/* Voting */
-"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "Disa nga masternode-t tuaj mund të mungojnë në këtë listë — kuleta nuk e lexoi dot të gjithë grupin e çelësave tuaj të votimit. Përfundoni sinkronizimin dhe rihapni këtë ekran.";
-
 /* CoinJoin */
 "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
 
