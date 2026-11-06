@@ -452,13 +452,13 @@ extension CrowdNode {
     /// without standing an SDK wallet up: the whole point of ticket 32026 is
     /// that `unproven` must behave like neither of the other two.
     enum StoredAccountVerdict: Equatable {
-        /// The scan found the address among this wallet's keys — the online
-        /// restore may activate the stored account on it.
+        /// The bounded scan found the address among this wallet's keys, so the
+        /// online restore may activate the stored account on it.
         case trusted
-        /// Ownership is unknown (wallet not up, or the address sits beyond
-        /// the scan bound). Keep the stored data, but never activate an
-        /// account on it: the legacy per-wallet key seeding can have copied
-        /// it from another wallet on the same network.
+        /// Ownership is unknown (wallet not up, or the bounded scan did not find
+        /// the address). Keep the stored data, but never activate an account on
+        /// it: the legacy per-wallet key seeding can have copied it from another
+        /// wallet on the same network.
         case unproven
         /// The address cannot be this wallet's — the account is reset.
         ///
@@ -571,12 +571,12 @@ extension CrowdNode {
     private func validatePrefs() -> CrowdNodeMessageSigner.Ownership? {
         guard let accountAddress = prefs.accountAddress else { return nil }
 
-        // SDK-native ownership check (BIP44 acct-0 scan — the same one the
-        // CrowdNode signer uses). Tri-state: nil ⇒ unknown (the SDK wallet
-        // isn't up yet, or the address sits beyond the bounded scan) — keep
-        // the stored account rather than resetting it. false is returned only
-        // for an address that cannot belong to this wallet (not a P2PKH
-        // address of the running network).
+        // SDK-native ownership check: the same bounded scan the CrowdNode
+        // signer uses. Tri-state: nil ⇒ unknown (the SDK wallet isn't up yet,
+        // or the scan did not find the address), so keep the stored account
+        // rather than resetting it. false is returned only for an address that
+        // cannot belong to this wallet (not a P2PKH address of the running
+        // network).
         let owns: CrowdNodeMessageSigner.Ownership
         if Thread.isMainThread {
             owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownership(of: accountAddress) }
@@ -1290,7 +1290,7 @@ extension CrowdNode {
         return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
-    /// - Parameter trustStoredAddress: whether the ownership scan proved the
+    /// - Parameter trustStoredAddress: whether the ownership check proved the
     ///   stored address belongs to the active wallet. When false the stored
     ///   address is ignored and the address must come from this wallet's own
     ///   API-confirmation transaction, so an unproven address — including one

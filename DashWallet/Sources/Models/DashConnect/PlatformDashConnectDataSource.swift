@@ -662,9 +662,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // prompt: from protocol version 14 the response goes to the App
         // Connect system contract and the wallet registers the key itself;
         // below it that contract does not exist and the two-QR flow runs.
-        // A pinned SDK reports its pin (testnet is pinned to 13 in
-        // `SwiftDashSDKHost.platformVersion(for:)`), so testnet stays on the
-        // two-QR flow until that pin moves.
+        // No network is pinned (`SwiftDashSDKHost.platformVersion(for:)` is
+        // 0), so the version comes from the current epoch: testnet runs 14
+        // and gets the one-QR login.
         let protocolVersion: UInt32
         do {
             protocolVersion = try await Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
@@ -1123,8 +1123,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         responseContractId: Data,
         sdk: SDK
     ) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
-        let response = try await DashConnectPlatformQueries.documentList(
-            sdk: sdk,
+        let response = try await sdk.documentList(
             dataContractId: responseContractId.toBase58String(),
             documentType: AppConnect.documentType,
             whereClause: AppConnect.responseLookupWhereClause(
@@ -3069,17 +3068,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 }
 
-/// Platform reads the Swift SDK offers only on the main actor, where their
-/// blocking FFI calls would hold the UI for a network round trip. They run
-/// here on one serial queue instead, with the SDK kept alive for the call;
-/// each copies the native result and releases it before returning.
-/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
-/// it has them for these two, as it has `dataContractGetOffMain`.
+/// The current-epoch read, which the Swift SDK offers only on the main actor,
+/// where its blocking FFI call would hold the UI for a network round trip. It
+/// runs here on its own serial queue instead, with the SDK kept alive for the
+/// call; it copies the native result and releases it before returning.
+/// TODO(dashconnect-off-main-queries): use the SDK's own off-main epoch read
+/// once it has one, as it has for `documentList`.
 enum DashConnectPlatformQueries {
-    /// One queue per kind of read, so a slow document search does not hold
-    /// back the protocol-version read a sheet waits for.
     private static let epochQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.epoch-query")
-    private static let documentQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.document-query")
 
     /// The protocol version the network runs, from a proved read of the
     /// current epoch. It throws when that read fails: there is no fallback
@@ -3092,41 +3088,6 @@ enum DashConnectPlatformQueries {
             throw SDKError.serializationError("The current epoch carries no protocol version")
         }
         return version
-    }
-
-    /// `SDK.documentList(dataContractId:documentType:whereClause:limit:)`
-    /// off the main actor: the contract is fetched, searched and released
-    /// on the query queue.
-    static func documentList(
-        sdk: SDK,
-        dataContractId: String,
-        documentType: String,
-        whereClause: String,
-        limit: UInt32
-    ) async throws -> [String: Any] {
-        try await run(sdk, on: documentQueue) { handle in
-            let contract = dash_sdk_data_contract_fetch(handle, dataContractId)
-            if let error = contract.error {
-                defer { dash_sdk_error_free(error) }
-                throw SDKError.fromDashSDKError(error.pointee)
-            }
-            guard let contractHandle = contract.data else {
-                throw SDKError.notFound("Data contract not found")
-            }
-            defer { dash_sdk_data_contract_destroy(OpaquePointer(contractHandle)) }
-            return try documentType.withCString { typePointer in
-                try whereClause.withCString { wherePointer in
-                    var parameters = DashSDKDocumentSearchParams()
-                    parameters.data_contract_handle = OpaquePointer(contractHandle)
-                    parameters.document_type = typePointer
-                    parameters.where_json = wherePointer
-                    parameters.order_by_json = nil
-                    parameters.limit = limit
-                    parameters.start_at = 0
-                    return try json(from: dash_sdk_document_search(handle, &parameters))
-                }
-            }
-        }
     }
 
     private static func run(
