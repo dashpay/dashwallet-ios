@@ -99,7 +99,7 @@ final class ContestedUsernameFeeTests: XCTestCase {
     func testNewIdentityFundingBySource() {
         for amounts in [Amounts.legacy, Amounts.reduced] {
             XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: false, fromShielded: false), 3_000_000)
-            XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: false, fromShielded: true), 10_000_000)
+            XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: false, fromShielded: true), 3_000_000)
             XCTAssertEqual(amounts.newIdentityFundingDuffs(isContested: true, fromShielded: true), 25_000_000)
         }
         XCTAssertEqual(Amounts.legacy.newIdentityFundingDuffs(isContested: true, fromShielded: false), 25_000_000)
@@ -110,16 +110,20 @@ final class ContestedUsernameFeeTests: XCTestCase {
     }
 
     /// The form states the figure of the source it holds, and judges the
-    /// Dash balance at its own figure whichever source that is.
+    /// Dash balance at its own figure whichever source that is. A standard
+    /// name costs the same from every source; a contested one on protocol 14
+    /// does not (0.15 from the Dash balance, the 0.25 denomination from
+    /// Shielded).
     func testFormFigureFollowsItsSource() {
-        let model = CreateUsernameViewModel.makeForPreview()
-        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 3_000_000)
+        let model = CreateUsernameViewModel.makeForPreview(contestedFee: .reduced)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true), 15_000_000)
         model.setActiveFundingSource(.shielded)
-        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 10_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 3_000_000)
         XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true), 25_000_000)
-        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false, source: .core), 3_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true, source: .core), 15_000_000)
         model.setActiveFundingSource(.core)
         XCTAssertEqual(model.newIdentityFundingDuffs(isContested: false), 3_000_000)
+        XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true), 15_000_000)
         XCTAssertEqual(model.newIdentityFundingDuffs(isContested: true, source: .shielded), 25_000_000)
     }
 
