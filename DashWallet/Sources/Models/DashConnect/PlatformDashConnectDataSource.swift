@@ -1423,6 +1423,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     identityId: context.identityId,
                     leaf: grant.binding.contractId,
                     purpose: grant.connectPurpose,
+                    // DIP-13's first pair; later rotations and the pairs from
+                    // before the rotation level come with #1258.
+                    rotation: 0,
                     network: context.network
                 )
                 return (key.publicKeyData, key.privateKeyData)
