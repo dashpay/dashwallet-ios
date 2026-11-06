@@ -12,6 +12,7 @@ where they disagree, ADR-0001 wins.
 | [0003](0003-take-rust-toolchain-from-platform-pin.md) | Take the Rust toolchain version from platform's pin | build | Proposed | |
 | [0004](0004-read-xcode-version-file-via-composite-action.md) | Read the Xcode version from a file through a composite action | build | Proposed | |
 | [0005](0005-enforce-workflow-policy-with-in-repo-script.md) | Enforce workflow policy with an in-repo script beside actionlint | build | Proposed | |
+| [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

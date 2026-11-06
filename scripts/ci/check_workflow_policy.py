@@ -277,7 +277,15 @@ def diff_findings(changed):
                 "{}: '{}' changed; the release workflows build with it next to release or store "
                 "credentials, and no PR check runs them. Run them by hand on this commit before "
                 "merging (TestFlight: internal-only upload; schema: dry run).".format(TOOLCHAIN, path)))
-        elif path.startswith(".github/workflows/") and head_text is not None and is_release_only(head_text):
+        elif not path.startswith(".github/workflows/"):
+            continue
+        elif head_text is None:
+            if base_text is not None and is_release_only(base_text):
+                findings.append(Finding(
+                    "warning", RELEASE_ONLY, path, 1,
+                    "{}: '{}' is deleted; it held release or store credentials and no PR check runs it. "
+                    "Confirm the release pipeline is meant to lose it.".format(RELEASE_ONLY, path)))
+        elif is_release_only(head_text):
             findings += step_warnings(path, base_text, head_text, hunks)
     return findings
 
@@ -603,7 +611,16 @@ def self_test():
                           TOOLCHAIN, PRE_MERGE_RUN.replace("that workflow", "them")))]:
         failures += 1
         print("FAIL diff_findings: expected one {} warning, got {}".format(TOOLCHAIN, toolchain))
-    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 2 + (shellcheck_result is not None)
+    deleted = [(f.level, f.code, f.path, f.line, f.message) for f in diff_findings(
+        {".github/workflows/release.yml": (CLASSIFIER_FIXTURES[0][1], None, [(1, 7, 0, 0)]),
+         ".github/workflows/lint.yml": (WORKFLOW_FIXTURE.format(steps="      - run: a"), None, [(1, 6, 0, 0)])})]
+    if deleted != [("warning", RELEASE_ONLY, ".github/workflows/release.yml", 1,
+                    "{}: '.github/workflows/release.yml' is deleted; it held release or store credentials "
+                    "and no PR check runs it. Confirm the release pipeline is meant to lose it.".format(
+                        RELEASE_ONLY))]:
+        failures += 1
+        print("FAIL deleted workflow: expected one {} warning for release.yml, got {}".format(RELEASE_ONLY, deleted))
+    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 3 + (shellcheck_result is not None)
     for name, path, text, expected in SELF_TEST_FIXTURES:
         found = [(f.code, f.line, f.message) for f in check_file(path, text)]
         ok = len(found) == len(expected) and all(

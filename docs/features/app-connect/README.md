@@ -1,0 +1,48 @@
+# DashConnect: sign in to an app with one QR
+
+**Owner:** romchornyi · Introduced in [#1202](https://github.com/dashpay/dashwallet-ios/pull/1202)
+
+## Why
+
+Signing in to an app with DashConnect took two scans: one QR made the wallet publish a login key
+to the app's own contract, and a second QR handed the wallet an identity update, built by the app,
+that registered the app's keys. Platform protocol version 14 adds the App Connect system contract,
+with the same id on every network, and lets the wallet register a bounded key itself. That makes a
+one-scan login possible, and with it DashConnect on mainnet once mainnet runs protocol 14.
+
+## What changed
+
+- **One-QR login from protocol 14.** The wallet reads the network's protocol version before the
+  approval sheet. From 14 it derives a session key for the request, registers it on the identity
+  bound to the app's contract with a budget and an expiry, and publishes the encrypted key to the
+  App Connect system contract. Below 14 the two-scan login runs as before.
+  [ADR-0006](../../adr/0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md).
+- **The approval sheet shows what is approved**: what the session key can do, its budget and its
+  lifetime. An unknown protocol version offers a retry, never an approval.
+- **Disconnect is real**: it turns off the app's session keys on the identity and deletes its
+  responses, then removes the row. A failure keeps the row and says so.
+- **Mainnet stays off** in this change: the Connections page uses its mock data source there.
+
+## What it guarantees
+
+- The app gets a new key that only it holds, bound to its own contract, with a budget and an
+  expiry. It never gets the identity's existing keys or the recovery phrase.
+- Approving the same QR again registers no second key.
+- The wallet records a key before it submits the key's registration, so a key that lands without
+  a confirmation is still found and can be turned off.
+
+## Not in scope
+
+The later DashConnect PRs build on this one. Each of them adds its own ADRs to the log:
+
+- App Connect request v2 and its response ([#1204](https://github.com/dashpay/dashwallet-ios/pull/1204)).
+- Connections derived from the identity and the recorded requests, and the removal of the two-scan
+  login ([#1301](https://github.com/dashpay/dashwallet-ios/pull/1301)).
+- The redesigned Connections page, approve sheet, expiry and disconnected apps
+  ([#1277](https://github.com/dashpay/dashwallet-ios/pull/1277),
+  [#1278](https://github.com/dashpay/dashwallet-ios/pull/1278),
+  [#1293](https://github.com/dashpay/dashwallet-ios/pull/1293),
+  [#1289](https://github.com/dashpay/dashwallet-ios/pull/1289)).
+- Turning DashConnect on for mainnet.
+
+The screens follow the design canon in [`docs/design-system.md`](../../design-system.md).

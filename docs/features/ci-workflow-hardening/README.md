@@ -24,7 +24,8 @@ regression could not always be traced to the commit that caused it.
   - [`scripts/ci/check_workflow_policy.py`](../../../scripts/ci/check_workflow_policy.py): fails on
     a step that is not pinned to a full commit and on a checkout that leaves the repository
     credential in the workspace, runs shellcheck on composite actions, and warns on a pull
-    request that changes a step of a release-only workflow or `.xcode-version`;
+    request that changes a step of a release-only workflow, deletes a release-only workflow, or
+    changes `.xcode-version`;
   - the self-tests of both scripts and
     [`scripts/ci/test_ci_structure.py`](../../../scripts/ci/test_ci_structure.py), which guards
     the wiring of the CI steps these checks rely on.

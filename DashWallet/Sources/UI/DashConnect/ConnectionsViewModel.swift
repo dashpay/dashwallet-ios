@@ -52,6 +52,10 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isApproving = false
     @Published var isApprovingPurchase = false
     @Published var isProcessingStateTransition = false
+    /// A disconnect that is signing an identity update. Its own flag, not
+    /// `isProcessingStateTransition`: a `dash-st:` task clears that one when
+    /// it finishes, which would lift the guard while a disconnect is still out.
+    @Published private(set) var isDisconnecting = false
     @Published var message: ConnectionsScreenMessage?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
@@ -128,7 +132,7 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
 
-        guard !isProcessingStateTransition else {
+        guard !isProcessingStateTransition, !isDisconnecting else {
             message = ConnectionsScreenMessage(
                 kind: .error,
                 text: NSLocalizedString("Finish the current DashConnect request first, then try again.",
@@ -196,7 +200,10 @@ final class ConnectionsViewModel: ObservableObject {
         // `isResolvingRequest` guards the window where a newer request has been
         // accepted but has not published yet: approving during it would
         // authorize the request on screen moments before it is replaced.
-        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+        // An unresolved login has nothing to approve; the sheet offers
+        // `retryPendingRequest` for it instead.
+        guard let consent = pendingRequest, consent.login != .unresolved,
+              let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
         isApproving = true
         approveError = nil
@@ -205,10 +212,27 @@ final class ConnectionsViewModel: ObservableObject {
             defer { isApproving = false }
 
             do {
-                _ = try await dataSource.approveLogin(pendingLoginRequest)
+                _ = try await dataSource.approveLogin(pendingLoginRequest, consent: consent)
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+            } catch DashConnectPlatformError.approvalOutOfDate {
+                // Another identity, wallet or network became active, or the
+                // network now answers with the other login: what the sheet
+                // showed is not what would run. Nothing was signed. The sheet is rebuilt from
+                // the same request as it stands now, for a new decision.
+                self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
+            } catch DashConnectPlatformError.loginUnresolved {
+                // The wallet could not check which login this network gets.
+                // Nothing was signed. The sheet is rebuilt: when it still
+                // cannot tell, it says so itself and offers "Try again"
+                // instead of Approve; when it can again, the note says why
+                // the approval did not go through.
+                let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.pendingRequest = rebuilt
+                self.approveError = rebuilt.login == .unresolved
+                    ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
             } catch {
                 // Keep the sheet up so the user can retry without rescanning the QR.
                 self.approveError = String(
@@ -216,6 +240,20 @@ final class ConnectionsViewModel: ObservableObject {
                     error.localizedDescription
                 )
             }
+        }
+    }
+
+    /// Builds the pending request again, for a sheet that could not tell
+    /// which login it would run. Approves nothing.
+    func retryPendingRequest() {
+        guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+
+        isApproving = true
+        approveError = nil
+
+        Task {
+            defer { isApproving = false }
+            self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
         }
     }
 
@@ -281,14 +319,31 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func disconnect(_ connection: DAppConnection) {
-        Task {
-            await dataSource.disconnect(id: connection.id)
+        // Disconnecting a one-QR connection signs an identity update, which
+        // takes seconds. It must not overlap anything else that signs one or
+        // touches the same records: a second tap, an approval on screen or in
+        // flight, a request still resolving, a `dash-st:` in progress.
+        guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+        isDisconnecting = true
+        Task { [weak self] in
+            guard let self else { return }
+            defer { self.isDisconnecting = false }
+            do {
+                try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
+            } catch {
+                self.message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString("Could not disconnect: %@", comment: "DashConnect"),
+                        error.localizedDescription))
+            }
         }
     }
 
     func removeConnection(_ connection: DAppConnection) {
         Task {
-            await dataSource.remove(id: connection.id)
+            await dataSource.remove(id: connection.id, scope: connection.scope)
         }
     }
 
