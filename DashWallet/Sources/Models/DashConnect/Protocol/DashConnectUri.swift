@@ -19,6 +19,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case emptyTransitionPayload
     case invalidKeyLabelEncoding
     case bodyTooLong
+    case queryTooLong
 
     var errorDescription: String? {
         switch self {
@@ -58,6 +59,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-st payload must be non-empty."
         case .bodyTooLong:
             return "The URI body is longer than the DashConnect payload format allows."
+        case .queryTooLong:
+            return "The URI query is longer than DashConnect allows."
         }
     }
 }
@@ -98,6 +101,11 @@ enum DashConnectUri {
     private static let maxAppConnectPayloadLength = 1024
     private static let appConnectVersion = "2"
     private static let maxCallbackLength = 512
+    /// The query is measured in Unicode scalars before it is split or form-decoded, so the
+    /// parameter count and every decoded value are bounded with it. 4 KiB
+    /// holds the longest callback form-encoded (each character as `%XX`)
+    /// twice over, with room for parameters a newer app may add.
+    private static let maxQueryLength = 4 * 1024
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -197,6 +205,8 @@ enum DashConnectUri {
     static func isAppConnectUri(_ uri: String) -> Bool {
         guard isKeyUri(uri), let queryIndex = uri.unicodeScalars.firstIndex(of: "?") else { return false }
         var query = uri.unicodeScalars[uri.unicodeScalars.index(after: queryIndex)...]
+        // Too long for either version: the version 1 parser refuses it.
+        guard query.count <= maxQueryLength else { return false }
         if query.first == "?" { query = query.dropFirst() }
         return query.split(separator: "&").contains { item in
             let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
@@ -221,6 +231,9 @@ enum DashConnectUri {
         // Names and values are form-decoded before they are compared, as the
         // app's `URLSearchParams` does.
         var query = remainder[remainder.index(after: queryIndex)...]
+        guard query.count <= maxQueryLength else {
+            throw AppConnectRequestError.invalid("query is too long")
+        }
         if query.first == "?" { query = query.dropFirst() }
         var parameters: [String: String] = [:]
         for item in query.split(separator: "&") {
@@ -365,6 +378,9 @@ enum DashConnectUri {
         }
 
         let query = String(remainder[remainder.index(after: queryIndex)...])
+        guard query.unicodeScalars.count <= maxQueryLength else {
+            throw DashConnectUriError.queryTooLong
+        }
         let parameters = parseQueryItems(query)
 
         guard let version = parameters["v"] else {
