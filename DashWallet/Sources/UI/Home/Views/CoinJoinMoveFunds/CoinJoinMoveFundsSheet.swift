@@ -164,16 +164,30 @@ struct CoinJoinMoveFundsSheet: View {
 
     private var shieldInFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Same steps as the internal transfer's Core → Shielded route —
-            // the drain is one asset lock, driven by the same coordinator.
-            ShieldedTransferStepList(
-                currentPhase: viewModel.coordinator.phase,
-                steps: [
-                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                    .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
-                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
-                ])
+            if viewModel.preparation != nil {
+                // More mixed coins than one drain can safely spend: they are
+                // consolidated first, which adds a step ahead of the lock.
+                ShieldedTransferStepList(
+                    labels: [
+                        NSLocalizedString("Authorizing", comment: ""),
+                        NSLocalizedString("Preparing your coins", comment: "CoinJoin"),
+                        NSLocalizedString("Locking funds", comment: ""),
+                        NSLocalizedString("Generating proof", comment: ""),
+                        NSLocalizedString("Broadcasting", comment: ""),
+                    ],
+                    currentIndex: viewModel.preparedChecklistIndex)
+            } else {
+                // Same steps as the internal transfer's Core → Shielded route —
+                // the drain is one asset lock, driven by the same coordinator.
+                ShieldedTransferStepList(
+                    currentPhase: viewModel.coordinator.phase,
+                    steps: [
+                        .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
+                        .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
+                        .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
+                        .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                    ])
+            }
 
             Text(NSLocalizedString(
                 "Building the privacy proof can take up to a minute. Keep the app open.",
@@ -229,7 +243,19 @@ struct CoinJoinMoveFundsSheet: View {
         }
     }
 
-    private func failedBody(message: String, destination: CoinJoinMoveFundsViewModel.Destination) -> some View {
+    private func retry(_ destination: CoinJoinMoveFundsViewModel.Destination) {
+        Task {
+            switch destination {
+            case .wallet:
+                await viewModel.moveToWallet()
+            case .shielded:
+                await viewModel.retryShielded()
+            }
+        }
+    }
+
+    /// A nil `destination` offers no retry, only Close.
+    private func failedBody(message: String, destination: CoinJoinMoveFundsViewModel.Destination?) -> some View {
         VStack(spacing: 0) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .resizable()
@@ -247,24 +273,25 @@ struct CoinJoinMoveFundsSheet: View {
 
             Spacer(minLength: 12)
 
-            ButtonsGroup(
-                orientation: .horizontal,
-                size: .large,
-                positiveButtonText: NSLocalizedString("Try again", comment: ""),
-                positiveButtonAction: {
-                    Task {
-                        switch destination {
-                        case .wallet:
-                            await viewModel.moveToWallet()
-                        case .shielded:
-                            await viewModel.retryShielded()
-                        }
-                    }
-                },
-                negativeButtonText: NSLocalizedString("Close", comment: ""),
-                negativeButtonAction: onDismiss)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            if let destination {
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                    positiveButtonAction: { retry(destination) },
+                    negativeButtonText: NSLocalizedString("Close", comment: ""),
+                    negativeButtonAction: onDismiss)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            } else {
+                DashButton(
+                    text: NSLocalizedString("Close", comment: ""),
+                    style: .filled,
+                    stretch: true,
+                    action: onDismiss)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            }
         }
     }
 }
@@ -307,6 +334,14 @@ extension CoinJoinMoveFundsSheet {
 #Preview("Submitted, unconfirmed") {
     CoinJoinMoveFundsSheet(
         previewViewModel: .preview(amountDuffs: 99_000_000, stage: .submittedUnconfirmed))
+}
+
+#Preview("Failed — wallet, no retry") {
+    CoinJoinMoveFundsSheet(
+        previewViewModel: .preview(
+            amountDuffs: 99_000_000,
+            stage: .failed(message: "We couldn't confirm all of your CoinJoin funds reached the network.",
+                           destination: nil)))
 }
 
 #Preview("Failed — shielded") {

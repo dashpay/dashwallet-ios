@@ -273,13 +273,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             }
 
             do {
-                let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-                guard seed.count == 64, try Mnemonic.toSeed(mnemonic: mnemonic) == seed else {
-                    logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) seed sanity check failed")
-                    failed += 1
-                    hadFailure = true
-                    continue
-                }
                 let sdkWalletId = try createWalletOnHost(
                     mnemonic: mnemonic,
                     network: network,

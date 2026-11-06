@@ -27,6 +27,8 @@
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have added or updated relevant unit/integration/functional/e2e tests
 - [ ] I have made corresponding changes to the documentation
+- [ ] ADR ([ADR-0001](https://github.com/dashpay/dashwallet-ios/blob/develop/docs/adr/0001-record-architecture-decisions-as-adrs.md)), keep the answer that applies: `ADR-NNNN added` · `no significant decision` · `not needed: <N1–N4>`
+- [ ] Nothing in this PR (files, commit messages, branch name, description, comments, attachments, linked issues) holds customer data, unfixed vulnerability detail, secrets, or step-by-step attack detail against keys, PIN or encryption; such content is left out and handled privately with the maintainers ([ADR-0001, rule 2](https://github.com/dashpay/dashwallet-ios/blob/develop/docs/adr/0001-record-architecture-decisions-as-adrs.md))
 
 **For repository code-owners and collaborators only**
 - [ ] I have assigned this pull request to a milestone
