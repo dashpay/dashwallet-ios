@@ -285,7 +285,7 @@ def diff_findings(changed):
                     "warning", RELEASE_ONLY, path, 1,
                     "{}: '{}' is deleted; it held release or store credentials and no PR check runs it. "
                     "Confirm the release pipeline is meant to lose it.".format(RELEASE_ONLY, path)))
-        elif is_release_only(head_text):
+        elif is_release_only(head_text) or (base_text is not None and is_release_only(base_text)):
             findings += step_warnings(path, base_text, head_text, hunks)
     return findings
 
@@ -320,28 +320,28 @@ def shellcheck_findings(path, text):
     return findings
 
 
-def git(*args):
-    result = subprocess.run(["git", "-C", str(ROOT)] + list(args), capture_output=True, text=True)
+def git(*args, root=ROOT):
+    result = subprocess.run(["git", "-C", str(root)] + list(args), capture_output=True, text=True)
     if result.returncode != 0:
         raise ParseError("git {}: {}".format(" ".join(args), result.stderr.strip()))
     return result.stdout
 
 
-def changed_files(base):
+def changed_files(base, root=ROOT):
     """{path: (base text or None, head text or None, hunks)} for the workflows and .xcode-version.
 
     Diffs `base` against HEAD directly, with no merge base: on a pull_request run HEAD is the
     merge commit and workflow-lint passes its first parent (HEAD^1, in the depth-2 checkout).
     """
-    diff = git("diff", "--unified=0", "--no-color", "--no-ext-diff", base, "HEAD",
-               "--", ".github/workflows", XCODE_VERSION_FILE)
+    diff = git("diff", "--unified=0", "--no-color", "--no-ext-diff", "--no-renames", base, "HEAD",
+               "--", ".github/workflows", XCODE_VERSION_FILE, root=root)
     changed = {}
     for path, hunks in parse_diff(diff).items():
         try:
-            base_text = git("show", "{}:{}".format(base, path))
+            base_text = git("show", "{}:{}".format(base, path), root=root)
         except ParseError:
             base_text = None
-        head_file = ROOT / path
+        head_file = root / path
         changed[path] = (base_text, head_file.read_text(encoding="utf-8") if head_file.exists() else None, hunks)
     return changed
 
@@ -578,8 +578,37 @@ def self_test_policy_files():
     return 0
 
 
+def self_test_renamed_workflow():
+    """1 when a release-only workflow renamed with a step deleted loses its warnings, else 0."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        workflows = root / ".github/workflows"
+        workflows.mkdir(parents=True)
+
+        def commit(message):
+            git("add", "-A", root=root)
+            git("-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false",
+                "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", message, root=root)
+
+        git("init", "-q", root=root)
+        (workflows / "release.yml").write_text(RELEASE_WORKFLOW, encoding="utf-8")
+        commit("base")
+        (workflows / "release.yml").unlink()
+        (workflows / "testflight.yml").write_text(
+            edit(RELEASE_WORKFLOW, "      - name: Tag\n        run: git tag v1\n", ""), encoding="utf-8")
+        commit("rename")
+        found = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(changed_files("HEAD~1", root))]
+    want = [(".github/workflows/release.yml", 1, "{}: '.github/workflows/release.yml' is deleted".format(RELEASE_ONLY)),
+            (".github/workflows/testflight.yml", 8, "{}: no PR check runs step 'Build'".format(RELEASE_ONLY)),
+            (".github/workflows/testflight.yml", 13, "{}: no PR check runs step 'Upload'".format(RELEASE_ONLY))]
+    if found != want:
+        print("FAIL renamed workflow: expected {}, got {}".format(want, found))
+        return 1
+    return 0
+
+
 def self_test():
-    failures = self_test_policy_files()
+    failures = self_test_policy_files() + self_test_renamed_workflow()
     shellcheck_result = self_test_shellcheck()
     failures += shellcheck_result or 0
     for name, text, want in CLASSIFIER_FIXTURES:
@@ -620,7 +649,17 @@ def self_test():
                         RELEASE_ONLY))]:
         failures += 1
         print("FAIL deleted workflow: expected one {} warning for release.yml, got {}".format(RELEASE_ONLY, deleted))
-    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 3 + (shellcheck_result is not None)
+    unmarked = edit(edit(RELEASE_WORKFLOW, "    environment: testflight\n", ""),
+                    "      - name: Upload\n        run: upload --key \"$KEY\"\n        env:\n"
+                    "          KEY: ${{ secrets.ASC_KEY }}\n", "")
+    unmarked_found = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(
+        {".github/workflows/release.yml": (RELEASE_WORKFLOW, unmarked, [(6, 1, 5, 0), (13, 4, 11, 0)])})]
+    if unmarked_found != [(".github/workflows/release.yml", 12,
+                           "{}: no PR check runs step 'Upload'".format(RELEASE_ONLY))]:
+        failures += 1
+        print("FAIL last release markers removed: expected one {} warning for 'Upload', got {}".format(
+            RELEASE_ONLY, unmarked_found))
+    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 4 + (shellcheck_result is not None)
     for name, path, text, expected in SELF_TEST_FIXTURES:
         found = [(f.code, f.line, f.message) for f in check_file(path, text)]
         ok = len(found) == len(expected) and all(
@@ -642,7 +681,7 @@ def self_test():
             print("FAIL {}: expected a parse error, got none".format(name))
         except ParseError:
             pass
-    total = len(SELF_TEST_FIXTURES) + 2 + expected_total + len(DUPLICATE_KEY_FIXTURES)
+    total = len(SELF_TEST_FIXTURES) + 3 + expected_total + len(DUPLICATE_KEY_FIXTURES)
     if failures:
         print("\n{}/{} fixtures failed".format(failures, total))
         return 1
