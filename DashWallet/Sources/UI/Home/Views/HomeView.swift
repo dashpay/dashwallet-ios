@@ -962,21 +962,9 @@ struct HomeViewContent<Content: View>: View {
             .frame(minHeight: 66)
 
         case .shieldedActivity(let item):
-            DashUIKit.TransactionView(
-                iconView: transferRouteIcon("shield.fill"),
-                secondaryIcon: item.secondarySystemIcon.map { DashIconSource.system($0) },
-                title: item.title,
-                subtitle: item.shortTimeString,
-                details: item.detailsText,
-                dashAmount: item.signedDashAmount,
-                amountSign: item.showsDirectionSign ? .always : .none,
-                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
-                fiat: item.fiatAmount,
-                trailingStatusText: item.trailingStatusText
-            ) {
+            ShieldedActivityHistoryRow(item: item, icon: transferRouteIcon("shield.fill")) {
                 self.selectedTxDataItem = txDataItem
             }
-            .frame(minHeight: 66)
 
         case .platformActivity(let item):
             DashUIKit.TransactionView(

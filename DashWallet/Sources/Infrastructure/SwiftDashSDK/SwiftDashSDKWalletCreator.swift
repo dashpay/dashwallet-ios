@@ -133,13 +133,6 @@ final class SwiftDashSDKWalletCreator: NSObject {
         }
 
         do {
-            // Determinism + length sanity check (matches migrator).
-            let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-            guard seed.count == 64 else {
-                logger.error("\(label, privacy: .public): seed length invalid: \(seed.count, privacy: .public)")
-                return
-            }
-
             let walletId = try createWalletOnHost(
                 mnemonic: mnemonic,
                 network: appNetwork,
