@@ -365,8 +365,8 @@ extension AppConnect {
         case current(keyId: UInt32)
         /// It has none: register the one this wallet derives.
         case absent
-        /// Its current key is another wallet's, or the one this wallet
-        /// derives was disabled: leave the slot out. Replacing it would be a
+        /// Its current key is another wallet's, or was disabled: leave the
+        /// slot out. Replacing it would be a
         /// rotation, which orphans what peers encrypted to it; that is an
         /// explicit user action, never part of a login.
         case notThisWallets
@@ -594,9 +594,8 @@ extension AppConnect {
     /// bound elsewhere once a later read agrees. Beside a current key, a
     /// live key the app may hold was registered before it, or after it with
     /// Platform's read behind, so the answer waits on a later read. Behind
-    /// a disabled current key that a later read confirms, a key registered
-    /// before it is no longer current, and a new one shadows nothing; under
-    /// `unique`, nothing can be added behind a disabled current key at all.
+    /// a disabled current key the slot is left out: a new key would be a
+    /// rotation, and under `unique` Platform refuses one at all.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -645,12 +644,14 @@ extension AppConnect {
             }
             return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
         }
+        // The identity has a key for the contract and purpose, and none is
+        // current. Under `unique` Platform refuses any other; under `latest`
+        // a new key would be a rotation, which is the user's explicit action
+        // and never part of a login. A later live key with Platform's read
+        // behind is the one exception, so under `latest` the answer waits on
+        // a later read.
         if rule == .unique { return .notThisWallets }
-        // Behind a disabled current key, a key of the app's registered
-        // before it is no longer current either, so a new key shadows
-        // nothing; this wallet's own key cannot be added a second time.
-        if holdsTheDerivedKey { return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets }
-        return mayBeBehind ? .absentIfSettled : .absent
+        return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to
