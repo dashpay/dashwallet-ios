@@ -369,6 +369,8 @@ final class SwapRouteAvailability {
 
     /// Asks `provider` about `asset` now, whatever is cached — for confirming an answer that came
     /// from a quote the probes cannot vouch for (one to a user-typed address).
+    /// Returns the probe's answer, or the newer stored one when the coin got an answer asked after
+    /// this probe (`probeOne`).
     @discardableResult
     func probeNow(asset: String, provider: RouteProvider, direction: SwapDirection, probe: Probe) async -> LiveRouteState {
         await probeOne(Key(direction, provider, asset), asset: asset, force: true, probe: probe)
@@ -379,7 +381,8 @@ final class SwapRouteAvailability {
     /// conclusive no, so the third stands in for a halted or an inconclusive one. Two conclusive
     /// no-routes and none routing → NEAR is down. Fewer keeps the previous verdict. A route after
     /// a "down" verdict also drops the other sentinels' no-routes stored before this round, so
-    /// their coins are asked again.
+    /// their coins are asked again. Counting reads the sentinels' answers stored since the round
+    /// started, so an answer recorded meanwhile replaces the one asked.
     private func resolveNearVerdict(direction: SwapDirection, probe: @escaping Probe) async -> NearVerdict? {
         if let verdict = readableVerdict(direction), !isDue(verdict) {
             return verdict.verdict
@@ -389,33 +392,46 @@ final class SwapRouteAvailability {
         }
 
         let roundStart = sequence
-        var noRoutes = 0
-        for sentinel in Self.nearSentinels where noRoutes < 2 {
+        // An answer recorded for a sentinel while the round is asking (an address quote) replaces
+        // the one asked, so the round reads the sentinels' answers stored since it started.
+        // Only a no-route says something about NEAR as a whole; a halt is about that chain.
+        func thisRound() -> [LiveRouteState] {
+            Self.nearSentinels.compactMap { sentinel in
+                let key = Key(direction, .near, sentinel)
+                guard storedSequence[key, default: 0] > roundStart else { return nil }
+                return readableEntry(key)?.state
+            }
+        }
+        func noRoutes() -> Int { thisRound().filter { $0 == .noRoute }.count }
+
+        for sentinel in Self.nearSentinels where noRoutes() < 2 {
             if Task.isCancelled {
                 return readableVerdict(direction)?.verdict
             }
-            let state = await probeOne(Key(direction, .near, sentinel), asset: sentinel, force: true, probe: probe)
-            if state == .available {
-                inconclusiveRoundAt[direction] = nil
-                if readableVerdict(direction)?.verdict == .down {
-                    forgetSentinelNoRoutes(direction: direction, storedBefore: roundStart)
-                }
-                setNearVerdict(.up, direction: direction)
-                return .up
-            }
-            // Only a no-route says something about NEAR as a whole; a halt is about that chain.
-            if state == .noRoute {
-                noRoutes += 1
+            _ = await probeOne(Key(direction, .near, sentinel), asset: sentinel, force: true, probe: probe)
+            if thisRound().contains(.available) {
+                return nearIsUp(direction: direction, roundStart: roundStart)
             }
         }
 
-        guard noRoutes >= 2 else {
+        guard noRoutes() >= 2 else {
             inconclusiveRoundAt[direction] = now()
             return readableVerdict(direction)?.verdict
         }
         inconclusiveRoundAt[direction] = nil
         setNearVerdict(.down, direction: direction)
         return .down
+    }
+
+    /// A sentinel routes: NEAR is up. After a "down" verdict, the other sentinels' outage-era
+    /// no-routes are dropped (`forgetSentinelNoRoutes`).
+    private func nearIsUp(direction: SwapDirection, roundStart: Int) -> NearVerdict {
+        inconclusiveRoundAt[direction] = nil
+        if readableVerdict(direction)?.verdict == .down {
+            forgetSentinelNoRoutes(direction: direction, storedBefore: roundStart)
+        }
+        setNearVerdict(.up, direction: direction)
+        return .up
     }
 
     /// When NEAR recovers, the sentinels' no-routes stored before this round (`roundStart`) come
@@ -443,8 +459,8 @@ final class SwapRouteAvailability {
     /// One probe under the in-flight limit. Unless `force`d, an answer that is not yet due is
     /// reused — checked again after waiting for a permit, since another writer may have answered
     /// meanwhile. A cancelled task gets `.unknown` without a request. When the key got an answer
-    /// asked after this one while the request was in flight, the probe's answer is returned but
-    /// not stored.
+    /// asked after this one while the request was in flight, the probe's answer is dropped and the
+    /// newer stored answer is returned instead (`.unknown` when it is no longer readable).
     private func probeOne(_ key: Key, asset: String, force: Bool, probe: Probe) async -> LiveRouteState {
         if !force, !isDue(key) {
             return readableEntry(key)?.state ?? .unknown
@@ -460,7 +476,7 @@ final class SwapRouteAvailability {
         let asked = nextSequence()
         let state = await probe(asset, key.provider, key.direction)
         guard storedSequence[key, default: -1] < asked else {
-            return state
+            return readableEntry(key)?.state ?? .unknown
         }
         if state == .unknown {
             inconclusiveAt[key] = now()

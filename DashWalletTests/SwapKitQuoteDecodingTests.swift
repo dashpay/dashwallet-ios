@@ -500,6 +500,21 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertEqual(SwapKitSwapProvider.addressCheck(nearHalted, requested: [.near]), .unavailable)
     }
 
+    /// A NEAR or Maya refusal counts only when the quote asked that provider: the swap would not
+    /// use one it did not ask.
+    func testAddressCheckIgnoresARefusalFromAnUnrequestedProvider() {
+        let mayaRefuses = response(providerErrors: [
+            pe("MAYACHAIN", "invalidDestinationAddress"), pe("NEAR", "noRoutesFound"),
+        ])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(mayaRefuses, requested: [.near]), .confirmNoRoute([.near]))
+        let nearRefuses = response(providerErrors: [
+            pe("NEAR", "invalidDestinationAddress"), pe("MAYACHAIN", "noRoutesFound"),
+        ])
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(nearRefuses, requested: [.maya]), .confirmNoRoute([.maya]))
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(mayaRefuses, requested: [.near, .maya]),
+                       .refused("invalidDestinationAddress"))
+    }
+
     // MARK: Address check after the address-free re-check (AC-05)
 
     private let addressCopy = "We couldn't set up your swap. Please check the amount and address, then try again."

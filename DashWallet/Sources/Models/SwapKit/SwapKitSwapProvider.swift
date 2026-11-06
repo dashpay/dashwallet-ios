@@ -307,15 +307,18 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         // A refusal only counts for the SwapKit provider (a Maya flavour, say) that gave it: another
-        // one may still accept the request. A refusal from any other provider, or from none named,
-        // is ignored. When several refuse, the first in SwapKit's order is shown.
+        // one may still accept the request. A refusal from a provider the quote did not ask, from any
+        // other provider, or from none named, is ignored. When several refuse, the first in
+        // SwapKit's order is shown.
         let errors = response.providerErrors ?? []
         var refusedBy: Set<String> = []
         var firstRefusal: String?
         for error in errors {
             guard let raw = code(error.errorCode),
                   requestCodes.contains(raw.lowercased()) || refusedCoinCodes.contains(raw.lowercased()) else { continue }
-            guard let name = error.provider, RouteProvider(swapKitProvider: name) != nil else { continue }
+            guard let name = error.provider,
+                  let provider = RouteProvider(swapKitProvider: name),
+                  requested.contains(provider) else { continue }
             refusedBy.insert(name.uppercased())
             firstRefusal = firstRefusal ?? raw
         }

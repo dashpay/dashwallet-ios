@@ -644,6 +644,74 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(store.state(of: .maya, for: "ETH.USDT", direction: .sell), .available)
     }
 
+    /// A sentinel's answer overtaken by a newer one for the same coin does not count in the round:
+    /// BTC's stale no-route and ETH's no-route do not declare NEAR down over BTC's newer route.
+    func testASentinelAnswerOvertakenByANewerOneIsNotCounted() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC"] }
+
+        store.record(.available, provider: .near, asset: "BTC.BTC", direction: .sell)
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+        XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .available)
+    }
+
+    /// A sentinel no-route already counted is overtaken by a route for that coin while the next
+    /// sentinel is asked: the round decides from what the store holds, so NEAR is up.
+    func testACountedSentinelNoRouteOvertakenLaterInTheRoundIsNotCounted() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC"] }
+        script.openGate()
+        script.closeGate()
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC", "ETH.ETH"] }
+        XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .noRoute, "BTC's answer is stored")
+
+        store.record(.available, provider: .near, asset: "BTC.BTC", direction: .sell)
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+        XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .available)
+    }
+
+    /// A counted sentinel no-route overtaken by a halt leaves BTC and ETH settling neither outcome,
+    /// so SOL is asked as the stand-in and its route decides.
+    func testACountedSentinelNoRouteOvertakenByAHaltAsksTheThird() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.set(.available, .near, "SOL.SOL")
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC"] }
+        script.openGate()
+        script.closeGate()
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC", "ETH.ETH"] }
+
+        store.record(.halted, provider: .near, asset: "BTC.BTC", direction: .sell)
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(Array(script.calls(to: .near).prefix(3)), ["BTC.BTC", "ETH.ETH", "SOL.SOL"])
+        XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+    }
+
     // MARK: Load
 
     func testNoMoreThanTwoProbesAreInFlight() async {
