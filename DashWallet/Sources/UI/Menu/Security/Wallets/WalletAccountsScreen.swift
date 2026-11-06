@@ -92,11 +92,11 @@ struct WalletAccountsScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationBar(
-                leading: { NavigationBarElement.back.button { vc.popViewController(animated: true) } },
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) } },
                 central: {
                     Text(viewModel.walletName)
-                        .font(.headline)
+                        .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
                         .padding(.horizontal, 60)

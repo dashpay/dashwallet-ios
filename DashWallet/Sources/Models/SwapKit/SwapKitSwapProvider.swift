@@ -75,7 +75,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Small batch size to keep verification bounded without spamming the quote endpoint.
     private let buyRoutabilityProbeBatchSize: Int = 8
 
-    private enum BuyRoutability {
+    /// Internal rather than private so the tests can assert `routability(from:)` directly.
+    enum BuyRoutability {
         case routable
         case notRoutable
     }
@@ -175,7 +176,9 @@ final class SwapKitSwapProvider: SwapProvider {
         scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset })
 
         // Optimistic filter: show until a probe conclusively proves the asset cannot route
-        // NEAR→DASH. This keeps first-open responsive while background verification prunes.
+        // NEAR→DASH — which now means NEAR itself reporting a no-route in `providerErrors`, the
+        // only unambiguous negative (see `routability(from:)`). This keeps first-open responsive
+        // while background verification prunes.
         return candidates.filter { pool in
             cachedBuyRoutability(for: pool.asset) != .notRoutable
         }
@@ -309,12 +312,21 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         let expectedDashAmount = Decimal(string: swapResponse.expectedBuyAmount ?? route.expectedBuyAmount) ?? 0
+        let depositDeadline = swapResponse.meta?.depositDeadline()
+        // A response that describes a deposit channel gives this order an address of its
+        // own. Without one the address may be a shared router or vault.
+        let hasDepositChannel = swapResponse.meta?.depositChannelExpiration != nil
+        DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
+        // An empty memo is no memo.
+        let memo = swapResponse.memo.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         return BuyOrder(
             depositAddress: depositAddress,
-            memo: swapResponse.memo,
+            memo: memo,
             expectedDashAmount: expectedDashAmount,
             sellAsset: sellAsset,
-            sellAmount: sellAmount
+            sellAmount: sellAmount,
+            depositDeadline: depositDeadline,
+            hasDepositChannel: hasDepositChannel
         )
     }
 
@@ -346,7 +358,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -375,7 +388,8 @@ final class SwapKitSwapProvider: SwapProvider {
 
         // Step 2: pick RECOMMENDED → CHEAPEST → first (mirrors Android bestRoute()).
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let msg = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
             return errorResult(msg)
         }
@@ -451,9 +465,17 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.track(request)
             return mapTrackResponse(response)
         } catch {
-            // Non-fatal; return not-yet-observed so polling continues.
+            // 404 for a deposit address is the tracker answering: it knows no such deposit
+            // channel (never funded, or aged out of its storage). That is "nothing observed",
+            // not a failed request.
+            if let depositAddress, !depositAddress.isEmpty,
+               case HTTPClientError.statusCode(let response) = error, response.statusCode == 404 {
+                return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            }
+            // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
+            // that draws conclusions from "not observed" can tell it from a real answer.
             DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
-            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }
 
@@ -566,7 +588,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             return try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 return SwapKitQuoteResponse(
                     quoteId: nil,
                     routes: nil,
@@ -602,7 +624,7 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             quoteResponse = try await SwapKitAPIService.shared.quote(quoteRequest)
         } catch {
-            if let apiError = decodeQuoteError(from: error) {
+            if let apiError = Self.decodeQuoteError(from: error) {
                 throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: apiError])
             }
             throw error
@@ -614,7 +636,8 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
-            let message = quoteResponse.providerErrors?.first?.message
+            let providerError = quoteResponse.providerErrors?.first
+            let message = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? quoteResponse.message
                 ?? quoteResponse.error
                 ?? NSLocalizedString("No route available", comment: "SwapKit")
@@ -722,24 +745,37 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    private static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
+    /// Internal rather than private so the tests can drive the picker-pruning rule with recorded
+    /// responses; nothing outside this type calls it.
+    static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
         if response.routes?.isEmpty == false {
             return .routable
         }
 
-        let message = [response.error, response.message, response.providerErrors?.first?.message]
-            .compactMap { $0 }
-            .joined(separator: " ")
+        // Classify on the codes, not the prose: a provider reports its reason in
+        // `providerErrors[].errorCode`, and only the code is a stable identifier.
+        let providerCode = SwapKitErrorCopy.providerErrorMessage(response.providerErrors?.first)
 
-        if isConfirmedNoRoute(message) {
-            return .notRoutable
+        guard let providerCode else {
+            // A top-level `noRoutesFound` is deliberately NOT treated as proof of unroutability.
+            // SwapKit answers with it for an amount far below a route's floor as well as for a
+            // pair it cannot carry — measured 2026-08-28, DASH → BTC returned it at 0.01 DASH
+            // and quoted a route at 0.3 — and the probe amount is a $50 estimate that falls back
+            // to one whole unit when no USD price is cached. Pruning on it would drop a routable
+            // asset out of the picker for the whole cache window.
+            return nil
         }
 
-        if isMinimumOrAmountError(message) {
+        if SwapKitErrorCopy.isBelowMinimum(providerCode) {
+            // The probe amount was under this route's floor, which says nothing about whether
+            // the asset is routable — the picker must not hide it on this evidence.
             return .routable
         }
 
-        return nil
+        // A provider naming its own no-route is the one conclusive negative: it is answering for
+        // the single provider the probe asked about. Anything else it reports (an upstream
+        // `apiRequestFailed`, say) leaves the question open.
+        return SwapKitErrorCopy.isNoRoute(providerCode) ? .notRoutable : nil
     }
 
     private static func decodedQuoteResponse(from error: Error) -> SwapKitQuoteResponse? {
@@ -747,27 +783,23 @@ final class SwapKitSwapProvider: SwapProvider {
         return try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
     }
 
-    private static func isConfirmedNoRoute(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("noroutesfound") || normalized.contains("no routes found")
-    }
-
-    private static func isMinimumOrAmountError(_ message: String) -> Bool {
-        let normalized = message.lowercased()
-        return normalized.contains("below minimum")
-            || normalized.contains("amount too small")
-            || normalized.contains("too small")
-            || normalized.contains("minimum")
-    }
-
-    private func decodeQuoteError(from error: Error) -> String? {
+    /// Internal rather than private so the tests can feed it a recorded non-2xx body and pin the
+    /// code-first ordering; nothing outside this type calls it.
+    static func decodeQuoteError(from error: Error) -> String? {
         guard case HTTPClientError.statusCode(let response) = error,
               let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
         else {
             return nil
         }
 
-        return body.message ?? body.error ?? body.providerErrors?.first?.message
+        if let code = body.error, !code.isEmpty {
+            if let message = body.message, !message.isEmpty {
+                return "\(code): \(message)"
+            }
+            return code
+        }
+
+        return SwapKitErrorCopy.providerErrorMessage(body.providerErrors?.first) ?? body.message
     }
 
     private func decodeSwapError(from error: Error) -> String? {
@@ -915,35 +947,58 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Private: Track Status Mapping
 
-    private func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
+    /// Internal for tests: what each `/track` answer means to the tracker.
+    func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
         switch response.status?.lowercased() {
-        case "not_started", nil:
+        case nil:
+            // A body without a status carries no information — not the provider saying
+            // "not started". Keep polling, flagged like a failed request.
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
+
+        case "not_started":
             // SwapKit hasn't seen the inbound DASH tx yet — keep polling.
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
 
         case "pending":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil, depositProven: true)
 
         case "swapping":
             // SwapKit is actively routing the swap; surface as "swapping" for per-order status tracking.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil, depositProven: true)
 
         case "completed":
             let outHashes = extractOutHashes(from: response)
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes, depositProven: true,
+                dashPayoutHash: dashPayoutHash(from: response))
 
         case "refunded":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil, depositProven: true)
 
         case "failed", "unknown":
             // Map to "refunded" so the polling loop drives swapStatus = .failed(reason:)
             // via the existing .refunded path. Conservative: no new state machine needed.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            // `providerStatus` keeps the real word for callers that must tell them apart.
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil,
+                providerStatus: response.status?.lowercased())
 
         default:
             // Prefer "still pending" over a wrong terminal state for any future statuses.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "pending", outHashes: nil,
+                providerStatus: response.status?.lowercased())
         }
+    }
+
+    /// The payout of a swap into DASH: the hash of its leg on the Dash chain, the one
+    /// transaction of the swap the wallet holds. Nil unless the answer says the swap ends
+    /// in DASH and has such a leg — any other hash in it is the deposit's or the router's.
+    private func dashPayoutHash(from response: SwapKitTrackResponse) -> String? {
+        guard response.toAsset?.uppercased() == "DASH.DASH" else { return nil }
+        return (response.legs ?? []).first { leg in
+            leg.chainId?.lowercased() == "dash" && leg.hash?.isEmpty == false
+        }?.hash
     }
 
     private func extractOutHashes(from response: SwapKitTrackResponse) -> [String] {

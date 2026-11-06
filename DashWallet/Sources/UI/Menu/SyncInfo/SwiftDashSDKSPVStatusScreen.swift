@@ -93,22 +93,9 @@ struct SwiftDashSDKSPVStatusScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            })
 
             // Header
             HStack {
@@ -120,6 +107,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
+            .padding(.horizontal, 20)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -138,8 +126,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     Spacer(minLength: 12)
                 }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .confirmationDialog(
@@ -952,24 +940,40 @@ extension SwiftDashSDKSPVStatusScreen {
                     dropResultMessage = NSLocalizedString(
                         "No unconfirmed transactions to drop.",
                         comment: "SPV diagnostics")
-                } else if outcome.rescanArmed {
-                    dropResultIsError = false
-                    dropResultMessage = String(
-                        format: NSLocalizedString(
-                            "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
-                            comment: "SPV diagnostics"),
-                        outcome.dropped)
                 } else {
-                    // The drop finished but the recovery rescan didn't
-                    // arm — flag it instead of claiming the safety net ran.
-                    dropResultIsError = true
-                    dropResultMessage = String(
-                        format: NSLocalizedString(
-                            "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
-                            comment: "SPV diagnostics"),
-                        outcome.dropped)
+                    switch outcome.outcome {
+                    case .rescanArmed:
+                        dropResultIsError = false
+                        dropResultMessage = String(
+                            format: NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    case .rescanUnavailable:
+                        // The drop finished but the recovery rescan didn't
+                        // arm — flag it instead of claiming the safety net ran.
+                        dropResultIsError = true
+                        dropResultMessage = String(
+                            format: NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    case .runtimeStopped:
+                        // Rescan Filters above is disabled while SPV is
+                        // stopped, so restarting comes first — and it has to
+                        // be followed by the rescan, which restarting does
+                        // not replay. This path never explorer-checked, so
+                        // that rescan is the only on-chain safety check the
+                        // dropped transactions ever get.
+                        dropResultIsError = true
+                        dropResultMessage = String(
+                            format: NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s), but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    }
                 }
-                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), rescanArmed=\(outcome.rescanArmed, privacy: .public)")
+                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), outcome=\(String(describing: outcome.outcome), privacy: .public)")
             } catch {
                 dropResultIsError = true
                 dropResultMessage = error.localizedDescription

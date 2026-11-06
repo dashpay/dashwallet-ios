@@ -137,6 +137,16 @@ static NSString *sanitizeString(NSString *s) {
     return total;
 }
 
+- (uint64_t)feeDuffs {
+    return self.fee;
+}
+
+- (uint64_t)totalDuffs {
+    // Mirrors `totalWithFont:tintColor:` — a fee-on-top BIP70 merchant request
+    // is the one case where the debit is not the amount already carried.
+    return self.isMerchantRequest ? (self.amount + self.fee) : self.amount;
+}
+
 - (BOOL)copyAddressToPasteboard {
     NSString *address = self.address;
     NSParameterAssert(address);

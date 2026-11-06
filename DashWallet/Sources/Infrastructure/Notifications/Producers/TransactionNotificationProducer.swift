@@ -1,0 +1,601 @@
+//
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Combine
+import CoreData
+import Foundation
+import UIKit
+import UserNotifications
+
+// MARK: - AppStateProvider
+
+/// Seam over "is the app frontmost right now", so producers never read
+/// `UIApplication.shared` themselves — a background-refresh task runs the
+/// same producer code with no UI available and injects its own answer.
+protocol AppStateProvider: AnyObject {
+    /// True while the application state is `.active`. Backgrounded and
+    /// inactive (app switcher, transition) both read false.
+    var isApplicationActive: Bool { get }
+}
+
+/// Production provider over `UIApplication.shared.applicationState`, which
+/// is main-actor state — read through `SwiftDashSDKWalletSource.onMain`, so a
+/// producer's background thread hops to the main thread first.
+final class UIApplicationStateProvider: AppStateProvider {
+    var isApplicationActive: Bool {
+        SwiftDashSDKWalletSource.onMain { UIApplication.shared.applicationState == .active }
+    }
+}
+
+// MARK: - WatchMirrorLedger
+
+/// The notification ids this process has already mirrored to the Apple Watch.
+///
+/// The watch notice does not go through the dispatcher — it mirrors every
+/// received payment whatever the notification permission or app state — so
+/// the dispatcher's persisted dedup does not bound it. Scans overlap and
+/// re-read the same rows on every signal; this ledger keeps one row to one
+/// watch notice within a process. It is in memory only: a relaunch inside a
+/// row's freshness window can mirror that row once more. Bounded, oldest id
+/// evicted first.
+private final class WatchMirrorLedger {
+    private let lock = NSLock()
+    private var ids: Set<String> = []
+    private var insertionOrder: [String] = []
+    private let capacity = 512
+
+    /// Records `id`; `false` when this process already recorded it.
+    func markIfNew(_ id: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard ids.insert(id).inserted else { return false }
+        insertionOrder.append(id)
+        if insertionOrder.count > capacity {
+            ids.remove(insertionOrder.removeFirst())
+        }
+        return true
+    }
+}
+
+// MARK: - TransactionNotificationProducer
+
+/// Translates newly persisted incoming transactions into `AppNotification`s
+/// with per-transaction identity ("tx.<txid>") — replacing the retired
+/// balance-delta inference of `DWBalanceNotifier`.
+///
+/// Observes the same signal funnel `HomeViewModel.observeWallet()` trusts
+/// for new transactions: the SwiftData save notification (filtered to
+/// `PersistentTransaction` inserts),
+/// `.swiftDashSDKTransactionProjectionDidChange`, and
+/// `.platformAddressActivityRecorded` (DIP-15 contact payments bypass the
+/// SwiftData trigger). Each signal triggers a bounded rescan of recent rows;
+/// the dispatcher's `NotifiedEventStore` guarantees one notification per
+/// txid no matter how many signals, scans, or app launches see the row.
+///
+/// Lifetime: `NotificationsBootstrap` constructs it and calls `start()`
+/// during `application(_:didFinishLaunching:)`, before the wallet runtime is
+/// up. That is safe because every signal is a `NotificationCenter` name
+/// (subscribing needs no SDK handle), rows only exist once the SDK's
+/// persister writes them, and the per-row replay guard below keeps initial
+/// sync, restore, and rescan bursts from notifying.
+final class TransactionNotificationProducer {
+    /// A row must prove it is at most this recent to notify — this is the
+    /// replay guard (Android's `isReplayedTx` parity): initial sync,
+    /// restore, and rescan write historical rows in bulk, and none of them
+    /// may fire a notification. What "recent" is measured against is the
+    /// point `freshnessStamp(for:)` picks: for a mined row it is the
+    /// block's own timestamp, which a replay cannot forge.
+    static let freshnessWindow: TimeInterval = 10 * 60
+
+    /// Hard floor for a catch-up boundary. A wallet left closed for weeks
+    /// must not have its whole backlog announced the first time a refresh
+    /// finally runs.
+    static let maxCatchUpWindow: TimeInterval = 24 * 60 * 60
+
+    /// Rows admitted per FETCH. The freshness floor already bounds the
+    /// window; this guards a resync burst that lands many rows at once.
+    static let scanFetchLimit = 100
+
+    /// Fetches a catch-up sweep may walk before it gives up on exhausting
+    /// the window. Only the sweep pages (see `scanAndNotify(since:)`), and
+    /// it runs at most once per background refresh, so the ceiling is there
+    /// for a pathological window rather than for ordinary load.
+    static let maxCatchUpFetches = 20
+
+    private let dispatcher: NotificationDispatcher
+    private let store: NotifiedEventStoring
+    /// Recent rows, given a `firstSeen` floor (epoch seconds) and a row
+    /// offset. Newest first, at most `scanFetchLimit` per call.
+    private let rowSource: (UInt64, Int) -> [ObservedTransaction]
+    /// Incoming Platform-address payments, which live in the app's own SQLite
+    /// ledger rather than in SwiftData — `rowSource` cannot see them. Same
+    /// ordering, cap and offset contract.
+    private let platformActivitySource: (Date, Int) -> [PlatformAddressActivityRecord]
+    private let appState: AppStateProvider
+    /// Sends a received payment's copy to the Apple Watch app; see
+    /// `mirrorToWatch(_:)`.
+    private let watchBridge: (String) -> Void
+    private let watchMirrors = WatchMirrorLedger()
+    /// The fiat half of the received-payment copy, for a DASH amount.
+    private let fiatFormatter: (Decimal) async -> String
+    /// The boundary a later background catch-up sweep would reach back to
+    /// (`DWGlobalOptions.notificationCatchUpDate`); see `consumeShownRows`.
+    private let catchUpBoundary: () -> Date?
+    /// Whether a received row is the L1 payout of the app's own Shielded →
+    /// Core withdrawal — an internal transfer, not a payment from someone.
+    private let isShieldedWithdrawalPayout: (ObservedTransaction) -> Bool
+    private let now: () -> Date
+    private var cancellables = Set<AnyCancellable>()
+
+    init(dispatcher: NotificationDispatcher,
+         store: NotifiedEventStoring,
+         rowSource: @escaping (UInt64, Int) -> [ObservedTransaction] = TransactionNotificationProducer.defaultRowSource,
+         platformActivitySource: @escaping (Date, Int) -> [PlatformAddressActivityRecord] =
+             TransactionNotificationProducer.defaultPlatformActivitySource,
+         appState: AppStateProvider = UIApplicationStateProvider(),
+         watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
+         fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
+         catchUpBoundary: @escaping () -> Date? = TransactionNotificationProducer.defaultCatchUpBoundary,
+         isShieldedWithdrawalPayout: @escaping (ObservedTransaction) -> Bool = { $0.wrapped.isShieldedWithdrawalReceipt },
+         now: @escaping () -> Date = Date.init) {
+        self.dispatcher = dispatcher
+        self.store = store
+        self.rowSource = rowSource
+        self.platformActivitySource = platformActivitySource
+        self.appState = appState
+        self.watchBridge = watchBridge
+        self.fiatFormatter = fiatFormatter
+        self.catchUpBoundary = catchUpBoundary
+        self.isShieldedWithdrawalPayout = isShieldedWithdrawalPayout
+        self.now = now
+    }
+
+    // MARK: Signals
+
+    /// Subscribes to the three signals. Idempotent; called once by
+    /// `NotificationsBootstrap`.
+    func start() {
+        guard cancellables.isEmpty else { return }
+
+        // The insert filter runs before any queue hop — the userInfo object
+        // sets belong to the posting thread (the same rule
+        // `HomeViewModel.observeWallet` follows for its save filter).
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { Self.saveInsertsTransactionRows($0) }
+            .sink { [weak self] _ in self?.requestScan() }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .sink { [weak self] _ in self?.requestScan() }
+            .store(in: &cancellables)
+
+        // The platform-address recorder writes the app's own SQLite —
+        // invisible to the SwiftData save signal — so DIP-15 contact
+        // payments arrive through this dedicated signal.
+        NotificationCenter.default.publisher(for: .platformAddressActivityRecorded)
+            .sink { [weak self] _ in self?.requestScan() }
+            .store(in: &cancellables)
+    }
+
+    /// Hops off the signal's posting thread. Scans are not serialized
+    /// against each other: overlapping scans posting the same row are
+    /// resolved by the store's `markIfNew` (an actor), so exactly one post
+    /// happens per txid; `WatchMirrorLedger` does the same for the watch
+    /// mirror within a process.
+    private func requestScan() {
+        Task { [weak self] in
+            await self?.scanAndNotify()
+        }
+    }
+
+    // MARK: Scanning
+
+    /// One bounded pass: recent rows in, per-row notification decisions out.
+    ///
+    /// Deliberately not gated on `SyncingActivityMonitor`: dash-spv leaves
+    /// `.syncDone` for every new block (see the "Synced is only a transient
+    /// window" note in `SyncingActivityMonitor.handleCoordinatorUpdate`),
+    /// and an incoming payment *is* what opens such a window — so a
+    /// sync-state gate drops precisely the rows this producer exists for,
+    /// with nothing rescanning once the state settles. The replay guard is
+    /// per row instead.
+    /// `since` widens the window for a catch-up scan: the background
+    /// refresh runs no earlier than 15 minutes after backgrounding and iOS
+    /// delays it further, so a payment mined two minutes after suspension is
+    /// already outside the default 10-minute window by the time the sweep
+    /// gets to run. The caller passes the persisted boundary
+    /// (`DWGlobalOptions.notificationCatchUpDate`); the same value bounds
+    /// both the fetch floor and the per-row freshness test, so the two
+    /// cannot disagree.
+    ///
+    /// Historical-restore suppression is unaffected: a restored row is
+    /// judged by `minedAt` (see `freshnessStamp`), and the boundary is
+    /// floored at `maxCatchUpWindow` so a long-dormant install cannot replay
+    /// weeks.
+    ///
+    /// While the app is frontmost the scan also consumes, without posting,
+    /// every received row a later catch-up sweep could reach — see
+    /// `consumeShownRows`.
+    @discardableResult
+    func scanAndNotify(since boundary: Date? = nil) async -> Bool {
+        let cutoff = Self.catchUpCutoff(now: now(), boundary: boundary)
+        // Only the catch-up sweep pages. A signal-driven scan reads ONE
+        // fetch: it fires on every persistence signal (a restore burst fires
+        // hundreds), the next signal re-reads the window anyway, and it moves
+        // no boundary — so a row it leaves behind is not lost. The sweep is
+        // the call that advances `notificationCatchUpDate`, and both sources
+        // return newest-first under `scanFetchLimit`, so the rows a single
+        // fetch drops are the OLDEST in the window: stepping the boundary
+        // over them would drop them for good.
+        let paging = boundary != nil
+
+        // The `.platformAddressActivityRecorded` signal this producer
+        // subscribes to is posted by `PlatformAddressActivityRecorder`, which
+        // writes the app-owned activity ledger and creates NO
+        // `PersistentTransaction` — so an incoming `dash1`/`tdash1` payment
+        // woke the scan and was then absent from the rows it looked at.
+        let platformCovered = await scanPlatformActivity(cutoff: cutoff, paging: paging)
+
+        let floor = Self.firstSeenFloor(for: cutoff)
+        var outcomes: [Outcome: Int] = [:]
+        var scanned = 0
+        var offset = 0
+        var fetches = 0
+        var coreCovered = true
+        while true {
+            let rows = rowSource(floor, offset)
+            for row in rows {
+                outcomes[await process(row, cutoff: cutoff), default: 0] += 1
+            }
+            scanned += rows.count
+            fetches += 1
+            // A short fetch is the end of the window; a full one may not be.
+            guard rows.count >= Self.scanFetchLimit else { break }
+            guard paging else { coreCovered = false; break }
+            guard fetches < Self.maxCatchUpFetches else { coreCovered = false; break }
+            offset += rows.count
+        }
+
+        if scanned > 0 {
+            // One line per scan, not per row: a restore burst hands back up to
+            // `scanFetchLimit` rows on every save signal.
+            let tally = Outcome.allCases
+                .compactMap { outcome in outcomes[outcome].map { "\(outcome.rawValue) \($0)" } }
+                .joined(separator: ", ")
+            DWLogger.log("TransactionNotificationProducer: scanned \(scanned) recent row(s) — \(tally)")
+        }
+        if !coreCovered || !platformCovered {
+            DWLogger.log("TransactionNotificationProducer: window not exhausted; the catch-up boundary must stay put")
+        }
+
+        // After the rows above, not before: a CrowdNode deposit posts in every
+        // app state, and consuming its id first left the dispatcher nothing
+        // to post. `consume` leaves an id that was already posted untouched.
+        if appState.isApplicationActive {
+            await consumeShownRows()
+        }
+        return coreCovered && platformCovered
+    }
+
+    /// The window a scan judges freshness against: the 10-minute default,
+    /// widened back to `boundary` but never past `maxCatchUpWindow`, and
+    /// never narrower than the default.
+    static func catchUpCutoff(now: Date, boundary: Date?) -> Date {
+        let defaultCutoff = now.addingTimeInterval(-freshnessWindow)
+        let earliest = now.addingTimeInterval(-maxCatchUpWindow)
+        return min(defaultCutoff, max(boundary ?? defaultCutoff, earliest))
+    }
+
+    /// The row source's `firstSeen` floor for a cutoff, in epoch seconds.
+    private static func firstSeenFloor(for cutoff: Date) -> UInt64 {
+        UInt64(max(0, cutoff.timeIntervalSince1970))
+    }
+
+    /// Consumes every received payment a later catch-up sweep could
+    /// announce, because the app is frontmost and the feed is showing it.
+    ///
+    /// A row enters the default window by its own stamp, so a payment mined
+    /// while the app slept and synced after it opened is older than the
+    /// window: no foreground scan fetches it, the user sees it on Home, and
+    /// the next background sweep — reaching back to the persisted boundary,
+    /// up to a day — used to announce it. This pass reaches back exactly as
+    /// far as that sweep would, and records the ids as seen. Nothing is
+    /// posted or mirrored; `consume` leaves an id that was already posted
+    /// untouched.
+    ///
+    /// Bounded by the row source's `scanFetchLimit` like every scan, so a
+    /// day holding more received rows than that leaves the excess
+    /// unconsumed.
+    private func consumeShownRows() async {
+        let cutoff = Self.catchUpCutoff(now: now(), boundary: catchUpBoundary())
+        for row in rowSource(Self.firstSeenFloor(for: cutoff), 0) {
+            guard row.wrapped.direction == .received,
+                  !isShieldedWithdrawalPayout(row),
+                  row.wrapped.dashAmount > 0 else { continue }
+            await store.consume(id: Self.notificationId(for: row),
+                                topic: Self.topic(forAmount: row.wrapped.dashAmount))
+        }
+    }
+
+    /// The Platform half of a scan: incoming payments recorded against the
+    /// wallet's Platform receive addresses.
+    ///
+    /// Identity is the ledger's own row id — append-only and stable, so the
+    /// dispatcher's dedup holds across relaunches and a re-scan of the same
+    /// window cannot post twice. Freshness is `observedAt`, which the
+    /// recorder stamps when it first SEES the balance increase, so a restore
+    /// that rebuilds baselines cannot backdate a payment into the window (it
+    /// records nothing) and cannot replay one either.
+    ///
+    /// Returns whether the window was exhausted — `paging` walks it a fetch
+    /// at a time, exactly as the Core half does and for the same reason.
+    private func scanPlatformActivity(cutoff: Date, paging: Bool) async -> Bool {
+        var offset = 0
+        var fetches = 0
+        var posted = 0
+        while true {
+            let records = platformActivitySource(cutoff, offset)
+            await postPlatformActivity(records, cutoff: cutoff, posted: &posted)
+            fetches += 1
+            guard records.count >= Self.scanFetchLimit else { break }
+            guard paging, fetches < Self.maxCatchUpFetches else { return false }
+            offset += records.count
+        }
+        return true
+    }
+
+    /// One fetch's worth of ledger rows, posted or consumed.
+    private func postPlatformActivity(_ records: [PlatformAddressActivityRecord],
+                                      cutoff: Date,
+                                      posted: inout Int) async {
+        guard !records.isEmpty else { return }
+        for record in records where record.amountDuffs > 0 && record.observedAt >= cutoff {
+            let amount = UInt64(record.amountDuffs)
+            let amountText = amount.formattedDashAmount
+            let fiatText = await fiatFormatter(amount.dashAmount)
+            let notification = AppNotification(
+                id: "platform-activity.\(record.id)",
+                topic: .transactions,
+                title: nil,
+                body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), amountText, fiatText),
+                sound: UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff")),
+                // No txid to open: a Platform-address receive has no Core
+                // transaction of its own, so this lands on the feed.
+                route: .home,
+                foregroundBehavior: .banner)
+
+            mirrorToWatch(notification)
+
+            // Same app-state policy as a received Core payment: consumed, not
+            // dropped, so a later scan cannot re-post what the user watched
+            // arrive in the foreground.
+            if appState.isApplicationActive {
+                await store.consume(id: notification.id, topic: notification.topic)
+                continue
+            }
+            if await dispatcher.post(notification) {
+                posted += 1
+            }
+        }
+        DWLogger.log("TransactionNotificationProducer: scanned \(records.count) platform activity row(s) — posted \(posted)")
+    }
+
+    /// What one row's pass decided, for the scan's log line.
+    private enum Outcome: String, CaseIterable {
+        case posted
+        case notReceived = "not-received"
+        /// The payout of the app's own Shielded → Core withdrawal.
+        case shieldedWithdrawal = "shielded-withdrawal"
+        case notFresh = "not-fresh"
+        case zeroAmount = "zero-amount"
+        /// Suppressed because the app is frontmost (and consumed, so a
+        /// later scan cannot resurrect it).
+        case appActive = "app-active"
+        /// The dispatcher declined it — permission gate or already notified;
+        /// it logs the reason itself.
+        case dropped
+    }
+
+    @discardableResult
+    private func process(_ tx: ObservedTransaction, cutoff: Date) async -> Outcome {
+        // Incoming only — the SDK direction classifier is authoritative.
+        // `.moved` (CoinJoin, self-sends, the Core → Shielded deposit leg)
+        // and sends never notify.
+        guard tx.wrapped.direction == .received else { return .notReceived }
+        // The Shielded → Core payout leg classifies `.received` — its
+        // outputs pay one of our receive addresses — but it is the user's
+        // own transfer, the same exclusion Home and the detail screen apply.
+        guard !isShieldedWithdrawalPayout(tx) else { return .shieldedWithdrawal }
+
+        // Replay guard: a row that cannot prove it is fresh does not notify.
+        guard let stamp = Self.freshnessStamp(for: tx), stamp >= cutoff else { return .notFresh }
+
+        let amount = tx.wrapped.dashAmount
+        guard amount > 0 else { return .zeroAmount }
+
+        let notification = await notification(for: tx, amount: amount)
+
+        mirrorToWatch(notification)
+
+        // App-state policy, preserved from the balance-delta notifier: a
+        // plain received payment posts only while the app is backgrounded
+        // or inactive — the foreground feed is already showing it. The id
+        // is still consumed in the store, so a later scan (relaunch,
+        // background refresh) cannot post a payment the user watched
+        // arrive. CrowdNode deposits post in every app state.
+        if notification.topic != .crowdnode, appState.isApplicationActive {
+            await store.consume(id: notification.id, topic: notification.topic)
+            return .appActive
+        }
+
+        guard await dispatcher.post(notification) else { return .dropped }
+        return .posted
+    }
+
+    /// Sends a received payment's copy to the Apple Watch, once per id per
+    /// process.
+    ///
+    /// Called only for rows that passed the replay guard, and ahead of the
+    /// app-state policy and the dispatcher's permission gate: the watch shows
+    /// every received payment — payments that arrive while the app is
+    /// frontmost or notifications are off included — as the retired
+    /// `DWBalanceNotifier` did, not only the ones that produced a phone
+    /// notification.
+    private func mirrorToWatch(_ notification: AppNotification) {
+        guard watchMirrors.markIfNew(notification.id) else { return }
+        watchBridge(notification.body)
+    }
+
+    /// The point in time a row must prove is recent.
+    ///
+    /// A mined row is judged by its block's timestamp. The persister stamps
+    /// `firstSeen` with the device clock while a row is unconfirmed and
+    /// adopts the block timestamp once it is mined, so for a mined row the
+    /// two normally agree — but only the block timestamp is consensus data a
+    /// replay cannot re-stamp, and a row first sighted unmined keeps its
+    /// device-clock `firstSeen` until the block arrives. A row that claims a
+    /// block but carries no block timestamp proves nothing, so it is dropped
+    /// (nil).
+    ///
+    /// An unmined row (mempool, or InstantSend-locked but not yet in a
+    /// block) has no consensus stamp and needs none: it can only have
+    /// entered the wallet's view just now, which is exactly the payment
+    /// this producer notifies about.
+    static func freshnessStamp(for tx: ObservedTransaction) -> Date? {
+        if tx.blockHeight > 0 || tx.minedAt != nil {
+            return tx.minedAt
+        }
+        return tx.timestamp
+    }
+
+    /// Classification picks copy, topic, sound, and route only — the
+    /// identity stays the txid, so a CrowdNode deposit still dedups per
+    /// transaction like every other received payment.
+    private func notification(for tx: ObservedTransaction, amount: UInt64) async -> AppNotification {
+        let id = Self.notificationId(for: tx)
+
+        if Self.topic(forAmount: amount) == .crowdnode {
+            return AppNotification(
+                id: id,
+                topic: .crowdnode,
+                title: nil,
+                body: NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode"),
+                sound: .default,
+                route: .staking,
+                foregroundBehavior: .banner)
+        }
+
+        let amountText = amount.formattedDashAmount
+        let fiatText = await fiatFormatter(amount.dashAmount)
+        return AppNotification(
+            id: id,
+            topic: .transactions,
+            title: nil,
+            body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), amountText, fiatText),
+            // The bundled resource is "coinflip.aiff" — without the
+            // extension the sound name does not resolve and iOS delivers
+            // the notification silently.
+            sound: UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff")),
+            route: .transactionDetail(txid: tx.txid),
+            foregroundBehavior: .banner)
+    }
+
+    /// The dedup identity of a received row's notification.
+    private static func notificationId(for tx: ObservedTransaction) -> String {
+        "tx.\(tx.txidHexDisplay)"
+    }
+
+    /// The CrowdNode API encodes "deposit received" as an exact amount
+    /// (apiOffset + code) paid back to the account.
+    private static func topic(forAmount amount: UInt64) -> NotificationTopic {
+        amount == ApiCode.depositReceived.rawValue + CrowdNode.apiOffset ? .crowdnode : .transactions
+    }
+
+    // MARK: Production defaults
+
+    /// The persisted catch-up boundary the background sweep reads.
+    static func defaultCatchUpBoundary() -> Date? {
+        DWGlobalOptions.sharedInstance().notificationCatchUpDate
+    }
+
+    /// Whether a SwiftData save inserted `PersistentTransaction` rows — only
+    /// inserts can carry a not-yet-notified transaction. Fails open on a
+    /// save whose payload cannot be inspected (a redundant bounded scan is
+    /// cheap and the store dedups), mirroring `HomeViewModel`'s save filter.
+    static func saveInsertsTransactionRows(_ notification: Notification) -> Bool {
+        guard let userInfo = notification.userInfo else { return true }
+        guard let inserted = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject> else { return false }
+        return inserted.contains { $0.entity.name == "PersistentTransaction" }
+    }
+
+    /// Production rows: `TransactionObserver`'s bounded SwiftData scan,
+    /// which reads through its own `ModelContext` on the calling thread —
+    /// never `mainContext` off-main. A thin pass-through left untested; the
+    /// decisions made on the rows it returns are covered through the
+    /// injected seam.
+    static func defaultRowSource(firstSeenAtOrAfter floor: UInt64, offset: Int) -> [ObservedTransaction] {
+        TransactionObserver.fetchObserved(fetchLimit: scanFetchLimit,
+                                          fetchOffset: offset,
+                                          firstSeenAtOrAfter: floor)
+    }
+
+    /// Production Platform activity: the active wallet's ledger rows on the
+    /// current network, windowed and capped at `scanFetchLimit` in the query
+    /// itself, like the Core half — scans run on every persistence signal and
+    /// may overlap. Returns nothing when no wallet is resolved — a scan
+    /// during teardown must not read another wallet's ledger.
+    static func defaultPlatformActivitySource(since cutoff: Date, offset: Int) -> [PlatformAddressActivityRecord] {
+        // Same resolution `SwiftDashSDKWalletSource.fetchPlatformActivity`
+        // uses, through the same main-thread trampoline: the
+        // handles are read on the main actor, the DAO's own SQLite connection
+        // serializes the query from whatever executor the scan landed on.
+        let handles: (walletId: Data, networkRaw: Int64)? = SwiftDashSDKWalletSource.onMain {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                return nil
+            }
+            return (walletId, Int64(network.rawValue))
+        }
+        guard let handles else { return [] }
+        return PlatformAddressActivityDAO.shared.activities(
+            walletId: handles.walletId,
+            networkRaw: handles.networkRaw,
+            since: cutoff,
+            limit: scanFetchLimit,
+            offset: offset)
+    }
+
+    /// Production fiat copy, formatted on the main actor. Scans run on
+    /// whatever executor the signal's `Task` lands on, while
+    /// `CurrencyExchanger` has no synchronization of its own: its rate
+    /// tables are replaced by `BaseRatesProvider`'s update handler on the
+    /// main actor, so reading them anywhere else races a rate refresh.
+    /// (The retired balance notifier read them from `RunLoop.main` for the
+    /// same reason.)
+    static func defaultFiatFormatter(_ dashAmount: Decimal) async -> String {
+        await MainActor.run {
+            CurrencyExchanger.shared.fiatAmountString(for: dashAmount)
+        }
+    }
+
+    /// Sends a custom notification to the watch if the watch app is up.
+    static func defaultWatchBridge(_ body: String) {
+        #if !IGNORE_WATCH_TARGET
+        DWPhoneWCSessionManager.sharedInstance().notifyTransactionString(body)
+        #endif
+    }
+}

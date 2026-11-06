@@ -44,11 +44,25 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewDidLoad];
 
     NSParameterAssert(self.payModel);
+}
 
-    self.paymentController = [[PaymentController alloc] init];
-    _paymentController.delegate = self;
-    _paymentController.locksBalance = self.locksBalance;
-    _paymentController.presentationContextProvider = self;
+/// Built on first use rather than in `viewDidLoad`.
+///
+/// A send flow can be opened PAST its address step — a scanned address
+/// installs the source picker with this screen behind it, and a controller
+/// that is never the top of the stack never loads its view. Continue on the
+/// step above then reached `processPaymentInput:` with a nil controller, and
+/// ObjC drops the message: no confirmation, no send, nothing on screen.
+/// Going Back loaded the view and hid it. Paying must not depend on whether
+/// the screen was ever shown.
+- (PaymentController *)paymentController {
+    if (_paymentController == nil) {
+        _paymentController = [[PaymentController alloc] init];
+        _paymentController.delegate = self;
+        _paymentController.locksBalance = self.locksBalance;
+        _paymentController.presentationContextProvider = self;
+    }
+    return _paymentController;
 }
 
 
@@ -93,6 +107,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
+- (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {
+    DWPaymentInput *paymentInput = [[[DWPaymentInputBuilder alloc] init] payToAddress:address
+                                                                               amount:amount];
+    if (!paymentInput) {
+        return;
+    }
+
+    [self processPaymentInput:paymentInput];
+}
+
 - (void)processPaymentInput:(DWPaymentInput *)input {
     [self.paymentController performPaymentWith:input];
 }
@@ -100,8 +124,63 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
 - (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
-    // Nothing to do — the success screen dismisses itself; the legacy pay-to-contact
-    // follow-up that lived here is gone with the contact plumbing (Row #18).
+    // The success screen has already dismissed itself; what is left underneath
+    // is the send that produced it.
+    [self finishSendFlow];
+}
+
+#pragma mark - Leaving a finished send
+
+- (void)finishSendFlow {
+    // What is left on screen is the send that just happened — an amount step,
+    // a source picker, an address field. Handing those back would offer to
+    // redo a payment already made, so leave for the history, which is where
+    // the transaction now is.
+    //
+    // Presented as a modal there is something to dismiss; inside the payments
+    // tab there is not, and the way back is the stack plus the tab. The tab
+    // change waits for the pop — run together they animate over each other.
+    //
+    // Asked of the container as well as of self. A controller inside a
+    // presented navigation stack does not reliably report a presenter of its
+    // own — the navigation controller owns the presentation — and reading only
+    // `self.presentingViewController` then took the in-tab branch: it popped a
+    // controller that was already the root and called `showHome` on a tab
+    // controller that is nil or someone else's, leaving the send modal on
+    // screen after a payment that had gone through.
+    UIViewController *presentedContainer = self.presentingViewController
+                                               ? self
+                                               : (self.navigationController.presentingViewController
+                                                      ? self.navigationController
+                                                      : nil);
+    if (presentedContainer) {
+        [presentedContainer dismissViewControllerAnimated:YES completion:nil];
+        return;
+    }
+
+    // Both read before the pop — it takes `self` off the stack, and with it
+    // the container references below.
+    UINavigationController *navigationController = self.navigationController;
+    MainTabbarController *tabBarController =
+        [self.tabBarController isKindOfClass:MainTabbarController.class]
+            ? (MainTabbarController *)self.tabBarController
+            : nil;
+
+    [navigationController popToRootViewControllerAnimated:YES];
+
+    // The pop's own coordinator, not a CATransaction completion: a navigation
+    // animation is run by the transition coordinator and is not guaranteed to
+    // belong to the transaction open at the call site.
+    id<UIViewControllerTransitionCoordinator> coordinator = navigationController.transitionCoordinator;
+    if (coordinator) {
+        [coordinator animateAlongsideTransition:nil
+                                     completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+                                         [tabBarController showHome];
+                                     }];
+    }
+    else {
+        [tabBarController showHome];
+    }
 }
 
 #pragma mark -  DWQRScanModelDelegate
@@ -129,11 +208,21 @@ NS_ASSUME_NONNULL_BEGIN
 /// Present the Send screen prefilled with a scanned bech32m destination —
 /// same presentation chrome as the payments landing (hidden-bar navigation
 /// controller, full screen; the screen draws its own X/title header).
+///
+/// Opened on the From picker, with the address step behind it: the scan named
+/// the recipient, so that step has nothing left to ask, and a BIP21 amount
+/// does not become visible until the step after it. Same rule as the landing's
+/// own scan (`pushScannedSend`). An address that did not decode stays on the
+/// address step, which is the screen that says so.
 - (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
     DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
     [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
+    if (controller.hasResolvedDestination) {
+        [navigationController setViewControllers:@[ controller, [controller makeSourceStep] ]
+                                        animated:NO];
+    }
     navigationController.navigationBarHidden = YES;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:navigationController animated:YES completion:nil];
@@ -152,6 +241,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller txidWire:(NSData *_Nonnull)txidWire {
+    [self presentSendSuccessWithTxidWire:txidWire];
+}
+
+#pragma mark - Send success
+
+- (void)presentSendSuccessWithTxidWire:(NSData *)txidWire {
     void (^presentSuccess)(void) = ^{
         DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
         SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
@@ -175,6 +270,8 @@ NS_ASSUME_NONNULL_BEGIN
         presentSuccess();
     }
 }
+
+#pragma mark - PaymentControllerPresentationContextProviding
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {
     return self;

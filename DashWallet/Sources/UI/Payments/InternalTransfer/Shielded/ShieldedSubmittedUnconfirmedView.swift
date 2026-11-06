@@ -9,6 +9,9 @@ import DashUIKit
 /// sync.
 struct ShieldedSubmittedUnconfirmedView: View {
     var onDone: () -> Void
+    /// Where this transfer's status can be checked later, when the surface
+    /// that started it has a place for that.
+    var detail: String? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -32,6 +35,15 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
+
+            if let detail {
+                Text(detail)
+                    .font(.footnote)
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 24)
+            }
 
             Spacer(minLength: 12)
 

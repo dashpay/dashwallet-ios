@@ -45,7 +45,7 @@ final class AdvancedModeInfoSheetViewModel: ObservableObject {
 
     let features: [Feature] = [
         Feature(
-            title: NSLocalizedString("Shield", comment: "Settings: advanced mode"),
+            title: NSLocalizedString("Shielded", comment: "Settings: advanced mode"),
             description: NSLocalizedString(
                 "Move Dash into a private, encrypted balance that can't be traced.",
                 comment: "Settings: advanced mode"),

@@ -40,7 +40,27 @@ protocol HomeViewDelegate: AnyObject {
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfileWithUnreadNotifications unreadNotifications: UInt)
     func homeViewRequestUsername()
-    func homeViewClaimInvitation()
+    /// The retry behind a `.creationFailed` / `.interrupted` registration
+    /// report. Separate from `homeViewRequestUsername()` because a recovery
+    /// must not meet the funding-readiness gate — see
+    /// `showCreateUsernameForRecovery`.
+    func homeViewRequestUsernameForRecovery(username: String)
+    /// Opens the invitation QR scanner (the Join DashPay sheet's
+    /// "Scan invitation QR").
+    func homeViewScanInvitation()
+    /// Create on the pending-invitation card: the username form in
+    /// invitation mode, paid for by the invitation.
+    func homeViewCreateUsername(with invitation: PendingInvitation, amountDuffs: UInt64)
+    /// A verdict that ended the pending invitation — present its dialog.
+    func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation)
+    /// Opens the internal-transfer form with Shielded preselected as the
+    /// destination — the "Shield your funds first" leg of the username
+    /// privacy step.
+    func homeViewShieldFunds()
+    /// Opens "Request details" for the contested name currently being voted
+    /// on — where the row's tap and its info button both lead, matching
+    /// Android's `VotingRequestDetailsFragment`.
+    func homeViewShowUsernameRequestStatus(username: String?)
     func homeViewEditProfile()
     /// Opens the notifications list (header nav-bar bell).
     func homeViewShowNotifications()
@@ -57,6 +77,7 @@ final class HomeView: UIView {
     let viewModel: HomeViewModel
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
+    let pendingInvitationViewModel = PendingInvitationViewModel.shared
     #endif
 
     var model: DWHomeProtocol?
@@ -93,6 +114,7 @@ final class HomeView: UIView {
         let content = HomeViewContent(
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
+            pendingInvitationViewModel: self.pendingInvitationViewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
             headerView: { UIViewWrapper(uiView: self.headerView) }
@@ -146,6 +168,13 @@ final class HomeView: UIView {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.joinDPViewModel.checkUsername()
+            }
+            .store(in: &cancellableBag)
+
+        pendingInvitationViewModel.definitiveOutcomes
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] outcome in
+                self?.delegate?.homeViewPresentInvitationOutcome(outcome)
             }
             .store(in: &cancellableBag)
         #endif
@@ -227,7 +256,10 @@ struct HomeViewContent<Content: View>: View {
     @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
-    @State private var navigateToClaimInvitation: Bool = false
+    @State private var navigateToScanInvitation: Bool = false
+    /// Same hand-off shape as the two above: the sheet only records the
+    /// intent, and the delegate acts on it once the sheet is gone.
+    @State private var navigateToShieldFunds: Bool = false
     @State private var pendingShieldedRecovery: Transaction? = nil
     /// An internal transfer runs past the screen that started it, and the
     /// confirm sheet closes the moment it begins — so its outcome is
@@ -259,6 +291,7 @@ struct HomeViewContent<Content: View>: View {
     @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
+    @ObservedObject var pendingInvitationViewModel: PendingInvitationViewModel
     #endif
     weak var delegate: HomeViewDelegate?
     /// Resolves the shortcuts delegate at tap time. A stored weak delegate
@@ -327,6 +360,9 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
+                        .padding(.horizontal, 16)
+
                     SyncingHeaderView(onFilterTap: {
                         showFilterDialog = true
                     }, onSyncTap: {
@@ -334,30 +370,76 @@ struct HomeViewContent<Content: View>: View {
                     })
 
                     #if DASHPAY
-                    if viewModel.showJoinDashpay {
+                    // A pending invitation takes the Join DashPay row's place
+                    // (Android hides that call to action while an invite is
+                    // stored) — except while the row is reporting a
+                    // registration, which is then the invitation's progress.
+                    if pendingInvitationViewModel.invitation != nil && !joinDPViewModel.state.isRegistrationReport {
+                        AcceptInvitationCard(
+                            viewModel: pendingInvitationViewModel,
+                            isSyncing: viewModel.isSyncing,
+                            onCreate: { invitation, amountDuffs in
+                                delegate?.homeViewCreateUsername(with: invitation, amountDuffs: amountDuffs)
+                            })
+                        .padding(.horizontal, 20)
+                    } else if viewModel.showJoinDashpay {
                         JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
                             // The row is the action now — this is what the
                             // Upgrade/Edit/Retry button used to do.
                             onTap: { state in
-                                if state == .approved {
+                                switch state {
+                                case .usernameRequired:
+                                    // An identity with credits and no name: the form
+                                    // finishes what is already paid for.
+                                    delegate?.homeViewRequestUsername()
+                                case .approved:
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
-                                } else {
+                                case .creating, .loading, .retryLoading:
+                                    // Nothing to act on while it runs.
+                                    break
+                                case .creationFailed, .interrupted:
+                                    // Back to the form: a retry re-enters the
+                                    // PIN gate and may re-spend, which deserves
+                                    // a screen rather than a one-tap action.
+                                    // Its recovery machinery takes over from
+                                    // there.
+                                    //
+                                    // Straight there, past the readiness gate:
+                                    // the report IS the evidence that an attempt
+                                    // already ran, and the predicate that would
+                                    // otherwise wave it through reads the SDK
+                                    // host — which is still cold right after the
+                                    // relaunch that renders `.interrupted`.
+                                    delegate?.homeViewRequestUsernameForRecovery(
+                                        username: joinDPViewModel.username)
+                                case .voting:
+                                    // The vote has its own screen — the join
+                                    // sheet is a call to action for someone
+                                    // who has not requested a name yet.
+                                    delegate?.homeViewShowUsernameRequestStatus(
+                                        username: joinDPViewModel.username)
+                                case .none, .callToAction, .failed, .blocked, .contested, .registered:
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
                                     // Always open the info dialog. It carries the
-                                    // only "Have an invitation?" entry in the app,
+                                    // only "Scan invitation QR" entry in the app,
                                     // so latching it to the first-ever tap left an
-                                    // invited user with no way to reach the redeem
-                                    // path once they had dismissed it — which is
-                                    // every user whose invitation arrived after
-                                    // they first looked at DashPay.
+                                    // invited user with no way to scan once they
+                                    // had dismissed it.
                                     self.shouldShowJoinDashPayInfo = true
                                 }
                             }, onDismiss: { _ in
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
+                            },
+                            // Same destination as the row's own tap: the
+                            // details screen carries the explainer behind its
+                            // own info control, as on Android.
+                            onShowVotingInfo: {
+                                delegate?.homeViewShowUsernameRequestStatus(
+                                    username: joinDPViewModel.username)
                             },
                             isSyncing: viewModel.isSyncing
                         )
@@ -536,9 +618,13 @@ struct HomeViewContent<Content: View>: View {
                 navigateToDashPayFlow = false
                 delegate?.homeViewRequestUsername()
             }
-            if navigateToClaimInvitation {
-                navigateToClaimInvitation = false
-                delegate?.homeViewClaimInvitation()
+            if navigateToScanInvitation {
+                navigateToScanInvitation = false
+                delegate?.homeViewScanInvitation()
+            }
+            if navigateToShieldFunds {
+                navigateToShieldFunds = false
+                delegate?.homeViewShieldFunds()
             }
         }) {
             let joinDashPayDialog = JoinDashPayInfoDialog(
@@ -546,14 +632,15 @@ struct HomeViewContent<Content: View>: View {
                     navigateToDashPayFlow = true
                 },
                 onClaimInvitation: {
-                    navigateToClaimInvitation = true
+                    navigateToScanInvitation = true
+                },
+                onShieldFunds: {
+                    navigateToShieldFunds = true
                 })
             
-            if #available(iOS 16.0, *) {
-                joinDashPayDialog.presentationDetents([.height(600)])
-            } else {
-                joinDashPayDialog
-            }
+            // No detent here: the dialog is a `BottomSheet.selfSizing`, which
+            // publishes its own measured height.
+            joinDashPayDialog
         }
         .onChange(of: joinDPViewModel.state) { state in
             viewModel.joinDashPayState = state
@@ -867,21 +954,9 @@ struct HomeViewContent<Content: View>: View {
             .frame(minHeight: 66)
 
         case .shieldedActivity(let item):
-            DashUIKit.TransactionView(
-                iconView: transferRouteIcon("shield.fill"),
-                secondaryIcon: item.secondarySystemIcon.map { DashIconSource.system($0) },
-                title: item.title,
-                subtitle: item.shortTimeString,
-                details: item.detailsText,
-                dashAmount: item.signedDashAmount,
-                amountSign: item.showsDirectionSign ? .always : .none,
-                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
-                fiat: item.fiatAmount,
-                trailingStatusText: item.trailingStatusText
-            ) {
+            ShieldedActivityHistoryRow(item: item, icon: transferRouteIcon("shield.fill")) {
                 self.selectedTxDataItem = txDataItem
             }
-            .frame(minHeight: 66)
 
         case .platformActivity(let item):
             DashUIKit.TransactionView(
@@ -893,6 +968,21 @@ struct HomeViewContent<Content: View>: View {
                 dashAmount: item.signedDashAmount,
                 amountSign: .always,
                 fiat: item.fiatAmount
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
+
+        case .swapOrder(let item):
+            DashUIKit.TransactionView(
+                icon: DashIcon.Transaction.convert.source,
+                secondaryIcon: item.showsErrorBadge ? DashIcon.AdditionalInfo.error.source : nil,
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.statusText,
+                dashAmount: item.expectedDuffs,
+                amountSign: .always,
+                fiat: item.sendAmountText
             ) {
                 self.selectedTxDataItem = txDataItem
             }
@@ -1068,18 +1158,34 @@ private struct TxDetailRoute: Identifiable {
 }
 
 struct TransactionDetailsSheet: View {
-    @State private var showBackButton: Bool = false
-    @State private var backNavigationRequested: Bool = false
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    
+    /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
+    @State private var groupedTransaction: Transaction? = nil
+    @AccessibilityFocusState private var focusedGroupRow: String?
     
     var item: TransactionListDataItem
     
     var body: some View {
-        DashUIKit.BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
-            backNavigationRequested = true
-        }) {
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(groupedTransaction != nil),
+            onBackButtonPressed: {
+                closeGroupedTransaction()
+            }
+        ) {
             TxDetailsDestination(from: item)
         }
         .background(Color.dash.primaryBackground)
+        // Reaches the SwiftUI elements, the header's Back and Close among them. A grouped
+        // transaction's UIKit detail answers escape itself through `onAccessibilityEscape`.
+        .accessibilityAction(.escape) {
+            if groupedTransaction != nil {
+                closeGroupedTransaction()
+            } else {
+                dismiss()
+            }
+        }
     }
     
     @ViewBuilder
@@ -1088,35 +1194,75 @@ struct TransactionDetailsSheet: View {
     ) -> some View {
         switch txDataItem {
         case .crowdnode(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .coinjoin(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .coinjoinWithdrawal(let set):
-            GroupedTransactionsScreen(
-                model: set,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
-                }
-            )
+            groupedTransactionsDestination(model: set)
         case .tx(let txItem, _):
-            TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
+            TXDetailVCWrapper(tx: txItem, navigateBack: .constant(false))
         case .shieldedActivity(let item):
             ShieldedActivityDetailsView(item: item)
         case .platformActivity(let item):
             PlatformAddressActivityDetailsView(item: item)
+        case .swapOrder(let item):
+            // No Dash transaction yet: the standard screen, with what the order knows.
+            TXDetailVCWrapper(swapOrder: item, navigateBack: .constant(false))
+        }
+    }
+    
+    private func groupedTransactionsDestination(model: GroupedTransactions) -> some View {
+        InSheetPushStack(pushed: groupedTransaction) {
+            GroupedTransactionsScreen(
+                model: model,
+                focusedRow: $focusedGroupRow,
+                onOpenTransaction: openGroupedTransaction
+            )
+        } pushedContent: { transaction in
+            // `navigateBack` stays false: the wrapper's own dismiss would close
+            // the whole sheet. Back clears `groupedTransaction` instead.
+            TXDetailVCWrapper(
+                tx: transaction,
+                navigateBack: .constant(false),
+                // Always handled here: a second escape while the detail slides out
+                // must not fall through to the sheet and close it.
+                onAccessibilityEscape: {
+                    closeGroupedTransaction()
+                    return true
+                }
+            )
+            // The table runs under the home indicator and insets its own content, so the
+            // detail's colour reaches the bottom edge as the group's does.
+            .ignoresSafeArea(.container, edges: .bottom)
+            // A fresh detail for each transaction, should one replace another directly.
+            .id(transaction.txHashHexString)
+        }
+    }
+    
+    private func openGroupedTransaction(_ transaction: Transaction) {
+        // Animated here so the header's Back button comes in with the levels.
+        withAnimation(.inSheetPush(reduceMotion: reduceMotion)) {
+            groupedTransaction = transaction
+        }
+        // Cleared so that going back to the same row is a change VoiceOver acts on.
+        focusedGroupRow = nil
+        // After the detail is in the hierarchy, so VoiceOver reads the new screen
+        // from its top.
+        DispatchQueue.main.async {
+            UIAccessibility.post(notification: .screenChanged, argument: nil)
+        }
+    }
+    
+    private func closeGroupedTransaction() {
+        guard let closed = groupedTransaction else { return }
+        withAnimation(.inSheetPush(reduceMotion: reduceMotion)) {
+            groupedTransaction = nil
+        }
+        // VoiceOver returns to the row that was opened.
+        DispatchQueue.main.async {
+            // Skipped when another transaction opened in the meantime.
+            guard groupedTransaction == nil else { return }
+            focusedGroupRow = closed.txHashHexString
         }
     }
 }

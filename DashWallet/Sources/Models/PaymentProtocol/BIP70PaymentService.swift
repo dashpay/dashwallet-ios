@@ -393,6 +393,12 @@ final class BIP70PaymentService {
 
     /// Maps a BIP70 `details.network` string to a `PaymentNetwork`. nil ⇒ unknown/absent.
     /// Reproduces DashSync's `chainForNetworkName:` value set.
+    ///
+    /// No string names a devnet: BIP70 has no devnet token. A request carrying
+    /// `"test"` therefore resolves to `.testnet`, and a wallet running on a
+    /// devnet fails the equality check above with `.networkMismatch` — the
+    /// intended outcome, not a gap. The two share address version bytes, so
+    /// nothing downstream would catch the mismatch on its own.
     static func paymentNetwork(fromString string: String?) -> PaymentNetwork? {
         switch string?.lowercased() {
         case "main", "live", "livenet", "mainnet": return .mainnet

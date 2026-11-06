@@ -76,32 +76,17 @@ struct DashSpendUserAuthScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
                         presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.dash.primaryText)
-                            .padding(10)
                     }
-                    
-                    Spacer()
-                    
+                },
+                central: {
                     Text("DashSpend")
-                        .font(.system(size: 14, weight: .semibold))
+                        .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .frame(maxWidth: .infinity)
-                    
-                    Spacer()
-                    
-                    Color.clear
-                        .frame(width: 44, height: 44)
-                }
-                .padding(.top, 5)
-                .padding(.horizontal, 10)
-            }
+                })
             
             // Content
             ScrollView {

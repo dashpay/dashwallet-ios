@@ -37,11 +37,36 @@ struct CastVoteSheet: View {
         candidateNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
     }
 
-    /// Only nodes that have not voted on this contest yet. A node with a vote
-    /// on record is not offered again — Platform rejects a repeat of the same
-    /// choice, and re-listing it would invite that error.
+    /// The nodes this choice can be cast with: everything except nodes that
+    /// already hold *this* choice — Platform rejects a repeat of the same vote
+    /// — and nodes that have spent the five casts it allows per contest.
+    ///
+    /// A node holding a different choice belongs here. Replacing its vote is a
+    /// single state transition, and excluding it was what made changing your
+    /// mind impossible from this sheet.
     private var candidateNodes: [VoterNode] {
-        viewModel.nodesYetToVote(on: contest.normalizedLabel)
+        viewModel.nodesForVote(choice, on: contest.normalizedLabel)
+    }
+
+    /// The nodes this sheet is talking about at all: `candidateNodes` is
+    /// already filtered by the remembered selection, so the counts explaining
+    /// what was left out have to be filtered the same way — otherwise nodes
+    /// the user never selected are reported as having used up their votes.
+    private var selectedVotableNodes: [VoterNode] {
+        let selected = viewModel.effectiveSelectedNodeIDs
+        return viewModel.votableNodes.filter { selected.contains($0.proTxHash) }
+    }
+
+    /// Nodes left out because they already hold this exact choice.
+    private var holdingThisChoice: Int {
+        selectedVotableNodes.filter {
+            viewModel.liveChoice(of: $0, on: contest.normalizedLabel) == choice
+        }.count
+    }
+
+    /// Nodes left out because they have no casts left on this contest.
+    private var outOfCasts: Int {
+        max(0, selectedVotableNodes.count - candidateNodes.count - holdingThisChoice)
     }
 
     var body: some View {
@@ -72,8 +97,9 @@ struct CastVoteSheet: View {
             if selectedNodeIDs.isEmpty {
                 // Honour the privacy mode: one node preselected by default,
                 // all of them only when the user asked for that.
-                selectedNodeIDs = Set(
-                    viewModel.nodesForNextVote(on: contest.normalizedLabel).map(\.proTxHash))
+                // Same set the sheet lists — nodes that can cast THIS choice,
+                // including ones whose current vote it would replace.
+                selectedNodeIDs = Set(candidateNodes.map(\.proTxHash))
             }
         }
     }
@@ -105,12 +131,26 @@ struct CastVoteSheet: View {
             } header: {
                 Text(NSLocalizedString("Vote with", comment: "Voting"))
             } footer: {
-                if alreadyVoted > 0 {
-                    Text(String(
-                        format: NSLocalizedString(
-                            "%d of your nodes already voted here and are not listed.",
-                            comment: "Voting"),
-                        alreadyVoted))
+                if holdingThisChoice > 0 || outOfCasts > 0 {
+                    // Both reasons when both apply: a node already voting this
+                    // way and a node with no casts left are different answers,
+                    // and showing one hides the other.
+                    VStack(alignment: .leading, spacing: 2) {
+                        if holdingThisChoice > 0 {
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.",
+                                    comment: "Voting"),
+                                holdingThisChoice))
+                        }
+                        if outOfCasts > 0 {
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%d of your nodes have used all 5 votes Dash Platform allows on one contest.",
+                                    comment: "Voting"),
+                                outOfCasts))
+                        }
+                    }
                 } else if selectedNodeIDs.count < candidateNodes.count, candidateNodes.count > 1 {
                     Text(NSLocalizedString(
                         "Selecting fewer nodes reveals less about which masternodes you run.",
@@ -147,9 +187,6 @@ struct CastVoteSheet: View {
         }
     }
 
-    private var alreadyVoted: Int {
-        viewModel.votableNodes.count - candidateNodes.count
-    }
 
     private func toggle(_ node: VoterNode) {
         if selectedNodeIDs.contains(node.proTxHash) {
@@ -159,20 +196,32 @@ struct CastVoteSheet: View {
         }
     }
 
+    /// The spelling a human recognizes. Platform indexes `10stest`; the person
+    /// asked for `iostest`, and that is what the rest of this flow shows —
+    /// naming the stored form here made the two screens look like two names.
+    private var displayLabel: String {
+        if case .towards(let identityId) = choice,
+           let contender = contest.contenders.first(where: { $0.identityId == identityId }),
+           let label = contender.displayLabel {
+            return label
+        }
+        return contest.contenders.compactMap(\.displayLabel).first ?? contest.normalizedLabel
+    }
+
     private var summaryTitle: String {
         switch choice {
         case .towards:
             return String(
                 format: NSLocalizedString("Award “%@” to this contender", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         case .lock:
             return String(
                 format: NSLocalizedString("Lock “%@” so nobody gets it", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         case .abstain:
             return String(
                 format: NSLocalizedString("Abstain on “%@”", comment: "Voting"),
-                contest.normalizedLabel)
+                displayLabel)
         }
     }
 

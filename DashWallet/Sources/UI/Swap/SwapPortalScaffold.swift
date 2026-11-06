@@ -32,7 +32,7 @@ struct SwapPortalScaffold: View {
     var body: some View {
         VStack(spacing: 0) {
             DashUIKit.NavigationBar(leading: {
-                NavigationBarElement.back.button { onBack() }
+                DashUIKit.NavigationBarElement.back.button { onBack() }
             })
 
             ScrollView {

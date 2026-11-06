@@ -203,47 +203,21 @@ struct WalletsScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .alert(
-            recoveryPhraseFlow.alertState?.title ?? "",
-            isPresented: Binding(
-                get: { recoveryPhraseFlow.alertState != nil },
-                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                recoveryPhraseFlow.dismissAlert()
-            }
-            Button(NSLocalizedString("Retry", comment: "")) {
-                recoveryPhraseFlow.retry()
-            }
-        } message: {
-            Text(recoveryPhraseFlow.alertState?.message ?? "")
-        }
+        .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
 
     // MARK: - Subviews
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-                Button(action: { showAddWallet = true }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                },
+                trailing: {
+                    DashUIKit.NavigationBarElement.plus.button { showAddWallet = true }
+                        .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
+                })
 
             HStack {
                 Text(NSLocalizedString("Wallets", comment: "Wallets"))
@@ -296,7 +270,7 @@ struct WalletsScreen: View {
 
     /// A wallet whose recovery phrase provably covers every stored wallet
     /// (Keychain ground truth) routes to the full reset flow
-    /// (`DWResetWalletInfoViewController`); a wallet with siblings on this
+    /// (`ResetWalletInfoHostingController`); a wallet with siblings on this
     /// network gets the per-wallet recovery-phrase remove sheet. A sole
     /// rendered wallet that can't route to reset — a distinct wallet is
     /// stored for the other network, or the Keychain couldn't be read — is
@@ -305,8 +279,7 @@ struct WalletsScreen: View {
     /// a wallet to switch to.
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = resetDelegate
+            let controller = ResetWalletInfoHostingController(wipeDelegate: resetDelegate)
             vc.pushViewController(controller, animated: true)
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
@@ -815,7 +788,7 @@ private struct ImportWalletView: View {
 // MARK: - Reset flow delegate
 
 extension WalletsScreen {
-    /// Bridges the last-wallet full reset flow (`DWResetWalletInfoViewController`).
+    /// Bridges the last-wallet full reset flow (`ResetWalletInfoHostingController`).
     /// A completed wipe invalidates the entire main UI: route to the app-level
     /// DWWipeDelegate chain (MainTabbar → root VC), which transitions to
     /// onboarding and drops the whole main stack. Popping back to this screen

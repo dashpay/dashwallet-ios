@@ -41,6 +41,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     enum BridgeNetwork: Int {
         case mainnet = 0
         case testnet = 1
+        case devnet = 2
     }
 
     // MARK: - Public entry point
@@ -58,7 +59,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///     we re-validate via `Mnemonic.validate` defensively before use.
     ///   - pin: User's plaintext PIN. Retained for Obj-C selector stability;
     ///     SwiftDashSDK key material is now mnemonic-only.
-    ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
+    ///   - network: 0 = mainnet, 1 = testnet, 2 = devnet.
     @objc(createWalletWithMnemonic:pin:network:)
     static func createWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -81,7 +82,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///   - mnemonic: BIP39 phrase from the user-provided recovery phrase.
     ///   - pin: User's plaintext PIN. Retained for Obj-C selector stability;
     ///     SwiftDashSDK key material is now mnemonic-only.
-    ///   - network: 0 = mainnet, 1 = testnet. Devnet/regtest are unsupported.
+    ///   - network: 0 = mainnet, 1 = testnet, 2 = devnet.
     @objc(importWalletWithMnemonic:pin:network:)
     static func importWallet(mnemonic: String, pin: String, network: BridgeNetwork) {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -111,7 +112,12 @@ final class SwiftDashSDKWalletCreator: NSObject {
         isImported: Bool,
         label: String
     ) {
-        let appNetwork: Network = (network == .mainnet) ? .mainnet : .testnet
+        let appNetwork: Network
+        switch network {
+        case .mainnet: appNetwork = .mainnet
+        case .testnet: appNetwork = .testnet
+        case .devnet: appNetwork = .devnet
+        }
 
         guard !mnemonic.isEmpty else {
             logger.error("\(label, privacy: .public): empty mnemonic — refusing")
@@ -127,13 +133,6 @@ final class SwiftDashSDKWalletCreator: NSObject {
         }
 
         do {
-            // Determinism + length sanity check (matches migrator).
-            let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-            guard seed.count == 64 else {
-                logger.error("\(label, privacy: .public): seed length invalid: \(seed.count, privacy: .public)")
-                return
-            }
-
             let walletId = try createWalletOnHost(
                 mnemonic: mnemonic,
                 network: appNetwork,

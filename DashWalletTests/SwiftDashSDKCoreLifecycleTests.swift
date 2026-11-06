@@ -17,6 +17,32 @@ private enum CoreLifecycleTestError: Error {
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 10_000)
 
+    /// The Core → Shielded pool fee is the shielded fee plus the asset-lock
+    /// base cost, whatever protocol version produced the shielded fee.
+    func testPoolFeeAddsTheAssetLockBaseCost() {
+        typealias Policy = CoreToShieldedAmountPolicy
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 162_851_200), 162_851_200 + Policy.assetLockBaseCostCredits)
+        XCTAssertEqual(Policy.poolFeeCredits(addingBaseCostTo: 114_140_000), 114_140_000 + Policy.assetLockBaseCostCredits)
+    }
+
+    /// No estimate, or a sum that overflows, gives no fee: callers fail closed.
+    func testPoolFeeIsNilWithoutAnEstimateOrOnOverflow() {
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: nil))
+        XCTAssertNil(CoreToShieldedAmountPolicy.poolFeeCredits(addingBaseCostTo: UInt64.max))
+    }
+
+    func testNameEndpointFailureDoesNotBlockAdoptingDiscoveredIdentity() async throws {
+        let id = Data([1])
+        var adopted = false
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [id] }, discover: { XCTFail("Already discovered"); return [] },
+            refreshNames: { _ in throw NSError(domain: "test", code: 1) },
+            adopt: { adopted = true; return true })
+        XCTAssertTrue(adopted)
+        XCTAssertTrue(outcome.adopted)
+        XCTAssertTrue(outcome.identitiesPersisted)
+    }
+
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
         var restartingStates: [Bool] = []
@@ -24,10 +50,225 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         try await CoreSPVRestartOperation.run(
             setRestarting: { restartingStates.append($0) },
             stop: { events.append("stop") },
+            networkSwitchPrepared: { false },
             start: { events.append("start") })
 
         XCTAssertEqual(events, ["stop", "start"])
         XCTAssertEqual(restartingStates, [true, false])
+    }
+
+    /// A network switch prepared while the restart's stop was awaited owns the
+    /// next start: the restart throws instead of starting the outgoing network.
+    func testRestartDoesNotStartAfterANetworkSwitchWasPreparedDuringItsStop() async {
+        var events: [String] = []
+        var restartingStates: [Bool] = []
+        var prepared = false
+
+        do {
+            try await CoreSPVRestartOperation.run(
+                setRestarting: { restartingStates.append($0) },
+                stop: {
+                    events.append("stop")
+                    prepared = true
+                },
+                networkSwitchPrepared: { prepared },
+                start: { events.append("start") })
+            XCTFail("Expected the restart to stop without starting")
+        } catch SwiftDashSDKSPVCoordinator.StartError.networkSwitchPending {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(events, ["stop"])
+        XCTAssertEqual(restartingStates, [true, false])
+    }
+
+    // MARK: - Network switch preparation
+
+    /// A preparation made before the stop, or during its await (the check
+    /// runs after the await either way), keeps a failed stop from
+    /// re-attaching the outgoing manager until a later start consumes it.
+    func testFailedStopDoesNotReattachAfterAPreparationUntilAStartConsumesIt() {
+        var gate = NetworkSwitchPreparationGate()
+        XCTAssertTrue(gate.allowsReattachingAfterFailedStop)
+
+        gate.prepare()
+        XCTAssertFalse(gate.allowsReattachingAfterFailedStop)
+
+        let token = gate.startToken()
+        XCTAssertFalse(gate.isOvertaken(since: token))
+        gate.consume()
+        XCTAssertTrue(gate.allowsReattachingAfterFailedStop)
+    }
+
+    /// A start that a preparation overtakes while it awaits gives up, and
+    /// leaves the preparation pending for the switch's own start.
+    func testStartOvertakenByAPreparationDoesNotConsumeIt() {
+        var gate = NetworkSwitchPreparationGate()
+        let token = gate.startToken()
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: token),
+            "the start must give up before it publishes a balance or starts SPV")
+        XCTAssertTrue(gate.isPending, "an overtaken start must not consume the preparation")
+    }
+
+    /// A start that began after the preparation is the switch's own start:
+    /// it goes ahead and consumes the preparation.
+    func testStartBegunAfterAPreparationConsumesIt() {
+        var gate = NetworkSwitchPreparationGate()
+        gate.prepare()
+        let token = gate.startToken()
+
+        XCTAssertFalse(gate.isOvertaken(since: token))
+        gate.consume()
+        XCTAssertFalse(gate.isPending)
+    }
+
+    /// A start consumes the preparation before it awaits the SDK's off-main
+    /// `startSpv`. A switch prepared during that await overtakes the start
+    /// (so it must not re-attach the subscriptions the preparation detached)
+    /// and stays pending for the switch's own start.
+    func testPreparationLandingAfterConsumeOvertakesTheStartAndStaysPending() {
+        var gate = NetworkSwitchPreparationGate()
+        let token = gate.startToken()
+        gate.consume()
+
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: token),
+            "the start must not publish the outgoing network's progress or balance")
+        XCTAssertTrue(gate.isPending, "the preparation belongs to the switch's own start")
+    }
+
+    /// A runtime refresh takes its token when it resolves its network, before
+    /// its reset. A switch prepared during that reset overtakes the refresh,
+    /// and the switch's own refresh, queued behind it, does the start.
+    func testSwitchPreparedDuringARefreshResetOvertakesThatRefresh() {
+        var gate = NetworkSwitchPreparationGate()
+        let refreshToken = gate.startToken()
+
+        gate.prepare()
+
+        XCTAssertTrue(
+            gate.isOvertaken(since: refreshToken),
+            "the refresh must not start the network it resolved before the switch")
+        XCTAssertTrue(gate.isPending, "the overtaken refresh must leave the preparation to the switch")
+
+        let switchRefreshToken = gate.startToken()
+        XCTAssertFalse(gate.isOvertaken(since: switchRefreshToken))
+        gate.consume()
+        XCTAssertFalse(gate.isPending)
+    }
+
+    // MARK: - SPV chain resync marker
+
+    /// The start suspends for the whole store open, during which the Sync
+    /// Info screen can arm a new resync for the same network. Consuming the
+    /// applied marker must not take that new request with it.
+    func testClearingTheAppliedResyncLeavesAResyncArmedDuringTheStartPending() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        let applied = SPVChainResyncMarker.Pending(
+            walletId: Data([0xA1]), fromHeight: 1_000, armedBySessionId: "an earlier launch")
+
+        // Armed during the start, by this session, for the same network.
+        SPVChainResyncMarker.arm(walletId: Data([0xB2]), fromHeight: 2_000, network: .testnet, defaults: defaults)
+
+        XCTAssertFalse(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        let pending = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertEqual(pending.walletId, Data([0xB2]))
+        XCTAssertEqual(pending.fromHeight, 2_000)
+        XCTAssertTrue(pending.armedByThisSession)
+    }
+
+    func testClearingTheAppliedResyncConsumesIt() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "resync.\(UUID().uuidString)"))
+        SPVChainResyncMarker.arm(walletId: Data([0xA1]), fromHeight: 1_000, network: .testnet, defaults: defaults)
+        let applied = try XCTUnwrap(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+
+        XCTAssertTrue(SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults))
+        XCTAssertNil(SPVChainResyncMarker.pending(for: .testnet, defaults: defaults))
+        XCTAssertFalse(
+            SPVChainResyncMarker.clear(applied: applied, for: .testnet, defaults: defaults),
+            "nothing pending: nothing to consume")
+    }
+
+    // MARK: - Devnet start preflight
+
+    /// The runtime discovers devnet peers before the SDK is built; the SPV
+    /// start that follows reuses exactly those peers instead of fetching
+    /// `/masternodes` a second time.
+    func testDevnetPreflightPeersAreReusedForTheSameConfiguration() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-moutai",
+            quorumURL: "https://quorum.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertEqual(
+            preflight.peers(forScope: "devnet-moutai", quorumURL: "https://quorum.example"),
+            ["1.2.3.4:20001"])
+    }
+
+    /// Devnet settings can change between a preflight and the start it was
+    /// made for. Peers discovered for devnet A must never configure a client
+    /// for devnet B — nor peers from a different quorum service.
+    func testDevnetPreflightIsDiscardedWhenTheConfigurationChanged() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a",
+            quorumURL: "https://a.example",
+            peers: ["1.2.3.4:20001"])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-b", quorumURL: "https://a.example"))
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://b.example"))
+    }
+
+    /// An empty peer set is not a usable preflight: the start must rediscover
+    /// rather than configure a peer-restricted client with no peers.
+    func testEmptyDevnetPreflightIsNotReused() {
+        let preflight = DevnetStartPreflight(
+            scope: "devnet-a", quorumURL: "https://a.example", peers: [])
+
+        XCTAssertNil(preflight.peers(forScope: "devnet-a", quorumURL: "https://a.example"))
+    }
+
+    // MARK: - Selectable wallet material memo
+
+    /// The memo answers only for the inventory it was derived from, so a
+    /// changed wallet set re-runs the classification instead of returning a
+    /// stale verdict.
+    func testSelectableWalletMaterialMemoAnswersOnlyForItsOwnInventory() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+        let ids = [Data([0x01]), Data([0x02])]
+        let fingerprint = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids)
+
+        WalletEnvironment.SelectableWalletMaterialMemo(
+            fingerprint: fingerprint, selectable: false).save(to: defaults)
+        let loaded = try XCTUnwrap(
+            WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
+
+        XCTAssertEqual(loaded.verdict(for: fingerprint), false)
+        let changed = WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(
+            of: ids + [Data([0x03])])
+        XCTAssertNil(loaded.verdict(for: changed))
+    }
+
+    /// The fingerprint identifies a SET of ids: Keychain enumeration order
+    /// must not invalidate a good memo and force the derivation again.
+    func testSelectableWalletMaterialFingerprintIsOrderIndependent() {
+        let ids = [Data([0x0a]), Data([0x0b]), Data([0xff])]
+
+        XCTAssertEqual(
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids),
+            WalletEnvironment.SelectableWalletMaterialMemo.fingerprint(of: ids.reversed()))
+    }
+
+    func testAbsentSelectableWalletMaterialMemoLoadsAsNil() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "memo.\(UUID().uuidString)"))
+
+        XCTAssertNil(WalletEnvironment.SelectableWalletMaterialMemo.load(from: defaults))
     }
 
     func testRestartPropagatesStartFailureAndAlwaysResetsBusyState() async {
@@ -38,6 +279,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             try await CoreSPVRestartOperation.run(
                 setRestarting: { restartingStates.append($0) },
                 stop: { events.append("stop") },
+                networkSwitchPrepared: { false },
                 start: {
                     events.append("start")
                     throw CoreLifecycleTestError.start
@@ -120,19 +362,191 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(MainThreadStallMonitor.stallMilliseconds(forLatency: 1.512), 1512)
     }
 
-    func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() {
-        final class Token {}
+    func testProcessCacheInvalidateAllEvictsAndDoesNotRecacheAnOpenInFlight() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        let before = try cache.value(for: "mainnet") { Token() }
+
+        cache.invalidateAll()
+
+        let after = try cache.value(for: "mainnet") { Token() }
+        XCTAssertFalse(after.reused)
+        XCTAssertFalse(before.value === after.value)
+
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let inFlight = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        cache.invalidateAll()
+        resumeOpen?.resume()
+        do {
+            _ = try await inFlight.value
+            XCTFail("An invalidated open must not escape to its caller")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        let reopened = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(reopened.source, .created)
+    }
+
+    func testProcessCacheWaiterAfterInvalidationCannotJoinOrRecacheOldOpen() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var resumeOld: CheckedContinuation<Void, Never>?
+        let old = Task { @MainActor in
+            try await cache.valueAsync(for: "mainnet") {
+                await withCheckedContinuation { resumeOld = $0 }
+                return Token()
+            }
+        }
+        while resumeOld == nil { await Task.yield() }
+        cache.invalidateAll()
+        let fresh = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(fresh.source, .created)
+        resumeOld?.resume()
+        do {
+            _ = try await old.value
+            XCTFail("Old container escaped invalidation")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        let cached = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === fresh.value)
+    }
+
+    func testProcessCacheSuspensionDrainsOpensAndRejectsNewCallersUntilResumed() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var resumeOld: CheckedContinuation<Void, Never>?
+        let old = Task { @MainActor in
+            try await cache.valueAsync(for: "mainnet") {
+                await withCheckedContinuation { resumeOld = $0 }
+                return Token()
+            }
+        }
+        while resumeOld == nil { await Task.yield() }
+        var started = false
+        var drained = false
+        let suspension = Task { @MainActor in
+            started = true
+            await cache.suspendAndInvalidate()
+            drained = true
+        }
+        while !started { await Task.yield() }
+        XCTAssertFalse(drained, "Deletion must wait for the old filesystem open")
+        do {
+            _ = try await cache.valueAsync(for: "testnet") { Token() }
+            XCTFail("New opens must be rejected during deletion")
+        } catch ProcessNetworkValueCache<Token>.OpenError.suspended {}
+        XCTAssertThrowsError(try cache.value(for: "testnet") { Token() })
+        resumeOld?.resume()
+        await suspension.value
+        do {
+            _ = try await old.value
+            XCTFail("The old caller must fail")
+        } catch ProcessNetworkValueCache<Token>.OpenError.invalidated {}
+        XCTAssertTrue(drained)
+        cache.resumeOpens()
+        let reopened = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(reopened.source, .created)
+    }
+
+    func testProcessCacheReusesValuesPerNetworkAndSeparatesNetworks() throws {
+        final class Token: Sendable {}
 
         let cache = ProcessNetworkValueCache<Token>()
-        let mainnetFirst = cache.value(for: "mainnet") { Token() }
-        let mainnetSecond = cache.value(for: "mainnet") { Token() }
-        let testnet = cache.value(for: "testnet") { Token() }
+        let mainnetFirst = try cache.value(for: "mainnet") { Token() }
+        let mainnetSecond = try cache.value(for: "mainnet") { Token() }
+        let testnet = try cache.value(for: "testnet") { Token() }
 
         XCTAssertFalse(mainnetFirst.reused)
         XCTAssertTrue(mainnetSecond.reused)
         XCTAssertFalse(testnet.reused)
         XCTAssertTrue(mainnetFirst.value === mainnetSecond.value)
         XCTAssertFalse(mainnetFirst.value === testnet.value)
+    }
+
+    func testProcessCacheCoalescesConcurrentAsyncOpensAndRetriesFailures() async throws {
+        final class Token: Sendable {}
+        let cache = ProcessNetworkValueCache<Token>()
+        var creates = 0
+        var resumeOpen: CheckedContinuation<Void, Never>?
+        let first = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                creates += 1
+                await withCheckedContinuation { resumeOpen = $0 }
+                return Token()
+            }
+        }
+        while resumeOpen == nil { await Task.yield() }
+        let second = Task { @MainActor in
+            try await cache.valueAsync(for: "testnet") {
+                XCTFail("An in-flight open must be reused")
+                return Token()
+            }
+        }
+        await Task.yield()
+        resumeOpen?.resume()
+        let initial = try await first.value
+        let concurrent = try await second.value
+        XCTAssertEqual(creates, 1)
+        XCTAssertTrue(initial.value === concurrent.value)
+        XCTAssertEqual(initial.source, .created)
+        XCTAssertEqual(concurrent.source, .shared)
+        let cached = try await cache.valueAsync(for: "testnet") { Token() }
+        XCTAssertEqual(cached.source, .cached)
+        XCTAssertTrue(cached.value === initial.value)
+        do {
+            _ = try await cache.valueAsync(for: "mainnet") { throw CoreLifecycleTestError.start }
+            XCTFail("A failed open must throw")
+        } catch CoreLifecycleTestError.start {}
+        let retried = try await cache.valueAsync(for: "mainnet") { Token() }
+        XCTAssertEqual(retried.source, .created)
+        XCTAssertFalse(retried.value === initial.value)
+    }
+
+    func testConcurrentFailedOpenWaitersShareOneFreshRetry() async throws {
+        let cache = ProcessNetworkValueCache<Int>()
+        var releaseFailure: CheckedContinuation<Void, Never>?
+        var releaseRetry: CheckedContinuation<Void, Never>?
+        var entered = 0
+        var failed = 0
+        var retryCreates = 0
+        let callers = (0..<8).map { _ in
+            Task { @MainActor in
+                entered += 1
+                do {
+                    _ = try await cache.valueAsync(for: "testnet") {
+                        await withCheckedContinuation { releaseFailure = $0 }
+                        throw CoreLifecycleTestError.start
+                    }
+                    XCTFail("Initial open must fail")
+                    return -1
+                } catch {
+                    failed += 1
+                    // Retry immediately, before other waiters necessarily resume.
+                    return try await cache.valueAsync(for: "testnet") {
+                        retryCreates += 1
+                        guard retryCreates == 1 else {
+                            XCTFail("An older waiter discarded the active retry")
+                            return -1
+                        }
+                        await withCheckedContinuation { releaseRetry = $0 }
+                        return 42
+                    }.value
+                }
+            }
+        }
+        while entered < callers.count || releaseFailure == nil { await Task.yield() }
+        releaseFailure?.resume()
+        while failed < callers.count || releaseRetry == nil { await Task.yield() }
+        releaseRetry?.resume()
+        for caller in callers {
+            let value = try await caller.value
+            XCTAssertEqual(value, 42)
+        }
+        XCTAssertEqual(retryCreates, 1, "Old waiters must not remove or bypass the new in-flight retry")
     }
 
     func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {
@@ -160,6 +574,39 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(
             outcome,
             .init(discoveredCount: 1, identityCount: 1, adopted: true, identitiesPersisted: true))
+    }
+
+    /// A run cancelled while its discovery is out (its start is being torn
+    /// down) stops there: no name refresh and no adoption against a wallet on
+    /// its way out.
+    func testSameSeedIdentityRecoveryStopsBeforeNameRefreshWhenCancelled() async {
+        let identityId = Data(repeating: 0x18, count: 32)
+
+        let run = Task { @MainActor () -> (threwCancellation: Bool, refreshCalls: Int, adoptCalls: Int) in
+            var refreshCalls = 0
+            var adoptCalls = 0
+            do {
+                _ = try await SameSeedIdentityRecoveryPipeline.run(
+                    localIdentityIds: { [] },
+                    discover: {
+                        withUnsafeCurrentTask { $0?.cancel() }
+                        return [identityId]
+                    },
+                    refreshNames: { _ in refreshCalls += 1 },
+                    adopt: {
+                        adoptCalls += 1
+                        return true
+                    })
+                return (false, refreshCalls, adoptCalls)
+            } catch {
+                return (error is CancellationError, refreshCalls, adoptCalls)
+            }
+        }
+
+        let result = await run.value
+        XCTAssertTrue(result.threwCancellation, "a run cancelled during discovery must throw CancellationError")
+        XCTAssertEqual(result.refreshCalls, 0)
+        XCTAssertEqual(result.adoptCalls, 0)
     }
 
     func testSameSeedIdentityRecoveryUsesPersistedIdentityWithoutRescanning() async throws {
@@ -490,6 +937,112 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             PlatformSyncRearmPolicy.requiresRuntimeRearm(
                 isRunning: true,
                 hasWalletManager: true))
+    }
+
+    /// A Platform outage must not cost the user a working Core runtime: with
+    /// Core up and Platform down, the triggers that fire on their own (launch,
+    /// foreground, the sync strip's Retry, "Sync Now") elide the rebuild whose
+    /// `fullReset` would stop SPV, clear the balance and empty the home
+    /// transaction list. This is the offline-launch regression in table form.
+    func testCoreOnlyTriggersElideTheRebuildWhilePlatformIsDown() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        // Core up, Platform down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: false),
+                "\(trigger.rawValue) must not rebuild a healthy Core because Platform is down")
+        }
+
+        // A network switch still rebuilds on Core alone — it detached the SPV
+        // subscriptions that only a rebuild re-attaches.
+        XCTAssertFalse(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: false))
+        XCTAssertTrue(
+            RuntimeRefreshPolicy.shouldSkipRebuild(
+                trigger: .networkDidChange, isCoreReady: true, isFullyReady: true))
+
+        // A wallet change never elides, however ready the runtime looks.
+        for trigger in [Trigger.walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: true, isFullyReady: true),
+                "\(trigger.rawValue) must always rebind the wallet")
+        }
+
+        // Nothing elides when Core itself is down.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: false, isFullyReady: false),
+                "\(trigger.rawValue) must rebuild when Core is not running")
+        }
+    }
+
+    /// Only a network switch leaves the identity recovery's DAPI round trips
+    /// out of the refresh its verdict waits for. A wallet switch relies on the
+    /// recovery's adopt step to repoint the username mirror before the change
+    /// is announced, so it and every other trigger await it.
+    func testOnlyANetworkChangeRunsIdentityRecoveryInBackground() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+
+        XCTAssertTrue(RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: .networkDidChange))
+        for trigger in [Trigger.startIfReady, .walletMaterialChanged, .walletDidChange, .walletRowsChanged, .platformSyncRearm] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.runsIdentityRecoveryInBackground(trigger: trigger),
+                "\(trigger.rawValue) must await the identity recovery")
+        }
+    }
+
+    /// `switchNetwork(to:)` detaches the SPV progress/peer/balance publishers and
+    /// clears wallet state BEFORE its own refresh reaches the lifecycle queue,
+    /// without clearing Core's running flag. A refresh queued in that window
+    /// must not elide: `isCoreRuntimeReady` reports `false` there because
+    /// `subscriptionsDetached` is set, so every trigger rebuilds and the
+    /// publishers are re-attached. Eliding instead would strand the runtime with
+    /// no subscriptions and a cleared balance that no later refresh repairs.
+    func testNoTriggerElidesWhileSwitchPreparationHasDetachedSubscriptions() {
+        typealias Trigger = SwiftDashSDKWalletRuntime.RefreshTrigger
+        let target = Network.testnet
+
+        // The state `prepareForNetworkSwitch()` leaves behind: host still bound,
+        // Core SPV still flagged running on the target, publishers detached.
+        // Readiness is computed here rather than asserted as a literal, so
+        // dropping the `subscriptionsDetached` term from the predicate fails
+        // this test instead of silently restoring the defect.
+        let preparedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: true)
+        XCTAssertFalse(preparedCoreReady, "detached subscriptions must make Core unready")
+
+        let preparedFullyReady = RuntimeReadinessPolicy.isFullyReady(
+            isCoreReady: preparedCoreReady, isBlastRunning: true,
+            blastNetwork: target, target: target)
+        XCTAssertFalse(preparedFullyReady, "full readiness must not outrank detached Core")
+
+        // With those computed values, nothing may elide the rebuild.
+        for trigger in [Trigger.startIfReady, .platformSyncRearm, .networkDidChange,
+                        .walletMaterialChanged, .walletDidChange] {
+            XCTAssertFalse(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: preparedCoreReady, isFullyReady: preparedFullyReady),
+                "\(trigger.rawValue) must rebuild while the switch preparation has detached the subscriptions")
+        }
+
+        // Re-attaching the publishers makes the same runtime ready again, and
+        // the Core-only triggers go back to eliding.
+        let reattachedCoreReady = RuntimeReadinessPolicy.isCoreReady(
+            boundNetwork: target, target: target, hasBoundWallet: true,
+            isSPVRunning: true, subscriptionsDetached: false)
+        XCTAssertTrue(reattachedCoreReady, "re-attached subscriptions must restore Core readiness")
+
+        for trigger in [Trigger.startIfReady, .platformSyncRearm] {
+            XCTAssertTrue(
+                RuntimeRefreshPolicy.shouldSkipRebuild(
+                    trigger: trigger, isCoreReady: reattachedCoreReady, isFullyReady: false))
+        }
     }
 
     func testWalletWithoutPlatformPaymentAccountUsesNeutralState() {
@@ -970,6 +1523,37 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             0)
     }
 
+    func testIdentityWithdrawalMinimumFeeMirrorsProtocolMinimums() {
+        // STATE_TRANSITION_MIN_FEES_VERSION1: identity_credit_withdrawal.
+        XCTAssertEqual(
+            IdentityWithdrawViewModel.minimumFeeCredits(target: .transparent),
+            400_000_000)
+        XCTAssertEqual(
+            Decimal(IdentityWithdrawViewModel.minimumFeeCredits(target: .transparent)) / 100_000_000_000,
+            Decimal(string: "0.004"))
+        // credit_transfer_to_addresses + one address_funds_transfer_output_cost.
+        XCTAssertEqual(
+            IdentityWithdrawViewModel.minimumFeeCredits(target: .platform),
+            6_500_000)
+        XCTAssertEqual(
+            Decimal(IdentityWithdrawViewModel.minimumFeeCredits(target: .platform)) / 100_000_000_000,
+            Decimal(string: "0.000065"))
+    }
+
+    func testTypedTextFitsPrecisionStopsBelowOneDuffAndOneCent() {
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("1", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0.", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0.00000001", unit: .dash))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("0.000000001", unit: .dash))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("0,00000001", unit: .dash))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("0,000000001", unit: .dash))
+
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("12.34", unit: .fiat))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("12.345", unit: .fiat))
+        XCTAssertTrue(InternalTransferViewModel.typedTextFitsPrecision("12,34", unit: .fiat))
+        XCTAssertFalse(InternalTransferViewModel.typedTextFitsPrecision("12,345", unit: .fiat))
+    }
+
     func testPlatformShieldScreenshotRegressionUsesSDKSelectableCapacity() {
         let capacity = PlatformShieldCapacity(
             canShield: true,
@@ -1044,39 +1628,6 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             3)
     }
 
-    func testPlatformShieldHeldBackNoticeUsesDisplayedAggregateBalance() {
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 4_500_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: 2_623_849),
-            1_876_151_000)
-
-        // If the published aggregate briefly lags, do not understate the
-        // account-level remainder reported by the coherent SDK preflight.
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 3_000_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: 2_623_849),
-            1_297_265_000)
-    }
-
-    func testPlatformShieldHeldBackIsZeroForOverflowAndFullySubmittedBalance() {
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 4_500_000_000,
-                accountBalanceCredits: 3_921_114_000,
-                submittedDuffs: UInt64.max),
-            0)
-        XCTAssertEqual(
-            PlatformShieldAmountPolicy.heldBackCredits(
-                displayedPlatformCredits: 2_623_849_000,
-                accountBalanceCredits: 2_623_849_000,
-                submittedDuffs: 2_623_849),
-            0)
-    }
-
     func testPlatformShieldFailsClosedWithoutResolvedPreflight() {
         XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
             requestedCredits: 1_000,
@@ -1140,11 +1691,9 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             balanceCredits: 10_000_000_000,
             feeReserveCredits: 2_000_000_000)
 
-        XCTAssertNotNil(message)
-        XCTAssertTrue(message?.contains("Shielded") == true)
-        XCTAssertTrue(
-            message?.contains("0.08 DASH") == true
-                || message?.contains("0,08 DASH") == true)
+        // Short on purpose: the From card already shows which balance fell short and by
+        // how much, so the amount row carries only the verdict.
+        XCTAssertEqual(message, "Insufficient balance")
         XCTAssertNil(
             TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: "Shielded",
@@ -1159,11 +1708,7 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             requestedDuffs: 50_000_000,
             spendableDuffs: 40_000_000)
 
-        XCTAssertNotNil(message)
-        XCTAssertTrue(message?.contains("Transparent") == true)
-        XCTAssertTrue(
-            message?.contains("0.4 DASH") == true
-                || message?.contains("0,4 DASH") == true)
+        XCTAssertEqual(message, "Insufficient balance")
         XCTAssertNil(
             TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: "Transparent",
@@ -1288,6 +1833,46 @@ final class JoinDashPayBannerPolicyTests: XCTestCase {
                 syncDone: true,
                 dismissed: false,
                 hasRegisteredUsername: false,
+                hasRegistrationInProgress: false))
+    }
+
+    /// The regression this parameter exists for: the instant companion
+    /// registers, so the wallet "has a username", while the contested name it
+    /// was created alongside is still out for a vote. The row reports that
+    /// vote, so it must stay.
+    func testPendingVoteKeepsBannerAfterCompanionUsernameRegisters() {
+        XCTAssertTrue(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: false,
+                hasRegisteredUsername: true,
+                hasRegistrationInProgress: true,
+                hasVotePending: true))
+    }
+
+    /// Dismissal still wins on Home, which is the only surface with a close
+    /// control; More passes `dismissed: false` and so keeps the row.
+    func testDismissalHidesTheVotingBanner() {
+        XCTAssertFalse(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: true,
+                hasRegisteredUsername: true,
+                hasRegistrationInProgress: true,
+                hasVotePending: true))
+    }
+
+    /// A registered user with no vote pending keeps the row hidden — the
+    /// vote flag is the only thing that overrides an existing username.
+    func testRegisteredWalletWithoutVoteHidesBanner() {
+        XCTAssertFalse(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: false,
+                hasRegisteredUsername: true,
                 hasRegistrationInProgress: false))
     }
 

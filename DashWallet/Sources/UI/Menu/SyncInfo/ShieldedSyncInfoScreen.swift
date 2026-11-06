@@ -21,6 +21,7 @@ import DashUIKit
 import UIKit
 
 struct ShieldedSyncInfoScreen: View {
+    @State private var syncRequestError: String?
     private let vc: UINavigationController
 
     @ObservedObject private var monitor = ShieldedSyncMonitor.shared
@@ -33,22 +34,9 @@ struct ShieldedSyncInfoScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            })
 
             // Header
             HStack {
@@ -60,6 +48,7 @@ struct ShieldedSyncInfoScreen: View {
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
+            .padding(.horizontal, 20)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -73,27 +62,35 @@ struct ShieldedSyncInfoScreen: View {
                     if monitor.syncCountSinceLaunch > 0 {
                         countersCard
                     }
-                    if let lastError = monitor.lastError {
+                    if let lastError = coordinator.shieldedRecoveryError ?? coordinator.shieldedInitializationError ?? monitor.lastError {
                         errorCard(message: lastError)
                     }
                     controlsCard
                     Spacer(minLength: 12)
                 }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .alert(Text("Sync Now"), isPresented: Binding(
+            get: { syncRequestError != nil },
+            set: { if !$0 { syncRequestError = nil } }
+        )) {
+            Button("OK", role: .cancel) { syncRequestError = nil }
+        } message: {
+            Text(syncRequestError ?? "")
+        }
     }
 
     // MARK: - Cards
 
     private var stateCard: some View {
         HStack(spacing: 8) {
-            if !coordinator.isRunning {
+            if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text(NSLocalizedString("Platform sync is not running", comment: "Sync diagnostics"))
+                Text("Shielded sync is not running")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
@@ -134,7 +131,7 @@ struct ShieldedSyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: NSLocalizedString("Total Shielded Balance", comment: "Sync diagnostics"),
-                value: PlatformCreditsFormatter.dashString(coordinator.shieldedBalance))
+                value: coordinator.shieldedBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: NSLocalizedString("Notes Synced", comment: "Sync diagnostics"),
                 value: formattedCount(monitor.notesSynced))
@@ -243,7 +240,7 @@ struct ShieldedSyncInfoScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                Task { await monitor.syncNow() }
+                syncRequestError = monitor.syncNow()
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
@@ -275,7 +272,7 @@ struct ShieldedSyncInfoScreen: View {
     }
 
     private var syncNowDisabled: Bool {
-        monitor.isSyncing || !coordinator.isRunning
+        monitor.isSyncing || !coordinator.canRecoverShielded
     }
 
     // MARK: - Row builders

@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftDashSDK
 import UIKit
 
@@ -45,6 +46,9 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
 
 @objc(DWKeychainWalletRecoveryCoordinator)
 final class KeychainWalletRecoveryCoordinator: NSObject {
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "keychain-wallet-recovery")
 
     /// `true` = keep the stored wallets (or none exist), `false` = continue to
     /// the support-phrase gate. This coordinator never deletes wallets itself.
@@ -120,8 +124,26 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         }
 
         Task { @MainActor in
-            let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
-            _ = WalletEnvironment.switchToNetwork(kind)
+            let kind: WalletEnvironment.NetworkKind
+            switch network {
+            case .mainnet: kind = .mainnet
+            case .testnet: kind = .testnet
+            case .devnet: kind = .devnet
+            case .regtest:
+                // No regtest wallet can be stored; keep the current network.
+                completion(true)
+                return
+            }
+            if !WalletEnvironment.switchToNetwork(kind) {
+                // Reachable in a shipping build holding devnet-only material:
+                // the switch is refused, so "Keep Wallets" keeps the material
+                // on the device but lands the user on onboarding rather than
+                // that wallet. Nothing here can improve on that — the build has
+                // no way to select the network — but the refusal must not be
+                // silent when someone reads the logs of that dead end.
+                Self.logger.error(
+                    "keepWallets: refused switch to \(String(describing: kind), privacy: .public); stored material is not selectable in this build")
+            }
             completion(true)
         }
     }

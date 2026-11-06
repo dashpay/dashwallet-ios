@@ -127,7 +127,8 @@ enum RawTransactionInspector {
         let data = row.transactionData
         guard !data.isEmpty, let parsed = try? ParsedRawTransaction(data: data) else { return nil }
 
-        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        // Devnet shares testnet's address version bytes.
+        let network: PaymentNetwork = WalletEnvironment.isMainnet ? .mainnet : .testnet
 
         // Best-effort input sender addresses from the SDK's consensus decoder
         // (P2PKH scriptSig recovery). Optional — a decode failure only loses

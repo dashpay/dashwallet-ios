@@ -37,6 +37,8 @@ enum DWRegistrationPhaseAdapter {
         phase: DWIdentityRegistrationController.Phase,
         assetLockStatus: Int,
         fundingSource: DWIdentityFundingSource = .core,
+        isRegisteringUsername: Bool = false,
+        isFundingExistingIdentity: Bool = false,
         failedAtPhase: DWDPRegistrationState? = nil
     ) -> DWDPRegistrationState {
         // NS_ENUM(NSUInteger, DWDPRegistrationState) imports into Swift
@@ -46,6 +48,10 @@ enum DWRegistrationPhaseAdapter {
         //   DWDPRegistrationState_CreatingID        → .creatingID
         //   DWDPRegistrationState_RegistrationUsername → .registrationUsername
         //   DWDPRegistrationState_Done              → .done
+        // Topping up an existing identity is the payment for its name, so it
+        // reads as the payment step even though the name step has begun.
+        if isFundingExistingIdentity && phase.isActive { return .processingPayment }
+        if isRegisteringUsername && phase.isActive { return .registrationUsername }
         switch phase {
         case .idle, .preparingKeys:
             // Pre-FFI — keys are still being derived, no on-chain

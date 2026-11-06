@@ -5,7 +5,7 @@
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 
-@testable import dashwallet
+@testable import dashpay
 import Combine
 import SwiftDashSDK
 import XCTest
@@ -29,6 +29,46 @@ final class PassiveWalletStateUITailTests: XCTestCase {
             WalletSendService.isBlockedByInitialRestoreSync(
                 isResyncingWallet: false,
                 isChainSynced: false))
+    }
+
+    func testInitialRestoreSyncGateBlocksAndClearsPerArmedNetwork() {
+        // Keychain recovery arms one network at a time; a second network's
+        // recovery joins the first instead of replacing it.
+        let gate = InitialRestoreSyncGate.disarmed
+            .arming(scope: "mainnet")
+            .arming(scope: "testnet")
+        XCTAssertEqual(gate.scopes, ["mainnet", "testnet"])
+        // Only an armed network is blocked; a network the user switches to
+        // mid-scan keeps its ordinary catch-up ungated.
+        XCTAssertTrue(gate.blocks(scope: "mainnet"))
+        XCTAssertTrue(gate.blocks(scope: "testnet"))
+        XCTAssertFalse(gate.blocks(scope: "devnet-x"))
+        XCTAssertTrue(gate.blocks(scope: nil), "unknown readiness must not spend")
+        // A `.syncDone` lifts its own network's arm and no other.
+        let afterTestnet = gate.clearing(scope: "testnet")
+        XCTAssertEqual(afterTestnet, InitialRestoreSyncGate(isArmed: true, scopes: ["mainnet"]))
+        XCTAssertFalse(afterTestnet.blocks(scope: "testnet"))
+        XCTAssertTrue(afterTestnet.blocks(scope: "mainnet"))
+        XCTAssertEqual(afterTestnet.clearing(scope: "devnet-x"), afterTestnet)
+        XCTAssertEqual(afterTestnet.clearing(scope: nil), afterTestnet)
+        XCTAssertEqual(afterTestnet.clearing(scope: "mainnet"), .disarmed)
+        XCTAssertFalse(InitialRestoreSyncGate.disarmed.blocks(scope: "mainnet"))
+    }
+
+    func testPhraseRestoreGateCoversEveryNetworkAndIsNeverNarrowed() {
+        // The phrase restore arms every network (no scopes): any network's
+        // `.syncDone` clears it, every network is blocked meanwhile, and a
+        // keychain recovery arm on top of it does not narrow it.
+        let gate = InitialRestoreSyncGate.everyNetwork
+        XCTAssertTrue(gate.blocks(scope: "mainnet"))
+        XCTAssertTrue(gate.blocks(scope: "testnet"))
+        XCTAssertEqual(gate.arming(scope: "testnet"), gate)
+        XCTAssertEqual(gate.clearing(scope: "mainnet"), .disarmed)
+        // Stale scopes from a disarmed gate do not revive it.
+        let stale = InitialRestoreSyncGate(isArmed: false, scopes: ["testnet"])
+        XCTAssertFalse(stale.blocks(scope: "testnet"))
+        XCTAssertEqual(stale.arming(scope: "mainnet"), InitialRestoreSyncGate(isArmed: true, scopes: ["mainnet"]))
+        XCTAssertEqual(stale.clearing(scope: "mainnet"), .disarmed)
     }
 
     func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {
@@ -64,7 +104,7 @@ final class PassiveWalletStateUITailTests: XCTestCase {
         withExtendedLifetime(cancellable) {}
     }
 
-    func testBalanceModelAppliesClearsAndReseedsWithoutChangingDisplayContract() async {
+    func testBalanceModelDistinguishesUnavailableFromZeroAcrossClearsAndReseeds() async {
         let options = DWGlobalOptions.sharedInstance()
         let originalBalanceHidden = options.balanceHidden
         let originalWalletNeedsBackup = options.walletNeedsBackup
@@ -86,15 +126,31 @@ final class PassiveWalletStateUITailTests: XCTestCase {
 
         let model = BalanceModel()
         XCTAssertTrue(model.isBalanceHidden)
+        XCTAssertNil(model.value)
+        XCTAssertEqual(model.mainAmountString, "—")
+        XCTAssertEqual(model.fiatAmountString(), "—")
 
-        await applyBalance(9_000, expecting: 9_000, in: model)
+        // The early restore publish must reach Home before the main actor
+        // yields. This also catches rereading @Published's old stored value.
+        SwiftDashSDKWalletState.shared.applyBalanceOnMainActor(WalletBalance(confirmed: 9_000))
+        XCTAssertEqual(model.value, 9_000)
         XCTAssertTrue(options.userHasBalance)
         XCTAssertNotNil(options.balanceChangedDate)
         XCTAssertTrue(model.isBalanceHidden)
 
         let backupReminderDate = options.balanceChangedDate
         await clearBalance(expecting: model)
-        XCTAssertFalse(options.userHasBalance)
+        XCTAssertNil(model.value)
+        XCTAssertEqual(model.mainAmountString, "—")
+        XCTAssertEqual(model.fiatAmountString(), "—")
+        // `userHasBalance` deliberately survives a cleared balance. `nil` means
+        // "not known yet" — Core SPV stopped, or no wallet bound to the host —
+        // never "this wallet is empty", and the flag is persisted per wallet and
+        // feeds the default shortcut bar. Writing `false` here let one offline
+        // launch permanently drop a shortcut from a funded wallet. The wipe path
+        // is what legitimately resets it, through
+        // `DWGlobalOptions.restoreToDefaults()` in `SwiftDashSDKWalletWiper`.
+        XCTAssertTrue(options.userHasBalance)
         XCTAssertEqual(options.balanceChangedDate, backupReminderDate)
         XCTAssertTrue(model.isBalanceHidden)
 
@@ -102,6 +158,11 @@ final class PassiveWalletStateUITailTests: XCTestCase {
         XCTAssertEqual(model.value, 4_000)
         XCTAssertTrue(options.userHasBalance)
         XCTAssertTrue(model.isBalanceHidden)
+
+        await applyBalance(0, expecting: 0, in: model)
+        XCTAssertEqual(model.value, 0)
+        XCTAssertNotEqual(model.mainAmountString, "—")
+        XCTAssertFalse(options.userHasBalance)
     }
 
     func testExploreUsesCurrentNetworkAndResolvesAddressForEveryAction() {
@@ -172,11 +233,12 @@ final class PassiveWalletStateUITailTests: XCTestCase {
     private func clearBalance(expecting model: BalanceModel) async {
         let expectation = expectation(description: "Balance clears")
         let cancellable = model.$value
-            .filter { $0 == 0 }
+            .filter { $0 == nil }
             .prefix(1)
             .sink { _ in expectation.fulfill() }
 
         SwiftDashSDKWalletState.shared.clearAllState()
+        XCTAssertNil(model.value)
 
         await fulfillment(of: [expectation], timeout: 2)
         withExtendedLifetime(cancellable) {}

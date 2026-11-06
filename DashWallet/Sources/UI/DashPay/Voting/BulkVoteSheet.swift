@@ -172,8 +172,8 @@ struct BulkVoteSheet: View {
         }
     }
 
-    /// Explains what will be cast, what will be replaced, and what is already
-    /// settled.
+    /// Explains what will be cast, what will be replaced, what is already
+    /// settled, and what can no longer be voted at all.
     ///
     /// Changing a vote is legitimate — Platform accepts several votes per
     /// masternode per contest — so an earlier vote of a DIFFERENT choice is
@@ -205,6 +205,14 @@ struct BulkVoteSheet: View {
                     "%1$d already voted “%2$@” and will be left as they are.",
                     comment: "Voting"),
                 plan.duplicatePairs, newName))
+        }
+
+        if plan.exhaustedPairs > 0 {
+            parts.append(String(
+                format: NSLocalizedString(
+                    "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.",
+                    comment: "Voting"),
+                plan.exhaustedPairs))
         }
 
         guard plan.hasWork else {

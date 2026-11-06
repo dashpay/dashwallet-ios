@@ -74,6 +74,7 @@ final class PinPromptViewModel: ObservableObject {
     /// Bound to the (hidden) system-keyboard field: keep only digits, drop
     /// anything longer than the PIN length, and verify once full.
     func inputChanged(_ text: String) {
+        guard !didComplete else { return }
         guard !isLockedOut else {
             if !enteredPin.isEmpty { enteredPin = "" }
             return

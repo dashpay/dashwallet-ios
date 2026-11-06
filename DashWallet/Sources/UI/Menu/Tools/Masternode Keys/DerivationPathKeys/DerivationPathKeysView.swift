@@ -65,9 +65,13 @@ struct DerivationPathKeysContentView: View {
                 .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 10) {
-                NavBarBackPlus(onBack: onBack) {
-                    viewModel.showNextKey()
-                }
+                DashUIKit.NavigationBar(
+                    leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
+                    trailing: {
+                        DashUIKit.NavigationBarElement.plus.button {
+                            viewModel.showNextKey()
+                        }
+                    })
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {

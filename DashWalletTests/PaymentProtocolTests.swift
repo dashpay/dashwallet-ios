@@ -6,10 +6,6 @@
 //  Self-contained: the signed PaymentRequest fixture is embedded (captured from the
 //  bip70-dash test server, see BIP70_TESTING.md), so no network/server is required.
 //
-//  NOTE: the DashWalletTests target is currently compile-gated; if it won't build, the
-//  identical assertions run via the standalone manual harness (swiftc). See the manual
-//  runner referenced in the BIP70 work.
-//
 
 import XCTest
 import Security
@@ -258,7 +254,35 @@ final class PaymentProtocolTests: XCTestCase {
     private var p2shScript: Data { Data([0xa9, 0x14]) + Self.hash160 + Data([0x87]) }
 
     private func sdkNetwork(_ network: PaymentNetwork) -> SwiftDashSDK.Network {
-        network == .mainnet ? .mainnet : .testnet
+        switch network {
+        case .mainnet: return .mainnet
+        // The SDK validates devnet addresses with testnet's version bytes.
+        case .testnet, .devnet: return .testnet
+        }
+    }
+
+    /// Devnet is a distinct payment network but not a distinct address
+    /// format. The codec must keep producing testnet's bytes for it, or every
+    /// devnet address the app shows and parses changes shape.
+    func testDevnetSharesTestnetAddressVersionBytes() {
+        for script in [p2pkhScript, p2shScript] {
+            XCTAssertEqual(ScriptAddressCodec.address(forScript: script, network: .devnet),
+                           ScriptAddressCodec.address(forScript: script, network: .testnet))
+        }
+        XCTAssertEqual(PaymentNetwork.devnet.pubkeyHashVersion,
+                       PaymentNetwork.testnet.pubkeyHashVersion)
+        XCTAssertEqual(PaymentNetwork.devnet.scriptHashVersion,
+                       PaymentNetwork.testnet.scriptHashVersion)
+    }
+
+    /// BIP70 has no devnet token, so no declared network string may resolve to
+    /// `.devnet`. That is precisely what makes the service's equality check
+    /// reject a testnet request while the wallet runs on a devnet.
+    func testDeclaredNetworkStringsNeverResolveToDevnet() {
+        XCTAssertEqual(BIP70PaymentService.paymentNetwork(fromString: "test"), .testnet)
+        XCTAssertEqual(BIP70PaymentService.paymentNetwork(fromString: "main"), .mainnet)
+        XCTAssertNil(BIP70PaymentService.paymentNetwork(fromString: "devnet"))
+        XCTAssertNil(BIP70PaymentService.paymentNetwork(fromString: nil))
     }
 
     func testFixtureScriptDecodesToKnownTestnetAddress() throws {
@@ -588,12 +612,45 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
+    /// A wallet running on a devnet must refuse a request that declares the
+    /// public testnet. Devnet and testnet share address version bytes, so
+    /// nothing downstream would notice: the transaction would be signed and
+    /// broadcast on the devnet while the merchant waits on testnet.
+    func testPrepareRejectsTestnetRequestWhileOnDevnet() async {
+        let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: "test")), w)
+        await assertThrowsBIP70(
+            try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .devnet),
+            .networkMismatch(requested: "test"))
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// And a mainnet request, for the same reason.
+    func testPrepareRejectsMainnetRequestWhileOnDevnet() async {
+        let svc = service(FakeTransport(unsigned(network: "main")), FakeWallet())
+        await assertThrowsBIP70(
+            try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .devnet),
+            .networkMismatch(requested: "main"))
+    }
+
+    /// A request that declares no network is still honoured on devnet: an
+    /// absent field means "no check" on every network, and devnet resolves its
+    /// outputs through testnet's address bytes.
+    func testPrepareAcceptsNetworklessRequestOnDevnet() async throws {
+        let svc = service(FakeTransport(unsigned(network: nil)), FakeWallet())
+        let confirmation = try await svc.prepareForConfirmation(
+            from: url, scheme: "dash", network: .devnet)
+        XCTAssertEqual(confirmation.recipients.map(\.address), [Self.testnetAddress])
+        XCTAssertEqual(confirmation.network, .devnet)
+    }
+
     func testConfirmAndSendOrderAndBytes() async throws {
         let w = FakeWallet(); let t = FakeTransport(unsigned()); t.onPost = { w.calls.append("post") }
         let svc = service(t, w)
         let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         let result = try await svc.confirmAndSend(confirmation)
-        XCTAssertEqual(w.calls, ["build", "broadcast", "post"]) // broadcast strictly before POST
+        // BIP70 order: the merchant acknowledges the signed bytes before they are broadcast.
+        XCTAssertEqual(w.calls, ["build", "post", "broadcast"])
         XCTAssertEqual(t.postedPayment?.transactions, [w.prepared.txData])
         XCTAssertEqual(result.ackMemo, "thanks")
     }
@@ -680,13 +737,20 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
-    func testSoftPostFailureAfterBroadcast() async throws {
+    /// A failed merchant round-trip happens BEFORE broadcast, so the money is unspent: the
+    /// failure is a hard throw carrying the tx hash, nothing is broadcast, and the send
+    /// guard is released so the user can retry.
+    func testPostFailureBeforeBroadcastThrowsWithoutBroadcasting() async throws {
         let w = FakeWallet(); let t = FakeTransport(unsigned()); t.postShouldThrow = .unexpectedResponse(host: "h")
         let svc = service(t, w)
         let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
-        let result = try await svc.confirmAndSend(c) // must NOT throw — coins already moved
-        XCTAssertNil(result.ackMemo)
-        XCTAssertTrue(w.calls.contains("broadcast"))
+        await assertThrowsBIP70(
+            try await svc.confirmAndSend(c),
+            .paymentNotAcknowledged(txHashDisplay: w.prepared.txHashDisplay, reason: "Unexpected response from h."))
+        XCTAssertFalse(w.calls.contains("broadcast"))
+        t.postShouldThrow = nil
+        _ = try await svc.confirmAndSend(c) // guard was released: the retry goes through
+        XCTAssertEqual(w.calls, ["build", "build", "broadcast"])
     }
 
     func testRefundToFromOwnAddress() async throws {
@@ -881,6 +945,38 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(box.amount, 150_000_000)
         XCTAssertEqual(box.dashpayUsername, "bob")
         XCTAssertTrue(box.hasExplicitScheme)
+    }
+
+    /// #1092: a scanned `dashwallet://pay=` link is read the way the same link opened as a deep
+    /// link is — address, amount, sender, and the label naming the requesting app.
+    func testParsedBoxReadsDashWalletPayLinkLikeDeepLink() {
+        let link = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=0.01916910&sender=v4v.app"
+        let box = ParsedPaymentURI.parse(paymentString: link)
+        XCTAssertEqual(box.rawString, link)
+        XCTAssertEqual(box.scheme, "dash")
+        XCTAssertEqual(box.address, "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
+        XCTAssertEqual(box.amount, 1_916_910)
+        XCTAssertEqual(box.callbackScheme, "v4v.app")
+        XCTAssertTrue(box.label?.contains("V4V.App") ?? false)
+    }
+
+    /// Without `sender` the deep-link router rejects a `pay=` link, so the scan still falls back to
+    /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
+    func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
+        let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
+        // The rewrite was not applied: it would carry the label naming the sender. This holds on
+        // every network; the verdicts below alone would also pass on mainnet for a testnet address.
+        XCTAssertNil(box.label)
+        XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
+        XCTAssertFalse(box.isValidDashPaymentIntent)
+    }
+
+    /// The plain `dashwallet:<address>` alias is not a deep-link action and still reads as `dash:`.
+    func testParsedBoxKeepsPlainDashWalletAlias() {
+        let box = ParsedPaymentURI.parse(paymentString: "dashwallet:Xabc?amount=1")
+        XCTAssertEqual(box.scheme, "dash")
+        XCTAssertEqual(box.address, "Xabc")
+        XCTAssertEqual(box.amount, 100_000_000)
     }
 
     // MARK: - PaymentURIBuilder (dash: serializer — DSPaymentRequest parity)

@@ -60,7 +60,9 @@ struct BuySellPortalScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack(onBack: onBack)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button(action: onBack)
+            })
 
             TopIntro(
                 title: NSLocalizedString("Buy & Sell Dash", comment: "Buy Sell Dash"),

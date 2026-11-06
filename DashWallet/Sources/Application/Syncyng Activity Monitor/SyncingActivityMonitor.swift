@@ -145,7 +145,25 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     public var state: State = .unknown {
         didSet {
             if state == .syncDone {
-                DWGlobalOptions.sharedInstance().isResyncingWallet = false
+                // Only the network whose historical scan armed the gate may
+                // clear its arm: a `.syncDone` from an already caught-up
+                // network the user switched to mid-scan leaves it in place,
+                // or the scan would resume ungated on the way back
+                // (ios#1227). The scope is the running SPV client's, not
+                // `WalletEnvironment.network`: a switch flips the key while
+                // the outgoing client's resting snapshot can still be
+                // replayed (`resetPublishedState`, a reachability update),
+                // and that snapshot must be credited to the network it came
+                // from. With no client (nil) a scoped arm stays; an
+                // every-network arm (phrase restore) clears as before. See
+                // `InitialRestoreSyncGate`.
+                // `state` is main-confined (the coordinator publishes on
+                // main); off main, no client is attributed and a scoped arm
+                // simply stays, which is the conservative outcome.
+                let runningScope: String? = Thread.isMainThread
+                    ? MainActor.assumeIsolated { SwiftDashSDKSPVCoordinator.shared.runningScope }
+                    : nil
+                DWGlobalOptions.sharedInstance().clearInitialRestoreSyncGate(scope: runningScope)
             }
 
             guard oldValue != state else {
@@ -194,6 +212,12 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     /// has no reason to keep any of them alive.
     private let observers = NSHashTable<AnyObject>.weakObjects()
     private let observersLock = NSLock()
+
+    /// Reachability reported by the previous path update, so the runtime kick
+    /// in `initializeReachibility()` fires on the transition into `.online`
+    /// rather than on every repeated `.online` path report. Main-confined:
+    /// only the main-hopped closure in `initializeReachibility()` touches it.
+    private var lastNetworkStatus: NetworkStatus = .unknown
 
     override init() {
         super.init()
@@ -516,7 +540,7 @@ extension SyncingActivityMonitor {
 
 extension SyncingActivityMonitor {
     private func initializeReachibility() {
-        networkStatusDidChange = { [weak self] _ in
+        networkStatusDidChange = { [weak self] status in
             // Re-evaluate state when reachability flips by replaying the
             // current coordinator snapshot through `handleCoordinatorUpdate`.
             // The Combine pipeline doesn't fire on reachability changes, so
@@ -527,9 +551,36 @@ extension SyncingActivityMonitor {
             // from a background Task (e.g. `CoinJoinService.restoreMode`),
             // `handleCoordinatorUpdate` would otherwise run off-main and
             // `isSyncing`'s `UIApplication.isIdleTimerDisabled` didSet would
-            // trip the main-thread barrier.
+            // trip the main-thread barrier. `lastNetworkStatus` is read and
+            // written inside this closure for the same reason — it stays
+            // main-confined.
             let apply: () -> Void = {
                 guard let self else { return }
+
+                // `handlePathUpdate` posts on every path update, not only on a
+                // change, so act on `.offline → .online` alone. Specifically
+                // `previous == .offline`, not `previous != .online`: the field
+                // starts at `.unknown`, so the looser test made the first path
+                // report of every cold launch look like connectivity returning.
+                // That fired a refresh the launch path had already queued, and
+                // during onboarding it reached `refresh`'s unconditional
+                // `fullReset` before the `hasSDKWallet` guard could bail.
+                // `startIfReady` elides the rebuild when Core is already up and
+                // starts Platform on its own, so this brings a degraded
+                // Platform back without stopping a healthy Core sync.
+                //
+                // `startIfReadyWhenLifecycleIdle` rather than `startIfReady`:
+                // the recovery must be held back while a wallet-lifecycle
+                // transition owns the runtime, and that has to be true when the
+                // op RUNS, not when it is queued. Checking here would race — a
+                // network switch can begin and fail while the op waits its turn
+                // on the lifecycle queue.
+                let previous = self.lastNetworkStatus
+                self.lastNetworkStatus = status
+                if status == .online, previous == .offline {
+                    SwiftDashSDKWalletRuntime.startIfReadyWhenLifecycleIdle()
+                }
+
                 let coord = SwiftDashSDKSPVCoordinator.shared
                 self.handleCoordinatorUpdate(
                     sdkState: coord.state,

@@ -11,8 +11,11 @@
 
 import Foundation
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
+// `AssetLockRecoveryService` is main-actor isolated; `apply` and `txidWire`
+// are not `nonisolated`, so the synchronous tests that call them run on it.
+@MainActor
 final class StuckAssetLockRetryTests: XCTestCase {
 
     // MARK: statusAllowsRetry

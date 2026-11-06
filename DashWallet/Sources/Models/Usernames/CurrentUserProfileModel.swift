@@ -61,6 +61,16 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // The row's report was acted on from the other surface — typically
+        // Home acknowledging a finished registration, which clears the record
+        // `reportsRegistration` reads below.
+        NotificationCenter.default.publisher(for: .DWUsernameRegistrationReportChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateShowJoinDashpay()
+            }
+            .store(in: &cancellableBag)
+
         // Re-evaluate only after the SDK host has rebound to the destination
         // network. This prevents the menu banner from inheriting the previous
         // network's global username mirror.
@@ -126,7 +136,28 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             // the user actually has a username, not when they dismiss it.
             dismissed: false,
             hasRegisteredUsername: hasUsername,
-            hasRegistrationInProgress: hasPendingRecoveredName)
+            hasRegistrationInProgress: hasPendingRecoveredName,
+            // Same reason as Home: a submitted contested name is reported by
+            // this row while the network votes on it, and that outlives the
+            // registration of an instant companion.
+            hasVotePending: hasPendingRecoveredName,
+            // Same override Home applies. A registration started from More
+            // returns to More, and the row is where its progress and its
+            // outcome are reported — but this model's status observer sees
+            // `hasRegisteredUsername` the moment registration succeeds and
+            // hid the row, so the promised completed report (with its profile
+            // action) vanished at the instant it became true, and stayed
+            // hidden after relaunch. The persisted records are the same
+            // wallet/network-scoped ones the row itself reads. A lost vote
+            // counts too: its companion keeps `hasRegisteredUsername` true and
+            // the bookmark behind `hasVotePending` is gone, so without it the
+            // rejection was never shown on a wallet that took a companion.
+            reportsRegistration: MainActor.assumeIsolated {
+                let prefs = UsernamePrefs.shared
+                return prefs.inFlightRegistrationUsername?.isEmpty == false
+                    || prefs.completedTileUsername?.isEmpty == false
+                    || prefs.lostContestUsername?.isEmpty == false
+            })
     }
 
     /// Re-evaluates the menu banner after a local preference change such as

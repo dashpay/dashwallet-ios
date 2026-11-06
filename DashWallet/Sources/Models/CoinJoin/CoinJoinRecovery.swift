@@ -66,7 +66,9 @@ final class CoinJoinRecovery: NSObject {
     // MARK: - Per-network UserDefaults keys
 
     private func networkTag(_ network: Network) -> String {
-        network == .mainnet ? "mainnet" : "testnet"
+        // Same "mainnet"/"testnet" strings as before; each configured devnet
+        // gets its own tag, since its wallets live on a different chain.
+        network.persistenceScope
     }
     /// Terminal per-network flag: set once the first full wide-gap scan
     /// completes (the deep coins it found are persisted thereafter) or the
@@ -74,13 +76,21 @@ final class CoinJoinRecovery: NSObject {
     /// used-address history persists. (The older `…evaluated` / `…needed` keys
     /// are no longer used; any stale values are harmless.)
     private func recoveredKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.recovered.\(networkTag(network))"
+        recoveredKey(tag: networkTag(network))
+    }
+
+    private func recoveredKey(tag: String) -> String {
+        "coinJoinRecovery.v1.recovered.\(tag)"
     }
 
     /// CoinJoin balance (duffs) at the moment the user last chose "Later" on
     /// the post-sync sweep prompt. Absent = never dismissed.
     private func sweepPromptDismissedBalanceKey(_ network: Network) -> String {
-        "coinJoinRecovery.v1.sweepPromptDismissedBalance.\(networkTag(network))"
+        sweepPromptDismissedBalanceKey(tag: networkTag(network))
+    }
+
+    private func sweepPromptDismissedBalanceKey(tag: String) -> String {
+        "coinJoinRecovery.v1.sweepPromptDismissedBalance.\(tag)"
     }
 
     // MARK: - API
@@ -94,7 +104,25 @@ final class CoinJoinRecovery: NSObject {
     /// launches load them at the default gap.
     func needsWideRecoveryGap(for network: Network) -> Bool {
         lock.lock(); defer { lock.unlock() }
+        // A local-store reset leaves a durable per-scope intent before it
+        // removes anything (`WalletLocalStoreResetIntent`): the flag alone
+        // cannot tell a scope whose WAL was unlinked from a healthy one.
+        if Self.resetIntent()?.isPending(scope: networkTag(network)) == true { return true }
         return !defaults.bool(forKey: recoveredKey(network))
+    }
+
+    /// Whether a local-store reset left its rescan intent for `network`:
+    /// the SPV coordinator then also rewinds every wallet's filter checkpoint
+    /// before the widened scan, since surviving rows keep a checkpoint past
+    /// the history that may have been lost. Thread-safe.
+    func isResetRescanPending(for network: Network) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return Self.resetIntent()?.isPending(scope: networkTag(network)) == true
+    }
+
+    private static func resetIntent() -> WalletLocalStoreResetIntent? {
+        guard let roots = try? WalletLocalStoreRoots.inDocuments() else { return nil }
+        return WalletLocalStoreResetIntent(directory: roots.resetIntents)
     }
 
     /// Mark recovery complete for `network` — the first wide-gap scan completed
@@ -102,6 +130,15 @@ final class CoinJoinRecovery: NSObject {
     /// revert to the fast default gap. Idempotent and thread-safe.
     func markRecovered(for network: Network) {
         lock.lock(); defer { lock.unlock() }
+        // The reset's intent for this scope is satisfied by this completed
+        // scan, whatever the flag said before.
+        if let intent = Self.resetIntent() {
+            do {
+                try intent.finish(scope: networkTag(network))
+            } catch {
+                Self.logger.error("🪙 CJRECOV :: could not clear the rescan intent for \(self.networkTag(network), privacy: .public): \(String(describing: error), privacy: .public)")
+            }
+        }
         guard !defaults.bool(forKey: recoveredKey(network)) else { return }
         defaults.set(true, forKey: recoveredKey(network))
         Self.logger.info(
@@ -131,21 +168,55 @@ final class CoinJoinRecovery: NSObject {
         return currentBalanceDuffs <= stored
     }
 
-    /// Clear the terminal per-network recovery flags on a wallet wipe so a
-    /// wallet restored afterwards re-runs the one-time wide CoinJoin scan. The
-    /// flag is app-level (UserDefaults), not per-wallet, and a wipe deletes the
-    /// persisted deep UTXOs, so without this a restored heavy-mixer wallet would
-    /// skip the wide scan and understate its balance. Clears BOTH networks —
-    /// the wipe removes all wallet material and we don't know the next restored
-    /// wallet's network; `recoveredKey` only ever produces those two keys.
-    /// Thread-safe.
-    func resetForWipe() {
+    /// Clear the terminal per-network recovery flags so the next start on any
+    /// network re-runs the one-time wide CoinJoin scan. Needed whenever the
+    /// persisted deep UTXOs are gone — a wallet wipe or a local-store reset:
+    /// the flag is app-level (UserDefaults), not per-wallet, so without this a
+    /// restored heavy-mixer wallet would skip the wide scan and understate its
+    /// balance. Clears every network and every devnet scope, because the next
+    /// restored wallet's network is unknown. Thread-safe.
+    func resetRecoveryFlags() {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(.mainnet))
         defaults.removeObject(forKey: recoveredKey(.testnet))
+        defaults.removeObject(forKey: recoveredKey(.devnet))
+        // Flags written on devnets other than the one configured now.
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
+            defaults.removeObject(forKey: recoveredKey(tag: scope))
+        }
+        Self.logger.info(
+            "🪙 CJRECOV :: recovery flags cleared — next start re-runs the one-time wide scan")
+    }
+
+    /// Clear one scope's terminal flag because its wallet rows — and with them
+    /// the persisted deep CoinJoin UTXOs — are being recreated from the
+    /// keychain. The host calls this on every such recreation, so the loss is
+    /// handled where it is observed, independently of how the store came to be
+    /// empty (a completed or interrupted local-store reset, a kill before an
+    /// earlier flag write reached disk, a reinstall). The next start re-runs
+    /// the idempotent one-time scan. `scope` is a `Network.persistenceScope`
+    /// value. Thread-safe.
+    func resetRecoveryFlag(scope: String) {
+        lock.lock(); defer { lock.unlock() }
+        defaults.removeObject(forKey: recoveredKey(tag: scope))
+        Self.logger.info(
+            "🪙 CJRECOV :: recovery flag cleared for \(scope, privacy: .public) — its next start re-runs the one-time wide scan")
+    }
+
+    /// Wallet wipe: the recovery flags (`resetRecoveryFlags`) plus the sweep
+    /// prompt's "Later" balances, which belong to the wallet being removed.
+    /// A local-store reset keeps those balances — the rescan re-derives the
+    /// same CoinJoin balance, so the user's deferral still applies. Thread-safe.
+    func resetForWipe() {
+        resetRecoveryFlags()
+        lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
         defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.devnet))
+        for scope in DevnetConfiguration.persistedDevnetScopes() {
+            defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(tag: scope))
+        }
         Self.logger.info(
-            "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
+            "🪙 CJRECOV :: sweep prompt deferrals cleared on wipe")
     }
 }

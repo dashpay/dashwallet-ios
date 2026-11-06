@@ -43,6 +43,15 @@ struct ObservedTransaction {
     let inputAddresses: Set<String>
     /// Row `firstSeen`, falling back to `blockTimestamp`; nil when both are 0.
     let timestamp: Date?
+    /// Row `blockHeight` — 0 while the transaction is still unmined
+    /// (mempool or InstantSend-locked only).
+    let blockHeight: UInt32
+    /// Row `blockTimestamp`, i.e. the timestamp of the block that mined this
+    /// transaction; nil while it is unmined. Unlike `timestamp` this is
+    /// consensus data, so a restore or rescan cannot re-stamp it with the
+    /// device clock — the only stamp that can tell "just arrived" apart from
+    /// "history replayed".
+    let minedAt: Date?
     /// Sum of this tx's outputs paying the wallet's own addresses (the row's
     /// materialized TXOs) — DashSync's `amountReceived(from:)`, in duffs.
     let ownOutputsAmount: UInt64

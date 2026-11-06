@@ -40,7 +40,7 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
 @implementation DWUpholdConstants
 
 + (NSString *)authorizeURLFormat {
-    if (DWWalletEnvironment.isTestnet) {
+    if (DWWalletEnvironment.isTestNetwork) {
         return @"https://sandbox.uphold.com/authorize/7aadd33b84e942632ed7ffd9b09578bd64be2099?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@";
     }
     else if (DWWalletEnvironment.isMainnet) {
@@ -50,7 +50,7 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
 }
 
 + (NSString *)baseURLString {
-    if (DWWalletEnvironment.isTestnet) {
+    if (DWWalletEnvironment.isTestNetwork) {
         return @"https://api-sandbox.uphold.com/";
     }
     else if (DWWalletEnvironment.isMainnet) {
@@ -60,7 +60,7 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
 }
 
 + (NSString *)clientID {
-    if (DWWalletEnvironment.isTestnet) {
+    if (DWWalletEnvironment.isTestNetwork) {
         return @"7aadd33b84e942632ed7ffd9b09578bd64be2099";
     }
     else if (DWWalletEnvironment.isMainnet) {
@@ -70,7 +70,7 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
 }
 
 + (NSString *)clientSecret {
-    if (DWWalletEnvironment.isTestnet) {
+    if (DWWalletEnvironment.isTestNetwork) {
         return DWUpholdInfoPlistValue(@"SANDBOX_CLIENT_SECRET");
     }
     else if (DWWalletEnvironment.isMainnet) {
@@ -80,7 +80,7 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
 }
 
 + (NSString *)transactionURLFormat {
-    if (DWWalletEnvironment.isTestnet) {
+    if (DWWalletEnvironment.isTestNetwork) {
         return @"https://sandbox.uphold.com/reserve/transactions/%@";
     }
     else if (DWWalletEnvironment.isMainnet) {

@@ -253,14 +253,22 @@ final class PlatformAddressActivityDAO {
 
     /// Stable append-only position for an attended receive-session snapshot.
     /// Row IDs are used instead of wall-clock observation timestamps.
-    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64 {
+    ///
+    /// 0 when the wallet has no activity yet; nil when the read failed. The
+    /// two must stay apart: a cursor of 0 admits every row as new, which is
+    /// right for an empty table and wrong for one that could not be read.
+    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64? {
         typealias S = PlatformAddressActivitySchema
         let query = S.activity
             .select(S.colId)
             .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
             .order(S.colId.desc)
             .limit(1)
-        return (try? db.pluck(query))?[S.colId] ?? 0
+        do {
+            return try db.pluck(query)?[S.colId] ?? 0
+        } catch {
+            return nil
+        }
     }
 
     /// New activity for one frozen receive address, oldest first so a burst is
@@ -279,6 +287,27 @@ final class PlatformAddressActivityDAO {
                     S.colAddress == address &&
                     S.colId > afterId)
             .order(S.colId.asc)
+        return records(for: query)
+    }
+
+    /// Received-activity rows for the wallet+network observed at or after
+    /// `since`, newest first, at most `limit` of them — the window and the cap
+    /// applied in the query, for a caller that scans on every signal.
+    func activities(
+        walletId: Data,
+        networkRaw: Int64,
+        since: Date,
+        limit: Int,
+        offset: Int = 0
+    ) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .filter(
+                S.colWalletId == walletId &&
+                    S.colNetwork == networkRaw &&
+                    S.colObservedAt >= since.timeIntervalSince1970)
+            .order(S.colObservedAt.desc)
+            .limit(limit, offset: offset)
         return records(for: query)
     }
 

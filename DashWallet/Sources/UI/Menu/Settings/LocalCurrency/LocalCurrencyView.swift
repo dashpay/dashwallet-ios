@@ -182,7 +182,9 @@ private struct LocalCurrencyTopOverlayView: View {
         HStack(alignment: .center, spacing: 0) {
             ZStack {
                 if let onBack {
-                    NavBarBack(onBack: onBack)
+                    DashUIKit.NavigationBar(leading: {
+                        DashUIKit.NavigationBarElement.back.button(action: onBack)
+                    })
                 }
 
                 // Title

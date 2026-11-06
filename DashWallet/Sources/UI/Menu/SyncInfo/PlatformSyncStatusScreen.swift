@@ -39,22 +39,9 @@ struct PlatformSyncStatusScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+            })
 
             // Header
             HStack {
@@ -66,6 +53,7 @@ struct PlatformSyncStatusScreen: View {
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
+            .padding(.horizontal, 20)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -86,8 +74,8 @@ struct PlatformSyncStatusScreen: View {
                     Spacer(minLength: 12)
                 }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
@@ -137,7 +125,7 @@ struct PlatformSyncStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(
                 title: NSLocalizedString("Platform Balance", comment: "Sync diagnostics"),
-                value: PlatformCreditsFormatter.dashString(coordinator.platformBalance))
+                value: coordinator.platformBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
                 title: NSLocalizedString("Active Addresses", comment: "Sync diagnostics"),
                 value: "\(coordinator.activeAddressCount)")
@@ -301,53 +289,60 @@ struct PlatformSyncStatusScreen: View {
     }
 
     private var controlsCard: some View {
-        HStack(spacing: 12) {
-            Button(action: {
-                Task { await coordinator.syncNow() }
-            }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.clockwise")
-                    Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Button(action: {
+                    Task { await coordinator.syncNow() }
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                        Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(coordinator.isSyncing || coordinator.isClearing ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
+                    .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
+                    .cornerRadius(8)
                 }
-                .font(.system(size: 14, weight: .semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(coordinator.isSyncing || coordinator.isClearing ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
-                .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
-                .cornerRadius(8)
-            }
-            .disabled(coordinator.isSyncing || coordinator.isClearing)
+                .disabled(coordinator.isSyncing || coordinator.isClearing)
 
-            Button(action: {
-                // Full local wipe (Rust watermark + persisted balances +
-                // display), so the next Sync Now does the complete
-                // trunk/branch rescan — not just a display reset.
-                Task { await coordinator.clearLocalState() }
-            }) {
-                Text(NSLocalizedString(
-                    "Clear",
-                    comment: "Sync diagnostics - button that wipes the local Platform sync state"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isClearing ? .secondary : .dash.primaryText)
-                    .cornerRadius(8)
-            }
-            .disabled(coordinator.isClearing || coordinator.isSyncing)
+                Button(action: {
+                    // Full local wipe (Rust watermark + persisted balances +
+                    // display), so the next Sync Now does the complete
+                    // trunk/branch rescan — not just a display reset.
+                    Task { await coordinator.clearLocalState() }
+                }) {
+                    Text(NSLocalizedString(
+                        "Clear",
+                        comment: "Sync diagnostics - button that wipes the local Platform sync state"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.dash.gray300.opacity(0.3))
+                        .foregroundColor(coordinator.canClearLocalState ? .dash.primaryText : .secondary)
+                        .cornerRadius(8)
+                }
+                .disabled(!coordinator.canClearLocalState)
 
-            Button(action: {
-                PlatformAddressSyncCoordinator.stop()
-            }) {
-                Text(NSLocalizedString("Stop", comment: "Sync diagnostics"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isRunning ? .red : .secondary)
-                    .cornerRadius(8)
+                Button(action: {
+                    PlatformAddressSyncCoordinator.stop()
+                }) {
+                    Text(NSLocalizedString("Stop", comment: "Sync diagnostics"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.dash.gray300.opacity(0.3))
+                        .foregroundColor(coordinator.isRunning ? .red : .secondary)
+                        .cornerRadius(8)
+                }
+                .disabled(!coordinator.isRunning)
             }
-            .disabled(!coordinator.isRunning)
+            if !coordinator.canClearLocalState && !coordinator.isSyncing && !coordinator.isClearing {
+                Text("Start Platform sync before clearing its local state")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
