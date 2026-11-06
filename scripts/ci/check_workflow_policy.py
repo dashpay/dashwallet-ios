@@ -277,9 +277,15 @@ def diff_findings(changed):
                 "{}: '{}' changed; the release workflows build with it next to release or store "
                 "credentials, and no PR check runs them. Run them by hand on this commit before "
                 "merging (TestFlight: internal-only upload; schema: dry run).".format(TOOLCHAIN, path)))
-        elif not path.startswith(".github/workflows/"):
             continue
-        elif head_text is None:
+        if not path.startswith(".github/workflows/"):
+            continue
+        if base_text is not None:
+            try:
+                compose(base_text)
+            except ParseError:
+                base_text = None  # a base that does not parse is what this pull request may repair
+        if head_text is None:
             if base_text is not None and is_release_only(base_text):
                 findings.append(Finding(
                     "warning", RELEASE_ONLY, path, 1,
@@ -659,7 +665,19 @@ def self_test():
         failures += 1
         print("FAIL last release markers removed: expected one {} warning for 'Upload', got {}".format(
             RELEASE_ONLY, unmarked_found))
-    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 4 + (shellcheck_result is not None)
+    try:
+        unparsable_base = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(
+            {".github/workflows/release.yml": ("jobs:\n  a: [\n",
+                                               edit(RELEASE_WORKFLOW, "make build", "make build ARCHS=arm64"),
+                                               [(1, 2, 11, 1)])})]
+    except ParseError as error:
+        unparsable_base = "ParseError: {}".format(error)
+    if unparsable_base != [(".github/workflows/release.yml", 11,
+                            "{}: no PR check runs step 'Build'".format(RELEASE_ONLY))]:
+        failures += 1
+        print("FAIL base that does not parse: expected one {} warning for 'Build', got {}".format(
+            RELEASE_ONLY, unparsable_base))
+    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 5 + (shellcheck_result is not None)
     for name, path, text, expected in SELF_TEST_FIXTURES:
         found = [(f.code, f.line, f.message) for f in check_file(path, text)]
         ok = len(found) == len(expected) and all(

@@ -47,6 +47,7 @@ SELECT_XCODE = ".github/actions/select-xcode/action.yml"
 TEST_STEP = "Run DashWalletTests"
 GUARD_STEP = "Fail on an empty test run"
 CACHE_STEP = "Restore release XCFramework cache"
+RUST_INSTALL_STEP = "Install Rust from platform's pin"
 LINT_CHECK_STEPS = ("Self-test of the empty-test-run guard", "Self-test of the workflow policy script",
                     "CI structure tests", "actionlint", "Workflow policy")
 BUILD_MARKERS = ("build_ios.sh", "xcodebuild build", "xcodebuild archive")
@@ -164,6 +165,7 @@ def check_shared_cache_key(unit_tests, release):  # AC-12
 def check_toolchain_first(doc, before_secrets):  # AC-14
     job, steps = job_with_step(doc, CACHE_STEP)
     toolchain = {"select Xcode": index(steps, id="xcode"), "read Rust": index(steps, id="rust"),
+                 "install Rust": index(steps, name=RUST_INSTALL_STEP),
                  "restore the cache": index(steps, name=CACHE_STEP)}
     limits = {"the build": first_build(steps)}
     if before_secrets:
@@ -323,11 +325,16 @@ class StaticChecks(unittest.TestCase):
         self.assert_holds_and_catches(check_toolchain_first, (release, True), (early_secret, True))
         late_cache = with_steps(release, CACHE_STEP, lambda s: move(s, CACHE_STEP, len(s) - 1))
         self.assertNotEqual(check_toolchain_first(late_cache, True), [])
+        late_rust = with_steps(release, CACHE_STEP, lambda s: move(
+            s, RUST_INSTALL_STEP, index(s, name="Validate release secrets")))
+        self.assertNotEqual(check_toolchain_first(late_rust, True), [], "the check missed a late Rust install")
 
     def test_unit_tests_reads_its_toolchain_before_the_build(self):
         unit = load(UNIT_TESTS)
         late_xcode = with_steps(unit, CACHE_STEP, lambda s: move(s, "Select Xcode from .xcode-version", len(s) - 1))
         self.assert_holds_and_catches(check_toolchain_first, (unit, False), (late_xcode, False))
+        late_rust = with_steps(unit, CACHE_STEP, lambda s: move(s, RUST_INSTALL_STEP, len(s) - 1))
+        self.assertNotEqual(check_toolchain_first(late_rust, False), [], "the check missed a late Rust install")
 
     def test_develop_runs_are_grouped_per_commit(self):
         unit = load(UNIT_TESTS)
