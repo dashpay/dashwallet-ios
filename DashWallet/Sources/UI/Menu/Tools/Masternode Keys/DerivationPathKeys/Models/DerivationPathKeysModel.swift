@@ -232,14 +232,6 @@ final class MasternodeProviderKeyDeriver {
         self.keyResolver = keyResolver
     }
 
-    /// Whether the running wallet has a provider account of this kind.
-    ///
-    /// Without one ``poolAddresses`` is empty and `providerKeyAtIndex` throws.
-    /// Consumers that **enumerate** the pool to decide what exists, the
-    /// owner/voting address joins, must say so rather than present an empty
-    /// list as the whole truth.
-    var hasProviderPool: Bool { !poolAddresses.isEmpty }
-
     /// Snapshot the running wallet's provider address pool — the one SPV
     /// extends as ProRegTx/ProUpRegTx matches mark indexes used, and the one
     /// the Storage Explorer renders. Read once per deriver: the FFI returns
