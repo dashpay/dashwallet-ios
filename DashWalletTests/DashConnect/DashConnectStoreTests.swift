@@ -32,6 +32,21 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), connections)
     }
 
+    func testRoundTripKeepsWhichLoginMadeAConnection() {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        var oneQR = sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10))
+        oneQR.loginKind = .oneQR
+        let twoQR = sampleConnection(
+            id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 20))
+
+        store.save([oneQR, twoQR])
+
+        XCTAssertEqual(store.load().map(\.loginKind), [.oneQR, .twoQR])
+    }
+
     func testUnknownStatusDropsOnlyThatRow() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let payload: [[String: Any]] = [
@@ -145,7 +160,8 @@ final class DashConnectStoreTests: XCTestCase {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let first = MockDashConnectDataSource(store: store)
 
-        _ = try await first.approveLogin(MockDashConnectDataSource.sampleLoginRequest)
+        _ = try await first.approveLogin(
+            MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
         let second = MockDashConnectDataSource(store: store)
 
@@ -157,9 +173,10 @@ final class DashConnectStoreTests: XCTestCase {
     func testRemovePersistsAcrossFreshMockInstances() async throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let first = MockDashConnectDataSource(store: store)
-        _ = try await first.approveLogin(MockDashConnectDataSource.sampleLoginRequest)
+        _ = try await first.approveLogin(
+            MockDashConnectDataSource.sampleLoginRequest, consent: MockDashConnectDataSource.sampleRequest)
 
-        await first.remove(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        await first.remove(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot, [])
@@ -178,7 +195,7 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot.count, 1)
@@ -206,6 +223,41 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(devnetA.load(), [connection])
         XCTAssertEqual(devnetB.load(), [])
         XCTAssertNotEqual(devnetA.storageKey, devnetB.storageKey)
+    }
+
+    func testAPinnedStoreStaysWithItsWalletAndDevnetWhenTheActiveOnesChange() {
+        var walletIdHex: String? = "wallet-a"
+        var devnetName: String? = "moutai"
+        let store = UserDefaultsDashConnectStore(
+            defaults: defaults,
+            network: .devnet,
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName }
+        )
+        let connection = sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+            status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10))
+
+        let pinned = store.pinnedStore(toWalletIdHex: "wallet-a")
+        XCTAssertEqual(pinned.storageKey, store.storageKey)
+
+        walletIdHex = "wallet-b"
+        devnetName = "paloma"
+        pinned.save([connection])
+
+        XCTAssertNotEqual(pinned.storageKey, store.storageKey)
+        XCTAssertEqual(pinned.load(), [connection])
+        XCTAssertEqual(store.load(), [], "the wallet that became active got none of the rows")
+        walletIdHex = "wallet-a"
+        devnetName = "moutai"
+        XCTAssertEqual(store.load(), [connection])
+    }
+
+    func testAPinnedStoreNamesTheWalletItWasGivenNotTheActiveOne() {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-b")
+
+        XCTAssertEqual(store.pinnedStore(toWalletIdHex: "wallet-a").storageKey, "dashconnect.connections.v1.t.wallet-a")
     }
 
     func testUnnamedDevnetStoresNothing() {
