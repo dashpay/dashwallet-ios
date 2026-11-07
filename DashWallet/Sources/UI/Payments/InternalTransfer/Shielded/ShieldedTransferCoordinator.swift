@@ -977,6 +977,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(CoordinatorError.assetLockInFlight)
             return
         }
+        // A Max lock's resume holds the Max operation's claim, as a new Max
+        // does, so no other attempt starts on it. Every return before
+        // `finishResumedAssetLock` hands the claim over releases it at once.
+        var drainClaim: UUID?
+        if case .operation(let id) = row {
+            ShieldedAssetLocksInFlight.shared.claimDrain(id)
+            drainClaim = id
+        }
+        defer { if let drainClaim { Self.releaseDrainClaim(drainClaim, completed: false) } }
         if row != .none {
             let (lookup, markerContext) = CoreShieldedDrainService().markerLookup()
             let resolved: Data?
@@ -1063,19 +1072,34 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume completed")
-        // The single resume FFI call covered proof + submit; advance through
-        // .broadcasting so the step checklist completes naturally (mirrors
-        // `performShield`). No intermediate signal exists for this opaque call.
-        phase = .broadcasting
-        // As in `performAssetLock`. An already-consumed report proves nothing
-        // about this transfer, so only a verified success is marked.
-        if terminalPhase == .success { markInFlightLockConsumed() }
-        phase = terminalPhase
+        // Hands the Max operation's claim over, so the deferred release
+        // above no longer applies.
+        finishResumedAssetLock(terminalPhase, drainOperation: drainClaim)
+        drainClaim = nil
         await ShieldedTxLookup.shared.refresh(reason: "shield-transfer-resume-completed")
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
             object: nil)
         scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// The bookkeeping after the resume call returned with `terminalPhase`.
+    /// The single call covered proof + submit, so it advances through
+    /// `.broadcasting` and the step checklist completes (as in
+    /// `performShield`). A lock without a Max operation is marked consumed
+    /// on a verified success only (as in `performAssetLock`). A Max lock
+    /// (`drainOperation`, whose claim the resume holds) is never marked: its
+    /// success may rest on an unauthenticated "already consumed" report, and
+    /// its row ends at DrainCompleted, which never retires the mark. Its
+    /// claim is released as a new Max's is (`releaseDrainClaim`).
+    func finishResumedAssetLock(_ terminalPhase: Phase, drainOperation: UUID?, lookup: ShieldedTxLookup = .shared) {
+        phase = .broadcasting
+        if let drainOperation {
+            Self.releaseDrainClaim(drainOperation, completed: terminalPhase == .success, lookup: lookup)
+        } else if terminalPhase == .success {
+            markInFlightLockConsumed(in: lookup)
+        }
+        phase = terminalPhase
     }
 
     /// Both a local `Consumed` tombstone and a remote already-consumed report
@@ -1965,13 +1989,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// outpoint is covered too) finished (`AssetLockStatus.isComplete`), or
     /// `drainSettleTimeout` passes; nothing is refreshed from here. A row
     /// missing from the snapshot counts as pending. Any other drain releases
-    /// at once.
-    private static func releaseDrainClaim(_ operation: UUID, completed: Bool) {
+    /// at once. The settler watches `lookup`.
+    private static func releaseDrainClaim(_ operation: UUID, completed: Bool, lookup: ShieldedTxLookup = .shared) {
         guard completed else {
             ShieldedAssetLocksInFlight.shared.releaseDrain(operation)
             return
         }
-        DrainClaimSettler(operation: operation, timeout: drainSettleTimeout).start()
+        DrainClaimSettler(operation: operation, timeout: drainSettleTimeout, lookup: lookup).start()
     }
 
     private static let drainSettleTimeout: TimeInterval = 30
@@ -2004,12 +2028,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         self.inFlightOutPoint = nil
     }
 
-    private func markInFlightLockConsumed() {
+    private func markInFlightLockConsumed(in lookup: ShieldedTxLookup = .shared) {
         guard let inFlightOutPoint else {
             Self.logger.warning("🛡️ SHIELD-TX :: finished without a known asset lock to mark consumed")
             return
         }
-        ShieldedTxLookup.shared.markConsumed(txidWire: inFlightOutPoint.txidWire)
+        lookup.markConsumed(txidWire: inFlightOutPoint.txidWire)
     }
 
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously

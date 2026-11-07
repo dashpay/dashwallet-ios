@@ -26,7 +26,7 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
     /// the next test.
     override func tearDown() {
         let shared = ShieldedAssetLocksInFlight.shared
-        let locks = [lockA, lockB]
+        let locks = [lockA, lockB, resumedLock]
         MainActor.assumeIsolated {
             for lock in locks {
                 while shared.contains(lock, drainOperation: nil) { shared.release(lock) }
@@ -404,6 +404,7 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
             return XCTFail("expected assetLockInFlight, got \(String(describing: coordinator.lastFailure))")
         }
         XCTAssertTrue(ShieldedAssetLocksInFlight.shared.contains(lockA, drainOperation: nil), "the refusal must not release the running claim")
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint, lockA, "a refused resume keeps its lock, so Try again finishes it")
     }
 
     @MainActor
@@ -428,6 +429,47 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
             return XCTFail("expected walletReloading, got \(String(describing: coordinator.lastFailure))")
         }
         XCTAssertFalse(registry.contains(lockA, drainOperation: nil), "a refused resume claims nothing")
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint, lockA, "a refused resume keeps its lock, so Try again finishes it")
+    }
+
+    /// The Internal Transfer sheet counts a Core-funded transfer as a
+    /// funding call before its PIN prompt; other routes build no asset lock.
+    func testOnlyCoreFundedRoutesCountAsAFundingCall() {
+        let counted: [InternalTransferRoute] = [.coreToShielded, .coreToPlatform]
+        for route in [InternalTransferRoute.coreToShielded, .coreToPlatform, .platformToShielded,
+                      .shieldedToCore, .shieldedToPlatform, .platformToCore] {
+            XCTAssertEqual(InternalTransferRunner.countsAsFundingCall(.route(route)), counted.contains(route), "\(route)")
+        }
+    }
+
+    /// While a removal reloads the wallet, a transfer from the Dash Wallet
+    /// balance is refused before the PIN prompt, and leaves nothing counted.
+    @MainActor
+    func testACoreFundedTransferIsRefusedBeforeThePINWhileAWalletReloads() async throws {
+        let registry = ShieldedAssetLocksInFlight.shared
+        guard registry.beginRemoval() == .admitted else {
+            return XCTFail("the shared registry has activity left over")
+        }
+        let runner = InternalTransferRunner.shared
+        let request = InternalTransferRequest(
+            kind: .route(.coreToShielded), amountDuffsUnsigned: 100_000, creditsAmount: 0,
+            coreToPlatformLockDuffs: nil, withdrawalFeeCredits: nil, isFullPlatformWithdrawal: false,
+            isFullShieldedSweep: false, platformShieldAmountWasMax: false)
+
+        // Not awaited: a transfer let through would stop at the PIN prompt and
+        // never return, so the test waits for the refusal with a deadline.
+        var outcome: InternalTransferRunner.StartOutcome?
+        Task { outcome = await runner.start(request) }
+        let deadline = Date().addingTimeInterval(2)
+        while outcome == nil, Date() < deadline {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        registry.endRemoval()
+
+        XCTAssertEqual(outcome, .walletReloading, "refused before the PIN prompt")
+        XCTAssertEqual(runner.notice, .failed(ShieldedAssetLocksInFlight.walletReloadingMessage))
+        runner.notice = nil
+        XCTAssertFalse(registry.hasActivity, "a refused transfer leaves no funding call counted")
     }
 
     @MainActor
@@ -469,5 +511,83 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
             coordinator.reset()
             XCTAssertFalse(registry.contains(lockA, drainOperation: nil), "\(failure)")
         }
+    }
+
+    // MARK: - A finished resume
+
+    /// The lock a resume consumes, keyed like `drainTxidHex` in the lookup.
+    private let resumedLock = OutPoint(txidWire: Data(repeating: 0xAB, count: 32), vout: 0)
+
+    /// A coordinator holding `resumedLock` as its in-flight lock, as a
+    /// resume admitted by the registry does, and a lookup that has its row.
+    @MainActor
+    private func resumeHoldingTheLock(drain: UUID?) -> (ShieldedTransferCoordinator, ShieldedTxLookup) {
+        let coordinator = ShieldedTransferCoordinator()
+        let capture = NewAssetLockCapture(initialState: nil)
+        ShieldedAssetLocksInFlight.shared.claimBuiltLock(resumedLock)
+        capture.withLock { $0 = resumedLock }
+        coordinator.finishNewAssetLock(capture)
+        let lookup = ShieldedTxLookup()
+        lookup.store([drainTxidHex: lockInfo(status: AssetLockStatus.instantSendLocked.rawValue, drain: drain)])
+        return (coordinator, lookup)
+    }
+
+    /// A Max lock's resume can succeed on an unauthenticated "already
+    /// consumed" report and its row ends at DrainCompleted, which never
+    /// retires a consumed mark. So it is not marked, and its operation claim
+    /// settles as a new Max's does.
+    @MainActor
+    func testASucceededResumeOfAMaxLockSettlesItsClaimWithoutAConsumedMark() {
+        let registry = ShieldedAssetLocksInFlight.shared
+        let drain = UUID()
+        defer { while registry.isDrainClaimed(drain) { registry.releaseDrain(drain) } }
+        let (coordinator, lookup) = resumeHoldingTheLock(drain: drain)
+        registry.claimDrain(drain)
+
+        coordinator.finishResumedAssetLock(.success, drainOperation: drain, lookup: lookup)
+
+        XCTAssertEqual(coordinator.phase, .success)
+        XCTAssertEqual(lookup.info(forTxidHex: drainTxidHex)?.statusRaw, AssetLockStatus.instantSendLocked.rawValue,
+                       "a Max lock is never marked consumed")
+        XCTAssertTrue(registry.isDrainClaimed(drain), "the claim settles until the row reads finished")
+        XCTAssertFalse(registry.contains(resumedLock, drainOperation: nil), "the lock's own claim is released")
+
+        // The settler reads the lookup the resume was given: a new pending
+        // row keeps the claim, the row recorded as a completed drain ends it.
+        lookup.store([drainTxidHex: lockInfo(status: AssetLockStatus.chainLocked.rawValue, drain: drain)])
+        spin(seconds: 0.1) { false }
+        XCTAssertTrue(registry.isDrainClaimed(drain), "a pending row keeps the claim")
+        lookup.store([drainTxidHex: lockInfo(status: AssetLockStatus.drainCompleted.rawValue, drain: drain)])
+        spin(seconds: 2) { !registry.isDrainClaimed(drain) }
+        XCTAssertFalse(registry.isDrainClaimed(drain), "the drain's completed row releases the claim")
+    }
+
+    @MainActor
+    func testASucceededResumeOfAnyOtherLockIsMarkedConsumed() {
+        let (coordinator, lookup) = resumeHoldingTheLock(drain: nil)
+
+        coordinator.finishResumedAssetLock(.success, drainOperation: nil, lookup: lookup)
+
+        XCTAssertEqual(coordinator.phase, .success)
+        XCTAssertEqual(lookup.info(forTxidHex: drainTxidHex)?.statusRaw, AssetLockRecoveryService.consumedStatus)
+        XCTAssertFalse(ShieldedAssetLocksInFlight.shared.contains(resumedLock, drainOperation: nil))
+    }
+
+    /// A Max resume that ends without a verified success (an already-consumed
+    /// report) releases its operation claim at once, so the lock offers
+    /// Finish now again.
+    @MainActor
+    func testAnUnconfirmedResumeOfAMaxLockReleasesItsClaimAtOnce() {
+        let registry = ShieldedAssetLocksInFlight.shared
+        let drain = UUID()
+        defer { while registry.isDrainClaimed(drain) { registry.releaseDrain(drain) } }
+        let (coordinator, lookup) = resumeHoldingTheLock(drain: drain)
+        registry.claimDrain(drain)
+
+        coordinator.finishResumedAssetLock(.submittedUnconfirmed, drainOperation: drain, lookup: lookup)
+
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertFalse(registry.isDrainClaimed(drain))
+        XCTAssertEqual(lookup.info(forTxidHex: drainTxidHex)?.statusRaw, AssetLockStatus.instantSendLocked.rawValue)
     }
 }

@@ -174,6 +174,68 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         }
     }
 
+    // MARK: - A lock an attempt is crediting
+
+    /// Runs `body` on a transaction whose lock row in the shared lookup is
+    /// pending (InstantSend-locked), and puts the lookup back afterwards.
+    /// History and the details screen both read the shared lookup.
+    @MainActor
+    private func withPendingShieldedLock(drain: UUID? = nil, _ body: (Transaction) -> Void) {
+        let lookup = ShieldedTxLookup.shared
+        let saved = Dictionary(uniqueKeysWithValues: lookup.allEntries().map { ($0.txidHex, $0.info) })
+        defer { lookup.store(saved) }
+        lookup.store([Transaction.displayHex(txidWire): .init(
+            amountDuffs: 1_000, statusRaw: AssetLockStatus.instantSendLocked.rawValue, vout: 0,
+            fundingTypeRaw: 5, walletId: Data(repeating: 1, count: 32), drainOperation: drain)])
+        body(Transaction(syntheticTxid: txidWire, directionRaw: 1, netAmount: -1_000,
+                         fee: nil, contextRaw: 0, date: Date()))
+    }
+
+    /// A History row offers "tap to finish" only for a pending lock that no
+    /// attempt is crediting (AC-02): a claimed lock, or the Max operation
+    /// that built it while it settles, reads as an ordinary transfer.
+    @MainActor
+    func testAClaimedLockReadsAsInFlightOnHistory() {
+        let drain = UUID()
+        withPendingShieldedLock(drain: drain) { transaction in
+            let registry = ShieldedAssetLocksInFlight()
+            let lock = ShieldedAssetLocksInFlight.OutPoint(txidWire: txidWire, vout: 0)
+            XCTAssertTrue(transaction.isPendingShieldedTransfer)
+            XCTAssertFalse(transaction.isShieldedLockInFlight(in: registry), "nobody is crediting it: tap to finish")
+
+            registry.claim(lock)
+            XCTAssertTrue(transaction.isShieldedLockInFlight(in: registry), "an attempt holds the lock")
+            registry.release(lock)
+            XCTAssertFalse(transaction.isShieldedLockInFlight(in: registry), "released: tap to finish again")
+
+            registry.claimDrain(drain)
+            XCTAssertTrue(transaction.isShieldedLockInFlight(in: registry), "the Max operation that built it still holds it")
+            registry.releaseDrain(drain)
+            XCTAssertFalse(transaction.isShieldedLockInFlight(in: registry))
+        }
+    }
+
+    /// The details of a lock an attempt is crediting offer no Retry or
+    /// Complete Transfer (AC-03); once the attempt releases it, they do.
+    @MainActor
+    func testTheDetailsOfAClaimedLockOfferNoFinishAction() {
+        withPendingShieldedLock { transaction in
+            let registry = ShieldedAssetLocksInFlight.shared
+            let lock = ShieldedAssetLocksInFlight.OutPoint(txidWire: txidWire, vout: 0)
+            let model = QuietTxDetailModel(transaction: transaction)
+            XCTAssertNotNil(model.recoveryActions.retry, "a stuck lock offers a finish action")
+
+            registry.claim(lock)
+            defer { while registry.contains(lock, drainOperation: nil) { registry.release(lock) } }
+            XCTAssertNil(model.recoveryActions.retry, "no Retry or Complete Transfer while an attempt credits it")
+            XCTAssertTrue(model.isAssetLockRetryInFlight)
+
+            registry.release(lock)
+            XCTAssertNotNil(model.recoveryActions.retry, "released: the finish action is back")
+            XCTAssertFalse(model.isAssetLockRetryInFlight)
+        }
+    }
+
     // MARK: - Removal
 
     func testRemovalForEachState() {

@@ -1037,6 +1037,7 @@
 		7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */; };
 		7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */; };
 		7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */; };
+		7A3000A230A10000000000A2 /* AssetLockRecoveryPassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */; };
 		7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
@@ -3350,6 +3351,7 @@
 		7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedAssetLocksInFlightTests.swift; sourceTree = "<group>"; };
 		7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTxLookupConsumedOverlayTests.swift; sourceTree = "<group>"; };
 		7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailRecoveryRowsTests.swift; sourceTree = "<group>"; };
+		7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockRecoveryPassTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetWalletInfoWipeForwardingTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
@@ -7718,6 +7720,7 @@
 				7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */,
 				7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */,
 				7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */,
+				7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */,
 				7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
@@ -11098,6 +11101,7 @@
 				7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */,
 				7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */,
 				7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */,
+				7A3000A230A10000000000A2 /* AssetLockRecoveryPassTests.swift in Sources */,
 				7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
