@@ -411,6 +411,20 @@ class Transaction: TransactionDataItem, Identifiable {
         return (txHashData, info.vout)
     }
 
+    /// The Max drain that built this transfer's shielded asset lock, if one
+    /// did; see `ShieldedAssetLocksInFlight`.
+    var shieldedDrainOperation: UUID? {
+        shieldedLockInfo?.drainOperation
+    }
+
+    /// Whether a running transfer, or the Max drain that built it while it
+    /// holds its claim, is consuming this transfer's shielded asset lock.
+    /// Reads the lock's snapshot once.
+    func isShieldedLockInFlight(in registry: ShieldedAssetLocksInFlight) -> Bool {
+        guard let info = shieldedLockInfo else { return false }
+        return registry.contains(.init(txidWire: txHashData, vout: info.vout), drainOperation: info.drainOperation)
+    }
+
     private lazy var _dashAmount: UInt64 = {
         // A "to Shielded" / "to Platform" transfer's L1 funding tx is an
         // asset lock; surface the real locked amount the SDK recorded
