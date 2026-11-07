@@ -1583,6 +1583,9 @@
 "Credit Card" = "บัตรเครดิต";
 
 /* Raw transaction */
+"Credit output %d" = "Credit output %d";
+
+/* Raw transaction */
 "Credit outputs" = "Credit outputs";
 
 /* Translate it as short as possible! (24 symbols max) */
