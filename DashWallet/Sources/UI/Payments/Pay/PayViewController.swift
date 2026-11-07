@@ -117,7 +117,11 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 
         switch payOption.type {
         case .scanQR:
-            performScanQRCodeAction(delegate: self)
+            presentPaymentScanner { [weak self] paymentInput in
+                self?.dismiss(animated: true) {
+                    self?.dispatchPaymentInput(paymentInput)
+                }
+            }
         case .pasteboard:
             showEnterAddressController()
         case .NFC:
@@ -129,22 +133,6 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
         @unknown default:
             break
         }
-    }
-}
-
-
-
-// MARK: DWQRScanModelDelegate
-
-extension PayViewController: DWQRScanModelDelegate {
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-        dismiss(animated: true) { [weak self] in
-            self?.paymentController.performPayment(with: paymentInput)
-        }
-    }
-
-    func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
-        dismiss(animated: true)
     }
 }
 
@@ -168,7 +156,7 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
 
 extension PayViewController: EnterAddressViewControllerDelegate {
     func enterAddressViewControllerDidPreparePaymentInput(_ viewController: EnterAddressViewController, input: DWPaymentInput) {
-        processPaymentInput(input)
+        dispatchPaymentInput(input)
     }
 }
 

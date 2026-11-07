@@ -349,11 +349,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     }
 
     /// The base class routes a scanned payment straight into the payment
-    /// processor (its `DWQRScanModelDelegate` conformance is a private
-    /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). A scan on the landing fills the send
-    /// FORM instead, so destination-type detection and the From picker apply to
-    /// scanned addresses exactly like typed/pasted ones.
+    /// processor. A scan on the landing fills the send FORM instead, so
+    /// destination-type detection and the From picker apply to scanned
+    /// addresses exactly like typed/pasted ones.
     ///
     /// Where that form is depends on the mode. The balance-row send sheet
     /// embeds it as its Send tab, and the scan goes straight in. On the picker
@@ -362,8 +360,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// filling it left the user on the same three rows with no sign the scan
     /// had been read. There the scan pushes the send form carrying it, which is
     /// where the sibling row goes.
-    @objc(qrScanModel:didScanPaymentInput:)
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+    override func didScanPaymentInput(_ paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             guard let self else { return }
 

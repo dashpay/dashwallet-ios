@@ -33,13 +33,18 @@ class QRCapturePreviewView: UIView {
 }
 
 /// SwiftUI bridge for an AVCaptureSession that detects QR codes.
+///
+/// Detection is continuous: every frame's decoded QR strings are delivered
+/// (there may be several codes in view at once) and the consumer decides
+/// when to stop listening — pausing/resuming lives in `QRScannerViewModel`,
+/// not here.
 struct QRCaptureView: UIViewRepresentable {
-    let onQRCodeScanned: (String) -> Void
+    let onQRCodesDetected: ([String]) -> Void
     let onCameraUnavailable: () -> Void
     @Binding var torchOn: Bool
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onQRCodeScanned: onQRCodeScanned, onCameraUnavailable: onCameraUnavailable)
+        Coordinator(onQRCodesDetected: onQRCodesDetected, onCameraUnavailable: onCameraUnavailable)
     }
 
     func makeUIView(context: Context) -> QRCapturePreviewView {
@@ -60,15 +65,21 @@ struct QRCaptureView: UIViewRepresentable {
     // MARK: - Coordinator
 
     class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
-        private let onQRCodeScanned: (String) -> Void
+        private let onQRCodesDetected: ([String]) -> Void
         private let onCameraUnavailable: () -> Void
         private var captureSession: AVCaptureSession?
         private var metadataOutput: AVCaptureMetadataOutput?
-        private let sessionQueue = DispatchQueue(label: "com.dashwallet.maya.qr-capture")
-        private var hasScanned = false
+        private let sessionQueue = DispatchQueue(label: "org.dash.wallet.qr-capture")
+        /// Set by `stopSession()`, read only on `sessionQueue`: a setup still
+        /// queued when the scanner is dismissed must not start the camera.
+        private var isStopped = false
+        /// Set by `stopSession()` on the main thread: a camera failure that
+        /// lands after the scanner is gone (a permission denied while the
+        /// prompt was up) must not show an alert over whatever is left.
+        private var isDismissed = false
 
-        init(onQRCodeScanned: @escaping (String) -> Void, onCameraUnavailable: @escaping () -> Void) {
-            self.onQRCodeScanned = onQRCodeScanned
+        init(onQRCodesDetected: @escaping ([String]) -> Void, onCameraUnavailable: @escaping () -> Void) {
+            self.onQRCodesDetected = onQRCodesDetected
             self.onCameraUnavailable = onCameraUnavailable
         }
 
@@ -88,15 +99,21 @@ struct QRCaptureView: UIViewRepresentable {
             case .authorized:
                 configureAndStart(previewLayer: previewLayer)
             case .notDetermined:
+                // The OS permission dialog resigns the app active; these
+                // notifications keep the auto-lock from engaging over it.
+                NotificationCenter.default.post(name: Notification.Name.willRequestOSPermission, object: nil)
                 AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: Notification.Name.didRequestOSPermission, object: nil)
+                    }
                     if granted {
                         self?.configureAndStart(previewLayer: previewLayer)
                     } else {
-                        DispatchQueue.main.async { self?.onCameraUnavailable() }
+                        self?.reportCameraUnavailable()
                     }
                 }
             default:
-                DispatchQueue.main.async { [weak self] in self?.onCameraUnavailable() }
+                reportCameraUnavailable()
             }
         }
 
@@ -105,13 +122,14 @@ struct QRCaptureView: UIViewRepresentable {
             // AVCaptureMetadataOutput holds an unretained reference to its delegate — if the
             // coordinator is deallocated while the session is still running, the delegate becomes
             // a dangling pointer and the next metadata callback causes EXC_BAD_ACCESS.
+            isDismissed = true
             metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
             metadataOutput = nil
 
-            let session = captureSession
-            captureSession = nil
             sessionQueue.async {
-                session?.stopRunning()
+                self.isStopped = true
+                self.captureSession?.stopRunning()
+                self.captureSession = nil
             }
         }
 
@@ -123,7 +141,7 @@ struct QRCaptureView: UIViewRepresentable {
                 device.unlockForConfiguration()
             } catch {
                 #if DEBUG
-                DWLogger.log("Maya QR Scanner: Torch toggle failed: \(error.localizedDescription)")
+                DWLogger.log("QR Scanner: Torch toggle failed: \(error.localizedDescription)")
                 #endif
             }
         }
@@ -133,46 +151,52 @@ struct QRCaptureView: UIViewRepresentable {
         func metadataOutput(_ output: AVCaptureMetadataOutput,
                             didOutput metadataObjects: [AVMetadataObject],
                             from connection: AVCaptureConnection) {
-            guard !hasScanned,
-                  let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
-                  object.type == .qr,
-                  let value = object.stringValue,
-                  !value.isEmpty else {
-                return
+            let values = metadataObjects.compactMap { object -> String? in
+                guard let code = object as? AVMetadataMachineReadableCodeObject,
+                      code.type == .qr,
+                      let value = code.stringValue,
+                      !value.isEmpty else { return nil }
+                return value
             }
-
-            hasScanned = true
-            onQRCodeScanned(value)
+            guard !values.isEmpty else { return }
+            onQRCodesDetected(values)
         }
 
         // MARK: - Private
 
+        private func reportCameraUnavailable() {
+            DispatchQueue.main.async { [weak self] in
+                guard let self, !self.isDismissed else { return }
+                self.onCameraUnavailable()
+            }
+        }
+
         private func configureAndStart(previewLayer: AVCaptureVideoPreviewLayer) {
             sessionQueue.async { [weak self] in
-                guard let self else { return }
+                guard let self, !self.isStopped else { return }
 
                 let session = AVCaptureSession()
 
                 guard let device = AVCaptureDevice.default(for: .video) else {
-                    DispatchQueue.main.async { self.onCameraUnavailable() }
+                    self.reportCameraUnavailable()
                     return
                 }
 
                 do {
                     let input = try AVCaptureDeviceInput(device: device)
                     guard session.canAddInput(input) else {
-                        DispatchQueue.main.async { self.onCameraUnavailable() }
+                        self.reportCameraUnavailable()
                         return
                     }
                     session.addInput(input)
                 } catch {
-                    DispatchQueue.main.async { self.onCameraUnavailable() }
+                    self.reportCameraUnavailable()
                     return
                 }
 
                 let output = AVCaptureMetadataOutput()
                 guard session.canAddOutput(output) else {
-                    DispatchQueue.main.async { self.onCameraUnavailable() }
+                    self.reportCameraUnavailable()
                     return
                 }
                 session.addOutput(output)
@@ -196,6 +220,7 @@ struct QRCaptureView: UIViewRepresentable {
                 DispatchQueue.main.async {
                     previewLayer.session = session
                     self.sessionQueue.async {
+                        guard !self.isStopped else { return }
                         session.startRunning()
                     }
                 }

@@ -101,10 +101,15 @@ struct EvonodeWithdrawalScreen: View {
                 .presentationDragIndicator(.hidden)
         }
         .fullScreenCover(isPresented: $showScanner) {
-            QRScannerRepresentable(
-                onScanned: { value in
+            QRScannerView(
+                mode: .addressInput(expectsDashAddress: true),
+                onResult: { result in
                     showScanner = false
-                    viewModel.setDestination(value)
+                    if case .text(let value) = result {
+                        viewModel.setDestination(value)
+                    } else {
+                        QRScanResultRouter.route(result)
+                    }
                 },
                 onCancel: { showScanner = false })
                 .ignoresSafeArea()
@@ -623,26 +628,5 @@ struct EvonodeWithdrawalConfirmSheet: View {
             .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
             .padding(.horizontal, 14)
-    }
-}
-
-// MARK: - QRScannerRepresentable
-
-/// SwiftUI wrapper for the UIKit `GenericQRScannerController`. Internal: the
-/// add-masternode locator field reuses it.
-struct QRScannerRepresentable: UIViewControllerRepresentable {
-    let onScanned: (String) -> Void
-    let onCancel: () -> Void
-
-    func makeUIViewController(context: Context) -> GenericQRScannerController {
-        let scanner = GenericQRScannerController()
-        scanner.onQRCodeScanned = onScanned
-        scanner.onCancel = onCancel
-        return scanner
-    }
-
-    func updateUIViewController(_ uiViewController: GenericQRScannerController, context: Context) {
-        uiViewController.onQRCodeScanned = onScanned
-        uiViewController.onCancel = onCancel
     }
 }

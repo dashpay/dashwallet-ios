@@ -94,7 +94,12 @@ extension EnterAddressViewController {
         scanButton.frame = .init(x: 0, y: 0, width: 18, height: 18)
         scanButton.addAction(.touchUpInside) { [weak self] _ in
             guard let self else { return }
-            self.performScanQRCodeAction(delegate: self)
+            self.presentPaymentScanner { [weak self] paymentInput in
+                self?.dismiss(animated: true) {
+                    guard let self else { return }
+                    self.delegate?.enterAddressViewControllerDidPreparePaymentInput(self, input: paymentInput)
+                }
+            }
         }
 
         addressField = DashInputField()
@@ -177,30 +182,3 @@ extension EnterAddressViewController {
         pasteboardContentView.update(with: string)
     }
 }
-
-// MARK: DWQRScanModelDelegate
-
-extension EnterAddressViewController: DWQRScanModelDelegate {
-    func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
-        if let vc = presentedViewController, vc is DWQRScanViewController {
-            return;
-        }
-
-        let controller = DWQRScanViewController()
-        controller.model.delegate = delegate
-        present(controller, animated: true, completion: nil)
-    }
-
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-        dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-
-            self.delegate?.enterAddressViewControllerDidPreparePaymentInput(self, input: paymentInput)
-        }
-    }
-
-    func qrScanModelDidCancel(_ viewModel: DWQRScanModel) {
-        dismiss(animated: true)
-    }
-}
-

@@ -20,8 +20,6 @@
 #import "DWPayModelProtocol.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
-#import "DWQRScanModel.h"
-#import "DWQRScanViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"
@@ -29,8 +27,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWBasePayViewController () <DWQRScanModelDelegate,
-                                       SuccessTxDetailViewControllerDelegate,
+@interface DWBasePayViewController () <SuccessTxDetailViewControllerDelegate,
                                        PaymentControllerDelegate,
                                        PaymentControllerPresentationContextProviding>
 
@@ -67,15 +64,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void)performScanQRCodeAction {
-    if ([self.presentedViewController isKindOfClass:DWQRScanViewController.class]) {
+    if ([self.presentedViewController isKindOfClass:DWQRScannerController.class]) {
         return;
     }
 
     NSAssert(self.presentedViewController == nil, @"Attempt to present on VC which is already presenting %@",
              self.presentedViewController);
 
-    DWQRScanViewController *controller = [[DWQRScanViewController alloc] init];
-    controller.model.delegate = self;
+    DWQRScannerController *controller = [DWQRScannerController paymentScanner];
+    __weak typeof(self) weakSelf = self;
+    controller.onPaymentInput = ^(DWPaymentInput *paymentInput) {
+        [weakSelf didScanPaymentInput:paymentInput];
+    };
+    controller.onCancel = ^{
+        [weakSelf dismissViewControllerAnimated:YES completion:nil];
+    };
     [self presentViewController:controller animated:YES completion:nil];
 }
 
@@ -183,9 +186,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-#pragma mark -  DWQRScanModelDelegate
+#pragma mark - Scanner completion
 
-- (void)qrScanModel:(DWQRScanModel *)viewModel didScanPaymentInput:(DWPaymentInput *)paymentInput {
+- (void)didScanPaymentInput:(DWPaymentInput *)paymentInput {
     self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
@@ -226,10 +229,6 @@ NS_ASSUME_NONNULL_BEGIN
     navigationController.navigationBarHidden = YES;
     navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:navigationController animated:YES completion:nil];
-}
-
-- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
-    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - PaymentControllerDelegate
