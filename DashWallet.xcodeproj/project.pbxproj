@@ -1170,9 +1170,12 @@
 		AA00100B2CA0B10001A0B10B /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100C2CA0B10001A0B10C /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */; };
+		C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */; };
 		AA00100F2CA0B10001A0B10F /* swapkit_quote_response.json in Resources */ = {isa = PBXBuildFile; fileRef = AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */; };
 		AA0010122CA0B10001A0B112 /* SwapKitSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */; };
 		AA0010132CA0B10001A0B113 /* SwapKitSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */; };
+		C5A11E000000000000000002 /* SwapRouteAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000001 /* SwapRouteAvailability.swift */; };
+		C5A11E000000000000000003 /* SwapRouteAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000001 /* SwapRouteAvailability.swift */; };
 		AA0020012FA0000000000014 /* SwapExecutionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020012FA0000000000013 /* SwapExecutionData.swift */; };
 		AA0020012FA0000000000015 /* SwapExecutionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020012FA0000000000013 /* SwapExecutionData.swift */; };
 		AA0020032FA0000000000003 /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020022FA0000000000002 /* SwapProvider.swift */; };
@@ -3416,8 +3419,10 @@
 		AA0010072CA0B10001A0B107 /* SwapKitModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitModels.swift; sourceTree = "<group>"; };
 		AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitAPIService.swift; sourceTree = "<group>"; };
 		AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitQuoteDecodingTests.swift; sourceTree = "<group>"; };
+		C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRouteAvailabilityTests.swift; sourceTree = "<group>"; };
 		AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = swapkit_quote_response.json; sourceTree = "<group>"; };
 		AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitSwapProvider.swift; sourceTree = "<group>"; };
+		C5A11E000000000000000001 /* SwapRouteAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRouteAvailability.swift; sourceTree = "<group>"; };
 		AA0020012FA0000000000013 /* SwapExecutionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapExecutionData.swift; sourceTree = "<group>"; };
 		AA0020022FA0000000000002 /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		AA0020052FA0000000000005 /* SwapBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapBackend.swift; sourceTree = "<group>"; };
@@ -7713,6 +7718,7 @@
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
+				C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
 				DA5A00000000000000000005 /* DashPayIdentityKeysTests.swift */,
@@ -7986,6 +7992,7 @@
 				AA0010072CA0B10001A0B107 /* SwapKitModels.swift */,
 				AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */,
 				AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */,
+				C5A11E000000000000000001 /* SwapRouteAvailability.swift */,
 			);
 			path = SwapKit;
 			sourceTree = "<group>";
@@ -10848,6 +10855,7 @@
 				AA0010082CA0B10001A0B108 /* SwapKitModels.swift in Sources */,
 				AA00100B2CA0B10001A0B10B /* SwapKitAPIService.swift in Sources */,
 				AA0010122CA0B10001A0B112 /* SwapKitSwapProvider.swift in Sources */,
+				C5A11E000000000000000002 /* SwapRouteAvailability.swift in Sources */,
 				AA0020012FA0000000000014 /* SwapExecutionData.swift in Sources */,
 				AA00020E2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */,
 				AA0002142BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
@@ -11088,6 +11096,7 @@
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
+				C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
 				DA5A00000000000000000004 /* DashPayIdentityKeysTests.swift in Sources */,
@@ -11961,6 +11970,7 @@
 				AA0010092CA0B10001A0B109 /* SwapKitModels.swift in Sources */,
 				AA00100C2CA0B10001A0B10C /* SwapKitAPIService.swift in Sources */,
 				AA0010132CA0B10001A0B113 /* SwapKitSwapProvider.swift in Sources */,
+				C5A11E000000000000000003 /* SwapRouteAvailability.swift in Sources */,
 				AA0020012FA0000000000015 /* SwapExecutionData.swift in Sources */,
 				AA00020F2BA0F58E00A1B305 /* SelectCoinViewModel.swift in Sources */,
 				AA0002152BA0F58E00A1B307 /* SelectCoinView.swift in Sources */,
