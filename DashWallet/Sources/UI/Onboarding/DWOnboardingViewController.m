@@ -347,6 +347,8 @@ static CGFloat const SCALE_FACTOR = 0.5;
 
     [self.skipButton setTitle:NSLocalizedString(@"Skip", nil) forState:UIControlStateNormal];
     [self.finishButton setTitle:NSLocalizedString(@"Get Started", nil) forState:UIControlStateNormal];
+    self.skipButton.accessibilityIdentifier = @"onboarding_skip_button";
+    self.finishButton.accessibilityIdentifier = @"onboarding_get_started_button";
     self.finishButton.alpha = 0.0;
 
     DWDemoAppRootViewController *controller = [[DWDemoAppRootViewController alloc] init];

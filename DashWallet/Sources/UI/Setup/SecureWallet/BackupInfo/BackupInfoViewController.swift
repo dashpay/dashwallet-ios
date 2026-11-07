@@ -204,6 +204,8 @@ extension BackupInfoViewController {
                                       comment: "Back up wallet")
         showRecoveryPhraseButton.setTitle(NSLocalizedString("Show Recovery Phrase", comment: "Back up wallet"), for: .normal)
         skipButton.setTitle(NSLocalizedString("Skip", comment: "Back up wallet"), for: .normal)
+        showRecoveryPhraseButton.accessibilityIdentifier = "show_recovery_button"
+        skipButton.accessibilityIdentifier = "backup_skip_button"
 
         show(item: .notStoredByDash)
         show(item: .unableToRestore)
