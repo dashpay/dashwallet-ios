@@ -21,7 +21,7 @@ import SwiftUI
 import DashUIKit
 import SwiftDashSDK
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
+extension HomeViewController {
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -168,9 +168,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
 
     private func showLocalCurrencyAction() {
-        let controller = DWLocalCurrencyViewController(navigationAppearance: .white, presentationMode: .dialog, currencyCode: nil)
-        controller.delegate = self
-        presentControllerModallyInNavigationController(controller)
+        let controller = LocalCurrencyModalController(currencyCode: nil, changesAppCurrency: true, onSelect: { _ in })
+        present(controller, animated: true)
     }
 
     #if DASHPAY
@@ -492,16 +491,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             self?.presentShortcutSelection(for: position)
         })
         present(alert, animated: true)
-    }
-
-    // MARK: - DWLocalCurrencyViewControllerDelegate
-
-    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
-    }
-
-    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
     }
 
 }

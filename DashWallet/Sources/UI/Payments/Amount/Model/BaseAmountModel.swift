@@ -273,13 +273,23 @@ extension BaseAmountModel {
         CurrencyExchanger.shared.hasRate(for: localCurrencyCode)
     }
 
+    /// The wallet balance in this model's fiat currency, which can differ
+    /// from the app's (a Coinbase transfer picks its own).
     var fiatWalletBalanceFormatted: String {
-        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: walletBalance.dashAmount, to: App.fiatCurrency) else {
-            return "Invalid"
-        }
+        Self.fiatFormatted(duffs: walletBalance,
+                           currencyCode: localCurrencyCode,
+                           exchanger: Coinbase.shared.currencyExchanger,
+                           formatter: supplementaryNumberFormatter) ?? "Invalid"
+    }
 
-        let nf = supplementaryNumberFormatter
-        return nf.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
+    /// `duffs` converted to `currencyCode` and formatted by `formatter`,
+    /// which must format that same currency; `nil` without a rate.
+    static func fiatFormatted(duffs: UInt64, currencyCode: String,
+                              exchanger: CurrencyExchanger, formatter: NumberFormatter) -> String? {
+        guard let fiatAmount = try? exchanger.convertDash(amount: duffs.dashAmount, to: currencyCode) else {
+            return nil
+        }
+        return formatter.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
     }
 
     var walletBalanceFormatted: String {

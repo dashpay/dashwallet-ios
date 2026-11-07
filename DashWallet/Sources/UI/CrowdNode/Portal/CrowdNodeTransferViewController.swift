@@ -338,8 +338,8 @@ extension CrowdNodeTransferController {
             .store(in: &cancellableBag)
     }
 
-    override func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        super.localCurrencyViewController(controller, didSelectCurrency: currencyCode)
+    override func didSelectLocalCurrency(_ currencyCode: String) {
+        super.didSelectLocalCurrency(currencyCode)
 
         updateBalanceLabel()
         dashPriceLabel.text = transferModel.dashPriceDisplayString
