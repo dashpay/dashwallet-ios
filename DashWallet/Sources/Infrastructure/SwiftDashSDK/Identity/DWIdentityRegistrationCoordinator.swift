@@ -861,6 +861,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.identityRegistration(AssetLockInputLimit.TooManyInputsError(check: inputCheck))
         }
 
+        // The shielded route proves at the end of this flow. Confirming it
+        // before the PIN prompt lets any proving-key build start while the
+        // prompt is up: the warm-up runs on the main actor, so it could not
+        // start during the synchronous key derivation below.
+        let shieldedProofTiming = currentFundingSource == .shielded
+            ? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool)
+            : nil
+
         // PIN / biometric gate. Throws on cancel / failure; the
         // controller stays at `.idle` so the UI doesn't show
         // "Processing payment" for a cancellation.
@@ -936,7 +944,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 IdentityCreationContext(wallet: wallet, network: network, modelContainer: modelContainer,
                                         signer: signer, pubkeys: pubkeys, fundingSource: fundingSource,
                                         username: username, invitationURI: invitationURI,
-                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs),
+                                        requiredIdentityFundingDuffs: requiredIdentityFundingDuffs,
+                                        shieldedProofTiming: shieldedProofTiming),
                 recoveryLock: recoveryLock)
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
         } catch {
@@ -980,6 +989,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let username: String
         let invitationURI: String?
         let requiredIdentityFundingDuffs: UInt64
+        /// Started when the user authorized a shielded-funded create.
+        let shieldedProofTiming: ShieldedProofTiming?
     }
 
     /// Submit only the selected funding route when no paid lock or identity exists.
@@ -1042,7 +1053,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 walletId: wallet.walletId,
                 modelContainer: modelContainer,
                 pubkeys: pubkeys,
-                signer: signer)
+                signer: signer,
+                proofTiming: context.shieldedProofTiming
+                    ?? ShieldedProverWarmup.shared.beginProofOperation(.identityFromShieldedPool))
 
         case .invitation:
             // DIP-13 claim: register the invitee's identity funded
@@ -2989,7 +3002,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         walletId: Data,
         modelContainer: ModelContainer,
         pubkeys: [ManagedPlatformWallet.IdentityPubkey],
-        signer: KeychainSigner
+        signer: KeychainSigner,
+        proofTiming: ShieldedProofTiming
     ) async throws -> Identifier {
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw CoordinatorError.noSDK
@@ -3028,18 +3042,20 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination) contested=\(contested)")
         do {
-            let identityId = try await manager.shieldedIdentityCreateFromPool(
-                walletId: walletId,
-                // Per-operation Orchard spend authority (seedless
-                // shielded bind) — same pattern as the app's other
-                // shielded spends in `ShieldedTransferCoordinator`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                denomination: denomination,
-                sendToAddressOnCreationFailure: fallbackAddressBytes,
-                identitySigner: signer)
+            let identityId = try await proofTiming.measure {
+                try await manager.shieldedIdentityCreateFromPool(
+                    walletId: walletId,
+                    // Per-operation Orchard spend authority (seedless
+                    // shielded bind) — same pattern as the app's other
+                    // shielded spends in `ShieldedTransferCoordinator`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    denomination: denomination,
+                    sendToAddressOnCreationFailure: fallbackAddressBytes,
+                    identitySigner: signer)
+            }
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
             return identityId
