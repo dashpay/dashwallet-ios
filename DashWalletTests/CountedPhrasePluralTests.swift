@@ -57,6 +57,15 @@ final class CountedPhrasePluralTests: XCTestCase {
                        "2 attempts remaining")
     }
 
+    func testCoinJoinWithdrawalCountsInEnglish() throws {
+        let bundle = try appLocalization("en")
+
+        XCTAssertEqual(format("%d transactions", in: bundle, locale: "en", 1), "1 transaction")
+        XCTAssertEqual(format("%d transactions", in: bundle, locale: "en", 2), "2 transactions")
+        XCTAssertEqual(format("%d UTXOs", in: bundle, locale: "en", 1), "1 UTXO")
+        XCTAssertEqual(format("%d UTXOs", in: bundle, locale: "en", 22), "22 UTXOs")
+    }
+
     // MARK: Polish rules, fixture entry
 
     func testPolishPluralRulesPickFewAndManyByCount() throws {

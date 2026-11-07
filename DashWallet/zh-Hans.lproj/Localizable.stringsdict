@@ -852,5 +852,33 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>请按顺序抄下这 %d 个词并妥善保管。它们是恢复此钱包的唯一途径。任何掌握它们的人都能花费你的资金。</string>
 		</dict>
 	</dict>
+	<key>%d transactions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transactions</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

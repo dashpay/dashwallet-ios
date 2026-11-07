@@ -894,5 +894,33 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Shkruaj këto %d fjalë me radhë dhe ruaji në një vend të sigurt. Ato janë E VETMJA mënyrë për ta rikuperuar këtë portofol. Kushdo që i ka mund të shpenzojë fondet e tua.</string>
 		</dict>
 	</dict>
+	<key>%d transactions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transactions</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

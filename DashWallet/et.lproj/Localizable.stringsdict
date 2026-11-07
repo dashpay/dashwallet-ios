@@ -894,5 +894,33 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Kirjuta need %d sõna järjekorras üles ja hoia neid turvalises kohas. Need on AINUS viis selle rahakoti taastamiseks. Igaüks, kellel need on, saab sinu vahendeid kulutada.</string>
 		</dict>
 	</dict>
+	<key>%d transactions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transactions</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

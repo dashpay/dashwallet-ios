@@ -181,8 +181,14 @@
 /* Wallet accounts — address pool */
 "%d total" = "%d total";
 
+/* CoinJoin */
+"%d transactions" = "%d transactions";
+
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
+
+/* CoinJoin */
+"%d UTXOs" = "%d UTXOs";
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d vota";

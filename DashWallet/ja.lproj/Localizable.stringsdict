@@ -850,5 +850,33 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>この %d 語を順番どおりに書き留め、安全な場所に保管してください。これがこのウォレットを復元する唯一の方法です。これを知っている人は誰でもあなたの資金を使えます。</string>
 		</dict>
 	</dict>
+	<key>%d transactions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transactions</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

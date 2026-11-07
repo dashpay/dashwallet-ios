@@ -894,5 +894,33 @@ Controleer en corrigeer indien nodig de instellingen voor datum, tijd en tijdzon
 			<string>Schrijf deze %d woorden in volgorde op en bewaar ze op een veilige plek. Ze zijn de ENIGE manier om deze wallet te herstellen. Iedereen die ze heeft, kan je tegoed uitgeven.</string>
 		</dict>
 	</dict>
+	<key>%d transactions</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transactions</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
