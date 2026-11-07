@@ -17,7 +17,6 @@
 
 #import "DWOnboardingViewController.h"
 
-#import "DWDemoAdvancedSecurityViewController.h"
 #import "DWDemoAppRootViewController.h"
 #import "DWModalPresentationController.h"
 #import "DWOnboardingCollectionViewCell.h"
@@ -259,7 +258,7 @@ static CGFloat const SCALE_FACTOR = 0.5;
         }];
 
         if (navigationController.viewControllers.count == 1) {
-            DWDemoAdvancedSecurityViewController *controller = [[DWDemoAdvancedSecurityViewController alloc] init];
+            UIViewController *controller = [DWAdvancedSecurityScreenFactory demoController];
             [navigationController pushViewController:controller animated:YES];
         }
     }

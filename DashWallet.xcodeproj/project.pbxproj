@@ -180,10 +180,6 @@
 		2A1B7D972322D0BC00BA8C6A /* DWTitleDetailCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7D962322D0BC00BA8C6A /* DWTitleDetailCellModel.m */; };
 		2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */; };
 		2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
-		2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
-		2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */; };
-		2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6411238D650200A9B505 /* DWSegmentSlider.m */; };
-		2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6414238FEEA900A9B505 /* DWAdvancedSecurityModel.m */; };
 		2A2120EA2214566A009906DC /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */; };
 		2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2CD6ED22F48159008C7BC9 /* UIDevice+DashWallet.m */; };
@@ -248,9 +244,6 @@
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
-		2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
-		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
-		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2A811558269CE09300215F81 /* uphold-logout.jpg */; };
 		2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */; };
@@ -315,9 +308,6 @@
 		2AB3416923A8C479004E37A7 /* DWOnboardingCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416823A8C479004E37A7 /* DWOnboardingCollectionViewCell.m */; };
 		2AB3416F23A8DCFB004E37A7 /* DWOnboardingModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */; };
 		2AB3417323A926C9004E37A7 /* DWDemoAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */; };
-		2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */; };
-		2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
-		2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
 		2AB76051F87248AC36AED99B /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4E3EBE8D8A77EBFAA1E86 /* NetworkReachability.swift */; };
 		2AB7F7E72384676200C173AD /* DWWatchDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */; };
 		2AB7F7E923846F6000C173AD /* DWMainInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E823846F6000C173AD /* DWMainInterfaceController.swift */; };
@@ -796,9 +786,19 @@
 		752D03B22E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */; };
 		752D03B32E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */; };
 		752F81982E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81962E30F55E00ADA76D /* SecurityMenuScreen.swift */; };
+		7A11E5E70000000000000113 /* AdvancedSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000112 /* AdvancedSecurityScreen.swift */; };
+		7A11E5E70000000000000110 /* SegmentSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000109 /* SegmentSlider.swift */; };
+		7A11E5E70000000000000107 /* AdvancedSecurityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000106 /* AdvancedSecurityViewModel.swift */; };
+		7A11E5E70000000000000104 /* AdvancedSecuritySettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000103 /* AdvancedSecuritySettingsStore.swift */; };
+		7A11E5E70000000000000101 /* WalletSecurityLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000100 /* WalletSecurityLevel.swift */; };
 		7A11E5E70000000000000002 /* ResetWalletInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000001 /* ResetWalletInfoScreen.swift */; };
 		752F81992E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */; };
 		752F819A2E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81962E30F55E00ADA76D /* SecurityMenuScreen.swift */; };
+		7A11E5E70000000000000114 /* AdvancedSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000112 /* AdvancedSecurityScreen.swift */; };
+		7A11E5E70000000000000111 /* SegmentSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000109 /* SegmentSlider.swift */; };
+		7A11E5E70000000000000108 /* AdvancedSecurityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000106 /* AdvancedSecurityViewModel.swift */; };
+		7A11E5E70000000000000105 /* AdvancedSecuritySettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000103 /* AdvancedSecuritySettingsStore.swift */; };
+		7A11E5E70000000000000102 /* WalletSecurityLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000100 /* WalletSecurityLevel.swift */; };
 		7A11E5E70000000000000003 /* ResetWalletInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000001 /* ResetWalletInfoScreen.swift */; };
 		752F819B2E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */; };
 		A1C0D0020000000000000002 /* RecoveryPhraseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0D0010000000000000001 /* RecoveryPhraseFlow.swift */; };
@@ -1035,6 +1035,7 @@
 		727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */; };
 		7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */; };
 		7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */; };
+		7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */; };
 		7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
@@ -1455,15 +1456,12 @@
 		C9A1B00230B5A10000D15A01 /* SendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */; };
 		C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C133592A561FFA00B66651 /* PasteboardContentView.swift */; };
 		C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
-		C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
 		C9D2C6962A320AA000D15901 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
 		C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
 		C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
-		C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		C9D2C69D2A320AA000D15901 /* Foundation+Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */; };
 		C9D2C69F2A320AA000D15901 /* DWPlaceholderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE3A2230FF4600956D5F /* DWPlaceholderFormTableViewCell.m */; };
 		C9D2C6A12A320AA000D15901 /* AmountInputControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B728FE907300028A8D /* AmountInputControl.swift */; };
-		C9D2C6A22A320AA000D15901 /* DWSegmentSliderFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */; };
 		C9D2C6A32A320AA000D15901 /* ApiCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449328F27C460082770C /* ApiCode.swift */; };
 		C9D2C6A42A320AA000D15901 /* CoinbaseEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B91290701470003E8AB /* CoinbaseEntryPointModel.swift */; };
 		C9D2C6A52A320AA000D15901 /* SyncingAlertViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451EA2A0BF10B00825057 /* SyncingAlertViewController.swift */; };
@@ -1581,7 +1579,6 @@
 		C9D2C7322A320AA000D15901 /* CrowdNode+UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */; };
 		C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313822CE2CB9009BAF7F /* DWPinView.m */; };
 		C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416423A8213C004E37A7 /* DWBaseReceiveModel.m */; };
-		C9D2C7372A320AA000D15901 /* DWSegmentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6411238D650200A9B505 /* DWSegmentSlider.m */; };
 		C9D2C7382A320AA000D15901 /* CoinbasePlaceBuyOrderRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA528C896BC000427E7 /* CoinbasePlaceBuyOrderRequest.swift */; };
 		C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB128C896BC000427E7 /* CoinbaseAmount.swift */; };
 		C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7D29102F6E0080C326 /* SendAmountModel.swift */; };
@@ -1632,7 +1629,6 @@
 		C9D2C7702A320AA000D15901 /* CrowdNodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BA728EAE7AD0097CFA0 /* CrowdNodeModel.swift */; };
 		C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
-		C9D2C7732A320AA000D15901 /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		C9D2C7752A320AA000D15901 /* DWAnimatedShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8D0231D33EA00A96B62 /* DWAnimatedShapeLayer.m */; };
 		C9D2C7782A320AA000D15901 /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		C9D2C7792A320AA000D15901 /* ConvertCryptoOrderPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CACC297021EE00F63AC4 /* ConvertCryptoOrderPreviewController.swift */; };
@@ -1648,7 +1644,6 @@
 		C9D2C7852A320AA000D15901 /* BalanceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E7299E4EE7006903F1 /* BalanceModel.swift */; };
 		C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
 		C9D2C7882A320AA000D15901 /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
-		C9D2C7892A320AA000D15901 /* DWAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */; };
 		C9D2C78B2A320AA000D15901 /* OrderPreviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CAD2297022B300F63AC4 /* OrderPreviewModel.swift */; };
 		C9D2C78D2A320AA000D15901 /* UIView+DWFindConstraints.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */; };
 		C9D2C78E2A320AA000D15901 /* DWModalPopupPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA42323AC1F00BA8C6A /* DWModalPopupPresentationController.m */; };
@@ -1659,7 +1654,6 @@
 		C9D2C7962A320AA000D15901 /* UIViewController+DWShareReceiveInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD86D2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m */; };
 		C9D2C7972A320AA000D15901 /* OnlineAccountConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */; };
 		C9D2C7982A320AA000D15901 /* BaseResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47838B8B29068F110003E8AB /* BaseResponse.swift */; };
-		C9D2C7992A320AA000D15901 /* DWDemoAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */; };
 		C9D2C79C2A320AA000D15901 /* TxWithinTimePeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C3C4F296D5A4700788E18 /* TxWithinTimePeriod.swift */; };
 		C9D2C79D2A320AA000D15901 /* CoinbaseSwapeTradeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9F28C896BC000427E7 /* CoinbaseSwapeTradeRequest.swift */; };
 		C9D2C79E2A320AA000D15901 /* UIFont+DWFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44311622CBF0B2009BAF7F /* UIFont+DWFont.m */; };
@@ -1857,7 +1851,6 @@
 		C9D2C8B42A320AA000D15901 /* CrowdNodeTransferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1141E4C1291BB12200ACDA9E /* CrowdNodeTransferViewController.swift */; };
 		C9D2C8B62A320AA000D15901 /* CBAuthInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478483E729629C0700E05A5A /* CBAuthInterop.swift */; };
 		C9D2C8B82A320AA000D15901 /* CoinbaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789D26F29825F5400BAFEFA /* CoinbaseAmountViewController.swift */; };
-		C9D2C8BA2A320AA000D15901 /* DWSegmentSliderFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */; };
 		C9D2C8BB2A320AA000D15901 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		C9D2C8BD2A320AA000D15901 /* UIStackView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */; };
 		C9D2C8BF2A320AA000D15901 /* ExplorePointOfUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */; };
@@ -1879,7 +1872,6 @@
 		C9D2C8D62A320AA000D15901 /* ListHandlerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C6E6E6291A90B2003FEDF2 /* ListHandlerView.swift */; };
 		C9D2C8D82A320AA000D15901 /* CrowdNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BD738028E7356100A34022 /* CrowdNode.swift */; };
 		C9D2C8D92A320AA000D15901 /* SQLite+ExloreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9E28BFAD8200490F5E /* SQLite+ExloreDash.swift */; };
-		C9D2C8DC2A320AA000D15901 /* DWAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1F6414238FEEA900A9B505 /* DWAdvancedSecurityModel.m */; };
 		C9D2C8DD2A320AA000D15901 /* AtmDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */; };
 		C9D2C8DE2A320AA000D15901 /* GettingStartedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110C67942921147F006B580C /* GettingStartedViewController.swift */; };
 		C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477A963D292CD27D0013605B /* NetworkUnavailableView.swift */; };
@@ -1926,7 +1918,6 @@
 		C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
 		C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
 		C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
-		C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* SetPin.storyboard */; };
 		C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
@@ -2439,14 +2430,6 @@
 		2A1B7DA62323AF4300BA8C6A /* DWModalPopupTransition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupTransition.h; sourceTree = "<group>"; };
 		2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWModalPopupTransition.m; sourceTree = "<group>"; };
 		2A1B7DBD23261F9F00BA8C6A /* DWModalPopupAppearanceStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalPopupAppearanceStyle.h; sourceTree = "<group>"; };
-		2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormTableViewCell.h; sourceTree = "<group>"; };
-		2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormTableViewCell.m; sourceTree = "<group>"; };
-		2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSliderFormCellModel.h; sourceTree = "<group>"; };
-		2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSliderFormCellModel.m; sourceTree = "<group>"; };
-		2A1F6410238D650200A9B505 /* DWSegmentSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSegmentSlider.h; sourceTree = "<group>"; };
-		2A1F6411238D650200A9B505 /* DWSegmentSlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSegmentSlider.m; sourceTree = "<group>"; };
-		2A1F6413238FEEA900A9B505 /* DWAdvancedSecurityModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityModel.h; sourceTree = "<group>"; };
-		2A1F6414238FEEA900A9B505 /* DWAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityModel.m; sourceTree = "<group>"; };
 		2A2120E82214566A009906DC /* DWAmountInputValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountInputValidator.h; sourceTree = "<group>"; };
 		2A2120E92214566A009906DC /* DWAmountInputValidator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputValidator.m; sourceTree = "<group>"; };
 		2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAmountInputValidatorTests.m; sourceTree = "<group>"; };
@@ -2570,12 +2553,6 @@
 		2A7A7C1E234B79B700451078 /* DWLocalCurrencyTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyTableViewCell.m; sourceTree = "<group>"; };
 		2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectUriTests.swift; path = DashConnect/DashConnectUriTests.swift; sourceTree = "<group>"; };
-		2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityViewController.h; sourceTree = "<group>"; };
-		2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityViewController.m; sourceTree = "<group>"; };
-		2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityStatusView.h; sourceTree = "<group>"; };
-		2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSecurityStatusView.m; sourceTree = "<group>"; };
-		2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWSecurityStatusView.xib; sourceTree = "<group>"; };
-		2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityLevel.h; sourceTree = "<group>"; };
 		2A811558269CE09300215F81 /* uphold-logout.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "uphold-logout.jpg"; sourceTree = "<group>"; };
 		2A858A05237EE89B0097A7B5 /* BRAppleWatchTransactionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchTransactionData.h; sourceTree = "<group>"; };
 		2A858A07237EE89B0097A7B5 /* DWPhoneWCSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhoneWCSessionManager.h; sourceTree = "<group>"; };
@@ -2730,13 +2707,6 @@
 		2AB3416E23A8DCFB004E37A7 /* DWOnboardingModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWOnboardingModel.m; sourceTree = "<group>"; };
 		2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoAppRootViewController.h; sourceTree = "<group>"; };
 		2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoAppRootViewController.m; sourceTree = "<group>"; };
-		2AB3417423A92875004E37A7 /* DWAdvancedSecurityModelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityModelProtocol.h; sourceTree = "<group>"; };
-		2AB3417523A92978004E37A7 /* DWDemoAdvancedSecurityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDemoAdvancedSecurityViewController.h; sourceTree = "<group>"; };
-		2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDemoAdvancedSecurityViewController.m; sourceTree = "<group>"; };
-		2AB3417823A929B6004E37A7 /* DWAdvancedSecurityModelStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAdvancedSecurityModelStub.h; sourceTree = "<group>"; };
-		2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityModelStub.m; sourceTree = "<group>"; };
-		2AB3417D23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseAdvancedSecurityModel.h; sourceTree = "<group>"; };
-		2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseAdvancedSecurityModel.m; sourceTree = "<group>"; };
 		2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWWatchDataManager.swift; sourceTree = "<group>"; };
 		2AB7F7E823846F6000C173AD /* DWMainInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWMainInterfaceController.swift; sourceTree = "<group>"; };
 		2AB7F7EA2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWTxInfoDisplayableInterfaceController.swift; sourceTree = "<group>"; };
@@ -3179,6 +3149,11 @@
 		752D03A82E2F758B00B88784 /* MainMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewModel.swift; sourceTree = "<group>"; };
 		752D03B12E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuViewControllerDelegate.swift; sourceTree = "<group>"; };
 		752F81962E30F55E00ADA76D /* SecurityMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityMenuScreen.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000112 /* AdvancedSecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecurityScreen.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000109 /* SegmentSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentSlider.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000106 /* AdvancedSecurityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecurityViewModel.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000103 /* AdvancedSecuritySettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecuritySettingsStore.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000100 /* WalletSecurityLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSecurityLevel.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000001 /* ResetWalletInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetWalletInfoScreen.swift; sourceTree = "<group>"; };
 		752F81972E30F55E00ADA76D /* SecurityMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityMenuViewModel.swift; sourceTree = "<group>"; };
 		A1C0D0010000000000000001 /* RecoveryPhraseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryPhraseFlow.swift; sourceTree = "<group>"; };
@@ -3345,6 +3320,7 @@
 		D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainStoreTests.swift; sourceTree = "<group>"; };
 		7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainRecipientTests.swift; sourceTree = "<group>"; };
 		7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryTapActionTests.swift; sourceTree = "<group>"; };
+		7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecurityTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetWalletInfoWipeForwardingTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
@@ -5370,12 +5346,14 @@
 		2A7F3B18238C643D00DEA3EF /* Advanced Security */ = {
 			isa = PBXGroup;
 			children = (
+				7A11E5E70000000000000112 /* AdvancedSecurityScreen.swift */,
+				7A11E5E70000000000000109 /* SegmentSlider.swift */,
+				7A11E5E70000000000000106 /* AdvancedSecurityViewModel.swift */,
+				7A11E5E70000000000000103 /* AdvancedSecuritySettingsStore.swift */,
+				7A11E5E70000000000000100 /* WalletSecurityLevel.swift */,
 				2AB3417C23A92A11004E37A7 /* Protocol */,
 				2AB3417B23A92A0C004E37A7 /* Model */,
 				2A7F3B1C238C648200DEA3EF /* Views */,
-				2A7F3B19238C646600DEA3EF /* DWAdvancedSecurityViewController.h */,
-				2A7F3B1A238C646600DEA3EF /* DWAdvancedSecurityViewController.m */,
-				2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */,
 			);
 			path = "Advanced Security";
 			sourceTree = "<group>";
@@ -5383,15 +5361,6 @@
 		2A7F3B1C238C648200DEA3EF /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2A7F3B1D238C651200DEA3EF /* DWSecurityStatusView.h */,
-				2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */,
-				2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */,
-				2A1F640A238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.h */,
-				2A1F640B238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m */,
-				2A1F640D238D5C0900A9B505 /* DWSegmentSliderFormCellModel.h */,
-				2A1F640E238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m */,
-				2A1F6410238D650200A9B505 /* DWSegmentSlider.h */,
-				2A1F6411238D650200A9B505 /* DWSegmentSlider.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5598,8 +5567,6 @@
 				2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */,
 				2A913EB423A7E145006A2A59 /* DWTransactionStub.h */,
 				2A913EB523A7E145006A2A59 /* DWTransactionStub.m */,
-				2AB3417823A929B6004E37A7 /* DWAdvancedSecurityModelStub.h */,
-				2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */,
 			);
 			path = Stubs;
 			sourceTree = "<group>";
@@ -5917,8 +5884,6 @@
 		2AB3417023A92661004E37A7 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				2AB3417523A92978004E37A7 /* DWDemoAdvancedSecurityViewController.h */,
-				2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */,
 				2AB3417123A926C9004E37A7 /* DWDemoAppRootViewController.h */,
 				2AB3417223A926C9004E37A7 /* DWDemoAppRootViewController.m */,
 			);
@@ -5928,10 +5893,6 @@
 		2AB3417B23A92A0C004E37A7 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				2A1F6413238FEEA900A9B505 /* DWAdvancedSecurityModel.h */,
-				2A1F6414238FEEA900A9B505 /* DWAdvancedSecurityModel.m */,
-				2AB3417D23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.h */,
-				2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -5939,7 +5900,6 @@
 		2AB3417C23A92A11004E37A7 /* Protocol */ = {
 			isa = PBXGroup;
 			children = (
-				2AB3417423A92875004E37A7 /* DWAdvancedSecurityModelProtocol.h */,
 			);
 			path = Protocol;
 			sourceTree = "<group>";
@@ -7710,6 +7670,7 @@
 				D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */,
 				7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */,
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
+				7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */,
 				7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
@@ -9646,7 +9607,6 @@
 				758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
-				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
@@ -9743,7 +9703,6 @@
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
 				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
-				C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */,
 				C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */,
 				C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */,
 				C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */,
@@ -10152,18 +10111,15 @@
 				F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */,
 				8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */,
 				2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */,
-				2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				75FFD6BE2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */,
 				11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */,
 				75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */,
 				7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */,
-				2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */,
 				4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */,
 				2A9FFE872230FF4700956D5F /* DWPlaceholderFormTableViewCell.m in Sources */,
 				47C661B828FE907300028A8D /* AmountInputControl.swift in Sources */,
-				2A1F640C238D5BBB00A9B505 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				11B8449428F27C470082770C /* ApiCode.swift in Sources */,
 				47838B92290701470003E8AB /* CoinbaseEntryPointModel.swift in Sources */,
 				C9F451EB2A0BF10B00825057 /* SyncingAlertViewController.swift in Sources */,
@@ -10341,7 +10297,6 @@
 				111C3C52296D620D00788E18 /* CrowdNode+UserDefaults.swift in Sources */,
 				2A44313922CE2CB9009BAF7F /* DWPinView.m in Sources */,
 				2AB3416523A8213C004E37A7 /* DWBaseReceiveModel.m in Sources */,
-				2A1F6412238D650200A9B505 /* DWSegmentSlider.m in Sources */,
 				0F6EDFCA28C896BD000427E7 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
 				0F6EDFD328C896BD000427E7 /* CoinbaseAmount.swift in Sources */,
 				75EBAA252BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
@@ -10404,7 +10359,6 @@
 				4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */,
 				2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */,
 				753F75382DD0D76400D40DFE /* DashSpendPayViewModel.swift in Sources */,
-				2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */,
 				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
@@ -10427,7 +10381,6 @@
 				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				754C27CC2CC3C15B00BA7B9F /* FeatureSingleItem.swift in Sources */,
-				2A7F3B1B238C646600DEA3EF /* DWAdvancedSecurityViewController.m in Sources */,
 				4751CAD6297024ED00F63AC4 /* OrderPreviewModel.swift in Sources */,
 				2A885FD6244DFEF100B9F679 /* UIView+DWFindConstraints.m in Sources */,
 				2A1B7DA52323AC1F00BA8C6A /* DWModalPopupPresentationController.m in Sources */,
@@ -10445,7 +10398,6 @@
 				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
 				279C16F9AF0575C540E312E5 /* SwapConvertCardRow.swift in Sources */,
-				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */,
 				111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */,
 				0F6EDFC528C896BD000427E7 /* CoinbaseSwapeTradeRequest.swift in Sources */,
@@ -10624,6 +10576,11 @@
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
 				752F819A2E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */,
+				7A11E5E70000000000000114 /* AdvancedSecurityScreen.swift in Sources */,
+				7A11E5E70000000000000111 /* SegmentSlider.swift in Sources */,
+				7A11E5E70000000000000108 /* AdvancedSecurityViewModel.swift in Sources */,
+				7A11E5E70000000000000105 /* AdvancedSecuritySettingsStore.swift in Sources */,
+				7A11E5E70000000000000102 /* WalletSecurityLevel.swift in Sources */,
 				7A11E5E70000000000000003 /* ResetWalletInfoScreen.swift in Sources */,
 				752F819B2E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */,
 				A1C0D0020000000000000002 /* RecoveryPhraseFlow.swift in Sources */,
@@ -10768,7 +10725,6 @@
 				1141E4C2291BB12200ACDA9E /* CrowdNodeTransferViewController.swift in Sources */,
 				478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */,
 				4789D27029825F5400BAFEFA /* CoinbaseAmountViewController.swift in Sources */,
-				2A1F640F238D5C0900A9B505 /* DWSegmentSliderFormCellModel.m in Sources */,
 				2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */,
 				47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */,
 				47AE8B9C28BFAD3600490F5E /* ExplorePointOfUse.swift in Sources */,
@@ -10804,7 +10760,6 @@
 				754D020E2D1558EB005CA466 /* GroupedTransactions.swift in Sources */,
 				11BD738128E7356100A34022 /* CrowdNode.swift in Sources */,
 				47AE8B9F28BFAD8200490F5E /* SQLite+ExloreDash.swift in Sources */,
-				2A1F6415238FEEA900A9B505 /* DWAdvancedSecurityModel.m in Sources */,
 				47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */,
 				110C67952921147F006B580C /* GettingStartedViewController.swift in Sources */,
 				C956AF312A5D601C002FAB75 /* UpholdConfirmTransferModel.swift in Sources */,
@@ -11086,6 +11041,7 @@
 				727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */,
 				7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */,
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
+				7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */,
 				7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
@@ -11159,19 +11115,16 @@
 				BCB10EF569912077058577E4 /* ContestedNamesService.swift in Sources */,
 				5EAD111330A0000000A1B201 /* MayaAmountFormatter.swift in Sources */,
 				C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */,
-				C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
 				C9D2C6962A320AA000D15901 /* DWBaseViewController.m in Sources */,
 				C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */,
 				C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */,
 				7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
-				C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */,
 				C9D2C69D2A320AA000D15901 /* Foundation+Bitcoin.swift in Sources */,
 				C9D2C69F2A320AA000D15901 /* DWPlaceholderFormTableViewCell.m in Sources */,
 				C9D2C6A12A320AA000D15901 /* AmountInputControl.swift in Sources */,
 				5151CA232F92335E00F0A604 /* LocalCurrencyViewModel.swift in Sources */,
 				5151CA242F92335E00F0A604 /* LocalCurrencyView.swift in Sources */,
-				C9D2C6A22A320AA000D15901 /* DWSegmentSliderFormTableViewCell.m in Sources */,
 				759609212C4553A400F3BF04 /* BuyCreditsViewController.swift in Sources */,
 				7549BE5E2DEAF55B004F0BAF /* IconBitmapDAO.swift in Sources */,
 				C9D2C6A32A320AA000D15901 /* ApiCode.swift in Sources */,
@@ -11383,7 +11336,6 @@
 				C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */,
 				C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */,
 				7545ED582DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */,
-				C9D2C7372A320AA000D15901 /* DWSegmentSlider.m in Sources */,
 				C9D2C7382A320AA000D15901 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
 				C943B5262A40A54600AF23C5 /* DWDashPayAnimationView.m in Sources */,
 				753F75342DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */,
@@ -11494,7 +11446,6 @@
 				759063E92C411673002F2AA9 /* ZenLedgerInfoSheet.swift in Sources */,
 				C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */,
 				C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */,
-				C9D2C7732A320AA000D15901 /* DWSecurityStatusView.m in Sources */,
 				C9D2C7752A320AA000D15901 /* DWAnimatedShapeLayer.m in Sources */,
 				C9D2C7782A320AA000D15901 /* DWScreenshotWarningViewController.m in Sources */,
 				C9D2C7792A320AA000D15901 /* ConvertCryptoOrderPreviewController.swift in Sources */,
@@ -11518,7 +11469,6 @@
 				C943B53E2A40A6BE00AF23C5 /* DPAlertViewController.m in Sources */,
 				C956AF132A5B5949002FAB75 /* EnterAddressModel.swift in Sources */,
 				C9D2C7882A320AA000D15901 /* DWModalPopupTransition.m in Sources */,
-				C9D2C7892A320AA000D15901 /* DWAdvancedSecurityViewController.m in Sources */,
 				C9D2C78B2A320AA000D15901 /* OrderPreviewModel.swift in Sources */,
 				C9D2C78D2A320AA000D15901 /* UIView+DWFindConstraints.m in Sources */,
 				C9D2C78E2A320AA000D15901 /* DWModalPopupPresentationController.m in Sources */,
@@ -11531,7 +11481,6 @@
 				C9D2C7962A320AA000D15901 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				C9D2C7972A320AA000D15901 /* OnlineAccountConfirmationController.swift in Sources */,
 				C9D2C7982A320AA000D15901 /* BaseResponse.swift in Sources */,
-				C9D2C7992A320AA000D15901 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				C943B3212A408CED00AF23C5 /* DWImgurItemView.m in Sources */,
 				756FE7062CDCBB1B00E6C195 /* CreateUsernameViewModel.swift in Sources */,
 				C9D2C79C2A320AA000D15901 /* TxWithinTimePeriod.swift in Sources */,
@@ -11587,6 +11536,11 @@
 				C9D2C7C32A320AA000D15901 /* DWDPRegistrationStatus.m in Sources */,
 				C9D2C7C42A320AA000D15901 /* CurrencyExchanger_Objc.m in Sources */,
 				752F81982E30F55E00ADA76D /* SecurityMenuScreen.swift in Sources */,
+				7A11E5E70000000000000113 /* AdvancedSecurityScreen.swift in Sources */,
+				7A11E5E70000000000000110 /* SegmentSlider.swift in Sources */,
+				7A11E5E70000000000000107 /* AdvancedSecurityViewModel.swift in Sources */,
+				7A11E5E70000000000000104 /* AdvancedSecuritySettingsStore.swift in Sources */,
+				7A11E5E70000000000000101 /* WalletSecurityLevel.swift in Sources */,
 				7A11E5E70000000000000002 /* ResetWalletInfoScreen.swift in Sources */,
 				752F81992E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */,
 				A1C0D0030000000000000003 /* RecoveryPhraseFlow.swift in Sources */,
@@ -11883,7 +11837,6 @@
 				C9D2C8B42A320AA000D15901 /* CrowdNodeTransferViewController.swift in Sources */,
 				C9D2C8B62A320AA000D15901 /* CBAuthInterop.swift in Sources */,
 				C9D2C8B82A320AA000D15901 /* CoinbaseAmountViewController.swift in Sources */,
-				C9D2C8BA2A320AA000D15901 /* DWSegmentSliderFormCellModel.m in Sources */,
 				C9D2C8BB2A320AA000D15901 /* DWSeedPhraseView.m in Sources */,
 				C9D2C8BD2A320AA000D15901 /* UIStackView+DashWallet.swift in Sources */,
 				C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */,
@@ -11915,7 +11868,6 @@
 				C9D2C8D82A320AA000D15901 /* CrowdNode.swift in Sources */,
 				755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */,
 				C9D2C8D92A320AA000D15901 /* SQLite+ExloreDash.swift in Sources */,
-				C9D2C8DC2A320AA000D15901 /* DWAdvancedSecurityModel.m in Sources */,
 				C9D2C8DD2A320AA000D15901 /* AtmDataProvider.swift in Sources */,
 				C9D2C8DE2A320AA000D15901 /* GettingStartedViewController.swift in Sources */,
 				C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */,
