@@ -10,6 +10,12 @@
 /* CrowdNode */
 " Terms of Use " = "Gebruiksvoorwaarden";
 
+/* Seconds, abbreviated */
+"%.1f s" = "%.1f s";
+
+/* Seconds, abbreviated */
+"%.2f s" = "%.2f s";
+
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f s";
 
@@ -495,6 +501,9 @@
 /* No comment provided by engineer. */
 "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected." = "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.";
 
+/* SPV diagnostics */
+"Aggregate Progress" = "Aggregate Progress";
+
 /* No comment provided by engineer. */
 "Agree" = "Akkoord";
 
@@ -841,6 +850,9 @@
 
 /* TimeSkew */
 "behind" = "achter";
+
+/* SPV diagnostics */
+"Best peer height" = "Best peer height";
 
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "Tussen %1$ld en %2$ld karakters";
@@ -1252,6 +1264,9 @@
 /* SPV sync */
 "Connected peers" = "Verbonden peers";
 
+/* SPV diagnostics */
+"Connected Peers" = "Connected Peers";
+
 /* DashConnect re-login */
 "Connected since %@" = "Connected since %@";
 
@@ -1381,6 +1396,10 @@
 
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core chain-locked hoogte";
+
+/* SPV diagnostics
+   Sync Info */
+"Core Sync Status" = "Core Sync Status";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Kon niet automatisch ontbrekende of incorrecte woorden herstellen";
@@ -1562,6 +1581,9 @@
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credticard";
+
+/* Raw transaction */
+"Credit outputs" = "Credit outputs";
 
 /* Translate it as short as possible! (24 symbols max) */
 "CrowdNode" = "CrowdNode";
@@ -1966,6 +1988,9 @@
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Vingeridentificatie inschakelen";
 
+/* Voting */
+"Enable Voting" = "Enable Voting";
+
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "DashPay inschakelen kost een kleine eenmalige netwerkvergoeding, betaald uit het kredietsaldo van je identiteit. De exacte schatting wordt getoond voordat je bevestigt. Het versturen van contactverzoeken en betalingen kost de gebruikelijke netwerkkosten.";
 
@@ -2151,6 +2176,9 @@
 
 /* SPV sync phase */
 "Filter headers" = "Filterheaders";
+
+/* SPV diagnostics */
+"Filter Headers" = "Filter Headers";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "Transacties filteren";
@@ -2673,6 +2701,9 @@
 /* Raw transaction inspector */
 "Inputs (%d)" = "Invoer (%d)";
 
+/* Raw transaction */
+"Inputs hash" = "Inputs hash";
+
 /* Receive payment status */
 "InstantSend confirmed" = "InstantSend confirmed";
 
@@ -3107,6 +3138,9 @@
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "lijst masternodes #%1$d of %2$d";
 
+/* Raw transaction */
+"Masternode list merkle root" = "Masternode list merkle root";
+
 /* About screen tech info */
 "Masternode list: %u of %u" = "Masternode list: %1$u of %2$u";
 
@@ -3124,6 +3158,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Revocation" = "Herroepen masternode";
+
+/* Raw transaction */
+"Masternode type" = "Masternode type";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Updaten masternode";
@@ -3466,6 +3503,9 @@
 
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
+
+/* SPV diagnostics */
+"No peers connected" = "No peers connected";
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "Geen opgeslagen portemonnee-record gevonden voor de gekoppelde portemonnee.";
@@ -3881,6 +3921,9 @@
 /* Raw transaction inspector */
 "Payload hex" = "Payload-hex";
 
+/* Raw transaction */
+"Payload version" = "Payload version";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "Betalingsmethode";
 
@@ -3947,6 +3990,9 @@
 /* CrowdNode */
 "per transaction" = "per transactie";
 
+/* SPV diagnostics */
+"Per-Phase Progress" = "Per-Phase Progress";
+
 /* No comment provided by engineer. */
 "Personalize" = "Personaliseer";
 
@@ -4000,6 +4046,9 @@
 
 /* No comment provided by engineer. */
 "Platform fee" = "Platform-kosten";
+
+/* Raw transaction */
+"Platform HTTP port" = "Platform HTTP port";
 
 /* Masternodes */
 "Platform node" = "Platform-node";
@@ -4261,6 +4310,9 @@
 
 /* Devnet */
 "Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Raw transaction */
+"Quorums merkle root" = "Quorums merkle root";
 
 /* Dash DEX */
 "Quote expires" = "Quote expires";
@@ -6026,6 +6078,9 @@
 
 /* No comment provided by engineer. */
 "Time" = "Tijd";
+
+/* SPV diagnostics */
+"Tip height" = "Tip height";
 
 /* Send Screen: to address */
 "to" = "naar";

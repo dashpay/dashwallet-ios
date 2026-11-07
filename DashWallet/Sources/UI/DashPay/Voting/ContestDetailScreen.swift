@@ -98,7 +98,7 @@ struct ContestDetailScreen: View {
         guard !needsVotingKey else { return NSLocalizedString("Vote", comment: "Voting") }
         let pending = nodes(for: choice)
         if pending.count <= 1 { return NSLocalizedString("Vote", comment: "Voting") }
-        return String(format: NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
+        return String.localizedStringWithFormat(NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
     }
 
     /// Nodes of ours with a live vote here. Not the number of vote *records*:
@@ -161,8 +161,8 @@ struct ContestDetailScreen: View {
                                 .font(.caption)
                                 .foregroundColor(Color.dash.secondaryText)
                             Spacer()
-                            Text(String(
-                                format: NSLocalizedString("%d of %d nodes voted", comment: "Voting"),
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString("%d of %d nodes voted", comment: "Voting"),
                                 castCount, viewModel.votableNodes.count))
                                 .font(.caption)
                                 .fontWeight(.medium)
@@ -302,7 +302,7 @@ private struct ContenderRow: View {
                         Text(contender.displayNameOrIdentity)
                             .font(.subheadline)
                             .monospaced(contender.displayLabel == nil)
-                        Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
+                        Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
                                     contender.voteTally))
                             .font(.caption)
                             .foregroundColor(isLeading ? .green : Color.dash.secondaryText)

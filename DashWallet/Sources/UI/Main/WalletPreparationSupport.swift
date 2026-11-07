@@ -130,11 +130,11 @@ struct WalletPreparationSupportView: View {
                         comment: "Wallet preparation support"))
                 }
             }
-            .navigationTitle(Text("Help"))
+            .navigationTitle(Text(NSLocalizedString("Help", comment: "Wallet preparation support")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(NSLocalizedString("Done", comment: "Wallet preparation support")) { dismiss() }
                 }
             }
             .sheet(item: $viewModel.draft) { draft in
@@ -145,7 +145,7 @@ struct WalletPreparationSupportView: View {
                 }
             }
             .alert(NSLocalizedString("Couldn't prepare the support message", comment: "Wallet preparation support"), isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
+                Button(NSLocalizedString("OK", comment: "Wallet preparation support"), role: .cancel) {}
             } message: {
                 Text(NSLocalizedString("Try again or copy the support address and write to us from your mail app.", comment: "Wallet preparation support"))
             }
