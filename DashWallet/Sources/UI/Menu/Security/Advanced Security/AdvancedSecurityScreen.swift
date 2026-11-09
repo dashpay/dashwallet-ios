@@ -70,9 +70,8 @@ struct AdvancedSecurityScreen: View {
             if viewModel.showsLockTimer {
                 Divider()
                 SliderRow(title: viewModel.lockTimerTitle) {
-                    Text(viewModel.lockTimerIndex
-                        .map { AdvancedSecurityViewModel.lockTimerText(AdvancedSecurityViewModel.lockTimerIntervals[$0]) }
-                        ?? "")
+                    // Also a stored value that is not a slider stop.
+                    Text(viewModel.lockTimerValueText)
                         .font(.system(.title2))
                         .foregroundColor(.dash.primaryText)
                 } slider: {
