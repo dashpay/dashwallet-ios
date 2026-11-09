@@ -6012,6 +6012,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "Ĉi tio ne estas QR-kodo de DashPay-uzanto.";
 
+/* No comment provided by engineer. */
+"This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
+
 /* Masternodes */
 "This masternode has no Platform identity yet." = "Ĉi tiu masternodo ankoraŭ ne havas Platform-identecon.";
 

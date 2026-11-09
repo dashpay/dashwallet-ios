@@ -6010,6 +6010,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "Bu bir DashPay kullanıcı QR kodu değil.";
 
+/* No comment provided by engineer. */
+"This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
+
 /* Masternodes */
 "This masternode has no Platform identity yet." = "Bu anadüğümün henüz bir Platform kimliği yok.";
 
