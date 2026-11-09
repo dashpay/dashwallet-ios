@@ -1157,12 +1157,15 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let opened = builder.paymentInput(with: try XCTUnwrap(URL(string: link)))
         XCTAssertEqual(opened.source, .deepLink)
         XCTAssertEqual(opened.callbackScheme, "ctx")
+        // The processor sends from the intent, so the gate must hold there too.
+        XCTAssertEqual(opened.paymentIntent?.callbackScheme, "ctx")
 
         for source in [DWPaymentInputSource.pasteboard, .NFC] {
             var read: DWPaymentInput?
             builder.payFirst(from: [link], source: source) { read = $0 }
             XCTAssertEqual(read?.parsedURI?.callbackScheme, "ctx")
             XCTAssertNil(read?.callbackScheme)
+            XCTAssertNil(read?.paymentIntent?.callbackScheme)
         }
     }
 

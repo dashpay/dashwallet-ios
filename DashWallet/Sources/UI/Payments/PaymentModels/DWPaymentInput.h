@@ -20,6 +20,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWParsedPaymentURI;
+@class DWPaymentIntent;
 
 typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
     DWPaymentInputSource_Pasteboard,
@@ -42,6 +43,9 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 /// The parsed link's `sender=` scheme, for a link another app opened (`DeepLink` / `URL`). nil for
 /// a scan, a paste or an NFC tag: no app asked for that payment, so none is called back after it.
 @property (nullable, readonly, nonatomic) NSString *callbackScheme;
+/// The send carrier projected from `parsedURI`; the processor reads it for a plain-`dash:` send.
+/// Its `callbackScheme` is `self.callbackScheme`, never the parsed link's directly.
+@property (nullable, readonly, nonatomic, strong) DWPaymentIntent *paymentIntent;
 
 @property (nullable, readonly, nonatomic) NSString *userDetails;
 
