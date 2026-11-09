@@ -1,0 +1,792 @@
+//
+//  PendingInvitationStore.swift
+//  DashWallet
+//
+//  The one DashPay invitation waiting to be accepted, per network + wallet.
+//
+//  An opened invitation link (or a scanned invitation QR) is stored here and
+//  surfaces as the Home card; the card validates it once the chain is synced
+//  and hands it to the create-username flow. Android keeps the same single
+//  slot (`DashPayConfig.INVITATION_LINK`) and drops a second link while one
+//  is pending.
+//
+//  The link carries the voucher private key (`pk`), so it is a bearer secret:
+//  it lives in the Keychain only, never in UserDefaults, and is never logged.
+//  It is stored exactly as received and normalized on every read, so a later
+//  change of the canonical link form touches `DWInvitationLinkNormalizer`
+//  only, never stored data.
+//
+//  Persisted state, per invitation scope `<net>.<wallet id | unbound>`:
+//
+//  | Where                                  | Holds                          | Written by           | Cleared by                        |
+//  |----------------------------------------|--------------------------------|----------------------|-----------------------------------|
+//  | Keychain `invitation.pending.<scope>`  | the link (bearer secret)       | receive, bindUnbound | every removal path below          |
+//  | Defaults `pendingInvitationMeta.<scope>` | receivedAt, fromOnboarding;  | receive, bindUnbound | with its Keychain item, never     |
+//  |                                        | `boundTo` on the unbound slot  |                      | before it; stray ones by a wipe   |
+//  | Defaults `pendingInvitationConsumed`   | SHA-256 of spent vouchers'     | retireConsumed       | retireConsumed, or a later reload |
+//  |                                        | normalized links (global)      |                      | once no copy can remain           |
+//  | Defaults `pendingInvitationFinished`   | scope → SHA-256 of links whose | retireFinished       | retireFinished, or a later reload |
+//  |                                        | registration finished there    |                      | once that scope holds no copy     |
+//
+//  Removal paths, from narrowest to widest:
+//  - `remove(_:reason:)` — the shown copy, plus an unbound copy already
+//    assigned to its wallet (hidden, or a verdict about this wallet).
+//  - `removeEverywhere` — every copy of one voucher (a fact about the
+//    voucher: claimed, malformed, below the minimum).
+//  - `retireConsumed` — `removeEverywhere` after our own claim, backed by
+//    a marker so a failed delete is retried on each reload.
+//  - `retireFinished` — `remove(_:reason:)` after a registration with the
+//    invitation finished, backed by a scope-local marker the same way. Not
+//    global: a registration that finished on an identity the wallet
+//    already had need not have spent the voucher.
+//  - `removeAll(walletIdHex:)` — a wallet being removed, including unbound
+//    copies assigned to it.
+//  - `eraseForWipe` / `wipeAllScopes` — everything, every network.
+//
+//  Invariants: `boundTo` is recorded before the wallet slot is written, so
+//  an interrupted move finishes for the wallet it started for; metadata is
+//  removed only after its Keychain item; a consumed marker stays while any
+//  stored item is unreadable, since that item might be the spent voucher.
+//
+
+import Combine
+import CryptoKit
+import Foundation
+import OSLog
+import SwiftDashSDK
+
+/// The network + wallet an invitation belongs to. Explicit on every stored
+/// invitation and every mutation, so a result that arrives after a wallet or
+/// network switch still names the slot it was about — "the current scope" is
+/// read only when something new comes in.
+struct InvitationScope: Hashable, CustomStringConvertible {
+    let networkRawValue: Int
+    /// nil before a wallet exists (an invitation opened during onboarding).
+    let walletIdHex: String?
+
+    init(networkRawValue: Int, walletIdHex: String?) {
+        self.networkRawValue = networkRawValue
+        self.walletIdHex = walletIdHex.flatMap { $0.isEmpty ? nil : $0 }
+    }
+
+    /// The active network and wallet right now.
+    static var current: InvitationScope {
+        InvitationScope(
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
+    }
+
+    var isUnbound: Bool { walletIdHex == nil }
+
+    /// The pre-wallet slot on the same network.
+    var unbound: InvitationScope { InvitationScope(networkRawValue: networkRawValue, walletIdHex: nil) }
+
+    /// `<networkRawValue>.<walletIdHex|unbound>` — the same scoping the Join
+    /// DashPay dismissal uses.
+    var storageKey: String { "\(networkRawValue).\(walletIdHex ?? "unbound")" }
+
+    init?(storageKey: String) {
+        let parts = storageKey.split(separator: ".", maxSplits: 1).map(String.init)
+        guard parts.count == 2, let network = Int(parts[0]) else { return nil }
+        self.init(networkRawValue: network, walletIdHex: parts[1] == "unbound" ? nil : parts[1])
+    }
+
+    var description: String { storageKey }
+}
+
+extension InvitationScope {
+    /// The network and wallet the SDK host is bound to right now. During a
+    /// wallet switch this lags `current` (the selected wallet is recorded
+    /// before the host rebinds), so the two can name different wallets.
+    @MainActor
+    static var hostBound: InvitationScope? {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+        return InvitationScope(
+            networkRawValue: WalletEnvironment.networkKind(for: network).rawValue,
+            walletIdHex: walletId.hexEncodedString())
+    }
+
+    /// `scope` is both the selected wallet and the one the SDK is bound to —
+    /// the only state in which reading wallet-local facts (identity, a
+    /// request in a vote) or spending a voucher answers for that scope.
+    @MainActor
+    static func isActiveAndBound(_ scope: InvitationScope) -> Bool {
+        isActiveAndBound(scope, selected: .current, bound: hostBound)
+    }
+
+    static func isActiveAndBound(
+        _ scope: InvitationScope,
+        selected: InvitationScope,
+        bound: InvitationScope?
+    ) -> Bool {
+        scope == selected && scope == bound
+    }
+}
+
+/// A stored, not yet accepted invitation.
+struct PendingInvitation: Equatable, CustomStringConvertible {
+    /// The link as received. Contains the voucher key — never log it.
+    let rawLink: String
+    /// nil when its metadata is gone (a reinstall keeps the Keychain item but
+    /// not the defaults) — a made-up date would differ on every reload.
+    let receivedAt: Date?
+    /// The link arrived before a wallet existed.
+    let fromOnboarding: Bool
+    /// Where it is stored.
+    let scope: InvitationScope
+
+    /// Canonical `dashpay://invite?…` URI, or nil when the stored link is no
+    /// longer recognized as an invitation.
+    var normalizedURI: String? {
+        DWInvitationLinkNormalizer.normalize(rawLink)
+    }
+
+    var description: String {
+        "PendingInvitation(scope: \(scope), receivedAt: \(receivedAt.map { "\($0)" } ?? "unknown"), fromOnboarding: \(fromOnboarding), link: <redacted>)"
+    }
+}
+
+/// A Keychain read that tells "not there" from "could not read".
+enum InvitationSecretRead: Equatable {
+    case found(Data)
+    case missing
+    /// The item may exist but could not be read (e.g. the device is locked).
+    case failed
+}
+
+/// Where the bearer secret is kept. A seam so the store's decisions can be
+/// tested with failing writes and deletes; production is the Keychain.
+@MainActor
+protocol InvitationSecretStorage: AnyObject {
+    func read(_ account: String) -> InvitationSecretRead
+    /// false when the item could not be written.
+    func write(_ data: Data, account: String) -> Bool
+    /// true when the item is gone — deleted, or was never there.
+    func delete(_ account: String) -> Bool
+    /// Every account starting with `prefix`; nil when they cannot be listed.
+    func accounts(withPrefix prefix: String) -> [String]?
+}
+
+/// The Keychain, through the SDK's `KeychainManager` service (items are
+/// `WhenUnlockedThisDeviceOnly`, never synchronized).
+@MainActor
+final class KeychainInvitationSecretStorage: InvitationSecretStorage {
+    private let keychain: KeychainManager
+
+    init(keychain: KeychainManager = .shared) {
+        self.keychain = keychain
+    }
+
+    func read(_ account: String) -> InvitationSecretRead {
+        // Not `KeychainManager.retrieveKeyData`: it answers nil for every
+        // failure, and an unreadable invitation must not pass for an absent
+        // one.
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychain.serviceName,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: AnyObject?
+        switch SecItemCopyMatching(query as CFDictionary, &result) {
+        case errSecSuccess:
+            return (result as? Data).map(InvitationSecretRead.found) ?? .failed
+        case errSecItemNotFound:
+            return .missing
+        default:
+            return .failed
+        }
+    }
+
+    func write(_ data: Data, account: String) -> Bool {
+        keychain.storeKeyData(data, identifier: account) != nil
+    }
+
+    func delete(_ account: String) -> Bool {
+        keychain.deleteKeyData(identifier: account)
+    }
+
+    func accounts(withPrefix prefix: String) -> [String]? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychain.serviceName,
+            kSecMatchLimit as String: kSecMatchLimitAll,
+            kSecReturnAttributes as String: true,
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecItemNotFound { return [] }
+        guard status == errSecSuccess, let items = result as? [[String: Any]] else { return nil }
+        return items.compactMap { $0[kSecAttrAccount as String] as? String }.filter { $0.hasPrefix(prefix) }
+    }
+}
+
+@MainActor
+final class PendingInvitationStore: ObservableObject {
+
+    /// Singleton justification (arch guardrail #4): it is the one owner of
+    /// the invitation Keychain items and their metadata, and it observes the
+    /// active wallet itself; the deep-link entry, the Home card, the claim
+    /// and the wiper must all see the same copy. Tests build their own
+    /// instance over `InvitationSecretStorage` and a private defaults suite.
+    static let shared = PendingInvitationStore()
+
+    enum ReceiveOutcome: Equatable {
+        /// Stored; the Home card shows it.
+        case stored
+        /// The same link is already pending; nothing changed.
+        case duplicate
+        /// A different invitation is already pending; the new one is dropped.
+        case busy
+        /// Not an invitation link.
+        case notAnInvitation
+        /// This wallet already has a DashPay username; nothing stored.
+        case alreadyHasIdentity
+        /// A valid invitation that could not be written to the Keychain.
+        /// Nothing is stored; opening the link again retries.
+        case storageFailed
+        /// A wallet wipe is running; nothing is stored.
+        case suspended
+    }
+
+    enum RemovalReason: String {
+        case hidden
+        case definitiveOutcome
+        case claimed
+        case wiped
+        case walletRemoved
+        /// The pre-onboarding copy, once it is safely under the new wallet.
+        case movedToWallet
+    }
+
+    /// The invitation pending in the current network + wallet scope.
+    @Published private(set) var pending: PendingInvitation?
+
+    /// Receipt is refused while a wallet wipe runs, from its first erase of
+    /// invitations until its registry reset: a link stored in between would
+    /// be written under a wallet that is being deleted and outlive the wipe.
+    private(set) var isReceiptSuspended = false
+
+    func resumeReceipt() { isReceiptSuspended = false }
+
+    /// Fires when a wallet wipe starts erasing invitations. State derived from
+    /// them elsewhere (a held receipt notice, an undelivered verdict)
+    /// subscribes and drops itself, so the wiper only talks to this store.
+    let wipeStarted = PassthroughSubject<Void, Never>()
+
+    /// The wipe's first step: refuse new links until `resumeReceipt`, tell
+    /// the subscribers, then delete every stored invitation. false when any
+    /// could not be deleted.
+    func eraseForWipe() -> Bool {
+        isReceiptSuspended = true
+        wipeStarted.send()
+        return wipeAllScopes()
+    }
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.invitations")
+
+    /// Keychain account prefix; every stored invitation lives under it.
+    static let keychainPrefix = "invitation.pending."
+    private static let metadataPrefix = "pendingInvitationMeta."
+    /// Unbound-slot metadata: the wallet a pre-onboarding invitation is being
+    /// moved under.
+    private static let bindingDestinationKey = "boundTo"
+    /// Vouchers a successful claim spent whose stored copies could not all be
+    /// removed yet — SHA-256 of the normalized link, never the link itself.
+    private static let consumedKey = "pendingInvitationConsumed"
+    /// Invitations whose registration finished in their wallet but whose
+    /// copy there could not be removed yet — scope storage key → SHA-256 of
+    /// each link (`linkDigest`), never the link itself.
+    private static let finishedKey = "pendingInvitationFinished"
+
+    private let storage: InvitationSecretStorage
+    private let defaults: UserDefaults
+    private let currentScope: () -> InvitationScope
+    private let hasRegisteredUsername: @MainActor () -> Bool
+    /// Whether a scope is both selected and bound to the SDK host — only
+    /// then does the identity snapshot describe that scope's wallet.
+    private let isActiveAndBound: @MainActor (InvitationScope) -> Bool
+    private var observers: [NSObjectProtocol] = []
+
+    init(storage: InvitationSecretStorage? = nil,
+         defaults: UserDefaults = .standard,
+         currentScope: @escaping () -> InvitationScope = { InvitationScope.current },
+         hasRegisteredUsername: (@MainActor () -> Bool)? = nil,
+         isActiveAndBound: (@MainActor (InvitationScope) -> Bool)? = nil) {
+        self.storage = storage ?? KeychainInvitationSecretStorage()
+        self.defaults = defaults
+        self.currentScope = currentScope
+        self.hasRegisteredUsername = hasRegisteredUsername
+            ?? { DWCurrentUserIdentityInfo.shared.refreshedSnapshot().username?.isEmpty == false }
+        self.isActiveAndBound = isActiveAndBound ?? { InvitationScope.isActiveAndBound($0) }
+        reload()
+        observers.append(NotificationCenter.default.addObserver(
+            forName: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.reload() }
+            })
+    }
+
+    deinit {
+        observers.forEach(NotificationCenter.default.removeObserver)
+    }
+
+    private func account(_ scope: InvitationScope) -> String { Self.keychainPrefix + scope.storageKey }
+    private func metadataKey(_ scope: InvitationScope) -> String { Self.metadataPrefix + scope.storageKey }
+
+    // MARK: - Reading
+
+    /// Re-read the slot for the current scope (network or wallet may have
+    /// changed underneath). Once a wallet exists, an invitation opened before
+    /// it is moved under it first — every reload is a retry of that move.
+    func reload() {
+        let scope = currentScope()
+        retryConsumedRemovals()
+        retryFinishedRemovals()
+        if !scope.isUnbound {
+            bindUnbound(into: scope)
+        }
+        switch slot(scope) {
+        case .invitation(let loaded) where isFinished(loaded):
+            // Its registration finished here; only the removal is still owed
+            // and is retried above. Shown, it would be checked, and the new
+            // username would read as "already has one".
+            if pending != nil { pending = nil }
+        case .invitation(let loaded):
+            if loaded != pending { pending = loaded }
+        case .empty:
+            if pending != nil { pending = nil }
+        case .unreadable:
+            // Keep what is shown only if it is this scope's own card; a card
+            // left over from the wallet or network the user just left must
+            // never stand in for this one. The next reload reads again.
+            Self.logger.error("🎟️ INVITE :: could not read the pending invitation")
+            if pending?.scope != scope {
+                pending = nil
+            }
+        }
+    }
+
+    private enum Slot {
+        case invitation(PendingInvitation)
+        case empty
+        /// Could not be read; treat as neither empty nor this invitation.
+        case unreadable
+    }
+
+    private func slot(_ scope: InvitationScope) -> Slot {
+        switch storage.read(account(scope)) {
+        case .missing:
+            return .empty
+        case .failed:
+            return .unreadable
+        case .found(let data):
+            guard let invitation = load(scope, data: data) else { return .unreadable }
+            return .invitation(invitation)
+        }
+    }
+
+    /// The readable invitation in `scope`, or nil when empty or unreadable.
+    private func load(_ scope: InvitationScope) -> PendingInvitation? {
+        if case .invitation(let invitation) = slot(scope) { return invitation }
+        return nil
+    }
+
+    private func load(_ scope: InvitationScope, data: Data) -> PendingInvitation? {
+        guard let rawLink = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        let meta = defaults.dictionary(forKey: metadataKey(scope)) ?? [:]
+        // Stored as `timeIntervalSinceReferenceDate`, Date's own
+        // representation, so it reads back equal: a reloaded invitation must
+        // compare equal to the one that was shown, or the card re-checks it.
+        let receivedAt = (meta["receivedAt"] as? Double).map(Date.init(timeIntervalSinceReferenceDate:))
+        let fromOnboarding = meta["fromOnboarding"] as? Bool ?? false
+        return PendingInvitation(rawLink: rawLink, receivedAt: receivedAt, fromOnboarding: fromOnboarding, scope: scope)
+    }
+
+    private func storedScopes() -> [InvitationScope]? {
+        storage.accounts(withPrefix: Self.keychainPrefix)?
+            .compactMap { InvitationScope(storageKey: String($0.dropFirst(Self.keychainPrefix.count))) }
+    }
+
+    // MARK: - Writing
+
+    /// Take in an opened link or a scanned QR payload, for the current scope.
+    func receive(_ raw: String) -> ReceiveOutcome {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let normalized = DWInvitationLinkNormalizer.normalize(trimmed) else {
+            return .notAnInvitation
+        }
+        guard !isReceiptSuspended else {
+            Self.logger.info("🎟️ INVITE :: a wallet wipe is running; invitation not stored")
+            return .suspended
+        }
+        let scope = currentScope()
+        // Only answerable once a wallet exists and the SDK is bound to it:
+        // mid-switch the identity snapshot still describes the outgoing
+        // wallet, so the invitation is stored and the card's guarded check
+        // decides after rebinding (as it does before a wallet exists, as on
+        // Android). An identity without a username is not enough to refuse:
+        // it may be the one this invitation already created.
+        if !scope.isUnbound && isActiveAndBound(scope) && hasRegisteredUsername() {
+            return .alreadyHasIdentity
+        }
+        switch slot(scope) {
+        case .invitation(let existing):
+            // Registered with here already; only its removal is owed, so the
+            // wallet cannot take this or another invitation.
+            if isFinished(existing) { return .alreadyHasIdentity }
+            if existing.rawLink == trimmed || existing.normalizedURI == normalized {
+                pending = existing
+                return .duplicate
+            }
+            return .busy
+        case .unreadable:
+            // Never overwrite what could not be read.
+            return .storageFailed
+        case .empty:
+            // This wallet registered with this link; its removal is owed
+            // elsewhere (an assigned pre-onboarding copy).
+            if finished()[scope.storageKey]?.contains(Self.digest(normalized)) == true {
+                return .alreadyHasIdentity
+            }
+        }
+        guard storage.write(Data(trimmed.utf8), account: account(scope)) else {
+            Self.logger.error("🎟️ INVITE :: could not store the pending invitation in the Keychain")
+            return .storageFailed
+        }
+        let invitation = PendingInvitation(
+            rawLink: trimmed, receivedAt: Date(), fromOnboarding: scope.isUnbound, scope: scope)
+        writeMetadata(invitation)
+        pending = invitation
+        Self.logger.info("🎟️ INVITE :: stored pending invitation (scope \(scope.storageKey, privacy: .public))")
+        return .stored
+    }
+
+    func receive(_ url: URL) -> ReceiveOutcome {
+        receive(url.absoluteString)
+    }
+
+    /// Forget this invitation in its own scope — a fact about that wallet
+    /// (hidden there, or refused for that wallet). A different invitation
+    /// stored there since is left alone. false when the Keychain item could
+    /// not be deleted; the invitation is then still pending.
+    @discardableResult
+    func remove(_ invitation: PendingInvitation, reason: RemovalReason) -> Bool {
+        switch slot(invitation.scope) {
+        case .empty:
+            return true
+        case .unreadable:
+            Self.logger.error("🎟️ INVITE :: could not read the invitation to remove it")
+            return false
+        case .invitation(let stored):
+            let digest = Self.linkDigest(invitation)
+            guard Self.linkDigest(stored) == digest else { return true }
+            guard remove(scope: invitation.scope, reason: reason) else { return false }
+            // A pre-onboarding copy already assigned to this wallet (its move
+            // was not cleaned up) would bring the invitation back on the next
+            // reload.
+            return removeAssignedUnbound(to: invitation.scope, reason: reason) { Self.linkDigest($0) == digest }
+        }
+    }
+
+    /// The pre-onboarding copy on `wallet`'s network whose move was already
+    /// assigned to `wallet` (`boundTo`), removed — optionally only when it
+    /// `matches`. true when there is none. false when it could not be read or
+    /// deleted.
+    private func removeAssignedUnbound(
+        to wallet: InvitationScope, reason: RemovalReason,
+        where matches: ((PendingInvitation) -> Bool)? = nil
+    ) -> Bool {
+        guard let walletIdHex = wallet.walletIdHex else { return true }
+        let unbound = wallet.unbound
+        let destination = defaults.dictionary(forKey: metadataKey(unbound))?[Self.bindingDestinationKey] as? String
+        guard destination == walletIdHex else { return true }
+        switch slot(unbound) {
+        case .empty:
+            return true
+        case .unreadable:
+            Self.logger.error("🎟️ INVITE :: could not read a pre-onboarding copy assigned to the wallet")
+            return false
+        case .invitation(let stored):
+            if let matches, !matches(stored) { return true }
+            return remove(scope: unbound, reason: reason)
+        }
+    }
+
+    /// Forget an invitation wherever it is stored — for facts about the
+    /// voucher itself (claimed, spent, malformed), which hold in every wallet.
+    /// Another invitation is never touched. false when a matching item could
+    /// not be deleted or the stored items could not be listed.
+    @discardableResult
+    func removeEverywhere(normalizedURI: String, reason: RemovalReason) -> Bool {
+        guard let scopes = storedScopes() else {
+            Self.logger.error("🎟️ INVITE :: could not list stored invitations to remove one")
+            return false
+        }
+        var removedAll = true
+        for scope in scopes {
+            switch slot(scope) {
+            case .invitation(let stored) where stored.normalizedURI == normalizedURI:
+                removedAll = remove(scope: scope, reason: reason) && removedAll
+            case .unreadable:
+                // Might be this voucher; cannot tell, so not "all removed".
+                removedAll = false
+            case .invitation, .empty:
+                break
+            }
+        }
+        return removedAll
+    }
+
+    /// A claim spent this voucher: remove every stored copy, and if that
+    /// fails, keep retrying on each reload until it succeeds — a spent
+    /// voucher's key must not stay behind.
+    @discardableResult
+    func retireConsumed(normalizedURI: String) -> Bool {
+        let digest = Self.digest(normalizedURI)
+        return retire(
+            record: { updateConsumed { $0.insert(digest) } },
+            clear: { updateConsumed { $0.remove(digest) } },
+            remove: { removeEverywhere(normalizedURI: normalizedURI, reason: .claimed) })
+    }
+
+    /// The marker is recorded before `remove` runs and cleared only when
+    /// `remove` succeeded, so a reload can finish a failed removal.
+    private func retire(record: () -> Void, clear: () -> Void, remove: () -> Bool) -> Bool {
+        record()
+        guard remove() else { return false }
+        clear()
+        return true
+    }
+
+    private func updateConsumed(_ change: (inout Set<String>) -> Void) {
+        var consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
+        change(&consumed)
+        defaults.set(Array(consumed), forKey: Self.consumedKey)
+    }
+
+    /// A marker is retired only once every stored item was read and none of
+    /// them is that voucher any more. An item that cannot be read might be
+    /// it, so while any is unreadable every marker stays.
+    private func retryConsumedRemovals() {
+        let consumed = Set(defaults.stringArray(forKey: Self.consumedKey) ?? [])
+        guard !consumed.isEmpty, let scopes = storedScopes() else { return }
+        var stillStored = Set<String>()
+        var anyUnreadable = false
+        for scope in scopes {
+            switch slot(scope) {
+            case .unreadable:
+                anyUnreadable = true
+            case .invitation(let stored):
+                guard let uri = stored.normalizedURI else { continue }
+                let digest = Self.digest(uri)
+                guard consumed.contains(digest) else { continue }
+                if !remove(scope: scope, reason: .claimed) { stillStored.insert(digest) }
+            case .empty:
+                break
+            }
+        }
+        let remaining = anyUnreadable ? consumed : consumed.intersection(stillStored)
+        defaults.set(Array(remaining), forKey: Self.consumedKey)
+    }
+
+    /// This wallet finished its registration with the invitation: remove its
+    /// copy there, and if that fails, keep retrying on each reload. Until
+    /// then it is not published as pending.
+    @discardableResult
+    func retireFinished(_ invitation: PendingInvitation) -> Bool {
+        let scope = invitation.scope.storageKey
+        let digest = Self.linkDigest(invitation)
+        let removed = retire(
+            record: { updateFinished { $0[scope, default: []].insert(digest) } },
+            clear: { updateFinished { $0[scope]?.remove(digest) } },
+            remove: { remove(invitation, reason: .claimed) })
+        if !removed, let pending, pending.scope == invitation.scope,
+           Self.linkDigest(pending) == digest {
+            self.pending = nil
+        }
+        return removed
+    }
+
+    /// Its registration finished in its own wallet; only its removal is
+    /// still owed.
+    func isFinished(_ invitation: PendingInvitation) -> Bool {
+        isFinished(invitation, in: invitation.scope)
+    }
+
+    private func isFinished(_ invitation: PendingInvitation, in scope: InvitationScope) -> Bool {
+        finished()[scope.storageKey]?.contains(Self.linkDigest(invitation)) == true
+    }
+
+    /// A scope's markers are retired once neither its slot nor a
+    /// pre-onboarding copy assigned to it holds one of those links. An
+    /// unreadable slot might, so its markers stay.
+    private func retryFinishedRemovals() {
+        let before = finished()
+        guard !before.isEmpty else { return }
+        let after = before.filter { key, digests in
+            guard let scope = InvitationScope(storageKey: key) else { return false }
+            let owed: (PendingInvitation) -> Bool = { digests.contains(Self.linkDigest($0)) }
+            // The assigned pre-onboarding copy first: left behind, the next
+            // `bindUnbound` would move it into the wallet's slot.
+            let unboundGone = removeAssignedUnbound(to: scope, reason: .claimed, where: owed)
+            switch slot(scope) {
+            case .unreadable:
+                return true
+            case .invitation(let stored) where owed(stored):
+                guard remove(scope: scope, reason: .claimed) else { return true }
+            case .invitation, .empty:
+                break
+            }
+            return !unboundGone
+        }
+        if after != before { storeFinished(after) }
+    }
+
+    private func finished() -> [String: Set<String>] {
+        (defaults.dictionary(forKey: Self.finishedKey) as? [String: [String]] ?? [:])
+            .mapValues(Set.init)
+    }
+
+    private func updateFinished(_ change: (inout [String: Set<String>]) -> Void) {
+        var markers = finished()
+        change(&markers)
+        storeFinished(markers)
+    }
+
+    private func storeFinished(_ markers: [String: Set<String>]) {
+        let kept = markers.filter { !$0.value.isEmpty }.mapValues(Array.init)
+        if kept.isEmpty {
+            defaults.removeObject(forKey: Self.finishedKey)
+        } else {
+            defaults.set(kept, forKey: Self.finishedKey)
+        }
+    }
+
+    /// Normalized when the link still is an invitation, raw otherwise — so a
+    /// copy is recognized whatever form it was stored in.
+    private static func linkDigest(_ invitation: PendingInvitation) -> String {
+        digest(invitation.normalizedURI ?? invitation.rawLink)
+    }
+
+    private static func digest(_ normalizedURI: String) -> String {
+        Data(SHA256.hash(data: Data(normalizedURI.utf8))).hexEncodedString()
+    }
+
+    /// Forget every invitation stored for a wallet that is being removed
+    /// (wallet ids are per network, so this is at most one slot). false when
+    /// one could not be deleted or the stored items could not be listed.
+    @discardableResult
+    func removeAll(walletIdHex: String) -> Bool {
+        guard let scopes = storedScopes() else {
+            Self.logger.error("🎟️ INVITE :: could not list stored invitations for a removed wallet")
+            return false
+        }
+        var removedAll = true
+        for scope in scopes where scope.walletIdHex == walletIdHex {
+            removedAll = remove(scope: scope, reason: .walletRemoved) && removedAll
+            // Including a pre-onboarding copy already assigned to it.
+            removedAll = removeAssignedUnbound(to: scope, reason: .walletRemoved) && removedAll
+        }
+        // An assigned copy whose move never wrote the wallet's own slot.
+        for scope in scopes where scope.isUnbound {
+            let wallet = InvitationScope(networkRawValue: scope.networkRawValue, walletIdHex: walletIdHex)
+            removedAll = removeAssignedUnbound(to: wallet, reason: .walletRemoved) && removedAll
+        }
+        return removedAll
+    }
+
+    private func remove(scope: InvitationScope, reason: RemovalReason) -> Bool {
+        guard storage.delete(account(scope)) else {
+            Self.logger.error("🎟️ INVITE :: could not delete the pending invitation (\(reason.rawValue, privacy: .public))")
+            return false
+        }
+        defaults.removeObject(forKey: metadataKey(scope))
+        if scope == currentScope(), pending != nil {
+            pending = nil
+        }
+        Self.logger.info("🎟️ INVITE :: removed pending invitation (\(reason.rawValue, privacy: .public))")
+        return true
+    }
+
+    /// Move an invitation received before the wallet existed under `wallet`.
+    /// The unbound copy is removed only once the invitation is safely there
+    /// (or the wallet already has one pending, which wins); on a failed write
+    /// it stays and the next reload tries again.
+    @discardableResult
+    private func bindUnbound(into wallet: InvitationScope) -> Bool {
+        let invitation: PendingInvitation
+        switch slot(wallet.unbound) {
+        case .empty: return true
+        case .unreadable: return false
+        case .invitation(let unboundInvitation): invitation = unboundInvitation
+        }
+        // The destination is recorded before it is written, so a move that
+        // was interrupted or whose clean-up failed is finished for the wallet
+        // it started for — never repeated for whichever wallet is selected
+        // next.
+        let unboundMetaKey = metadataKey(wallet.unbound)
+        var unboundMeta = defaults.dictionary(forKey: unboundMetaKey) ?? [:]
+        if let destination = unboundMeta[Self.bindingDestinationKey] as? String {
+            guard destination == wallet.walletIdHex else { return true }
+        } else {
+            unboundMeta[Self.bindingDestinationKey] = wallet.walletIdHex
+            defaults.set(unboundMeta, forKey: unboundMetaKey)
+        }
+        // Registered with in this wallet already, and its removal here failed
+        // above: moving it in would write the link back for the next reload
+        // to delete.
+        if isFinished(invitation, in: wallet) { return false }
+        switch slot(wallet) {
+        case .unreadable:
+            // The wallet's own slot may hold an invitation; don't overwrite.
+            return false
+        case .invitation:
+            break
+        case .empty:
+            guard storage.write(Data(invitation.rawLink.utf8), account: account(wallet)) else {
+                Self.logger.error("🎟️ INVITE :: could not move the pre-onboarding invitation under the wallet")
+                return false
+            }
+            writeMetadata(PendingInvitation(
+                rawLink: invitation.rawLink, receivedAt: invitation.receivedAt, fromOnboarding: true, scope: wallet))
+        }
+        return remove(scope: wallet.unbound, reason: .movedToWallet)
+    }
+
+    private func writeMetadata(_ invitation: PendingInvitation) {
+        var meta: [String: Any] = ["fromOnboarding": invitation.fromOnboarding]
+        meta["receivedAt"] = invitation.receivedAt?.timeIntervalSinceReferenceDate
+        defaults.set(meta, forKey: metadataKey(invitation.scope))
+    }
+
+    /// Delete every stored invitation, across networks and wallets. Metadata
+    /// is removed only for items that are gone, so a failure leaves a
+    /// consistent slot.
+    @discardableResult
+    func wipeAllScopes() -> Bool {
+        guard let scopes = storedScopes() else {
+            Self.logger.error("🎟️ INVITE :: could not list stored invitations to wipe them")
+            return false
+        }
+        var removedAll = true
+        for scope in scopes {
+            removedAll = remove(scope: scope, reason: .wiped) && removedAll
+        }
+        // Metadata whose secret is already gone (a crash between the two
+        // writes) is harmless, but nothing should outlive a wipe.
+        if removedAll {
+            for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.metadataPrefix) {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        reload()
+        return removedAll
+    }
+}

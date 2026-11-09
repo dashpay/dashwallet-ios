@@ -29,7 +29,8 @@ extension AppConnect {
     /// Platform's system contracts (dashpay/platform `data-contracts`), the
     /// same ids on every network. None of them is an app: a request naming
     /// one as its app, or binding a key to one, is refused, except for the
-    /// document types allowlisted above.
+    /// document types allowlisted above. A contract added later is still
+    /// caught as the app by its owner (`systemContractOwnerId`).
     static let systemContractIds: Set<String> = [
         "4fJLR2GYTPFdomuTVvNy3VRrvWgvkKPzqehEBpNf2nk6", // withdrawals
         "rUnsWrFu3PKyRMGk2mxmZVBPbQuZx2qtHeFjURoQevX", // masternode reward shares
@@ -41,7 +42,11 @@ extension AppConnect {
         "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD", // document history
         contractId, // App Connect
         "EG7RGfV8fDTayC2FyVr8HwdpJh3fXDbVztcfE94UmN88", // moderation charters
+        "3iNyoNwjCTkb7XS3RHyWUtLx7pgC6AFAEQNNDHzxqngF", // decision proposals (protocol 15)
+        "AE6yYq65VdfGCg2MSyV9vV7cWGiFWjbwBuy7THesDh4e", // token market (protocol 15)
     ]
+    /// The owner of every system contract. No identity has this id.
+    static let systemContractOwnerId = Data(count: 32)
 
     // MARK: What an approval grants
 
@@ -222,23 +227,26 @@ extension AppConnect {
         )
     }
 
-    /// The profile's callback rule for an app in the wallet's brand map: a
-    /// request whose `cb` is on a host that is not the app's is refused.
-    /// The sheet would be branded as the app and return somewhere else, and
-    /// the host is the user's main phishing signal. A request without `cb`
-    /// is not refused, the sheet warns instead
-    /// (`ApproveConnectionSheet.originWarning`).
-    ///
+    /// What the sheet warns about where a request came from.
+    enum OriginWarning: Equatable {
+        /// The app is not in the wallet's brand map: its name comes from the
+        /// request alone.
+        case unknownApp
+        /// A known app's request carries no callback.
+        case noCallback(website: String)
+        /// A known app's request returns to a host that is not its website.
+        case returnsElsewhere(callbackHost: String)
+    }
+
     /// The request itself proves nothing about where it came from: anyone
-    /// can put the app's id and the app's host in a QR code. What the wallet
-    /// can check is that what it shows agrees with itself.
-    static func callbackRefusal(callbackHost: String?, brandHost: String?) -> Refusal? {
-        guard let brandHost, let callbackHost, !isHost(callbackHost, of: brandHost) else { return nil }
-        return Refusal(.invalid, String(
-            format: NSLocalizedString(
-                "This request would return to %@, which is not the app's website.",
-                comment: "DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr"),
-            callbackHost))
+    /// can put the app's id and the app's host in a QR code. The brand map
+    /// only names an app and never changes which requests are accepted
+    /// (dips#181, App Identity), so what does not agree with it is a
+    /// warning on the sheet, never a refusal.
+    static func originWarning(callbackHost: String?, brandHost: String?) -> OriginWarning? {
+        guard let brandHost else { return .unknownApp }
+        guard let callbackHost else { return .noCallback(website: brandHost) }
+        return isHost(callbackHost, of: brandHost) ? nil : .returnsElsewhere(callbackHost: callbackHost)
     }
 
     /// Whether `host` is `brandHost` or one of its subdomains. Both are
@@ -264,7 +272,7 @@ extension AppConnect {
         appBoundedKeyPurposes: Set<KeyPurpose>,
         appUnreadableKeyPurposes: Set<KeyPurpose> = []
     ) -> Refusal? {
-        if systemContractIds.contains(plan.appId.toBase58String()) {
+        if systemContractIds.contains(plan.appId.toBase58String()) || appOwnerId == systemContractOwnerId {
             return Refusal(.invalid, NSLocalizedString(
                 "The request names a Dash Platform system contract as the app.",
                 comment: "DashConnect App Connect v2"))
@@ -300,6 +308,29 @@ extension AppConnect {
             return Refusal(.invalid, NSLocalizedString(
                 "The app's contract keeps no current key bound to it for the encryption it asks for.",
                 comment: "DashConnect App Connect v2"))
+        }
+        return nil
+    }
+
+    /// Wallet rule 3 for a document-type binding: the type has to be one its
+    /// contract defines, which Platform checks again when the key is added.
+    /// `contracts` holds the contracts preflight read; a binding whose
+    /// contract is not among them (the allowlisted DashPay `profile`) is not
+    /// checked here. A contract whose document types this build cannot read
+    /// asks for an update rather than proving the type missing.
+    static func documentTypeRefusal(for plan: GrantPlan, contracts: [Data: [String: Any]]) -> Refusal? {
+        for grant in plan.auth where grant.binding.kind == .documentType {
+            guard let contract = contracts[grant.binding.id] else { continue }
+            guard let schemas = contract["documentSchemas"] as? [String: Any] else {
+                return Refusal(.unsupported, NSLocalizedString(
+                    "This version of the wallet cannot read the document types of the app's contract. Update the wallet.",
+                    comment: "DashConnect App Connect v2"))
+            }
+            guard schemas[grant.binding.documentTypeName ?? ""] != nil else {
+                return Refusal(.invalid, NSLocalizedString(
+                    "The app asks for a key on a document type its contract does not define.",
+                    comment: "DashConnect App Connect v2"))
+            }
         }
         return nil
     }
@@ -365,8 +396,8 @@ extension AppConnect {
         case current(keyId: UInt32)
         /// It has none: register the one this wallet derives.
         case absent
-        /// Its current key is another wallet's, or the one this wallet
-        /// derives was disabled: leave the slot out. Replacing it would be a
+        /// Its current key is another wallet's, or was disabled: leave the
+        /// slot out. Replacing it would be a
         /// rotation, which orphans what peers encrypted to it; that is an
         /// explicit user action, never part of a login.
         case notThisWallets
@@ -594,9 +625,8 @@ extension AppConnect {
     /// bound elsewhere once a later read agrees. Beside a current key, a
     /// live key the app may hold was registered before it, or after it with
     /// Platform's read behind, so the answer waits on a later read. Behind
-    /// a disabled current key that a later read confirms, a key registered
-    /// before it is no longer current, and a new one shadows nothing; under
-    /// `unique`, nothing can be added behind a disabled current key at all.
+    /// a disabled current key the slot is left out: a new key would be a
+    /// rotation, and under `unique` Platform refuses one at all.
     static func encryptionKeyState(
         derivedPublicKey: Data,
         purpose: KeyPurpose,
@@ -645,12 +675,14 @@ extension AppConnect {
             }
             return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
         }
+        // The identity has a key for the contract and purpose, and none is
+        // current. Under `unique` Platform refuses any other; under `latest`
+        // a new key would be a rotation, which is the user's explicit action
+        // and never part of a login. A later live key with Platform's read
+        // behind is the one exception, so under `latest` the answer waits on
+        // a later read.
         if rule == .unique { return .notThisWallets }
-        // Behind a disabled current key, a key of the app's registered
-        // before it is no longer current either, so a new key shadows
-        // nothing; this wallet's own key cannot be added a second time.
-        if holdsTheDerivedKey { return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets }
-        return mayBeBehind ? .absentIfSettled : .absent
+        return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
     }
 
     /// Wallet rule 8: the live auth keys of this wallet's earlier grants to

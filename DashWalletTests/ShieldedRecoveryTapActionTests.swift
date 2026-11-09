@@ -42,6 +42,18 @@ final class ShieldedRecoveryTapActionTests: XCTestCase {
         XCTAssertEqual(inFlight, [.signing, .locking, .proving, .broadcasting])
     }
 
+    /// A Max drain can complete between opening the sheet from a pending row
+    /// and tapping "Finish now". The preflight must read the SDK's
+    /// DrainCompleted (6) as finished; a generic resume of that lock is
+    /// rejected as already consumed and would show it as unconfirmed.
+    func testPreflightTreatsACompletedDrainAsFinished() {
+        XCTAssertEqual(AssetLockStatus(rawValue: 6), .drainCompleted)
+        let finished = (0...6).filter { AssetLockStatus(rawValue: $0)?.isComplete == true }
+        XCTAssertEqual(finished, [4, 6])
+        XCTAssertEqual(TxDetailModel.lockStatusText(6), TxDetailModel.lockStatusText(4))
+        XCTAssertFalse(TxDetailModel.statusAllowsRetry(6))
+    }
+
     func testLongWaitStartsAfterTheCopysMinute() {
         XCTAssertEqual(ShieldedRecoveryViewModel.longProofWaitThreshold, .seconds(60))
     }

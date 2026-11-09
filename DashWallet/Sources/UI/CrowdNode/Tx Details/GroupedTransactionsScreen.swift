@@ -19,11 +19,11 @@ import SwiftUI
 import DashUIKit
 
 struct GroupedTransactionsScreen: View {
-    @State private var currentTag: String?
-    
     let model: GroupedTransactions!
-    @Binding var backNavigationRequested: Bool
-    var onShowBackButton: (Bool) -> Void
+    /// The row VoiceOver focuses, keyed by `txHashHexString`.
+    var focusedRow: AccessibilityFocusState<String?>.Binding
+    /// Opens a row's transaction. The host shows the detail over this screen.
+    var onOpenTransaction: (Transaction) -> Void
     
     var body: some View {
         ScrollView {
@@ -88,34 +88,17 @@ struct GroupedTransactionsScreen: View {
                 Section {
                     LazyVStack(spacing: 0) {
                         ForEach(model.transactions, id: \.txHashHexString) { txItem in
-                            ZStack {
-                                NavigationLink(
-                                    destination:
-                                        TXDetailVCWrapper(
-                                            tx: txItem,
-                                            navigateBack: $backNavigationRequested,
-                                            onDismissed: {
-                                                onShowBackButton(false)
-                                            }
-                                        ).navigationBarHidden(true),
-                                    tag: txItem.txHashHexString,
-                                    selection: self.$currentTag
-                                ) {
-                                    SwiftUI.EmptyView()
-                                }.opacity(0)
-
-                                TransactionPreview(
-                                    title: txItem.stateTitle,
-                                    subtitle: txItem.shortTimeString,
-                                    icon: .custom(txItem.iconName),
-                                    dashAmount: txItem.signedDashAmount,
-                                    overrideFiatAmount: txItem.fiatAmount
-                                ) {
-                                    self.currentTag = txItem.txHashHexString
-                                    onShowBackButton(true)
-                                }
-                                .frame(minHeight: 66)
+                            TransactionPreview(
+                                title: txItem.stateTitle,
+                                subtitle: txItem.shortTimeString,
+                                icon: .custom(txItem.iconName),
+                                dashAmount: txItem.signedDashAmount,
+                                overrideFiatAmount: txItem.fiatAmount
+                            ) {
+                                onOpenTransaction(txItem)
                             }
+                            .frame(minHeight: 66)
+                            .accessibilityFocused(focusedRow, equals: txItem.txHashHexString)
                         }
                     }
                     .padding(5)
