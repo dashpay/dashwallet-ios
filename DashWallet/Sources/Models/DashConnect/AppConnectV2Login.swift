@@ -105,7 +105,7 @@ extension AppConnect {
     /// What an approval gives an app, as the approval sheet and the
     /// connection sheet list it.
     struct GrantedAccess: Equatable {
-        struct Key: Equatable {
+        struct Key: Codable, Equatable {
             let bound: StoredBound
             let isCritical: Bool
             /// `nil` for a key with no spending limit.

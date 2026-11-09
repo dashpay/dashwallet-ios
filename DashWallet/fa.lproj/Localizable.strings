@@ -1285,6 +1285,9 @@
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Connecting to payment server";
 
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
@@ -1853,6 +1856,12 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Disconnected" = "عدم اتصال به شبکه";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
 
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
@@ -2814,6 +2823,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "این کد ممکن است به صورت پیامک به گوشی شما بیاید. در عیر این صورت، از کد اپلیکیشن اعتبارسنجی استفاده کنید. ";
 
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
+
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
 
@@ -3437,6 +3449,9 @@
 /* Wallet accounts */
 "No Accounts" = "No Accounts";
 
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
 /* Coinbase */
 "No active user" = "No active user";
 
@@ -3469,6 +3484,9 @@
 
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "هیچ گزارش تشخیصی روی این دستگاه پیدا نشد. گزارش‌ها از اجرای بعدی نوشته می‌شوند.";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
 
 /* Wallet accounts */
 "No extended public key has been persisted for this account yet." = "No extended public key has been persisted for this account yet.";
@@ -4433,6 +4451,12 @@
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "توصیه می‌شود: انتقال دومرحله‌ای از طریق نشانی Platform خودتان، هویت شما را از سکه‌های شفافتان جدا نگه می‌دارد.";
 
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
+
 /* Voting */
 "Records your masternodes as having voted, without taking a side." = "مسترنودهای شما را به‌عنوان رأی‌داده ثبت می‌کند، بدون جانبداری.";
 
@@ -4862,6 +4886,12 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "مشاهده در آپهلد";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will be able to do" = "See what %@ will be able to do";

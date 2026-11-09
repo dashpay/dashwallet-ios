@@ -1029,6 +1029,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // wallet's settled identity-recovery context (a backstop that never
         // runs).
         GeneratedWalletIdentityMarker.clear(walletId: walletId)
+        // Nor its DashConnect disconnected apps, on every network scope; a
+        // sweep of one devnet scope keeps the scopes the wallet stays on.
+        if !keepsWalletOnAnotherScope {
+            UserDefaultsDashConnectHistoryStore.clear(walletIdHex: walletId.hexEncodedString())
+        }
 #if DASHPAY
         // Nor its username registration reports (in-flight, completed, lost,
         // failed instant name) and form drafts, which would resurface under

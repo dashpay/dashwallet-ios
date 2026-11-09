@@ -27,6 +27,7 @@ struct ConnectionRow: View {
     let item: ConnectionSheetItem
     let onOpen: () -> Void
     let onDisconnect: () -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
         HStack(spacing: 20) {
@@ -58,27 +59,43 @@ struct ConnectionRow: View {
         .padding(.trailing, 14)
     }
 
-    /// Every connection offers a disconnect: the app's keys may be on in
-    /// each status.
+    /// A row may hold keys in every status, so it offers a disconnect; a
+    /// disconnected app offers to connect again.
+    @ViewBuilder
     private var action: some View {
-        DashUIKit.DashButton(
-            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
-            size: .small, style: .tintedGray, action: onDisconnect)
-            .fixedSize()
-            .accessibilityLabel(Text(String(
-                format: NSLocalizedString(
-                    "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
-                item.name)))
+        switch item.status {
+        case .active, .confirming, .undelivered:
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+                size: .small, style: .tintedGray, action: onDisconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
+        case .disconnected:
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+                size: .small, style: .tintedBlue, action: onReconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
+        }
     }
+}
+
+private func previewItem(
+    _ id: String, name: String = "Example App", url: String = "example.org", _ status: ConnectionSheetItem.Status
+) -> ConnectionSheetItem {
+    ConnectionSheetItem(id: id, name: name, url: url, status: status, connection: nil, entry: nil, scope: nil)
 }
 
 #Preview("Statuses") {
     VStack(spacing: 2) {
-        ForEach(ConnectionStatus.allCases, id: \.self) { status in
-            ConnectionRow(
-                item: ConnectionSheetItem(
-                    id: status.rawValue, name: "Example App", url: "example.org", status: status, connection: nil),
-                onOpen: {}, onDisconnect: {})
+        ForEach([ConnectionSheetItem.Status.active, .confirming, .undelivered, .disconnected], id: \.self) { status in
+            ConnectionRow(item: previewItem("\(status)", status), onOpen: {}, onDisconnect: {}, onReconnect: {})
         }
     }
     .background(Color.dash.secondaryBackground)
@@ -86,9 +103,7 @@ struct ConnectionRow: View {
 
 #Preview("Long name, no website") {
     ConnectionRow(
-        item: ConnectionSheetItem(
-            id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
-            status: .active, connection: nil),
-        onOpen: {}, onDisconnect: {})
+        item: previewItem("long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "", .active),
+        onOpen: {}, onDisconnect: {}, onReconnect: {})
     .background(Color.dash.secondaryBackground)
 }

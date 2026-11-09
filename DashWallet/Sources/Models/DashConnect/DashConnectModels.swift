@@ -222,11 +222,14 @@ struct DashConnectDisconnectResult: Equatable {
     /// approval names. They can be turned off only while that identity is
     /// the active one.
     var keysOnAnotherIdentity = false
+    /// The app is disconnected, but it could not be saved among the
+    /// disconnected apps.
+    var notRecordedInHistory = false
 }
 
 /// What a connection gives its app, from the intents of one identity that
 /// hold it, as the connection sheet shows it.
-struct ConnectionAccess: Equatable {
+struct ConnectionAccess: Codable, Equatable {
     /// What each key can do.
     let keys: [AppConnect.GrantedAccess.Key]
     /// The largest budget among the keys, in credits; `nil` when no key has

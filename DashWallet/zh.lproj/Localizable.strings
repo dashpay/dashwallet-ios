@@ -1285,6 +1285,9 @@
 /* No comment provided by engineer. */
 "Connecting to payment server" = "正在连接支付服务器";
 
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
@@ -1853,6 +1856,12 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Disconnected" = "连接断开";
+
+/* DashConnect */
+"Disconnected apps could not be read." = "Disconnected apps could not be read.";
+
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
 
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
@@ -2814,6 +2823,9 @@
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "它可能是您手机短信中的验证码. 如果没有, 请输入身份验证应用程序中的验证码.";
 
+/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
+"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
+
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "将 Dash从 Coinbase转账到此设备的 Dash钱包最多可能需要10分钟.";
 
@@ -3437,6 +3449,9 @@
 /* Wallet accounts */
 "No Accounts" = "No Accounts";
 
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
 /* Coinbase */
 "No active user" = "没有活跃用户";
 
@@ -3469,6 +3484,9 @@
 
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "此设备上未找到诊断日志。日志将从下次启动开始记录。";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
 
 /* Wallet accounts */
 "No extended public key has been persisted for this account yet." = "No extended public key has been persisted for this account yet.";
@@ -4433,6 +4451,12 @@
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "建议：通过你自己的 Platform 地址进行两步转账，可让你的身份与透明币不产生关联。";
 
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
+
 /* Voting */
 "Records your masternodes as having voted, without taking a side." = "记录您的主节点已投票，但不偏向任何一方。";
 
@@ -4862,6 +4886,12 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "查看Uphold";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ was able to do" = "See what %@ was able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will be able to do" = "See what %@ will be able to do";

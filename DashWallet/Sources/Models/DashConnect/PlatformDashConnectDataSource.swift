@@ -325,6 +325,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let walletIdHex: String
         let connections: any DashConnectStore
         let intents: any AppConnectIntentStore
+        /// The apps disconnected on this wallet.
+        let history: any DashConnectHistoryStore
         /// Where the network is reached, as configured when the pair was
         /// made; `nil` on a network with one fixed set of nodes.
         let endpoint: String?
@@ -379,7 +381,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The newest read of each identity this process has seen; a read
     /// behind it is not used (`AppConnect.IdentitySnapshot.mayReplace`).
     private static let newestSnapshots = OSAllocatedUnfairLock<[Data: AppConnect.IdentitySnapshot]>(initialState: [:])
-    private let subject: CurrentValueSubject<[DAppConnection], Never>
+    private let historyStore: any DashConnectHistoryStore
+    private let subject: CurrentValueSubject<DashConnectListing, Never>
     private let shownRows: ShownRows
     private let operationGate: DashConnectOperationGate
     private let activeWalletIdHex: () -> String?
@@ -423,6 +426,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         supportedNetwork: DashConnectNetwork = PlatformDashConnectDataSource.currentEnvironmentNetwork(),
         store: (any DashConnectStore)? = nil,
         intentStore: (any AppConnectIntentStore)? = nil,
+        historyStore: (any DashConnectHistoryStore)? = nil,
         activeWalletIdHex: @escaping () -> String? = { WalletEnvironment.activeWalletIdHex as String? },
         authorizer: DWIdentityAuthorizer = DWIdentityAuthorizer(),
         stateTransitionParser: any DashConnectStateTransitionParsing = PlatformWalletDashConnectStateTransitionParser(),
@@ -438,6 +442,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.supportedNetwork = supportedNetwork
         self.store = store ?? UserDefaultsDashConnectStore(network: supportedNetwork)
         self.intentStore = intentStore ?? UserDefaultsAppConnectIntentStore(network: supportedNetwork)
+        self.historyStore = historyStore ?? UserDefaultsDashConnectHistoryStore(network: supportedNetwork)
         self.authorizer = authorizer
         self.stateTransitionParser = stateTransitionParser
         self.now = now
@@ -450,9 +455,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.networkEndpoint = networkEndpoint
         let active = Self.pinnedStores(
             walletIdHex: activeWalletIdHex(), store: self.store, intentStore: self.intentStore,
+            historyStore: self.historyStore,
             endpoint: networkEndpoint())
         self.shownRows = ShownRows(scope: active?.scope)
-        self.subject = CurrentValueSubject(active.map { $0.published($0.connections.load()) } ?? [])
+        self.subject = CurrentValueSubject(Self.listing(of: active, rows: active?.connections.load() ?? []))
         // The list is loaded once, and the active wallet can change while
         // this data source lives.
         self.walletChangeObserver = notificationCenter
@@ -470,7 +476,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
     }
 
-    var connections: AnyPublisher<[DAppConnection], Never> {
+    var listing: AnyPublisher<DashConnectListing, Never> {
         subject.eraseToAnyPublisher()
     }
 
@@ -1008,6 +1014,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw Self.spentRequest(after: error)
         }
         await settle(after: intent, responseContractId: responseContractId, context: context, signer: signer)
+        // Connected again: the app leaves the disconnected ones once its
+        // update landed and it has a row.
+        await forgetDisconnected([plan.appId.toBase58String()], in: stores)
         return Self.connection(consent: consent, at: now())
     }
 
@@ -1947,15 +1956,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard let stores = await showActiveWalletRows(), scope == stores.scope else { return nil }
-        return await details(of: id, stores: stores)
+        return await details(of: id, stores: stores, readsFunding: true)
     }
 
     /// The app's connection on the active identity, as the intents that hold
     /// it show it. With a read of the identity, only the intents whose keys
     /// are live, expired or may still land count, and what is left of each
     /// landed key's budget is read from Platform. Without one, every open
-    /// intent counts and nothing is read.
-    private func details(of appId: String, stores: Stores) async -> ConnectionDetails {
+    /// intent counts and nothing is read. Without `readsFunding`, nothing is
+    /// read either.
+    private func details(of appId: String, stores: Stores, readsFunding: Bool) async -> ConnectionDetails {
         guard let context = try? await requireContext(pinnedTo: stores) else {
             return ConnectionDetails(appId: appId, identityId: nil, username: nil, access: nil)
         }
@@ -1984,7 +1994,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // still land names ids another key may hold.
         let landed = snapshot.map { snapshot in held.filter { AppConnect.hasLanded($0, in: snapshot) } } ?? []
         let keyIds = Array(Set(landed.flatMap(\.authKeys).map(\.id))).sorted()
-        if !keyIds.isEmpty {
+        if readsFunding, !keyIds.isEmpty {
             // A read-only query: it does not touch the identity copy the
             // operations that sign use, so it does not wait on them.
             if let remaining = try? await context.sdk.fetchKeysRemainingBudgets(identityId: identityId, keyIds: keyIds) {
@@ -2024,6 +2034,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard !stores.intents.hasUnreadableRows(identityId: context.identityId) else {
             throw DashConnectPlatformError.intentsUnreadable
         }
+        // What the connection was, read before its intents close.
+        let entry = await disconnectedEntry(appId: id, stores: stores)
         var planned = try await disconnectPlan(appId: appId, includingUnrecorded: includingUnrecorded, context: context)
         // The PIN is asked for only when there is something to sign.
         if !planned.plan.isEmpty {
@@ -2073,13 +2085,31 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
-        return DashConnectDisconnectResult(
+        var result = DashConnectDisconnectResult(
             keysTurnedOff: planned.appKeysOff,
             unrecordedKeysLeft: includingUnrecorded ? 0 : planned.unrecordedLeft,
             keysNotChecked: planned.unplaced,
             // Keys a read of another identity saw stay, and so does the row.
             keysOnAnotherIdentity: rows(in: stores).first { $0.id == id }?.seenOn
                 .subtracting([context.identityId.toBase58String()]).isEmpty == false)
+        // The app is listed among the disconnected ones once its row is gone,
+        // dated when the disconnect ended. An entry that could not be
+        // recorded is said.
+        if !rows(in: stores).contains(where: { $0.id == id }) {
+            result.notRecordedInHistory = !(entry.map { stores.history.record($0.disconnected(at: now())) } ?? false)
+            await MainActor.run { showStoredRows(of: stores) }
+        }
+        return result
+    }
+
+    /// The history entry a disconnect of the app records: its row and the
+    /// connection's details. `nil` without a row.
+    private func disconnectedEntry(appId: String, stores: Stores) async -> DisconnectedConnection? {
+        guard let row = rows(in: stores).first(where: { $0.id == appId }) else { return nil }
+        let details = await details(of: appId, stores: stores, readsFunding: false)
+        return DisconnectedConnection(
+            id: appId, name: row.name, url: row.url, identityId: details.identityId, username: details.username,
+            disconnectedAt: now(), access: details.access, connectedAt: details.connectedAt)
     }
 
     /// What a disconnect of `appId` submits on the active identity, from a
@@ -2198,6 +2228,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         walletIdHex: String?,
         store: any DashConnectStore,
         intentStore: any AppConnectIntentStore,
+        historyStore: any DashConnectHistoryStore,
         endpoint: String?
     ) -> Stores? {
         guard let walletIdHex, !walletIdHex.isEmpty else { return nil }
@@ -2205,6 +2236,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: walletIdHex,
             connections: store.pinned(toWalletIdHex: walletIdHex),
             intents: intentStore.pinned(toWalletIdHex: walletIdHex),
+            history: historyStore.pinned(toWalletIdHex: walletIdHex),
             endpoint: endpoint)
     }
 
@@ -2212,7 +2244,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// once; `nil` with no wallet.
     private func pinnedActiveStores() -> Stores? {
         Self.pinnedStores(
-            walletIdHex: activeWalletIdHex(), store: store, intentStore: intentStore,
+            walletIdHex: activeWalletIdHex(), store: store, intentStore: intentStore, historyStore: historyStore,
             endpoint: networkEndpoint())
     }
 
@@ -2224,7 +2256,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let active = pinnedActiveStores()
         guard shownRows.scope != active?.scope else { return active }
         shownRows.scope = active?.scope
-        subject.send(active.map { $0.published($0.connections.load()) } ?? [])
+        subject.send(Self.listing(of: active, rows: active?.connections.load() ?? []))
         return active
     }
 
@@ -2237,7 +2269,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     @MainActor
     private func shownRow(id: String) -> DAppConnection? {
-        subject.value.first { $0.id == id }
+        subject.value.rows.first { $0.id == id }
+    }
+
+    /// Publishes the rows of the wallet `stores` belongs to as stored now,
+    /// with its disconnected apps, while the published list is that wallet's.
+    @MainActor
+    private func showStoredRows(of stores: Stores) {
+        if shownRows.scope == stores.scope { subject.send(Self.listing(of: stores, rows: rows(in: stores))) }
     }
 
     /// Publishes the active wallet's rows as stored, after a save under
@@ -2247,7 +2286,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard store.scopeKey == scopeKey, let active = pinnedActiveStores(),
               active.connections.scopeKey == scopeKey,
               shownRows.scope == active.scope else { return }
-        subject.send(active.published(rows(in: active)))
+        subject.send(Self.listing(of: active, rows: rows(in: active)))
     }
 
     /// Changes the rows of the wallet `stores` belongs to in one step, saves
@@ -2257,7 +2296,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func updateRows(in stores: Stores, _ change: ([DAppConnection]) -> [DAppConnection]) {
         let sorted = Stores.stored(change(rows(in: stores))).sorted(by: { $0.updatedAt > $1.updatedAt })
         stores.connections.save(sorted)
-        if shownRows.scope == stores.scope { subject.send(stores.published(sorted)) }
+        if shownRows.scope == stores.scope { subject.send(Self.listing(of: stores, rows: sorted)) }
+    }
+
+    /// What the page lists for the wallet `stores` belongs to: `rows`, and
+    /// its disconnected apps as stored, most recent first. Nothing without a
+    /// wallet.
+    private static func listing(of stores: Stores?, rows: [DAppConnection]) -> DashConnectListing {
+        guard let stores else { return DashConnectListing(scope: nil, rows: [], disconnected: []) }
+        return DashConnectListing(
+            scope: stores.scope, rows: stores.published(rows),
+            disconnected: stores.history.load()?.sorted { $0.disconnectedAt > $1.disconnectedAt })
+    }
+
+    /// Forgets the disconnected apps `appIds` of the wallet `stores` belongs
+    /// to that have a row, read now, and publishes the list without them:
+    /// they are connected again. An app with no row keeps its entry, so it
+    /// is never in neither list.
+    @MainActor
+    private func forgetDisconnected(_ appIds: Set<String>, in stores: Stores) {
+        let connected = appIds.intersection(rows(in: stores).map(\.id))
+        guard !connected.isEmpty else { return }
+        for appId in connected { stores.history.remove(appId: appId) }
+        if shownRows.scope == stores.scope { subject.send(Self.listing(of: stores, rows: rows(in: stores))) }
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
@@ -2386,6 +2447,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: walletIdHex,
             connections: store.pinned(toWalletIdHex: walletIdHex),
             intents: intentStore.pinned(toWalletIdHex: walletIdHex),
+            history: historyStore.pinned(toWalletIdHex: walletIdHex),
             endpoint: networkEndpoint())
         guard await MainActor.run(body: { SwiftDashSDKHost.shared.sdk === sdk }) else {
             Self.logger.error("🔗 DASHCONNECT :: the SDK runtime changed while its context was read")
