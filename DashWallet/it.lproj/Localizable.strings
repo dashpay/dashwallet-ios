@@ -10,6 +10,9 @@
 /* CrowdNode */
 " Terms of Use " = "Termini di utilizzo";
 
+/* Evonode status: duration */
+"%.0f s" = "%.0f s";
+
 /* Seconds, abbreviated */
 "%.1f s" = "%.1f s";
 
@@ -1711,6 +1714,15 @@
 
 /* Buy Dash */
 "Dash Wallet on this device" = "Portafoglio Dash su questo dispositivo";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to move wallet" = "Dash Wallet — unable to move wallet";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to open wallet" = "Dash Wallet — unable to open wallet";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to read wallet keys" = "Dash Wallet — unable to read wallet keys";
 
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
