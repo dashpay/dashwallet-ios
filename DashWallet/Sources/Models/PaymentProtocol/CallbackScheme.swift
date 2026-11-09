@@ -20,10 +20,14 @@ final class CallbackScheme: NSObject {
     private static let blocked: Set<String> = [
         "http", "https", "file", "ftp", "data", "javascript", "about", "blob",
         "tel", "telprompt", "sms", "smsto", "mailto", "message", "maps", "geo", "music", "videos",
-        "prefs", "app-prefs", "app-settings", "shortcuts", "webcal", "calshow", "feed",
-        "dash", "dashwallet", "dashpay", "pay", "bitcoin",
+        "prefs", "app-prefs", "app-settings", "shortcuts", "workflow", "webcal", "calshow", "feed",
+        "shareddocuments", "mobilenotes", "x-web-search",
+        // Every scheme in the wallet's own `CFBundleURLSchemes`, and `bitcoin`.
+        "dash", "dashwallet", "dashpay", "dashid", "dash-key", "dash-st", "pay", "bitcoin",
     ]
     private static let blockedPrefixes = ["facetime", "itms", "x-apple"]
+    /// Longer than any real scheme. The value is shown to the user, so it is kept short.
+    private static let maxLength = 64
 
     private static let schemeTail = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-.")
     private static let letters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -31,11 +35,12 @@ final class CallbackScheme: NSObject {
     private static let unreserved = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
 
     /// `raw` unchanged when it is a bare custom URL scheme (RFC 3986:
-    /// `ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )`, ASCII only) that neither the system nor the
-    /// wallet answers. nil otherwise.
+    /// `ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )`, ASCII only, at most 64 characters) that
+    /// neither the system nor the wallet answers. nil otherwise.
     @objc(validated:)
     static func validated(_ raw: String?) -> String? {
-        guard let raw, let first = raw.unicodeScalars.first, letters.contains(first),
+        guard let raw, raw.utf8.count <= maxLength,
+              let first = raw.unicodeScalars.first, letters.contains(first),
               raw.unicodeScalars.allSatisfy(schemeTail.contains) else {
             return nil
         }
@@ -65,8 +70,10 @@ final class CallbackScheme: NSObject {
     /// here, so a caller that skipped `validated` still cannot open anything else.
     private static func url(scheme: String?, items: [(name: String, value: String)]) -> URL? {
         guard let scheme = validated(scheme) else { return nil }
-        let pairs = items.map { item in
-            "\(item.name)=\(item.value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? "")"
+        var pairs: [String] = []
+        for item in items {
+            guard let value = item.value.addingPercentEncoding(withAllowedCharacters: unreserved) else { return nil }
+            pairs.append("\(item.name)=\(value)")
         }
         return URL(string: "\(scheme)://\(pairs.joined(separator: "&"))")
     }

@@ -151,19 +151,25 @@ NS_ASSUME_NONNULL_BEGIN
 /// The `dash:` URI a `dashwallet://pay=` link stands for. A `sender` that names an app replaces
 /// the link's own label with one naming that app, and stays in the URI as the callback scheme.
 /// Otherwise (`namingSender` is NO, or `sender` is not a scheme an app can own) `sender` is
-/// dropped and the link keeps its own label.
+/// dropped and the link keeps its own label. `BIP70URI` reads `req-sender` and `req-label` as
+/// `sender` and `label`, so neither is passed on: the URI carries one sender and one label, the
+/// ones decided here.
 + (nullable NSURL *)paymentURLWithParams:(NSDictionary<NSString *, NSString *> *)params
                             namingSender:(BOOL)namingSender {
     NSMutableDictionary<NSString *, NSString *> *mutableParams = [params mutableCopy];
 
     NSString *sender = namingSender ? [DWCallbackScheme validated:mutableParams[@"sender"]] : nil;
+    NSString *ownLabel = mutableParams[@"label"] ?: mutableParams[@"req-label"];
+    [mutableParams removeObjectsForKeys:@[ @"sender", @"req-sender", @"label", @"req-label" ]];
+
     if (sender) {
+        mutableParams[@"sender"] = sender;
         mutableParams[@"label"] = [NSString stringWithFormat:
                                                 NSLocalizedString(@"Application %@ is requesting a payment to", nil),
                                                 sender];
     }
-    else {
-        [mutableParams removeObjectForKey:@"sender"];
+    else if (ownLabel) {
+        mutableParams[@"label"] = ownLabel;
     }
 
     NSString *componentsString = [NSString stringWithFormat:@"dash:%@", mutableParams[@"pay"]];

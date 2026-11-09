@@ -947,8 +947,8 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(box.hasExplicitScheme)
     }
 
-    /// #1092: a scanned `dashwallet://pay=` link is read the way the same link opened as a deep
-    /// link is — address, amount, sender, and the label naming the requesting app.
+    /// #1092: a scanned `dashwallet://pay=` link pays the address and amount the same link pays
+    /// when opened as a deep link. #1219: it names no app and calls none back.
     func testParsedBoxReadsDashWalletPayLinkLikeDeepLink() {
         let link = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=0.01916910&sender=v4v.app"
         let box = ParsedPaymentURI.parse(paymentString: link)
@@ -974,9 +974,10 @@ final class BIP70PaymentServiceTests: XCTestCase {
     /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
     func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
         let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
-        // The rewrite was not applied: it would carry the label naming the sender. This holds on
-        // every network; the verdicts below alone would also pass on mainnet for a testnet address.
-        XCTAssertNil(box.label)
+        // The rewrite was not applied: `BIP70URI` read the raw link, so `pay=` is still in the
+        // address. This holds on every network; the verdicts below alone would also pass on
+        // mainnet for a testnet address.
+        XCTAssertEqual(box.address, "pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
         XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
         XCTAssertFalse(box.isValidDashPaymentIntent)
     }
@@ -1008,10 +1009,28 @@ final class BIP70PaymentServiceTests: XCTestCase {
 
     func testCallbackSchemeRejectsSystemAndOwnSchemes() {
         let blocked = ["http", "https", "HTTPS", "tel", "sms", "smsto", "geo", "mailto", "facetime", "facetime-audio",
-                       "itms-apps", "x-apple-reminder", "app-settings", "dash", "DashWallet", "pay"]
+                       "itms-apps", "x-apple-reminder", "app-settings", "workflow", "shareddocuments",
+                       "dash", "DashWallet", "dashpay", "dashid", "DashID", "dash-key", "Dash-Key", "dash-st", "pay"]
         for scheme in blocked {
             XCTAssertNil(CallbackScheme.validated(scheme), scheme)
+            XCTAssertNil(CallbackScheme.payAckURL(scheme: scheme, address: "Xabc", txid: "ab12"), scheme)
+            XCTAssertNil(CallbackScheme.addressRequestURL(scheme: scheme, request: "address", address: "Xabc"), scheme)
         }
+    }
+
+    /// The wallet answers every scheme it registers, so none of them can be a callback.
+    func testCallbackSchemeRejectsEverySchemeTheWalletRegisters() throws {
+        let urlTypes = try XCTUnwrap(Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]])
+        let registered = urlTypes.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+        XCTAssertFalse(registered.isEmpty)
+        for scheme in registered {
+            XCTAssertNil(CallbackScheme.validated(scheme), scheme)
+        }
+    }
+
+    func testCallbackSchemeHasALengthLimit() {
+        XCTAssertNotNil(CallbackScheme.validated(String(repeating: "a", count: 64)))
+        XCTAssertNil(CallbackScheme.validated(String(repeating: "a", count: 65)))
     }
 
     /// An invalid `sender` is dropped; the payment the link asks for is untouched.
@@ -1069,6 +1088,54 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertNil(uri.callbackScheme)
         XCTAssertEqual(uri.label, "Shop")
         XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
+    }
+
+    /// `BIP70URI` reads `req-sender` as `sender`, so an invalid `sender` must not leave a
+    /// `req-sender` behind to be called back.
+    func testDeepLinkPayActionDropsReqSenderWithAnInvalidSender() throws {
+        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=https&req-sender=foo"))
+        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
+        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
+        XCTAssertEqual(uri.address, "Xabc")
+        XCTAssertNil(uri.callbackScheme)
+        XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
+    }
+
+    /// The app named on screen and the app called back are the same one: `sender`.
+    func testDeepLinkPayActionIgnoresReqSenderNextToAValidSender() throws {
+        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=ctx&req-sender=foo"))
+        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
+        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
+        XCTAssertEqual(uri.callbackScheme, "ctx")
+        XCTAssertTrue(uri.label?.contains("ctx") ?? false)
+        XCTAssertFalse(action.paymentURL.absoluteString.contains("foo"))
+    }
+
+    /// A `req-label` cannot replace the label the wallet wrote for a valid `sender`.
+    func testDeepLinkPayActionKeepsItsSenderLabelOverReqLabel() throws {
+        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=ctx&req-label=Shop"))
+        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
+        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
+        XCTAssertTrue(uri.label?.contains("ctx") ?? false)
+        XCTAssertFalse(action.paymentURL.absoluteString.contains("Shop"))
+    }
+
+    /// Without a valid `sender` a `req-label` is the link's own label, like `label`.
+    func testDeepLinkPayActionKeepsReqLabelWithAnInvalidSender() throws {
+        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=https&req-label=Shop"))
+        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
+        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
+        XCTAssertNil(uri.callbackScheme)
+        XCTAssertEqual(uri.label, "Shop")
+    }
+
+    /// A link the wallet read itself carries no sender under either name.
+    func testParsedBoxDropsReqSenderOfDashWalletPayLink() {
+        let box = ParsedPaymentURI.parse(
+            paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx&req-sender=foo")
+        XCTAssertEqual(box.address, "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
+        XCTAssertNil(box.callbackScheme)
+        XCTAssertNil(box.label)
     }
 
     func testAddressRequestNeedsAValidSender() throws {
