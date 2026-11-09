@@ -32,7 +32,9 @@ struct DashConnectAppMetadata: Equatable {
 enum DashConnectFallbackAppMetadata {
     // Fallback-only branding keyed by the trustworthy contract id, not the spoofable QR label.
     private static let knownApps: [String: DashConnectAppMetadata] = [
-        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr")
+        "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F": .init(name: "Yappr", url: "yap.pr"),
+        // The row of DashPay profile keys no connection accounts for.
+        AppConnect.dashPayContractId: .init(name: "DashPay", url: ""),
     ]
 
     /// The app's website, for an app the wallet knows.
