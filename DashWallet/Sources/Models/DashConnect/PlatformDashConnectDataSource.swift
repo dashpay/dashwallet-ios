@@ -622,15 +622,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             var plan = try AppConnect.grantPlan(for: uri, now: now())
             plan.brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: plan.appId.toBase58String())
-            if let refusal = AppConnect.callbackRefusal(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
-                return (.refused(refusal), nil)
-            }
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
                     "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
                     comment: "DashConnect App Connect v2"))), nil)
             }
-            let ownership = try await appConnectOwnership(plan, sdk: context.sdk)
+            let sdk = context.sdk
+            let ownership = try await Self.appConnectOwnership(
+                plan,
+                readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
+                readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
             if let refusal = ownership.refusal {
                 return (.refused(refusal), nil)
             }
@@ -647,13 +648,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// Reads the owners wallet rule 3 compares from Platform. A group the
     /// network proves absent counts as not the app's; any other failure to
-    /// read throws, so the sheet offers to try again. The reads run off the
-    /// main actor (`dataContractGetOffMain`; `getContractGroupInfo` is
-    /// nonisolated), so the sheet stays responsive while they wait. Also
+    /// read throws, so the sheet offers to try again. The caller's reads run
+    /// off the main actor (`dataContractGetOffMain`; `getContractGroupInfo`
+    /// is nonisolated), so the sheet stays responsive while they wait. Also
     /// returns the groups that have administrators, for the sheet.
-    private func appConnectOwnership(
+    static func appConnectOwnership(
         _ plan: AppConnect.GrantPlan,
-        sdk: SDK
+        readContract: (Data) async throws -> [String: Any],
+        readGroup: (Data) async throws -> [String: Any]
     ) async throws -> (
         refusal: AppConnect.Refusal?,
         administeredGroupIds: Set<Data>,
@@ -662,7 +664,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         func ownerId(of contract: [String: Any]) -> Data? {
             (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
         }
-        let app = try await sdk.dataContractGetOffMain(id: plan.appId.toBase58String())
+        let app: [String: Any]
+        do {
+            app = try await readContract(plan.appId)
+        } catch SDKError.notFound {
+            return (AppConnect.Refusal(.invalid, NSLocalizedString(
+                "The app's contract does not exist on this network.", comment: "DashConnect App Connect v2")), [], [:])
+        }
         guard let appOwnerId = ownerId(of: app) else {
             return (AppConnect.Refusal(.invalid, NSLocalizedString(
                 "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
@@ -670,13 +678,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         var groupOwners: [Data: Data] = [:]
         var administeredGroupIds: Set<Data> = []
         var contractOwners: [Data: Data] = [plan.appId: appOwnerId]
+        var contracts: [Data: [String: Any]] = [plan.appId: app]
         for grant in plan.auth {
             let id = grant.binding.id
             switch grant.binding.kind {
             case .contractGroup:
                 guard groupOwners[id] == nil else { continue }
                 do {
-                    let info = try await sdk.getContractGroupInfo(contractGroupId: id.toBase58String())
+                    let info = try await readGroup(id)
                     groupOwners[id] = (info["ownerId"] as? String).flatMap(Self.decodeIdentifier)
                     // Read as administered unless the proof shows none.
                     if (info["adminIds"] as? [Any])?.isEmpty != true { administeredGroupIds.insert(id) }
@@ -687,7 +696,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 let name = grant.binding.documentTypeName ?? ""
                 guard contractOwners[id] == nil,
                       !AppConnect.allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)") else { continue }
-                contractOwners[id] = ownerId(of: try await sdk.dataContractGetOffMain(id: id.toBase58String()))
+                // A contract the network proves absent has no owner, so
+                // rule 3 refuses the request; any other failure throws.
+                let contract: [String: Any]
+                do {
+                    contract = try await readContract(id)
+                } catch SDKError.notFound {
+                    continue
+                }
+                contracts[id] = contract
+                contractOwners[id] = ownerId(of: contract)
             }
         }
         // A contract whose config this build cannot read says nothing of its
@@ -716,6 +734,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             contractOwners: contractOwners,
             appBoundedKeyPurposes: Set(currentKeyRules.keys),
             appUnreadableKeyPurposes: unreadableKeyPurposes)
+            ?? AppConnect.documentTypeRefusal(for: plan, contracts: contracts)
         return (refusal, administeredGroupIds, currentKeyRules)
     }
 
@@ -1660,8 +1679,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         responseContractId: Data,
         sdk: SDK
     ) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
-        let response = try await DashConnectPlatformQueries.documentList(
-            sdk: sdk,
+        let response = try await sdk.documentList(
             dataContractId: responseContractId.toBase58String(),
             documentType: AppConnect.documentType,
             whereClause: AppConnect.responseLookupWhereClause(
@@ -2508,17 +2526,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 }
 
-/// Platform reads the Swift SDK offers only on the main actor, where their
-/// blocking FFI calls would hold the UI for a network round trip. They run
-/// here on one serial queue instead, with the SDK kept alive for the call;
-/// each copies the native result and releases it before returning.
+/// Platform reads the Swift SDK offers only on the main actor (the current
+/// epoch and an identity's contract keys), where their blocking FFI calls
+/// would hold the UI for a network round trip. They run here on queues of
+/// their own instead, with the SDK kept alive for the call; each copies the
+/// native result and releases it before returning.
 /// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
-/// it has them for these, as it has `dataContractGetOffMain`.
+/// it has them for these, as it has for `documentList`.
 enum DashConnectPlatformQueries {
-    /// One queue per kind of read, so a slow document search does not hold
-    /// back the protocol-version read a sheet waits for.
     private static let epochQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.epoch-query")
-    private static let documentQueue = DispatchQueue(label: "org.dashfoundation.dash.dashconnect.document-query")
     /// Concurrent: a read a failed login no longer waits for cannot be
     /// stopped, and must not hold back the next login's read.
     private static let contractKeysQueue = DispatchQueue(
@@ -2535,41 +2551,6 @@ enum DashConnectPlatformQueries {
             throw SDKError.serializationError("The current epoch carries no protocol version")
         }
         return version
-    }
-
-    /// `SDK.documentList(dataContractId:documentType:whereClause:limit:)`
-    /// off the main actor: the contract is fetched, searched and released
-    /// on the query queue.
-    static func documentList(
-        sdk: SDK,
-        dataContractId: String,
-        documentType: String,
-        whereClause: String,
-        limit: UInt32
-    ) async throws -> [String: Any] {
-        try await run(sdk, on: documentQueue) { handle in
-            let contract = dash_sdk_data_contract_fetch(handle, dataContractId)
-            if let error = contract.error {
-                defer { dash_sdk_error_free(error) }
-                throw SDKError.fromDashSDKError(error.pointee)
-            }
-            guard let contractHandle = contract.data else {
-                throw SDKError.notFound("Data contract not found")
-            }
-            defer { dash_sdk_data_contract_destroy(OpaquePointer(contractHandle)) }
-            return try documentType.withCString { typePointer in
-                try whereClause.withCString { wherePointer in
-                    var parameters = DashSDKDocumentSearchParams()
-                    parameters.data_contract_handle = OpaquePointer(contractHandle)
-                    parameters.document_type = typePointer
-                    parameters.where_json = wherePointer
-                    parameters.order_by_json = nil
-                    parameters.limit = limit
-                    parameters.start_at = 0
-                    return try json(from: dash_sdk_document_search(handle, &parameters))
-                }
-            }
-        }
     }
 
     /// `SDK.identityGetContractKeys(identityIds:contractId:documentType:purposes:)`

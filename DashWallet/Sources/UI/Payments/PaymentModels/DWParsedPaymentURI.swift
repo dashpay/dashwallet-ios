@@ -145,7 +145,8 @@ final class ParsedPaymentURI: NSObject {
     /// which always returns an object), so ObjC nil-messaging needs no special cases.
     @objc(parsePaymentString:)
     static func parse(paymentString raw: String) -> ParsedPaymentURI {
-        guard let uri = BIP70URI(paymentString: raw) else {
+        let paymentString = deepLinkPaymentString(for: raw) ?? raw
+        guard let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     label: nil, message: nil, rURL: nil, callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
@@ -173,6 +174,20 @@ final class ParsedPaymentURI: NSObject {
                                 isAddressValidForCurrentNetwork: addressValid,
                                 isAddressPayableForCurrentNetwork: addressValid || classified != nil,
                                 requiresSendScreenRouting: isBech32Destination)
+    }
+
+    /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`
+    /// link to: the address, the link's own parameters and a label naming its `sender`. Read raw,
+    /// `pay=<address>` would be taken for the address. nil for anything the router does not turn
+    /// into a payment — the plain `dashwallet:<address>` alias among them, which `BIP70URI` reads.
+    private static func deepLinkPaymentString(for raw: String) -> String? {
+        let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard link.hasPrefix("dashwallet:"),
+              let url = URL(string: link),
+              let action = DWURLParser.action(for: url) as? DWURLPayAction else {
+            return nil
+        }
+        return action.paymentURL.absoluteString
     }
 
     /// The fetch-failed fallback: a copy without the BIP70 request URL (was the

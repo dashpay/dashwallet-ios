@@ -59,7 +59,9 @@ struct BIP70URI {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let colon = trimmed.firstIndex(of: ":") else { return nil }
 
-        // Scheme normalization (pay: → dash:).
+        // Scheme normalization (pay: → dash:). `dashwallet:` is only the plain `dash:` alias here;
+        // the `dashwallet://pay=` deep-link form is not parsed (`pay=` stays in the address) —
+        // see `ParsedPaymentURI.deepLinkPaymentString`.
         switch trimmed[..<colon].lowercased() {
         case "pay", "dash", "dashwallet": scheme = "dash"
         case "bitcoin": scheme = "bitcoin"
