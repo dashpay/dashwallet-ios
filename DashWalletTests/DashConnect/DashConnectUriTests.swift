@@ -1031,6 +1031,14 @@ extension DashConnectUriTests {
         XCTAssertFalse(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash:XyZ?amount=1"))))
     }
 
+    func testTheUrlParserTurnsAConnectLinkIntoADashConnectActionWithTheLinkUnchanged() throws {
+        let connect = try XCTUnwrap(URL(string: Self.connectVectorUri))
+
+        XCTAssertTrue(DWURLParser.canHandle(connect))
+        let action = try XCTUnwrap(DWURLParser.action(for: connect) as? DWURLDashConnectAction)
+        XCTAssertEqual(action.uri, Self.connectVectorUri)
+    }
+
     func testAnOversizedDashpayUriIsClassifiedFromItsFirstScalars() {
         let tooLarge = AppConnectRequestError.invalid("URI is too long")
         let filler = String(repeating: "a", count: 10_000)
