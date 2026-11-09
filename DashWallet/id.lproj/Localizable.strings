@@ -19,6 +19,12 @@
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ dijual seharga %2$@ DASH";
 
+/* DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date */
+"%1$@, spending up to %2$@ of your identity's credits until %3$@" = "%1$@, spending up to %2$@ of your identity's credits until %3$@";
+
+/* DashConnect App Connect v2: what a key can do, a date */
+"%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
 
@@ -394,6 +400,15 @@
 
 /* Wallet accounts */
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
+
+/* DashConnect App Connect v2: the placeholder is the app's name */
+"Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
+
+/* DashConnect App Connect v2: the placeholder is the app's name */
+"Act as you in all of %@'s contracts, including claiming and spending its tokens" = "Act as you in all of %@'s contracts, including claiming and spending its tokens";
+
+/* DashConnect App Connect v2: the placeholder is the app's name */
+"Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
 
 /* DashPay username registration recovery */
 "Act as you in this app without asking each time" = "Act as you in this app without asking each time";
@@ -1947,6 +1962,9 @@
 
 /* No comment provided by engineer. */
 "Edit profile" = "Sunting profil";
+
+/* DashConnect App Connect v2 */
+"Edit your DashPay profile" = "Edit your DashPay profile";
 
 /* Input username textfield placeholder */
 "eg: johndoe" = "misalnya: johndoe";
@@ -3722,6 +3740,9 @@
 /* Transaction filter */
 "Only" = "Only";
 
+/* DashConnect App Connect v2: the placeholder is the app's website or name */
+"Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
+
 /* Voting */
 "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
 
@@ -3766,6 +3787,9 @@
 
 /* DashSpend */
 "Original Price" = "Original Price";
+
+/* DashConnect App Connect v2 */
+"Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
 
 /* Voting */
 "Other outcomes" = "Hasil lainnya";
@@ -4313,6 +4337,9 @@
 /* Coinbase Entry Point */
 "Receive directly into Dash Wallet" = "Terima langsung ke Dash Wallet";
 
+/* DashConnect App Connect v2: the placeholder is the app's name */
+"Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
+
 /* Masternode unban */
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 
@@ -4420,6 +4447,9 @@
 
 /* No comment provided by engineer. */
 "Registered payout address" = "Alamat pembayaran terdaftar";
+
+/* DashConnect App Connect v2 */
+"Registering names or changing your keys" = "Registering names or changing your keys";
 
 /* Username marketplace: activity overlay while the registration transition runs */
 "Registering the username…" = "Mendaftarkan nama pengguna…";
@@ -4534,6 +4564,12 @@
 
 /* Username marketplace: contested register sheet title */
 "Request “%@”" = "Minta “%@”";
+
+/* DashConnect App Connect v2: a relative time (12 seconds ago), then a website (yap.pr) */
+"Requested %1$@ · returns to %2$@" = "Requested %1$@ · returns to %2$@";
+
+/* DashConnect App Connect v2: the placeholder is a relative time, e.g. 12 seconds ago */
+"Requested %@" = "Requested %@";
 
 /* Username marketplace: search row for a contested label this identity already requested */
 "Requested by you — the network vote is in progress" = "Diminta oleh Anda — pemungutan suara jaringan sedang berlangsung";
@@ -5433,6 +5469,33 @@
 /* InternalTransfer */
 "The amount is too large to transfer." = "The amount is too large to transfer.";
 
+/* DashConnect App Connect v2 */
+"The app asks for a key on a contract group it does not own." = "The app asks for a key on a contract group it does not own.";
+
+/* DashConnect App Connect v2 */
+"The app asks for a key on a contract it does not own." = "The app asks for a key on a contract it does not own.";
+
+/* DashConnect App Connect v2 */
+"The app asks for a key on a document type its contract does not define." = "The app asks for a key on a document type its contract does not define.";
+
+/* DashConnect App Connect v2 */
+"The app asks for a key that has already expired." = "The app asks for a key that has already expired.";
+
+/* DashConnect App Connect v2 */
+"The app asks for an encryption key on a contract other than its own." = "The app asks for an encryption key on a contract other than its own.";
+
+/* DashConnect App Connect v2 */
+"The app's contract does not exist on this network." = "The app's contract does not exist on this network.";
+
+/* DashConnect App Connect v2 */
+"The app's contract has no readable owner." = "The app's contract has no readable owner.";
+
+/* DashConnect App Connect v2 */
+"The app's contract keeps no current key bound to it for the encryption it asks for." = "The app's contract keeps no current key bound to it for the encryption it asks for.";
+
+/* DashConnect App Connect v2 */
+"The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
+
 /* DashConnect */
 "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
 
@@ -5456,6 +5519,9 @@
 
 /* Username marketplace: contested request cost footnote */
 "The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "Biayanya dibayar dari saldo identitas Anda. Biaya ini mendanai pemungutan suara jaringan dan tidak dikembalikan jika penantang lain menang.";
+
+/* DashConnect App Connect v2 */
+"The credit limit does not limit how many of your tokens it can move." = "The credit limit does not limit how many of your tokens it can move.";
 
 /* Send confirm sheet */
 "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." = "Dash tiba di alamat penerima setelah jaringan memproses penarikan — ini bisa memakan waktu hingga 10 menit.";
@@ -5577,6 +5643,9 @@
 /* DashPay registration context changed */
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 
+/* DashConnect App Connect v2 */
+"The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
+
 /* Protocol version advisory */
 "The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
 
@@ -5634,6 +5703,9 @@
 /* DashPay */
 "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "Pendaftaran telah dikirim tetapi hasilnya tidak dapat dikonfirmasi. Tunggu satu menit hingga dompet bersinkronisasi, lalu coba lagi — jangan kirim ulang seketika.";
 
+/* DashConnect App Connect v2 */
+"The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
+
 /* Username marketplace */
 "The seller changed the price before your purchase was accepted. Review the new price and try again." = "Penjual mengubah harga sebelum pembelian Anda diterima. Tinjau harga baru lalu coba lagi.";
 
@@ -5642,6 +5714,12 @@
 
 /* DashPay */
 "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "Kolam privasi bersama masih bertumbuh (%1$ld dari %2$ld setoran). Coba lagi setelah mencapai batas minimum.";
+
+/* DashConnect App Connect v2 */
+"The sign-in request is dated in the future. Check this device's clock." = "The sign-in request is dated in the future. Check this device's clock.";
+
+/* DashConnect App Connect v2 */
+"The sign-in request is more than 10 minutes old." = "The sign-in request is more than 10 minutes old.";
 
 /* No comment provided by engineer. */
 "The signing key is missing from the keychain — re-add it and try again." = "Kunci penanda tangan tidak ada di keychain — tambahkan lagi lalu coba kembali.";
@@ -5675,6 +5753,9 @@
 
 /* Wallets */
 "The wallet could not be fully removed. Please try again." = "The wallet could not be fully removed. Please try again.";
+
+/* DashConnect App Connect v2 */
+"The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
 
 /* Wallet preparation */
 "The wallet data on this device could not be reset. Try again or contact support for help." = "The wallet data on this device could not be reset. Try again or contact support for help.";
@@ -5895,6 +5976,9 @@
 /* Username marketplace: seller-clarity callout on the detail sheet */
 "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "Nama ini ditawarkan oleh pengguna independen di jaringan Dash — bukan oleh Dash atau aplikasi ini. Penjual yang menetapkan harganya.";
 
+/* DashConnect App Connect v2 */
+"This network does not support this kind of sign-in yet." = "This network does not support this kind of sign-in yet.";
+
 /* Voting */
 "This node will no longer vote from this wallet. You can add its voting key again at any time." = "This node will no longer vote from this wallet. You can add its voting key again at any time.";
 
@@ -5922,8 +6006,20 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Ini mewakili Persentase Hasil Tahunan saat ini dari Masternode penuh dikurangi biaya CrowdNode 15%. Ini bukan tingkat pengembalian yang dijamin dan dapat naik atau turun berdasarkan ukuran  CrowdNode pool dan harga Dash.";
 
+/* DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr */
+"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
+
+/* DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr */
+"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
+
+/* DashConnect App Connect v2 */
+"This sign-in is for another identity. Switch to it in this wallet and ask the app again." = "This sign-in is for another identity. Switch to it in this wallet and ask the app again.";
+
 /* DashConnect */
 "This sign-in request can no longer be approved. Ask the app for a new code." = "This sign-in request can no longer be approved. Ask the app for a new code.";
+
+/* DashConnect App Connect v2 */
+"This sign-in request has expired. Ask the app for a new one." = "This sign-in request has expired. Ask the app for a new one.";
 
 /* Voting */
 "This still counts as your masternodes having voted in this contest." = "Ini tetap dihitung sebagai masternode Anda telah memberi suara dalam sengketa ini.";
@@ -5970,6 +6066,15 @@
 /* Usernames */
 "This username would also require voting — try adding a digit between 2 and 9" = "Nama pengguna ini juga akan memerlukan pemungutan suara — coba tambahkan angka antara 2 dan 9";
 
+/* DashConnect App Connect v2 */
+"This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet." = "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.";
+
+/* DashConnect App Connect v2 */
+"This version of the wallet cannot read the document types of the app's contract. Update the wallet." = "This version of the wallet cannot read the document types of the app's contract. Update the wallet.";
+
+/* DashConnect App Connect v2 */
+"This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet." = "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.";
+
 /* DashConnect: the placeholder is the kind of the scanned state transition */
 "This wallet cannot approve the scanned request (%@)." = "This wallet cannot approve the scanned request (%@).";
 
@@ -5981,6 +6086,9 @@
 
 /* Voting */
 "This wallet could not derive the voting key for this node." = "Dompet ini tidak dapat menurunkan kunci pemungutan suara untuk node ini.";
+
+/* DashConnect App Connect v2 */
+"This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
 
 /* Masternode unban */
 "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here." = "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.";
@@ -6011,6 +6119,9 @@
 
 /* No comment provided by engineer. */
 "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "Dompet ini tidak kosong atau sinkronisasi belum selesai, Anda tidak dapat menghapusnya tanpa frasa pemulihan";
+
+/* DashConnect App Connect v2 */
+"This wallet will not answer this sign-in request." = "This wallet will not answer this sign-in request.";
 
 /* DashConnect */
 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
@@ -6901,6 +7012,9 @@
 
 /* Wallets */
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
+
+/* DashConnect App Connect v2: the placeholder is a document type name */
+"Write \"%@\" documents as you" = "Write \"%@\" documents as you";
 
 /* Wallets */
 "Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Catat %d kata ini secara berurutan dan simpan di tempat aman. Kata-kata itu adalah SATU-SATUNYA cara memulihkan dompet ini. Siapa pun yang memilikinya dapat membelanjakan dana Anda.";
