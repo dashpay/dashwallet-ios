@@ -1354,7 +1354,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before", access: nil)
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
-        viewModel.showConnection(viewModel.rows[0])
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
         await waitUntil { viewModel.shownDetails?.username == "before" }
 
         spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "renewed", access: nil)
@@ -1367,13 +1367,13 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
-        viewModel.showConnection(viewModel.rows[0])
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
         let closing = Task { await viewModel.closeConnectionSheet() }
         await waitUntil { viewModel.shownConnection == nil }
         viewModel.connectionSheetDismissed()
         await closing.value
 
-        viewModel.showConnection(viewModel.rows[0])
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
         // The first close's fallback would have fired by now.
         try await Task.sleep(nanoseconds: 1_200_000_000)
         XCTAssertTrue(viewModel.isConnectionSheetOnScreen, "the later sheet is still up")
