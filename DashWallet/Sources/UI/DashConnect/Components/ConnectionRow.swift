@@ -21,12 +21,19 @@ import DashUIKit
 import SwiftUI
 
 /// One app on the Connections page: its name and website, which open the
-/// connection's sheet, and the action that fits its status. Disconnect opens
-/// the sheet too, which asks first.
+/// connection's sheet, and the action its status allows (ADR 0010).
+/// Disconnect opens the sheet too, which asks first; Remove takes a Refused
+/// row off the list without a PIN.
 struct ConnectionRow: View {
     let item: ConnectionSheetItem
     let onOpen: () -> Void
     let onDisconnect: () -> Void
+    let onRemove: () -> Void
+
+    /// What a row offers, read from the state-to-actions table.
+    static func actions(for status: ConnectionStatus) -> Set<AppConnect.RowAction> {
+        AppConnect.StateActions.row(for: status).actions
+    }
 
     var body: some View {
         HStack(spacing: 20) {
@@ -58,9 +65,17 @@ struct ConnectionRow: View {
         .padding(.trailing, 14)
     }
 
-    /// Every connection offers a disconnect: the app's keys may be on in
-    /// each status.
+    @ViewBuilder
     private var action: some View {
+        let actions = Self.actions(for: item.status)
+        if actions.contains(.disconnect) {
+            disconnectButton
+        } else if actions.contains(.remove) {
+            removeButton
+        }
+    }
+
+    private var disconnectButton: some View {
         DashUIKit.DashButton(
             text: NSLocalizedString("Disconnect", comment: "DashConnect"),
             size: .small, style: .tintedGray, action: onDisconnect)
@@ -70,6 +85,14 @@ struct ConnectionRow: View {
                     "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                 item.name)))
     }
+
+    private var removeButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+            size: .small, style: .tintedGray, action: onRemove)
+            .fixedSize()
+            .accessibilityLabel(Text(NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list")))
+    }
 }
 
 #Preview("Statuses") {
@@ -78,7 +101,7 @@ struct ConnectionRow: View {
             ConnectionRow(
                 item: ConnectionSheetItem(
                     id: status.rawValue, name: "Example App", url: "example.org", status: status, connection: nil),
-                onOpen: {}, onDisconnect: {})
+                onOpen: {}, onDisconnect: {}, onRemove: {})
         }
     }
     .background(Color.dash.secondaryBackground)
@@ -89,6 +112,13 @@ struct ConnectionRow: View {
         item: ConnectionSheetItem(
             id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
             status: .active, connection: nil),
-        onOpen: {}, onDisconnect: {})
+        onOpen: {}, onDisconnect: {}, onRemove: {})
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Refused") {
+    ConnectionRow(
+        item: ConnectionSheetItem(id: "refused", name: "Example App", url: "example.org", status: .refused, connection: nil),
+        onOpen: {}, onDisconnect: {}, onRemove: {})
     .background(Color.dash.secondaryBackground)
 }

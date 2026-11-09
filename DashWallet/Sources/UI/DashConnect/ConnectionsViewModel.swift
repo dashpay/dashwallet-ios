@@ -25,15 +25,10 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
     enum Kind: String {
         case error
         case success
-        /// A question the user answers from the message itself.
-        case question
     }
 
     let kind: Kind
     let text: String
-    /// A connection the user can also turn its unrecorded keys off for,
-    /// from the same message.
-    var unrecordedKeysOf: DAppConnection? = nil
 
     var id: String {
         "\(kind.rawValue):\(text)"
@@ -45,8 +40,6 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
             return NSLocalizedString("Error", comment: "")
         case .success:
             return NSLocalizedString("Success", comment: "DashConnect")
-        case .question:
-            return NSLocalizedString("Keys left on your identity", comment: "DashConnect: title of the question after a disconnect")
         }
     }
 }
@@ -661,17 +654,10 @@ final class ConnectionsViewModel: ObservableObject {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return
         }
-        disconnect(connection, includingUnrecorded: false)
+        disconnect(connection)
     }
 
     func disconnect(_ connection: DAppConnection) {
-        disconnect(connection, includingUnrecorded: false)
-    }
-
-    /// `includingUnrecorded`: also turn off the live keys of the app, and the
-    /// DashPay profile keys, that no approval of this wallet names. The user
-    /// is asked for that separately, after a disconnect left some.
-    func disconnect(_ connection: DAppConnection, includingUnrecorded: Bool) {
         // Disconnecting an App Connect connection signs an identity update,
         // which takes seconds. It must not overlap anything else that signs
         // one or touches the same records: a second tap, an approval on
@@ -679,14 +665,7 @@ final class ConnectionsViewModel: ObservableObject {
         // progress.
         guard !isBusyWithAnotherRequest else {
             // The user confirmed it; say why nothing ran.
-            show(includingUnrecorded
-                ? ConnectionsScreenMessage(
-                    kind: .error,
-                    text: NSLocalizedString(
-                        "Finish the request on screen, then disconnect the app again.",
-                        comment: "DashConnect: turning off unrecorded keys while another request is in progress"))
-                : Self.anotherRequestMessage,
-                from: connection)
+            show(Self.anotherRequestMessage, from: connection)
             return
         }
         isDisconnecting = true
@@ -695,8 +674,7 @@ final class ConnectionsViewModel: ObservableObject {
             self.connectionSheetMessage = nil
             let result: DashConnectDisconnectResult
             do {
-                result = try await self.dataSource.disconnect(
-                    id: connection.id, scope: connection.scope, includingUnrecorded: includingUnrecorded)
+                result = try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
             } catch {
                 self.isDisconnecting = false
                 // It may have turned some keys off before it failed, or the
@@ -717,41 +695,39 @@ final class ConnectionsViewModel: ObservableObject {
             }
             self.isDisconnecting = false
             self.updateShownConnection()
-            if result.unrecordedKeysLeft > 0 {
-                let text = result.keysTurnedOff > 0
-                    ? NSLocalizedString(
-                        "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?",
-                        comment: "DashConnect: after a disconnect that left keys no approval of this wallet names")
-                    : NSLocalizedString(
-                        "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?",
-                        comment: "DashConnect: a disconnect of an app whose keys no approval of this wallet names")
-                // A question the page asks, with its own answer: never on
-                // the sheet.
-                self.showOnPage(ConnectionsScreenMessage(
-                    kind: .question,
-                    text: String.localizedStringWithFormat(text, result.unrecordedKeysLeft),
-                    unrecordedKeysOf: connection))
-            } else if result.keysOnAnotherIdentity || result.keysNotChecked > 0 {
-                var texts: [String] = []
-                if result.keysNotChecked > 0 {
-                    texts.append(String.localizedStringWithFormat(
-                        NSLocalizedString(
-                            "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.",
-                            comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
-                        result.keysNotChecked))
-                }
-                if result.keysOnAnotherIdentity {
-                    texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
-                }
-                // Nothing turned off here and the app still has keys
-                // elsewhere: as when its approval on another identity is
-                // open, that is not a success.
-                self.show(
-                    ConnectionsScreenMessage(
-                        kind: result.keysOnAnotherIdentity && result.keysTurnedOff == 0 ? .error : .success,
-                        text: texts.joined(separator: "\n\n")),
-                    from: connection)
+            let notTurnedOff = result.keysStillLive > 0 || result.fencesNotPlaced > 0
+            guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 else { return }
+            var texts: [String] = []
+            if result.keysStillLive > 0 {
+                texts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Not every key was turned off: %d still on your identity. The connection stays listed; disconnect it again to turn them off.",
+                        comment: "DashConnect: after a disconnect that stopped part-way or left keys live"),
+                    result.keysStillLive))
             }
+            if result.fencesNotPlaced > 0 {
+                texts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The sign-in may still land: some temporary keys (%d) may not be placed yet. Disconnect again to be sure they are turned off.",
+                        comment: "DashConnect: after a disconnect whose fence keys the read after it does not show"),
+                    result.fencesNotPlaced))
+            }
+            if result.keysNotChecked > 0 {
+                texts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.",
+                        comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
+                    result.keysNotChecked))
+            }
+            if result.keysOnAnotherIdentity {
+                texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
+            }
+            // Keys still live, or nothing turned off here while the app still
+            // has keys elsewhere, is not a success.
+            let failed = notTurnedOff || (result.keysOnAnotherIdentity && result.keysTurnedOff == 0)
+            self.show(
+                ConnectionsScreenMessage(kind: failed ? .error : .success, text: texts.joined(separator: "\n\n")),
+                from: connection)
         }
     }
 
@@ -777,15 +753,6 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    /// On the page: once a sheet that is up has gone.
-    private func showOnPage(_ message: ConnectionsScreenMessage) {
-        if isConnectionSheetOnScreen {
-            holdForAfterSheet(message)
-        } else {
-            self.message = message
-        }
-    }
-
     /// A page message waiting for the connection's sheet to go.
     private var messageAfterSheet: ConnectionsScreenMessage?
 
@@ -795,13 +762,7 @@ final class ConnectionsViewModel: ObservableObject {
             messageAfterSheet = message
             return
         }
-        // A question keeps its answer; otherwise an error wins.
-        if let question = [waiting, message].first(where: { $0.kind == .question }) {
-            messageAfterSheet = ConnectionsScreenMessage(
-                kind: .question, text: waiting.text + "\n\n" + message.text,
-                unrecordedKeysOf: question.unrecordedKeysOf)
-            return
-        }
+        // An error wins.
         messageAfterSheet = ConnectionsScreenMessage(
             kind: waiting.kind == .error || message.kind == .error ? .error : .success,
             text: waiting.text + "\n\n" + message.text)

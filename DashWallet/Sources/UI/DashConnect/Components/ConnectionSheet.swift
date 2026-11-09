@@ -44,6 +44,8 @@ struct ConnectionSheet: View {
     let onClose: () -> Void
     /// Confirmed.
     let onDisconnect: () -> Void
+    /// Hides a Refused connection: no PIN, nothing written to Platform.
+    let onRemove: () -> Void
     /// Whether a row's Disconnect opened the sheet, so it asks at once;
     /// `false` also when it cannot ask (the view model then says why).
     let takeDisconnectQuestion: () -> Bool
@@ -99,7 +101,7 @@ struct ConnectionSheet: View {
                     .padding(.top, 12)
             }
 
-            actionButton
+            action
                 .padding(.horizontal, 40)
                 .padding(.top, 20)
                 .padding(.bottom, 20)
@@ -160,7 +162,7 @@ struct ConnectionSheet: View {
                 .foregroundColor(Color.dash.tertiaryText)
             HStack(spacing: 6) {
                 Circle()
-                    .fill(isLive ? Color.dash.green : Color.dash.gray300Alpha90)
+                    .fill(ConnectionStatusBadge.dotColor(for: item.status))
                     .frame(width: 8, height: 8)
                 Text(statusText)
                     .dashFont(.callout)
@@ -338,6 +340,19 @@ struct ConnectionSheet: View {
                 .strokeBorder(Color.dash.gray300Alpha20, lineWidth: 2))
     }
 
+    /// The action the status allows (ADR 0010).
+    @ViewBuilder
+    private var action: some View {
+        let actions = AppConnect.StateActions.row(for: item.status).actions
+        if actions.contains(.disconnect) {
+            actionButton
+        } else if actions.contains(.remove) {
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+                isEnabled: !isBusy, fillsWidth: true, size: .large, style: .tintedGray, action: onRemove)
+        }
+    }
+
     private var actionButton: some View {
         DashUIKit.DashButton(
             text: NSLocalizedString("Disconnect", comment: "DashConnect"),
@@ -374,14 +389,9 @@ struct ConnectionSheet: View {
     /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
+    /// The status name from the state-to-actions table (ADR 0010).
     private var statusText: String {
-        switch item.status {
-        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
-        case .confirming:
-            return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
-        case .undelivered:
-            return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
-        }
+        ConnectionStatusBadge.label(for: item.status)
     }
 
     private var grantedTitle: String {
@@ -480,7 +490,7 @@ private enum ConnectionSheetPreview {
         ConnectionSheet(
             item: item, details: details, detailsFailed: detailsFailed, granted: granted,
             withheld: DashConnectPermissionText.withheld, funding: funding, fundingFailed: fundingFailed,
-            connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {},
+            connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {}, onRemove: {},
             takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onShowFundingLimitsInfo: {})
     }
 }

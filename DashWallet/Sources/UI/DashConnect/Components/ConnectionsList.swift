@@ -25,13 +25,15 @@ struct ConnectionsList: View {
     let items: [ConnectionSheetItem]
     let onOpen: (ConnectionSheetItem) -> Void
     let onDisconnect: (ConnectionSheetItem) -> Void
+    let onRemove: (ConnectionSheetItem) -> Void
 
     var body: some View {
         VStack(spacing: 2) {
             ForEach(items) { item in
                 ConnectionRow(
                     item: item, onOpen: { onOpen(item) },
-                    onDisconnect: { onDisconnect(item) })
+                    onDisconnect: { onDisconnect(item) },
+                    onRemove: { onRemove(item) })
             }
         }
         .modifier(MenuViewModifier())
@@ -45,7 +47,7 @@ struct ConnectionsList: View {
                 id: status.rawValue, name: "Example App \(status.rawValue)", url: "example.org", status: status,
                 connection: nil)
         },
-        onOpen: { _ in }, onDisconnect: { _ in })
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
     .padding(20)
     .background(Color.primaryBackground)
 }
@@ -53,7 +55,7 @@ struct ConnectionsList: View {
 #Preview("One app") {
     ConnectionsList(
         items: [ConnectionSheetItem(id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil)],
-        onOpen: { _ in }, onDisconnect: { _ in })
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
     .padding(20)
     .background(Color.primaryBackground)
 }

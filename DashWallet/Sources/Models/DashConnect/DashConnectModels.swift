@@ -151,6 +151,12 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     /// The app's keys are live, but its response was never published: the
     /// app holds keys it cannot use. Only a disconnect or a new QR helps.
     case undelivered
+    /// Platform refused the identity update for good; the keys can never land.
+    case refused
+    /// The connection's keys have expired on the identity.
+    case expired
+    /// The user disconnected the app and no key of it is live.
+    case disconnected
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -210,14 +216,24 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
 struct DashConnectDisconnectResult: Equatable {
     /// How many of the app's keys it turned off.
     var keysTurnedOff = 0
-    /// Live keys no approval of this wallet names that a disconnect turns
-    /// off only when the user asks: keys bound to the app's contracts, given
-    /// on another device or before a restore, and DashPay profile keys no
-    /// app can be told to hold.
-    var unrecordedKeysLeft = 0
+    /// Keys a disconnect meant to turn off that are still live: an update
+    /// that failed stopped it, or a read after it still shows them. A sign-in
+    /// that landed under an id the disconnect meant to fence counts here too.
+    /// The connection stays and Disconnect can run again.
+    var keysStillLive = 0
     /// Live App Connect keys whose app the wallet could not tell yet: its key
     /// store does not hold their bound. None of them was turned off.
     var keysNotChecked = 0
+    /// Fence keys of the wallet that a disconnect placed (the read after it
+    /// shows the wallet's own fence key live, or with no read the submission
+    /// reports it added) and did not turn off. The sign-in they guard can no
+    /// longer land; the next disconnect turns them off. Not an error.
+    var fencesLeftOn = 0
+    /// Fence keys of the wallet that a disconnect meant to add and the read
+    /// after it does not show (with no read: whose update was not placed):
+    /// they may not be placed yet, so the sign-in can still land. Disconnect
+    /// can run again.
+    var fencesNotPlaced = 0
     /// A read of another identity of this wallet saw keys of the app no
     /// approval names. They can be turned off only while that identity is
     /// the active one.

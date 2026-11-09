@@ -71,18 +71,6 @@ struct ConnectionsScreen: View {
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
         .alert(item: messageBinding) { message in
-            if let connection = message.unrecordedKeysOf {
-                return Alert(
-                    title: Text(message.title),
-                    message: Text(message.text),
-                    primaryButton: .destructive(Text(NSLocalizedString("Turn them off", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                        viewModel.disconnect(connection, includingUnrecorded: true)
-                    },
-                    secondaryButton: .cancel(Text(NSLocalizedString("Leave them", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                    })
-            }
             return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
@@ -132,7 +120,10 @@ struct ConnectionsScreen: View {
                     ConnectionsList(
                         items: viewModel.rows,
                         onOpen: { viewModel.showConnection($0) },
-                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) })
+                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                        onRemove: { item in
+                            if let connection = item.connection { viewModel.removeConnection(connection) }
+                        })
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -160,6 +151,10 @@ struct ConnectionsScreen: View {
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
             onDisconnect: viewModel.disconnectShown,
+            onRemove: {
+                if let connection = item.connection { viewModel.removeConnection(connection) }
+                viewModel.hideConnection()
+            },
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
             disconnectQuestion: viewModel.disconnectQuestion,
             onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
