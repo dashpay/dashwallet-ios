@@ -475,4 +475,35 @@ struct UsernameFundingPrivacyScreen: View {
         .background(Color.dash.primaryBackground)
 }
 
+/// The wallet already has an identity with no credits: it is topped up, never
+/// funded from Shielded, so even ready Shielded funds give way to the
+/// registration's refusal, and shielding more is off.
+#Preview("Existing identity — top-up refused") {
+    UsernameFundingPrivacyScreen(
+        previewViewModel: .makeForPreview(
+            balance: "0.30999774",
+            hasMinimumRequiredBalance: true,
+            shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot(
+                state: .ready,
+                requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                matureCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                unspentCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                poolNoteCount: 400),
+            existingIdentityCredits: 0),
+        onShieldFunds: {})
+        .background(Color.dash.primaryBackground)
+}
+
+/// The existing identity already holds more than a name costs: nothing is
+/// owed, so Shielded is offered with nothing shielded at all.
+#Preview("Existing identity — nothing owed") {
+    UsernameFundingPrivacyScreen(
+        previewViewModel: .makeForPreview(
+            balance: "0.30999774",
+            hasMinimumRequiredBalance: true,
+            existingIdentityCredits: 100_000_000_000),
+        onShieldFunds: {})
+        .background(Color.dash.primaryBackground)
+}
+
 #endif

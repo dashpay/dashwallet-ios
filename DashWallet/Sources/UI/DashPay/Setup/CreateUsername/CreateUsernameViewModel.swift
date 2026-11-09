@@ -434,9 +434,8 @@ class CreateUsernameViewModel: ObservableObject {
     enum ShieldedCostBlocker: Equatable {
         /// Enough is shielded; the covering notes are still resting.
         case resting(readyAt: Date)
-        /// Not enough is shielded. `dashBalanceCovers`: the Dash balance
-        /// could pay for the name instead.
-        case short(shortfallDuffs: UInt64, dashBalanceCovers: Bool)
+        /// Not enough is shielded.
+        case short(shortfallDuffs: UInt64)
         /// The shared pool is below the consensus minimum.
         case poolTooSmall(current: UInt64)
         /// The registration reuses an existing identity that is short by
@@ -452,8 +451,7 @@ class CreateUsernameViewModel: ObservableObject {
         Self.shieldedCostBlocker(
             source: activeFundingSource,
             identityTopUpDuffs: identityTopUpDuffs,
-            readiness: shieldedReadiness?.state,
-            dashBalanceCovers: hasMinimumRequiredCoreBalance)
+            readiness: shieldedReadiness?.state)
     }
 
     /// The top-up an existing identity needs that Shielded cannot pay; nil
@@ -466,8 +464,7 @@ class CreateUsernameViewModel: ObservableObject {
     static func shieldedCostBlocker(
         source: DWIdentityFundingSource?,
         identityTopUpDuffs: UInt64?,
-        readiness: ShieldedIdentityFundingReadiness.State?,
-        dashBalanceCovers: Bool
+        readiness: ShieldedIdentityFundingReadiness.State?
     ) -> ShieldedCostBlocker? {
         guard source == .shielded else { return nil }
         if let topUp = shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) {
@@ -475,12 +472,11 @@ class CreateUsernameViewModel: ObservableObject {
         }
         if identityTopUpDuffs != nil { return nil }
         guard let readiness else { return nil }
-        return shieldedCostBlocker(for: readiness, dashBalanceCovers: dashBalanceCovers)
+        return shieldedCostBlocker(for: readiness)
     }
 
     static func shieldedCostBlocker(
-        for state: ShieldedIdentityFundingReadiness.State,
-        dashBalanceCovers: Bool
+        for state: ShieldedIdentityFundingReadiness.State
     ) -> ShieldedCostBlocker? {
         switch state {
         case .ready:
@@ -488,9 +484,7 @@ class CreateUsernameViewModel: ObservableObject {
         case .maturing(let readyAt):
             return .resting(readyAt: readyAt)
         case .needsFunding(let shortfallCredits):
-            return .short(
-                shortfallDuffs: shieldedShortfallDuffs(shortfallCredits),
-                dashBalanceCovers: dashBalanceCovers)
+            return .short(shortfallDuffs: shieldedShortfallDuffs(shortfallCredits))
         case .poolTooSmall(let current):
             return .poolTooSmall(current: current)
         }
@@ -501,6 +495,14 @@ class CreateUsernameViewModel: ObservableObject {
     nonisolated static func shieldedShortfallDuffs(_ shortfallCredits: UInt64) -> UInt64 {
         let perDuff = ContestedUsernameFee.Amounts.creditsPerDuff
         return (shortfallCredits + perDuff - 1) / perDuff
+    }
+
+    /// The cost row when nothing but the price stops the name: the price,
+    /// stated as the least the source must hold.
+    nonisolated static func minimumCostMessage(requiredDuffs: UInt64) -> String {
+        String.localizedStringWithFormat(
+            NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
+            requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
     }
 
     /// Why a private registration waits on the shared pool rather than on

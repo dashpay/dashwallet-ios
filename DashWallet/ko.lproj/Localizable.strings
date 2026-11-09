@@ -262,7 +262,6 @@
 /* Usernames */
 "Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "보호 잔액에 %@ Dash를 추가하고 몇 시간 두어, 사용자 이름이 다른 자금과 연결되지 않은 채로 등록하세요.";
 "Add %@ Dash to your Shielded balance to create this username" = "Add %@ Dash to your Shielded balance to create this username";
-"Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance" = "Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "새로운 연락처 추가하기";
