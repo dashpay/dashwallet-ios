@@ -43,19 +43,49 @@ final class AppConnectProjectionTests: XCTestCase {
     }
 
     private static func intent(
-        _ keys: [Key], app: Data = app, identity: Data = identity, published: Bool = false, createdAt: TimeInterval = 0
+        _ keys: [Key], app: Data = app, identity: Data = identity, published: Bool = false, createdAt: TimeInterval = 0,
+        refusal: AppConnect.ConsensusRefusal? = nil, removedAt: Date? = nil, label: String = "App", url: String = ""
     ) -> Intent {
-        Intent(
-            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: Data(repeating: 0xEE, count: 20),
+        var intent = Intent(
+            id: UUID(), identityId: identity, appId: app, appLabel: label, appUrl: url, requestHash: Data(repeating: 0xEE, count: 20),
             connectionId: nil, keys: keys, sentEncryptionKeyIds: [], disables: [],
             response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
             responseDocumentId: published ? Data(repeating: 0xDD, count: 32) : nil, responseRemoved: !published, createdAt: Date(timeIntervalSince1970: createdAt), closedAt: nil)
+        intent.refusal = refusal
+        intent.removedAt = removedAt
+        return intent
     }
 
     private static func snapshot(
         _ keys: [AppConnect.PlatformKey], identity: Data = identity, revision: UInt64 = 5, time: UInt64? = now
     ) -> Snapshot {
         Snapshot(identityId: identity, revision: revision, keys: keys, platformTime: time)
+    }
+
+    // MARK: The disconnect mark (T35)
+
+    /// T35 (G1): an open intent a disconnect ran on, whose id the fence now
+    /// holds, is Disconnected; with no mark it is Never landed.
+    func testAnOpenIntentADisconnectRanOnWhoseIdAnotherKeyHoldsIsDisconnected() {
+        let a = Self.authKey(10)
+        var intent = Self.intent([a])
+        let fenced = Self.snapshot([Self.onPlatform(a, disabledAt: Self.now - 1, data: Data(repeating: 0xF0, count: 20))])
+        XCTAssertEqual(AppConnect.status(of: intent, in: fenced), .neverLanded)
+        intent.disconnectedAt = Date(timeIntervalSince1970: 1)
+        XCTAssertEqual(AppConnect.status(of: intent, in: fenced), .disconnected)
+    }
+
+    /// T35 (G5): an intent stored before `disconnectedAt` existed still loads,
+    /// with no mark; a marked one round-trips.
+    func testAnIntentStoredWithoutTheDisconnectMarkLoadsAndAMarkedOneRoundTrips() throws {
+        var intent = Self.intent([Self.authKey(10)])
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(intent)) as? [String: Any])
+        json.removeValue(forKey: "disconnectedAt")
+        let older = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(older.disconnectedAt)
+        XCTAssertEqual(older.id, intent.id)
+        intent.disconnectedAt = Date(timeIntervalSince1970: 1_773_132_300)
+        XCTAssertEqual(try JSONDecoder().decode(Intent.self, from: JSONEncoder().encode(intent)), intent)
     }
 
     // MARK: Status of one intent
@@ -116,13 +146,15 @@ final class AppConnectProjectionTests: XCTestCase {
 
     // MARK: Projection
 
-    func testAnAppShowsTheStatusTheUserCanActOnFirst() {
+    // AC-13: the card is on the tab of the app's latest connection, so a new
+    // approval still Confirming shows over an earlier Active one.
+    func testAnAppShowsTheStatusOfItsLatestConnection() {
         let old = Self.intent([Self.authKey(10)], createdAt: 1)
         let new = Self.intent([Self.authKey(11)], createdAt: 2)
         let projection = AppConnect.project(
             [Self.snapshot([Self.onPlatform(Self.authKey(10))])], intents: [old, new])
         XCTAssertEqual(projection.connections.count, 1)
-        XCTAssertEqual(projection.connections[0].status, .active(expiresAt: Self.now + 1000))
+        XCTAssertEqual(projection.connections[0].status, .confirming)
         XCTAssertEqual(projection.connections[0].intents.map(\.id), [new.id, old.id])
     }
 
@@ -153,22 +185,520 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(projection.connections[0].unrecordedKeyIds, [Self.identity: [20]])
     }
 
-    func testAProfileKeyNoIntentNamesStandsAsAConnectionOfItsOwnAndADisabledOneIsNotShown() {
+    func testAProfileKeyNoIntentNamesGivesNoRowOfItsOwnAndADisabledOneIsNotShown() {
         let profile = Self.authKey(20, bound: .documentType(contractId: Self.dashPay, name: "profile"))
         let off = Self.authKey(21, bound: .singleContract(Self.otherApp))
         let snapshot = Self.snapshot([Self.onPlatform(profile), Self.onPlatform(off, disabledAt: 1)])
         let projection = AppConnect.project([snapshot], intents: [])
-        XCTAssertEqual(projection.connections.map(\.appId), [Self.dashPay], "it can be turned off with no other row left")
-        XCTAssertEqual(projection.connections.first?.unrecordedKeyIds, [Self.identity: [20]])
-        XCTAssertEqual(projection.unrecordedProfileKeyIds, [Self.identity: [20]])
-        XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.dashPay, snapshot: snapshot, intents: [], includeUnrecorded: true).disable,
-            [20])
+        XCTAssertEqual(projection.connections, [], "no row, and not an unknown app")
+    }
+
+    func testAProfileKeyNoIntentNamesIsNotShownOnAnotherAppsRowEither() {
+        let profile = Self.authKey(20, bound: .documentType(contractId: Self.dashPay, name: "profile"))
+        let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10)), Self.onPlatform(profile)])
+        let projection = AppConnect.project([snapshot], intents: [Self.intent([Self.authKey(10)])])
+        XCTAssertEqual(projection.connections.map(\.appId), [Self.app])
+        XCTAssertEqual(projection.connections[0].unrecordedKeyIds, [:])
     }
 
     func testAKeyAStoreCannotBindIsNotGuessedToBeAnApps() {
         let unknown = Self.onPlatform(Self.authKey(20), boundKnown: false)
         XCTAssertEqual(AppConnect.project([Self.snapshot([unknown])], intents: []).connections, [])
+    }
+
+    // MARK: Every status (AC-14, AC-19)
+
+    private static let refusal = AppConnect.ConsensusRefusal(code: 10_212, at: Date(timeIntervalSince1970: 1_773_132_300))
+    private static let removedAt = Date(timeIntervalSince1970: 1_773_218_700)
+
+    private static func closed(_ intent: Intent) -> Intent {
+        var closed = intent
+        closed.closedAt = Date(timeIntervalSince1970: 5)
+        return closed
+    }
+
+    /// `intent` as a Disconnect leaves one it closed: closed and marked.
+    private static func disconnected(_ intent: Intent) -> Intent {
+        var disconnected = closed(intent)
+        disconnected.disconnectedAt = disconnected.closedAt
+        return disconnected
+    }
+
+    /// The projected connection of `Self.app` from one read of `Self.identity`.
+    private static func connection(
+        _ intents: [Intent], _ keys: [AppConnect.PlatformKey], time: UInt64? = now
+    ) -> AppConnect.ProjectedConnection? {
+        AppConnect.project([snapshot(keys, time: time)], intents: intents).connections.first { $0.appId == app }
+    }
+
+    func testEveryStatusIsProjectedFromTheKeysAndTheIntent() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let expired = Self.authKey(10, expiresAt: Self.now - 1)
+        let cases: [(String, Intent, [AppConnect.PlatformKey], AppConnect.IntentStatus, Bool)] = [
+            ("Active", Self.intent([a, b], published: true), [Self.onPlatform(a)], .active(expiresAt: Self.now + 1000), false),
+            ("Confirming", Self.intent([a, b]), [], .confirming, false),
+            ("Not delivered", Self.intent([a, b]), [Self.onPlatform(a)], .active(expiresAt: Self.now + 1000), true),
+            ("Refused", Self.intent([a, b], refusal: Self.refusal), [], .refused, false),
+            ("Expired", Self.intent([expired, b], published: true), [Self.onPlatform(expired), Self.onPlatform(b, disabledAt: 1)], .expired, false),
+            ("Disconnected", Self.closed(Self.intent([a, b], published: true)), [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)], .disconnected, false),
+        ]
+        for (name, intent, keys, status, undelivered) in cases {
+            let projected = Self.connection([intent], keys)
+            XCTAssertEqual(projected?.status, status, name)
+            XCTAssertEqual(projected?.isUndelivered, undelivered, name)
+        }
+    }
+
+    func testMixedKeysOfOneIntentFollowTheAC14Precedence() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let aExpired = Self.authKey(10, expiresAt: Self.now - 1)
+        let plain = Self.intent([a, b])
+        let expiredIntent = Self.intent([aExpired, b])
+        let refused = Self.intent([a, b], refusal: Self.refusal)
+        let cases: [(String, Intent, [AppConnect.PlatformKey], AppConnect.IntentStatus)] = [
+            ("one live, one off: Active", plain, [Self.onPlatform(a), Self.onPlatform(b, disabledAt: 1)], .active(expiresAt: Self.now + 1000)),
+            ("one live, one expired: Active", expiredIntent, [Self.onPlatform(aExpired), Self.onPlatform(b)], .active(expiresAt: Self.now + 1000)),
+            ("one expired, one off: Expired, not Disconnected", expiredIntent, [Self.onPlatform(aExpired), Self.onPlatform(b, disabledAt: 1)], .expired),
+            ("every key off: Disconnected", plain, [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)], .disconnected),
+            ("a refusal and a live key: the live key wins", refused, [Self.onPlatform(a)], .active(expiresAt: Self.now + 1000)),
+            ("a refusal and both keys live: Active", refused, [Self.onPlatform(a), Self.onPlatform(b)], .active(expiresAt: Self.now + 1000)),
+            ("a refusal and no key on Platform: Refused", refused, [], .refused),
+        ]
+        for (name, intent, keys, expected) in cases {
+            XCTAssertEqual(AppConnect.status(of: intent, in: Self.snapshot(keys)), expected, name)
+            XCTAssertEqual(Self.connection([intent], keys)?.status, expected, name)
+        }
+    }
+
+    func testAMixOfLiveAndOffKeysWithNoPublishedResponseIsNotDelivered() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let projected = Self.connection([Self.intent([a, b])], [Self.onPlatform(a), Self.onPlatform(b, disabledAt: 1)])
+        XCTAssertEqual(projected?.status, .active(expiresAt: Self.now + 1000))
+        XCTAssertEqual(projected?.isUndelivered, true)
+    }
+
+    // MARK: Expiry by block time (AC-14)
+
+    func testAKeyIsExpiredFromItsExpiryOnByBlockTime() {
+        let key = Self.authKey(10, expiresAt: Self.now)
+        let intent = Self.intent([key])
+        XCTAssertEqual(Self.connection([intent], [Self.onPlatform(key)])?.status, .expired, "expiry <= block time")
+        XCTAssertEqual(
+            Self.connection([intent], [Self.onPlatform(key)], time: Self.now - 1)?.status, .active(expiresAt: Self.now),
+            "one millisecond before")
+    }
+
+    func testAKeyPastItsExpiryByThePhoneClockButNotByBlockTimeIsNotExpired() {
+        let key = Self.authKey(10, expiresAt: 1_000_000)
+        let projected = Self.connection([Self.intent([key])], [Self.onPlatform(key)], time: 500_000)
+        XCTAssertEqual(projected?.status, .active(expiresAt: 1_000_000))
+    }
+
+    func testAKeyPastItsExpiryByBlockTimeButNotByThePhoneClockIsExpired() {
+        let phone = UInt64(Date().timeIntervalSince1970 * 1000)
+        let key = Self.authKey(10, expiresAt: phone + 3_600_000)
+        let projected = Self.connection([Self.intent([key])], [Self.onPlatform(key)], time: phone + 7_200_000)
+        XCTAssertEqual(projected?.status, .expired)
+    }
+
+    func testWithoutPlatformTimeNoConnectionIsExpired() {
+        let key = Self.authKey(10, expiresAt: 1)
+        let projected = Self.connection([Self.intent([key])], [Self.onPlatform(key)], time: nil)
+        XCTAssertEqual(projected?.status, .active(expiresAt: 1))
+    }
+
+    // MARK: Refused (AC-14, AC-20b)
+
+    func testARefusalAloneMakesTheConnectionRefused() {
+        let refused = Self.intent([Self.authKey(10)], refusal: Self.refusal)
+        let projected = Self.connection([refused], [])
+        XCTAssertEqual(projected?.status, .refused)
+        XCTAssertEqual(projected?.intents.first?.refusal, Self.refusal, "the reason stays on the intent")
+    }
+
+    func testAnIntentWithoutARefusalAndNoKeyIsConfirmingNotRefused() {
+        XCTAssertEqual(Self.connection([Self.intent([Self.authKey(10)])], [])?.status, .confirming)
+    }
+
+    func testARemovedRefusedIntentHasNoRow() {
+        let removed = Self.intent([Self.authKey(10)], refusal: Self.refusal, removedAt: Self.removedAt)
+        XCTAssertEqual(AppConnect.project([Self.snapshot([])], intents: [removed]).connections, [])
+    }
+
+    func testAnIntentWithRemovedAtNeverYieldsADisconnectedEntry() {
+        let key = Self.authKey(10)
+        let gone = Self.closed(Self.intent([key], removedAt: Self.removedAt))
+        XCTAssertEqual(AppConnect.project([Self.snapshot([Self.onPlatform(key, disabledAt: 1)])], intents: [gone]).connections, [])
+    }
+
+    // MARK: Recording a refusal and Remove (AC-20b, ADR 0012)
+
+    func testRecordingARefusalOnAnIntentListsItsConnectionAsRefused() {
+        let intent = Self.intent([Self.authKey(10), Self.authKey(11)])
+        let other = Self.intent([Self.authKey(20)], app: Self.otherApp)
+        XCTAssertEqual(Self.connection([intent, other], [])?.status, .confirming)
+
+        let recorded = AppConnect.recordRefusal(Self.refusal, on: intent.id, in: [intent, other])
+
+        XCTAssertEqual(recorded.first { $0.id == intent.id }?.refusal, Self.refusal)
+        XCTAssertNil(recorded.first { $0.id == other.id }?.refusal, "only the named intent")
+        XCTAssertEqual(recorded.count, 2)
+        XCTAssertEqual(Self.connection(recorded, [])?.status, .refused)
+    }
+
+    func testRecordingARefusalNamingNoIntentChangesNothing() {
+        let intent = Self.intent([Self.authKey(10)])
+        XCTAssertEqual(AppConnect.recordRefusal(Self.refusal, on: UUID(), in: [intent]), [intent])
+    }
+
+    func testWithoutARecordedRefusalTheConnectionStaysConfirming() {
+        let intent = Self.intent([Self.authKey(10)])
+        XCTAssertEqual(Self.connection([intent], [])?.status, .confirming)
+        XCTAssertNil(intent.refusal)
+    }
+
+    func testRemovingARefusedConnectionSetsRemovedAtOnItsRefusedIntentsAndHidesTheRow() throws {
+        let refused = Self.intent([Self.authKey(10)], refusal: Self.refusal)
+        let other = Self.intent([Self.authKey(20)], app: Self.otherApp)
+
+        let removed = try XCTUnwrap(AppConnect.removing(
+            appId: Self.app, intents: [refused, other], snapshots: [Self.snapshot([])], at: Self.removedAt))
+
+        XCTAssertEqual(removed.first { $0.id == refused.id }?.removedAt, Self.removedAt)
+        XCTAssertEqual(removed.first { $0.id == refused.id }?.refusal, Self.refusal, "the reason stays")
+        XCTAssertNil(removed.first { $0.id == other.id }?.removedAt)
+        XCTAssertNil(Self.connection(removed, []), "the row is hidden")
+    }
+
+    func testRemovingRefusesAConnectionThatIsNotRefused() {
+        let a = Self.authKey(10)
+        let cases: [(String, [Intent], [AppConnect.PlatformKey])] = [
+            ("Confirming", [Self.intent([a])], []),
+            ("Active", [Self.intent([a], published: true, refusal: Self.refusal)], [Self.onPlatform(a)]),
+            ("Disconnected", [Self.closed(Self.intent([a], published: true))], [Self.onPlatform(a, disabledAt: 1)]),
+            ("no intent of the app", [Self.intent([a], app: Self.otherApp)], []),
+        ]
+        for (name, intents, keys) in cases {
+            XCTAssertNil(
+                AppConnect.removing(appId: Self.app, intents: intents, snapshots: [Self.snapshot(keys)], at: Self.removedAt), name)
+        }
+    }
+
+    func testRemovingALiveKeyIsRefusedEvenWhenTheRefusalIsRecorded() {
+        // The live key wins over the recorded refusal (AC-14), so Remove, which
+        // writes nothing to Platform, must not hide it.
+        let a = Self.authKey(10)
+        let intent = Self.intent([a], refusal: Self.refusal)
+        XCTAssertNil(AppConnect.removing(
+            appId: Self.app, intents: [intent], snapshots: [Self.snapshot([Self.onPlatform(a)])], at: Self.removedAt))
+    }
+
+    func testRemovingARefusedConnectionLeavesAnEarlierConnectionOfTheAppOnItsOwnTab() throws {
+        let (earlier, earlierKeys) = disconnectedEarlier()
+        let refused = Self.intent([Self.authKey(30)], createdAt: 2, refusal: Self.refusal)
+        XCTAssertEqual(Self.connection([earlier, refused], earlierKeys)?.status, .refused)
+
+        let removed = try XCTUnwrap(AppConnect.removing(
+            appId: Self.app, intents: [earlier, refused], snapshots: [Self.snapshot(earlierKeys)], at: Self.removedAt))
+
+        XCTAssertNil(removed.first { $0.id == earlier.id }?.removedAt, "the earlier connection is not removed")
+        XCTAssertEqual(Self.connection(removed, earlierKeys)?.status, .disconnected, "it is not moved to Disconnected either")
+        XCTAssertEqual(Self.connection(removed, earlierKeys)?.intents.map(\.id), [earlier.id])
+    }
+
+    // MARK: The Disconnected entry and its give-way rules (AC-19)
+
+    private func disconnectedEarlier() -> (Intent, [AppConnect.PlatformKey]) {
+        let old = Self.authKey(10)
+        return (Self.closed(Self.intent([old], published: true, createdAt: 1)), [Self.onPlatform(old, disabledAt: 1)])
+    }
+
+    func testADisconnectedEntryNeedsEveryKeyOffNotJustClosedAt() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let closed = Self.closed(Self.intent([a, b], published: true))
+        XCTAssertEqual(
+            Self.connection([closed], [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b)])?.status,
+            .active(expiresAt: Self.now + 1000))
+        XCTAssertEqual(
+            Self.connection([closed], [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)])?.status,
+            .disconnected)
+    }
+
+    func testKeysGivenOnAnotherDeviceThenTurnedOffMakeNoDisconnectedEntry() {
+        let stray = Self.onPlatform(Self.authKey(20), disabledAt: 1)
+        XCTAssertEqual(AppConnect.project([Self.snapshot([stray])], intents: []).connections, [])
+    }
+
+    func testTheDisconnectedEntryGivesWayToANewerConnectionThatIsConfirmingNotDeliveredActiveOrExpired() {
+        let (earlier, off) = disconnectedEarlier()
+        let new = Self.authKey(11)
+        let newExpired = Self.authKey(12, expiresAt: Self.now - 1)
+        let cases: [(String, Intent, [AppConnect.PlatformKey], AppConnect.IntentStatus, Bool)] = [
+            ("Confirming", Self.intent([new], createdAt: 2), [], .confirming, false),
+            ("Not delivered", Self.intent([new], createdAt: 2), [Self.onPlatform(new)], .active(expiresAt: Self.now + 1000), true),
+            ("Active", Self.intent([new], published: true, createdAt: 2), [Self.onPlatform(new)], .active(expiresAt: Self.now + 1000), false),
+            ("Expired", Self.intent([newExpired], published: true, createdAt: 2), [Self.onPlatform(newExpired)], .expired, false),
+        ]
+        for (name, newer, keys, status, undelivered) in cases {
+            let projected = Self.connection([earlier, newer], off + keys)
+            XCTAssertEqual(projected?.status, status, name)
+            XCTAssertEqual(projected?.isUndelivered, undelivered, name)
+            XCTAssertEqual(AppConnect.project([Self.snapshot(off + keys)], intents: [earlier, newer]).connections.count, 1, "one card per app: \(name)")
+        }
+    }
+
+    func testARemovedRefusedAttemptAfterADisconnectedOneLeavesTheDisconnectedEntry() {
+        let (earlier, off) = disconnectedEarlier()
+        let removed = Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal, removedAt: Self.removedAt)
+        let projection = AppConnect.project([Self.snapshot(off)], intents: [earlier, removed])
+        XCTAssertEqual(projection.connections.map(\.status), [.disconnected])
+    }
+
+    func testAnUnremovedRefusedAttemptAfterADisconnectedOneIsShownRefused() {
+        let (earlier, off) = disconnectedEarlier()
+        let refused = Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal)
+        XCTAssertEqual(Self.connection([earlier, refused], off)?.status, .refused)
+    }
+
+    // T22 (R10): rewritten from `testARefusedAttemptDoesNotHideAnEarlierConnectionTheUserCanActOn`, which pinned
+    // the old "most actionable status wins" rule (older Active + newer Refused showed Active). The card follows the
+    // app's latest intent (AC-13), so the Refused attempt shows and can be Removed (AC-20b).
+    func testTheCardFollowsTheLatestIntentOfTheApp() {
+        let live = Self.authKey(10)
+        let expired = Self.authKey(12, expiresAt: Self.now - 1)
+        let activeThenRefused = [
+            Self.intent([live], published: true, createdAt: 1),
+            Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal),
+        ]
+        let expiredThenRefused = [
+            Self.intent([expired], published: true, createdAt: 1),
+            Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal),
+        ]
+        let refusedThenActive = [
+            Self.intent([Self.authKey(11)], createdAt: 1, refusal: Self.refusal),
+            Self.intent([live], published: true, createdAt: 2),
+        ]
+        let cases: [(String, [Intent], [AppConnect.PlatformKey], AppConnect.IntentStatus)] = [
+            ("older Active, newer Refused", activeThenRefused, [Self.onPlatform(live)], .refused),
+            ("older Active, newer Refused (input order reversed)", activeThenRefused.reversed(), [Self.onPlatform(live)], .refused),
+            ("older Expired, newer Refused", expiredThenRefused, [Self.onPlatform(expired)], .refused),
+            ("older Refused, newer Active", refusedThenActive, [Self.onPlatform(live)], .active(expiresAt: Self.now + 1000)),
+        ]
+        for (name, intents, keys, expected) in cases {
+            XCTAssertEqual(Self.connection(intents, keys)?.status, expected, name)
+            XCTAssertEqual(AppConnect.project([Self.snapshot(keys)], intents: intents).connections.count, 1, "one card: \(name)")
+        }
+    }
+
+    // T30 (F1): a newer intent with no access left of its own (Never landed, Disconnected) does not hide the
+    // older Active connection whose keys are live (AC-13, AC-14, AC-16).
+    func testANewerIntentWithNoAccessLeftDoesNotHideAnOlderActiveConnection() {
+        let live = Self.authKey(10)
+        let older = Self.intent([live], published: true, createdAt: 1)
+        let active = AppConnect.IntentStatus.active(expiresAt: Self.now + 1000)
+
+        // Never landed: unclosed, and its key id is held by another key.
+        let lost = Self.authKey(11)
+        let holder = AppConnect.PlatformKey(
+            id: 11, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: lost.data, readOnly: false, bound: .singleContract(Self.otherApp), boundKnown: true,
+            totalBudget: 1000, expiresAt: Self.now + 1000, disabledAt: nil)
+        let neverLanded = Self.intent([lost], createdAt: 2)
+        let neverLandedKeys = [Self.onPlatform(live), holder]
+        XCTAssertEqual(AppConnect.status(of: neverLanded, in: Self.snapshot(neverLandedKeys)), .neverLanded)
+        XCTAssertEqual(Self.connection([older, neverLanded], neverLandedKeys)?.status, active, "older Active, newer Never landed")
+
+        // Disconnected: closed, its own key off.
+        let gone = Self.authKey(12)
+        let disconnected = Self.closed(Self.intent([gone], published: true, createdAt: 2))
+        let disconnectedKeys = [Self.onPlatform(live), Self.onPlatform(gone, disabledAt: 1)]
+        XCTAssertEqual(Self.connection([older, disconnected], disconnectedKeys)?.status, active, "older Active, newer Disconnected")
+
+        // The existing decision stays: a newer Confirming is what the card shows.
+        let confirming = Self.intent([Self.authKey(13)], createdAt: 2)
+        XCTAssertEqual(Self.connection([older, confirming], [Self.onPlatform(live)])?.status, .confirming, "older Active, newer Confirming")
+    }
+
+    // T30 (F5): the not-delivered fact follows the newest Active intent, not "every Active intent" (AC-18).
+    func testTheNotDeliveredFactFollowsTheNewestActiveIntent() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let keys = [Self.onPlatform(a), Self.onPlatform(b)]
+        let olderDelivered = Self.intent([a], published: true, createdAt: 1)
+        let newerUndelivered = Self.intent([b], published: false, createdAt: 2)
+        XCTAssertEqual(Self.connection([olderDelivered, newerUndelivered], keys)?.isUndelivered, true, "newest without a response")
+        let olderUndelivered = Self.intent([a], published: false, createdAt: 1)
+        let newerDelivered = Self.intent([b], published: true, createdAt: 2)
+        XCTAssertEqual(Self.connection([olderUndelivered, newerDelivered], keys)?.isUndelivered, false, "newest with a response")
+    }
+
+    func testRemovingTheLatestRefusedAttemptShowsTheEarlierActiveConnectionAgain() throws {
+        let live = Self.authKey(10)
+        let earlier = Self.intent([live], published: true, createdAt: 1)
+        let refused = Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal)
+        let keys = [Self.onPlatform(live)]
+        XCTAssertEqual(Self.connection([earlier, refused], keys)?.status, .refused)
+        let removed = try XCTUnwrap(AppConnect.removing(
+            appId: Self.app, intents: [earlier, refused], snapshots: [Self.snapshot(keys)], at: Self.removedAt))
+        XCTAssertEqual(Self.connection(removed, keys)?.status, .active(expiresAt: Self.now + 1000))
+    }
+
+    // MARK: T22 R4: Confirming, then disconnected
+
+    /// The wallet's fence key as Platform shows it under `key`'s id: another key, no expiry, no contract bound.
+    private static func fence(_ key: Key) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: 0x99, count: 20), readOnly: false, bound: nil, boundKnown: true,
+            totalBudget: 1, expiresAt: nil, disabledAt: nil)
+    }
+
+    func testAConfirmingConnectionThatWasDisconnectedProjectsAsDisconnected() {
+        // Disconnect fenced the missing key id: the id is now held by the wallet's fence key and the intent is closed.
+        let a = Self.authKey(10)
+        let fence = Self.fence(a)
+        let confirming = Self.intent([a], createdAt: 1)
+        XCTAssertEqual(Self.connection([confirming], [])?.status, .confirming)
+
+        let disconnected = Self.disconnected(confirming)
+        XCTAssertEqual(Self.connection([disconnected], [fence])?.status, .disconnected)
+    }
+
+    func testAFencedClosedIntentWithANewerIntentGivesWayToIt() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let fence = Self.fence(a)
+        let closed = Self.closed(Self.intent([a], createdAt: 1))
+        let newer = Self.intent([b], published: true, createdAt: 2)
+        XCTAssertEqual(Self.connection([closed, newer], [fence, Self.onPlatform(b)])?.status, .active(expiresAt: Self.now + 1000))
+    }
+
+    // MARK: T22 R1: rows() of every status
+
+    func testRowsShowEveryIntentStatus() {
+        let a = Self.authKey(10)
+        let expired = Self.authKey(10, expiresAt: Self.now - 1)
+        let fence = Self.fence(a)
+        let cases: [(String, Intent, [AppConnect.PlatformKey], ConnectionStatus?)] = [
+            ("Active", Self.intent([a], published: true), [Self.onPlatform(a)], .active),
+            ("Not delivered", Self.intent([a]), [Self.onPlatform(a)], .undelivered),
+            ("Confirming", Self.intent([a]), [], .confirming),
+            ("Expired", Self.intent([expired], published: true), [Self.onPlatform(expired)], .expired),
+            ("Refused", Self.intent([a], refusal: Self.refusal), [], .refused),
+            ("Disconnected", Self.closed(Self.intent([a], published: true)), [Self.onPlatform(a, disabledAt: 1)], .disconnected),
+            ("Never landed", Self.intent([a]), [fence], nil),
+        ]
+        for (name, intent, keys, expected) in cases {
+            let projection = AppConnect.project([Self.snapshot(keys)], intents: [intent])
+            let rows = PlatformDashConnectDataSource.rows(
+                [], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+            XCTAssertEqual(rows.map(\.status), expected.map { [$0] } ?? [], name)
+        }
+    }
+
+    func testAFencedConfirmingConnectionHasADisconnectedRow() {
+        let a = Self.authKey(10)
+        let fence = Self.fence(a)
+        let projection = AppConnect.project([Self.snapshot([fence])], intents: [Self.disconnected(Self.intent([a]))])
+        let rows = PlatformDashConnectDataSource.rows(
+            [], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+    }
+
+    /// T36 (G2, AC-19): a closed Disconnected A keeps its row when a newer
+    /// open intent C never landed (another key holds its id): the row is
+    /// read off the intents the card follows, not the newest one, and so
+    /// are its name and website (T40, H2, AC-13).
+    func testADisconnectedRowStaysUnderANewerIntentThatNeverLanded() {
+        let a = Self.authKey(10), c = Self.authKey(11)
+        let disconnected = Self.closed(Self.intent(
+            [a], published: true, createdAt: 1, label: "Yappr iOS", url: "https://ios.yappr.example"))
+        let neverLanded = Self.intent([c], createdAt: 2, label: "Yappr web", url: "https://web.yappr.example")
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.fence(c)])], intents: [disconnected, neverLanded])
+        XCTAssertEqual(projection.connections.first?.status, .disconnected)
+        XCTAssertEqual(projection.connections.first?.followedIntents.map(\.id), [disconnected.id])
+        let rows = PlatformDashConnectDataSource.rows(
+            [], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+        XCTAssertEqual(rows.first?.name, "Yappr iOS", "the name recorded with the disconnected connection")
+        XCTAssertEqual(rows.first?.url, "https://ios.yappr.example")
+    }
+
+    /// T44 (J3, AC-13, AC-19): a newer intent C whose id another key took
+    /// (Never landed) is closed by a disconnect without the mark; it reads
+    /// Never landed still, so the connection follows the closed, marked A:
+    /// its name, website and status are A's.
+    func testAClosedUnmarkedIntentAnotherKeyTookTheIdOfReadsNeverLandedAndDoesNotNameTheDisconnectedEntry() {
+        let a = Self.authKey(10), c = Self.authKey(11)
+        var disconnected = Self.closed(Self.intent(
+            [a], published: true, createdAt: 1, label: "Yappr iOS", url: "https://ios.yappr.example"))
+        disconnected.disconnectedAt = Date(timeIntervalSince1970: 5)
+        let neverLanded = Self.closed(Self.intent(
+            [c], createdAt: 2, label: "Yappr web", url: "https://web.yappr.example"))
+        let snapshot = Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.fence(c)])
+        XCTAssertEqual(AppConnect.status(of: neverLanded, in: snapshot), .neverLanded, "closed without the mark it never landed")
+        let projection = AppConnect.project([snapshot], intents: [disconnected, neverLanded])
+        XCTAssertEqual(projection.connections.first?.followedIntents.first?.id, disconnected.id)
+        XCTAssertEqual(projection.connections.first?.status, .disconnected)
+        let rows = PlatformDashConnectDataSource.rows(
+            [], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rows.first?.name, "Yappr iOS")
+        XCTAssertEqual(rows.first?.url, "https://ios.yappr.example")
+    }
+
+    // MARK: T22 R8: a refused intent is never fenced
+
+    func testARefusedIntentIsNeverFencedByADisconnectPlan() {
+        let refused = Self.intent([Self.authKey(10)], refusal: Self.refusal)
+        let pending = Self.intent([Self.authKey(11)])
+        let plan = AppConnect.recordedDisconnectPlan(appId: Self.app, snapshot: Self.snapshot([]), intents: [refused, pending])
+        XCTAssertEqual(plan.fence, [11], "only the update that may still land is fenced")
+        XCTAssertEqual(
+            AppConnect.recordedDisconnectPlan(appId: Self.app, snapshot: Self.snapshot([]), intents: [refused]).fence, [])
+        XCTAssertEqual(
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: Self.snapshot([]), intents: [refused]).fence, [])
+    }
+
+    // MARK: First connection of an App ID (AC-03, T16)
+
+    func testTheFirstConnectionFactCountsEveryStatusButRefused() {
+        let a = Self.authKey(10)
+        let expired = Self.authKey(10, expiresAt: Self.now - 1)
+        let cases: [(String, [Intent], [AppConnect.PlatformKey], Bool)] = [
+            ("no intent", [], [], false),
+            ("Confirming", [Self.intent([a])], [], true),
+            ("Active", [Self.intent([a], published: true)], [Self.onPlatform(a)], true),
+            ("Not delivered", [Self.intent([a])], [Self.onPlatform(a)], true),
+            ("Expired", [Self.intent([expired], published: true)], [Self.onPlatform(expired)], true),
+            ("Disconnected", [Self.closed(Self.intent([a], published: true))], [Self.onPlatform(a, disabledAt: 1)], true),
+            ("Refused", [Self.intent([a], refusal: Self.refusal)], [], false),
+            ("a removed Refused", [Self.intent([a], refusal: Self.refusal, removedAt: Self.removedAt)], [], false),
+            ("a refusal next to a live key", [Self.intent([a], refusal: Self.refusal)], [Self.onPlatform(a)], true),
+        ]
+        for (name, intents, keys, expected) in cases {
+            let projection = AppConnect.project([Self.snapshot(keys)], intents: intents)
+            XCTAssertEqual(projection.hasConnectionOtherThanRefused(appId: Self.app), expected, name)
+        }
+    }
+
+    func testARefusedAttemptNextToADisconnectedOneStillCountsAsAFirstConnectionHistory() {
+        let (earlier, off) = disconnectedEarlier()
+        let refused = Self.intent([Self.authKey(11)], createdAt: 2, refusal: Self.refusal)
+        let projection = AppConnect.project([Self.snapshot(off)], intents: [earlier, refused])
+        XCTAssertTrue(projection.hasConnectionOtherThanRefused(appId: Self.app), "the project() status says Refused, the history says otherwise")
+    }
+
+    func testTheFirstConnectionFactIsPerAppId() {
+        let refused = Self.intent([Self.authKey(10)], refusal: Self.refusal)
+        let other = Self.intent([Self.authKey(11, bound: .singleContract(Self.otherApp))], app: Self.otherApp)
+        let projection = AppConnect.project([Self.snapshot([])], intents: [refused, other])
+        XCTAssertFalse(projection.hasConnectionOtherThanRefused(appId: Self.app))
+        XCTAssertTrue(projection.hasConnectionOtherThanRefused(appId: Self.otherApp))
+    }
+
+    func testAKeyNoIntentNamesCountsAsAConnectionForTheFirstConnectionFact() {
+        let stray = Self.onPlatform(Self.authKey(20))
+        let projection = AppConnect.project([Self.snapshot([stray])], intents: [])
+        XCTAssertTrue(projection.hasConnectionOtherThanRefused(appId: Self.app))
     }
 
     // MARK: Snapshots
@@ -211,8 +741,10 @@ final class AppConnectProjectionTests: XCTestCase {
             Self.onPlatform(Self.authKey(14), data: Data(repeating: 9, count: 20)),
         ])
         let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: snapshot, intents: [landed, waiting, dead], includeUnrecorded: false)
-        XCTAssertEqual(plan.disable, [10, 11])
+            appId: Self.app, snapshot: snapshot, intents: [landed, waiting, dead])
+        // 14 is another key on the id the dead intent named: bound to the
+        // app and named by no record, so it goes too (AC-16).
+        XCTAssertEqual(plan.disable, [10, 11, 14])
         XCTAssertEqual(plan.fence, [12])
         XCTAssertEqual(plan.deleteResponses, [landed.id])
     }
@@ -220,22 +752,97 @@ final class AppConnectProjectionTests: XCTestCase {
     func testAPartlyLandedIntentIsFencedOnlyWhileAKeyIsMissing() {
         let intent = Self.intent([Self.authKey(10), Self.authKey(11)])
         let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: Self.snapshot([Self.onPlatform(Self.authKey(10))]), intents: [intent],
-            includeUnrecorded: false)
+            appId: Self.app, snapshot: Self.snapshot([Self.onPlatform(Self.authKey(10))]), intents: [intent])
         XCTAssertEqual(plan.disable, [10])
         XCTAssertEqual(plan.fence, [11])
     }
 
-    func testUnrecordedAppKeysAreTurnedOffOnlyWhenTheUserSaysSo() {
+    // MARK: Disconnect without asking (AC-16, AC-16b, AC-18)
+
+    private static let profileBound = AppConnect.StoredBound.documentType(contractId: dashPay, name: "profile")
+
+    func testOneDisconnectTurnsOffRecordedUnrecordedAndUnattributedProfileKeysWithNoFlag() {
         let intent = Self.intent([Self.authKey(10)])
-        let stray = Self.onPlatform(Self.authKey(20))
-        let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10)), stray])
+        let otherApps = Self.intent([Self.authKey(11, bound: .singleContract(Self.otherApp))], app: Self.otherApp)
+        let snapshot = Self.snapshot([
+            Self.onPlatform(Self.authKey(10)),
+            Self.onPlatform(Self.authKey(20)),
+            Self.onPlatform(Self.authKey(30, bound: Self.profileBound)),
+            Self.onPlatform(Self.authKey(11, bound: .singleContract(Self.otherApp))),
+            Self.onPlatform(Self.authKey(21), disabledAt: 1),
+        ])
+        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent, otherApps])
+        XCTAssertEqual(plan.disable, [10, 20, 30], "recorded, live unrecorded, unattributed profile; not the other app's")
+    }
+
+    func testAnUnattributedProfileKeyGoesWithTheDisconnectOfAnyApp() {
+        let snapshot = Self.snapshot([
+            Self.onPlatform(Self.authKey(10)), Self.onPlatform(Self.authKey(30, bound: Self.profileBound)),
+        ])
+        let mine = Self.intent([Self.authKey(10)])
+        let theirs = Self.intent([Self.authKey(11, bound: .singleContract(Self.otherApp))], app: Self.otherApp)
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
-            [10])
-        XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: true).disable,
-            [10, 20])
+            AppConnect.disconnectPlan(appId: Self.otherApp, snapshot: snapshot, intents: [mine, theirs]).disable, [30])
+    }
+
+    func testAProfileKeyAnIntentNamesIsNotTakenAsUnattributed() {
+        let named = Self.authKey(30, bound: Self.profileBound)
+        let theirs = Self.intent([named], app: Self.otherApp)
+        let snapshot = Self.snapshot([Self.onPlatform(named)])
+        XCTAssertEqual(AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [theirs]).disable, [])
+    }
+
+    func testKeysWhoseBoundTheStoreDoesNotHoldAreNotTurnedOffAndAreReportedAsNotChecked() {
+        let intent = Self.intent([Self.authKey(10)])
+        let snapshot = Self.snapshot([
+            Self.onPlatform(Self.authKey(10)), Self.onPlatform(Self.authKey(20), boundKnown: false),
+        ])
+        XCTAssertEqual(AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent]).disable, [10])
+        XCTAssertEqual(AppConnect.project([snapshot], intents: [intent]).unplacedKeyIds, [Self.identity: [20]])
+    }
+
+    func testTwentyThreeKeysGoInThreeUpdatesOfAtMostTen() {
+        let recorded = (100 ..< 112).map { Self.authKey($0) }
+        let intent = Self.intent(recorded)
+        let unrecorded = (200 ..< 208).map { Self.authKey($0) }
+        let profile = (300 ..< 303).map { Self.authKey($0, bound: Self.profileBound) }
+        let snapshot = Self.snapshot((recorded + unrecorded + profile).map { Self.onPlatform($0) })
+        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent])
+        XCTAssertEqual(plan.disable.count, 23)
+        let updates = plan.updates
+        XCTAssertEqual(updates.count, 3)
+        XCTAssertTrue(updates.allSatisfy { $0.disable.count <= 10 })
+        XCTAssertEqual(updates.flatMap(\.disable), plan.disable, "every key once, none dropped")
+    }
+
+    func testAnUpdateAddsAtMostSixFencesAndTurnsOffAtMostTenKeys() {
+        let plan = AppConnect.DisconnectPlan(disable: [1, 2, 3], fence: Array(40 ..< 47))
+        let updates = plan.updates
+        XCTAssertEqual(updates.count, 2)
+        XCTAssertTrue(updates.allSatisfy { $0.fence.count <= 6 && $0.disable.count <= 10 })
+        XCTAssertEqual(updates.flatMap(\.fence), plan.fence)
+        XCTAssertEqual(updates.flatMap(\.disable), plan.disable)
+    }
+
+    func testAnUpdateFailingMidBatchStopsAndNamesWhatIsStillLive() async {
+        let plan = AppConnect.DisconnectPlan(disable: (1 ... 23).map { UInt32($0) })
+        var sent = 0
+        let progress = await AppConnect.submit(plan) { _ in
+            sent += 1
+            if sent == 2 { throw NSError(domain: "test", code: 1) }
+        }
+        XCTAssertEqual(sent, 2, "nothing is sent after the failure")
+        XCTAssertTrue(progress.stopped)
+        XCTAssertEqual(progress.turnedOff, (1 ... 10).map { UInt32($0) })
+        XCTAssertEqual(progress.stillLive, (11 ... 23).map { UInt32($0) })
+    }
+
+    func testAnUninterruptedSubmitLeavesNothingLive() async {
+        let plan = AppConnect.DisconnectPlan(disable: (1 ... 23).map { UInt32($0) })
+        let progress = await AppConnect.submit(plan) { _ in }
+        XCTAssertFalse(progress.stopped)
+        XCTAssertEqual(progress.turnedOff, plan.disable)
+        XCTAssertEqual(progress.stillLive, [])
     }
 
     func testADisconnectLeavesOtherAppsAndOtherIdentitiesAlone() {
@@ -244,7 +851,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let otherIdentity = Self.intent([Self.authKey(12)], identity: Self.otherIdentity)
         let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10)), Self.onPlatform(Self.authKey(11))])
         let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: snapshot, intents: [mine, otherApps, otherIdentity], includeUnrecorded: false)
+            appId: Self.app, snapshot: snapshot, intents: [mine, otherApps, otherIdentity])
         XCTAssertEqual(plan, AppConnect.DisconnectPlan(disable: [10]))
     }
 
@@ -259,6 +866,18 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(decoded, intent)
     }
 
+    func testAnIntentWrittenBeforeRefusalAndRemovedAtDecodesWithBothNil() throws {
+        var row = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(Self.intent([Self.authKey(10)]))) as? [String: Any])
+        row.removeValue(forKey: "refusal")
+        row.removeValue(forKey: "removedAt")
+
+        let decoded = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: row))
+
+        XCTAssertNil(decoded.refusal)
+        XCTAssertNil(decoded.removedAt)
+    }
+
     // MARK: Intent store
 
     private func intentStore(_ scope: @escaping () -> String?) -> (UserDefaultsAppConnectIntentStore, UserDefaults) {
@@ -266,6 +885,25 @@ final class AppConnectProjectionTests: XCTestCase {
         let defaults = UserDefaults(suiteName: suite)!
         addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
         return (UserDefaultsAppConnectIntentStore(defaults: defaults, network: .testnet, scopeKeyProvider: scope), defaults)
+    }
+
+    func testAnIntentWithARefusalAndRemovedAtRoundTripsThroughTheStore() throws {
+        let (store, _) = intentStore { "scope" }
+        let refusal = AppConnect.ConsensusRefusal(code: 10_212, at: Date(timeIntervalSince1970: 1_773_132_300))
+        let removedAt = Date(timeIntervalSince1970: 1_773_218_700)
+        let refused = Self.intent([Self.authKey(6)], refusal: refusal, removedAt: removedAt)
+        let plain = Self.intent([Self.authKey(7)])
+
+        store.save([refused, plain])
+
+        let loaded = store.load()
+        XCTAssertEqual(loaded, [refused, plain])
+        let back = try XCTUnwrap(loaded.first { $0.id == refused.id })
+        XCTAssertEqual(back.refusal, refusal)
+        XCTAssertEqual(back.removedAt, removedAt)
+        let other = try XCTUnwrap(loaded.first { $0.id == plain.id })
+        XCTAssertNil(other.refusal)
+        XCTAssertNil(other.removedAt)
     }
 
     func testAPinnedHandedInScopeDoesNotFollowItsProvider() {
@@ -427,7 +1065,7 @@ final class AppConnectProjectionTests: XCTestCase {
         for app in [Self.app, Self.otherApp] {
             XCTAssertEqual(projection.connections.first { $0.appId == app }?.unrecordedKeyIds[Self.identity], [20])
             XCTAssertEqual(
-                AppConnect.disconnectPlan(appId: app, snapshot: snapshot, intents: [mine, theirs], includeUnrecorded: true).disable,
+                AppConnect.disconnectPlan(appId: app, snapshot: snapshot, intents: [mine, theirs]).disable,
                 [20])
         }
     }
@@ -444,7 +1082,7 @@ final class AppConnectProjectionTests: XCTestCase {
         }
         for app in [Self.app, Self.otherApp] {
             XCTAssertEqual(
-                AppConnect.disconnectPlan(appId: app, snapshot: Self.snapshot([stray]), intents: [mine, gone], includeUnrecorded: true).disable,
+                AppConnect.disconnectPlan(appId: app, snapshot: Self.snapshot([stray]), intents: [mine, gone]).disable,
                 [20], "a disconnect of either app turns it off")
         }
     }
@@ -455,8 +1093,10 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         let projection = AppConnect.project([snapshot], intents: [intent])
         XCTAssertEqual(projection.connections.first?.status, .active(expiresAt: Self.now + 1000), "the app keeps a row")
-        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false)
-        XCTAssertEqual(plan.disable, [10])
+        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent])
+        // 11 is another key on the id the intent named, bound to the app and
+        // named by no record: it is turned off as an unrecorded key (AC-16).
+        XCTAssertEqual(plan.disable, [10, 11])
         XCTAssertEqual(plan.fence, [])
     }
 
@@ -494,8 +1134,8 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .expired)
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
-            [10])
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent]).disable,
+            [10, 11], "11 holds the intent's id with other data: an unrecorded key of the app (AC-16)")
         let off = Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: off), .neverLanded, "nothing enabled is left")
     }
@@ -608,7 +1248,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([other])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .neverLanded)
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).fence,
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent]).fence,
             [])
     }
 

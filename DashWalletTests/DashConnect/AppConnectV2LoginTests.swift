@@ -28,12 +28,15 @@ final class AppConnectV2LoginTests: XCTestCase {
     /// One minute after the vector's request was made.
     private static let now = date(milliseconds: createdAt + 60_000)
 
+    /// The proved block time at that same moment.
+    private static let blockTimeMs = createdAt + 60_000
+
     private static func vectorUri() throws -> AppConnectUri {
         try DashConnectUri.parseAppConnectRequest(requestUri)
     }
 
     private static func vectorPlan() throws -> AppConnect.GrantPlan {
-        try AppConnect.grantPlan(for: vectorUri(), now: now)
+        try AppConnect.grantPlan(for: vectorUri(), now: now, blockTimeMs: blockTimeMs)
     }
 
     /// The vector's request with its bindings replaced.
@@ -167,7 +170,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let tooMuch = Self.groupBinding(
             budget: 10 * PlatformCreditsFormatter.creditsPerDash,
             expiresAt: Self.createdAt + 2 * 365 * Self.dayMilliseconds)
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [tooMuch]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [tooMuch]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(plan.auth[0].totalBudget, AppConnect.v2BudgetCapCredits)
         XCTAssertEqual(plan.auth[0].expiresAt, AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2LifetimeCap)))
     }
@@ -176,7 +179,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let unlimited = AppConnectRequest.AuthBinding(
             kind: .singleContract, securityLevel: .high, id: Self.appId,
             totalBudget: nil, expiresAt: nil, documentTypeName: nil)
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [unlimited]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [unlimited]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertNil(plan.auth[0].totalBudget, "a budget the app did not ask for is not added")
         XCTAssertEqual(
             plan.auth[0].expiresAt,
@@ -184,7 +187,7 @@ final class AppConnectV2LoginTests: XCTestCase {
     }
 
     func testAProposalBelowTheCapsIsKeptAsItIs() throws {
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(plan.auth[0].totalBudget, 50_000_000_000)
         XCTAssertEqual(plan.auth[0].expiresAt, Self.expiresAt)
     }
@@ -193,19 +196,79 @@ final class AppConnectV2LoginTests: XCTestCase {
 
     func testAStaleOrFutureRequestIsRefusedAsStale() throws {
         let uri = try Self.vectorUri()
-        let late = Self.date(milliseconds: Self.createdAt + 11 * 60_000)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: late)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, now: Self.now, blockTimeMs: Self.createdAt + 11 * 60_000)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
         }
-        let early = Self.date(milliseconds: Self.createdAt - 3 * 60_000)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: early)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, now: Self.now, blockTimeMs: Self.createdAt - 3 * 60_000)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+        }
+    }
+
+    /// R12a / AC-09: a future-dated request asks the app for a new code; it
+    /// does not blame the phone's clock, which plays no part in the age.
+    func testAFutureDatedRequestIsRefusedAskingForANewCodeWithoutBlamingTheClock() throws {
+        let uri = try Self.vectorUri()
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, now: Self.now, blockTimeMs: Self.createdAt - 3 * 60_000)) {
+            let refusal = $0 as? AppConnect.Refusal
+            XCTAssertEqual(refusal?.status, .stale)
+            let text = refusal?.reason.lowercased() ?? ""
+            XCTAssertFalse(text.contains("clock"), text)
+            XCTAssertFalse(text.contains("device"), text)
+            XCTAssertTrue(text.contains("new"), "it asks the app for a new code: \(text)")
+            XCTAssertFalse(text.contains("expired"), text)
+            XCTAssertTrue(text.contains("ahead"), "it gives the reason, the request is dated ahead: \(text)")
+            XCTAssertTrue(text.contains("network"), "it names the network's time: \(text)")
+        }
+    }
+
+    /// The edges of the window, by block time: 10 minutes old and 2 minutes
+    /// ahead are answered, a millisecond more is refused.
+    func testTheAgeWindowIsJudgedByBlockTimeToTheMillisecond() throws {
+        let uri = try Self.vectorUri()
+        let minute: UInt64 = 60_000
+        for blockTimeMs in [Self.createdAt + 10 * minute, Self.createdAt - 2 * minute] {
+            XCTAssertNoThrow(
+                try AppConnect.grantPlan(for: uri, now: Self.now, blockTimeMs: blockTimeMs), "\(blockTimeMs)")
+        }
+        for blockTimeMs in [Self.createdAt + 10 * minute + 1, Self.createdAt - 2 * minute - 1] {
+            XCTAssertThrowsError(
+                try AppConnect.grantPlan(for: uri, now: Self.now, blockTimeMs: blockTimeMs), "\(blockTimeMs)") {
+                XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+            }
+        }
+    }
+
+    /// A phone clock a year off neither refuses a fresh request nor admits a
+    /// stale one: only the block time counts.
+    func testThePhoneClockDoesNotDecideTheAge() throws {
+        let uri = try Self.vectorUri()
+        let yearAhead = Self.date(milliseconds: Self.createdAt + 365 * Self.dayMilliseconds)
+        let yearBehind = Self.date(milliseconds: Self.createdAt - 365 * Self.dayMilliseconds)
+        for phoneClock in [yearAhead, yearBehind] {
+            XCTAssertNoThrow(try AppConnect.grantPlan(for: uri, now: phoneClock, blockTimeMs: Self.blockTimeMs))
+            XCTAssertThrowsError(try AppConnect.grantPlan(
+                for: uri, now: phoneClock, blockTimeMs: Self.createdAt + 11 * 60_000)) {
+                XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+            }
+        }
+    }
+
+    /// No proved block time: the wallet cannot judge the age. This is not a
+    /// refusal of the request, so the sheet offers to try again.
+    func testARequestIsNotJudgedWithoutABlockTime() throws {
+        let uri = try Self.vectorUri()
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: Self.now, blockTimeMs: nil)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .requestAgeUncheckable)
+            XCTAssertNil($0 as? AppConnect.Refusal)
         }
     }
 
     func testAKeyThatWouldAlreadyBeExpiredIsRefused() {
         let expired = Self.groupBinding(expiresAt: Self.createdAt)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: Self.uri(authBindings: [expired]), now: Self.now)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: Self.uri(authBindings: [expired]), now: Self.now, blockTimeMs: Self.blockTimeMs)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
         }
     }
@@ -213,7 +276,7 @@ final class AppConnectV2LoginTests: XCTestCase {
     func testAnEncryptionKeyOnAnotherContractIsRefused() {
         let foreign = AppConnectRequest.EncryptionBinding(contractId: Self.groupId, purpose: .encryption)
         XCTAssertThrowsError(try AppConnect.grantPlan(
-            for: Self.uri(authBindings: [Self.groupBinding()], encryptionBindings: [foreign]), now: Self.now)) {
+            for: Self.uri(authBindings: [Self.groupBinding()], encryptionBindings: [foreign]), now: Self.now, blockTimeMs: Self.blockTimeMs)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
         }
     }
@@ -251,7 +314,7 @@ final class AppConnectV2LoginTests: XCTestCase {
             try AppConnect.grantPlan(for: Self.uri(authBindings: [
                 .init(kind: .documentType, securityLevel: .high, id: Self.dashpayContractId,
                       totalBudget: nil, expiresAt: nil, documentTypeName: name),
-            ]), now: Self.now)
+            ]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         }
         func refusal(_ plan: AppConnect.GrantPlan) -> AppConnect.Refusal? {
             AppConnect.ownershipRefusal(
@@ -268,7 +331,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .singleContract, securityLevel: .high, id: other,
                   totalBudget: nil, expiresAt: nil, documentTypeName: nil),
-        ]), now: Self.now)
+        ]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         func refusal(owner: Data) -> AppConnect.Refusal? {
             AppConnect.ownershipRefusal(
                 for: plan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -300,7 +363,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .singleContract, securityLevel: .high, id: other,
                   totalBudget: nil, expiresAt: nil, documentTypeName: nil),
-        ]), now: Self.now)
+        ]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         func ownership(_ otherRead: @escaping () throws -> [String: Any]) async throws -> AppConnect.Refusal? {
             try await PlatformDashConnectDataSource.appConnectOwnership(
                 plan,
@@ -335,7 +398,7 @@ final class AppConnectV2LoginTests: XCTestCase {
             _ bindings: [AppConnectRequest.AuthBinding],
             other otherSchemas: [String: Any]? = ["note": [:] as [String: Any]]
         ) async throws -> AppConnect.Refusal? {
-            let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: bindings), now: Self.now)
+            let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: bindings), now: Self.now, blockTimeMs: Self.blockTimeMs)
             return try await PlatformDashConnectDataSource.appConnectOwnership(
                 plan,
                 readContract: { id in
@@ -374,7 +437,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                                      totalBudget: nil, expiresAt: nil, documentTypeName: nil)],
                 connectionId: nil, encryptionBindings: [], isRenewal: false, createdAt: Self.createdAt),
             network: .devnet, callback: nil)
-        let appPlan = try AppConnect.grantPlan(for: asApp, now: Self.now)
+        let appPlan = try AppConnect.grantPlan(for: asApp, now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
                 for: appPlan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -384,7 +447,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let bindingPlan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .documentType, securityLevel: .high, id: dpns,
                   totalBudget: nil, expiresAt: nil, documentTypeName: "domain"),
-        ]), now: Self.now)
+        ]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
                 for: bindingPlan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -399,7 +462,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .documentType, securityLevel: .high, id: Self.appId,
                   totalBudget: nil, expiresAt: nil, documentTypeName: "post"),
-        ]), now: Self.now)
+        ]), now: Self.now, blockTimeMs: Self.blockTimeMs)
         XCTAssertFalse(AppConnect.systemContractIds.contains(Self.appId.toBase58String()))
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
@@ -889,6 +952,192 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertTrue(AppConnect.Login.appConnect(try Self.vectorPlan()).isApprovable)
         XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
         XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
+    }
+
+    // MARK: - Funding limit and expiry pickers (AC-06)
+
+    private static let dash: UInt64 = PlatformCreditsFormatter.creditsPerDash
+    private static let fundingPresets: [UInt64] = [dash / 10, dash / 2, 2 * dash, 5 * dash]
+    private static let day: TimeInterval = 24 * 60 * 60
+
+    private func assertFunding(
+        asking requested: UInt64?, cap: UInt64, start: UInt64, enabled: [Bool],
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let range = AppConnect.fundingRange(requestedTotal: requested)
+        XCTAssertEqual(range.cap, cap, "cap", file: file, line: line)
+        XCTAssertEqual(range.start, start, "start", file: file, line: line)
+        XCTAssertEqual(range.presets.map(\.credits), Self.fundingPresets, "presets", file: file, line: line)
+        XCTAssertEqual(range.presets.map(\.isEnabled), enabled, "enabled presets", file: file, line: line)
+    }
+
+    func testTheFundingLimitIsTheAppsTotalCappedAtFiveDash() {
+        let dash = Self.dash
+        assertFunding(asking: 10 * dash, cap: 5 * dash, start: 5 * dash, enabled: [true, true, true, true])
+        assertFunding(asking: 5 * dash, cap: 5 * dash, start: 5 * dash, enabled: [true, true, true, true])
+        assertFunding(asking: 2 * dash, cap: 2 * dash, start: 2 * dash, enabled: [true, true, true, false])
+        assertFunding(asking: 3 * dash / 10, cap: 3 * dash / 10, start: 3 * dash / 10, enabled: [true, false, false, false])
+    }
+
+    func testAnAskBelowEveryPresetOffersNoPresetAndStartsAtTheAsk() {
+        let dash = Self.dash
+        assertFunding(asking: dash / 20, cap: dash / 20, start: dash / 20, enabled: [false, false, false, false])
+    }
+
+    func testAnAppThatAsksNoAmountCanGetUpToFiveDashStartingAtHalfADash() {
+        let dash = Self.dash
+        assertFunding(asking: nil, cap: 5 * dash, start: dash / 2, enabled: [true, true, true, true])
+    }
+
+    func testACustomFundingLimitIsAboveZeroAndNeverAboveTheCap() {
+        let dash = Self.dash
+        let cap = 3 * dash / 10
+        XCTAssertEqual(AppConnect.checkCustomFunding(0, cap: cap), .notSubmittable)
+        XCTAssertEqual(AppConnect.checkCustomFunding(1, cap: cap), .accepted(1))
+        XCTAssertEqual(AppConnect.checkCustomFunding(cap, cap: cap), .accepted(cap))
+        XCTAssertEqual(AppConnect.checkCustomFunding(cap + 1, cap: cap), .aboveCap(cap))
+        XCTAssertEqual(AppConnect.checkCustomFunding(6 * dash, cap: 5 * dash), .aboveCap(5 * dash))
+    }
+
+    private func assertExpiry(
+        asking requested: UInt64?, cap: TimeInterval, start: TimeInterval, enabled: [Bool],
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let now = Self.now
+        let range = AppConnect.expiryRange(requestedExpiry: requested, now: now)
+        XCTAssertEqual(range.cap, AppConnect.milliseconds(now.addingTimeInterval(cap)), "cap", file: file, line: line)
+        XCTAssertEqual(range.start, AppConnect.milliseconds(now.addingTimeInterval(start)), "start", file: file, line: line)
+        XCTAssertEqual(range.presets.map(\.days), [30, 90, 365], "presets", file: file, line: line)
+        XCTAssertEqual(range.presets.map(\.isEnabled), enabled, "enabled presets", file: file, line: line)
+    }
+
+    private func requestedExpiry(afterDays days: Double) -> UInt64 {
+        AppConnect.milliseconds(Self.now.addingTimeInterval(days * Self.day))
+    }
+
+    func testTheExpiryIsTheAppsExpiryCappedAtOneYear() {
+        let day = Self.day
+        assertExpiry(asking: requestedExpiry(afterDays: 30), cap: 30 * day, start: 30 * day, enabled: [true, false, false])
+        assertExpiry(asking: requestedExpiry(afterDays: 100), cap: 100 * day, start: 100 * day, enabled: [true, true, false])
+        assertExpiry(asking: requestedExpiry(afterDays: 365), cap: 365 * day, start: 365 * day, enabled: [true, true, true])
+        assertExpiry(asking: requestedExpiry(afterDays: 2 * 365), cap: 365 * day, start: 365 * day, enabled: [true, true, true])
+    }
+
+    func testAnAppThatAsksNoExpiryCanGetUpToOneYearStartingAtNinetyDays() {
+        let day = Self.day
+        assertExpiry(asking: nil, cap: 365 * day, start: 90 * day, enabled: [true, true, true])
+    }
+
+    /// 2026-12-15 in Pacific/Auckland (UTC+13) and 2026-11-01 in
+    /// America/New_York (the 25-hour day DST ends), as the last millisecond
+    /// of that local day.
+    func testAPickedDateEndsAtTheEndOfThatDayInTheGivenTimeZone() throws {
+        let cap = AppConnect.milliseconds(Self.now.addingTimeInterval(365 * Self.day))
+        func pick(_ zone: String, _ year: Int, _ month: Int, _ dayOfMonth: Int) throws -> UInt64? {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try XCTUnwrap(TimeZone(identifier: zone))
+            let noon = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: dayOfMonth, hour: 12)))
+            return AppConnect.pickedExpiry(day: noon, calendar: calendar, cap: cap)
+        }
+        XCTAssertEqual(try pick("Pacific/Auckland", 2026, 12, 15), 1_797_332_399_999)
+        XCTAssertEqual(try pick("UTC", 2026, 12, 15), 1_797_379_199_999)
+        XCTAssertEqual(try pick("America/New_York", 2026, 11, 1), 1_793_595_599_999)
+    }
+
+    func testAPickedDateWithinTheCapIsAcceptedAndOneAfterItIsRefused() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        // A cap at 2026-12-15 08:00 UTC: that day is still offered but ends
+        // at the cap; the next day is past it.
+        let cap = AppConnect.milliseconds(try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 12, day: 15, hour: 8))))
+        let capDay = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 12, day: 15, hour: 12)))
+        let dayBefore = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 12, day: 14, hour: 12)))
+        let dayAfter = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 12, day: 16, hour: 12)))
+        XCTAssertEqual(AppConnect.pickedExpiry(day: dayBefore, calendar: calendar, cap: cap), 1_797_292_799_999)
+        XCTAssertEqual(AppConnect.pickedExpiry(day: capDay, calendar: calendar, cap: cap), cap)
+        XCTAssertNil(AppConnect.pickedExpiry(day: dayAfter, calendar: calendar, cap: cap), "a date past the cap is refused")
+    }
+
+    // MARK: Chosen terms reach the plan
+
+    private func twoKeyPlan(group: UInt64?, profile: UInt64?) throws -> AppConnect.GrantPlan {
+        let profileBinding = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Self.dashpayContractId,
+            totalBudget: profile, expiresAt: nil, documentTypeName: "profile")
+        return try AppConnect.grantPlan(
+            for: Self.uri(authBindings: [Self.groupBinding(budget: group, expiresAt: nil), profileBinding]),
+            now: Self.now, blockTimeMs: Self.blockTimeMs)
+    }
+
+    func testThePlanKnowsWhatTheAppAskedInAllAndTheEarliestExpiry() throws {
+        let dash = Self.dash
+        let plan = try twoKeyPlan(group: 3 * dash, profile: dash)
+        XCTAssertEqual(plan.requestedTotal, 4 * dash)
+        XCTAssertNil(plan.requestedExpiry)
+        XCTAssertEqual(try Self.vectorPlan().requestedExpiry, Self.expiresAt)
+        let none = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: Self.appId, totalBudget: nil, expiresAt: nil, documentTypeName: nil)
+        let unlimited = try AppConnect.grantPlan(for: Self.uri(authBindings: [none]), now: Self.now, blockTimeMs: Self.blockTimeMs)
+        XCTAssertNil(unlimited.requestedTotal)
+    }
+
+    /// AC-07: the DashPay profile key gets 0.002 DASH of the limit and the
+    /// app's own keys share the rest, no key above its own ask.
+    func testTheProfileKeyGetsItsFixedShareAndTheAppKeysShareTheRest() throws {
+        let dash = Self.dash
+        let profileShare = dash / 500
+        let plan = try twoKeyPlan(group: 3 * dash, profile: dash)
+        let expiry = AppConnect.milliseconds(Self.now.addingTimeInterval(30 * Self.day))
+        let two = try XCTUnwrap(AppConnect.applying(fundingLimit: 2 * dash, expiresAt: expiry, to: plan))
+        XCTAssertEqual(two.auth.compactMap(\.totalBudget), [2 * dash - profileShare, profileShare])
+        XCTAssertEqual(two.totalBudget, 2 * dash)
+        XCTAssertEqual(two.auth.map(\.expiresAt), [expiry, expiry], "one expiry for the whole connection")
+
+        let all = try XCTUnwrap(AppConnect.applying(fundingLimit: 4 * dash, expiresAt: expiry, to: plan))
+        XCTAssertEqual(all.auth.compactMap(\.totalBudget), [3 * dash, profileShare], "an app key never gets more than it asked")
+    }
+
+    func testUnderFourThousandthsOfADashTheProfileKeyGetsHalfOfTheLimit() throws {
+        let dash = Self.dash
+        let plan = try twoKeyPlan(group: 3 * dash, profile: dash)
+        let limit = 3 * dash / 1000
+        let applied = try XCTUnwrap(AppConnect.applying(fundingLimit: limit, expiresAt: Self.expiresAt, to: plan))
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget), [limit - limit / 2, limit / 2])
+        // At 0.004 DASH the fixed share applies again.
+        let atEdge = try XCTUnwrap(AppConnect.applying(fundingLimit: dash / 250, expiresAt: Self.expiresAt, to: plan))
+        XCTAssertEqual(atEdge.auth.compactMap(\.totalBudget), [dash / 250 - dash / 500, dash / 500])
+    }
+
+    /// With no app key there is nothing to share the rest with: the profile
+    /// key still gets at most its 0.002 DASH, never more than the limit or
+    /// than it asked.
+    func testAProfileOnlyRequestGetsAtMostItsFixedShareOfTheLimit() throws {
+        let dash = Self.dash
+        let profile = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Self.dashpayContractId,
+            totalBudget: dash, expiresAt: nil, documentTypeName: "profile")
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [profile]), now: Self.now, blockTimeMs: Self.blockTimeMs)
+        func budget(_ limit: UInt64) throws -> UInt64? {
+            try XCTUnwrap(AppConnect.applying(fundingLimit: limit, expiresAt: Self.expiresAt, to: plan)).auth.first?.totalBudget
+        }
+        XCTAssertEqual(try budget(2 * dash), dash / 500)
+        XCTAssertEqual(try budget(dash / 1000), dash / 1000)
+    }
+
+    func testAppKeysWithoutAnAskShareTheRestLikeTheSmallestAsk() throws {
+        let dash = Self.dash
+        let open = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: Self.appId, totalBudget: nil, expiresAt: nil, documentTypeName: nil)
+        let plan = try AppConnect.grantPlan(
+            for: Self.uri(authBindings: [Self.groupBinding(budget: 3 * dash, expiresAt: nil), open]),
+            now: Self.now, blockTimeMs: Self.blockTimeMs)
+        let applied = try XCTUnwrap(AppConnect.applying(fundingLimit: dash, expiresAt: Self.expiresAt, to: plan))
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget), [dash / 2, dash / 2])
+    }
+
+    func testALimitTooSmallToGiveEveryKeyABudgetIsNotApplied() throws {
+        let plan = try twoKeyPlan(group: Self.dash, profile: Self.dash)
+        XCTAssertNil(AppConnect.applying(fundingLimit: 1, expiresAt: Self.expiresAt, to: plan))
     }
 }
 

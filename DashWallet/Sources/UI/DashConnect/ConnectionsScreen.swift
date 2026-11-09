@@ -77,18 +77,6 @@ struct ConnectionsScreen: View {
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
         .alert(item: messageBinding) { message in
-            if let connection = message.unrecordedKeysOf {
-                return Alert(
-                    title: Text(message.title),
-                    message: Text(message.text),
-                    primaryButton: .destructive(Text(NSLocalizedString("Turn them off", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                        viewModel.disconnect(connection, includingUnrecorded: true)
-                    },
-                    secondaryButton: .cancel(Text(NSLocalizedString("Leave them", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                    })
-            }
             return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
@@ -119,7 +107,8 @@ struct ConnectionsScreen: View {
         } else {
             ConnectionsList(
                 connections: viewModel.connections,
-                onDisconnect: viewModel.disconnect
+                onDisconnect: viewModel.disconnect,
+                onRemove: viewModel.removeConnection
             )
             .padding(.horizontal, 20)
         }

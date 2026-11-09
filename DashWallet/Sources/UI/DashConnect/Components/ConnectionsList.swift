@@ -25,6 +25,7 @@ import SwiftUI
 struct ConnectionsList: View {
     let connections: [DAppConnection]
     let onDisconnect: (DAppConnection) -> Void
+    let onRemove: (DAppConnection) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -32,7 +33,8 @@ struct ConnectionsList: View {
                 ForEach(connections) { connection in
                     ConnectionRow(
                         connection: connection,
-                        onDisconnect: { onDisconnect(connection) }
+                        onDisconnect: { onDisconnect(connection) },
+                        onRemove: { onRemove(connection) }
                     )
                 }
             }
@@ -52,7 +54,8 @@ struct ConnectionsList: View {
                 updatedAt: Date()
             )
         },
-        onDisconnect: { _ in }
+        onDisconnect: { _ in },
+        onRemove: { _ in }
     )
     .padding(20)
     .background(Color.primaryBackground)

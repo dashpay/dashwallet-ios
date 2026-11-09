@@ -43,27 +43,57 @@ protocol DashConnectDataSource {
     /// every key the wallet's approvals of the app gave on the active
     /// identity, puts a key of the wallet's own under each id an approval
     /// may still land on so it never does, and deletes the published
-    /// responses; it throws when a key could not be shown off, and the
-    /// connection then stays. Keys no approval of this wallet names (the
-    /// app's from another device or from before a restore, DashPay profile
-    /// keys no app can be told to hold) are turned off only with
-    /// `includingUnrecorded`; the result says how many are left. The
-    /// connection also stays, and that is thrown, while an approval of the
-    /// app on another identity of the wallet is not done.
+    /// responses. It also turns off, with no further question, the live keys
+    /// bound to the app's contracts that no approval of this wallet names
+    /// (from another device or from before a restore) and every DashPay
+    /// profile key no approval names. An update that fails stops it: the
+    /// result says how many keys are still live, and the connection stays.
+    /// Keys whose bound the wallet cannot tell yet are not turned off and are
+    /// counted as not checked. The connection also stays, and that is thrown,
+    /// while an approval of the app on another identity of the wallet is not
+    /// done.
     ///
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
     @discardableResult
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    /// Hides a row. For an App Connect connection that Platform refused for
+    /// good it records the remove date on the connection's refused approvals,
+    /// without a PIN and without writing to Platform; a connection that does
+    /// not show Refused is left as it is.
     func remove(id: String, scope: String?) async
     /// Puts the App Connect rows in step with the active identity's keys on
     /// Platform. Best effort: a failed read leaves the rows as they were.
     func refreshConnections() async
+    /// The protocol version the active network runs, as the wallet can read
+    /// it; throws when it cannot be read.
+    func protocolVersion() async throws -> UInt32
+    /// What the approve sheet is built from besides the request (Flow 4): the
+    /// projection of the wallet's connections, the identity balance and the
+    /// fee to register the keys. `nil` when they cannot be read.
+    func approveSheetFacts() async -> ApproveSheetFacts?
 }
 
 extension DashConnectDataSource {
     func refreshConnections() async {}
+
+    /// A data source that does not read a wallet cannot tell.
+    func approveSheetFacts() async -> ApproveSheetFacts? { nil }
+
+    /// A data source that does not read a network cannot tell its version.
+    func protocolVersion() async throws -> UInt32 {
+        throw DashConnectMockError.protocolVersionUnknown
+    }
+}
+
+/// What the approve sheet is built from besides the request itself.
+struct ApproveSheetFacts: Equatable {
+    let projection: AppConnect.Projection
+    /// The identity balance, in Platform credits.
+    let balance: UInt64
+    /// What registering the keys costs, in Platform credits.
+    let fee: UInt64
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -102,6 +132,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case needsNewerWallet
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
     case stateTransitionNotSupported
+    case protocolVersionUnknown
 
     var errorDescription: String? {
         switch self {
@@ -117,6 +148,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .stateTransitionNotSupported:
             return "State transitions are not supported by the mock."
+        case .protocolVersionUnknown:
+            return "This data source does not read a protocol version."
         }
     }
 
@@ -266,6 +299,10 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         )
     }
 
+    func approveSheetFacts() async -> ApproveSheetFacts? {
+        ApproveSheetFacts(projection: AppConnect.project([], intents: []), balance: 5_000_000_000, fee: 1_000_000_000)
+    }
+
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
         try await Task.sleep(nanoseconds: 400_000_000)
         throw DashConnectMockError.stateTransitionNotSupported
@@ -277,7 +314,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         persistAndSend(subject.value.filter { $0.id != id })
         return DashConnectDisconnectResult()
     }
