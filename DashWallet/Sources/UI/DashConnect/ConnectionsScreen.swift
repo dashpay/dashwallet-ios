@@ -74,18 +74,6 @@ struct ConnectionsScreen: View {
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
         .alert(item: messageBinding) { message in
-            if let connection = message.unrecordedKeysOf {
-                return Alert(
-                    title: Text(message.title),
-                    message: Text(message.text),
-                    primaryButton: .destructive(Text(NSLocalizedString("Turn them off", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                        viewModel.disconnect(connection, includingUnrecorded: true)
-                    },
-                    secondaryButton: .cancel(Text(NSLocalizedString("Leave them", comment: "DashConnect"))) {
-                        viewModel.message = nil
-                    })
-            }
             return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
@@ -157,13 +145,14 @@ struct ConnectionsScreen: View {
     @ViewBuilder private var tabContent: some View {
         let tab = viewModel.selectedTab
         let rows = viewModel.rows(for: tab)
-        if tab == .disconnected, viewModel.historyIsUnreadable {
-            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
-        } else if !rows.isEmpty {
+        if !rows.isEmpty {
             ConnectionsList(
                 items: rows,
                 onOpen: { viewModel.showConnection($0) },
                 onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onRemove: { item in
+                    if let connection = item.connection { viewModel.removeConnection(connection) }
+                },
                 onReconnect: showScanner)
         } else {
             tabNote(Self.emptyTabText(tab))
@@ -207,6 +196,10 @@ struct ConnectionsScreen: View {
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
             onDisconnect: viewModel.disconnectShown,
+            onRemove: {
+                if let connection = item.connection { viewModel.removeConnection(connection) }
+                viewModel.hideConnection()
+            },
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
             disconnectQuestion: viewModel.disconnectQuestion,
             onScan: {

@@ -336,6 +336,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
         AssetLockFailureStore.shared.resetForWipe()
+        DashConnectStores.removeAllWallets(in: .standard)
         SPVChainResyncMarker.resetForWipe()
         // Marker files behind their own lock; safe on this queue too.
         SPVChainStoreRebuild.clearAll()
@@ -1015,6 +1016,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     "Core drain marker cleanup failed: \(String(describing: error), privacy: .public)")
             }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // DashConnect connection history, intents and legacy grants of
+            // the wallet on every network scope. One wallet id covers every
+            // devnet scope, so a store-only sweep of one scope leaves them
+            // to the deletion that removes the wallet itself. Local only:
+            // the keys given on Platform stay.
+            if !keepsWalletOnAnotherScope {
+                DashConnectStores.removeAll(walletIdHex: walletIdHex, in: .standard)
+            }
             // One wallet id covers every devnet scope it has rows in, so
             // only the rebuild pending on the scope whose rows were just
             // deleted is dropped; the wallet's other scopes keep theirs.
@@ -1029,11 +1038,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // wallet's settled identity-recovery context (a backstop that never
         // runs).
         GeneratedWalletIdentityMarker.clear(walletId: walletId)
-        // Nor its DashConnect disconnected apps, on every network scope; a
-        // sweep of one devnet scope keeps the scopes the wallet stays on.
-        if !keepsWalletOnAnotherScope {
-            UserDefaultsDashConnectHistoryStore.clear(walletIdHex: walletId.hexEncodedString())
-        }
 #if DASHPAY
         // Nor its username registration reports (in-flight, completed, lost,
         // failed instant name) and form drafts, which would resurface under

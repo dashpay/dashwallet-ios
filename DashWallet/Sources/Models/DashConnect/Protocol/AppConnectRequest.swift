@@ -62,10 +62,12 @@ struct AppConnectRequest: Equatable {
 
     enum Age: Equatable {
         case fresh
-        /// Created more than `maxAge` before the wallet's clock.
+        /// Created more than `maxAge` before the proved block time.
         case stale
         /// Created more than `maxClockSkew` after it.
         case future
+        /// No proved block time to judge by.
+        case uncheckable
     }
 
     static let version: UInt8 = 0x02
@@ -91,11 +93,12 @@ struct AppConnectRequest: Equatable {
     /// Milliseconds since the epoch.
     let createdAt: UInt64
 
-    func age(now: Date) -> Age {
-        let created = TimeInterval(createdAt) / 1000
-        let current = now.timeIntervalSince1970
-        if current - created > Self.maxAge { return .stale }
-        if created - current > Self.maxClockSkew { return .future }
+    /// The request's age at the block time Platform proved, in milliseconds
+    /// since the epoch; the phone's clock plays no part.
+    func age(blockTimeMs: UInt64?) -> Age {
+        guard let blockTimeMs else { return .uncheckable }
+        if blockTimeMs > createdAt, blockTimeMs - createdAt > UInt64(Self.maxAge * 1000) { return .stale }
+        if createdAt > blockTimeMs, createdAt - blockTimeMs > UInt64(Self.maxClockSkew * 1000) { return .future }
         return .fresh
     }
 }
