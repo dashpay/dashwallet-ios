@@ -107,7 +107,7 @@ class SendAmountModel: BaseAmountModel {
 
     /// Whether `canShowInsufficientFunds` refuses against the wallet's send
     /// pool. Only then can a shortfall be the wallet's coins still confirming;
-    /// a subclass that gates on another balance (CrowdNode, Coinbase) returns
+    /// a subclass that gates on another balance (Coinbase) returns
     /// false so its refusals stay "Insufficient funds".
     var gatesOnWalletSendPool: Bool { true }
 
