@@ -1,4 +1,4 @@
-# 0006 — Remove CrowdNode entirely, as Android does
+# 0023 — Remove CrowdNode entirely, as Android does
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (decision taken 2026-10-30, recorded retroactively)
@@ -31,7 +31,7 @@ Jira MO-1115 asks to remove CrowdNode from the iOS app: no screens, validations 
 
 **Negative**
 - A depositor with a balance at CrowdNode cannot withdraw from the app and has to use crowdnode.io (SAD §11).
-- Upgrade code has to handle what older builds left behind (ADR-0007, ADR-0008, ADR-0009).
+- Upgrade code has to handle what older builds left behind (ADR-0024, ADR-0025, ADR-0026).
 
 **Neutral**
 - Bringing a CrowdNode feature back would mean rebuilding it from git history; nothing in the current code depends on it.
@@ -40,6 +40,6 @@ Jira MO-1115 asks to remove CrowdNode from the iOS app: no screens, validations 
 
 - Pull request: [dashpay/dashwallet-ios#1268](https://github.com/dashpay/dashwallet-ios/pull/1268)
 - Android counterpart: [dashpay/dash-wallet#1664](https://github.com/dashpay/dash-wallet/pull/1664)
-- Related ADR: [0007 — Pin shortcut raw values and refill the retired slot](0007-pin-shortcut-raw-values-and-refill-the-retired-slot.md)
-- Related ADR: [0008 — Remove CrowdNode defaults by exact key list on activation](0008-remove-crowdnode-defaults-by-exact-key-list-on-activation.md)
-- Related ADR: [0009 — Retire the CrowdNode topic by marking its events seen](0009-retire-the-crowdnode-topic-by-marking-events-seen.md)
+- Related ADR: [0024 — Pin shortcut raw values and refill the retired slot](0024-pin-shortcut-raw-values-and-refill-the-retired-slot.md)
+- Related ADR: [0025 — Remove CrowdNode defaults by exact key list on activation](0025-remove-crowdnode-defaults-by-exact-key-list-on-activation.md)
+- Related ADR: [0026 — Retire the CrowdNode topic by marking its events seen](0026-retire-the-crowdnode-topic-by-marking-events-seen.md)

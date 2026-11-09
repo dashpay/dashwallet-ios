@@ -1,4 +1,4 @@
-# 0007 — Pin shortcut raw values and refill the retired slot
+# 0024 — Pin shortcut raw values and refill the retired slot
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (decision taken 2026-10-30, recorded retroactively)
@@ -41,4 +41,4 @@ The Home shortcut bar is saved in `DWGlobalOptions.shortcuts` as an array of `Sh
 
 - Pull request: [dashpay/dashwallet-ios#1268](https://github.com/dashpay/dashwallet-ios/pull/1268)
 - Android counterpart: [dashpay/dash-wallet#1664](https://github.com/dashpay/dash-wallet/pull/1664)
-- Related ADR: [0006 — Remove CrowdNode entirely, as Android does](0006-remove-crowdnode-entirely-as-android-does.md)
+- Related ADR: [0023 — Remove CrowdNode entirely, as Android does](0023-remove-crowdnode-entirely-as-android-does.md)

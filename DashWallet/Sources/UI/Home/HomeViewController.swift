@@ -322,9 +322,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         
         if coinjoin {
             let position = diffSeconds > 0 ? NSLocalizedString("ahead", comment: "TimeSkew") : NSLocalizedString("behind", comment: "TimeSkew")
-            message = String(format: NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
+            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
         } else {
-            message = String(format: NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
+            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
         }
         
         showModalDialog(

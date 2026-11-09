@@ -345,6 +345,6 @@ final class EvonodeStatusViewModel: ObservableObject {
         if seconds < 1 {
             return String(format: NSLocalizedString("%.3f s", comment: "Evonode status: sub-second duration"), seconds)
         }
-        return durationFormatter.string(from: seconds) ?? String(format: "%.0f s", seconds)
+        return durationFormatter.string(from: seconds) ?? String(format: NSLocalizedString("%.0f s", comment: "Evonode status: duration"), seconds)
     }
 }

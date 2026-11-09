@@ -1,4 +1,4 @@
-# 0008 — Remove CrowdNode defaults by exact key list on activation
+# 0025 — Remove CrowdNode defaults by exact key list on activation
 
 - **Status:** Proposed
 - **Date:** 2026-11-05 (decision taken 2026-10-30, refined in review on 2026-10-30, recorded retroactively)
@@ -44,4 +44,4 @@ Older builds stored CrowdNode's settings in `UserDefaults.standard`: account sta
 
 - Pull request: [dashpay/dashwallet-ios#1268](https://github.com/dashpay/dashwallet-ios/pull/1268)
 - Android counterpart: [dashpay/dash-wallet#1664](https://github.com/dashpay/dash-wallet/pull/1664)
-- Related ADR: [0006 — Remove CrowdNode entirely, as Android does](0006-remove-crowdnode-entirely-as-android-does.md)
+- Related ADR: [0023 — Remove CrowdNode entirely, as Android does](0023-remove-crowdnode-entirely-as-android-does.md)
