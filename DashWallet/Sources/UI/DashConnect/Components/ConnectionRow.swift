@@ -20,94 +20,75 @@
 import DashUIKit
 import SwiftUI
 
-/// One connected app: its name and url, the current status, and the switch
-/// that turns it off.
+/// One app on the Connections page: its name and website, which open the
+/// connection's sheet, and the action that fits its status. Disconnect opens
+/// the sheet too, which asks first.
 struct ConnectionRow: View {
-    let connection: DAppConnection
+    let item: ConnectionSheetItem
+    let onOpen: () -> Void
     let onDisconnect: () -> Void
 
-    private enum Layout {
-        /// `SwitchView` is a fixed 64×28 from the design system and sets that
-        /// width internally, so an outer `.frame` cannot shrink it — it would
-        /// only change the space reserved while the control kept overflowing.
-        /// Scaling is the only way to make it smaller from the outside; the
-        /// design ratio is preserved.
-        static let switchScale: CGFloat = 0.75
-        static let switchWidth: CGFloat = 64 * switchScale
-        static let switchHeight: CGFloat = 28 * switchScale
-        /// The scaled switch draws at 48×21, and the tap gesture lives on that
-        /// shape alone — under the 44pt minimum. The hit area is grown around
-        /// the control without changing what is drawn.
-        static let minimumTouchTarget: CGFloat = 44
-    }
-
     var body: some View {
-        HStack(spacing: 12) {
-            identity
+        HStack(spacing: 20) {
+            Button(action: onOpen) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.name)
+                        .dashFont(.callout)
+                        .foregroundStyle(Color.dash.primaryText)
+                        .lineLimit(1)
 
-            ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
-                .fixedSize(horizontal: true, vertical: false)
-
-            // A confirming connection may get its keys yet: turning it off
-            // makes sure it never does.
-            activeSwitch
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var identity: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(connection.name)
-                .dashFont(.subhead)
-                .foregroundStyle(Color.dash.primaryText)
-                .lineLimit(1)
-
-            if !connection.url.isEmpty {
-                Text(connection.url)
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-                    .lineLimit(1)
+                    if !item.url.isEmpty {
+                        Text(item.url)
+                            .dashFont(.caption1)
+                            .foregroundStyle(Color.dash.tertiaryText)
+                            .lineLimit(1)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 14)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+
+            action
         }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .padding(.trailing, 14)
     }
 
-    /// Always reads as on: only the off direction is reachable from here.
-    /// Turning it off turns the app's keys off on the identity and removes
-    /// the row (see `DashConnectDataSource.disconnect`).
-    private var activeSwitch: some View {
-        ZStack {
-            SwitchView(isOn: .constant(true))
-                .allowsHitTesting(false)
-                .scaleEffect(Layout.switchScale)
-        }
-        .frame(width: Layout.switchWidth, height: Layout.switchHeight)
-        .frame(minWidth: Layout.minimumTouchTarget, minHeight: Layout.minimumTouchTarget)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onDisconnect)
-        .accessibilityElement()
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(Text(NSLocalizedString("Disconnect", comment: "DashConnect")))
+    /// Every connection offers a disconnect: the app's keys may be on in
+    /// each status.
+    private var action: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            size: .small, style: .tintedGray, action: onDisconnect)
+            .fixedSize()
+            .accessibilityLabel(Text(String(
+                format: NSLocalizedString(
+                    "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                item.name)))
     }
 }
 
-#Preview {
+#Preview("Statuses") {
     VStack(spacing: 2) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
             ConnectionRow(
-                connection: DAppConnection(
-                    id: status.rawValue,
-                    name: "A Very Long Application Name Indeed",
-                    url: "https://example.org",
-                    status: status,
-                    updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
-                ),
-                onDisconnect: {}
-            )
+                item: ConnectionSheetItem(
+                    id: status.rawValue, name: "Example App", url: "example.org", status: status, connection: nil),
+                onOpen: {}, onDisconnect: {})
         }
     }
-    .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Long name, no website") {
+    ConnectionRow(
+        item: ConnectionSheetItem(
+            id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
+            status: .active, connection: nil),
+        onOpen: {}, onDisconnect: {})
+    .background(Color.dash.secondaryBackground)
 }

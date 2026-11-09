@@ -68,8 +68,20 @@ extension AppConnect {
         /// When the intent was done with: the user disconnected the app, or a
         /// later approval on the same connection replaced it.
         var closedAt: Date?
+        /// The contract groups among the auth keys' bounds that had
+        /// administrators besides their owner when the sheet was shown
+        /// (`GrantPlan.administeredGroupIds`). Absent on an intent from a
+        /// build that did not note it.
+        var administeredGroupIds: [Data]? = nil
 
         var authKeys: [IntendedKey] { keys.filter(\.isAuthentication) }
+
+        /// Whether the sheet said `bound`'s group has other administrators;
+        /// `false` when it is not a group or the intent did not note it.
+        func isAdministered(_ bound: StoredBound) -> Bool {
+            guard case .contractGroup(let id) = bound else { return false }
+            return administeredGroupIds?.contains(id) == true
+        }
     }
 
     // MARK: Read

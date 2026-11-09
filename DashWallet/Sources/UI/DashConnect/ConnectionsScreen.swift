@@ -34,6 +34,8 @@ struct ConnectionsScreen: View {
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
 
+    @State private var showsFundingLimitsInfo = false
+
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
@@ -42,20 +44,12 @@ struct ConnectionsScreen: View {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
                     },
                     trailing: {
-                        // The empty state has its own scan button; a list
-                        // needs one too, for a new code after a request that
-                        // could not be completed.
-                        if !viewModel.featureUnavailable && !viewModel.connections.isEmpty {
+                        if !viewModel.featureUnavailable {
                             DashUIKit.NavigationBarElement.plus.button(action: showScanner)
                                 .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
                         }
                     }
                 )
-
-                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
 
                 content
             }
@@ -107,21 +101,76 @@ struct ConnectionsScreen: View {
                 tokenPurchaseSheet(for: purchase)
             }
         }
+        .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
+            viewModel.connectionSheetDismissed()
+        }) { item in
+            connectionSheet(for: item)
+        }
     }
 
     // MARK: - States
 
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
+            title
             ConnectionsUnavailableState()
+        } else if !viewModel.hasReadRows {
+            // No empty state that the rows replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
         } else if viewModel.connections.isEmpty {
+            title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
-            ConnectionsList(
-                connections: viewModel.connections,
-                onDisconnect: viewModel.disconnect
-            )
-            .padding(.horizontal, 20)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    title
+                    ConnectionsList(
+                        items: viewModel.rows,
+                        onOpen: { viewModel.showConnection($0) },
+                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) })
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+        }
+    }
+
+    private var title: some View {
+        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+            .padding(.horizontal, !viewModel.connections.isEmpty && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.top, 10)
+    }
+
+    private func connectionSheet(for item: ConnectionSheetItem) -> some View {
+        ConnectionSheet(
+            item: item,
+            details: viewModel.shownDetails,
+            detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
+            withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
+            connectedAt: viewModel.shownConnectedAt,
+            isBusy: viewModel.isDisconnecting,
+            message: viewModel.connectionSheetMessage,
+            onClose: viewModel.hideConnection,
+            onDisconnect: viewModel.disconnectShown,
+            takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
+            disconnectQuestion: viewModel.disconnectQuestion,
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
+        )
+        .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -174,6 +223,13 @@ struct ConnectionsScreen: View {
         )
     }
 
+    private var shownConnectionBinding: Binding<ConnectionSheetItem?> {
+        Binding(
+            get: { viewModel.shownConnection },
+            set: { if $0 == nil { viewModel.hideConnection() } }
+        )
+    }
+
     private var messageBinding: Binding<ConnectionsScreenMessage?> {
         Binding(
             get: { viewModel.message },
@@ -184,6 +240,9 @@ struct ConnectionsScreen: View {
     // MARK: - Actions
 
     private func showScanner() {
+        // Not while something signs or an approval is up: the scanner would
+        // cover it.
+        guard viewModel.mayScan() else { return }
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in

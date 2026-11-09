@@ -58,6 +58,54 @@ final class AppConnectProjectionTests: XCTestCase {
         Snapshot(identityId: identity, revision: revision, keys: keys, platformTime: time)
     }
 
+    // MARK: What a connection gave
+
+    func testTheAccessOfAConnectionIsWhatItsIntentsAdded() {
+        let profile = Self.authKey(11, bound: .documentType(contractId: Self.dashPay, name: "profile"))
+        var group = Self.intent([Self.authKey(12, bound: .contractGroup(Self.appGroup), expiresAt: Self.now + 5000)])
+        group.administeredGroupIds = [Self.appGroup]
+        let access = ConnectionAccess(intents: [Self.intent([Self.authKey(10), profile, Self.encryptionKey(13)]), group])
+
+        XCTAssertEqual(access?.keys.map(\.bound), [.singleContract(Self.app), profile.bound!, .contractGroup(Self.appGroup)])
+        XCTAssertEqual(access?.keys.map(\.isAdministered), [false, false, true])
+        XCTAssertEqual(access?.largestBudget, 1000)
+        XCTAssertEqual(access?.hasUnlimitedKey, false)
+        XCTAssertEqual(access?.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.now + 5000) / 1000))
+        XCTAssertEqual(access?.receivesMessages, true, "an encryption key it added")
+        XCTAssertNil(ConnectionAccess(intents: [Self.intent([Self.encryptionKey(13)])]), "no auth key, nothing to show")
+    }
+
+    func testAConnectionReceivesMessagesWhenItsResponseCarriesAnEncryptionKey() {
+        let added = ConnectionAccess(intents: [Self.intent([Self.authKey(10)])])
+        XCTAssertEqual(added?.receivesMessages, false)
+        var sent = Self.intent([Self.authKey(10)])
+        sent = Intent(
+            id: sent.id, identityId: sent.identityId, appId: sent.appId, appLabel: sent.appLabel, appUrl: sent.appUrl,
+            requestHash: sent.requestHash, connectionId: nil, keys: sent.keys, sentEncryptionKeyIds: [3], disables: [],
+            response: sent.response, responseDocumentId: nil, responseRemoved: true, createdAt: sent.createdAt, closedAt: nil)
+        XCTAssertEqual(ConnectionAccess(intents: [sent])?.receivesMessages, true, "the identity's key, sent again")
+    }
+
+    func testEachAuthKeyIsListedOnceWithWhatIsLeftOfItsBudget() {
+        let profile = Self.authKey(11, bound: .documentType(contractId: Self.dashPay, name: "profile"))
+        let first = Self.intent([Self.authKey(10), profile, Self.encryptionKey(13)])
+        let funding = KeyFunding.of(intents: [first, Self.intent([Self.authKey(10)])], remaining: [10: 400, 11: nil])
+        XCTAssertEqual(funding, [
+            KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400),
+            KeyFunding(isProfileKey: true, totalBudget: 1000, remaining: nil),
+        ])
+    }
+
+    func testAnIntentWrittenBeforeItNotedAdministeredGroupsIsStillRead() throws {
+        var intent = Self.intent([Self.authKey(12, bound: .contractGroup(Self.appGroup))])
+        intent.administeredGroupIds = [Self.appGroup]
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(intent)) as? [String: Any])
+        json.removeValue(forKey: "administeredGroupIds")
+        let read = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(read.administeredGroupIds)
+        XCTAssertFalse(read.isAdministered(.contractGroup(Self.appGroup)), "not known, so not said")
+    }
+
     // MARK: Status of one intent
 
     func testStatusOfAnIntentFollowsItsAuthKeysOnPlatform() {

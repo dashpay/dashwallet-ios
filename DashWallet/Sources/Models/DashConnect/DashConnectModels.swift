@@ -224,6 +224,82 @@ struct DashConnectDisconnectResult: Equatable {
     var keysOnAnotherIdentity = false
 }
 
+/// What a connection gives its app, from the intents of one identity that
+/// hold it, as the connection sheet shows it.
+struct ConnectionAccess: Equatable {
+    /// What each key can do.
+    let keys: [AppConnect.GrantedAccess.Key]
+    /// The largest budget among the keys, in credits; `nil` when no key has
+    /// one (see `hasUnlimitedKey`).
+    let largestBudget: UInt64?
+    /// A key with no spending limit.
+    let hasUnlimitedKey: Bool
+    /// When the last of the keys stops working.
+    let expiresAt: Date?
+    /// The connection can receive messages encrypted to this identity.
+    let receivesMessages: Bool
+
+    /// `nil` when `intents` add no auth key.
+    init?(intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    init(_ access: AppConnect.GrantedAccess) {
+        keys = access.keys
+        largestBudget = access.keys.compactMap(\.totalBudget).max()
+        hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
+        expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        receivesMessages = access.receivesMessages
+    }
+
+    var granted: AppConnect.GrantedAccess {
+        AppConnect.GrantedAccess(keys: keys, receivesMessages: receivesMessages)
+    }
+}
+
+/// A connection as its sheet shows it: the app, the identity it is
+/// connected on, and what it was given.
+struct ConnectionDetails: Equatable {
+    let appId: String
+    let identityId: String?
+    let username: String?
+    let access: ConnectionAccess?
+    /// When the connection was made: the latest of its approvals, so a
+    /// renewal from a new code counts as the connection it made.
+    var connectedAt: Date? = nil
+    /// What is left of each key's budget, read from Platform; `nil` when it
+    /// was not read (the connection is on another identity) or could not be
+    /// (`fundingReadFailed`).
+    var keyFunding: [KeyFunding]? = nil
+    var fundingReadFailed = false
+}
+
+/// One of a connection's keys, with what is left of its budget.
+struct KeyFunding: Equatable {
+    /// The key is bound to the DashPay profile, not to the app's data.
+    let isProfileKey: Bool
+    /// What the key may spend over its life; `nil` with no limit.
+    let totalBudget: UInt64?
+    /// What is left of it; `nil` with no limit, or when Platform did not say.
+    let remaining: UInt64?
+
+    /// The auth keys of `intents` in their order, each with its budget as
+    /// the intent submitted it and what `remaining` (by key id) says is
+    /// left. A key two intents name is listed once.
+    static func of(intents: [AppConnect.ConnectionIntent], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
+        var listed = Set<UInt32>()
+        return intents.flatMap(\.authKeys).compactMap { key in
+            guard listed.insert(key.id).inserted else { return nil }
+            return KeyFunding(
+                isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
+                totalBudget: key.totalBudget,
+                remaining: remaining[key.id] ?? nil)
+        }
+    }
+}
+
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String
