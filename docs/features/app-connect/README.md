@@ -31,6 +31,24 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   and the app's callback opens after the user answers. A v2 code for mainnet is refused.
   [ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md).
 
+- **Connection states and disconnect** ([#1334](https://github.com/dashpay/dashwallet-ios/pull/1334)).
+  A connection is Active, Confirming, Not delivered, Refused, Expired or Disconnected, worked out
+  from what Platform shows now and the wallet's record, and one state table decides what it shows
+  and offers ([ADR-0019](../../adr/0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md)).
+  A request's age and a connection's expiry are judged by Platform's proved block time
+  ([ADR-0020](../../adr/0020-judge-request-age-and-expiry-by-proved-platform-block-time.md)); a
+  request is answered at most once
+  ([ADR-0017](../../adr/0017-answer-an-app-connect-request-at-most-once.md)). A disconnect turns
+  off everything that may give the app access without a further question
+  ([ADR-0016](../../adr/0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md)), fences a
+  sign-in that may still land
+  ([ADR-0015](../../adr/0015-fence-a-pending-sign-in-on-disconnect.md)), and runs its writes
+  through one executor ([ADR-0018](../../adr/0018-run-app-connect-platform-writes-through-one-executor.md)).
+  A refusal by Platform is kept as Refused
+  ([ADR-0021](../../adr/0021-record-a-consensus-refusal-on-the-intent.md)), and disconnected apps
+  are derived from the intents a disconnect marked
+  ([ADR-0022](../../adr/0022-derive-disconnected-apps-from-the-intents-a-disconnect-marked.md)).
+
 ## What it guarantees
 
 - The app gets new keys that only it holds, each bound to the contract, group or document type the
