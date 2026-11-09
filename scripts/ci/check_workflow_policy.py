@@ -154,7 +154,7 @@ def check_file(path, text):
                 "error", UNPINNED, path, line_of(uses_node),
                 "{}: step '{}' uses '{}'. Rule: every step from another repository is a pinned "
                 "step (a full 40-hex commit, or a sha256 image digest).".format(UNPINNED, name, uses)))
-        if uses.split("@")[0] == "actions/checkout":
+        if uses.split("@")[0].lower() == "actions/checkout":
             persist = scalar(child(child(step, "with"), "persist-credentials")) or ""
             if persist.lower() != "false":
                 findings.append(Finding(
@@ -234,13 +234,50 @@ def job_steps(text):
     return found
 
 
+def job_settings(text):
+    """{job id: (first line, last line, steps first line, steps last line)}: a job's own lines
+    are the first..last span outside the steps span (runner, env, defaults, environment)."""
+    root, lines = compose(text), text.splitlines()
+    jobs = child(root, "jobs")
+    found = {}
+    for key, job in (jobs.value if isinstance(jobs, yaml.MappingNode) else []):
+        steps_key = next((k for k, _ in (job.value if isinstance(job, yaml.MappingNode) else [])
+                          if k.value == "steps"), None)
+        steps = child(job, "steps")
+        span = (line_of(steps_key), last_line(steps, lines)) if steps_key and steps is not None else (0, -1)
+        found[key.value] = (line_of(key), last_line(job, lines)) + span
+    return found
+
+
+def settings_job(jobs, lines, line):
+    """The job whose own settings hold this line, or None (a step, a blank or comment line, or no job)."""
+    text = lines[line - 1].strip() if 0 < line <= len(lines) else ""
+    if not text or text.startswith("#"):
+        return None
+    for job, (first, last, steps_first, steps_last) in jobs.items():
+        if first <= line <= last and not steps_first <= line <= steps_last:
+            return job
+    return None
+
+
 def step_warnings(path, base_text, head_text, hunks):
     """release_only_step_changed findings for the steps of one workflow that the hunks touch."""
     head_jobs = job_steps(head_text)
     base_jobs = job_steps(base_text) if base_text else []
     warned = {}  # (job, step name, first line) -> line of the warning
+    head_settings, head_lines = job_settings(head_text), head_text.splitlines()
+    base_settings = job_settings(base_text) if base_text else {}
+    base_lines = base_text.splitlines() if base_text else []
 
     for a, b, c, d in hunks:
+        for line in range(c, c + d):
+            job = settings_job(head_settings, head_lines, line)
+            if job is not None:
+                warned.setdefault((job, None, "job"), line)
+        for line in range(a, a + b):
+            job = settings_job(base_settings, base_lines, line)
+            if job is not None:
+                warned.setdefault((job, None, "job"), c + 1 if d == 0 else c)
         for line in range(c, c + d):
             for job, _, spans in head_jobs:
                 for name, first, last in spans:
@@ -262,6 +299,8 @@ def step_warnings(path, base_text, head_text, hunks):
                         warned.setdefault((job, name, head[1]), min(max(c, head[1]), head[2]))
 
     return [Finding("warning", RELEASE_ONLY, path, line,
+                    "{}: no PR check runs job '{}'; its settings run next to release or store credentials "
+                    "in '{}'. {}".format(RELEASE_ONLY, job, path, PRE_MERGE_RUN) if name is None else
                     "{}: no PR check runs step '{}'; it runs next to release or store credentials in "
                     "'{}'. {}".format(RELEASE_ONLY, name, path, PRE_MERGE_RUN))
             for (job, name, _), line in sorted(warned.items(), key=lambda item: item[1])]
@@ -339,7 +378,8 @@ def changed_files(base, root=ROOT):
     Diffs `base` against HEAD directly, with no merge base: on a pull_request run HEAD is the
     merge commit and workflow-lint passes its first parent (HEAD^1, in the depth-2 checkout).
     """
-    diff = git("diff", "--unified=0", "--no-color", "--no-ext-diff", "--no-renames", base, "HEAD",
+    diff = git("diff", "--unified=0", "--no-color", "--no-ext-diff", "--no-renames",
+               "--src-prefix=a/", "--dst-prefix=b/", base, "HEAD",
                "--", ".github/workflows", XCODE_VERSION_FILE, root=root)
     changed = {}
     for path, hunks in parse_diff(diff).items():
@@ -413,6 +453,16 @@ SELF_TEST_FIXTURES = [
     ("composite action", ".github/actions/a/action.yml",
      "name: a\nruns:\n  using: composite\n  steps:\n    - uses: actions/cache@v5\n",
      [(UNPINNED, 5, "actions/cache@v5")]),
+    ("mixed-case checkout without with", ".github/workflows/w.yml",
+     WORKFLOW_FIXTURE.format(steps="      - uses: Actions/Checkout@" + SHA),
+     [(CHECKOUT, 6, "checkout step 'Actions/Checkout@" + SHA + "'")]),
+    ("mixed-case checkout persist-credentials false", ".github/workflows/w.yml",
+     WORKFLOW_FIXTURE.format(steps="      - uses: ACTIONS/checkout@" + SHA + "\n        with:\n"
+                                   "          persist-credentials: false"),
+     []),
+    ("mixed-case checkout in a composite action", ".github/actions/a/action.yml",
+     "name: a\nruns:\n  using: composite\n  steps:\n    - uses: actions/CHECKOUT@" + SHA + "\n",
+     [(CHECKOUT, 5, "checkout step 'actions/CHECKOUT@" + SHA + "'")]),
 ]
 
 
@@ -436,6 +486,10 @@ jobs:
       - name: Tag
         run: git tag v1
 """
+
+RELEASE_JOB_ENV = RELEASE_WORKFLOW.replace(
+    "    environment: testflight\n",
+    "    environment: testflight\n    env:\n      FASTLANE_VERSION: 2.228.0\n", 1)
 
 DUPLICATE_KEY_FIXTURES = [
     # (name, path, file text) — each must raise ParseError
@@ -514,6 +568,15 @@ STEP_FIXTURES = [
     ("line deleted inside a step",
      edit(RELEASE_WORKFLOW, "      - name: Upload\n", "      - name: Upload\n        if: inputs.channel == 'external'\n"),
      RELEASE_WORKFLOW, [(14, 1, 13, 0)], [(13, "step 'Upload'")]),
+    ("edited job runner", RELEASE_WORKFLOW, edit(RELEASE_WORKFLOW, "macos-15", "macos-26"), [(5, 1, 5, 1)],
+     [(5, "{}: no PR check runs job 'release'; its settings run next to release or store credentials in "
+          "'.github/workflows/release.yml'. {}".format(RELEASE_ONLY, PRE_MERGE_RUN))]),
+    ("edited job env", RELEASE_JOB_ENV, edit(RELEASE_JOB_ENV, "2.228.0", "2.229.0"), [(8, 1, 8, 1)],
+     [(8, "job 'release'")]),
+    ("deleted job env", RELEASE_JOB_ENV, RELEASE_WORKFLOW, [(7, 2, 6, 0)], [(7, "job 'release'")]),
+    ("job runner and a step", RELEASE_WORKFLOW,
+     edit(edit(RELEASE_WORKFLOW, "macos-15", "macos-26"), "make build", "make build ARCHS=arm64"),
+     [(5, 1, 5, 1), (11, 1, 11, 1)], [(5, "job 'release'"), (11, "step 'Build'")]),
 ]
 
 
@@ -605,10 +668,60 @@ def self_test_renamed_workflow():
         commit("rename")
         found = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(changed_files("HEAD~1", root))]
     want = [(".github/workflows/release.yml", 1, "{}: '.github/workflows/release.yml' is deleted".format(RELEASE_ONLY)),
+            (".github/workflows/testflight.yml", 4, "{}: no PR check runs job 'release'".format(RELEASE_ONLY)),
             (".github/workflows/testflight.yml", 8, "{}: no PR check runs step 'Build'".format(RELEASE_ONLY)),
             (".github/workflows/testflight.yml", 13, "{}: no PR check runs step 'Upload'".format(RELEASE_ONLY))]
     if found != want:
         print("FAIL renamed workflow: expected {}, got {}".format(want, found))
+        return 1
+    return 0
+
+
+def self_test_noprefix():
+    """1 when a local `diff.noprefix=true` setting breaks the diff warnings, else 0."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        workflows = root / ".github/workflows"
+        workflows.mkdir(parents=True)
+
+        def commit(message):
+            git("add", "-A", root=root)
+            git("-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false",
+                "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", message, root=root)
+
+        git("init", "-q", root=root)
+        git("config", "diff.noprefix", "true", root=root)
+        (workflows / "release.yml").write_text(RELEASE_WORKFLOW, encoding="utf-8")
+        commit("base")
+        (workflows / "release.yml").write_text(
+            edit(RELEASE_WORKFLOW, "make build", "make build ARCHS=arm64"), encoding="utf-8")
+        commit("edit")
+        try:
+            found = [(f.path, f.line, f.message.split(";")[0])
+                     for f in diff_findings(changed_files("HEAD~1", root))]
+        except Exception as error:  # the failure this test guards is a crash
+            found = "{}: {}".format(type(error).__name__, error)
+    want = [(".github/workflows/release.yml", 11, "{}: no PR check runs step 'Build'".format(RELEASE_ONLY))]
+    if found != want:
+        print("FAIL diff.noprefix=true: expected {}, got {}".format(want, found))
+        return 1
+    return 0
+
+
+def self_test_summary():
+    """1 when the summary of a pull request run without warnings claims more than the check covers."""
+    with tempfile.TemporaryDirectory() as folder:
+        summary = Path(folder) / "summary.md"
+        os.environ["GITHUB_STEP_SUMMARY"] = str(summary)
+        try:
+            write_summary([], "origin/develop")
+        finally:
+            del os.environ["GITHUB_STEP_SUMMARY"]
+        text = summary.read_text(encoding="utf-8")
+    want = ("No release-only step or job changes, release-only workflow deletions or "
+            ".xcode-version changes detected.")
+    if want not in text:
+        print("FAIL summary without warnings: expected {!r}, got {!r}".format(want, text))
         return 1
     return 0
 
@@ -660,10 +773,11 @@ def self_test():
                     "          KEY: ${{ secrets.ASC_KEY }}\n", "")
     unmarked_found = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(
         {".github/workflows/release.yml": (RELEASE_WORKFLOW, unmarked, [(6, 1, 5, 0), (13, 4, 11, 0)])})]
-    if unmarked_found != [(".github/workflows/release.yml", 12,
+    if unmarked_found != [(".github/workflows/release.yml", 6, "{}: no PR check runs job 'release'".format(RELEASE_ONLY)),
+                          (".github/workflows/release.yml", 12,
                            "{}: no PR check runs step 'Upload'".format(RELEASE_ONLY))]:
         failures += 1
-        print("FAIL last release markers removed: expected one {} warning for 'Upload', got {}".format(
+        print("FAIL last release markers removed: expected {} warnings for job 'release' and 'Upload', got {}".format(
             RELEASE_ONLY, unmarked_found))
     try:
         unparsable_base = [(f.path, f.line, f.message.split(";")[0]) for f in diff_findings(
@@ -677,7 +791,8 @@ def self_test():
         failures += 1
         print("FAIL base that does not parse: expected one {} warning for 'Build', got {}".format(
             RELEASE_ONLY, unparsable_base))
-    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 5 + (shellcheck_result is not None)
+    failures += self_test_summary() + self_test_noprefix()
+    expected_total = len(CLASSIFIER_FIXTURES) + len(STEP_FIXTURES) + 7 + (shellcheck_result is not None)
     for name, path, text, expected in SELF_TEST_FIXTURES:
         found = [(f.code, f.line, f.message) for f in check_file(path, text)]
         ok = len(found) == len(expected) and all(
@@ -733,7 +848,8 @@ def write_summary(findings, base):
         lines += ["#### Release-only changes", ""]
         lines += ["- `{}:{}` {}".format(f.path, f.line, f.message) for f in warnings]
     else:
-        lines.append("No release-only changes.")
+        lines.append("No release-only step or job changes, release-only workflow deletions or "
+                     ".xcode-version changes detected.")
     with open(path, "a", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n\n")
 

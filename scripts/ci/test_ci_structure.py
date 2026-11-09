@@ -2,10 +2,11 @@
 """Tests for the CI wiring that the scripts' own self-tests cannot see.
 
 - Static checks on the real workflow files, the PR template and the repository
-  root: the order and conditions of the steps that the test plan's static-check
-  rows rely on. Each check is a function returning its problems; a test runs it
-  on the real files (no problems) and on a broken copy (a problem), so a check
-  that cannot fail fails its own test.
+  root: the order and conditions of the steps that the CI guarantees rely on
+  (guard after tests, lint on every pull request, toolchain before secrets and
+  the like; each check's name says which). Each check is a function returning
+  its problems; a test runs it on the real files (no problems) and on a broken
+  copy (a problem), so a check that cannot fail fails its own test.
 - The select-xcode script run over throwaway folders. It stops at the
   not-installed check for a version no runner has, which shows the version and
   file it selected, so it runs on any machine without touching xcode-select.
@@ -99,7 +100,7 @@ def reads_secret(node):
 
 # Static checks: each returns a list of problems, empty when the property holds.
 
-def check_guard_after_tests(unit_tests):  # AC-02, AC-03, AC-03b
+def check_guard_after_tests(unit_tests):
     job, steps = job_with_step(unit_tests, TEST_STEP)
     guard, test = index(steps, name=GUARD_STEP), index(steps, name=TEST_STEP)
     if guard is None:
@@ -115,7 +116,7 @@ def check_guard_after_tests(unit_tests):  # AC-02, AC-03, AC-03b
     return problems
 
 
-def check_lint_on_every_pr(workflow_lint):  # AC-05b
+def check_lint_on_every_pr(workflow_lint):
     pull_request = triggers(workflow_lint).get("pull_request", False)
     if pull_request is False:
         return ["no pull_request trigger"]
@@ -123,7 +124,7 @@ def check_lint_on_every_pr(workflow_lint):  # AC-05b
             for key in (pull_request or {})]
 
 
-def check_lint_secret_free(workflow_lint):  # AC-07
+def check_lint_secret_free(workflow_lint):
     problems = []
     if reads_secret(workflow_lint):
         problems.append("reads a secret")
@@ -135,7 +136,7 @@ def check_lint_secret_free(workflow_lint):  # AC-07
     return problems
 
 
-def check_no_ignore_files(root, policy_texts):  # AC-06
+def check_no_ignore_files(root, policy_texts):
     problems = ["{} exists".format(rel) for rel in IGNORE_FILES if (root / rel).exists()]
     for rel, text in policy_texts.items():
         for number, line in enumerate(text.splitlines(), 1):
@@ -144,7 +145,7 @@ def check_no_ignore_files(root, policy_texts):  # AC-06
     return problems
 
 
-def check_shared_cache_key(unit_tests, release):  # AC-12
+def check_shared_cache_key(unit_tests, release):
     keys, problems = [], []
     for rel, doc in ((UNIT_TESTS, unit_tests), (RELEASE, release)):
         _, steps = job_with_step(doc, CACHE_STEP)
@@ -162,7 +163,7 @@ def check_shared_cache_key(unit_tests, release):  # AC-12
     return problems
 
 
-def check_toolchain_first(doc, before_secrets):  # AC-14
+def check_toolchain_first(doc, before_secrets):
     job, steps = job_with_step(doc, CACHE_STEP)
     toolchain = {"select Xcode": index(steps, id="xcode"), "read Rust": index(steps, id="rust"),
                  "install Rust": index(steps, name=RUST_INSTALL_STEP),
@@ -180,7 +181,7 @@ def check_toolchain_first(doc, before_secrets):  # AC-14
     return problems
 
 
-def check_per_commit_runs(unit_tests):  # AC-15
+def check_per_commit_runs(unit_tests):
     concurrency, problems = unit_tests.get("concurrency", {}), []
     group = concurrency.get("group", "")
     if "github.sha" not in group or "github.event_name != 'pull_request'" not in group:
@@ -192,7 +193,7 @@ def check_per_commit_runs(unit_tests):  # AC-15
     return problems
 
 
-def check_pre_merge_item(template):  # AC-17
+def check_pre_merge_item(template):
     items = [line for line in template.splitlines() if line.startswith("- [ ]")
              and all(part in line for part in ("release-dashpay-testflight.yml", "appstore-schema-release.yml",
                                                "wallet_ref", "internal-only", "dry_run: true", "final commit"))]
@@ -207,7 +208,7 @@ def check_lint_runs_this_test(workflow_lint):
     return [] if runs[0].get("if") == "${{ !cancelled() }}" else ["its step does not run after a failed check"]
 
 
-def check_lint_steps_fail_the_job(workflow_lint):  # AC-04, AC-05, AC-08
+def check_lint_steps_fail_the_job(workflow_lint):
     job, steps = job_with_step(workflow_lint, "Workflow policy")
     problems = ["the job has continue-on-error"] if "continue-on-error" in job else []
     if "if" in job:
@@ -226,7 +227,7 @@ def check_lint_steps_fail_the_job(workflow_lint):  # AC-04, AC-05, AC-08
     return problems
 
 
-def check_lint_compares_with_first_parent(workflow_lint):  # AC-10, AC-17
+def check_lint_compares_with_first_parent(workflow_lint):
     _, steps = job_with_step(workflow_lint, "Workflow policy")
     problems = []
     checkout = steps[index(steps, name="Checkout")]
@@ -381,7 +382,7 @@ class StaticChecks(unittest.TestCase):
 
 
 class SelectXcode(unittest.TestCase):
-    """The select-xcode script over throwaway folders (AC-13, AC-13b, AC-14)."""
+    """The select-xcode script over throwaway folders."""
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -405,21 +406,21 @@ class SelectXcode(unittest.TestCase):
         self.assertIn("::error::select_xcode.not_installed: Xcode {} from {}/.xcode-version is not installed. "
                       "Available: ".format(version, folder), result.stdout)
 
-    def test_branch_without_its_own_file_falls_back_to_the_release_tooling(self):  # AC-13
+    def test_branch_without_its_own_file_falls_back_to_the_release_tooling(self):
         result = self.run_select(fallback="0.0-fallback\n")
         self.assertIn("(fallback: {} has no .xcode-version)".format(self.app), result.stdout)
         self.assert_not_installed(result, "0.0-fallback", self.fallback)
 
-    def test_branch_with_its_own_file_wins(self):  # AC-13b
+    def test_branch_with_its_own_file_wins(self):
         self.assert_not_installed(self.run_select(app="0.0-app\n", fallback="0.0-fallback\n"), "0.0-app", self.app)
 
     def test_version_is_trimmed(self):
         self.assert_not_installed(self.run_select(app="  0.0-trim \n\n"), "0.0-trim", self.app)
 
-    def test_version_not_on_the_runner_fails_and_lists_the_installed_ones(self):  # AC-14
+    def test_version_not_on_the_runner_fails_and_lists_the_installed_ones(self):
         self.assert_not_installed(self.run_select(app="0.0-none", fallback_path=False), "0.0-none", self.app)
 
-    def test_missing_or_empty_file_fails_with_its_own_reason(self):  # AC-14
+    def test_missing_or_empty_file_fails_with_its_own_reason(self):
         for app in (None, " \n"):
             with self.subTest(app=app):
                 result = self.run_select(app=app, fallback_path=False)
@@ -431,7 +432,7 @@ class SelectXcode(unittest.TestCase):
 
 
 class RustToolchain(unittest.TestCase):
-    """Both workflows' Rust read and install scripts over throwaway folders (AC-14)."""
+    """Both workflows' Rust read and install scripts over throwaway folders."""
 
     READ_STEP = "Read Rust version from platform"
     INSTALL_STEP = "Install Rust from platform's pin"
@@ -523,7 +524,7 @@ jobs:
 
 
 class LintSteps(unittest.TestCase):
-    """workflow-lint's own check steps, run as the runner runs them (AC-04, AC-05, AC-08)."""
+    """workflow-lint's own check steps, run as the runner runs them."""
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -683,7 +684,7 @@ class PolicyEndToEnd(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.tmp)
         self.repo = Repo(self.tmp)
 
-    def test_edited_release_step_warns_once_from_a_shallow_checkout(self):  # AC-10
+    def test_edited_release_step_warns_once_from_a_shallow_checkout(self):
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW})
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW.replace(
             "make build", "make build ARCHS=arm64")})
@@ -694,7 +695,7 @@ class PolicyEndToEnd(unittest.TestCase):
         self.assertIn("file=.github/workflows/release.yml,line=11::workflow_policy.release_only_step_changed: "
                       "no PR check runs step 'Build'", warnings[0])
 
-    def test_line_deleted_inside_a_release_step_warns(self):  # AC-10
+    def test_line_deleted_inside_a_release_step_warns(self):
         guarded = RELEASE_WORKFLOW.replace("      - name: Upload\n", "      - name: Upload\n        if: inputs.x\n")
         self.repo.commit({".github/workflows/release.yml": guarded})
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW})
@@ -705,7 +706,7 @@ class PolicyEndToEnd(unittest.TestCase):
         self.assertIn("line=12::workflow_policy.release_only_step_changed: no PR check runs step 'Upload'",
                       warnings[0])
 
-    def test_only_the_pull_requests_own_changes_warn_after_the_base_branch_moved(self):  # AC-10
+    def test_only_the_pull_requests_own_changes_warn_after_the_base_branch_moved(self):
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW})
         git(self.repo.path, "checkout", "-q", "-b", "feature")
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW.replace(
@@ -720,14 +721,14 @@ class PolicyEndToEnd(unittest.TestCase):
         self.assertEqual(len(warnings), 1, result.stdout)
         self.assertIn("no PR check runs step 'Build'", warnings[0])
 
-    def test_checkout_without_the_base_fails_with_an_error(self):  # AC-10
+    def test_checkout_without_the_base_fails_with_an_error(self):
         self.repo.commit({".github/workflows/release.yml": RELEASE_WORKFLOW})
         self.repo.commit({"README.md": "docs only\n"})
         result = run_policy(self.repo.checkout(depth=1), "--base", "HEAD^1")
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("::error::cannot compare with --base HEAD^1:", result.stdout)
 
-    def test_tagged_step_in_an_untouched_workflow_still_fails(self):  # AC-08
+    def test_tagged_step_in_an_untouched_workflow_still_fails(self):
         self.repo.commit({".github/workflows/old.yaml": "on: push\njobs:\n  a:\n    runs-on: x\n"
                                                               "    steps:\n      - name: Cache\n"
                                                               "        uses: actions/cache@v5\n"})
@@ -739,7 +740,7 @@ class PolicyEndToEnd(unittest.TestCase):
                 self.assertIn("::error file=.github/workflows/old.yaml,line=7::workflow_policy.unpinned_step: "
                               "step 'Cache' uses 'actions/cache@v5'", result.stdout)
 
-    def test_changed_xcode_version_warns_and_passes(self):  # AC-17
+    def test_changed_xcode_version_warns_and_passes(self):
         self.repo.commit({".xcode-version": "26.5\n"})
         self.repo.commit({".xcode-version": "26.6\n"})
         result = run_policy(self.repo.checkout(), "--base", "HEAD^1")
