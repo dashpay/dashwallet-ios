@@ -135,7 +135,7 @@ extension NewAccountViewController {
     
     private func configureForNewAccount() {
         titleLabel.text = NSLocalizedString("New CrowdNode Account", comment: "CrowdNode")
-        actionButton.setTitle("Create Account", for: .normal)
+        actionButton.setTitle(NSLocalizedString("Create Account", comment: "CrowdNode"), for: .normal)
         explainerLabel1.text = NSLocalizedString("CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address.", comment: "CrowdNode")
         explainerLabel2.text = NSLocalizedString("Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.", comment: "CrowdNode")
     }
