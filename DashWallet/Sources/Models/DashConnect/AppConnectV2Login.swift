@@ -105,7 +105,7 @@ extension AppConnect {
     /// What an approval gives an app, as the approval sheet and the
     /// connection sheet list it.
     struct GrantedAccess: Equatable {
-        struct Key: Codable, Equatable {
+        struct Key: Equatable {
             let bound: StoredBound
             let isCritical: Bool
             /// `nil` for a key with no spending limit.
@@ -201,6 +201,12 @@ extension AppConnect {
         case failed
     }
 
+    /// Why a request dated ahead of the network's time is refused.
+    static var futureRequestMessage: String {
+        NSLocalizedString("This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
+                          comment: "DashConnect App Connect v2")
+    }
+
     /// A v2 request the wallet does not answer, with the status its callback
     /// reports.
     struct Refusal: LocalizedError, Equatable {
@@ -223,26 +229,27 @@ extension AppConnect {
     }
 
     /// The plan for `uri` at `now`: every binding granted, the proposals
-    /// clamped to the caps. A wallet may lower a proposal but must never drop
+    /// clamped to the caps. The request's age, and whether a key it asks for has
+    /// already expired, are judged by `blockTimeMs`, the block time Platform
+    /// proved, never by `now`, which only dates the granted keys; without a
+    /// block time it throws `requestAgeUncheckable`. A wallet may lower a proposal but must never drop
     /// a limit the app asked for, and every key gets an expiry.
     ///
     /// A renewal (`MODE = 1`) is answered as a new login carrying the same
     /// connection id, which supersedes the old keys (the profile's phase-1
     /// renewal); raising the limits of existing keys is not implemented.
-    static func grantPlan(for uri: AppConnectUri, now: Date) throws -> GrantPlan {
+    static func grantPlan(for uri: AppConnectUri, now: Date, blockTimeMs: UInt64?) throws -> GrantPlan {
         let request = uri.request
-        switch request.age(now: now) {
+        switch request.age(blockTimeMs: blockTimeMs) {
         case .fresh: break
         case .stale: throw Refusal(.stale, NSLocalizedString(
                 "The sign-in request is more than 10 minutes old.",
                 comment: "DashConnect App Connect v2"))
-        case .future: throw Refusal(.stale, NSLocalizedString(
-                "The sign-in request is dated in the future. Check this device's clock.",
-                comment: "DashConnect App Connect v2"))
+        case .future: throw Refusal(.stale, futureRequestMessage)
+        case .uncheckable: throw DashConnectPlatformError.requestAgeUncheckable
         }
-        let nowMilliseconds = milliseconds(now)
         let auth = try request.authBindings.enumerated().map { index, binding -> AuthGrant in
-            if let expiresAt = binding.expiresAt, expiresAt <= nowMilliseconds {
+            if let expiresAt = binding.expiresAt, let blockTimeMs, expiresAt <= blockTimeMs {
                 throw Refusal(.invalid, NSLocalizedString(
                 "The app asks for a key that has already expired.",
                 comment: "DashConnect App Connect v2"))

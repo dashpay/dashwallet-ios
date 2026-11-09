@@ -44,6 +44,8 @@ struct ConnectionSheet: View {
     let onClose: () -> Void
     /// Confirmed.
     let onDisconnect: () -> Void
+    /// Hides a Refused connection: no PIN, nothing written to Platform.
+    let onRemove: () -> Void
     /// Whether a row's Disconnect opened the sheet, so it asks at once;
     /// `false` also when it cannot ask (the view model then says why).
     let takeDisconnectQuestion: () -> Bool
@@ -101,7 +103,7 @@ struct ConnectionSheet: View {
                     .padding(.top, 12)
             }
 
-            actionButton
+            action
                 .padding(.horizontal, 40)
                 .padding(.top, 20)
                 .padding(.bottom, 20)
@@ -162,7 +164,7 @@ struct ConnectionSheet: View {
                 .foregroundColor(Color.dash.tertiaryText)
             HStack(spacing: 6) {
                 Circle()
-                    .fill(isLive ? Color.dash.green : Color.dash.gray300Alpha90)
+                    .fill(ConnectionStatusBadge.dotColor(for: item.status))
                     .frame(width: 8, height: 8)
                 Text(statusText)
                     .dashFont(.callout)
@@ -301,20 +303,23 @@ struct ConnectionSheet: View {
         }
     }
 
-    @ViewBuilder
-    private var actionButton: some View {
-        switch item.status {
-        case .disconnected:
-            reconnectButton
-        case .expired:
-            // Its keys stay on Platform until a disconnect, or a renewal of
-            // the same connection, turns them off: both are offered.
-            VStack(spacing: 10) {
+    /// Every action the table allows: an expired connection's keys stay on
+    /// Platform until a disconnect, or a renewal of the same connection,
+    /// turns them off, so it offers both.
+    private var action: some View {
+        let actions = AppConnect.StateActions.row(for: item.status).actions
+        return VStack(spacing: 10) {
+            if actions.contains(.reconnect) {
                 reconnectButton
+            }
+            if actions.contains(.disconnect) {
                 disconnectButton
             }
-        case .active, .confirming, .undelivered:
-            disconnectButton
+            if actions.contains(.remove) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+                    isEnabled: !isBusy, fillsWidth: true, size: .large, style: .tintedGray, action: onRemove)
+            }
         }
     }
 
@@ -360,16 +365,9 @@ struct ConnectionSheet: View {
     /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
+    /// The status name from the state-to-actions table (ADR 0010).
     private var statusText: String {
-        switch item.status {
-        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
-        case .confirming:
-            return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
-        case .undelivered:
-            return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
-        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
-        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
-        }
+        ConnectionStatusBadge.label(for: item.status)
     }
 
     private var isPast: Bool { item.status == .disconnected || item.status == .expired }
@@ -429,7 +427,7 @@ private enum ConnectionSheetPreview {
 
     static func item(_ status: ConnectionStatus, name: String = "Yappr") -> ConnectionSheetItem {
         ConnectionSheetItem(
-            id: appId, name: name, url: "yap.pr", status: .init(status),
+            id: appId, name: name, url: "yap.pr", status: status,
             connection: DAppConnection(
                 id: appId, name: name, url: "yap.pr", status: status, updatedAt: Date(timeIntervalSince1970: 1_793_000_000)),
             entry: nil, scope: nil)
@@ -468,7 +466,7 @@ private enum ConnectionSheetPreview {
         ConnectionSheet(
             item: item, details: details, detailsFailed: detailsFailed, granted: granted,
             withheld: DashConnectPermissionText.withheld, funding: funding, fundingFailed: fundingFailed,
-            connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {},
+            connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {}, onRemove: {},
             takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onScan: {}, onShowFundingLimitsInfo: {})
     }
 }
