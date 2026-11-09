@@ -117,7 +117,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>Hääletatud %1$d / %#@names@</string>
+		<string>Hääletatud %1$d / %2$#@names@</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d / %#@nodes@ on hääletanud</string>
+		<string>%1$d / %2$#@nodes@ on hääletanud</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -165,7 +165,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d / %#@nodes@ on hääletanud</string>
+		<string>%1$d / %2$#@nodes@ on hääletanud</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

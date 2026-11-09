@@ -103,7 +103,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@names@中 %1$d 件に投票済み</string>
+		<string>%2$#@names@中 %1$d 件に投票済み</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -131,7 +131,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@nodes@中 %1$d 件が投票済み</string>
+		<string>%2$#@nodes@中 %1$d 件が投票済み</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -145,7 +145,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@nodes@中 %1$d 件が投票済み</string>
+		<string>%2$#@nodes@中 %1$d 件が投票済み</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

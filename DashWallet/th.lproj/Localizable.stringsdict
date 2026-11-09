@@ -103,7 +103,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>ลงคะแนนแล้ว %1$d จาก %#@names@</string>
+		<string>ลงคะแนนแล้ว %1$d จาก %2$#@names@</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -131,7 +131,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d จาก %#@nodes@ ลงคะแนนแล้ว</string>
+		<string>%1$d จาก %2$#@nodes@ ลงคะแนนแล้ว</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -145,7 +145,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d จาก %#@nodes@ ลงคะแนนแล้ว</string>
+		<string>%1$d จาก %2$#@nodes@ ลงคะแนนแล้ว</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

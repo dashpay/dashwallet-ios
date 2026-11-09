@@ -113,7 +113,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>Đã bỏ phiếu %1$d trên %#@names@</string>
+		<string>Đã bỏ phiếu %1$d trên %2$#@names@</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -141,7 +141,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d trên %#@nodes@ đã bỏ phiếu</string>
+		<string>%1$d trên %2$#@nodes@ đã bỏ phiếu</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -155,7 +155,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d trên %#@nodes@ đã bỏ phiếu</string>
+		<string>%1$d trên %2$#@nodes@ đã bỏ phiếu</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

@@ -66,6 +66,42 @@ final class CountedPhrasePluralTests: XCTestCase {
         XCTAssertEqual(format("%d UTXOs", in: bundle, locale: "en", 22), "22 UTXOs")
     }
 
+    func testVotingSummariesPickTheNounByTheTotalInEnglish() throws {
+        let bundle = try appLocalization("en")
+
+        XCTAssertEqual(format("%d of %d masternodes voted", in: bundle, locale: "en", 1, 2),
+                       "1 of 2 masternodes voted")
+        XCTAssertEqual(format("%d of %d masternodes voted", in: bundle, locale: "en", 2, 5),
+                       "2 of 5 masternodes voted")
+        XCTAssertEqual(format("%d of %d nodes voted", in: bundle, locale: "en", 1, 2),
+                       "1 of 2 nodes voted")
+        XCTAssertEqual(format("%d of %d nodes voted", in: bundle, locale: "en", 2, 5),
+                       "2 of 5 nodes voted")
+        XCTAssertEqual(format("%d of %d usernames voted on", in: bundle, locale: "en", 1, 2),
+                       "1 of 2 usernames voted on")
+        XCTAssertEqual(format("%d of %d usernames voted on", in: bundle, locale: "en", 2, 5),
+                       "2 of 5 usernames voted on")
+        XCTAssertEqual(format("%d of %d usernames voted on", in: bundle, locale: "en", 0, 1),
+                       "0 of 1 username voted on")
+    }
+
+    /// Every English plural entry, formatted with 1 and with 2, fills all its
+    /// markers and picks a form instead of showing "(s)".
+    func testEveryEnglishPluralEntryFormatsCleanly() throws {
+        let bundle = try appLocalization("en")
+        let path = try XCTUnwrap(bundle.path(forResource: "Localizable", ofType: "stringsdict"))
+        let entries = try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: Any])
+        XCTAssertFalse(entries.isEmpty)
+
+        for key in entries.keys {
+            for count in [1, 2] {
+                let text = format(key, in: bundle, locale: "en", arguments: arguments(for: key, count: count))
+                XCTAssertFalse(text.contains("%"), "\(key) with \(count): \(text)")
+                XCTAssertFalse(text.contains("(s)"), "\(key) with \(count): \(text)")
+            }
+        }
+    }
+
     // MARK: Polish rules, fixture entry
 
     func testPolishPluralRulesPickFewAndManyByCount() throws {
@@ -94,8 +130,33 @@ final class CountedPhrasePluralTests: XCTestCase {
     /// The same lookup and formatting the app does with `NSLocalizedString` and
     /// `String.localizedStringWithFormat`, with the language pinned.
     private func format(_ key: String, in bundle: Bundle, locale: String, _ args: CVarArg...) -> String {
+        format(key, in: bundle, locale: locale, arguments: args)
+    }
+
+    private func format(_ key: String, in bundle: Bundle, locale: String, arguments args: [CVarArg]) -> String {
         let template = bundle.localizedString(forKey: key, value: nil, table: nil)
         return String(format: template, locale: Locale(identifier: locale), arguments: args)
+    }
+
+    /// One argument per marker of the key, in argument order: `count` for
+    /// numbers, a word for `%@`.
+    private func arguments(for key: String, count: Int) -> [CVarArg] {
+        let regex = try! NSRegularExpression(pattern: "%(?:(\\d+)\\$)?(l?[du]|@)")
+        let matches = regex.matches(in: key, range: NSRange(key.startIndex..., in: key))
+        let markers = matches.enumerated().map { offset, match -> (position: Int, type: String) in
+            let position = Range(match.range(at: 1), in: key).flatMap { Int(key[$0]) } ?? offset + 1
+            return (position, String(key[Range(match.range(at: 2), in: key)!]))
+        }
+        let args = markers.sorted { $0.position < $1.position }.map { marker -> CVarArg in
+            switch marker.type {
+            case "@": return "word"
+            case "u", "lu": return UInt(count)
+            default: return count
+            }
+        }
+        // ShieldedSyncInfoScreen shows the count already formatted and passes the
+        // number after it only to pick the form.
+        return key == "%@ notes" ? ["\(count)", UInt64(count)] : args
     }
 
     private func appLocalization(_ language: String) throws -> Bundle {

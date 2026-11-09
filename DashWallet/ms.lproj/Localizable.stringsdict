@@ -115,7 +115,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d daripada %#@names@ telah diundi</string>
+		<string>%1$d daripada %2$#@names@ telah diundi</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -143,7 +143,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d daripada %#@nodes@ telah mengundi</string>
+		<string>%1$d daripada %2$#@nodes@ telah mengundi</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -157,7 +157,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d daripada %#@nodes@ telah mengundi</string>
+		<string>%1$d daripada %2$#@nodes@ telah mengundi</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
