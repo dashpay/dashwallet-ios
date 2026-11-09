@@ -25,18 +25,21 @@ import SwiftUI
 /// sheet content is written once rather than repeated per availability branch.
 /// Swipe-to-dismiss is gated by the sheet's `BottomSheet`, not here.
 struct ApproveSheetPresentation: ViewModifier {
-    private let detentHeight: CGFloat = 620
+    /// Full height, for content that does not fit the fixed one.
+    var isTall = false
+
+    private var detent: PresentationDetent { isTall ? .large : .height(620) }
     private let cornerRadius: CGFloat = 32
 
     func body(content: Content) -> some View {
         if #available(iOS 16.4, *) {
             content
-                .presentationDetents([.height(detentHeight)])
+                .presentationDetents([detent])
                 .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(cornerRadius)
         } else if #available(iOS 16.0, *) {
             content
-                .presentationDetents([.height(detentHeight)])
+                .presentationDetents([detent])
                 .presentationDragIndicator(.hidden)
         } else {
             content
@@ -46,7 +49,7 @@ struct ApproveSheetPresentation: ViewModifier {
 
 extension View {
     /// Presents this view as a DashConnect approval sheet body.
-    func approveSheetPresentation() -> some View {
-        modifier(ApproveSheetPresentation())
+    func approveSheetPresentation(isTall: Bool = false) -> some View {
+        modifier(ApproveSheetPresentation(isTall: isTall))
     }
 }

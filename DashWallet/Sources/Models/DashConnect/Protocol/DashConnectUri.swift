@@ -19,6 +19,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case emptyTransitionPayload
     case invalidKeyLabelEncoding
     case bodyTooLong
+    case queryTooLong
 
     var errorDescription: String? {
         switch self {
@@ -58,6 +59,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-st payload must be non-empty."
         case .bodyTooLong:
             return "The URI body is longer than the DashConnect payload format allows."
+        case .queryTooLong:
+            return "The URI query is longer than DashConnect allows."
         }
     }
 }
@@ -90,6 +93,19 @@ enum DashConnectUri {
     /// would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
     private static let maxStPayloadLength = 4 * 1024
+    /// The largest App Connect request the format defines today (a 64-byte
+    /// label, four auth bindings with full-length names, two encryption
+    /// bindings and every optional field) is 734 bytes. The rest is room for optional
+    /// fields a newer app may add, which this decoder has to skip, at a
+    /// decode cost that stays small.
+    private static let maxAppConnectPayloadLength = 1024
+    private static let appConnectVersion = "2"
+    private static let maxCallbackLength = 512
+    /// The query is measured in Unicode scalars before it is split or form-decoded, so the
+    /// parameter count and every decoded value are bounded with it. 4 KiB
+    /// holds the longest callback form-encoded (each character as `%XX`)
+    /// twice over, with room for parameters a newer app may add.
+    private static let maxQueryLength = 4 * 1024
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -182,6 +198,145 @@ enum DashConnectUri {
         )
     }
 
+    /// Whether a `dash-key:` URI asks for request version 2 (`v=2`), and so
+    /// belongs to `parseAppConnectRequest`. The v1 parser cannot tell: it
+    /// measures the body before it reads the version. The query is read as
+    /// that parser reads it, form-decoded, so `v=%32` is version 2 as well.
+    static func isAppConnectUri(_ uri: String) -> Bool {
+        guard isKeyUri(uri), let queryIndex = uri.unicodeScalars.firstIndex(of: "?") else { return false }
+        var query = uri.unicodeScalars[uri.unicodeScalars.index(after: queryIndex)...]
+        // Too long for either version: the version 1 parser refuses it.
+        guard query.count <= maxQueryLength else { return false }
+        if query.first == "?" { query = query.dropFirst() }
+        return query.split(separator: "&").contains { item in
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            return parts.count == 2 && formDecoded(parts[0]) == "v" && formDecoded(parts[1]) == appConnectVersion
+        }
+    }
+
+    /// Parses a `dash-key:` URI of version 2. A version 1 URI is
+    /// `unsupported` here: it belongs to `parseKeyRequest`.
+    static func parseAppConnectRequest(_ uri: String) throws -> AppConnectUri {
+        // Scalars, not characters: a combining mark after the scheme or a
+        // delimiter must not hide it.
+        guard uri.unicodeScalars.starts(with: keyScheme.unicodeScalars) else {
+            throw AppConnectRequestError.invalid("not a dash-key URI")
+        }
+        let remainder = uri.unicodeScalars.dropFirst(keyScheme.unicodeScalars.count)
+        guard let queryIndex = remainder.firstIndex(of: "?") else {
+            throw AppConnectRequestError.invalid("URI has no query")
+        }
+        let body = String(remainder[..<queryIndex])
+
+        // Names and values are form-decoded before they are compared, as the
+        // app's `URLSearchParams` does.
+        var query = remainder[remainder.index(after: queryIndex)...]
+        guard query.count <= maxQueryLength else {
+            throw AppConnectRequestError.invalid("query is too long")
+        }
+        if query.first == "?" { query = query.dropFirst() }
+        var parameters: [String: String] = [:]
+        for item in query.split(separator: "&") {
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            let name = formDecoded(parts[0])
+            guard ["n", "v", "cb"].contains(name) else { continue }
+            guard parameters[name] == nil else {
+                throw AppConnectRequestError.invalid("query parameter \(name) is repeated")
+            }
+            parameters[name] = parts.count == 2 ? formDecoded(parts[1]) : ""
+        }
+
+        guard parameters["v"] == appConnectVersion else {
+            // The value is untrusted and unbounded: only a short number is echoed.
+            let version = parameters["v"].map { (1 ... 3).contains($0.utf8.count) && $0.utf8.allSatisfy { (0x30 ... 0x39).contains($0) } ? $0 : "(unreadable)" }
+            throw AppConnectRequestError.unsupported("URI version \(version ?? "(none)")")
+        }
+        guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
+            throw AppConnectRequestError.invalid("unknown network")
+        }
+        // The DIP defines this request for testnet and devnets only. Refused
+        // here, so it does not rest on DashConnect being off on mainnet.
+        guard network != .mainnet else {
+            throw AppConnectRequestError.invalid("request v2 is not defined for mainnet")
+        }
+        // Before the decode, as for the other two formats: its cost is
+        // quadratic in the encoded length.
+        guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
+            throw AppConnectRequestError.invalid("request is too long")
+        }
+        guard let payload = base58Decode(body) else {
+            throw AppConnectRequestError.invalid("request is not base58")
+        }
+        guard payload.count <= maxAppConnectPayloadLength else {
+            throw AppConnectRequestError.invalid("request is too long")
+        }
+        let callback = try parameters["cb"].map(parseCallback)
+
+        return AppConnectUri(request: try AppConnectRequest.decode(payload), network: network, callback: callback)
+    }
+
+    /// `+` is a space and each well-formed `%XX` a byte; a `%` that is not
+    /// followed by two hex digits stands as written. Bytes that are not
+    /// UTF-8 come out as U+FFFD.
+    private static func formDecoded(_ scalars: Substring.UnicodeScalarView) -> String {
+        let source = Array(String(scalars).utf8)
+        let hexValue = { (byte: UInt8) -> UInt8? in
+            byte < 0x80 ? Character(UnicodeScalar(byte)).hexDigitValue.map(UInt8.init) : nil
+        }
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(source.count)
+        var index = 0
+        while index < source.count {
+            let byte = source[index]
+            if byte == UInt8(ascii: "%"), index + 2 < source.count,
+               let high = hexValue(source[index + 1]), let low = hexValue(source[index + 2]) {
+                bytes.append(high << 4 | low)
+                index += 3
+            } else {
+                bytes.append(byte == UInt8(ascii: "+") ? 0x20 : byte)
+                index += 1
+            }
+        }
+        return String(decoding: bytes, as: UTF8.self)
+    }
+
+    /// `cb` is an absolute `https` URL without credentials, already
+    /// form-decoded. The app's own check takes anything a browser's URL
+    /// parser repairs or percent-encodes; this refuses what `URLComponents`
+    /// does not take as written, and takes a host only when it is a plain
+    /// lowercase DNS name (see `isPlainHostName`) and a port only when it is
+    /// a port. The host is what the user will be shown. In one case this is
+    /// the looser side: an `xn--` label that is not valid punycode passes
+    /// here and not in the app.
+    private static func parseCallback(_ text: String) throws -> URL {
+        guard text.utf16.count <= maxCallbackLength,
+              let components = URLComponents(string: text, encodingInvalidCharacters: false),
+              components.scheme?.lowercased() == "https",
+              // Presence, not the decoded value: that is nil for bytes that are not UTF-8.
+              components.rangeOfUser == nil, components.rangeOfPassword == nil,
+              let hostRange = components.rangeOfHost, isPlainHostName(text[hostRange]),
+              components.rangeOfPort == nil || components.port.map({ (0 ... 65535).contains($0) }) == true,
+              let url = components.url else {
+            throw AppConnectRequestError.invalid("callback is not an https URL without credentials")
+        }
+        return url
+    }
+
+    /// Dot-separated labels of lowercase ASCII letters, digits and hyphens,
+    /// none of them empty, the last one starting with a letter. That leaves
+    /// out IP addresses in every spelling (`[::1]`, `1.2.3.4`, `2130706433`,
+    /// `1.2.3.0x4`), bracketed text, which `URL.host` reads back without the
+    /// brackets, percent-encoding, and capitals, which a browser lowercases
+    /// (`paypaI.com` opens `paypai.com`). Whether an `xn--` label is valid
+    /// punycode is not checked.
+    private static func isPlainHostName(_ host: Substring) -> Bool {
+        let labels = host.split(separator: ".", omittingEmptySubsequences: false)
+        let isLetter = { (scalar: Unicode.Scalar) in ("a" ... "z").contains(scalar) }
+        return labels.allSatisfy { label in
+            !label.isEmpty && label.unicodeScalars.allSatisfy { isLetter($0) || ("0" ... "9").contains($0) || $0 == "-" }
+        } && labels.last?.unicodeScalars.first.map(isLetter) == true
+    }
+
     static func parseStRequest(_ uri: String) throws -> DashStRequest {
         let envelope = try parseEnvelope(uri,
                                          scheme: stScheme,
@@ -223,6 +378,9 @@ enum DashConnectUri {
         }
 
         let query = String(remainder[remainder.index(after: queryIndex)...])
+        guard query.unicodeScalars.count <= maxQueryLength else {
+            throw DashConnectUriError.queryTooLong
+        }
         let parameters = parseQueryItems(query)
 
         guard let version = parameters["v"] else {
