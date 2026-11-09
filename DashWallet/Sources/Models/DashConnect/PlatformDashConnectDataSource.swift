@@ -2432,15 +2432,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The protocol version of the network the wallet runs on, read without
     /// an identity: the Connections page is gated by it before any identity
     /// is involved.
-    func protocolVersion() async throws -> UInt32 {
-        let runtime = await MainActor.run {
-            (sdk: SwiftDashSDKHost.shared.sdk, network: SwiftDashSDKHost.shared.runningNetwork)
-        }
-        guard let sdk = runtime.sdk else { throw DashConnectPlatformError.noSDK }
-        guard let network = runtime.network else { throw DashConnectPlatformError.noWallet }
-        return try await Self.networkProtocolVersion(sdk: sdk, network: network)
-    }
-
     func refreshConnections() async {
         do {
             try await gated {
@@ -2457,30 +2448,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         } catch {
             Self.logger.info("🔗 DASHCONNECT :: connections not refreshed — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
-        }
-    }
-
-    /// The projection of the active identity from a fresh read, its balance
-    /// and the fee to register the keys. The fee is the credits one Platform
-    /// write can cost at most (`IdentityCreditBalance.maxOperationCost`), not
-    /// a quote for this update: TODO(dashconnect-v2-fee): the cost of the
-    /// update with the plan's own keys, once the SDK can estimate it.
-    func approveSheetFacts() async -> ApproveSheetFacts? {
-        do {
-            let context = try await requireContext()
-            let snapshot = try await identitySnapshot(context: context).snapshot
-            await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
-            guard let balance = await MainActor.run(body: { IdentityCreditBalance.current()?.credits }) else {
-                Self.logger.info("🔗 DASHCONNECT :: approve sheet facts not read — identity balance unknown")
-                return nil
-            }
-            return ApproveSheetFacts(
-                projection: AppConnect.project([snapshot], intents: context.stores.intents.load()),
-                balance: balance,
-                fee: IdentityCreditBalance.maxOperationCost)
-        } catch {
-            Self.logger.info("🔗 DASHCONNECT :: approve sheet facts not read — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
-            return nil
         }
     }
 
