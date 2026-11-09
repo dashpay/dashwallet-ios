@@ -10,10 +10,10 @@ Older builds stored CrowdNode's settings in `UserDefaults.standard`: account sta
 
 ## Decision drivers
 
-- Spec AC-07: CrowdNode data of every wallet is deleted; after success, later launches do nothing more.
-- Spec AC-09 and §6.1 abuse case "over-deletion": the clean-up never touches data outside CrowdNode data.
-- Spec AC-10: nothing is recorded as done while the data is unreadable.
-- Spec AC-11: a wipe leaves no CrowdNode data behind.
+- Every wallet: CrowdNode data of every wallet is deleted; after success, later launches do nothing more.
+- No over-deletion: the clean-up never touches data outside CrowdNode data.
+- Locked device: nothing is recorded as done while the data is unreadable.
+- Wipe: a wipe leaves no CrowdNode data behind.
 - Parity with Android's clean-up of the named CrowdNode keys (dash-wallet #1664).
 
 ## Considered options
@@ -25,7 +25,7 @@ Older builds stored CrowdNode's settings in `UserDefaults.standard`: account sta
 
 ## Decision outcome
 
-**Chosen:** Option 1. Option 2 misses the Cyrillic key and the three generic names, and could catch a foreign key that happens to share the prefix. Option 3 can run in the background before the first unlock, read empty defaults and record the work as done without deleting anything. Option 4 leaves confidential data (an account address and an email) on the device, against spec US-06 and against Android's behaviour. The done flag lives in `UserDefaults.standard` rather than `DWGlobalOptions`, because a wipe clears `DWGlobalOptions`.
+**Chosen:** Option 1. Option 2 misses the Cyrillic key and the three generic names, and could catch a foreign key that happens to share the prefix. Option 3 can run in the background before the first unlock, read empty defaults and record the work as done without deleting anything. Option 4 leaves confidential data (an account address and an email) on the device, against the goal of deleting CrowdNode data and against Android's behaviour. The done flag lives in `UserDefaults.standard` rather than `DWGlobalOptions`, because a wipe clears `DWGlobalOptions`.
 
 ## Consequences
 

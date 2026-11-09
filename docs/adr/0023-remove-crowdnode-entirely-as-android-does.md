@@ -10,9 +10,9 @@ Jira MO-1115 asks to remove CrowdNode from the iOS app: no screens, validations 
 
 ## Decision drivers
 
-- Spec §2 goals: no Wallet holder meets CrowdNode anywhere; the app does no CrowdNode work.
+- Goals: no Wallet holder meets CrowdNode anywhere; the app does no CrowdNode work.
 - Consistency with Android, which removed CrowdNode in dash-wallet #1664.
-- SAD §1 quality goal 3 (complete removal): 0 CrowdNode requests, 0 CrowdNode strings.
+- Complete removal: 0 CrowdNode requests, 0 CrowdNode strings.
 
 ## Considered options
 
@@ -21,7 +21,7 @@ Jira MO-1115 asks to remove CrowdNode from the iOS app: no screens, validations 
 
 ## Decision outcome
 
-**Chosen:** Option 1. It meets both spec goals outright, matches Android's #1664, and removes the CrowdNode API client and its launch and Home requests. Option 2 keeps a CrowdNode client and screens alive for a service the wallet no longer supports.
+**Chosen:** Option 1. It meets both goals outright, matches Android's #1664, and removes the CrowdNode API client and its launch and Home requests. Option 2 keeps a CrowdNode client and screens alive for a service the wallet no longer supports.
 
 ## Consequences
 
@@ -30,7 +30,7 @@ Jira MO-1115 asks to remove CrowdNode from the iOS app: no screens, validations 
 - iOS and Android behave the same for CrowdNode depositors.
 
 **Negative**
-- A depositor with a balance at CrowdNode cannot withdraw from the app and has to use crowdnode.io (SAD §11).
+- A depositor with a balance at CrowdNode cannot withdraw from the app and has to use crowdnode.io.
 - Upgrade code has to handle what older builds left behind (ADR-0024, ADR-0025, ADR-0026).
 
 **Neutral**

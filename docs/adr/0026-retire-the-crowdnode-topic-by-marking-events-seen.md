@@ -10,9 +10,9 @@ Older builds posted CrowdNode notifications on the `crowdnode` thread (and earli
 
 ## Decision drivers
 
-- Spec AC-04: a tap on an old CrowdNode notification opens the app normally and leads nowhere.
-- Spec AC-05: CrowdNode notifications leave the tray and the badge.
-- Spec AC-06: a background badge update before the first launch does not count CrowdNode events.
+- Old notifications: a tap on an old CrowdNode notification opens the app normally and leads nowhere.
+- Tray and badge: CrowdNode notifications leave the tray and the badge.
+- Background badge: a background badge update before the first launch does not count CrowdNode events.
 - The store's rows also serve dedup and must not be lost for other topics.
 
 ## Considered options
@@ -23,7 +23,7 @@ Older builds posted CrowdNode notifications on the `crowdnode` thread (and earli
 
 ## Decision outcome
 
-**Chosen:** Option 1. Option 3 fails AC-06, because a background notification before the first activation would count the CrowdNode events in the badge. Option 2 also meets the ACs, but it destroys rows that the store keeps for dedup and history, and it is harder to reason about than flipping a seen flag. The tray clean-up runs on every activation. Older builds scheduled the legacy `CrowdNode` and `Now` notifications with a one-second trigger, so one may still be pending at the update; activation cancels those pending requests too (`NotificationLifecycle.legacyPendingIdentifiers`). The current dispatcher posts with no trigger, so nothing else can be pending.
+**Chosen:** Option 1. Option 3 fails the background-badge driver, because a background notification before the first activation would count the CrowdNode events in the badge. Option 2 also meets the drivers, but it destroys rows that the store keeps for dedup and history, and it is harder to reason about than flipping a seen flag. The tray clean-up runs on every activation. Older builds scheduled the legacy `CrowdNode` and `Now` notifications with a one-second trigger, so one may still be pending at the update; activation cancels those pending requests too (`NotificationLifecycle.legacyPendingIdentifiers`). The current dispatcher posts with no trigger, so nothing else can be pending.
 
 ## Consequences
 

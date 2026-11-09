@@ -59,10 +59,12 @@ extension ShortcutActionType {
     /// The raw value of a retired shortcut that saved bars may still hold.
     static let retiredRawValue = 18
 
-    /// The bar a saved configuration shows. The saved config itself is never
-    /// rewritten, so an action that is unavailable now comes back once its
-    /// gate passes again. An unknown raw value drops its slot; a short bar
-    /// makes the caller fall back to the default bar.
+    /// The bar a saved configuration shows. Restoring doesn't write the saved
+    /// config, so an action that is unavailable now comes back once its gate
+    /// passes again — until the user changes any slot: the customization
+    /// sheet then saves the bar as shown, fallbacks included. An unknown raw
+    /// value drops its slot; a short bar makes the caller fall back to the
+    /// default bar.
     ///
     /// Availability fallbacks:
     /// - the faucet becomes Spend off testnet (no mainnet faucet exists);

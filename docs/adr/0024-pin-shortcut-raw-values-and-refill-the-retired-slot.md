@@ -10,9 +10,9 @@ The Home shortcut bar is saved in `DWGlobalOptions.shortcuts` as an array of `Sh
 
 ## Decision drivers
 
-- Spec AC-12: other buttons stay in place, the retired slot gets an action the bar doesn't show yet, the bar keeps its size.
-- Spec AC-13: buttons after CrowdNode in the list keep their action.
-- CONTEXT invariant: the update adds no button already on the bar when another one is free.
+- Same bar: other buttons stay in place, the retired slot gets an action the bar doesn't show yet, the bar keeps its size.
+- Same actions: buttons after CrowdNode in the list keep their action.
+- No duplicates: the update adds no button already on the bar when another one is free.
 
 ## Considered options
 
@@ -22,7 +22,7 @@ The Home shortcut bar is saved in `DWGlobalOptions.shortcuts` as an array of `Sh
 
 ## Decision outcome
 
-**Chosen:** Option 1. It is the only option that meets both AC-12 (same size) and AC-13 (same actions). Option 2 throws away the Wallet holder's customisation, and Option 3 changes the bar's size. Android does the same with its id 10: the id is reserved and its refill logic fills the slot (dash-wallet #1664).
+**Chosen:** Option 1. It is the only option that keeps both the same bar (same size) and the same actions. Option 2 throws away the Wallet holder's customisation, and Option 3 changes the bar's size. Android does the same with its id 10: the id is reserved and its refill logic fills the slot (dash-wallet #1664).
 
 ## Consequences
 
