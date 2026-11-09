@@ -19,7 +19,7 @@ final class CallbackScheme: NSObject {
     /// web page, a call, a message or a settings pane, or send the wallet back to itself.
     private static let blocked: Set<String> = [
         "http", "https", "file", "ftp", "data", "javascript", "about", "blob",
-        "tel", "telprompt", "sms", "mailto", "message", "maps", "music", "videos",
+        "tel", "telprompt", "sms", "smsto", "mailto", "message", "maps", "geo", "music", "videos",
         "prefs", "app-prefs", "app-settings", "shortcuts", "webcal", "calshow", "feed",
         "dash", "dashwallet", "dashpay", "pay", "bitcoin",
     ]

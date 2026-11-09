@@ -1007,7 +1007,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
     }
 
     func testCallbackSchemeRejectsSystemAndOwnSchemes() {
-        let blocked = ["http", "https", "HTTPS", "tel", "sms", "mailto", "facetime", "facetime-audio",
+        let blocked = ["http", "https", "HTTPS", "tel", "sms", "smsto", "geo", "mailto", "facetime", "facetime-audio",
                        "itms-apps", "x-apple-reminder", "app-settings", "dash", "DashWallet", "pay"]
         for scheme in blocked {
             XCTAssertNil(CallbackScheme.validated(scheme), scheme)
