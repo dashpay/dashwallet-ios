@@ -50,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverWalletWithPhrase:(NSString *)phrase {
     [self importWalletIntoSwiftDashSDK:phrase];
 
+    // Every network: the phrase is provisioned on all of them, so no scope
+    // narrows the gate (a stale keychain-recovery scope must not survive here).
+    [DWGlobalOptions sharedInstance].resyncingWalletScopes = nil;
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
     // SwiftDashSDK SPV is started by SwiftDashSDKWalletCreator after the

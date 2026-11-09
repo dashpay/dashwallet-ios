@@ -225,8 +225,7 @@ struct SecurityMenuScreen: View {
     private func handleResetWalletDestination(_ destination: SecurityMenuResetWalletDestination) {
         switch destination {
         case .reset:
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = delegateInternal
+            let controller = ResetWalletInfoHostingController(wipeDelegate: delegateInternal)
             vc.pushViewController(controller, animated: true)
         case .multipleWallets:
             showMultipleWalletsResetAlert = true
