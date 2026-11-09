@@ -866,9 +866,7 @@ struct CreateUsernameView: View {
         } else {
             add(
                 id: "cost",
-                text: String.localizedStringWithFormat(
-                    NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
-                    viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
+                text: CreateUsernameViewModel.minimumCostMessage(requiredDuffs: viewModel.uiState.requiredDash),
                 rule: viewModel.uiState.costRule)
         }
 
@@ -1925,11 +1923,10 @@ extension CreateUsernameViewModel.ShieldedCostBlocker {
                 : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
             return (String.localizedStringWithFormat(format, time), .pending)
 
-        case .short(let shortfallDuffs, let dashBalanceCovers):
+        case .short(let shortfallDuffs):
             let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-            let format = dashBalanceCovers
-                ? NSLocalizedString("Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance", comment: "Usernames")
-                : NSLocalizedString("Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            let format = NSLocalizedString(
+                "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
             return (String.localizedStringWithFormat(format, amount), .failed)
 
         case .poolTooSmall(let current):
