@@ -31,6 +31,10 @@ struct GiftCardDetailsInfoCard: View {
 
     private var isClaimLink: Bool { card?.isClaimLink ?? false }
 
+    private func isSquareBarcode(_ image: UIImage) -> Bool {
+        image.size.width == image.size.height
+    }
+
     var body: some View {
         VStack(spacing: 2) {
             barcodeSection
@@ -46,8 +50,10 @@ struct GiftCardDetailsInfoCard: View {
             EmptyView()
         } else if let barcodeImage = card?.barcodeImage {
             Image(uiImage: barcodeImage)
+                .interpolation(.none)
                 .resizable()
-                .frame(width: 200, height: 80)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 200, height: isSquareBarcode(barcodeImage) ? 200 : 80)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
         } else {
