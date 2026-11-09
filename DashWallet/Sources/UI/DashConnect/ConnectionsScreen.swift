@@ -91,14 +91,23 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        .task { await viewModel.refreshConnections() }
         // Another identity may have become active while the screen was away.
-        .onAppear {
-            viewModel.refreshUsername()
-            viewModel.checkExpiries()
-        }
-        .onDisappear { viewModel.stopCheckingExpiries() }
+        .onAppear { viewModel.refreshUsername() }
         .alert(item: messageBinding) { message in
-            Alert(
+            if let connection = message.unrecordedKeysOf {
+                return Alert(
+                    title: Text(message.title),
+                    message: Text(message.text),
+                    primaryButton: .destructive(Text(NSLocalizedString("Turn them off", comment: "DashConnect"))) {
+                        viewModel.message = nil
+                        viewModel.disconnect(connection, includingUnrecorded: true)
+                    },
+                    secondaryButton: .cancel(Text(NSLocalizedString("Leave them", comment: "DashConnect"))) {
+                        viewModel.message = nil
+                    })
+            }
+            return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
                 dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
@@ -209,57 +218,25 @@ struct ConnectionsScreen: View {
         let tab = viewModel.selectedTab
         let rows = viewModel.rows(for: tab)
         if tab == .disconnected, viewModel.historyIsUnreadable {
-            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"), retries: false)
+            tabNote(NSLocalizedString("Disconnected apps could not be read.", comment: "DashConnect"))
+        } else if !rows.isEmpty {
+            ConnectionsList(
+                items: rows,
+                onOpen: { viewModel.showConnection($0) },
+                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onReconnect: showScanner)
         } else {
-            if !rows.isEmpty {
-                ConnectionsList(
-                    items: rows,
-                    onOpen: { viewModel.showConnection($0) },
-                    onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
-                    onReconnect: showScanner)
-            }
-            // Under Expired, "none" is said only once a check has ended.
-            if tab == .expired, viewModel.isCheckingExpiries {
-                checking
-            } else if tab == .expired, viewModel.expiryCheckIsIncomplete {
-                // Some apps could not be checked: more may have expired. On a
-                // network with no identity to read, Retry tells the same.
-                tabNote(
-                    NSLocalizedString("Which connections have expired could not be checked.", comment: "DashConnect"),
-                    retries: viewModel.expiryCheck != .unavailable)
-            } else if tab == .expired, viewModel.expiriesAreUndecided {
-                // Told as far as the clocks and the keys allow: Retry would
-                // tell the same.
-                tabNote(
-                    NSLocalizedString("Whether some connections have expired is not known yet.", comment: "DashConnect"),
-                    retries: false)
-            } else if rows.isEmpty {
-                tabNote(Self.emptyTabText(tab), retries: false)
-            }
+            tabNote(Self.emptyTabText(tab))
         }
     }
 
-    private var checking: some View {
-        SwiftUI.ProgressView()
+    private func tabNote(_ text: String) -> some View {
+        Text(text)
+            .dashFont(.subhead)
+            .foregroundColor(Color.dash.secondaryText)
+            .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             .padding(.top, 20)
-            .accessibilityLabel(Text(NSLocalizedString("Checking connections", comment: "DashConnect")))
-    }
-
-    private func tabNote(_ text: String, retries: Bool) -> some View {
-        VStack(spacing: 12) {
-            Text(text)
-                .dashFont(.subhead)
-                .foregroundColor(Color.dash.secondaryText)
-                .multilineTextAlignment(.center)
-            if retries {
-                DashUIKit.DashButton(
-                    text: NSLocalizedString("Retry", comment: "DashConnect"),
-                    size: .small, style: .tintedBlue, action: viewModel.retryExpiryCheck)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
     }
 
     private static func emptyTabText(_ tab: ConnectionsTab) -> String {
@@ -289,17 +266,15 @@ struct ConnectionsScreen: View {
             fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
-            expiryCheck: viewModel.expiryCheck,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
-            onDisconnect: viewModel.disconnectShown(asked:),
+            onDisconnect: viewModel.disconnectShown,
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
             disconnectQuestion: viewModel.disconnectQuestion,
             onScan: {
                 scansAfterSheet = true
                 viewModel.hideConnection()
             },
-            onMockScan: mockScan,
             onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
         )
         .presentationDragIndicator(.visible)
@@ -332,9 +307,9 @@ struct ConnectionsScreen: View {
             onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest(asksToReturn: true) }
         )
-        // The one-QR terms make the sheet longer than the fixed height
-        // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil)
+        // Only a request that cannot be answered comes here: its sheet is
+        // short.
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: false)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -439,17 +414,21 @@ struct ConnectionsScreen: View {
     )
 }
 
-#Preview("Approved") {
+#Preview("Confirming") {
     ConnectionsScreen(
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
-            dataSource: MockDashConnectDataSource(initial: [.init(
-                id: MockDashConnectDataSource.sample(.approved).id,
-                name: MockDashConnectDataSource.sample(.approved).name,
-                url: MockDashConnectDataSource.sample(.approved).url,
-                status: .approved,
-                updatedAt: MockDashConnectDataSource.sample(.approved).updatedAt
-            )]),
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.confirming)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Not Delivered") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.undelivered)]),
             featureUnavailable: false
         )
     )
@@ -460,6 +439,16 @@ struct ConnectionsScreen: View {
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
             dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Expired") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.expired)]),
             featureUnavailable: false
         )
     )

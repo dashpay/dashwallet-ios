@@ -111,7 +111,7 @@ struct ApproveConnectionSheet: View {
 
                         // The name above can be one the code or the
                         // contract's owner chose. This id is what the
-                        // approval is for: a one-QR key is bound to it. Shown
+                        // approval is for: the app's keys are bound to it. Shown
                         // in full and selectable, so it can be compared with
                         // the one the app publishes.
                         VStack(alignment: .leading, spacing: 2) {
@@ -132,9 +132,9 @@ struct ApproveConnectionSheet: View {
                         reloginNotice(connectedSince)
                     }
 
-                    // The one-QR login gives the app a key with limits of its
-                    // own, so its terms are spelled out on a repeat sign-in
-                    // too, and when it replaces a two-QR connection.
+                    // An App Connect plan gives the app keys with limits of
+                    // their own, so its terms are spelled out on a repeat
+                    // sign-in too.
                     if request.login == .unresolved {
                         Text(NSLocalizedString(
                             "This wallet could not check what this sign-in would give the app.",
@@ -155,12 +155,6 @@ struct ApproveConnectionSheet: View {
                         Text(refusal.reason)
                             .font(.footnote)
                             .foregroundColor(.secondaryText)
-                    } else if let terms = request.login.sessionKeyTerms {
-                        sessionKeyPermissions(terms)
-                    } else if request.isRelogin {
-                        reloginPermissionsSummary
-                    } else {
-                        fullPermissions
                     }
 
                     if request.walletUsername != nil || request.walletIdentityId != nil {
@@ -248,43 +242,6 @@ struct ApproveConnectionSheet: View {
         return candidates.first(where: { !$0.isEmpty }) ?? NSLocalizedString("Unknown app", comment: "DashConnect")
     }
 
-    private var fullPermissions: some View {
-        permissions(
-            granted: [
-                NSLocalizedString("See your username", comment: "DashConnect"),
-                NSLocalizedString("Verify your identity", comment: "DashConnect"),
-            ],
-            withheld: [
-                NSLocalizedString("Your private keys", comment: "DashConnect"),
-                NSLocalizedString("Withdraw funds", comment: "DashConnect"),
-            ]
-        )
-    }
-
-    /// The one-QR login gives the app a key of its own on the identity, so
-    /// the sheet names what that key can spend and when it stops working.
-    private func sessionKeyPermissions(_ terms: AppConnect.SessionKeyTerms) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            permissions(
-                // Per sign-in: an earlier sign-in to the app keeps its own
-                // key and limit until the app is disconnected.
-                granted: DashConnectPermissionText.sessionKeyGranted(budgets: [terms.budgetCredits]),
-                withheld: DashConnectPermissionText.sessionKeyWithheld
-            )
-
-            Text(
-                String(
-                    format: NSLocalizedString(
-                        "This access ends after %d days, or when you disconnect the app.",
-                        comment: "DashConnect one-QR login"),
-                    terms.lifetimeDays
-                )
-            )
-            .font(.footnote)
-            .foregroundColor(.secondaryText)
-        }
-    }
-
     private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
@@ -292,7 +249,8 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(granted, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(granted.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: text)
                 }
             }
@@ -302,21 +260,11 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(withheld, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(withheld.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: text)
                 }
             }
-        }
-    }
-
-    private var reloginPermissionsSummary: some View {
-        HStack(spacing: 8) {
-            Icon(name: .custom("dashconnect.check.circle", maxHeight: 18))
-                .frame(width: 18, height: 18)
-
-            Text(NSLocalizedString("Same permissions as before", comment: "DashConnect re-login"))
-                .font(.subhead)
-                .foregroundColor(.primaryText)
         }
     }
 
@@ -407,23 +355,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
     )
 }
 
-#Preview("Approve One-QR") {
-    ApproveConnectionSheet(
-        request: ConnectionRequest(
-            loginRequest: MockDashConnectDataSource.sampleLoginRequest,
-            appLabel: "Yappr",
-            appUrl: "yap.pr",
-            walletUsername: "dashuser",
-            walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
-            existingConnection: nil,
-            login: .oneQR(.current)
-        ),
-        onApprove: {},
-        onDeny: {}
-    )
-}
-
-#Preview("Approve Re-Login") {
+#Preview("Older Sign-In Refused") {
     ApproveConnectionSheet(
         request: ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -432,7 +364,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
             existingConnection: MockDashConnectDataSource.sample(.active),
-            login: .twoQR
+            login: .refused(AppConnect.v1Refusal)
         ),
         onApprove: {},
         onDeny: {}

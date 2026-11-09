@@ -66,6 +66,7 @@ static NSString *const PER_WALLET_NOTIFICATION_CATCH_UP_PREFIX = @"DW_WALLET_NOT
 @dynamic shouldDisplayOnboarding;
 @dynamic paymentsScreenCurrentTab;
 @dynamic resyncingWallet;
+@dynamic resyncingWalletScopes;
 @dynamic selectedPaymentCurrency;
 @dynamic shouldDisplayReclassifyYourTransactionsFlow;
 @dynamic dateReclassifyYourTransactionsFlowActivated;
@@ -320,6 +321,7 @@ NSNotificationName const DWAdvancedModeDidChangeNotification = @"org.dash.advanc
     self.advancedModeUserManaged = NO;
     self.tapToHideBalanceShown = NO;
     self.resyncingWallet = NO;
+    self.resyncingWalletScopes = nil;
     self.selectedPaymentCurrency = DWPaymentCurrencyDash;
     self.shouldDisplayReclassifyYourTransactionsFlow = YES;
     self.dateReclassifyYourTransactionsFlowActivated = nil;

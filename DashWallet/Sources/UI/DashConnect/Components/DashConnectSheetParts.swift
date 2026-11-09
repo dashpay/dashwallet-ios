@@ -205,3 +205,33 @@ struct DashConnectInlineErrorToast: View {
         UIAccessibility.post(notification: .announcement, argument: message)
     }
 }
+
+#Preview("Grabber and detail lines") {
+    VStack(spacing: 2) {
+        DashConnectSheetGrabber()
+        DashConnectDetailLine(title: "App ID", value: "AyWK6nDVfb8d1ZmkM5MmZZrThbUyWyso1aMeGuuVSfxf")
+        DashConnectDetailLine(title: "Username", value: "alice")
+    }
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Collapsible card, open and closed") {
+    VStack(spacing: 12) {
+        DashConnectCollapsibleCard(title: "See what Yappr will be able to do", isExpanded: .constant(true)) {
+            Text("See your username")
+        }
+        DashConnectCollapsibleCard(title: "See what Yappr will NOT have access to", isExpanded: .constant(false)) {
+            Text("Your Dash balance")
+        }
+    }
+    .padding(20)
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Inline error toast") {
+    VStack(spacing: 12) {
+        DashConnectInlineErrorToast(message: "Could not complete the DashConnect request: the network did not answer.")
+        DashConnectInlineErrorToast(message: nil)
+    }
+    .padding(20)
+}

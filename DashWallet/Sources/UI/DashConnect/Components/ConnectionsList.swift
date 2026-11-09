@@ -38,3 +38,24 @@ struct ConnectionsList: View {
         .modifier(MenuViewModifier())
     }
 }
+
+#Preview("Several apps") {
+    ConnectionsList(
+        items: [ConnectionSheetItem.Status.active, .confirming, .undelivered, .disconnected].map { status in
+            ConnectionSheetItem(
+                id: "\(status)", name: "Example App \(status)", url: "example.org", status: status,
+                connection: nil, entry: nil, scope: nil)
+        },
+        onOpen: { _ in }, onDisconnect: { _ in }, onReconnect: {})
+    .padding(20)
+    .background(Color.primaryBackground)
+}
+
+#Preview("One app") {
+    ConnectionsList(
+        items: [ConnectionSheetItem(
+            id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil, entry: nil, scope: nil)],
+        onOpen: { _ in }, onDisconnect: { _ in }, onReconnect: {})
+    .padding(20)
+    .background(Color.primaryBackground)
+}

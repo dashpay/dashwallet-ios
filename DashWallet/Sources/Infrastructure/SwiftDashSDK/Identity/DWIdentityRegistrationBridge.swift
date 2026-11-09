@@ -116,7 +116,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// posts the canonical `DWDashPayRegistrationStatusUpdatedNotification`
     /// so existing UI consumers see a consistent model + notification
     /// pair (registration-order race avoidance).
-    @objc nonisolated public static let stateChangedNotification =
+    @objc public static let stateChangedNotification =
         NSNotification.Name("DWIdentityRegistrationBridgeStateChangedNotification")
 
     private static let logger = Logger(

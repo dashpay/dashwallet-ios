@@ -197,15 +197,11 @@ extension AppConnect {
 
     /// Why an approval refuses `plan` at `now`, or `nil` when its terms are
     /// valid (`hasValidTerms`):
-    /// - `sessionKeyUnusable` for terms an earlier approval recorded
-    ///   (`hasRecordedTerms`), which the user cannot change: the app has to
-    ///   ask again;
     /// - `approvalTermsExpired` when a key's expiry has gone by, which the
     ///   user can change on the sheet;
     /// - `approvalOutOfDate` for any other term out of bounds.
     static func termsFailure(of plan: GrantPlan, now: Date) -> DashConnectPlatformError? {
         guard !hasValidTerms(plan, now: now) else { return nil }
-        if plan.hasRecordedTerms { return .sessionKeyUnusable }
         return plan.auth.contains { $0.expiresAt <= milliseconds(now) }
             ? .approvalTermsExpired : .approvalOutOfDate
     }
@@ -226,46 +222,12 @@ extension AppConnect {
         return resolved
     }
 
-    /// `plan` with the terms an earlier approval of the same request recorded
-    /// (`GrantedAccess`, written before its update was submitted), when they
-    /// name its keys one for one. That update may have landed, and a retry
-    /// has to send the same keys with the same terms.
-    /// `requestHash` is the request the terms were recorded for: another
-    /// request's plan comes back as it was. Recorded terms that are no longer
-    /// in bounds at `now` (an expiry gone by, a key with no budget) are not
-    /// taken either.
-    static func withRecordedTerms(
-        _ plan: GrantPlan,
-        access: GrantedAccess?,
-        recordedFor requestHash: Data,
-        now: Date
-    ) -> GrantPlan {
-        guard plan.appEphemeralPubKeyHash == requestHash,
-              let access, !access.isUnreadable, !access.isSessionKeyLogin, access.keys.count == plan.auth.count,
-              zip(access.keys, plan.auth).allSatisfy({ $0.bound == $1.storedBound }) else { return plan }
-        var recorded = plan
-        recorded.auth = zip(plan.auth, access.keys).map { grant, key in
-            AuthGrant(bindingIndex: grant.bindingIndex, binding: grant.binding, totalBudget: key.totalBudget,
-                      expiresAt: key.expiresAt)
-        }
-        guard hasValidTerms(recorded, now: now) else { return plan }
-        recorded.hasRecordedTerms = true
-        return recorded
-    }
-
     /// The sum of every key's budget, saturating.
     static func totalBudget(of plan: GrantPlan) -> UInt64 {
         plan.auth.reduce(UInt64(0)) { total, grant in
             let (sum, overflow) = total.addingReportingOverflow(grant.totalBudget ?? 0)
             return overflow ? .max : sum
         }
-    }
-
-    /// The terms a plan's keys carry, read back: their total budget and their
-    /// latest expiry.
-    static func terms(of plan: GrantPlan) -> ConnectionTerms? {
-        guard let expiresAt = plan.expiresAt else { return nil }
-        return ConnectionTerms(fundingLimit: totalBudget(of: plan), expiresAt: expiresAt)
     }
 
     /// Whether Platform refused an identity update because the identity's

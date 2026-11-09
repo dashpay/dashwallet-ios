@@ -67,3 +67,8 @@ struct FundingLimitsInfoSheet: View {
         .background(Color.dash.secondaryBackground)
     }
 }
+
+#Preview("Info") {
+    FundingLimitsInfoSheet(onClose: {})
+        .background(Color.dash.secondaryBackground)
+}

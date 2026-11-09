@@ -347,6 +347,15 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(parsed.request.encryptionBindings, [])
     }
 
+    func testRefusesAMainnetAppConnectUri() throws {
+        let mainnetUri = AppConnectVector.renewUri.replacingOccurrences(of: "?n=t&", with: "?n=m&")
+        XCTAssertNotEqual(mainnetUri, AppConnectVector.renewUri)
+
+        XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(mainnetUri)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+        }
+    }
+
     func testAVersion1UriIsUnsupportedByTheAppConnectParserAndViceVersa() throws {
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(try validKeyUri())) { error in
             XCTAssertEqual(error as? AppConnectRequestError, .unsupported("URI version 1"))
@@ -396,6 +405,28 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest("dash-key:0?n=t&v=2")) { error in
             XCTAssertEqual(error as? AppConnectRequestError, .invalid("request is not base58"))
         }
+    }
+
+    /// The query is measured before it is split or decoded, by the router and
+    /// by both parsers; a URI that routes to version 1 is no exception.
+    func testAnOversizedQueryIsRefusedBeforeItIsRead() throws {
+        let padding = "&" + String(repeating: "x", count: 4096)
+        let v2 = AppConnectVector.renewUri + padding
+        let v1 = try validKeyUri() + padding
+
+        XCTAssertFalse(DashConnectUri.isAppConnectUri(v2))
+        XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(v2)) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("query is too long"))
+        }
+        XCTAssertThrowsError(try DashConnectUri.parseKeyRequest(v1)) { error in
+            XCTAssertEqual(error as? DashConnectUriError, .queryTooLong)
+        }
+        assertStError(validStUri() + padding, .queryTooLong)
+
+        // A query at the ceiling is read.
+        let atCeiling = AppConnectVector.renewUri + "&" + String(repeating: "x", count: 4096 - "n=t&v=2&".count)
+        XCTAssertTrue(DashConnectUri.isAppConnectUri(atCeiling))
+        XCTAssertNoThrow(try DashConnectUri.parseAppConnectRequest(atCeiling))
     }
 
     func testAnAppConnectPayloadAtTheCeilingIsReadAndOneOverIsNot() {
@@ -838,9 +869,13 @@ extension DashConnectUriTests {
                 XCTAssertEqual(error as? AppConnectRequestError, .invalid("unknown network"), query)
             }
         }
-        let networks: [(String, DashConnectNetwork)] = [("m", .mainnet), ("t", .testnet), ("d", .devnet)]
+        let networks: [(String, DashConnectNetwork)] = [("t", .testnet), ("d", .devnet)]
         for (code, network) in networks {
             XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=\(code)")).network, network)
+        }
+        // As on `dash-key:`: the request is not defined for mainnet.
+        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=m"))) { error in
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
         }
     }
 

@@ -23,17 +23,14 @@ import SwiftDashSDK
 enum DashConnectQr: Equatable {
     case login(DashKeyRequest)
     /// A `dash-st:` payload — a serialized state transition whose kind is
-    /// only known once the wallet parses it (key registration or token
-    /// purchase).
+    /// only known once the wallet parses it (a token purchase is the only
+    /// one it takes).
     case stateTransition(DashStRequest)
 }
 
 /// What the wallet did — or still needs the user to do — with a scanned
 /// `dash-st:` state transition.
 enum DashConnectStAction: Equatable {
-    /// Key registration was validated and published (or the derived keys
-    /// were already on the identity).
-    case keyRegistrationCompleted
     /// The payload is a token purchase; nothing was signed or sent yet — it
     /// awaits explicit user approval via `approveTokenPurchase(_:)`.
     case tokenPurchaseApprovalRequired(DashConnectTokenPurchaseRequest)
@@ -143,32 +140,21 @@ extension DashConnectTokenPurchaseRequest {
     }
 }
 
-/// Lifecycle of an app connection.
-///
-/// `approved` means the wallet knows about the app, but it may not be ready to
-/// sign in yet: either the required login keys are not on the identity yet, or
-/// the user locally turned the connection off from the wallet UI.
-///
-/// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`. For a one-QR
-/// connection it means the app holds a session key on an identity of this
-/// wallet that this wallet has not disabled: the row is made once the key is
-/// seen on the identity, before its response is published, and stays
-/// whether or not the publish is confirmed.
-///
-/// `confirming` is an App Connect v2 connection whose identity update was
-/// submitted and whose outcome is not known yet: its keys may be on the
-/// identity, so it offers a disconnect like an active one. The disconnect
-/// turns off the app's live auth keys on the active identity, including the
-/// ones a waiting record holds. It is refused (`registrationPending`) while
-/// a waiting record still holds a live key after that; otherwise the row
-/// goes and the record stays, and an update that lands after all shows the
-/// app again. A build without this
-/// status drops the row on load; the grant record stays.
+/// Lifecycle of an app connection. `active` means an approval's keys are
+/// live on an identity of this wallet; `undelivered` means they are live but
+/// the app never got its response; `confirming` means an identity update may
+/// still land.
 enum ConnectionStatus: String, Codable, CaseIterable {
-    case approved
-    case active
+    /// An App Connect approval whose identity update may still land.
     case confirming
+    case active
+    /// The app's keys are live, but its response was never published: the
+    /// app holds keys it cannot use. Only a disconnect or a new QR helps.
+    case undelivered
+    /// Every live key of the app is past its expiry by the Core tip
+    /// (`AppConnect.platformTimeLowerBound`). The keys stay on Platform until
+    /// a disconnect turns them off.
+    case expired
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -188,22 +174,34 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     }
 }
 
-/// Which login made a connection. It decides what turning it off means:
-/// a one-QR connection has a session key on the identity to disable, a
-/// two-QR connection does not (see `DashConnectDataSource.disconnect`).
-enum DashConnectLoginKind: String, Codable {
-    case twoQR
-    case oneQR
-}
-
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
+    init(id: String, name: String, url: String, status: ConnectionStatus, updatedAt: Date, seenOn: Set<String> = []) {
+        self.id = id
+        self.name = name
+        self.url = url
+        self.status = status
+        self.updatedAt = updatedAt
+        self.seenOn = seenOn
+    }
+
+    /// `row` with another status, as of `updatedAt`, and `seenOn`.
+    init(_ row: DAppConnection, status: ConnectionStatus? = nil, seenOn: Set<String>, at updatedAt: Date? = nil) {
+        self.init(
+            id: row.id, name: row.name, url: row.url, status: status ?? row.status,
+            updatedAt: updatedAt ?? row.updatedAt, seenOn: seenOn)
+        scope = row.scope
+    }
+
     let id: String
     let name: String
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
-    var loginKind: DashConnectLoginKind = .twoQR
+    /// The identities (Base58) whose last read showed the app live keys no
+    /// approval of this wallet names. The wallet reads one identity at a
+    /// time, so access seen on another stays known until that one is read.
+    let seenOn: Set<String>
     /// Names the wallet and network a data source published this row for;
     /// `nil` on a row that was built or read from a store. Not stored. It
     /// goes back with a disconnect or a remove, so a row picked from a list
@@ -211,83 +209,60 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
-/// What a disconnect of a connection does, as far as the local records tell
-/// before the identity is read.
-enum DashConnectDisconnectEffect: Equatable {
-    /// Its keys are turned off on Platform.
-    case revokesKeys
-    /// Only its local status changes: nothing of the app's can reach
-    /// Platform.
-    case localOnly
-    /// Either, depending on what the identity shows: a two-QR row with a
-    /// grant whose keys may or may not still be live.
-    case dependsOnPlatform
-
-    /// Whether a disconnect that does `effect` is what a user told this was
-    /// asked for: the same, or either when told it depends on Platform.
-    func accepts(_ effect: DashConnectDisconnectEffect) -> Bool {
-        self == .dependsOnPlatform || self == effect
-    }
-}
-
-/// What a disconnect did with the active identity's DashPay profile keys
-/// that no grant record names, besides turning off the app's own keys.
+/// What a disconnect left on the active identity besides the app's keys it
+/// turned off.
 struct DashConnectDisconnectResult: Equatable {
-    /// How many of them it turned off.
-    var profileKeysTurnedOff = 0
-    /// They could not be told apart, so none was turned off; the app's own
-    /// keys were.
-    var profileKeysUnchecked = false
+    /// How many of the app's keys it turned off.
+    var keysTurnedOff = 0
+    /// Live keys no approval of this wallet names that a disconnect turns
+    /// off only when the user asks: keys bound to the app's contracts, given
+    /// on another device or before a restore, and DashPay profile keys no
+    /// app can be told to hold.
+    var unrecordedKeysLeft = 0
+    /// Live App Connect keys whose app the wallet could not tell yet: its key
+    /// store does not hold their bound. None of them was turned off.
+    var keysNotChecked = 0
+    /// A read of another identity of this wallet saw keys of the app no
+    /// approval names. They can be turned off only while that identity is
+    /// the active one.
+    var keysOnAnotherIdentity = false
     /// The app is disconnected, but it could not be saved among the
     /// disconnected apps.
     var notRecordedInHistory = false
 }
 
-/// What a connection gives its app, from the grant records of one
-/// identity, as the connection sheet shows it.
+/// What a connection gives its app, from the intents of one identity that
+/// hold it, as the connection sheet shows it.
 struct ConnectionAccess: Codable, Equatable {
-    /// What each key can do; `nil` when a record predates
-    /// `AppConnectGrant.grantedAccess`, and only the limits are known.
-    let keys: [AppConnect.GrantedAccess.Key]?
+    /// What each key can do.
+    let keys: [AppConnect.GrantedAccess.Key]
     /// The largest budget among the keys, in credits; `nil` when no key has
-    /// one (see `hasUnlimitedKey`) or none is known.
+    /// one (see `hasUnlimitedKey`).
     let largestBudget: UInt64?
     /// A key with no spending limit.
     let hasUnlimitedKey: Bool
-    /// When the last of the keys stops working; `nil` when a key has no
-    /// expiry noted, or the records do not say for every key.
+    /// When the last of the keys stops working.
     let expiresAt: Date?
     /// The connection can receive messages encrypted to this identity.
     let receivesMessages: Bool
-    /// Every grant is a one-QR login's session key.
-    let isSessionKeyLogin: Bool
 
-    /// `nil` with no grant.
-    init?(grants: [AppConnectGrant]) {
-        guard !grants.isEmpty else { return nil }
-        let recorded = grants.compactMap(\.grantedAccess).filter { !$0.isUnreadable }
-        let keys = recorded.count == grants.count ? recorded.flatMap(\.keys) : nil
-        self.keys = keys
-        // An older record names its primary key's limits only: with other
-        // keys, its largest budget and last expiry are not known.
-        func readable(_ grant: AppConnectGrant) -> AppConnect.GrantedAccess? {
-            grant.grantedAccess.flatMap { $0.isUnreadable ? nil : $0 }
-        }
-        let isPartial = grants.contains { readable($0) == nil && !($0.additionalKeyIds ?? []).isEmpty }
-        let budgets = grants.flatMap { readable($0)?.keys.map(\.totalBudget) ?? [$0.totalBudget] }
-        largestBudget = isPartial ? nil : budgets.compactMap { $0 }.max()
-        // An older record's primary key without a budget has no limit.
-        hasUnlimitedKey = budgets.contains(where: { $0 == nil })
-        // A record with no expiry noted (a key that never expires, or an
-        // older record that did not note it) leaves the connection with no
-        // end date to show: another key's date would not be its end.
-        let expiries = grants.flatMap { grant -> [UInt64?] in
-            readable(grant)?.keys.map(\.expiresAt) ?? [grant.expiresAt]
-        }
-        expiresAt = isPartial || expiries.contains(nil)
-            ? nil : expiries.compactMap { $0 }.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
-        receivesMessages = recorded.contains(where: \.receivesMessages)
-        isSessionKeyLogin = recorded.count == grants.count && recorded.allSatisfy(\.isSessionKeyLogin)
+    /// `nil` when `intents` add no auth key.
+    init?(intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    init(_ access: AppConnect.GrantedAccess) {
+        keys = access.keys
+        largestBudget = access.keys.compactMap(\.totalBudget).max()
+        hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
+        expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        receivesMessages = access.receivesMessages
+    }
+
+    var granted: AppConnect.GrantedAccess {
+        AppConnect.GrantedAccess(keys: keys, receivesMessages: receivesMessages)
     }
 }
 
@@ -298,8 +273,8 @@ struct ConnectionDetails: Equatable {
     let identityId: String?
     let username: String?
     let access: ConnectionAccess?
-    /// When the connection was made: the latest of its grants' approvals,
-    /// so a renewal from a new code counts as the connection it made.
+    /// When the connection was made: the latest of its approvals, so a
+    /// renewal from a new code counts as the connection it made.
     var connectedAt: Date? = nil
     /// What is left of each key's budget, read from Platform; `nil` when it
     /// was not read (the connection is on another identity) or could not be
@@ -312,141 +287,23 @@ struct ConnectionDetails: Equatable {
 struct KeyFunding: Equatable {
     /// The key is bound to the DashPay profile, not to the app's data.
     let isProfileKey: Bool
-    /// What the key may spend over its life; `nil` with no limit or when
-    /// not known (`isBudgetKnown`).
+    /// What the key may spend over its life; `nil` with no limit.
     let totalBudget: UInt64?
-    /// The record says what the key's budget is (or that it has none). An
-    /// older record names its primary key's only.
-    var isBudgetKnown = true
     /// What is left of it; `nil` with no limit, or when Platform did not say.
     let remaining: UInt64?
 
-    /// The keys of `grants` in their order, each with its budget as the
-    /// grant recorded it and what `remaining` (by key id) says is left. A
-    /// record from before `grantedAccess` knows its primary key's budget
-    /// only, and no key of it as the DashPay profile's.
-    /// A key two grants name is listed once.
-    static func of(grants: [AppConnectGrant], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
+    /// The auth keys of `intents` in their order, each with its budget as
+    /// the intent submitted it and what `remaining` (by key id) says is
+    /// left. A key two intents name is listed once.
+    static func of(intents: [AppConnect.ConnectionIntent], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
         var listed = Set<UInt32>()
-        return grants.flatMap { grant -> [KeyFunding] in
-            let keys = grant.grantedAccess.flatMap { $0.isUnreadable ? nil : $0.keys }
-            return grant.keyIds.enumerated().compactMap { index, keyId -> KeyFunding? in
-                guard listed.insert(keyId).inserted else { return nil }
-                let key = keys.flatMap { index < $0.count ? $0[index] : nil }
-                let isProfileKey: Bool
-                if case .documentType(let contractId, let name)? = key?.bound {
-                    isProfileKey = contractId.toBase58String() == AppConnect.dashPayContractId && name == "profile"
-                } else {
-                    isProfileKey = false
-                }
-                let isBudgetKnown = key != nil || index == 0
-                return KeyFunding(
-                    isProfileKey: isProfileKey,
-                    totalBudget: key.map(\.totalBudget) ?? (index == 0 ? grant.totalBudget : nil),
-                    isBudgetKnown: isBudgetKnown,
-                    remaining: remaining[keyId] ?? nil)
-            }
+        return intents.flatMap(\.authKeys).compactMap { key in
+            guard listed.insert(key.id).inserted else { return nil }
+            return KeyFunding(
+                isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
+                totalBudget: key.totalBudget,
+                remaining: remaining[key.id] ?? nil)
         }
-    }
-}
-
-/// Whether a connected app's keys can still sign, as one read of the
-/// active identity told it, and the row it was told for.
-struct ConnectionExpiry: Equatable {
-    enum Verdict: Equatable {
-        /// Every live key of the app is past its expiry by the Core tip
-        /// alone: the tip is past it by at least
-        /// `AppConnect.chainTimeMarginMilliseconds`, whatever this phone's
-        /// clock says. The app can no longer sign, and a disconnect turns
-        /// the keys off.
-        case expired
-        /// A live key of the app can still sign: the tip does not show it
-        /// expired, and it has no expiry or this phone's clock is not past
-        /// it.
-        case current
-        /// Not every live key is expired by the Core tip, and none can sign
-        /// by this phone's clock: each is past its expiry by the phone, or
-        /// expired by the tip.
-        case pastByPhone
-        /// Every key attributed to the app is disabled while its row says
-        /// connected (turned off elsewhere): reading again tells the same.
-        case keysOff
-        /// Not told: the identity view lacks one of the app's keys, or holds
-        /// another key under a stored id.
-        case unknown
-        /// None of the app's keys can sign, while a live authentication key
-        /// of the identity that may still sign cannot be matched to any app:
-        /// it may be the app's.
-        case undecided
-        /// Nothing of this identity's to judge: no grant of the app, and no
-        /// key bound to it.
-        case notJudged
-    }
-
-    let verdict: Verdict
-    /// The published row the verdict was told for, of a generation the read
-    /// was made for: the verdict holds while the published row has the same
-    /// generation (`DAppConnection.expiryGeneration`).
-    let row: DAppConnection
-}
-
-extension DAppConnection {
-    /// What of a row a verdict of the expiry check is told for: a change of
-    /// any of it makes the verdict another row's; a change of the rest (its
-    /// name, its url) does not.
-    struct ExpiryGeneration: Hashable {
-        let id: String
-        let scope: String?
-        let status: ConnectionStatus
-        let loginKind: DashConnectLoginKind
-        let updatedAt: Date
-    }
-
-    var expiryGeneration: ExpiryGeneration {
-        ExpiryGeneration(id: id, scope: scope, status: status, loginKind: loginKind, updatedAt: updatedAt)
-    }
-
-    /// The generations of the active ones of `rows`, by app: what the
-    /// expiry check reads again when it changes.
-    static func activeExpiryGenerations(_ rows: [DAppConnection]) -> [ExpiryGeneration] {
-        rows.filter { $0.status == .active }.map(\.expiryGeneration).sorted { $0.id < $1.id }
-    }
-}
-
-/// The expiry check of the active wallet's rows.
-struct ConnectionExpiries: Equatable {
-    enum Check: Equatable {
-        case notStarted
-        case checking
-        /// The last read ended with a verdict for every active row.
-        case read
-        /// The last read could not be made.
-        case failed
-        /// The runtime's network has no identity to read: reading again
-        /// tells the same.
-        case unavailable
-    }
-
-    /// The identity the verdicts were read on (Base58); `nil` with no
-    /// identity, or before a read.
-    let identityId: String?
-    let check: Check
-    /// By app id.
-    let byApp: [String: ConnectionExpiry]
-
-    static let notStarted = ConnectionExpiries(identityId: nil, check: .notStarted, byApp: [:])
-
-    /// The verdicts that hold for `rows` as they are published: each told
-    /// for its row as it is (`DAppConnection.expiryGeneration`); a row that
-    /// changed has none until it is checked again. With `onlyExpired`, only
-    /// the `.expired` ones.
-    func holding(for rows: [DAppConnection], onlyExpired: Bool = false) -> ConnectionExpiries {
-        let rowsById = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return ConnectionExpiries(identityId: identityId, check: check, byApp: byApp.filter { appId, expiry in
-            guard let row = rowsById[appId] else { return false }
-            guard row.expiryGeneration == expiry.row.expiryGeneration else { return false }
-            return !onlyExpired || expiry.verdict == .expired
-        })
     }
 }
 
@@ -513,17 +370,5 @@ extension ConnectionRequest {
     /// identity, wallet and network an approval is about to run for.
     func wasResolved(forIdentityId identityId: String, scope: String) -> Bool {
         walletIdentityId == identityId && self.scope == scope
-    }
-}
-
-extension AppConnect.SessionKeyTerms {
-    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
-    var budgetText: String {
-        PlatformCreditsFormatter.dashString(budgetCredits)
-    }
-
-    /// The lifetime in whole days.
-    var lifetimeDays: Int {
-        Int(lifetime / (24 * 60 * 60))
     }
 }

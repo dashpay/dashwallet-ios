@@ -59,10 +59,13 @@ struct ConnectionRow: View {
         .padding(.trailing, 14)
     }
 
+    /// A row may hold keys in every status, so it offers a disconnect; a
+    /// disconnected app, and an expired one as in Figma, offer to connect
+    /// again (an expired one's sheet offers Disconnect too).
     @ViewBuilder
     private var action: some View {
         switch item.status {
-        case .active, .confirming:
+        case .active, .confirming, .undelivered:
             DashUIKit.DashButton(
                 text: NSLocalizedString("Disconnect", comment: "DashConnect"),
                 size: .small, style: .tintedGray, action: onDisconnect)
@@ -80,9 +83,28 @@ struct ConnectionRow: View {
                     format: NSLocalizedString(
                         "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
-        case .waitingForSecondScan:
-            // Its sheet offers the second code.
-            EmptyView()
         }
     }
+}
+
+private func previewItem(
+    _ id: String, name: String = "Example App", url: String = "example.org", _ status: ConnectionSheetItem.Status
+) -> ConnectionSheetItem {
+    ConnectionSheetItem(id: id, name: name, url: url, status: status, connection: nil, entry: nil, scope: nil)
+}
+
+#Preview("Statuses") {
+    VStack(spacing: 2) {
+        ForEach([ConnectionSheetItem.Status.active, .confirming, .undelivered, .expired, .disconnected], id: \.self) { status in
+            ConnectionRow(item: previewItem("\(status)", status), onOpen: {}, onDisconnect: {}, onReconnect: {})
+        }
+    }
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Long name, no website") {
+    ConnectionRow(
+        item: previewItem("long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "", .active),
+        onOpen: {}, onDisconnect: {}, onReconnect: {})
+    .background(Color.dash.secondaryBackground)
 }

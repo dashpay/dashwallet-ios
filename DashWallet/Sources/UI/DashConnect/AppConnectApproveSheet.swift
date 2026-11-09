@@ -168,20 +168,9 @@ struct AppConnectApproveSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
-    /// The funding limit and the expiry with their Change buttons, under a
-    /// note when an earlier approval fixed them (the buttons are then off).
-    @ViewBuilder
+    /// The funding limit and the expiry with their Change buttons.
     private var termsCard: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if viewModel.approvalTermsLocked {
-                Text(NSLocalizedString(
-                    "An earlier approval of this request may have gone through, so its limit and expiry stay as they were.",
-                    comment: "DashConnect approve sheet: terms fixed by an earlier approval"))
-                    .dashFont(.footnote)
-                    .foregroundColor(Color.dash.secondaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.top, 8)
-            }
             termRow(
                 title: NSLocalizedString("Identity funding limit", comment: "DashConnect approve sheet"),
                 value: viewModel.approvalFundingText ?? "",
@@ -238,7 +227,7 @@ struct AppConnectApproveSheet: View {
             if canChange {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Change", comment: "DashConnect approve sheet"),
-                    isEnabled: !viewModel.isApproving && !viewModel.approvalTermsLocked,
+                    isEnabled: !viewModel.isApproving,
                     size: .small, style: .plainBlue, action: onChange)
                     .accessibilityLabel(Text(changeLabel))
             }
@@ -581,4 +570,61 @@ struct SpendableDashInfoSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.secondaryBackground)
     }
+}
+
+private enum AppConnectApproveSheetPreview {
+    /// A request for one HIGH key on Yappr's "post" documents, with a
+    /// budget and an expiry, and an encryption key.
+    static var request: ConnectionRequest {
+        var request = MockDashConnectDataSource.sampleRequest
+        let contract = MockDashConnectDataSource.sampleLoginRequest.contractId
+        let binding = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: contract, totalBudget: 1_000_000_000,
+            expiresAt: 1_800_000_000_000, documentTypeName: "post")
+        request.login = .appConnect(AppConnect.GrantPlan(
+            appId: contract, appEphemeralPubKeyHash: Data(repeating: 1, count: 20),
+            auth: [.init(bindingIndex: 0, binding: binding, totalBudget: 1_000_000_000, expiresAt: 1_800_000_000_000)],
+            encryption: [], connectionId: nil, identityHint: nil, createdAt: 1_793_000_000_000))
+        return request
+    }
+
+    @MainActor
+    static func viewModel(isApproving: Bool = false, error: String? = nil) -> ConnectionsViewModel {
+        let viewModel = ConnectionsViewModel(dataSource: MockDashConnectDataSource(), featureUnavailable: false)
+        viewModel.pendingRequest = request
+        viewModel.isApproving = isApproving
+        viewModel.approveError = error
+        return viewModel
+    }
+}
+
+#Preview("Approve") {
+    AppConnectApproveSheet(viewModel: AppConnectApproveSheetPreview.viewModel(), request: AppConnectApproveSheetPreview.request, onTopUp: {})
+}
+
+#Preview("Approving") {
+    AppConnectApproveSheet(
+        viewModel: AppConnectApproveSheetPreview.viewModel(isApproving: true),
+        request: AppConnectApproveSheetPreview.request, onTopUp: nil)
+}
+
+#Preview("Failed") {
+    AppConnectApproveSheet(
+        viewModel: AppConnectApproveSheetPreview.viewModel(error: "Could not complete the DashConnect request: the network did not answer."),
+        request: AppConnectApproveSheetPreview.request, onTopUp: {})
+}
+
+#Preview("Return step") {
+    DashConnectReturnStep(host: "yap.pr", onOpen: {}, onStay: {})
+}
+
+#Preview("Return step, with a note") {
+    DashConnectReturnStep(
+        host: "a-very-long-host-name.example.org",
+        note: "Another request arrived while this one was on screen; ask the app again.",
+        onOpen: {}, onStay: {})
+}
+
+#Preview("Funding limit") {
+    FundingLimitSheet(viewModel: AppConnectApproveSheetPreview.viewModel(), onClose: {})
 }
