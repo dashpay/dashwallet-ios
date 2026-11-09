@@ -11,8 +11,8 @@ extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
     /// The most budget the wallet grants a key the app proposes a budget
-    /// for. A plan keeps a binding that asks for none without one; the
-    /// approve sheet gives the connection a limit from `fundingRange`.
+    /// for. A binding that asks for none gets none, and the sheet says the
+    /// key can spend without a limit.
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
@@ -66,12 +66,6 @@ extension AppConnect {
             binding.securityLevel == .critical ? .critical : .high
         }
 
-        /// Whether this is the key for the DashPay profile.
-        var isDashPayProfile: Bool {
-            binding.kind == .documentType
-                && allowedForeignDocumentTypes.contains("\(binding.id.toBase58String())/\(binding.documentTypeName ?? "")")
-        }
-
         /// The bound the key is registered with, as the store records it.
         var storedBound: StoredBound {
             switch binding.kind {
@@ -114,8 +108,7 @@ extension AppConnect {
         let appId: Data
         /// `hash160(appEphPub)`: names the request the plan was made for.
         let appEphemeralPubKeyHash: Data
-        /// The keys' limits are the wallet's to lower: `applying` sets them.
-        var auth: [AuthGrant]
+        let auth: [AuthGrant]
         let encryption: [EncryptionGrant]
         let connectionId: Data?
         let identityHint: Data?
@@ -137,196 +130,15 @@ extension AppConnect {
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
 
-        /// The funding limit of the connection, for the summary line: the
-        /// budgets of the keys added up, or `nil` when no key has one.
+        /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
-            let budgets = auth.compactMap(\.totalBudget)
-            return budgets.isEmpty ? nil : budgets.reduce(UInt64(0)) { $0 &+ $1 }
+            auth.compactMap(\.totalBudget).max()
         }
 
         /// The latest expiry among the keys.
         var expiresAt: UInt64? {
             auth.map(\.expiresAt).max()
         }
-
-        /// What the app asked to spend in all: the sum of the keys' asks
-        /// (each at most `v2BudgetCapCredits`), or `nil` when none asked.
-        var requestedTotal: UInt64? {
-            let asks = auth.compactMap { $0.binding.totalBudget.map { min($0, v2BudgetCapCredits) } }
-            return asks.isEmpty ? nil : asks.reduce(UInt64(0)) { $0 &+ $1 }
-        }
-
-        /// The earliest expiry the app asked for, or `nil` when no key asked
-        /// for one: one expiry for the whole connection can be no later than
-        /// any key's ask.
-        var requestedExpiry: UInt64? {
-            auth.compactMap(\.binding.expiresAt).min()
-        }
-    }
-
-    // MARK: Funding limit and expiry pickers (AC-06)
-
-    /// What the funding limit sheet offers.
-    struct FundingRange: Equatable {
-        /// The most the user may set, in credits.
-        let cap: UInt64
-        /// The limit the sheet starts at, in credits.
-        let start: UInt64
-        let presets: [FundingPreset]
-    }
-
-    struct FundingPreset: Equatable {
-        let credits: UInt64
-        /// False for a preset above the cap.
-        let isEnabled: Bool
-    }
-
-    /// How a typed funding limit is judged against the cap.
-    enum CustomFundingCheck: Equatable {
-        case accepted(UInt64)
-        /// Zero: Submit stays disabled.
-        case notSubmittable
-        /// Above the cap, which the message names.
-        case aboveCap(UInt64)
-    }
-
-    /// What the expiry sheet offers.
-    struct ExpiryRange: Equatable {
-        /// The latest expiry the user may set, in milliseconds since the epoch.
-        let cap: UInt64
-        /// The expiry the sheet starts at, in milliseconds since the epoch.
-        let start: UInt64
-        let presets: [ExpiryPreset]
-    }
-
-    struct ExpiryPreset: Equatable {
-        let days: Int
-        /// Milliseconds since the epoch: `days` after the range's `now`.
-        let expiresAt: UInt64
-        /// False for a preset past the cap.
-        let isEnabled: Bool
-    }
-
-    static let fundingPresetCredits: [UInt64] = [
-        PlatformCreditsFormatter.creditsPerDash / 10,
-        PlatformCreditsFormatter.creditsPerDash / 2,
-        2 * PlatformCreditsFormatter.creditsPerDash,
-        5 * PlatformCreditsFormatter.creditsPerDash,
-    ]
-    static let expiryPresetDays = [30, 90, 365]
-    /// The limit the sheet starts at when the app asks for no amount.
-    static let defaultFundingLimit: UInt64 = PlatformCreditsFormatter.creditsPerDash / 2
-
-    private static let secondsPerDay: TimeInterval = 24 * 60 * 60
-
-    /// The funding limits the user may set: up to what the app asked for,
-    /// never above `v2BudgetCapCredits`; up to the cap from half a DASH when
-    /// it asked for no amount. The wallet may lower what the app asked for,
-    /// never raise it.
-    static func fundingRange(requestedTotal: UInt64?) -> FundingRange {
-        let cap = requestedTotal.map { min($0, v2BudgetCapCredits) } ?? v2BudgetCapCredits
-        return FundingRange(
-            cap: cap,
-            start: requestedTotal == nil ? defaultFundingLimit : cap,
-            presets: fundingPresetCredits.map { FundingPreset(credits: $0, isEnabled: $0 <= cap) })
-    }
-
-    /// A typed funding limit in credits: above zero and not above `cap`.
-    static func checkCustomFunding(_ credits: UInt64, cap: UInt64) -> CustomFundingCheck {
-        if credits == 0 { return .notSubmittable }
-        return credits > cap ? .aboveCap(cap) : .accepted(credits)
-    }
-
-    /// The expiries the user may set at `now`: up to what the app asked for,
-    /// never later than `v2LifetimeCap`; up to the cap from 90 days when it
-    /// asked for none.
-    static func expiryRange(requestedExpiry: UInt64?, now: Date) -> ExpiryRange {
-        let latest = milliseconds(now.addingTimeInterval(v2LifetimeCap))
-        let cap = requestedExpiry.map { min($0, latest) } ?? latest
-        return ExpiryRange(
-            cap: cap,
-            start: requestedExpiry == nil ? milliseconds(now.addingTimeInterval(v2DefaultLifetime)) : cap,
-            presets: expiryPresetDays.map { days in
-                let expiresAt = milliseconds(now.addingTimeInterval(TimeInterval(days) * secondsPerDay))
-                return ExpiryPreset(days: days, expiresAt: expiresAt, isEnabled: expiresAt <= cap)
-            })
-    }
-
-    /// The expiry for a picked day: the last millisecond of that day in
-    /// `calendar`'s time zone, cut to `cap` on the cap's own day. `nil` for a
-    /// day that starts after the cap.
-    static func pickedExpiry(day: Date, calendar: Calendar, cap: UInt64) -> UInt64? {
-        let start = calendar.startOfDay(for: day)
-        guard milliseconds(start) <= cap,
-              let next = calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
-        return min(milliseconds(next) - 1, cap)
-    }
-
-    /// What a DashPay profile key gets of the funding limit (AC-07).
-    static let profileKeyShare: UInt64 = PlatformCreditsFormatter.creditsPerDash / 500
-
-    /// `plan` with one funding limit and one expiry for the whole
-    /// connection (AC-07): the DashPay profile keys take `profileKeyShare`
-    /// between them, or half of a limit under twice that, and the app's own
-    /// keys share the rest in proportion to what each asked for (a key that
-    /// asked for nothing weighs as much as the smallest ask; none asked,
-    /// evenly). With no app key the profile keys take `profileKeyShare` or the
-    /// whole limit when it is smaller. No key gets more than it asked, and
-    /// every key gets `expiresAt`. `nil` when a key would get no budget.
-    /// TODO(dashconnect-app-key-split): the product rule for sharing between
-    /// several app keys is not decided yet (spec §8); `appKeyShares` is the
-    /// one place to change it.
-    static func applying(fundingLimit: UInt64, expiresAt: UInt64, to plan: GrantPlan) -> GrantPlan? {
-        let profile = plan.auth.indices.filter { plan.auth[$0].isDashPayProfile }
-        let app = plan.auth.indices.filter { !plan.auth[$0].isDashPayProfile }
-        let profileTotal: UInt64
-        if profile.isEmpty {
-            profileTotal = 0
-        } else if app.isEmpty {
-            profileTotal = min(fundingLimit, profileKeyShare)
-        } else {
-            profileTotal = fundingLimit < 2 * profileKeyShare ? fundingLimit / 2 : profileKeyShare
-        }
-        var shares = [UInt64](repeating: 0, count: plan.auth.count)
-        for (index, share) in zip(profile, evenShares(of: profileTotal, count: profile.count)) {
-            shares[index] = share
-        }
-        let appAsks = app.map { plan.auth[$0].binding.totalBudget.map { min($0, v2BudgetCapCredits) } }
-        for (index, share) in zip(app, appKeyShares(of: fundingLimit - profileTotal, asks: appAsks)) {
-            shares[index] = share
-        }
-        var applied = plan
-        var grants: [AuthGrant] = []
-        for (grant, share) in zip(plan.auth, shares) {
-            let budget = grant.binding.totalBudget.map { min(share, min($0, v2BudgetCapCredits)) } ?? share
-            guard budget > 0 else { return nil }
-            grants.append(AuthGrant(
-                bindingIndex: grant.bindingIndex, binding: grant.binding, totalBudget: budget, expiresAt: expiresAt))
-        }
-        applied.auth = grants
-        return applied
-    }
-
-    /// How the app's own keys share `total`: in proportion to their asks. The
-    /// remainder of the division goes to the first key.
-    private static func appKeyShares(of total: UInt64, asks: [UInt64?]) -> [UInt64] {
-        guard !asks.isEmpty else { return [] }
-        let smallest = asks.compactMap { $0 }.filter { $0 > 0 }.min() ?? 1
-        let weights = asks.map { $0 ?? smallest }
-        let weightTotal = weights.reduce(UInt64(0), +)
-        var shares = weights.map { weight -> UInt64 in
-            let product = total.multipliedFullWidth(by: weight)
-            return weightTotal.dividingFullWidth((high: product.high, low: product.low)).quotient
-        }
-        shares[0] += total - shares.reduce(UInt64(0), +)
-        return shares
-    }
-
-    private static func evenShares(of total: UInt64, count: Int) -> [UInt64] {
-        guard count > 0 else { return [] }
-        var shares = [UInt64](repeating: total / UInt64(count), count: count)
-        shares[0] += total % UInt64(count)
-        return shares
     }
 
     /// The `ac=` statuses of the profile's callback.
