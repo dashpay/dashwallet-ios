@@ -64,8 +64,14 @@ NS_ASSUME_NONNULL_BEGIN
                 return nil;
             }
 
+            // The answer goes to `sender`, so a request without an app to answer has no use.
+            NSString *sender = [DWCallbackScheme validated:params[@"sender"]];
+            if (!sender) {
+                return nil;
+            }
+
             DWURLRequestAction *action = [[DWURLRequestAction alloc] init];
-            action.sender = params[@"sender"];
+            action.sender = sender;
             action.request = params[@"request"];
 
             return action;
@@ -76,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
                 return nil;
             }
 
-            NSURL *paymentURL = [self paymentURLWithParams:params];
+            NSURL *paymentURL = [self paymentURLWithParams:params namingSender:YES];
             if (!paymentURL) {
                 return nil;
             }
@@ -95,6 +101,16 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     return nil;
+}
+
++ (nullable NSURL *)paymentURLForScannedLink:(NSURL *)url {
+    // Same routing as a deep link, so a scan pays exactly the links a deep link pays.
+    if (![url.scheme isEqual:@"dashwallet"] ||
+        ![[self actionForURL:url] isKindOfClass:DWURLPayAction.class]) {
+        return nil;
+    }
+
+    return [self paymentURLWithParams:[self parseParamsFromURL:url] namingSender:NO];
 }
 
 #pragma mark - Private
@@ -132,11 +148,22 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
-+ (nullable NSURL *)paymentURLWithParams:(NSDictionary<NSString *, NSString *> *)params {
+/// The `dash:` URI a `dashwallet://pay=` link stands for. A `sender` that names an app replaces
+/// the link's own label with one naming that app, and stays in the URI as the callback scheme.
+/// Otherwise (`namingSender` is NO, or `sender` is not a scheme an app can own) `sender` is
+/// dropped and the link keeps its own label.
++ (nullable NSURL *)paymentURLWithParams:(NSDictionary<NSString *, NSString *> *)params
+                            namingSender:(BOOL)namingSender {
     NSMutableDictionary<NSString *, NSString *> *mutableParams = [params mutableCopy];
 
-    if (mutableParams[@"label"]) {
-        [mutableParams removeObjectForKey:@"label"];
+    NSString *sender = namingSender ? [DWCallbackScheme validated:mutableParams[@"sender"]] : nil;
+    if (sender) {
+        mutableParams[@"label"] = [NSString stringWithFormat:
+                                                NSLocalizedString(@"Application %@ is requesting a payment to", nil),
+                                                sender];
+    }
+    else {
+        [mutableParams removeObjectForKey:@"sender"];
     }
 
     NSString *componentsString = [NSString stringWithFormat:@"dash:%@", mutableParams[@"pay"]];
@@ -147,11 +174,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
 
-    NSString *labelValue = [NSString stringWithFormat:
-                                         NSLocalizedString(@"Application %@ is requesting a payment to", nil),
-                                         [mutableParams[@"sender"] capitalizedString]];
-    NSURLQueryItem *labelItem = [NSURLQueryItem queryItemWithName:@"label" value:labelValue];
-    [queryItems addObject:labelItem];
+    if (mutableParams[@"label"]) {
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:@"label" value:mutableParams[@"label"]]];
+    }
 
     for (NSString *key in mutableParams) {
         if ([key isEqualToString:@"label"]) {
