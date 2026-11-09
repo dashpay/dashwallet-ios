@@ -300,12 +300,12 @@ struct ApproveConnectionSheet: View {
             )
 
             VStack(alignment: .leading, spacing: 4) {
-                if let warning = originWarning(plan) {
-                    Text(warning)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primaryText)
-                }
+                Text(NSLocalizedString(
+                    "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
+                    comment: "DashConnect App Connect v2"))
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primaryText)
                 Text(requestOrigin(plan))
                     .font(.footnote)
                     .foregroundColor(.secondaryText)
@@ -314,7 +314,7 @@ struct ApproveConnectionSheet: View {
                         format: NSLocalizedString(
                             "Only approve if you just started signing in on %@.",
                             comment: "DashConnect App Connect v2: the placeholder is the app's website or name"),
-                        plan.brandHost ?? plan.callbackHost ?? resolvedAppLabel)
+                        plan.callbackHost ?? resolvedAppLabel)
                 )
                 .font(.footnote)
                 .foregroundColor(.secondaryText)
@@ -387,33 +387,6 @@ struct ApproveConnectionSheet: View {
                 comment: "DashConnect App Connect v2")
         }
         return text
-    }
-
-    /// The profile's warnings. Nothing in a request proves where it came
-    /// from: an app the wallet does not know is named by the request alone,
-    /// and a known app's request that does not return to its website may
-    /// come from a page that is not the app's.
-    private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
-        switch AppConnect.originWarning(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
-        case nil:
-            return nil
-        case .unknownApp:
-            return NSLocalizedString(
-                "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
-                comment: "DashConnect App Connect v2")
-        case .noCallback(let website):
-            return String(
-                format: NSLocalizedString(
-                    "This request does not return to %@. It may not come from the app's website.",
-                    comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
-                website)
-        case .returnsElsewhere(let callbackHost):
-            return String(
-                format: NSLocalizedString(
-                    "This request would return to %@, which is not the app's website.",
-                    comment: "DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr"),
-                callbackHost)
-        }
     }
 
     private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {

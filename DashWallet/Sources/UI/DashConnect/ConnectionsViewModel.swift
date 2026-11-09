@@ -309,9 +309,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// Returns to the app that sent an App Connect request, with how it
     /// ended (`ac=<status>`). Only the callback the sheet showed ("returns
     /// to <host>") is opened, and only once the user has answered it: the
-    /// user's answer to a sheet naming the host, with a warning when the app
-    /// is unknown or the host is not its website
-    /// (`AppConnect.originWarning`), stands in for the profile's "ask".
+    /// user's answer to a sheet naming the host, with its warning that the
+    /// wallet cannot confirm the app, stands in for the profile's "ask".
     /// The app treats it as a nudge to look for the response, never as
     /// proof of anything.
     private func openCallback(of request: DashKeyRequest, status: AppConnect.CallbackStatus) {

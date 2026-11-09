@@ -116,10 +116,6 @@ extension AppConnect {
         let createdAt: UInt64
         /// Where the wallet returns when it is done; shown on the sheet.
         let callbackHost: String?
-        /// The app's website in the wallet's brand map, or nil for an app the
-        /// wallet does not know: then the name on the sheet is the one the
-        /// request gives.
-        var brandHost: String? = nil
         /// The groups among the bindings that have administrators besides
         /// their owner, as Platform proves them. Each administrator can add
         /// contracts of its own to the group, and a group key acts in every
@@ -225,34 +221,6 @@ extension AppConnect {
             createdAt: request.createdAt,
             callbackHost: uri.callback?.host
         )
-    }
-
-    /// What the sheet warns about where a request came from.
-    enum OriginWarning: Equatable {
-        /// The app is not in the wallet's brand map: its name comes from the
-        /// request alone.
-        case unknownApp
-        /// A known app's request carries no callback.
-        case noCallback(website: String)
-        /// A known app's request returns to a host that is not its website.
-        case returnsElsewhere(callbackHost: String)
-    }
-
-    /// The request itself proves nothing about where it came from: anyone
-    /// can put the app's id and the app's host in a QR code. The brand map
-    /// only names an app and never changes which requests are accepted
-    /// (dips#181, App Identity), so what does not agree with it is a
-    /// warning on the sheet, never a refusal.
-    static func originWarning(callbackHost: String?, brandHost: String?) -> OriginWarning? {
-        guard let brandHost else { return .unknownApp }
-        guard let callbackHost else { return .noCallback(website: brandHost) }
-        return isHost(callbackHost, of: brandHost) ? nil : .returnsElsewhere(callbackHost: callbackHost)
-    }
-
-    /// Whether `host` is `brandHost` or one of its subdomains. Both are
-    /// lowercase DNS names: the callback parser takes no other host.
-    static func isHost(_ host: String, of brandHost: String) -> Bool {
-        host == brandHost || host.hasSuffix("." + brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:

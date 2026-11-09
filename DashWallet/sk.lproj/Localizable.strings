@@ -6006,12 +6006,6 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "To predstavuje to aktuálny ročný percentuálny výnos celého Masternódu mínus 15 % poplatok CrowdNode. Nie je to zaručená miera návratnosti a môže stúpať alebo klesať v závislosti od veľkosti fondov CrowdNode a ceny Dash.";
 
-/* DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr */
-"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
-
-/* DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr */
-"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
-
 /* DashConnect App Connect v2 */
 "This sign-in is for another identity. Switch to it in this wallet and ask the app again." = "This sign-in is for another identity. Switch to it in this wallet and ask the app again.";
 
