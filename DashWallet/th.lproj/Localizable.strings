@@ -184,9 +184,6 @@
 /* Wallet accounts — address pool */
 "%d total" = "%d total";
 
-/* CoinJoin */
-"%d transactions" = "%d transactions";
-
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
 

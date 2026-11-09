@@ -906,20 +906,6 @@ Debes comprobar y, si es necesario, corregir la configuración de fecha, hora y 
 			<string>Anota estas %d palabras en orden y guárdalas en un lugar seguro. Son la ÚNICA forma de recuperar esta cartera. Cualquiera que las tenga puede gastar tus fondos.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

@@ -902,20 +902,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Annota queste %d parole in ordine e conservale in un posto sicuro. Sono l'UNICO modo per recuperare questo portafoglio. Chiunque le possieda può spendere i tuoi fondi.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

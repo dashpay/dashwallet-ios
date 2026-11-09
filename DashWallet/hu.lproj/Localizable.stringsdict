@@ -894,20 +894,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Írd le ezt a(z) %d szót sorrendben, és tartsd biztonságos helyen. Ez az EGYETLEN módja e tárca helyreállításának. Bárki, akinek megvan, elköltheti a pénzedet.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

@@ -894,20 +894,6 @@ Dapat mong suriin at kung kinakailangan itama ang iyong mga setting ng petsa, or
 			<string>Isulat ang %d salitang ito ayon sa pagkakasunod-sunod at itago sa ligtas na lugar. Ito lang ang PARAAN para mabawi ang wallet na ito. Kayang gastusin ng sinumang may hawak nito ang iyong pondo.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

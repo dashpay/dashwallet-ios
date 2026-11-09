@@ -982,20 +982,6 @@ Powinieneś sprawdzić, i skorygować swoje ustawienia daty, godziny i strefy cz
 			<string>Zapisz te słowa po kolei i przechowuj w bezpiecznym miejscu. Liczba słów: %d. To JEDYNY sposób na odzyskanie tego portfela. Każdy, kto je ma, może wydać Twoje środki.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

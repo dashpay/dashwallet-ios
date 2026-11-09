@@ -982,20 +982,6 @@ Mali by ste skontrolovať a v prípade potreby opraviť nastavenia dátumu, čas
 			<string>Zapíšte si týchto %d slov v poradí a uschovajte ich na bezpečnom mieste. Sú JEDINÝM spôsobom, ako túto peňaženku obnoviť. Ktokoľvek, kto ich má, môže minúť vaše prostriedky.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

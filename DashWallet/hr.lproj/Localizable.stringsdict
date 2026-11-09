@@ -926,20 +926,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Zapišite ovih %d riječi redom i čuvajte ih na sigurnom mjestu. One su JEDINI način da se ovaj novčanik oporavi. Svatko tko ih ima može potrošiti vaša sredstva.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

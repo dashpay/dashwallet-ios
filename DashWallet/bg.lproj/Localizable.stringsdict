@@ -894,20 +894,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Запишете тези %d думи по ред и ги пазете на сигурно място. Те са ЕДИНСТВЕНИЯТ начин да възстановите този портфейл. Всеки, който ги притежава, може да похарчи средствата ви.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

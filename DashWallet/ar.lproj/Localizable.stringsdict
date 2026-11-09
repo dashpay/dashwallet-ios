@@ -1022,20 +1022,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>دوّن هذه الكلمات الـ %d بالترتيب واحتفظ بها في مكان آمن. فهي الطريقة الوحيدة لاسترداد هذه المحفظة. وأي شخص يملكها يمكنه إنفاق أموالك.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

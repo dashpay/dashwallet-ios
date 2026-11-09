@@ -894,20 +894,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Skribu ĉi tiujn %d vortojn laŭvice kaj konservu ilin en sekura loko. Ili estas la SOLA maniero reakiri ĉi tiun monujon. Ĉiu, kiu havas ilin, povas elspezi viajn rimedojn.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

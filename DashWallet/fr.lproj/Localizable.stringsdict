@@ -906,20 +906,6 @@ Il vous est conseillé de vérifier (voire de corriger) la date, l'heure et le f
 			<string>Notez ces %d mots dans l'ordre et conservez-les en lieu sûr. Ils sont le SEUL moyen de récupérer ce portefeuille. Quiconque les détient peut dépenser vos fonds.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

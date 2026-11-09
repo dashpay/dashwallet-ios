@@ -982,20 +982,6 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>Запишите эти слова по порядку и храните в надёжном месте. Всего слов: %d. Это ЕДИНСТВЕННЫЙ способ восстановить этот кошелёк. Любой, у кого они есть, может потратить ваши средства.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

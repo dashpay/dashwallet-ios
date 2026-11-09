@@ -850,20 +850,6 @@ Anda harus memeriksa dan jika perlu mengoreksi pengaturan tanggal, waktu, dan zo
 			<string>Catat %d kata ini secara berurutan dan simpan di tempat aman. Kata-kata itu adalah SATU-SATUNYA cara memulihkan dompet ini. Siapa pun yang memilikinya dapat membelanjakan dana Anda.</string>
 		</dict>
 	</dict>
-	<key>%d transactions</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d transactions</string>
-		</dict>
-	</dict>
 	<key>%d UTXOs</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
