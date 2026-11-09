@@ -588,7 +588,8 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func normalizeBarcodeFormat(_ rawFormat: String?) -> BarcodeFormat {
-        let normalized = (rawFormat ?? "")
+        guard let rawFormat, !rawFormat.isEmpty else { return .code128 }
+        let normalized = rawFormat
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .uppercased()
             .replacingOccurrences(of: "-", with: "_")
