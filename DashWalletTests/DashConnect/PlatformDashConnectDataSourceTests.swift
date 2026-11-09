@@ -662,7 +662,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(
             "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
-        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a", terms: .current)], loginRequest: request)
+        let spy = LoginApprovalSpy(shown: [Self.consent(identityId: "identity-a")], loginRequest: request)
         spy.approveFailures = [AppConnect.Refusal(.stale, "The request is too old.")]
         let opened = OpenedURLs()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, openURL: { opened.urls.append($0) })
