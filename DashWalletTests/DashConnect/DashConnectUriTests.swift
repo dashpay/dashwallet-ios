@@ -352,7 +352,7 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertNotEqual(mainnetUri, AppConnectVector.renewUri)
 
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(mainnetUri)) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
         }
     }
 
@@ -873,9 +873,9 @@ extension DashConnectUriTests {
         for (code, network) in networks {
             XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=\(code)")).network, network)
         }
-        // As on `dash-key:`: the request is not defined for mainnet.
+        // As on `dash-key:`: request v2 is not enabled on mainnet yet (ADR-0009).
         XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=m"))) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
         }
     }
 
