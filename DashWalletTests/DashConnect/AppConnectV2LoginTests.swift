@@ -407,6 +407,27 @@ final class AppConnectV2LoginTests: XCTestCase {
             .invalid)
     }
 
+    func testAnAppOwnedLikeASystemContractIsRefusedEvenWhenUnlisted() throws {
+        // An app whose contract has the all-zero owner of every system
+        // contract, as a protocol-15 contract missing from the list would.
+        let zeroOwner = AppConnect.systemContractOwnerId
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
+            .init(kind: .documentType, securityLevel: .high, id: Self.appId,
+                  totalBudget: nil, expiresAt: nil, documentTypeName: "post"),
+        ]), now: Self.now)
+        XCTAssertFalse(AppConnect.systemContractIds.contains(Self.appId.toBase58String()))
+        XCTAssertEqual(
+            AppConnect.ownershipRefusal(
+                for: plan, appOwnerId: zeroOwner, groupOwners: [:],
+                contractOwners: [Self.appId: zeroOwner], appBoundedKeyPurposes: [])?.status,
+            .invalid)
+        // The two protocol-15 system contracts are listed.
+        XCTAssertTrue(AppConnect.systemContractIds.isSuperset(of: [
+            "3iNyoNwjCTkb7XS3RHyWUtLx7pgC6AFAEQNNDHzxqngF", // decision proposals
+            "AE6yYq65VdfGCg2MSyV9vV7cWGiFWjbwBuy7THesDh4e", // token market
+        ]))
+    }
+
     // MARK: - Re-sending an auth key
 
     func testAKeyOnTheIdentityIsSentAgainOnlyWithinThePlansTerms() throws {

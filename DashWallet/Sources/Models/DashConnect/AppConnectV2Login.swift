@@ -29,7 +29,8 @@ extension AppConnect {
     /// Platform's system contracts (dashpay/platform `data-contracts`), the
     /// same ids on every network. None of them is an app: a request naming
     /// one as its app, or binding a key to one, is refused, except for the
-    /// document types allowlisted above.
+    /// document types allowlisted above. A contract added later is still
+    /// caught as the app by its owner (`systemContractOwnerId`).
     static let systemContractIds: Set<String> = [
         "4fJLR2GYTPFdomuTVvNy3VRrvWgvkKPzqehEBpNf2nk6", // withdrawals
         "rUnsWrFu3PKyRMGk2mxmZVBPbQuZx2qtHeFjURoQevX", // masternode reward shares
@@ -41,7 +42,11 @@ extension AppConnect {
         "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD", // document history
         contractId, // App Connect
         "EG7RGfV8fDTayC2FyVr8HwdpJh3fXDbVztcfE94UmN88", // moderation charters
+        "3iNyoNwjCTkb7XS3RHyWUtLx7pgC6AFAEQNNDHzxqngF", // decision proposals (protocol 15)
+        "AE6yYq65VdfGCg2MSyV9vV7cWGiFWjbwBuy7THesDh4e", // token market (protocol 15)
     ]
+    /// The owner of every system contract. No identity has this id.
+    static let systemContractOwnerId = Data(count: 32)
 
     // MARK: What an approval grants
 
@@ -267,7 +272,7 @@ extension AppConnect {
         appBoundedKeyPurposes: Set<KeyPurpose>,
         appUnreadableKeyPurposes: Set<KeyPurpose> = []
     ) -> Refusal? {
-        if systemContractIds.contains(plan.appId.toBase58String()) {
+        if systemContractIds.contains(plan.appId.toBase58String()) || appOwnerId == systemContractOwnerId {
             return Refusal(.invalid, NSLocalizedString(
                 "The request names a Dash Platform system contract as the app.",
                 comment: "DashConnect App Connect v2"))
