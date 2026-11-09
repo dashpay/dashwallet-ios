@@ -1062,7 +1062,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             if status == .active && connection.isUndelivered { status = .undelivered }
             let existing = rows.first { $0.id == id }
             let latest = connection.followedIntents.first ?? connection.intents.first
-            let name = latest?.appLabel ?? existing?.name ?? ""
+            // Profile keys no connection accounts for stand under DashPay's id.
+            let name = latest?.appLabel ?? existing?.name ?? (id == AppConnect.dashPayContractId ? "DashPay" : "")
             var seenOn = existing?.seenOn ?? []
             seenOn.remove(me)
             if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
