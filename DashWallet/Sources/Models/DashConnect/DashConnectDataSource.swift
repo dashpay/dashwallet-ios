@@ -100,13 +100,6 @@ protocol DashConnectDataSource {
     /// identity's intents for the app; `nil` when there is no active wallet
     /// or `scope` is not its.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
-    /// The protocol version the active network runs, as the wallet can read
-    /// it; throws when it cannot be read.
-    func protocolVersion() async throws -> UInt32
-    /// What the approve sheet is built from besides the request (Flow 4): the
-    /// projection of the wallet's connections, the identity balance and the
-    /// fee to register the keys. `nil` when they cannot be read.
-    func approveSheetFacts() async -> ApproveSheetFacts?
 }
 
 extension DashConnectDataSource {
@@ -117,23 +110,6 @@ extension DashConnectDataSource {
     }
 
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
-
-    /// A data source that does not read a wallet cannot tell.
-    func approveSheetFacts() async -> ApproveSheetFacts? { nil }
-
-    /// A data source that does not read a network cannot tell its version.
-    func protocolVersion() async throws -> UInt32 {
-        throw DashConnectMockError.protocolVersionUnknown
-    }
-}
-
-/// What the approve sheet is built from besides the request itself.
-struct ApproveSheetFacts: Equatable {
-    let projection: AppConnect.Projection
-    /// The identity balance, in Platform credits.
-    let balance: UInt64
-    /// What registering the keys costs, in Platform credits.
-    let fee: UInt64
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -172,7 +148,6 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case needsNewerWallet
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
     case stateTransitionNotSupported
-    case protocolVersionUnknown
 
     var errorDescription: String? {
         switch self {
@@ -188,8 +163,6 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .stateTransitionNotSupported:
             return "State transitions are not supported by the mock."
-        case .protocolVersionUnknown:
-            return "This data source does not read a protocol version."
         }
     }
 
@@ -338,10 +311,6 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             existingConnection: existingConnection(for: fallback.appContractId),
             login: .refused(AppConnect.v1Refusal)
         )
-    }
-
-    func approveSheetFacts() async -> ApproveSheetFacts? {
-        ApproveSheetFacts(projection: AppConnect.project([], intents: []), balance: 5_000_000_000, fee: 1_000_000_000)
     }
 
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
