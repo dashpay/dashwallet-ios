@@ -37,3 +37,23 @@ struct ConnectionsList: View {
         .modifier(MenuViewModifier())
     }
 }
+
+#Preview("Several apps") {
+    ConnectionsList(
+        items: ConnectionStatus.allCases.map { status in
+            ConnectionSheetItem(
+                id: status.rawValue, name: "Example App \(status.rawValue)", url: "example.org", status: status,
+                connection: nil)
+        },
+        onOpen: { _ in }, onDisconnect: { _ in })
+    .padding(20)
+    .background(Color.primaryBackground)
+}
+
+#Preview("One app") {
+    ConnectionsList(
+        items: [ConnectionSheetItem(id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil)],
+        onOpen: { _ in }, onDisconnect: { _ in })
+    .padding(20)
+    .background(Color.primaryBackground)
+}

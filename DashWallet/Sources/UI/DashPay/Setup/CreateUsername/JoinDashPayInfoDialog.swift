@@ -21,7 +21,7 @@ import DashUIKit
 public struct JoinDashPayInfoDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     var action: () -> Void
-    /// Non-nil surfaces the "Have an invitation?" redeem entry on the
+    /// Non-nil surfaces the "Scan invitation QR" entry on the
     /// embedded join screen; the dialog dismisses before forwarding.
     var onClaimInvitation: (() -> Void)? = nil
     /// Non-nil lets the privacy page offer "Shield your funds first"; the

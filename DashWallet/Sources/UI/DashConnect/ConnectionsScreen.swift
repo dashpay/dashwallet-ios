@@ -35,9 +35,6 @@ struct ConnectionsScreen: View {
     }
 
     @State private var showsFundingLimitsInfo = false
-    /// Scanning from the connection sheet closes it first: the scanner is
-    /// presented once it is gone.
-    @State private var scansAfterSheet = false
 
     var body: some View {
         ZStack {
@@ -72,8 +69,21 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        .task { await viewModel.refreshConnections() }
         .alert(item: messageBinding) { message in
-            Alert(
+            if let connection = message.unrecordedKeysOf {
+                return Alert(
+                    title: Text(message.title),
+                    message: Text(message.text),
+                    primaryButton: .destructive(Text(NSLocalizedString("Turn them off", comment: "DashConnect"))) {
+                        viewModel.message = nil
+                        viewModel.disconnect(connection, includingUnrecorded: true)
+                    },
+                    secondaryButton: .cancel(Text(NSLocalizedString("Leave them", comment: "DashConnect"))) {
+                        viewModel.message = nil
+                    })
+            }
+            return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
                 dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
@@ -94,9 +104,6 @@ struct ConnectionsScreen: View {
         .sheet(item: shownConnectionBinding, onDismiss: {
             showsFundingLimitsInfo = false
             viewModel.connectionSheetDismissed()
-            guard scansAfterSheet else { return }
-            scansAfterSheet = false
-            showScanner()
         }) { item in
             connectionSheet(for: item)
         }
@@ -152,14 +159,9 @@ struct ConnectionsScreen: View {
             isBusy: viewModel.isDisconnecting,
             message: viewModel.connectionSheetMessage,
             onClose: viewModel.hideConnection,
-            onDisconnect: viewModel.disconnectShown(asked:),
+            onDisconnect: viewModel.disconnectShown,
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
             disconnectQuestion: viewModel.disconnectQuestion,
-            onScan: {
-                scansAfterSheet = true
-                viewModel.hideConnection()
-            },
-            onMockScan: mockScan,
             onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
         )
         .presentationDragIndicator(.visible)
@@ -181,9 +183,9 @@ struct ConnectionsScreen: View {
             onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
-        // The one-QR terms make the sheet longer than the fixed height
+        // An App Connect plan makes the sheet longer than the fixed height
         // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.sessionKeyTerms != nil || request.login.grantPlan != nil)
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.grantPlan != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -282,17 +284,21 @@ struct ConnectionsScreen: View {
     )
 }
 
-#Preview("Approved") {
+#Preview("Confirming") {
     ConnectionsScreen(
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
-            dataSource: MockDashConnectDataSource(initial: [.init(
-                id: MockDashConnectDataSource.sample(.approved).id,
-                name: MockDashConnectDataSource.sample(.approved).name,
-                url: MockDashConnectDataSource.sample(.approved).url,
-                status: .approved,
-                updatedAt: MockDashConnectDataSource.sample(.approved).updatedAt
-            )]),
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.confirming)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Not Delivered") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.undelivered)]),
             featureUnavailable: false
         )
     )

@@ -58,22 +58,37 @@ struct ConnectionRow: View {
         .padding(.trailing, 14)
     }
 
-    @ViewBuilder
+    /// Every connection offers a disconnect: the app's keys may be on in
+    /// each status.
     private var action: some View {
-        switch item.status {
-        case .active, .confirming:
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Disconnect", comment: "DashConnect"),
-                size: .small, style: .tintedGray, action: onDisconnect)
-                .fixedSize()
-                .accessibilityLabel(Text(String(
-                    format: NSLocalizedString(
-                        "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
-                    item.name)))
-        case .waitingForSecondScan:
-            // Its sheet offers the second code; a disconnect only turns it
-            // back into this state.
-            EmptyView()
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            size: .small, style: .tintedGray, action: onDisconnect)
+            .fixedSize()
+            .accessibilityLabel(Text(String(
+                format: NSLocalizedString(
+                    "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                item.name)))
+    }
+}
+
+#Preview("Statuses") {
+    VStack(spacing: 2) {
+        ForEach(ConnectionStatus.allCases, id: \.self) { status in
+            ConnectionRow(
+                item: ConnectionSheetItem(
+                    id: status.rawValue, name: "Example App", url: "example.org", status: status, connection: nil),
+                onOpen: {}, onDisconnect: {})
         }
     }
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Long name, no website") {
+    ConnectionRow(
+        item: ConnectionSheetItem(
+            id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
+            status: .active, connection: nil),
+        onOpen: {}, onDisconnect: {})
+    .background(Color.dash.secondaryBackground)
 }
