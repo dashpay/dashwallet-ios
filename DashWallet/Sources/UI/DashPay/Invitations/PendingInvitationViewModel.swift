@@ -315,10 +315,8 @@ final class PendingInvitationViewModel: ObservableObject {
         if let validationTask, validationFor == invitation {
             return await validationTask.value
         }
-        // Asked for while another check of this invitation was running, but
-        // only reached now, after that check answered (this one waited for a
-        // stale check, or for its turn on the main actor). That answer
-        // stands, as it would in `validateIfPossible`; no second check.
+        // Another caller that waited for the same stale check may have
+        // checked this invitation already and finished: its verdict stands.
         if let lastVerdict, lastVerdict.invitation == invitation,
            Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime {
             return lastVerdict.validation

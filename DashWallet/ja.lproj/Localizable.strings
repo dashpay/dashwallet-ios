@@ -10,6 +10,15 @@
 /* CrowdNode */
 " Terms of Use " = "利用規約";
 
+/* Evonode status: duration */
+"%.0f s" = "%.0f s";
+
+/* Seconds, abbreviated */
+"%.1f s" = "%.1f s";
+
+/* Seconds, abbreviated */
+"%.2f s" = "%.2f s";
+
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f 秒";
 
@@ -183,6 +192,9 @@
 
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
+
+/* CoinJoin */
+"%d UTXOs" = "%d UTXOs";
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d 票";
@@ -509,6 +521,9 @@
 
 /* No comment provided by engineer. */
 "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected." = "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.";
+
+/* SPV diagnostics */
+"Aggregate Progress" = "Aggregate Progress";
 
 /* No comment provided by engineer. */
 "Agree" = "同意する";
@@ -856,6 +871,9 @@
 
 /* TimeSkew */
 "behind" = "下回る";
+
+/* SPV diagnostics */
+"Best peer height" = "Best peer height";
 
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "%1$ld～%2$ld文字";
@@ -1267,6 +1285,9 @@
 /* SPV sync */
 "Connected peers" = "接続中のピア";
 
+/* SPV diagnostics */
+"Connected Peers" = "Connected Peers";
+
 /* DashConnect re-login */
 "Connected since %@" = "Connected since %@";
 
@@ -1396,6 +1417,10 @@
 
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core のチェーンロック高";
+
+/* SPV diagnostics
+   Sync Info */
+"Core Sync Status" = "Core Sync Status";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "見落としまたは間違った言葉を自動回復できませんでした";
@@ -1578,6 +1603,12 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "クレジットカード";
 
+/* Raw transaction */
+"Credit output %d" = "Credit output %d";
+
+/* Raw transaction */
+"Credit outputs" = "Credit outputs";
+
 /* Translate it as short as possible! (24 symbols max) */
 "CrowdNode" = "CrowdNode";
 
@@ -1695,6 +1726,15 @@
 
 /* Buy Dash */
 "Dash Wallet on this device" = "この端末のDashウォレット";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to move wallet" = "Dash Wallet — unable to move wallet";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to open wallet" = "Dash Wallet — unable to open wallet";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to read wallet keys" = "Dash Wallet — unable to read wallet keys";
 
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
@@ -1984,6 +2024,9 @@
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Touch IDを有効にする";
 
+/* Voting */
+"Enable Voting" = "Enable Voting";
+
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "DashPay の有効化には、一度きりの少額のネットワーク手数料がかかり、アイデンティティのクレジット残高から支払われます。正確な見積もりは確定前に表示されます。連絡先リクエストや支払いの送信には通常のネットワーク手数料がかかります。";
 
@@ -2169,6 +2212,9 @@
 
 /* SPV sync phase */
 "Filter headers" = "フィルターヘッダー";
+
+/* SPV diagnostics */
+"Filter Headers" = "Filter Headers";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "取引を絞り込む";
@@ -2691,6 +2737,9 @@
 /* Raw transaction inspector */
 "Inputs (%d)" = "入力 (%d)";
 
+/* Raw transaction */
+"Inputs hash" = "Inputs hash";
+
 /* Receive payment status */
 "InstantSend confirmed" = "InstantSend confirmed";
 
@@ -3125,6 +3174,9 @@
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "%2$dのマスターノードリスト#%1$d";
 
+/* Raw transaction */
+"Masternode list merkle root" = "Masternode list merkle root";
+
 /* About screen tech info */
 "Masternode list: %u of %u" = "Masternode list: %1$u of %2$u";
 
@@ -3142,6 +3194,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Revocation" = "マスターノードの取り消し";
+
+/* Raw transaction */
+"Masternode type" = "Masternode type";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "マスターノードのアップデート";
@@ -3484,6 +3539,9 @@
 
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
+
+/* SPV diagnostics */
+"No peers connected" = "No peers connected";
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "紐付けられたウォレットの保存済みレコードが見つかりません。";
@@ -3905,6 +3963,9 @@
 /* Raw transaction inspector */
 "Payload hex" = "ペイロード (16 進)";
 
+/* Raw transaction */
+"Payload version" = "Payload version";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "支払い方法";
 
@@ -3971,6 +4032,9 @@
 /* CrowdNode */
 "per transaction" = "1取引あたり";
 
+/* SPV diagnostics */
+"Per-Phase Progress" = "Per-Phase Progress";
+
 /* No comment provided by engineer. */
 "Personalize" = "カスタマイズする";
 
@@ -4024,6 +4088,9 @@
 
 /* No comment provided by engineer. */
 "Platform fee" = "Platform 手数料";
+
+/* Raw transaction */
+"Platform HTTP port" = "Platform HTTP port";
 
 /* Masternodes */
 "Platform node" = "Platform ノード";
@@ -4285,6 +4352,9 @@
 
 /* Devnet */
 "Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
+
+/* Raw transaction */
+"Quorums merkle root" = "Quorums merkle root";
 
 /* Dash DEX */
 "Quote expires" = "Quote expires";
@@ -5940,6 +6010,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "これは DashPay ユーザーの QR コードではありません。";
 
+/* No comment provided by engineer. */
+"This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
+
 /* Masternodes */
 "This masternode has no Platform identity yet." = "このマスターノードにはまだ Platform アイデンティティがありません。";
 
@@ -6137,6 +6210,9 @@
 
 /* No comment provided by engineer. */
 "Time" = "時刻";
+
+/* SPV diagnostics */
+"Tip height" = "Tip height";
 
 /* Send Screen: to address */
 "to" = "へ";

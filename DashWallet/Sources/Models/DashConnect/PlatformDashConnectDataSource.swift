@@ -556,10 +556,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     func parseQR(_ content: String) async throws -> DashConnectQr {
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if DashConnectUri.isAppConnectUri(trimmed) {
+        // `dashpay://connect` and a `dash-key:` version 2 URI carry the same
+        // request body and are processed identically.
+        let isConnectUri = DashConnectUri.isConnectUri(trimmed)
+        if isConnectUri || DashConnectUri.isAppConnectUri(trimmed) {
             let uri: AppConnectUri
             do {
-                uri = try DashConnectUri.parseAppConnectRequest(trimmed)
+                uri = try isConnectUri
+                    ? DashConnectUri.parseConnectRequest(trimmed)
+                    : DashConnectUri.parseAppConnectRequest(trimmed)
             } catch let error as AppConnectRequestError {
                 throw AppConnect.Refusal(error)
             }
@@ -582,6 +587,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let request = try DashConnectUri.parseStRequest(trimmed)
             try validateNetwork(request.network)
             return .stateTransition(request)
+        }
+
+        if DashConnectUri.isUnsupportedDashpayVerb(trimmed) {
+            throw DashConnectMockError.needsNewerWallet
         }
 
         throw DashConnectMockError.notDashConnectQrCode
