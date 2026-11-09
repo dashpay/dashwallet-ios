@@ -11,6 +11,7 @@ where they disagree, ADR-0001 wins.
 | [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | process | Accepted | |
 | [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Proposed | |
 | [0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md) | Answer App Connect request v2 with wallet-derived keys under wallet limits | platform | Proposed | |
+| [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

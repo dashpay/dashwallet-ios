@@ -634,6 +634,34 @@ final class AppConnectV2LoginTests: XCTestCase {
             currentIdentityPublicKeys: [key(1, disabled: true)], nowMilliseconds: now), [])
     }
 
+    /// The app's keys are disabled after the profile keys, so an update that
+    /// fails part way leaves an app key live while a profile key is: the
+    /// retry still counts as the app's disconnect.
+    func testADisconnectDisablesTheAppsKeysAfterTheProfileKeys() {
+        // One app key below ten profile keys: in id order the first update
+        // would take the app key and nine profile keys.
+        let order = AppConnect.disableOrder(appKeyIds: [3], profileKeyIds: Array(4 ... 13))
+        XCTAssertEqual(order, Array(4 ... 13) + [3])
+        let batches = stride(from: 0, to: order.count, by: AppConnect.maxKeysDisabledPerUpdate).map {
+            Array(order[$0 ..< min($0 + AppConnect.maxKeysDisabledPerUpdate, order.count)])
+        }
+        XCTAssertEqual(batches.first, Array(4 ... 13), "the first update takes only profile keys")
+        // Whichever update fails, while a profile key is still live so is an
+        // app key.
+        for failed in batches.indices {
+            let off = Set(batches[..<failed].joined())
+            if !Set(4 ... 13).isSubset(of: off) {
+                XCTAssertFalse(off.contains(3))
+            }
+        }
+        // Each part in id order; a key in both lists goes with the app's.
+        XCTAssertEqual(
+            AppConnect.disableOrder(appKeyIds: [20, 2, 9], profileKeyIds: [7, 5, 9]),
+            [5, 7, 2, 9, 20], "a key in both is the app's")
+        XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [4, 1], profileKeyIds: []), [1, 4])
+        XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [], profileKeyIds: [6, 2]), [2, 6])
+    }
+
     /// A v2 grant's CRITICAL group key is disabled under its recorded id,
     /// but only while the store shows that key bound to a group: a CRITICAL
     /// key under a recorded id with no such record is not taken for it.

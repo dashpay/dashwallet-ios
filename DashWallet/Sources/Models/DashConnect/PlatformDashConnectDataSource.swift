@@ -2779,10 +2779,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // ends here: one with nothing of the app's here, or that ends with
         // the app held on another identity (or not checked there), leaves
         // them. A grant whose keys went in an earlier try that then failed
-        // still counts, so a retry reaches them. When the set cannot be told
-        // (a live key no record names whose bound the store cannot read, a
-        // stored one the view lacks, a record the store cannot read), none
-        // of them is touched, and the app's own keys still go.
+        // still counts, so a retry reaches them; so does an app key that
+        // stays live because the app's keys are disabled after the profile
+        // keys (`AppConnect.disableOrder`). When the set cannot be told from
+        // the store (a stored key no record names whose bound it cannot read
+        // and that the view lacks, a stored profile key the view lacks, a
+        // record it cannot read), none of them is touched, and the app's own
+        // keys still go. A live key in the view whose bound the store cannot
+        // read stops the whole disconnect earlier
+        // (`sessionKeyIdsWithUnknownBinding`): it may be the app's own.
         // TODO(app-connect-v2-pending-record): a v2 approval writes its record
         // only once its update is seen to land, so the profile key of one whose
         // outcome was unknown when it failed has no record and is turned off
@@ -2801,7 +2806,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     nowMilliseconds: Int64(AppConnect.milliseconds(now())))
             if let profileKeyIds {
                 profileKeysOff = profileKeyIds.filter { !keyIds.contains($0) }
-                keyIds = Array(Set(keyIds).union(profileKeysOff)).sorted()
+                keyIds = AppConnect.disableOrder(appKeyIds: keyIds, profileKeyIds: profileKeysOff)
             } else {
                 Self.logger.error("🔗 DASHCONNECT :: DashPay profile keys no record names could not be told; none turned off")
                 profileKeysUnchecked = true

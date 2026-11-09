@@ -951,6 +951,18 @@ extension AppConnect {
             .filter(unexpired.contains)
     }
 
+    /// The order a disconnect disables keys in: the unattributed profile
+    /// keys first, then the app's own keys. Platform takes
+    /// `maxKeysDisabledPerUpdate` keys per update, and an update that fails
+    /// leaves the later ones live. With the app's keys last, a failure part
+    /// way never leaves all of them off while a profile key is still live,
+    /// so the retry still counts as the app's disconnect and reaches the
+    /// profile keys left.
+    static func disableOrder(appKeyIds: [UInt32], profileKeyIds: [UInt32]) -> [UInt32] {
+        let app = Set(appKeyIds)
+        return Set(profileKeyIds).subtracting(app).sorted() + app.sorted()
+    }
+
     /// The live v2-shaped keys on the identity that no grant record of it
     /// names, as a reinstall or a lost record leaves them: HASH160
     /// authentication keys at HIGH or CRITICAL with an expiry (every v2
