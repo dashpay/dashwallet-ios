@@ -1872,16 +1872,8 @@
    Coinbase Entry Point */
 "Disconnected" = "تم قطع الاتصال";
 
-<<<<<<< HEAD
-/* DashConnect */
-"Disconnected apps could not be read." = "Disconnected apps could not be read.";
-
-/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
-"Disconnected. It could not be saved among the disconnected apps." = "Disconnected. It could not be saved among the disconnected apps.";
-=======
 /* DashConnect: the status badge of a connection whose keys are all turned off */
 "Disconnected (connection status)" = "Disconnected";
->>>>>>> stack/1277
 
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
@@ -2851,9 +2843,6 @@
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "قد يكون الرمز من الرسائل القصيرة على هاتفك. إذا لم يكن كذلك ، أدخل الرمز من تطبيق المصادقة.";
-
-/* DashConnect: after a disconnect that could not be kept in the Disconnected list */
-"It could not be saved among the disconnected apps." = "It could not be saved among the disconnected apps.";
 
 /* Coinbase */
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device";
