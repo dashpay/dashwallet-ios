@@ -19,6 +19,10 @@ where they disagree, ADR-0001 wins.
 | [0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md) | Judge request age and expiry by proved Platform block time | platform | Proposed | |
 | [0021](0021-record-a-consensus-refusal-on-the-intent.md) | Record a consensus refusal on the intent and show it as Refused | platform | Proposed | |
 | [0022](0022-derive-disconnected-apps-from-the-intents-a-disconnect-marked.md) | Derive disconnected apps from the intents a disconnect marked | platform | Proposed | |
+| [0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md) | Derive App Connect connections from the identity and recorded intents | platform | Proposed | |
+| [0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md) | Answer App Connect v2 only and remove the two-scan login | platform | Proposed | |
+| [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Proposed | |
+| [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
