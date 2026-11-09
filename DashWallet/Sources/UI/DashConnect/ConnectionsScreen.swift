@@ -26,15 +26,31 @@ import DashUIKit
 /// sheet.
 struct ConnectionsScreen: View {
     private let vc: UINavigationController
+    /// Starts the app's username creation; `nil` where it cannot be reached.
+    private let onCreateUsername: (() -> Void)?
+    /// Presents the identity top-up over whatever is on screen; `nil` where
+    /// it cannot be reached.
+    private let onTopUpIdentity: (() -> Void)?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(
+        vc: UINavigationController,
+        viewModel: ConnectionsViewModel? = nil,
+        onCreateUsername: (() -> Void)? = nil,
+        onTopUpIdentity: (() -> Void)? = nil
+    ) {
         self.vc = vc
+        self.onCreateUsername = onCreateUsername
+        self.onTopUpIdentity = onTopUpIdentity
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
 
     @State private var showsFundingLimitsInfo = false
+    /// The Join DashPay sheet, which leads to the username form as More's
+    /// does; `createsUsernameAfterSheet` carries the user's choice to it.
+    @State private var showsJoinDashPay = false
+    @State private var createsUsernameAfterSheet = false
     /// Reconnect closes the connection sheet first: the scanner is
     /// presented once it is gone.
     @State private var scansAfterSheet = false
@@ -47,8 +63,11 @@ struct ConnectionsScreen: View {
                         DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
                     },
                     trailing: {
-                        if !viewModel.featureUnavailable {
-                            DashUIKit.NavigationBarElement.plus.button(action: showScanner)
+                        if !viewModel.featureUnavailable, !showsNoUsernameState {
+                            // Without a username a new connection starts by
+                            // creating one.
+                            DashUIKit.NavigationBarElement.plus.button(
+                                action: viewModel.needsUsername ? startCreatingUsername : showScanner)
                                 .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
                         }
                     }
@@ -73,6 +92,8 @@ struct ConnectionsScreen: View {
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
+        // Another identity may have become active while the screen was away.
+        .onAppear { viewModel.refreshUsername() }
         .alert(item: messageBinding) { message in
             if let connection = message.unrecordedKeysOf {
                 return Alert(
@@ -97,6 +118,15 @@ struct ConnectionsScreen: View {
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
+            } else if viewModel.pendingReturn != nil {
+                // The request is answered; the sheet asks before the
+                // browser opens an app the wallet does not know.
+                DashConnectReturnStep(
+                    host: viewModel.pendingReturnHost ?? "",
+                    note: viewModel.returnStepNote,
+                    onOpen: { viewModel.openPendingReturn() },
+                    onStay: { viewModel.stayInWallet() })
+                    .approveSheetPresentation(isLoading: false)
             }
         }
         .sheet(isPresented: isTokenPurchaseSheetPresented) {
@@ -113,9 +143,35 @@ struct ConnectionsScreen: View {
         }) { item in
             connectionSheet(for: item)
         }
+        #if DASHPAY
+        .sheet(isPresented: $showsJoinDashPay, onDismiss: {
+            guard createsUsernameAfterSheet else { return }
+            createsUsernameAfterSheet = false
+            onCreateUsername?()
+        }) {
+            // No detent: the dialog sizes itself (`BottomSheet.selfSizing`).
+            JoinDashPayInfoDialog(action: { createsUsernameAfterSheet = true })
+        }
+        #endif
     }
 
     // MARK: - States
+
+    /// A wallet without a username and with nothing ever connected: the page
+    /// offers to create one. A wallet that has connections keeps its list,
+    /// so their keys can still be turned off.
+    private var showsNoUsernameState: Bool {
+        viewModel.needsUsername && viewModel.hasReadRows && !viewModel.hasConnectionsOrHistory
+    }
+
+    /// Creating a username starts on the Join DashPay sheet, as from More.
+    private func startCreatingUsername() {
+        #if DASHPAY
+        showsJoinDashPay = true
+        #else
+        onCreateUsername?()
+        #endif
+    }
 
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
@@ -129,9 +185,13 @@ struct ConnectionsScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
             Spacer()
+        } else if showsNoUsernameState {
+            title
+            ConnectionsEmptyState(
+                kind: .noUsername(onCreateUsername: onCreateUsername == nil ? nil : startCreatingUsername))
         } else if !viewModel.hasConnectionsOrHistory {
             title
-            ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
+            ConnectionsEmptyState(kind: .noApps(onScanQR: showScanner, onMockScan: mockScan))
         } else {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
@@ -227,18 +287,29 @@ struct ConnectionsScreen: View {
         }
     }
 
+    @ViewBuilder
     private func approveSheet(for request: ConnectionRequest) -> some View {
+        if request.login.grantPlan != nil {
+            AppConnectApproveSheet(
+                viewModel: viewModel, request: request, onTopUp: onTopUpIdentity)
+                .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
+        } else {
+            legacyApproveSheet(for: request)
+        }
+    }
+
+    private func legacyApproveSheet(for request: ConnectionRequest) -> some View {
         ApproveConnectionSheet(
             request: request,
             isLoading: viewModel.isApproving,
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
             onRetry: { viewModel.retryPendingRequest() },
-            onDeny: { viewModel.denyPendingRequest() }
+            onDeny: { viewModel.denyPendingRequest(asksToReturn: true) }
         )
-        // An App Connect plan makes the sheet longer than the fixed height
-        // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.grantPlan != nil)
+        // Only a request that cannot be answered comes here: its sheet is
+        // short.
+        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: false)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -256,10 +327,16 @@ struct ConnectionsScreen: View {
 
     private var isApproveSheetPresented: Binding<Bool> {
         Binding(
-            get: { viewModel.pendingRequest != nil },
+            get: { viewModel.pendingRequest != nil || viewModel.pendingReturn != nil },
             set: { isPresented in
-                if !isPresented && !viewModel.isApproving {
-                    viewModel.denyPendingRequest()
+                guard !isPresented else { return }
+                if viewModel.pendingRequest == nil {
+                    // Closing the return step stays in the wallet.
+                    viewModel.stayInWallet()
+                } else if !viewModel.isApproving {
+                    // Closing the sheet declines, and stays in the wallet:
+                    // the sheet is gone and cannot ask about a return.
+                    viewModel.denyPendingRequest(asksToReturn: false)
                 }
             }
         )

@@ -29,12 +29,55 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// screen, which cannot present while it is still being pushed.
     private var pendingURI: String?
 
-    init(navigationController: UINavigationController, uri: String? = nil) {
-        let viewModel = ConnectionsViewModel()
+    /// `dashPayModel` tells whether the wallet has a username and starts
+    /// creating one; without it the page does not ask.
+    init(navigationController: UINavigationController, uri: String? = nil, dashPayModel: DWDashPayProtocol? = nil) {
+        let viewModel = ConnectionsViewModel(
+            hasUsername: { dashPayModel.map(Self.hasUsername) ?? true })
         self.viewModel = viewModel
         pendingURI = uri
 
-        super.init(rootView: ConnectionsScreen(vc: navigationController, viewModel: viewModel))
+        super.init(rootView: ConnectionsScreen(
+            vc: navigationController,
+            viewModel: viewModel,
+            onCreateUsername: Self.createUsername(on: navigationController, dashPayModel: dashPayModel),
+            onTopUpIdentity: Self.topUp(over: navigationController)))
+    }
+
+    /// A username counts once its registration completed.
+    private static func hasUsername(_ model: DWDashPayProtocol) -> Bool {
+        model.registrationCompleted
+    }
+
+    private static func createUsername(
+        on navigationController: UINavigationController,
+        dashPayModel: DWDashPayProtocol?
+    ) -> (() -> Void)? {
+        #if DASHPAY
+        guard let dashPayModel else { return nil }
+        return { [weak navigationController] in
+            guard let navigationController else { return }
+            MainMenuScreen.pushCreateUsernameForm(on: navigationController, dashPayModel: dashPayModel)
+        }
+        #else
+        return nil
+        #endif
+    }
+
+    /// The identity top-up, over the approve sheet: the request stays on
+    /// screen to be approved once the balance is there. `nil` in a build
+    /// without DashPay, which has no top-up.
+    private static func topUp(over navigationController: UINavigationController) -> (() -> Void)? {
+        #if DASHPAY
+        return { [weak navigationController] in
+            guard let navigationController else { return }
+            var presenter: UIViewController = navigationController
+            while let presented = presenter.presentedViewController { presenter = presented }
+            presenter.present(IdentityCreditGate.makeTopUpController(), animated: true)
+        }
+        #else
+        return nil
+        #endif
     }
 
     @MainActor dynamic required init?(coder aDecoder: NSCoder) {
