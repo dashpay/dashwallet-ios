@@ -25,6 +25,7 @@ struct ConnectionsList: View {
     let items: [ConnectionSheetItem]
     let onOpen: (ConnectionSheetItem) -> Void
     let onDisconnect: (ConnectionSheetItem) -> Void
+    let onRemove: (ConnectionSheetItem) -> Void
     let onReconnect: () -> Void
 
     var body: some View {
@@ -32,7 +33,9 @@ struct ConnectionsList: View {
             ForEach(items) { item in
                 ConnectionRow(
                     item: item, onOpen: { onOpen(item) },
-                    onDisconnect: { onDisconnect(item) }, onReconnect: onReconnect)
+                    onDisconnect: { onDisconnect(item) },
+                    onRemove: { onRemove(item) },
+                    onReconnect: onReconnect)
             }
         }
         .modifier(MenuViewModifier())
@@ -41,12 +44,12 @@ struct ConnectionsList: View {
 
 #Preview("Several apps") {
     ConnectionsList(
-        items: [ConnectionSheetItem.Status.active, .confirming, .undelivered, .disconnected].map { status in
+        items: ConnectionStatus.allCases.map { status in
             ConnectionSheetItem(
                 id: "\(status)", name: "Example App \(status)", url: "example.org", status: status,
                 connection: nil, entry: nil, scope: nil)
         },
-        onOpen: { _ in }, onDisconnect: { _ in }, onReconnect: {})
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
     .padding(20)
     .background(Color.primaryBackground)
 }
@@ -55,7 +58,7 @@ struct ConnectionsList: View {
     ConnectionsList(
         items: [ConnectionSheetItem(
             id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil, entry: nil, scope: nil)],
-        onOpen: { _ in }, onDisconnect: { _ in }, onReconnect: {})
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
     .padding(20)
     .background(Color.primaryBackground)
 }

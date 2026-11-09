@@ -759,13 +759,21 @@ final class DashConnectUriTests: XCTestCase {
 
     func testAppConnectRequestAge() throws {
         let request = try AppConnectRequest.decode(AppConnectVector.requestBytes)
-        let created = Date(timeIntervalSince1970: TimeInterval(AppConnectVector.createdAt) / 1000)
+        let created = AppConnectVector.createdAt
+        let minute: UInt64 = 60 * 1000
 
-        XCTAssertEqual(request.age(now: created), .fresh)
-        XCTAssertEqual(request.age(now: created.addingTimeInterval(10 * 60)), .fresh)
-        XCTAssertEqual(request.age(now: created.addingTimeInterval(10 * 60 + 1)), .stale)
-        XCTAssertEqual(request.age(now: created.addingTimeInterval(-2 * 60)), .fresh)
-        XCTAssertEqual(request.age(now: created.addingTimeInterval(-2 * 60 - 1)), .future)
+        XCTAssertEqual(request.age(blockTimeMs: created), .fresh)
+        XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute), .fresh)
+        XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute + 1), .stale)
+        XCTAssertEqual(request.age(blockTimeMs: created - 2 * minute), .fresh)
+        XCTAssertEqual(request.age(blockTimeMs: created - 2 * minute - 1), .future)
+    }
+
+    /// Without a proved block time the age is not judged: not fresh, and not
+    /// stale or future either, so the wallet can offer to try again.
+    func testAppConnectRequestAgeIsUncheckableWithoutABlockTime() throws {
+        let request = try AppConnectRequest.decode(AppConnectVector.requestBytes)
+        XCTAssertEqual(request.age(blockTimeMs: nil), .uncheckable)
     }
 }
 
