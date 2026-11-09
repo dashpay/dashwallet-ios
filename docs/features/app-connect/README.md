@@ -1,6 +1,6 @@
 # DashConnect: sign in to an app with one QR
 
-**Owner:** romchornyi · Introduced in [#1202](https://github.com/dashpay/dashwallet-ios/pull/1202)
+**Owner:** romchornyi · Introduced in [#1202](https://github.com/dashpay/dashwallet-ios/pull/1202); request v2 decoded in [#1204](https://github.com/dashpay/dashwallet-ios/pull/1204) and answered in [#1210](https://github.com/dashpay/dashwallet-ios/pull/1210)
 
 ## Why
 
@@ -22,11 +22,20 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 - **Disconnect is real**: it turns off the app's session keys on the identity and deletes its
   responses, then removes the row. A failure keeps the row and says so.
 - **Mainnet stays off** in this change: the Connections page uses its mock data source there.
+- **App Connect request v2** ([#1210](https://github.com/dashpay/dashwallet-ios/pull/1210)). A `v=2`
+  code can name up to four auth bindings (a contract, a contract group or one document type) and
+  two encryption bindings, each with the limits the app proposes. The wallet checks the request
+  against Platform (who owns each contract, the identity hint), clamps the limits, derives one key
+  per binding, and registers them in one identity update that also turns off the keys of its
+  earlier grant on the same connection. The keys are published sealed on the App Connect contract,
+  and the app's callback opens after the user answers. A v2 code for mainnet is refused.
+  [ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md).
 
 ## What it guarantees
 
-- The app gets a new key that only it holds, bound to its own contract, with a budget and an
-  expiry. It never gets the identity's existing keys or the recovery phrase.
+- The app gets new keys that only it holds, each bound to the contract, group or document type the
+  user approved, with an expiry and the budget the sheet showed. It never gets the identity's
+  existing keys or the recovery phrase.
 - Approving the same QR again registers no second key.
 - The wallet records a key before it submits the key's registration, so a key that lands without
   a confirmation is still found and can be turned off.
@@ -35,7 +44,9 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 
 The later DashConnect PRs build on this one. Each of them adds its own ADRs to the log:
 
-- App Connect request v2 and its response ([#1204](https://github.com/dashpay/dashwallet-ios/pull/1204)).
+- Encryption key rotation and the `dashpay://connect` carrier
+  ([#1257](https://github.com/dashpay/dashwallet-ios/pull/1257),
+  [#1258](https://github.com/dashpay/dashwallet-ios/pull/1258)).
 - Connections derived from the identity and the recorded requests, and the removal of the two-scan
   login ([#1301](https://github.com/dashpay/dashwallet-ios/pull/1301)).
 - The redesigned Connections page, approve sheet, expiry and disconnected apps
