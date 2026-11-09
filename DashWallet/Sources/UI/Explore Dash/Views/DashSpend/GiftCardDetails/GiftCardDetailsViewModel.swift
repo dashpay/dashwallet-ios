@@ -318,15 +318,14 @@ class GiftCardDetailsViewModel: ObservableObject {
                         pin: response.cardPin
                     )
 
-                    if !cardNumber.isEmpty {
-                        let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
-                        await giftCardsDAO.updateBarcode(
-                            txId: txId,
-                            value: cleanNumber,
-                            format: "CODE128"
-                        )
-                    }
+                    let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+                    let barcodeValue = response.barcodeContent.flatMap { $0.isEmpty ? nil : $0 } ?? cleanNumber
+                    await giftCardsDAO.updateBarcode(
+                        txId: txId,
+                        value: barcodeValue,
+                        format: normalizeBarcodeFormat(response.barcodeType)
+                    )
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
                 } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
