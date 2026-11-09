@@ -400,6 +400,22 @@ extension AppConnect {
         // An intent Remove hid yields no row; its keys still count as named
         // above, so a key of it that is live is not reported as unrecorded.
         let kept = intents.filter { $0.removedAt == nil }
+        // Profile keys no intent names are turned off by any app's
+        // disconnect. On an identity with no connection to disconnect, that
+        // would be never: there they stand as a DashPay row of their own.
+        if let dashPay = Data.identifier(fromBase58: dashPayContractId) {
+            for (identity, ids) in profile {
+                let disconnectable = unrecorded.values.contains { $0[identity] != nil }
+                    || kept.contains { intent in
+                        guard intent.identityId == identity, let snapshot = byIdentity[identity] else { return false }
+                        switch status(of: intent, in: snapshot) {
+                        case .active, .confirming, .expired: return true
+                        case .refused, .disconnected, .neverLanded: return false
+                        }
+                    }
+                if !disconnectable { unrecorded[dashPay, default: [:]][identity] = ids }
+            }
+        }
         let apps = Set(kept.map(\.appId)).union(unrecorded.keys)
         var hasOtherThanRefused = Set(unrecorded.keys)
         var supersedable: [Data: Set<Data>] = [:]
@@ -419,9 +435,15 @@ extension AppConnect {
             // Live keys no intent names count as the app's oldest connection:
             // they show when no intent of the app has a status here, or the
             // followed one has no access left (Disconnected, Never landed).
+            // They are Active while one of them is live at Platform's time,
+            // else Expired: enabled, so still turned off by a disconnect.
             var latest = followedStatus
             if !others.isEmpty, latest == nil || [.disconnected, .neverLanded].contains(latest) {
-                latest = .active(expiresAt: nil)
+                let anyLive = others.contains { identity, ids in
+                    guard let snapshot = byIdentity[identity] else { return false }
+                    return snapshot.keys.contains { ids.contains($0.id) && isLive($0, at: snapshot.platformTime) }
+                }
+                latest = anyLive ? .active(expiresAt: nil) : .expired
             }
             // An app this read says nothing about (its intents are on
             // identities not read) has no connection here.

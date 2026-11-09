@@ -233,12 +233,23 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(projection.connections[0].unrecordedKeyIds, [Self.identity: [20]])
     }
 
-    func testAProfileKeyNoIntentNamesGivesNoRowOfItsOwnAndADisabledOneIsNotShown() {
+    func testAProfileKeyNoIntentNamesOnAnIdentityWithNothingElseToDisconnectIsADashPayRow() {
         let profile = Self.authKey(20, bound: .documentType(contractId: Self.dashPay, name: "profile"))
         let off = Self.authKey(21, bound: .singleContract(Self.otherApp))
         let snapshot = Self.snapshot([Self.onPlatform(profile), Self.onPlatform(off, disabledAt: 1)])
         let projection = AppConnect.project([snapshot], intents: [])
-        XCTAssertEqual(projection.connections, [], "no row, and not an unknown app")
+        XCTAssertEqual(projection.connections.map(\.appId), [Self.dashPay], "no other disconnect would turn it off")
+        XCTAssertEqual(projection.connections.first?.unrecordedKeyIds, [Self.identity: [20]])
+        XCTAssertEqual(AppConnect.disconnectPlan(appId: Self.dashPay, snapshot: snapshot, intents: []).disable, [20])
+    }
+
+    func testAProfileKeyNoIntentNamesNextToADisconnectedAppIsADashPayRow() {
+        let profile = Self.authKey(20, bound: .documentType(contractId: Self.dashPay, name: "profile"))
+        var gone = Self.intent([Self.authKey(10)], published: true)
+        gone.closedAt = Date(timeIntervalSince1970: 1)
+        let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1), Self.onPlatform(profile)])
+        let projection = AppConnect.project([snapshot], intents: [gone])
+        XCTAssertEqual(Set(projection.connections.map(\.appId)), [Self.app, Self.dashPay])
     }
 
     func testAProfileKeyNoIntentNamesIsNotShownOnAnotherAppsRowEither() {
@@ -1352,5 +1363,22 @@ final class AppConnectProjectionTests: XCTestCase {
         let theirs = Self.onPlatform(Self.authKey(7, data: 0x99, bound: .singleContract(Self.otherApp)))
         let projection = AppConnect.project([Self.snapshot([theirs])], intents: [mine])
         XCTAssertEqual(projection.connections.first { $0.appId == Self.otherApp }?.unrecordedKeyIds, [Self.identity: [7]])
+    }
+
+    // MARK: Fifth review round
+
+    func testUnrecordedKeysAllPastTheirExpiryShowExpiredAndAreStillTurnedOff() {
+        let expired = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.otherApp), expiresAt: Self.now - 1))
+        let snapshot = Self.snapshot([expired])
+        let projection = AppConnect.project([snapshot], intents: [])
+        XCTAssertEqual(projection.connections.map(\.status), [.expired])
+        XCTAssertEqual(AppConnect.disconnectPlan(appId: Self.otherApp, snapshot: snapshot, intents: []).disable, [20])
+    }
+
+    func testUnrecordedKeysWithOneLiveShowActive() {
+        let expired = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.otherApp), expiresAt: Self.now - 1))
+        let live = Self.onPlatform(Self.authKey(21, bound: .singleContract(Self.otherApp)))
+        let projection = AppConnect.project([Self.snapshot([expired, live])], intents: [])
+        XCTAssertEqual(projection.connections.map(\.status), [.active(expiresAt: nil)])
     }
 }

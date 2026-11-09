@@ -214,7 +214,9 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
 /// What a disconnect left on the active identity besides the app's keys it
 /// turned off.
 struct DashConnectDisconnectResult: Equatable {
-    /// How many of the app's keys it turned off.
+    /// How many of the app's keys it turned off. Each key id it fenced counts
+    /// too: the fence keeps the pending sign-in's key from ever landing,
+    /// which is access this disconnect took away.
     var keysTurnedOff = 0
     /// Keys a disconnect meant to turn off that are still live: an update
     /// that failed stopped it, or a read after it still shows them. A sign-in
