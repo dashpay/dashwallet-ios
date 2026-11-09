@@ -437,16 +437,15 @@ final class HostRecoveryTests: XCTestCase {
         let resolver = SwiftDashSDKHost.preparationFailure(
             forStartError: HostError.walletBootstrapFailed(SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork))
         XCTAssertEqual(resolver?.codes, ["Keychain:unclassifiable"])
-        // The resolver constructs a wallet from the stored phrase; its refusal
-        // of material that passed word validation is a keys failure too.
-        for material in [KeyWalletError.invalidMnemonic("bad"), .invalidInput("bad")] {
-            let construction = SwiftDashSDKHost.preparationFailure(
-                forStartError: HostError.walletBootstrapFailed(material))
-            XCTAssertEqual(construction?.codes, ["Keychain:unclassifiable"])
-        }
-        // Its other cases say nothing about the stored material.
+        // The resolver reports a stored phrase whose wallet id cannot be derived
+        // as `.invalidMnemonic`, a keys failure too.
+        let derivation = SwiftDashSDKHost.preparationFailure(
+            forStartError: HostError.walletBootstrapFailed(SwiftDashSDKWalletDeletionError.invalidMnemonic))
+        XCTAssertEqual(derivation?.codes, ["Keychain:unclassifiable"])
+        // A `PlatformWalletError` says nothing about the stored material: store
+        // calls throw it as well.
         XCTAssertEqual(SwiftDashSDKHost.preparationFailure(
-            forStartError: HostError.walletBootstrapFailed(KeyWalletError.invalidState("ffi")))?.kind, .database)
+            forStartError: HostError.walletBootstrapFailed(PlatformWalletError.invalidParameter("ffi")))?.kind, .database)
         XCTAssertNil(SwiftDashSDKHost.preparationFailure(forStartError: HostError.sdkInitFailed(swiftData)))
         XCTAssertNil(SwiftDashSDKHost.keysFailure(in: swiftData))
     }

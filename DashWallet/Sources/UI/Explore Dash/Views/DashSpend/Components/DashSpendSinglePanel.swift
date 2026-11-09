@@ -28,6 +28,19 @@ extension View {
     }
 }
 
+/// Caption color for an error under the DashSpend amount, shared by the
+/// single- and multiple-denomination panels: `SendAmountError`'s own color for
+/// funds that only need to confirm, DashSpend's red for everything else —
+/// including the network and sync notices, which block Purchase here.
+enum DashSpendErrorCaption {
+    static func color(for error: any Error) -> Color {
+        if let error = error as? SendAmountError, case .fundsStillConfirming = error {
+            return Color(uiColor: error.textColor)
+        }
+        return Color.dash.red
+    }
+}
+
 struct DashSpendSinglePanel: View {
     let isLoading: Bool
     let hasValidLimits: Bool
@@ -78,7 +91,7 @@ struct DashSpendSinglePanel: View {
         if let error = error {
             Text(error.localizedDescription)
                 .font(.caption)
-                .foregroundColor(Color.dash.red)
+                .foregroundColor(DashSpendErrorCaption.color(for: error))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 12)

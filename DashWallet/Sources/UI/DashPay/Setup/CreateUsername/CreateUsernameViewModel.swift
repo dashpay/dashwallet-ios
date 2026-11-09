@@ -943,6 +943,10 @@ class CreateUsernameViewModel: ObservableObject {
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
+        /// Nothing was sent: the Core asset lock would need more inputs than
+        /// the network accepts. The screen offers `CoreCoinConsolidationSheet`
+        /// for this lock.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
     }
 
     /// Kick off SwiftDashSDK identity + DPNS registration and suspend
@@ -1120,6 +1124,9 @@ class CreateUsernameViewModel: ObservableObject {
                     // user-cancel — a silent no-op, not an error popup.
                     if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
                         continuation.resume(returning: .cancelled)
+                    } else if let check = AssetLockInputLimit.check(for: error) {
+                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit for '\(submittedUsername)'")
+                        continuation.resume(returning: .needsCoinConsolidation(check))
                     } else {
                         continuation.resume(
                             returning: .failure(
@@ -1158,6 +1165,9 @@ class CreateUsernameViewModel: ObservableObject {
             return .cancelled
         } catch {
             DWLogger.log("CreateUsername: purchase failed for '\(name)': \(error.localizedDescription)")
+            if let check = AssetLockInputLimit.check(for: error) {
+                return .needsCoinConsolidation(check)
+            }
             return .failure(error.localizedDescription)
         }
     }

@@ -24,19 +24,21 @@ import SwiftUI
 /// once rather than repeated per availability branch.
 struct ApproveSheetPresentation: ViewModifier {
     let isLoading: Bool
+    /// Full height, for content that does not fit the fixed one.
+    var isTall = false
 
-    private let detentHeight: CGFloat = 620
+    private var detent: PresentationDetent { isTall ? .large : .height(620) }
     private let cornerRadius: CGFloat = 32
 
     func body(content: Content) -> some View {
         if #available(iOS 16.4, *) {
             content
-                .presentationDetents([.height(detentHeight)])
+                .presentationDetents([detent])
                 .presentationCornerRadius(cornerRadius)
                 .interactiveDismissDisabled(isLoading)
         } else if #available(iOS 16.0, *) {
             content
-                .presentationDetents([.height(detentHeight)])
+                .presentationDetents([detent])
                 .interactiveDismissDisabled(isLoading)
         } else {
             content
@@ -46,7 +48,7 @@ struct ApproveSheetPresentation: ViewModifier {
 
 extension View {
     /// Presents this view as the approve-connection sheet body.
-    func approveSheetPresentation(isLoading: Bool) -> some View {
-        modifier(ApproveSheetPresentation(isLoading: isLoading))
+    func approveSheetPresentation(isLoading: Bool, isTall: Bool = false) -> some View {
+        modifier(ApproveSheetPresentation(isLoading: isLoading, isTall: isTall))
     }
 }
