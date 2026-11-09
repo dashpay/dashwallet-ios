@@ -99,7 +99,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
             // Header
             HStack {
-                Text("Core Sync Status")
+                Text(NSLocalizedString("Core Sync Status", comment: "SPV diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -254,7 +254,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Aggregate Progress")
+                Text(NSLocalizedString("Aggregate Progress", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -282,8 +282,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var heightsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            row(title: "Tip height", value: "\(coordinator.tipHeight)")
-            row(title: "Best peer height", value: "\(coordinator.bestPeerHeight)")
+            row(title: NSLocalizedString("Tip height", comment: "SPV diagnostics"), value: "\(coordinator.tipHeight)")
+            row(title: NSLocalizedString("Best peer height", comment: "SPV diagnostics"), value: "\(coordinator.bestPeerHeight)")
             // Birth height (the wallet's filter-scan floor) with an
             // edit affordance — the escape hatch for wallets stamped
             // with a wrong creation height (e.g. imports made before
@@ -317,7 +317,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var connectedPeersCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Connected Peers")
+                Text(NSLocalizedString("Connected Peers", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -329,7 +329,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             .padding(.bottom, 4)
 
             if coordinator.connectedPeers.isEmpty {
-                Text("No peers connected")
+                Text(NSLocalizedString("No peers connected", comment: "SPV diagnostics"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
             } else {
@@ -381,34 +381,34 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var perPhaseCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Per-Phase Progress")
+            Text(NSLocalizedString("Per-Phase Progress", comment: "SPV diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
                 .padding(.bottom, 4)
 
             phaseRow(
-                title: "Headers",
+                title: NSLocalizedString("Headers", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.headers?.state,
                 percentage: coordinator.syncProgress.headers?.percentage,
                 current: coordinator.syncProgress.headers?.currentHeight,
                 target: coordinator.syncProgress.headers?.targetHeight
             )
             phaseRow(
-                title: "Filter Headers",
+                title: NSLocalizedString("Filter Headers", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.filterHeaders?.state,
                 percentage: coordinator.syncProgress.filterHeaders?.percentage,
                 current: coordinator.syncProgress.filterHeaders?.currentHeight,
                 target: coordinator.syncProgress.filterHeaders?.targetHeight
             )
             phaseRow(
-                title: "Filters",
+                title: NSLocalizedString("Filters", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.filters?.state,
                 percentage: coordinator.syncProgress.filters?.percentage,
                 current: coordinator.syncProgress.filters?.currentHeight,
                 target: coordinator.syncProgress.filters?.targetHeight
             )
             phaseRow(
-                title: "Masternodes",
+                title: NSLocalizedString("Masternodes", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.masternodes?.state,
                 percentage: nil,
                 current: coordinator.syncProgress.masternodes?.currentHeight,
@@ -601,7 +601,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last Error")
+            Text(NSLocalizedString("Last Error", comment: "SPV diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -620,7 +620,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             Button(action: {
                 SwiftDashSDKWalletRuntime.stopCoreSPV()
             }) {
-                Text("Stop")
+                Text(NSLocalizedString("Stop", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -845,23 +845,23 @@ extension SwiftDashSDKSPVStatusScreen {
             // a completion this pass witnessed.
             var parts: [String] = []
             if outcome.completed > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d finished", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
                     outcome.completed))
             }
             if outcome.alreadySpent > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
                     outcome.alreadySpent))
             }
             if outcome.awaitingSync > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
                     outcome.awaitingSync))
             }
             if outcome.failed > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
                     outcome.failed))
             }
             if outcome.cancelled {
@@ -944,8 +944,8 @@ extension SwiftDashSDKSPVStatusScreen {
                     switch outcome.outcome {
                     case .rescanArmed:
                         dropResultIsError = false
-                        dropResultMessage = String(
-                            format: NSLocalizedString(
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
                                 "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
                                 comment: "SPV diagnostics"),
                             outcome.dropped)
@@ -953,8 +953,8 @@ extension SwiftDashSDKSPVStatusScreen {
                         // The drop finished but the recovery rescan didn't
                         // arm — flag it instead of claiming the safety net ran.
                         dropResultIsError = true
-                        dropResultMessage = String(
-                            format: NSLocalizedString(
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
                                 "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
                                 comment: "SPV diagnostics"),
                             outcome.dropped)
@@ -966,8 +966,8 @@ extension SwiftDashSDKSPVStatusScreen {
                         // that rescan is the only on-chain safety check the
                         // dropped transactions ever get.
                         dropResultIsError = true
-                        dropResultMessage = String(
-                            format: NSLocalizedString(
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
                                 "Dropped %d unconfirmed transaction(s), but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.",
                                 comment: "SPV diagnostics"),
                             outcome.dropped)
