@@ -1,8 +1,8 @@
 # 0003 — Take the Rust toolchain version from platform's pin
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-04
-- **Deciders:** romchornyi (author)
+- **Deciders:** romchornyi (author). Approved in #1311 by llbartekll.
 
 ## Context
 

@@ -1,8 +1,8 @@
 # 0005 — Enforce workflow policy with an in-repo script beside actionlint
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-04
-- **Deciders:** romchornyi (author)
+- **Deciders:** romchornyi (author). Approved in #1311 by llbartekll.
 
 ## Context
 

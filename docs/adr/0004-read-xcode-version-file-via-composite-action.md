@@ -1,8 +1,8 @@
 # 0004 — Read the Xcode version from a file through a composite action
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-04
-- **Deciders:** romchornyi (author)
+- **Deciders:** romchornyi (author). Approved in #1311 by llbartekll.
 
 ## Context
 
