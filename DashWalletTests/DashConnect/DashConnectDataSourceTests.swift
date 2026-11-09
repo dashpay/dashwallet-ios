@@ -243,8 +243,9 @@ extension DashConnectDataSourceTests {
         )
     }
 
-    /// The real Yappr contract resolves to its branding whatever the label says.
-    func testBrandingResolvesKnownContractRegardlessOfLabel() throws {
+    /// The wallet keeps no list of apps: Yappr's mainnet contract is named by
+    /// the request's label like any other, and has no website.
+    func testNoContractHasBrandingOfItsOwn() throws {
         let request = try makeLoginRequest(
             contractId: Self.yapprContractId,
             label: "anything at all"
@@ -253,7 +254,7 @@ extension DashConnectDataSourceTests {
         let connectionRequest = ConnectionRequest(loginRequest: request)
 
         XCTAssertEqual(connectionRequest.appContractId, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
-        XCTAssertEqual(connectionRequest.appLabel, "Yappr")
-        XCTAssertEqual(connectionRequest.appUrl, "yap.pr")
+        XCTAssertEqual(connectionRequest.appLabel, "anything at all")
+        XCTAssertEqual(connectionRequest.appUrl, "")
     }
 }
