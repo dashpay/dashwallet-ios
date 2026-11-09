@@ -312,12 +312,21 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         let expectedDashAmount = Decimal(string: swapResponse.expectedBuyAmount ?? route.expectedBuyAmount) ?? 0
+        let depositDeadline = swapResponse.meta?.depositDeadline()
+        // A response that describes a deposit channel gives this order an address of its
+        // own. Without one the address may be a shared router or vault.
+        let hasDepositChannel = swapResponse.meta?.depositChannelExpiration != nil
+        DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
+        // An empty memo is no memo.
+        let memo = swapResponse.memo.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         return BuyOrder(
             depositAddress: depositAddress,
-            memo: swapResponse.memo,
+            memo: memo,
             expectedDashAmount: expectedDashAmount,
             sellAsset: sellAsset,
-            sellAmount: sellAmount
+            sellAmount: sellAmount,
+            depositDeadline: depositDeadline,
+            hasDepositChannel: hasDepositChannel
         )
     }
 
@@ -456,9 +465,17 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.track(request)
             return mapTrackResponse(response)
         } catch {
-            // Non-fatal; return not-yet-observed so polling continues.
+            // 404 for a deposit address is the tracker answering: it knows no such deposit
+            // channel (never funded, or aged out of its storage). That is "nothing observed",
+            // not a failed request.
+            if let depositAddress, !depositAddress.isEmpty,
+               case HTTPClientError.statusCode(let response) = error, response.statusCode == 404 {
+                return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            }
+            // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
+            // that draws conclusions from "not observed" can tell it from a real answer.
             DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
-            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }
 
@@ -930,35 +947,58 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Private: Track Status Mapping
 
-    private func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
+    /// Internal for tests: what each `/track` answer means to the tracker.
+    func mapTrackResponse(_ response: SwapKitTrackResponse) -> SwapStatusResult {
         switch response.status?.lowercased() {
-        case "not_started", nil:
+        case nil:
+            // A body without a status carries no information — not the provider saying
+            // "not started". Keep polling, flagged like a failed request.
+            return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
+
+        case "not_started":
             // SwapKit hasn't seen the inbound DASH tx yet — keep polling.
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
 
         case "pending":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil, depositProven: true)
 
         case "swapping":
             // SwapKit is actively routing the swap; surface as "swapping" for per-order status tracking.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil, depositProven: true)
 
         case "completed":
             let outHashes = extractOutHashes(from: response)
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "done", outHashes: outHashes, depositProven: true,
+                dashPayoutHash: dashPayoutHash(from: response))
 
         case "refunded":
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil, depositProven: true)
 
         case "failed", "unknown":
             // Map to "refunded" so the polling loop drives swapStatus = .failed(reason:)
             // via the existing .refunded path. Conservative: no new state machine needed.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil)
+            // `providerStatus` keeps the real word for callers that must tell them apart.
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "refunded", outHashes: nil,
+                providerStatus: response.status?.lowercased())
 
         default:
             // Prefer "still pending" over a wrong terminal state for any future statuses.
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            return SwapStatusResult(
+                error: nil, isObserved: true, observedStatus: "pending", outHashes: nil,
+                providerStatus: response.status?.lowercased())
         }
+    }
+
+    /// The payout of a swap into DASH: the hash of its leg on the Dash chain, the one
+    /// transaction of the swap the wallet holds. Nil unless the answer says the swap ends
+    /// in DASH and has such a leg — any other hash in it is the deposit's or the router's.
+    private func dashPayoutHash(from response: SwapKitTrackResponse) -> String? {
+        guard response.toAsset?.uppercased() == "DASH.DASH" else { return nil }
+        return (response.legs ?? []).first { leg in
+            leg.chainId?.lowercased() == "dash" && leg.hash?.isEmpty == false
+        }?.hash
     }
 
     private func extractOutHashes(from response: SwapKitTrackResponse) -> [String] {

@@ -98,10 +98,7 @@ enum DashConnectPermissionText {
 
     /// What an approval gave the app, one line each, as its sheet listed it.
     static func granted(_ access: AppConnect.GrantedAccess, appLabel: String) -> [String] {
-        if access.isSessionKeyLogin {
-            return sessionKeyGranted(budgets: access.keys.compactMap(\.totalBudget))
-        }
-        return [NSLocalizedString("See your username", comment: "DashConnect")]
+        [NSLocalizedString("See your username", comment: "DashConnect")]
             + access.keys.map {
                 key(bound: $0.bound, isCritical: $0.isCritical, totalBudget: $0.totalBudget, expiresAt: $0.expiresAt,
                     isAdministered: $0.isAdministered, appLabel: appLabel)
@@ -117,37 +114,11 @@ enum DashConnectPermissionText {
             appLabel)
     }
 
-    /// What a one-QR login gives the app; one budget line per sign-in.
-    static func sessionKeyGranted(budgets: [UInt64]) -> [String] {
-        [
-            NSLocalizedString("See your username", comment: "DashConnect"),
-            NSLocalizedString("Verify your identity", comment: "DashConnect"),
-            NSLocalizedString("Act as you in this app without asking each time", comment: "DashConnect one-QR login"),
-        ] + budgets.map(sessionKeyBudget)
-    }
-
-    /// A one-QR session key's budget, as the login's sheet says it.
-    static func sessionKeyBudget(_ credits: UInt64) -> String {
-        String(
-            format: NSLocalizedString(
-                "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.",
-                comment: "DashConnect one-QR login: the placeholder is an amount with its unit, e.g. 0.05 DASH"),
-            PlatformCreditsFormatter.dashString(credits))
-    }
-
-    /// What a one-QR session key never gives an app.
-    static var sessionKeyWithheld: [String] {
-        [
-            NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect one-QR login"),
-            NSLocalizedString("Your Dash balance", comment: "DashConnect one-QR login"),
-        ]
-    }
-
     /// What an App Connect v2 key never gives an app.
     static var withheld: [String] {
         [
-            NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect one-QR login"),
-            NSLocalizedString("Your Dash balance", comment: "DashConnect one-QR login"),
+            NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect App Connect"),
+            NSLocalizedString("Your Dash balance", comment: "DashConnect App Connect"),
             NSLocalizedString("Registering names or changing your keys", comment: "DashConnect App Connect v2"),
         ]
     }

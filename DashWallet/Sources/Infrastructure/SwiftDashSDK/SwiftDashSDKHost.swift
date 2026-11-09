@@ -28,11 +28,11 @@
 //  SPV.stop → host.stop.
 //
 
-import Combine
 import Foundation
 import OSLog
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 enum MnemonicFirstWalletCreationError: Error {
     case mnemonicPersistence(Error)
@@ -256,6 +256,48 @@ protocol CoinJoinRecoveryFlagResetting: AnyObject {
 
 extension CoinJoinRecovery: CoinJoinRecoveryFlagResetting {}
 
+/// The app-global "first historical sync after a restore" gate: while it is
+/// armed and `SyncingActivityMonitor` has not reached `.syncDone`, new Core
+/// spends are refused (`WalletSendService.isBlockedByInitialRestoreSync`).
+/// Production is `DWGlobalOptions.isResyncingWallet`; the phrase restore
+/// arms it in `DWRecoverWalletCommand` for every network, keychain recovery
+/// arms it here for one `persistenceScope`, and the monitor clears it at
+/// the first `.syncDone` of the scope that armed it.
+@MainActor
+protocol InitialRestoreSyncGating: AnyObject {
+    func armInitialRestoreSyncGate(scope: String)
+}
+
+extension DWGlobalOptions: InitialRestoreSyncGating {
+    /// The persisted gate: `resyncingWallet` plus `resyncingWalletScopes`.
+    var initialRestoreSyncGate: InitialRestoreSyncGate {
+        get { InitialRestoreSyncGate(isArmed: isResyncingWallet, scopes: resyncingWalletScopes) }
+        set {
+            resyncingWalletScopes = newValue.scopes
+            isResyncingWallet = newValue.isArmed
+        }
+    }
+
+    /// The gate as the current network's send surfaces see it: armed for
+    /// every network, or for the network currently selected. An arm left
+    /// behind by another network's unfinished scan does not block this one.
+    var isResyncingCurrentNetworkWallet: Bool {
+        initialRestoreSyncGate.blocks(scope: WalletEnvironment.network?.persistenceScope)
+    }
+
+    func armInitialRestoreSyncGate(scope: String) {
+        initialRestoreSyncGate = initialRestoreSyncGate.arming(scope: scope)
+    }
+
+    /// `.syncDone` on `scope`. No write while the gate is disarmed, so the
+    /// monitor's per-tick `.syncDone` costs nothing in the common case.
+    func clearInitialRestoreSyncGate(scope: String?) {
+        let gate = initialRestoreSyncGate
+        guard gate.isArmed else { return }
+        initialRestoreSyncGate = gate.clearing(scope: scope)
+    }
+}
+
 extension SwiftDashSDKHost {
     /// What the restore flow and the reset preflight read beside the SDK
     /// runtime. Production reads the keychain, `WalletEnvironment`'s
@@ -266,6 +308,7 @@ extension SwiftDashSDKHost {
         var material: any SwiftDashSDKWalletMaterialReading
         var registry: any SwiftDashSDKActiveWalletRegistry
         var coinJoinRecovery: any CoinJoinRecoveryFlagResetting
+        var restoreSyncGate: any InitialRestoreSyncGating
         var localStoreRoots: () throws -> WalletLocalStoreRoots
 
         @MainActor
@@ -274,6 +317,7 @@ extension SwiftDashSDKHost {
                 material: SwiftDashSDKKeychainWalletMaterial(),
                 registry: WalletEnvironmentActiveWalletRegistry(),
                 coinJoinRecovery: CoinJoinRecovery.shared,
+                restoreSyncGate: DWGlobalOptions.sharedInstance(),
                 localStoreRoots: { try WalletLocalStoreRoots.inDocuments() })
         }
     }
@@ -296,9 +340,12 @@ final class SwiftDashSDKHost {
 
     // MARK: - Owned state
 
+    let protocolCompatibility = WalletProtocolCompatibilityController(
+        foregroundNotification: UIApplication.willEnterForegroundNotification,
+        log: { DWLogger.log($0) })
+
     private(set) var sdk: SDK?
-    /// Published so a reader can follow the manager that runs now.
-    @Published private(set) var manager: PlatformWalletManager?
+    private(set) var manager: PlatformWalletManager?
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
@@ -371,43 +418,13 @@ final class SwiftDashSDKHost {
 
     // MARK: - Platform protocol version
 
-    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
-    ///
-    /// **Testnet is pinned to the protocol testnet has activated** (14; check
-    /// `current` in an evonode's getStatus before bumping). Below it the
-    /// client builds transitions the network refuses — at 13, every
-    /// `ShieldFromAssetLock` (version 1 only at v14) failed with 10603 and
-    /// left its asset lock unspent. An explicit pin, rather than auto-detect,
-    /// keeps a shielded build from running before the SDK has ratcheted up to
-    /// the network version. A pinned SDK never ratchets
-    /// (`refreshProtocolVersion()` is a no-op while pinned), so the pin has to
-    /// be bumped by hand on the next testnet activation.
-    ///
-    /// **Mainnet and devnet use `0` — auto-detect.** The SDK seeds at its
-    /// per-network `min_protocol_version` floor (13 on mainnet) and moves up
-    /// only when a proved response carries a newer version, so it follows a
-    /// mainnet activation to any protocol the linked SDK carries without an
-    /// app release. The floor must not sit
-    /// above the network: a client ahead of the network misreads its proofs (a
-    /// v13 pin while mainnet ran v12 failed with "compacted address balance
-    /// proof contains trailing bytes"). Devnet's floor is 14, built from the
-    /// linked SDK's v14, which a devnet cut from another release may not run.
-    /// TODO(protocol-refresh): the app never calls `refreshProtocolVersion()`,
-    /// so until the first proved read an auto-detect SDK builds transitions at
-    /// its floor.
-    ///
-    /// **Regtest** returns `0` only to keep the switch exhaustive;
-    /// `makeRuntime` rejects it before an SDK is built.
-    ///
-    /// The pin only names a version; its rules come from the linked SDK.
-    /// platform v4.2-dev carries a pre-release v14 whose `ShieldFromAssetLock`
-    /// is still version 0. Testnet runs 5.0.0-rc.4; link that release, or a
-    /// later commit with the same `v14.rs`.
+    /// Use the SDK's automatic protocol selection on every supported network.
+    /// It starts at the network's minimum version and advances after verified
+    /// responses, up to the SDK's supported maximum. The advisory query runs
+    /// independently; operation preparation does not wait for it.
+    /// Regtest is rejected by `makeRuntime` before an SDK is built.
     static func platformVersion(for network: Network) -> UInt32 {
-        switch network {
-        case .testnet: return 14
-        case .mainnet, .devnet, .regtest: return 0
-        }
+        0
     }
 
     // MARK: - Wallet presence
@@ -576,31 +593,6 @@ final class SwiftDashSDKHost {
         return persistedMnemonics().contains { Mnemonic.normalizePhrase($0.mnemonic) == typed }
     }
 
-    /// Throwaway key-wallet stack (manager + wallet) for path-based key
-    /// derivation, built from the persisted mnemonic of the host's active
-    /// wallet. Separate from the running `PlatformWalletManager` — key
-    /// derivation lives in the `WalletManager`/`Wallet` FFI surface, which
-    /// the runtime handles don't expose. The instances derive keys locally
-    /// (no networking, no persistence); drop them when done.
-    ///
-    /// Consumers: the masternode Owner/Voting key deriver and CrowdNode
-    /// message signing. Returns nil when no wallet is bound/running or the
-    /// mnemonic can't be read (logged).
-    func derivationWallet() -> (manager: WalletManager, wallet: Wallet, walletId: Data)? {
-        guard let hostWalletId = wallet?.walletId, let network = runningNetwork else {
-            Self.logger.warning("🪺 HOST :: derivationWallet — no bound wallet/network")
-            return nil
-        }
-        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
-              let manager = try? WalletManager(network: network),
-              let walletId = try? manager.addWallet(mnemonic: mnemonic),
-              let derivationWallet = (try? manager.getWallet(id: walletId)) ?? nil else {
-            Self.logger.error("🪺 HOST :: derivationWallet — key-wallet bootstrap failed")
-            return nil
-        }
-        return (manager: manager, wallet: derivationWallet, walletId: walletId)
-    }
-
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {
@@ -692,14 +684,7 @@ final class SwiftDashSDKHost {
         case WalletStorageError.mnemonicNotFound:
             return (.notFound, nil)
         case SwiftDashSDKWalletDeletionError.invalidMnemonic,
-             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
-             KeyWalletError.invalidMnemonic,
-             KeyWalletError.invalidInput:
-            // The resolver derives ids by constructing a wallet from the
-            // stored phrase; these two `KeyWalletError` cases are that
-            // construction refusing material that passed word validation.
-            // Its other cases (allocation, network, state) say nothing about
-            // the keys and stay a store failure.
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork:
             return (.unclassifiable, nil)
         case HostError.mnemonicRoundTripMismatch:
             return (.idMismatch, nil)
@@ -782,7 +767,8 @@ final class SwiftDashSDKHost {
             // through this branch.
             collaborators.coinJoinRecovery.resetRecoveryFlag(scope: network.persistenceScope)
             do {
-                var recovered = try recoverPersistedWallet(in: rows, network: network)
+                let keychainRecovered = try recoverPersistedWallet(in: rows, network: network)
+                var recovered = keychainRecovered
                 if recovered == nil, network == .devnet {
                     recovered = await provisionDevnet()
                 }
@@ -791,6 +777,18 @@ final class SwiftDashSDKHost {
                 // the marker. First-entry devnet provisioning keeps its
                 // separate policy when no devnet wallet existed yet.
                 try localStoreRecovery(for: network).finish()
+                if keychainRecovered != nil {
+                    // The rows were recreated at the import floor, so the scan
+                    // that follows is a historical one and a Core spend could
+                    // select an input it has not yet seen spent (ios#1227).
+                    // Arm the same gate the phrase restore arms, scoped to this
+                    // network so another network's `.syncDone` cannot lift it
+                    // mid-scan. Armed last, after every step that can throw,
+                    // so a failed start leaves no gate behind. Devnet rows
+                    // provisioned on first entry are not armed (unchanged).
+                    collaborators.restoreSyncGate.armInitialRestoreSyncGate(
+                        scope: network.persistenceScope)
+                }
                 return recovered
             } catch {
                 await rows.shutdown()
@@ -1084,10 +1082,42 @@ final class SwiftDashSDKHost {
         do {
             // This is the same deterministic id contract used by addWallet's
             // duplicate guard and PlatformWalletManager.createWallet.
-            walletId = try Wallet(mnemonic: mnemonic, network: network).id
+            walletId = try Mnemonic.walletId(for: mnemonic, network: network)
         } catch {
             Self.logger.error("🪺 HOST :: walletId derivation failed: \(String(describing: error), privacy: .public)")
             throw HostError.walletCreationFailed(error)
+        }
+
+        // An imported wallet may hold history below the anchor of a chain
+        // store an earlier, younger wallet left on this network. Recorded
+        // before the wallet exists, so the rebuild does not depend on reaching
+        // the code after the create; a wallet that is not loaded rebuilds
+        // nothing. An import whose marker cannot be made durable is refused
+        // before it stores the phrase or creates the wallet. The marker this
+        // call armed is withdrawn only when the import fails before the SDK
+        // was asked to create the wallet; once it was, the marker stays — the SDK
+        // can throw after the wallet's rows landed, and a later start then
+        // loads the wallet without passing through here again.
+        var armedRebuildDirectory: URL?
+        var nativeCreateAttempted = false
+        defer {
+            if let armedRebuildDirectory, !nativeCreateAttempted {
+                SPVChainStoreRebuild.finish(
+                    walletIds: [walletId], scope: network.persistenceScope, directory: armedRebuildDirectory)
+            }
+        }
+        if isImported {
+            do {
+                let directory = try chainStoreRebuildDirectory()
+                if try SPVChainStoreRebuild.arm(
+                    walletId: walletId, scope: network.persistenceScope, directory: directory) {
+                    armedRebuildDirectory = directory
+                }
+            } catch {
+                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+                throw HostError.walletCreationFailed(error)
+            }
         }
 
         let storage = WalletStorage()
@@ -1118,6 +1148,7 @@ final class SwiftDashSDKHost {
                     }
                 },
                 createWallet: {
+                    nativeCreateAttempted = true
                     if offMainCreate {
                         // Async SDK overload: the blocking native create
                         // runs on the SDK's dedicated queue, not the main
@@ -1196,6 +1227,7 @@ final class SwiftDashSDKHost {
     /// invariant doesn't hold here.
     @discardableResult
     func stopAsync() async -> PlatformWalletShutdownMetrics? {
+        protocolCompatibility.detach()
         let drainWatch = contactCryptoDrainWatch
         contactCryptoDrainWatch = nil
         drainWatch?.cancel()
@@ -1226,6 +1258,7 @@ final class SwiftDashSDKHost {
         sdk = nil
         modelContainer = nil
         runningNetwork = nil
+        ContestedUsernameFee.shared.runtimeDidStop()
 
         Self.logger.info("🪺 HOST :: stopped")
         DWLogger.log("HOST stopped")
@@ -1662,8 +1695,25 @@ final class SwiftDashSDKHost {
             for: network)
         guard !entries.isEmpty else { return nil }
 
+        let scope = network.persistenceScope
         for entry in entries {
             if rows.wallets[entry.walletId] != nil { continue }
+            // Recreated at the import floor like an import, so a chain store
+            // that survived the lost rows may be anchored above the wallet's
+            // history too (see `SPVChainStoreRebuild`). Durable before the
+            // create, so a wallet an interrupted attempt recreated is still
+            // pending when a later start finds it loaded. Never withdrawn on
+            // failure — the SDK can throw after the wallet's rows landed, and
+            // a marker for a wallet that is not loaded deletes nothing. A
+            // marker that cannot be written does not stop the recovery: the
+            // wallet opening matters more than the rescan it asks for.
+            do {
+                try SPVChainStoreRebuild.arm(
+                    walletId: entry.walletId, scope: scope, directory: try chainStoreRebuildDirectory())
+            } catch {
+                Self.logger.error("🪺 HOST :: chain store rebuild marker not persisted for a recovered wallet: \(String(describing: error), privacy: .public)")
+                DWLogger.log("HOST keychain recovery: chain store rebuild marker not persisted: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            }
             do {
                 let created = try rows.createWallet(
                     mnemonic: entry.mnemonic,
@@ -1921,6 +1971,10 @@ final class SwiftDashSDKHost {
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        ContestedUsernameFee.shared.runtimeDidStart()
+        protocolCompatibility.attach(
+            client: SwiftDashSDKProtocolCompatibilityClient(sdk: handles.sdk),
+            network: String(describing: handles.network))
     }
 
     // MARK: - ModelContainer
@@ -1961,6 +2015,10 @@ final class SwiftDashSDKHost {
     private func localStoreRecovery(for network: Network) throws -> WalletLocalStoreRecovery {
         WalletLocalStoreRecovery(directory: try collaborators.localStoreRoots().platform
             .appendingPathComponent(network.persistenceScope, isDirectory: true))
+    }
+
+    private func chainStoreRebuildDirectory() throws -> URL {
+        try collaborators.localStoreRoots().chainStoreRebuilds
     }
 
     private func resetIntent() throws -> WalletLocalStoreResetIntent {
