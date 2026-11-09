@@ -394,7 +394,7 @@ struct UsernameMarketplaceService {
     /// transition, but the on-chain effect differs: the label enters a
     /// masternode vote (~2 weeks mainnet) instead of being claimed, and
     /// the transition locks the protocol's vote-resolution fund
-    /// (`contestedFundCredits`) from the identity balance.
+    /// (`ContestedUsernameFee`) from the identity balance.
     ///
     /// Mirrors step 3.5 of `DWIdentityRegistrationCoordinator`: the
     /// submission is bookmarked in `DWContestedNameStatusService` so the
@@ -417,11 +417,15 @@ struct UsernameMarketplaceService {
         guard let network = WalletEnvironment.network else {
             throw ServiceError.noNetwork
         }
+        // Before the PIN prompt: a fund that cannot be stated stops here.
+        let maxContestFund = try await ContestedUsernameFee.shared
+            .contestFundCeilingCredits(scope: network.persistenceScope)
         try await authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
-            signer: KeychainSigner(modelContainer: container))
+            signer: KeychainSigner(modelContainer: container),
+            maxContestFund: maxContestFund)
         Self.logger.info("🏷️ MARKET :: contested request submitted for \(label, privacy: .public)")
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative
@@ -536,13 +540,6 @@ struct UsernameMarketplaceService {
             : 45 * 60
         return voteEnd.addingTimeInterval(-closedBeforeEnd)
     }
-
-    /// The protocol's contested-document vote-resolution fund: what a
-    /// contested request locks from the identity balance on top of the
-    /// normal registration fee. Mirrors
-    /// `vote_resolution_fund_fees::v1` in rs-platform-version
-    /// (20_000_000_000 credits = 0.2 DASH).
-    static let contestedFundCredits: UInt64 = 20_000_000_000
 
     /// Buyer identity's credit balance from the persisted row — for the
     /// affordability hint; the SDK re-checks authoritatively at purchase.

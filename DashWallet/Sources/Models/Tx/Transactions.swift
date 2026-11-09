@@ -25,8 +25,14 @@ final class Tx: NSObject {
     private var txUserInfos: TransactionMetadataDAO = TransactionMetadataDAOImpl.shared
 
     func updateRateIfNeeded(for transaction: Transaction) {
+        updateRateIfNeeded(txHashData: transaction.txHashData, date: transaction.date)
+    }
+
+    /// Stamps the current rate on a transaction by its wire-order txid — for a
+    /// send at broadcast, before Home lists it.
+    func updateRateIfNeeded(txHashData: Data, date: Date) {
         guard let activationDate = DWGlobalOptions.sharedInstance().dateHistoricalRatesActivated,
-              transaction.date > activationDate else {
+              date > activationDate else {
             return
         }
 
@@ -37,14 +43,14 @@ final class Tx: NSObject {
         let maximumFractionDigits = decimalRate.fractionDigits
         let rate = (decimalRate*pow(10, maximumFractionDigits) as NSDecimalNumber).intValue
 
-        guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
+        guard let userInfo = txUserInfos.get(by: txHashData) else {
             // Stamp the rate only — the tax category stays .unknown
             // (unclassified) so readers keep deriving the live default.
             // Persisting the default here would freeze it before
             // internal-transfer detection settles (restore-scan asset-lock
             // reconstruction lags first observation).
             set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits,
-                for: TransactionMetadata(txHash: transaction.txHashData))
+                for: TransactionMetadata(txHash: txHashData))
             return
         }
 

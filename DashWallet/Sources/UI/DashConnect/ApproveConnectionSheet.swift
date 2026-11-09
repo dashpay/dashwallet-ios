@@ -392,20 +392,28 @@ struct ApproveConnectionSheet: View {
     /// The profile's warnings. Nothing in a request proves where it came
     /// from: an app the wallet does not know is named by the request alone,
     /// and a known app's request that does not return to its website may
-    /// come from a page that is not the app's. A known app's request that
-    /// returns elsewhere is refused before it gets here.
+    /// come from a page that is not the app's.
     private func originWarning(_ plan: AppConnect.GrantPlan) -> String? {
-        guard let brandHost = plan.brandHost else {
+        switch AppConnect.originWarning(callbackHost: plan.callbackHost, brandHost: plan.brandHost) {
+        case nil:
+            return nil
+        case .unknownApp:
             return NSLocalizedString(
                 "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.",
                 comment: "DashConnect App Connect v2")
+        case .noCallback(let website):
+            return String(
+                format: NSLocalizedString(
+                    "This request does not return to %@. It may not come from the app's website.",
+                    comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
+                website)
+        case .returnsElsewhere(let callbackHost):
+            return String(
+                format: NSLocalizedString(
+                    "This request would return to %@, which is not the app's website.",
+                    comment: "DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr"),
+                callbackHost)
         }
-        guard plan.callbackHost == nil else { return nil }
-        return String(
-            format: NSLocalizedString(
-                "This request does not return to %@. It may not come from the app's website.",
-                comment: "DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr"),
-            brandHost)
     }
 
     private func requestOrigin(_ plan: AppConnect.GrantPlan) -> String {
@@ -445,7 +453,8 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(granted, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(granted.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: text)
                 }
             }
@@ -455,7 +464,8 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                ForEach(withheld, id: \.self) { text in
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(withheld.enumerated()), id: \.offset) { _, text in
                     PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: text)
                 }
             }

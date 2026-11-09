@@ -111,6 +111,19 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
+    /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
+    /// An escape that rises from a controller this one presented is left to the default
+    /// handling, so it closes that controller and not this screen. Returns whether it acted;
+    /// when it did not, the default handling runs.
+    var onAccessibilityEscape: (() -> Bool)?
+
+    override func accessibilityPerformEscape() -> Bool {
+        guard let onAccessibilityEscape, presentedViewController == nil, onAccessibilityEscape() else {
+            return super.accessibilityPerformEscape()
+        }
+        return true
+    }
 
     enum Section: CaseIterable {
         case header
@@ -181,6 +194,16 @@ class TXDetailViewController: BaseTxDetailsViewController {
         }
     }
 
+    /// The contact whose profile a host already sits on, and how to go back
+    /// to it: that contact's row goes back instead of stacking a second
+    /// profile on top.
+    struct ContactReturn {
+        let identityId: Data
+        let goBack: () -> Void
+    }
+
+    var contactReturn: ContactReturn?
+
     @objc
     init(model: TxDetailModel) {
         self.model = model
@@ -217,6 +240,12 @@ class TXDetailViewController: BaseTxDetailsViewController {
         // block explorer for it; the row reads "Paid by sender" until (and
         // unless) an answer lands.
         model.resolveExplorerFee { [weak self] in
+            self?.reloadDataSource()
+        }
+
+        // A swap order shown before its Dash transaction exists changes status while the
+        // screen is up.
+        model.observeSwapOrderPlaceholder { [weak self] in
             self?.reloadDataSource()
         }
     }
@@ -293,6 +322,13 @@ extension TXDetailViewController {
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
+                AssetLockRetryLog.logOutcome(
+                    "outcome=\(outcome)",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
@@ -310,8 +346,25 @@ extension TXDetailViewController {
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
+                AssetLockRetryLog.logOutcome(
+                    "outcome=cancelled",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
             } catch {
                 failure = error
+                // The alert shows only the text; the log keeps the typed case.
+                // The failure store is written where the network call threw,
+                // not here, so a refusal cannot overwrite the stored reason.
+                AssetLockRetryLog.logFailure(
+                    error,
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
             }
 
             guard let self else { return }
@@ -539,9 +592,21 @@ extension TXDetailViewController {
         let date = model.date
         let taxCategory = model.taxCategory
 
+        // A swap order shown before its Dash transaction exists has nothing to categorise for
+        // tax, no raw transaction to inspect and nothing to look up on a block explorer, so
+        // those sections are left out.
+        let hasTransaction = model.swapOrderPlaceholder == nil
+
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .rawTransaction, .explorer])
+        currentSnapshot.appendSections(hasTransaction
+            ? [.header, .info, .taxCategory, .rawTransaction, .explorer]
+            : [.header, .info])
         currentSnapshot.appendItems([.header], toSection: .header)
+        if !hasTransaction {
+            // The header item's identity never changes, so a rebuilt snapshot alone leaves
+            // the cell as it was; an order's title follows its status, so redraw it.
+            currentSnapshot.reconfigureItems([.header])
+        }
 
         // Shielded transfers lead with their balance route + lock status.
         for item in model.shieldedInfo() {
@@ -599,7 +664,9 @@ extension TXDetailViewController {
         }
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
-        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        if hasTransaction {
+            currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        }
         // A funding asset lock parked mid-transfer gets a retry action.
         // The section is inserted (not pre-appended) so the empty state
         // adds no phantom section spacing.
@@ -617,8 +684,10 @@ extension TXDetailViewController {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
             currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
         }
-        currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
-        currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        if hasTransaction {
+            currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
+            currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        }
         if let swapLink = model.swapExplorerLink {
             currentSnapshot.appendSections([.swapExplorer])
             currentSnapshot.appendItems([.swapExplorer(swapLink.title)], toSection: .swapExplorer)
@@ -639,7 +708,11 @@ extension TXDetailViewController {
         switch section {
         case .info:
             if case .contact(_, let party)? = dataSource.itemIdentifier(for: indexPath) {
-                openContactProfile(party)
+                if let contactReturn, contactReturn.identityId == party.identityId {
+                    contactReturn.goBack()
+                } else {
+                    openContactProfile(party)
+                }
             }
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
@@ -726,26 +799,65 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
 struct TXDetailVCWrapper: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     
-    let tx: Transaction
+    private let makeModel: () -> TxDetailModel
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
+    /// VoiceOver's escape gesture on the detail, returning whether it acted; `nil` or
+    /// `false` leaves the gesture to the default handling.
+    var onAccessibilityEscape: (() -> Bool)? = nil
     
-    init(tx: Transaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
-        self.tx = tx
+    /// See `TXDetailViewController.contactReturn`.
+    var contactReturn: TXDetailViewController.ContactReturn? = nil
+
+    init(tx: Transaction,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil,
+         onAccessibilityEscape: (() -> Bool)? = nil) {
+        self.init(makeModel: { .init(transaction: tx) }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn,
+                  onAccessibilityEscape: onAccessibilityEscape)
+    }
+
+    init(model: TxDetailModel,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil) {
+        self.init(makeModel: { model }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn, onAccessibilityEscape: nil)
+    }
+
+    init(swapOrder: BuySwapOrderItem, navigateBack: Binding<Bool>) {
+        self.init(makeModel: { .init(swapOrder: swapOrder) }, navigateBack: navigateBack,
+                  onDismissed: nil, contactReturn: nil, onAccessibilityEscape: nil)
+    }
+
+    private init(makeModel: @escaping () -> TxDetailModel,
+                 navigateBack: Binding<Bool>,
+                 onDismissed: (() -> Void)?,
+                 contactReturn: TXDetailViewController.ContactReturn?,
+                 onAccessibilityEscape: (() -> Bool)?) {
+        self.makeModel = makeModel
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
+        self.contactReturn = contactReturn
+        self.onAccessibilityEscape = onAccessibilityEscape
     }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = TXDetailViewController(model: .init(transaction: tx))
+    func makeUIViewController(context: Context) -> TXDetailViewController {
+        let vc = TXDetailViewController(model: makeModel())
+        vc.contactReturn = contactReturn
+        vc.onAccessibilityEscape = onAccessibilityEscape
         return vc
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.contactReturn = contactReturn
+        uiViewController.onAccessibilityEscape = onAccessibilityEscape
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false
