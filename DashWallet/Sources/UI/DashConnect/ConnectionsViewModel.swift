@@ -197,10 +197,12 @@ final class ConnectionsViewModel: ObservableObject {
     /// that sheet to be gone (`connectionSheetDismissed`): SwiftUI shows one
     /// sheet at a time.
     private var sheetDismissal: CheckedContinuation<Void, Never>?
+    /// Moves on with every sheet opened and every dismissal reported, so a
+    /// fallback timeout of an earlier dismissal does nothing.
     private var sheetDismissalNumber = 0
     /// From opening a connection's sheet until it reports being gone: it
     /// may still be leaving the screen after `shownConnection` is cleared.
-    private var isConnectionSheetOnScreen = false
+    private(set) var isConnectionSheetOnScreen = false
 
     init(
         dataSource: (any DashConnectDataSource)? = nil,
@@ -268,6 +270,7 @@ final class ConnectionsViewModel: ObservableObject {
     func showConnection(_ item: ConnectionSheetItem, asksToDisconnect: Bool = false) {
         guard !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
         isConnectionSheetOnScreen = true
+        sheetDismissalNumber &+= 1
         shownConnection = item
         shownDetails = nil
         shownDetailsFailed = false
@@ -328,7 +331,8 @@ final class ConnectionsViewModel: ObservableObject {
             "This connection has nothing to disconnect now.",
             comment: "DashConnect: a disconnect asked for on a connection that no longer offers one"))
 
-    private func readShownDetails(_ item: ConnectionSheetItem) {
+    /// With `keepingShown`, a read that fails leaves what the sheet shows.
+    private func readShownDetails(_ item: ConnectionSheetItem, keepingShown: Bool = false) {
         detailsReadNumber += 1
         let number = detailsReadNumber
         if let entry = item.entry {
@@ -344,6 +348,7 @@ final class ConnectionsViewModel: ObservableObject {
             // the sheet closed, opened again or read again tells of a
             // connection as it was then.
             guard number == self.detailsReadNumber, self.shownConnection != nil else { return }
+            if details == nil, keepingShown, self.shownDetails != nil { return }
             self.shownDetails = details
             self.shownDetailsFailed = details == nil
         }
@@ -369,6 +374,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// The connection's sheet is gone from the screen.
     func connectionSheetDismissed() {
         isConnectionSheetOnScreen = false
+        sheetDismissalNumber &+= 1
         // A request on its way owns the screen: the page cannot show an
         // alert and its sheet at once.
         if let waiting = messageAfterSheet, !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil {
@@ -382,7 +388,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// Closes an open connection's sheet and returns once it is gone, so a
     /// request's sheet can show. A sheet that never reports going (the
     /// screen is not up) is waited for no longer than a second.
-    private func closeConnectionSheet() async {
+    func closeConnectionSheet() async {
         guard isConnectionSheetOnScreen else { return }
         hideConnection()
         sheetDismissalNumber &+= 1
@@ -413,14 +419,18 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
         if let current {
-            guard current != shown else { return }
-            shownConnection = current
+            if current != shown { shownConnection = current }
             // What the sheet reads changes with the app, its row, or whether
             // it is still connected.
             if Self.readsAnew(current, from: shown) {
                 shownDetails = nil
                 shownDetailsFailed = false
                 readShownDetails(current)
+            } else {
+                // Same app and status: what it holds may still have changed
+                // (another approval of it, a limits update), and the row
+                // does not tell. Read again, showing the old until then.
+                readShownDetails(current, keepingShown: true)
             }
         } else {
             // What the sheet was saying goes to the page once it has gone.

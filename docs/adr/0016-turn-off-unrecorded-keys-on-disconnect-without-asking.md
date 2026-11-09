@@ -42,6 +42,9 @@ access, in one step.
 **Neutral**
 - A key whose bound the wallet cannot tell yet is still not turned off; the disconnect reports it
   as not checked and keeps the connection listed.
+- Profile keys no connection accounts for get no row while some connection on the identity can be
+  disconnected. On an identity with none, they stand as a "DashPay" row of their own, so they can
+  always be turned off.
 
 ## Links
 
