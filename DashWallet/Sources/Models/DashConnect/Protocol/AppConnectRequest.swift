@@ -18,8 +18,8 @@ enum AppConnectRequestError: Error, Equatable {
 /// unknown odd types are skipped. TLVs come in ascending type order, and of
 /// the known types only the two bindings repeat. Integers are big-endian.
 ///
-/// This type only decodes and checks the format. Nothing in the login flow
-/// reads it yet.
+/// This type only decodes and checks the format. The rules a wallet applies
+/// before it grants what a request asks for are `AppConnect.grantPlan(for:now:)`.
 struct AppConnectRequest: Equatable {
     /// Wire tags, equal to Platform's `ContractBounds` bincode tags.
     enum BindingKind: UInt8 {

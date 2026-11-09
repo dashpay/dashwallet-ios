@@ -38,6 +38,13 @@ enum AssetLockStatus: Int {
     /// Recovered from chain after a restore: final on Core, but whether it
     /// completed on Platform cannot be authenticated.
     case recoveredFromChain = 5
+    /// A Core → Shielded Max drain the SDK recorded as completed. It is
+    /// terminal like `consumed`; a generic resume would only be rejected as
+    /// already consumed.
+    case drainCompleted = 6
+
+    /// The transfer is finished; there is nothing left to resume.
+    var isComplete: Bool { self == .consumed || self == .drainCompleted }
 }
 
 // MARK: - ShieldedRecoveryViewModel
@@ -143,7 +150,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         Task { @MainActor in
             await ShieldedTxLookup.shared.refresh(reason: "shield-recovery-preflight")
 
-            if Self.status(ofOutPoint: outPoint.txidWire) == .consumed {
+            if Self.status(ofOutPoint: outPoint.txidWire)?.isComplete == true {
                 alreadyComplete = true
                 return
             }

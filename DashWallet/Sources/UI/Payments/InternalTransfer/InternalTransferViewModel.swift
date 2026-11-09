@@ -120,28 +120,25 @@ enum CoreToShieldedAmountPolicy {
     /// (50_000 duffs) × 1000 credits/duff.
     static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
-    /// Cached: this is read from `amountValidationMessage` and `canContinue`,
-    /// both of which a SwiftUI `body` evaluates — so an uncached property
-    /// crosses into Rust on every render and every keystroke. The value is a
-    /// pure function of the protocol version and the fixed `(transfer, 2)`
-    /// shape, so it cannot change within a launch.
-    private static var cachedPoolFeeCredits: UInt64??
-
+    /// Estimated on every read, not cached: the fee follows the running
+    /// manager's protocol version, which differs between networks (see
+    /// `SwiftDashSDKHost.platformVersion(for:)`) and rises in place on an
+    /// auto-detected network once a proof shows a newer one. The estimate is a
+    /// local computation in the SDK with no network round-trip, read per
+    /// render like `CoreToPlatformAmountPolicy.currentReserveCredits`.
     static var poolFeeCredits: UInt64? {
-        if let cached = cachedPoolFeeCredits { return cached }
-        guard let shieldedFee = try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
+        poolFeeCredits(addingBaseCostTo: try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(
             kind: .transfer,
-            numActions: 2)
-        else {
-            // Not cached: a failed estimate is a transient FFI condition, and
-            // caching it would keep the screen permanently unusable.
-            return nil
-        }
+            numActions: 2))
+    }
 
-        let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
-        let value: UInt64? = overflow ? nil : total
-        cachedPoolFeeCredits = .some(value)
-        return value
+    /// A ShieldFromAssetLock pool fee from the shielded fee for the fixed
+    /// `(transfer, 2)` shape: that fee plus the asset-lock base cost; nil
+    /// when there is no estimate or the sum overflows, so callers fail closed.
+    static func poolFeeCredits(addingBaseCostTo shieldedFeeCredits: UInt64?) -> UInt64? {
+        guard let shieldedFeeCredits else { return nil }
+        let (total, overflow) = shieldedFeeCredits.addingReportingOverflow(assetLockBaseCostCredits)
+        return overflow ? nil : total
     }
 
     /// Pool fee in whole duffs, rounded UP so a duff-denominated lock always
@@ -432,10 +429,84 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
     @Published private(set) var isFullShieldedSweep = false
-    /// Why Max could not produce an amount (or is still resolving one).
-    /// Surfaced through `amountValidationMessage` so tapping Max is never a
-    /// silent no-op.
-    @Published private(set) var maxNotice: String?
+    /// Core → Shielded Max: status, estimate and recovery live in the shared
+    /// controller; this form forwards and applies estimates to its amount.
+    private(set) lazy var coreDrainMax = CoreShieldedDrainMaxController(dependencies: .init(
+        insufficientFundsMessage: { [weak self] in
+            guard let self else { return "" }
+            return Self.coreDrainInsufficientFundsMessage(
+                coreSpendableDuffs: self.coreSpendableDuffs, coreBalanceDuffs: self.coreBalanceDuffs)
+        },
+        applyEstimate: { [weak self] duffs in
+            guard let self else { return }
+            self.isApplyingMax = true
+            self.applyMaxAmountText(duffs ?? 0)
+            self.isApplyingMax = false
+        },
+        onContextChanged: { [weak self] in
+            guard let self else { return }
+            self.clearMaxSelection()
+            self.amountText = "0"
+        },
+        completionMessage: { recipient in
+            // An external drain started on Send can be found here too; it did
+            // not land in this wallet's Shielded balance.
+            recipient?.isExternal == false
+                ? NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+                : NSLocalizedString("The pending Max transfer completed.", comment: "Send: Core drain recovery success")
+        }))
+    private var coreDrainMaxCancellable: AnyCancellable?
+
+    var isCoreShieldedDrain: Bool { coreDrainMax.isActive }
+    var isCoreDrainLoading: Bool { coreDrainMax.isLoading }
+    var coreShieldedDrainConfirmation: CoreShieldedDrainConfirmation? { coreDrainMax.confirmation }
+    var coreDrainPending: Bool { coreDrainMax.isPending }
+    var coreDrainCompleted: Bool { coreDrainMax.isCompleted }
+
+    var coreDrainDashDisplay: String? {
+        guard isCoreShieldedDrain else { return nil }
+        return CoreShieldedDrainDisplay.dashAmount(
+            estimatedRecipientCredits: coreShieldedDrainConfirmation?.estimatedRecipientCredits)
+    }
+
+    var coreDrainFiatDisplay: String? {
+        guard isCoreShieldedDrain else { return nil }
+        return CoreShieldedDrainDisplay.fiatAmount(
+            estimatedRecipientCredits: coreShieldedDrainConfirmation?.estimatedRecipientCredits,
+            dashAmount: parsedDashAmount, currency: fiatCurrencyCode)
+    }
+
+    var canShowTransferPreview: Bool {
+        canContinue && (!isCoreShieldedDrain || coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil)
+    }
+
+    var coreDrainEstimateNotice: String? { coreDrainMax.estimateNotice }
+    var coreDrainCompletionNotice: String? { coreDrainMax.completionNotice }
+    var coreDrainActionTitle: String? { coreDrainMax.actionTitle }
+
+    @discardableResult
+    func performCoreDrainAction() -> Task<Void, Never>? {
+        coreDrainMax.performAction()
+    }
+
+    /// The drain found nothing to move. With nothing spendable at all, the
+    /// precise reason (still confirming, or only mixed coins) is the shared
+    /// Core Max explanation, not the fees. Shared by both Max screens.
+    static func coreDrainInsufficientFundsMessage(coreSpendableDuffs: UInt64, coreBalanceDuffs: UInt64) -> String {
+        guard coreSpendableDuffs == 0 else {
+            return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
+        }
+        return coreZeroMaxMessage(
+            totalDuffs: coreBalanceDuffs,
+            confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
+            excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
+    }
+
+    /// Why Max could not produce an amount, is still resolving one, or has
+    /// an estimate to explain. Estimates are shown separately from errors.
+    /// A Core drain's notice comes from its controller while one is set.
+    var maxNotice: String? { coreDrainMax.notice ?? routeMaxNotice }
+    @Published private var routeMaxNotice: String?
     /// Exact duff amount selected by Max. Fiat text is presentation-only and
     /// may round to two decimals, so reparsing it must never move the transfer
     /// above (or below) the source's real spendable ceiling.
@@ -447,6 +518,7 @@ final class InternalTransferViewModel: ObservableObject {
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
+            if isCoreShieldedDrain && maxAmountDuffs == nil { return }
             if let maxAmountDuffs {
                 isApplyingMax = true
                 defer { isApplyingMax = false }
@@ -1013,7 +1085,7 @@ final class InternalTransferViewModel: ObservableObject {
             self.isIdentityBalanceRefreshing = false
             self.identityBalanceRefreshTask = nil
             if self.maxNotice == Self.identityBalanceRefreshingMessage {
-                self.maxNotice = nil
+                self.routeMaxNotice = nil
             }
         }
         identityBalanceRefreshTask = task
@@ -1080,9 +1152,17 @@ final class InternalTransferViewModel: ObservableObject {
     /// Continue gate and Max all read this one number so the screen can't offer
     /// an amount the transaction builder must then reject.
     ///
-    /// Recomputed on each published balance instead of per view render — the
-    /// underlying reserve estimate walks the account's UTXO set over the FFI.
+    /// Recomputed on every raw balance or pooled-spendable publication, rather
+    /// than per view render — the underlying reserve estimate walks the
+    /// account's UTXO set over the FFI. Validation, Continue and Max all use
+    /// this cached value.
     @Published private(set) var coreSpendableDuffs: UInt64 = 0
+
+    /// The ordinary L1 reserve paired with `coreSpendableDuffs`. It is cached
+    /// with the same envelope read so a funds verdict can include both the
+    /// ordinary send reserve and the route-specific asset-lock cost without
+    /// walking the UTXO set during a render.
+    private(set) var coreL1FeeReserveDuffs: UInt64 = 0
 
     /// DIP-17 Platform Payment credits (1e11 per DASH). Sourced from
     /// `PlatformAddressSyncCoordinator.platformBalance`. Used to validate
@@ -1134,17 +1214,46 @@ final class InternalTransferViewModel: ObservableObject {
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 
+    /// Preserve every balance event as an envelope-refresh trigger, even when
+    /// its aggregate buckets are unchanged. The fee reserve depends on the
+    /// UTXO count, not just those aggregates. Pooled publications also refresh
+    /// the envelope, including the first read after a wallet balance event.
+    nonisolated static func coreEnvelopeRefreshPublisher(
+        pooled: AnyPublisher<UInt64?, Never>,
+        balance: AnyPublisher<WalletBalance?, Never>
+    ) -> AnyPublisher<Void, Never> {
+        Publishers.CombineLatest(pooled, balance)
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
+
     init() {
         SyncingActivityMonitor.shared.add(observer: self)
+
+        // A nested `ObservableObject` does not announce through its owner.
+        coreDrainMaxCancellable = coreDrainMax.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
 
         NotificationCenter.default.publisher(for: .advancedModeDidChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.applyAdvancedMode() }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.isCoreShieldedDrain else { return }
+                self.clearMaxSelection()
+                self.amountText = "0"
+                self.routeMaxNotice = CoreShieldedDrainService.ServiceError.contextChanged.localizedDescription
+            }
+            .store(in: &cancellables)
+
         isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+        let initialCoreEnvelope = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
+        coreL1FeeReserveDuffs = initialCoreEnvelope.reserve
+        coreSpendableDuffs = initialCoreEnvelope.max
         platformBalanceState = PlatformAddressSyncCoordinator.shared.platformBalanceState
         platformCredits = platformBalanceState.credits ?? 0
 
@@ -1152,8 +1261,33 @@ final class InternalTransferViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] balance in
                 self?.coreBalanceDuffs = balance?.total ?? 0
-                self?.coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
             }
+            .store(in: &cancellables)
+
+        // Keep the base branch's raw balance-event refreshes as well as the
+        // pooled updates. Do not deduplicate aggregates here: the envelope's
+        // reserve is based on the UTXO set, not just the published sums.
+        let state = SwiftDashSDKWalletState.shared
+        Self.coreEnvelopeRefreshPublisher(
+            pooled: state.$pooledSpendableDuffs.eraseToAnyPublisher(),
+            balance: state.$balance.eraseToAnyPublisher())
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                let envelope = SwiftDashSDKWalletState.shared.feeAwareMaxSendableAndReserve()
+                self?.coreL1FeeReserveDuffs = envelope.reserve
+                // Publish the max after its paired inputs are cached, so a
+                // render never observes a mixed envelope.
+                self?.coreSpendableDuffs = envelope.max
+            }
+            .store(in: &cancellables)
+
+        // The balance is republished on every wallet event, unchanged or not.
+        // A drain refresh drops the estimate (disabling Continue) and, with a
+        // pending marker, queries the SDK, so only a changed balance earns one.
+        SwiftDashSDKWalletState.shared.$balance
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.coreDrainMax.refresh() }
             .store(in: &cancellables)
 
         PlatformAddressSyncCoordinator.shared.$platformBalanceState
@@ -1333,6 +1467,10 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     var parsedDashAmount: Decimal {
+        if isCoreShieldedDrain {
+            guard let credits = coreShieldedDrainConfirmation?.estimatedRecipientCredits else { return 0 }
+            return Decimal(credits) / Decimal(100_000_000_000 as UInt64)
+        }
         if let maxAmountDuffs {
             return maxAmountDuffs.dashAmount
         }
@@ -1380,7 +1518,7 @@ final class InternalTransferViewModel: ObservableObject {
         #if DEBUG
         if let previewIsResyncingWallet { return previewIsResyncingWallet }
         #endif
-        return DWGlobalOptions.sharedInstance().isResyncingWallet
+        return DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet
     }
 
     /// Embedded send/receive sheets pin the route independently of `source`.
@@ -1394,10 +1532,73 @@ final class InternalTransferViewModel: ObservableObject {
             || (sourceBalanceNetwork == .platform && !platformBalanceState.isAvailable))
     }
 
+    /// Pure route arithmetic for a Core-funded asset-lock message. These
+    /// routes spend only confirmed or InstantSend-locked coins, so waiting is
+    /// the correct advice when the confirming pool can cover the shortfall.
+    /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`.
+    /// The caller supplies its exact route ceiling, including any conversion
+    /// cap, so validation uses the same envelope as Continue and Max. The pool
+    /// is read only above that ceiling while the pooled figure is known.
+    nonisolated static func coreTransferFundsMessage(
+        requestedDuffs: UInt64,
+        ceilingDuffs: UInt64,
+        sendableDuffs: UInt64,
+        l1ReserveDuffs: UInt64,
+        routeCostDuffs: UInt64,
+        pooledKnown: Bool,
+        pool: () -> SendPoolConfirmationSnapshot?
+    ) -> String? {
+        guard requestedDuffs > ceilingDuffs else { return nil }
+        let reserve = l1ReserveDuffs.addingReportingOverflow(routeCostDuffs)
+        guard pooledKnown, !reserve.overflow else {
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: ChainNetwork.core.balanceName,
+                requestedDuffs: requestedDuffs,
+                spendableDuffs: ceilingDuffs)
+        }
+
+        let verdict = SwiftDashSDKWalletState.judgeShortfall(
+            requested: requestedDuffs,
+            sendable: sendableDuffs,
+            pool: pool(),
+            reserve: { reserve.partialValue })
+        switch verdict {
+        case .fits:
+            return nil
+        case .confirming(let duffs):
+            return SendAmountError.fundsStillConfirming(duffs).errorDescription
+        case .insufficient:
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: ChainNetwork.core.balanceName,
+                requestedDuffs: requestedDuffs,
+                spendableDuffs: ceilingDuffs)
+        }
+    }
+
+    /// `coreTransferFundsMessage` for the typed amount: the caller gives its
+    /// route's ceiling and the cost the route adds on top of the L1 reserve;
+    /// the L1 reserve is the cached one and the pooled figures are read live.
+    private func coreRouteFundsMessage(ceilingDuffs: UInt64, routeCostDuffs: UInt64) -> String? {
+        let state = SwiftDashSDKWalletState.shared
+        return Self.coreTransferFundsMessage(
+            requestedDuffs: dashDuffsUnsigned,
+            ceilingDuffs: ceilingDuffs,
+            sendableDuffs: state.sendableDuffs,
+            l1ReserveDuffs: coreL1FeeReserveDuffs,
+            routeCostDuffs: routeCostDuffs,
+            pooledKnown: state.pooledSpendableDuffs != nil,
+            pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
+    }
+
     /// Inline, user-facing explanation for an amount rejected before Confirm.
     /// Zero stays quiet while the user has not entered an amount; a
     /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
+        if coreDrainCompleted { return nil }
+        if isCoreShieldedDrain && !isChainSynced {
+            return CoreShieldedDrainService.ServiceError.requiresSync.localizedDescription
+        }
+        if isCoreShieldedDrain && coreShieldedDrainConfirmation != nil { return nil }
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
         if hasUnavailableSourceBalance {
@@ -1432,11 +1633,11 @@ final class InternalTransferViewModel: ObservableObject {
             guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
                 return Self.feeEstimateUnavailableMessage
             }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs > feeDuffs
-                    ? coreSpendableDuffs - feeDuffs : 0)
+            return coreRouteFundsMessage(
+                ceilingDuffs: SwiftDashSDKWalletState.feeAwareMax(
+                    spendable: coreSpendableDuffs,
+                    reserve: feeDuffs),
+                routeCostDuffs: feeDuffs)
 
         case .coreToPlatform:
             // The static address-funding reserve rides on top of the amount,
@@ -1445,12 +1646,13 @@ final class InternalTransferViewModel: ObservableObject {
             guard let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits else {
                 return Self.feeEstimateUnavailableMessage
             }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
+            let routeReserveDuffs = CoreToPlatformAmountPolicy.reserveDuffs(
+                reserveCredits: reserveCredits)
+            return coreRouteFundsMessage(
+                ceilingDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
                     spendableDuffs: coreSpendableDuffs,
-                    reserveCredits: reserveCredits))
+                    reserveCredits: reserveCredits),
+                routeCostDuffs: routeReserveDuffs)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -1580,10 +1782,12 @@ final class InternalTransferViewModel: ObservableObject {
         }
         switch source {
         case .core:
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: source.balanceName,
-                requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs)
+            // The SDK builds the top-up's asset lock with the same pooled
+            // funding as Core → Platform; the lock holds nothing back beyond
+            // the ordinary L1 reserve, so the ceiling is the cached envelope.
+            return coreRouteFundsMessage(
+                ceilingDuffs: coreSpendableDuffs,
+                routeCostDuffs: 0)
         case .platform:
             guard let ceiling = platformIdentityFundableDuffs else {
                 return Self.feeEstimateUnavailableMessage
@@ -1653,6 +1857,15 @@ final class InternalTransferViewModel: ObservableObject {
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
+        if isCoreShieldedDrain {
+            return route == .coreToShielded && !isIdentitySource && !isIdentityDestination
+                && isChainSynced && !isCoreDrainLoading && !coreDrainPending
+                // A whole-wallet spend is never authorized without an amount
+                // and fee to show (an input-limit preview has neither).
+                && coreShieldedDrainConfirmation?.estimatedRecipientCredits != nil
+                && coreShieldedDrainConfirmation?.totalFeeCredits != nil
+                && (try? CoreShieldedDrainService.currentContext()) == coreShieldedDrainConfirmation?.context
+        }
         if hasUnavailableSourceBalance { return false }
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -1815,6 +2028,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// fee math is banned inside View structs; frozen into the submission at
     /// Continue. `nil` renders as "—".
     var confirmNetworkFeeCredits: UInt64? {
+        if isCoreShieldedDrain { return coreShieldedDrainConfirmation?.totalFeeCredits }
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -1866,6 +2080,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// `canContinue` fails closed before that can be confirmed, but the row
     /// must never show the un-inflated number.
     var confirmTotalDuffs: Int64? {
+        if isCoreShieldedDrain { return coreShieldedDrainConfirmation.flatMap { Int64(exactly: $0.candidateBalanceDuffs) } }
         switch route {
         case .coreToShielded:
             guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
@@ -1994,9 +2209,14 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        if route == .coreToShielded, !isIdentitySource, !isIdentityDestination {
+            clearMaxSelection()
+            coreDrainMax.select()
+            return
+        }
         if hasUnavailableSourceBalance {
             clearMaxSelection()
-            maxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            routeMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
             return
         }
         if isIdentitySource {
@@ -2012,32 +2232,14 @@ final class InternalTransferViewModel: ObservableObject {
         let sourceDuffs: UInt64
         switch route {
         case .coreToShielded:
-            // Fee-on-top Max: the lock is amount + pool fee, so the largest
-            // recipient amount is L1-fee-aware spendable minus the pool fee.
-            // Fails closed (fills 0) when the fee estimate is unavailable.
-            guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
-                maxNotice = Self.feeEstimateUnavailableMessage
-                sourceDuffs = 0
-                break
-            }
-            sourceDuffs = coreSpendableDuffs > feeDuffs
-                ? coreSpendableDuffs - feeDuffs : 0
-            if coreSpendableDuffs == 0 {
-                maxNotice = Self.coreZeroMaxMessage(
-                    totalDuffs: coreBalanceDuffs,
-                    confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
-                    excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
-            } else if sourceDuffs == 0 {
-                maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
-            }
-            // A Max below the balance card's total is not worth a notice: the
-            // fee reserve and unconfirmed coins are ordinary, and saying so in
-            // the slot that otherwise carries errors reads as one.
+            // The eligible Core-to-own-Shielded route was handled above.
+            // Identity destinations do not offer Max.
+            return
         case .coreToPlatform:
             // Fee-on-top Max: the lock is amount + static reserve, so the
             // largest topup is the L1-fee-aware spendable minus that reserve.
             guard let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits else {
-                maxNotice = Self.feeEstimateUnavailableMessage
+                routeMaxNotice = Self.feeEstimateUnavailableMessage
                 sourceDuffs = 0
                 break
             }
@@ -2045,7 +2247,7 @@ final class InternalTransferViewModel: ObservableObject {
                 spendableDuffs: coreSpendableDuffs,
                 reserveCredits: reserveCredits)
             if coreSpendableDuffs == 0 {
-                maxNotice = Self.coreZeroMaxMessage(
+                routeMaxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0,
                     excludedFromPoolDuffs: SwiftDashSDKWalletState.shared.excludedFromSendPoolDuffs)
@@ -2053,7 +2255,7 @@ final class InternalTransferViewModel: ObservableObject {
                 // New with the fee-on-top reserve: a balance that cannot carry
                 // the reserve fills 0, which needs a reason like the shielded
                 // branch above rather than a silently empty amount.
-                maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
+                routeMaxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
             }
             // No notice for a Max below the total — same reason as the
             // shielded branch above.
@@ -2072,10 +2274,10 @@ final class InternalTransferViewModel: ObservableObject {
                 shieldedSweepAmountCredits = plan.amountCredits
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
-                maxNotice = Self.shieldedConfirmingMessage(credits)
+                routeMaxNotice = Self.shieldedConfirmingMessage(credits)
                 sourceDuffs = 0
             case .unavailable:
-                maxNotice = NSLocalizedString(
+                routeMaxNotice = NSLocalizedString(
                     "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
@@ -2088,9 +2290,9 @@ final class InternalTransferViewModel: ObservableObject {
             sourceDuffs = platformWithdrawableDuffs ?? 0
             if sourceDuffs == 0 {
                 if withdrawalPreflight?.canWithdraw == false {
-                    maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
+                    routeMaxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
                 } else {
-                    maxNotice = NSLocalizedString(
+                    routeMaxNotice = NSLocalizedString(
                         "Still calculating the withdrawable amount. Tap Max again in a moment.",
                         comment: "Platform withdrawal preflight not resolved")
                     startWithdrawalPreflightIfNeeded()
@@ -2112,7 +2314,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// sheet, not in a line that reads as one.
     private func fillIdentityWithdrawalMax() {
         guard !isIdentityBalanceRefreshing else {
-            maxNotice = Self.identityBalanceRefreshingMessage
+            routeMaxNotice = Self.identityBalanceRefreshingMessage
             return
         }
         clearMaxSelection()
@@ -2124,7 +2326,7 @@ final class InternalTransferViewModel: ObservableObject {
         // explanation.
         let spendableDuffs = spendable / 1000
         if spendableDuffs == 0 {
-            maxNotice = Self.feeReserveExceedsIdentityBalanceMessage
+            routeMaxNotice = Self.feeReserveExceedsIdentityBalanceMessage
         }
 
         isApplyingMax = true
@@ -2145,7 +2347,7 @@ final class InternalTransferViewModel: ObservableObject {
     private func fillPlatformShieldMax() {
         if awaitingPlatformShieldResync {
             isPlatformShieldMaxQueued = true
-            maxNotice = Self.platformShieldResyncInProgressMessage
+            routeMaxNotice = Self.platformShieldResyncInProgressMessage
             startManualPlatformShieldResyncIfNeeded()
             return
         }
@@ -2153,7 +2355,7 @@ final class InternalTransferViewModel: ObservableObject {
               let capacity = platformShieldCapacity
         else {
             isPlatformShieldMaxQueued = true
-            maxNotice = Self.platformShieldPreflightLoadingMessage
+            routeMaxNotice = Self.platformShieldPreflightLoadingMessage
             refreshPlatformShieldPreflightIfNeeded()
             return
         }
@@ -2173,10 +2375,10 @@ final class InternalTransferViewModel: ObservableObject {
         isPlatformShieldMaxDerived = true
 
         if let preservedNotice {
-            maxNotice = preservedNotice
+            routeMaxNotice = preservedNotice
             hasPlatformShieldCapacityChangeNotice = true
         } else if sourceDuffs == 0 {
-            maxNotice = capacity.accountBalanceCredits > 0
+            routeMaxNotice = capacity.accountBalanceCredits > 0
                 ? Self.platformShieldHeadroomUnavailableMessage
                 : Self.emptyBalanceMessage(.platform)
         }
@@ -2211,13 +2413,14 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     private func clearMaxSelection() {
+        coreDrainMax.clear()
         maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
         isPlatformShieldMaxDerived = false
         isPlatformShieldMaxQueued = false
         hasPlatformShieldCapacityChangeNotice = false
-        maxNotice = nil
+        routeMaxNotice = nil
     }
 
     /// Kick off (or re-arm) the Platform → Core withdrawal preflight. Split out
@@ -2257,7 +2460,7 @@ final class InternalTransferViewModel: ObservableObject {
             guard let self, !Task.isCancelled else { return }
             self.platformShieldManualResyncTask = nil
             if self.awaitingPlatformShieldResync {
-                self.maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+                self.routeMaxNotice = Self.platformShieldCapacityRefreshRequiredMessage
             }
         }
     }
@@ -2284,7 +2487,7 @@ final class InternalTransferViewModel: ObservableObject {
         platformShieldCapacity = nil
         isPlatformShieldPreflightLoading = true
         if isPlatformShieldMaxDerived && !hasPlatformShieldCapacityChangeNotice {
-            maxNotice = Self.platformShieldPreflightLoadingMessage
+            routeMaxNotice = Self.platformShieldPreflightLoadingMessage
         }
 
         platformShieldPreflightTask = Task { [weak self] in
@@ -2302,7 +2505,7 @@ final class InternalTransferViewModel: ObservableObject {
                 self.platformShieldPreflightTask = nil
 
                 if self.hasPlatformShieldCapacityChangeNotice {
-                    self.maxNotice = Self.platformShieldCapacityChangedMessage(
+                    self.routeMaxNotice = Self.platformShieldCapacityChangedMessage(
                         maxShieldableCredits: capacity.maxShieldableCredits)
                 }
 
@@ -2321,7 +2524,7 @@ final class InternalTransferViewModel: ObservableObject {
                 self.platformShieldPreflightTask = nil
                 if !self.hasPlatformShieldCapacityChangeNotice
                     && (self.isPlatformShieldMaxQueued || self.isPlatformShieldMaxDerived) {
-                    self.maxNotice = Self.platformShieldPreflightUnavailableMessage
+                    self.routeMaxNotice = Self.platformShieldPreflightUnavailableMessage
                 }
             }
         }
@@ -2375,11 +2578,11 @@ final class InternalTransferViewModel: ObservableObject {
         hasPlatformShieldCapacityChangeNotice = true
         if let maxShieldableCredits {
             awaitingPlatformShieldResync = false
-            maxNotice = Self.platformShieldCapacityChangedMessage(
+            routeMaxNotice = Self.platformShieldCapacityChangedMessage(
                 maxShieldableCredits: maxShieldableCredits)
             refreshPlatformShieldPreflight()
         } else {
-            maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+            routeMaxNotice = Self.platformShieldCapacityRefreshRequiredMessage
             // Fail closed until the coordinator's scheduled Platform sync
             // publishes a balance snapshot. Do not re-read the cache here.
             platformShieldPreflightGeneration &+= 1

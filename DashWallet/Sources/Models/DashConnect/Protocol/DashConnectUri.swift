@@ -19,6 +19,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case emptyTransitionPayload
     case invalidKeyLabelEncoding
     case bodyTooLong
+    case queryTooLong
 
     var errorDescription: String? {
         switch self {
@@ -58,6 +59,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-st payload must be non-empty."
         case .bodyTooLong:
             return "The URI body is longer than the DashConnect payload format allows."
+        case .queryTooLong:
+            return "The URI query is longer than DashConnect allows."
         }
     }
 }
@@ -77,17 +80,15 @@ enum DashConnectUri {
     /// `dash-key:` is fully specified: version + compressed point + contract id
     /// + label length + label.
     ///
-    /// `dash-st:` carries one `IdentityUpdateTransition` that adds the two
-    /// login keys: identity id, revision, nonce, two key entries with their
-    /// contract bounds and per-key signatures, and the transition signature —
-    /// well under a kilobyte. The ceiling is deliberately not Platform's own
-    /// state-transition limit, which is far larger than this format ever needs
-    /// and which the decode below cannot afford: its cost is quadratic in the
-    /// encoded length, so a 32 KiB ceiling would admit a ~44,800-character body
-    /// worth ~1.5 billion inner iterations — seconds of CPU per link, from any
-    /// installed app. 4 KiB costs ~23 million, tens of milliseconds, and still
-    /// leaves several times the headroom a longer key form or an added field
-    /// would need.
+    /// `dash-st:` carries the one state transition the wallet takes, a token
+    /// purchase — well under a kilobyte. The ceiling is deliberately not
+    /// Platform's own state-transition limit, which is far larger than this
+    /// format ever needs and which the decode below cannot afford: its cost
+    /// is quadratic in the encoded length, so a 32 KiB ceiling would admit a
+    /// ~44,800-character body worth ~1.5 billion inner iterations — seconds
+    /// of CPU per link, from any installed app. 4 KiB costs ~23 million, tens
+    /// of milliseconds, and still leaves several times the headroom an added
+    /// field would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
     private static let maxStPayloadLength = 4 * 1024
     /// The largest App Connect request the format defines today (a 64-byte
@@ -98,6 +99,11 @@ enum DashConnectUri {
     private static let maxAppConnectPayloadLength = 1024
     private static let appConnectVersion = "2"
     private static let maxCallbackLength = 512
+    /// The query is measured in Unicode scalars before it is split or form-decoded, so the
+    /// parameter count and every decoded value are bounded with it. 4 KiB
+    /// holds the longest callback form-encoded (each character as `%XX`)
+    /// twice over, with room for parameters a newer app may add.
+    private static let maxQueryLength = 4 * 1024
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -197,6 +203,8 @@ enum DashConnectUri {
     static func isAppConnectUri(_ uri: String) -> Bool {
         guard isKeyUri(uri), let queryIndex = uri.unicodeScalars.firstIndex(of: "?") else { return false }
         var query = uri.unicodeScalars[uri.unicodeScalars.index(after: queryIndex)...]
+        // Too long for either version: the version 1 parser refuses it.
+        guard query.count <= maxQueryLength else { return false }
         if query.first == "?" { query = query.dropFirst() }
         return query.split(separator: "&").contains { item in
             let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
@@ -219,6 +227,9 @@ enum DashConnectUri {
         let body = String(remainder[..<queryIndex])
 
         var query = remainder[remainder.index(after: queryIndex)...]
+        guard query.count <= maxQueryLength else {
+            throw AppConnectRequestError.invalid("query is too long")
+        }
         if query.first == "?" { query = query.dropFirst() }
         let parameters = try appConnectParameters(query, known: ["n", "v", "cb"])
 
@@ -405,6 +416,11 @@ enum DashConnectUri {
         guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
             throw AppConnectRequestError.invalid("unknown network")
         }
+        // The DIP defines this request for testnet and devnets only. Refused
+        // here, so it does not rest on DashConnect being off on mainnet.
+        guard network != .mainnet else {
+            throw AppConnectRequestError.invalid("request v2 is not defined for mainnet")
+        }
         let body = try payload()
         guard body.count <= maxAppConnectPayloadLength else {
             throw AppConnectRequestError.invalid("request is too long")
@@ -517,6 +533,9 @@ enum DashConnectUri {
         }
 
         let query = String(remainder[remainder.index(after: queryIndex)...])
+        guard query.unicodeScalars.count <= maxQueryLength else {
+            throw DashConnectUriError.queryTooLong
+        }
         let parameters = parseQueryItems(query)
 
         guard let version = parameters["v"] else {

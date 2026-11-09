@@ -42,24 +42,20 @@ struct ConnectionSheet: View {
     /// What the last action from this sheet ended in.
     let message: ConnectionsScreenMessage?
     let onClose: () -> Void
-    /// Confirmed, with what the question said a disconnect does.
-    let onDisconnect: (DashConnectDisconnectEffect) -> Void
-    /// The question a row's Disconnect opened the sheet for, read when it
-    /// is asked: what a disconnect does. `nil` when there is none to ask, or
-    /// when it cannot ask (the view model then says why).
-    let takeDisconnectQuestion: () -> DashConnectDisconnectEffect?
-    /// The question of the sheet's own Disconnect, read when it is asked.
-    let disconnectQuestion: () -> DashConnectDisconnectEffect?
-    /// Scans the app's code.
+    /// Confirmed.
+    let onDisconnect: () -> Void
+    /// Whether a row's Disconnect opened the sheet, so it asks at once;
+    /// `false` also when it cannot ask (the view model then says why).
+    let takeDisconnectQuestion: () -> Bool
+    /// Whether the sheet's own Disconnect may ask now.
+    let disconnectQuestion: () -> Bool
+    /// Reconnect: scans the app's new code.
     let onScan: () -> Void
-    let onMockScan: () -> Void
     let onShowFundingLimitsInfo: () -> Void
 
     @State private var showsGranted = false
     @State private var showsWithheld = false
     @State private var isConfirmingDisconnect = false
-    /// What the open question says a disconnect does; kept while it closes.
-    @State private var askedEffect: DashConnectDisconnectEffect?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -74,9 +70,6 @@ struct ConnectionSheet: View {
                 VStack(alignment: .leading, spacing: 20) {
                     header
                     statusCard
-                    if item.status == .waitingForSecondScan {
-                        ScanToCompleteBanner(onScanQR: onScan, onMockScan: onMockScan)
-                    }
                     detailsCard
                     if details == nil {
                         detailsPlaceholder
@@ -122,23 +115,22 @@ struct ConnectionSheet: View {
                     "Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
                 item.name),
             isPresented: $isConfirmingDisconnect,
-            titleVisibility: .visible,
-            presenting: askedEffect
-        ) { asked in
-            Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive) {
-                onDisconnect(asked)
-            }
+            titleVisibility: .visible
+        ) {
+            Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
-        } message: { asked in
-            Text(Self.disconnectConsequence(asked))
+        } message: {
+            Text(NSLocalizedString(
+                "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.",
+                comment: "DashConnect: what a disconnect does, in its confirmation"))
         }
         // After the sheet's own transition: a dialog asked for while it
         // slides in may not show.
         .task {
             do { try await Task.sleep(nanoseconds: 450_000_000) } catch { return }
             // The user may have asked from the sheet's own button meanwhile.
-            guard !isConfirmingDisconnect, let effect = takeDisconnectQuestion() else { return }
-            ask(effect)
+            guard !isConfirmingDisconnect, takeDisconnectQuestion() else { return }
+            ask()
         }
     }
 
@@ -353,10 +345,7 @@ struct ConnectionSheet: View {
         switch item.status {
         case .disconnected:
             reconnectButton
-        case .waitingForSecondScan:
-            // The second code is the way forward.
-            EmptyView()
-        case .active, .confirming:
+        case .active, .confirming, .undelivered:
             disconnectButton
         }
     }
@@ -381,14 +370,13 @@ struct ConnectionSheet: View {
             .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// Only where Disconnect is offered, and with what it will do known.
+    /// Only when the view model lets it ask.
     private func askToDisconnect() {
-        guard let effect = disconnectQuestion() else { return }
-        ask(effect)
+        guard disconnectQuestion() else { return }
+        ask()
     }
 
-    private func ask(_ effect: DashConnectDisconnectEffect) {
-        askedEffect = effect
+    private func ask() {
         // A question that did not show leaves the flag set: it is turned
         // off first, so the button always asks.
         guard isConfirmingDisconnect else {
@@ -401,36 +389,16 @@ struct ConnectionSheet: View {
 
     // MARK: - Text
 
-    /// What a disconnect will do, as the data source will run it: one that
-    /// only changes the local status, one that turns the keys off and may
-    /// take unattributed DashPay profile keys with it, or either, as the
-    /// identity shows once it is read.
-    private static func disconnectConsequence(_ effect: DashConnectDisconnectEffect) -> String {
-        switch effect {
-        case .revokesKeys:
-            return NSLocalizedString(
-                "Its keys are turned off on Platform for good. DashPay profile keys not linked to any connection may be turned off too, so another app using one would have to ask again.",
-                comment: "DashConnect: what a disconnect does, in its confirmation")
-        case .localOnly:
-            return NSLocalizedString(
-                "It is turned off on this device. Approving the app's code again turns it back on.",
-                comment: "DashConnect: what disconnecting a two-QR connection does, in its confirmation")
-        case .dependsOnPlatform:
-            return NSLocalizedString(
-                "Depending on the keys Dash Platform shows for this identity, its keys are turned off on Platform for good, or it is turned off on this device only. DashPay profile keys not linked to any connection may be turned off too.",
-                comment: "DashConnect: what a disconnect of a two-QR connection with an earlier grant does, in its confirmation")
-        }
-    }
-
     /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
     private var statusText: String {
         switch item.status {
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
-        case .confirming: return NSLocalizedString("Confirming", comment: "DashConnect")
-        case .waitingForSecondScan:
-            return NSLocalizedString("Waiting for the second code", comment: "DashConnect connection status")
+        case .confirming:
+            return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
+        case .undelivered:
+            return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
         }
     }
@@ -505,4 +473,91 @@ private struct DetailLine: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
+
+private enum ConnectionSheetPreview {
+    static let appId = "AyWK6nDVfb8d1ZmkM5MmZZrThbUyWyso1aMeGuuVSfxf"
+
+    static func item(_ status: ConnectionStatus, name: String = "Yappr") -> ConnectionSheetItem {
+        ConnectionSheetItem(
+            id: appId, name: name, url: "yap.pr", status: .init(status),
+            connection: DAppConnection(
+                id: appId, name: name, url: "yap.pr", status: status, updatedAt: Date(timeIntervalSince1970: 1_793_000_000)),
+            entry: nil, scope: nil)
+    }
+
+    static var disconnected: ConnectionSheetItem {
+        ConnectionSheetItem(
+            id: appId, name: "Yappr", url: "yap.pr", status: .disconnected, connection: nil,
+            entry: DisconnectedConnection(
+                id: appId, name: "Yappr", url: "yap.pr", identityId: details.identityId, username: "alice",
+                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: access,
+                connectedAt: Date(timeIntervalSince1970: 1_793_000_000)),
+            scope: nil)
+    }
+
+    static let access = ConnectionAccess(AppConnect.GrantedAccess(
+        keys: [.init(
+            bound: .documentType(contractId: Data(repeating: 1, count: 32), name: "post"), isCritical: false,
+            totalBudget: 1_000_000_000, expiresAt: 1_794_000_000_000, isAdministered: false)],
+        receivesMessages: true))
+
+    static let details = ConnectionDetails(
+        appId: appId, identityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8", username: "alice",
+        access: access, connectedAt: Date(timeIntervalSince1970: 1_793_000_000))
+
+    static func sheet(
+        _ item: ConnectionSheetItem,
+        details: ConnectionDetails?,
+        detailsFailed: Bool = false,
+        granted: [String]? = nil,
+        funding: [(title: String, value: String)]? = nil,
+        fundingFailed: Bool = false,
+        isBusy: Bool = false,
+        message: ConnectionsScreenMessage? = nil
+    ) -> ConnectionSheet {
+        ConnectionSheet(
+            item: item, details: details, detailsFailed: detailsFailed, granted: granted,
+            withheld: DashConnectPermissionText.withheld, funding: funding, fundingFailed: fundingFailed,
+            connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {},
+            takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onScan: {}, onShowFundingLimitsInfo: {})
+    }
+}
+
+#Preview("Loading") {
+    ConnectionSheetPreview.sheet(ConnectionSheetPreview.item(.active), details: nil)
+}
+
+#Preview("Loaded") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
+        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"),
+        funding: [(title: "App key", value: "0.004 DASH left of 0.01 DASH")])
+}
+
+#Preview("Details failed") {
+    ConnectionSheetPreview.sheet(ConnectionSheetPreview.item(.active), details: nil, detailsFailed: true)
+}
+
+#Preview("Confirming, funding not read") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.confirming), details: ConnectionSheetPreview.details, fundingFailed: true)
+}
+
+#Preview("Not delivered, disconnecting") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.undelivered, name: "A Very Long Application Name That Wraps"),
+        details: ConnectionSheetPreview.details, isBusy: true)
+}
+
+#Preview("Error message") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
+        message: ConnectionsScreenMessage(kind: .error, text: "Could not disconnect: the network did not answer."))
+}
+
+#Preview("Disconnected") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.disconnected, details: ConnectionSheetPreview.details,
+        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
 }
