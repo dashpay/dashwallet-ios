@@ -60,7 +60,8 @@ struct ConnectionRow: View {
     }
 
     /// A row may hold keys in every status, so it offers a disconnect; a
-    /// disconnected app offers to connect again.
+    /// disconnected app, and an expired one as in Figma, offer to connect
+    /// again (an expired one's sheet offers Disconnect too).
     @ViewBuilder
     private var action: some View {
         switch item.status {
@@ -73,7 +74,7 @@ struct ConnectionRow: View {
                     format: NSLocalizedString(
                         "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
-        case .disconnected:
+        case .disconnected, .expired:
             DashUIKit.DashButton(
                 text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
                 size: .small, style: .tintedBlue, action: onReconnect)
@@ -94,7 +95,7 @@ private func previewItem(
 
 #Preview("Statuses") {
     VStack(spacing: 2) {
-        ForEach([ConnectionSheetItem.Status.active, .confirming, .undelivered, .disconnected], id: \.self) { status in
+        ForEach([ConnectionSheetItem.Status.active, .confirming, .undelivered, .expired, .disconnected], id: \.self) { status in
             ConnectionRow(item: previewItem("\(status)", status), onOpen: {}, onDisconnect: {}, onReconnect: {})
         }
     }

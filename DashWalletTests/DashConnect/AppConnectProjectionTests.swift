@@ -58,6 +58,29 @@ final class AppConnectProjectionTests: XCTestCase {
         Snapshot(identityId: identity, revision: revision, keys: keys, platformTime: time)
     }
 
+    // MARK: Platform time from the Core tip
+
+    func testPlatformTimeIsKnownPastOnlyByTheCoreTipLessItsMargin() {
+        XCTAssertNil(AppConnect.platformTimeLowerBound(chainTip: nil), "no tip, no time: no key is expired")
+        XCTAssertNil(AppConnect.platformTimeLowerBound(chainTip: Date(timeIntervalSince1970: 0)))
+        let tip = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertEqual(
+            AppConnect.platformTimeLowerBound(chainTip: tip),
+            1_800_000_000_000 - AppConnect.chainTimeMarginMilliseconds)
+        XCTAssertEqual(AppConnect.chainTimeMarginMilliseconds, 11_400_000, "2 h of header rule and 70 min of clock")
+    }
+
+    func testAnIntentIsExpiredOnceTheTipIsPastItsKeysByTheMargin() {
+        let key = Self.authKey(10, expiresAt: Self.now)
+        let intent = Self.intent([key])
+        func status(tipAt tip: UInt64) -> AppConnect.IntentStatus {
+            let time = AppConnect.platformTimeLowerBound(chainTip: Date(timeIntervalSince1970: TimeInterval(tip) / 1000))
+            return AppConnect.status(of: intent, in: Self.snapshot([Self.onPlatform(key)], time: time))
+        }
+        XCTAssertEqual(status(tipAt: Self.now + 1000), .active(expiresAt: Self.now), "past by the tip, not by its margin")
+        XCTAssertEqual(status(tipAt: Self.now + AppConnect.chainTimeMarginMilliseconds), .expired)
+    }
+
     // MARK: What a connection gave
 
     func testTheAccessOfAConnectionIsWhatItsIntentsAdded() {
@@ -384,6 +407,15 @@ final class AppConnectProjectionTests: XCTestCase {
             [.active])
         let restored = AppConnect.project([Self.snapshot([Self.onPlatform(key)])], intents: [])
         XCTAssertEqual(restored.connections.first?.isUndelivered, false, "keys no intent names are not judged undelivered")
+    }
+
+    func testAConnectionWhoseKeysAreAllExpiredShowsAsExpired() {
+        let key = Self.authKey(10, expiresAt: Self.now - 1)
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(key)])], intents: [Self.intent([key], published: true)])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            [.expired])
     }
 
     func testAccessSeenOnAnotherIdentityKeepsTheRowUntilThatIdentityIsReadAgain() {

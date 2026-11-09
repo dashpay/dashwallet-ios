@@ -151,6 +151,10 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     /// The app's keys are live, but its response was never published: the
     /// app holds keys it cannot use. Only a disconnect or a new QR helps.
     case undelivered
+    /// Every live key of the app is past its expiry by the Core tip
+    /// (`AppConnect.platformTimeLowerBound`). The keys stay on Platform until
+    /// a disconnect turns them off.
+    case expired
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

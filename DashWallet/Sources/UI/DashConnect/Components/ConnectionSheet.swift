@@ -345,6 +345,13 @@ struct ConnectionSheet: View {
         switch item.status {
         case .disconnected:
             reconnectButton
+        case .expired:
+            // Its keys stay on Platform until a disconnect, or a renewal of
+            // the same connection, turns them off: both are offered.
+            VStack(spacing: 10) {
+                reconnectButton
+                disconnectButton
+            }
         case .active, .confirming, .undelivered:
             disconnectButton
         }
@@ -399,11 +406,12 @@ struct ConnectionSheet: View {
             return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
         case .undelivered:
             return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
         }
     }
 
-    private var isPast: Bool { item.status == .disconnected }
+    private var isPast: Bool { item.status == .disconnected || item.status == .expired }
 
     private var grantedTitle: String {
         String(
@@ -441,8 +449,10 @@ struct ConnectionSheet: View {
             return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
         }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
-        // Whether that time has passed on Platform is not read here.
-        return (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
+        // Past only once the Core tip shows every live key past it.
+        return item.status == .expired
+            ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
+            : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
     }
 
     private static let dateFormatter: DateFormatter = {
@@ -559,5 +569,11 @@ private enum ConnectionSheetPreview {
 #Preview("Disconnected") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.disconnected, details: ConnectionSheetPreview.details,
+        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
+}
+
+#Preview("Expired") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.expired), details: ConnectionSheetPreview.details,
         granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
 }

@@ -55,6 +55,7 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
 enum ConnectionsTab: CaseIterable {
     case active
     case disconnected
+    case expired
 }
 
 /// A connection as its sheet shows it: a row of the page, or an app
@@ -66,6 +67,8 @@ struct ConnectionSheetItem: Identifiable, Equatable {
         case confirming
         /// The app's keys are live, but its response was never published.
         case undelivered
+        /// Every live key is past its expiry by the Core tip.
+        case expired
         case disconnected
 
         init(_ status: ConnectionStatus) {
@@ -73,6 +76,7 @@ struct ConnectionSheetItem: Identifiable, Equatable {
             case .active: self = .active
             case .confirming: self = .confirming
             case .undelivered: self = .undelivered
+            case .expired: self = .expired
             }
         }
 
@@ -259,7 +263,9 @@ final class ConnectionsViewModel: ObservableObject {
     func rows(for tab: ConnectionsTab) -> [ConnectionSheetItem] {
         switch tab {
         case .active:
-            return connections.map { item(for: $0) }
+            return connections.filter { $0.status != .expired }.map { item(for: $0) }
+        case .expired:
+            return connections.filter { $0.status == .expired }.map { item(for: $0) }
         case .disconnected:
             let connected = Set(connections.map(\.id))
             return (history ?? []).filter { !connected.contains($0.id) }.map(item(for:))

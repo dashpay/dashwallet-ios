@@ -135,6 +135,21 @@ extension AppConnect {
         }
     }
 
+    /// How far a Core block header's time may be ahead of real time: 2 h
+    /// by the header rule, and the node's own clock at most 70 min off.
+    static let chainTimeMarginMilliseconds: UInt64 = (2 * 60 + 70) * 60 * 1_000
+
+    /// A time Platform's block time is known to be past, from the Core tip
+    /// SPV synced: the tip's time less `chainTimeMarginMilliseconds`, since a
+    /// header can be at most that far ahead of real time. `nil` without a
+    /// tip. A key whose expiry is before it is expired on Platform, whatever
+    /// this phone's clock says.
+    static func platformTimeLowerBound(chainTip: Date?) -> UInt64? {
+        guard let chainTip, chainTip.timeIntervalSince1970 > 0 else { return nil }
+        let tip = UInt64(chainTip.timeIntervalSince1970 * 1_000)
+        return tip > chainTimeMarginMilliseconds ? tip - chainTimeMarginMilliseconds : nil
+    }
+
     // MARK: One key against the identity
 
     enum KeyPresence: Equatable {

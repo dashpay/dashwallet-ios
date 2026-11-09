@@ -392,6 +392,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
+    /// The block time of the Core tip SPV synced; `nil` without one.
+    private let chainTipTime: @MainActor () -> Date?
 
     /// Prefix of the shared profile keys an earlier build let the user keep.
     static let keptSharedProfileKeysPrefix = "DashConnect.keptSharedProfileKeys "
@@ -434,7 +436,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         notificationCenter: NotificationCenter = .default,
         operationGate: DashConnectOperationGate = .shared,
         defaults: UserDefaults = .standard,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        chainTipTime: @escaping @MainActor () -> Date? = { SwiftDashSDKHost.shared.manager?.spvTipBlockTime }
     ) {
         assert(
             supportedNetwork == .testnet || supportedNetwork == .devnet,
@@ -446,6 +449,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         self.authorizer = authorizer
         self.stateTransitionParser = stateTransitionParser
         self.now = now
+        self.chainTipTime = chainTipTime
         Self.removeKeptSharedProfileKeys(from: defaults)
         self.activeWalletIdHex = activeWalletIdHex
         self.operationGate = operationGate
@@ -854,9 +858,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 AppConnect.platformKey(key, binding: bindings.first { $0.keyId == UInt32(bitPattern: key.keyId) })
             },
             // TODO(dashconnect-platform-time): proved block time arrives with
-            // dashpay/platform#5715; until the app pins it no key is judged
-            // expired.
-            platformTime: nil)
+            // dashpay/platform#5715; until the app pins it, a key is judged
+            // expired only once the Core tip shows Platform's time is past it.
+            platformTime: AppConnect.platformTimeLowerBound(chainTip: await MainActor.run { chainTipTime() }))
         let newest = Self.newestSnapshots.withLock { $0[context.identityId] }
         guard read.mayReplace(newest) else {
             // The SDK's copy of the identity is now that older one too, so
@@ -907,7 +911,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let me = identityId.toBase58String()
         func shownStatus(_ status: AppConnect.IntentStatus) -> ConnectionStatus? {
             switch status {
-            case .active, .expired: return .active
+            case .active: return .active
+            case .expired: return .expired
             case .confirming: return .confirming
             case .disconnected, .neverLanded: return nil
             }

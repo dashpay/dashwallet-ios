@@ -1108,6 +1108,16 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(viewModel.message?.unrecordedKeysOf?.id, "app")
     }
 
+    func testAnExpiredRowIsListedUnderExpiredOnly() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("live", .active), Self.row("old", .expired)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 2 }
+        XCTAssertEqual(viewModel.rows(for: .active).map(\.id), ["live"])
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["old"])
+        XCTAssertEqual(viewModel.rows(for: .expired).first?.status, .expired)
+        XCTAssertEqual(viewModel.rows(for: .expired).first?.status.offersDisconnect, true, "its keys are still on")
+    }
+
     func testTheSheetListsWhatIsLeftOfEachKey() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
         spy.details = ConnectionDetails(
