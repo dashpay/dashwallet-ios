@@ -203,8 +203,8 @@ final class VotingKeyInputViewModel: ObservableObject {
                 "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.",
                 comment: "Voting")
         default:
-            walletOwnedNote = String(
-                format: NSLocalizedString(
+            walletOwnedNote = String.localizedStringWithFormat(
+                NSLocalizedString(
                     "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.",
                     comment: "Voting"),
                 walletOwnedCount)
@@ -219,8 +219,8 @@ final class VotingKeyInputViewModel: ObservableObject {
             // Counted against `addable` only, so "the rest" is exactly what a
             // retry can add.
             retryPart = [
-                String(
-                    format: NSLocalizedString(
+                String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.",
                         comment: "Voting"),
                     added, addable.count),
