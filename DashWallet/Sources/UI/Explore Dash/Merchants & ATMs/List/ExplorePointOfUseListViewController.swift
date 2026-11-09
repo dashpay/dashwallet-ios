@@ -18,6 +18,7 @@
 import CoreLocation
 import UIKit
 import SwiftUI
+import DashUIKit
 
 private let kExploreWhereToSpendSectionCount = 5
 
@@ -53,7 +54,32 @@ public enum PointOfUseListFiltersGroup {
 // MARK: - ExplorePointOfUseListViewController
 
 @objc
-class ExplorePointOfUseListViewController: UIViewController {
+class ExplorePointOfUseListViewController: UIViewController, NavigationBarDisplayable {
+
+    /// DashUIKit's `NavigationBar`, drawn over the screen in place of the
+    /// system bar. Set before the view loads; `nil` keeps the system bar.
+    var customNavBar: CustomNavBarConfiguration?
+
+    struct CustomNavBarConfiguration {
+        enum Leading {
+            case back
+            case close
+        }
+
+        let title: String
+        var leading: Leading = .back
+        let onBack: () -> Void
+        let onInfo: (() -> Void)?
+    }
+
+    private weak var customNavBarHost: UIHostingController<AnyView>?
+
+    var isBackButtonHidden: Bool { customNavBar != nil }
+    var isNavigationBarHidden: Bool { customNavBar != nil }
+
+    /// The bar's info action; subclasses supply a default for a configuration
+    /// without one.
+    internal var customNavBarInfoAction: (() -> Void)? { customNavBar?.onInfo }
 
     // Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
@@ -79,7 +105,18 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
-    internal var expandedTableTopInset: CGFloat { 0 }
+    /// Keeps the expanded list clear of the custom bar, which overlays it.
+    internal var expandedTableTopInset: CGFloat {
+        guard customNavBar != nil else { return 0 }
+
+        let hostHeight = customNavBarHost?.view.bounds.height ?? 0
+        if hostHeight > 0 {
+            return hostHeight
+        }
+
+        let fittingHeight = customNavBarHost?.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
+        return fittingHeight > 0 ? fittingHeight : 64
+    }
 
     internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
@@ -212,6 +249,9 @@ class ExplorePointOfUseListViewController: UIViewController {
         }
 
         configureHierarchy()
+        if let config = customNavBar {
+            installCustomNavBar(config: config)
+        }
         updateTableViewInsetsForCurrentSheetPosition()
         
         // Check database sync status
@@ -957,5 +997,89 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
         refreshFilterCell()
         updateMapVisibility()
         updateShowMapButtonVisibility()
+    }
+}
+
+// MARK: - Custom navigation bar
+
+extension ExplorePointOfUseListViewController {
+    /// Back for a pushed screen, close for one presented as the root of its
+    /// own navigation controller.
+    internal var defaultCustomNavBarLeading: CustomNavBarConfiguration.Leading {
+        let isModalRoot = navigationController?.viewControllers.first === self
+            && navigationController?.presentingViewController != nil
+        return isModalRoot ? .close : .back
+    }
+
+    /// Pops a pushed screen, dismisses a modal root.
+    internal func closeOrPop() {
+        if let navigationController, navigationController.viewControllers.first !== self {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
+
+    private func installCustomNavBar(config: CustomNavBarConfiguration) {
+        let navBar = ExploreListNavBar(
+            title: config.title,
+            leading: config.leading,
+            onBack: config.onBack,
+            onInfo: customNavBarInfoAction
+        )
+
+        let topFillView = UIView()
+        topFillView.translatesAutoresizingMaskIntoConstraints = false
+        topFillView.backgroundColor = UIColor(named: "SecondaryBackgroundColor") ?? .systemBackground
+        view.addSubview(topFillView)
+
+        let host = UIHostingController(rootView: AnyView(navBar))
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+
+        addChild(host)
+        view.addSubview(host.view)
+        host.didMove(toParent: self)
+        customNavBarHost = host
+
+        NSLayoutConstraint.activate([
+            topFillView.topAnchor.constraint(equalTo: view.topAnchor),
+            topFillView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            topFillView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            topFillView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+
+            host.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+
+        view.layoutIfNeeded()
+    }
+}
+
+// MARK: - ExploreListNavBar
+
+private struct ExploreListNavBar: View {
+    let title: String
+    let leading: ExplorePointOfUseListViewController.CustomNavBarConfiguration.Leading
+    let onBack: () -> Void
+    let onInfo: (() -> Void)?
+
+    var body: some View {
+        DashUIKit.NavigationBar(
+            leading: {
+                switch leading {
+                case .back: DashUIKit.NavigationBarElement.back.button(action: onBack)
+                case .close: DashUIKit.NavigationBarElement.close.button(action: onBack)
+                }
+            },
+            central: { Text(title).font(.subheadMedium) },
+            trailing: {
+                if let onInfo {
+                    DashUIKit.NavigationBarElement.info.button(action: onInfo)
+                }
+            }
+        )
+        .background(Color.dash.primaryBackground)
     }
 }
