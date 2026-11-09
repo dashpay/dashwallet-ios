@@ -28,16 +28,8 @@ struct ExploreMenuScreen: View {
     private let isTestnetProvider: () -> Bool
     private let receiveAddressProvider: () -> String?
 
-    @ObservedObject private var balanceReminder = CrowdNodeBalanceReminder.shared
-    @State private var showSyncingAlert = false
-
     var shouldShowGetTestDash: Bool {
         isTestnetProvider()
-    }
-
-    private var hasCrowdNodeAccount: Bool {
-        let state = CrowdNode.shared.signUpState
-        return state == .finished || state == .linkedOnline
     }
 
     init(vc: UINavigationController,
@@ -119,22 +111,6 @@ struct ExploreMenuScreen: View {
                 )
                 .frame(minHeight: 56)
 
-                if hasCrowdNodeAccount {
-                    MenuItem(
-                        title: NSLocalizedString("Staking", comment: ""),
-                        subtitleView: AnyView(
-                            Text(NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks", comment: ""))
-                                .font(.footnote)
-                                .foregroundColor(.dash.tertiaryText)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        ),
-                        icon: .custom("image-menu-staking", maxHeight: 30),
-                        iconAlignment: .top,
-                        action: { showStaking() }
-                    )
-                    .frame(minHeight: 56)
-                }
             }
             .padding(6)
             .background(Color.dash.secondaryBackground)
@@ -142,39 +118,10 @@ struct ExploreMenuScreen: View {
             .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
             .padding(.horizontal, 20)
 
-            if balanceReminder.shouldShowOnExplore {
-                CrowdNodeBalanceReminderBanner {
-                    showCrowdNodeWithdrawal()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-            }
-
             Spacer()
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .alert(NSLocalizedString("The chain is syncing…", comment: ""), isPresented: $showSyncingAlert) {
-            Button(NSLocalizedString("Go to CrowdNode website", comment: "")) {
-                UIApplication.shared.open(CrowdNodeObjcWrapper.crowdNodeWebsiteUrl(), options: [:], completionHandler: nil)
-            }
-            Button(NSLocalizedString("Close", comment: ""), role: .cancel) { }
-        } message: {
-            Text(NSLocalizedString("Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.", comment: ""))
-        }
-    }
-
-    @ViewBuilder
-    private func StakingSubtitle() -> some View {
-        VStack(alignment: .leading, spacing: 11) {
-            Text(NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks", comment: ""))
-                .font(.footnote)
-                .foregroundColor(.dash.tertiaryText)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.top, 2)
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func getTestDashAction() {
@@ -241,18 +188,5 @@ struct ExploreMenuScreen: View {
         atmVC.payWithDashHandler = { onShowReceivePayment() }
         atmVC.sellDashHandler = { onShowSendPayment() }
         vc.pushViewController(atmVC, animated: true)
-    }
-
-    private func showStaking() {
-        if SyncingActivityMonitor.shared.state == .syncDone {
-            let stakingVC = CrowdNodeModelObjcWrapper.getRootVC()
-            vc.pushViewController(stakingVC, animated: true)
-        } else {
-            showSyncingAlert = true
-        }
-    }
-
-    private func showCrowdNodeWithdrawal() {
-        CrowdNodeWithdrawalRouter.openWithdrawal(from: vc)
     }
 }
