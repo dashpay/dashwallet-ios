@@ -11,6 +11,10 @@ where they disagree, ADR-0001 wins.
 | [0002](0002-keep-the-decision-log-in-docs-adr.md) | Keep the decision log in docs/adr | process | Accepted | |
 | [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Proposed | |
 | [0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md) | Answer App Connect request v2 with wallet-derived keys under wallet limits | platform | Proposed | |
+| [0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md) | Derive App Connect connections from the identity and recorded intents | platform | Proposed | |
+| [0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md) | Answer App Connect v2 only and remove the two-scan login | platform | Proposed | |
+| [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Proposed | |
+| [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
