@@ -18,6 +18,8 @@ where they disagree, ADR-0001 wins.
 | [0024](0024-pin-shortcut-raw-values-and-refill-the-retired-slot.md) | Pin shortcut raw values and refill the retired slot | ui | Proposed | |
 | [0025](0025-remove-crowdnode-defaults-by-exact-key-list-on-activation.md) | Remove CrowdNode defaults by exact key list on activation | storage | Proposed | |
 | [0026](0026-retire-the-crowdnode-topic-by-marking-events-seen.md) | Retire the CrowdNode topic by marking its events seen | storage | Proposed | |
+| [0033](0033-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Proposed | |
+| [0034](0034-subtract-own-top-ups-via-a-typed-top-up-event.md) | Subtract own top-ups via a typed top-up event | ui | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

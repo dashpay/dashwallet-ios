@@ -7,6 +7,7 @@ import Foundation
 
 enum PlatformCreditsFormatter {
     static let creditsPerDash: UInt64 = 100_000_000_000
+    static let creditsPerDuff: UInt64 = 1_000
 
     /// Credits rendered as DASH at full credit precision, with no grouping and
     /// trailing zeros trimmed.

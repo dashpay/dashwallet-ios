@@ -278,6 +278,10 @@ struct PaymentsLandingScreen: View {
                     },
                     onShareAddress: onShareAddress,
                     onSpecifyAmount: onSpecifyAmount,
+                    onCopyUsername: {
+                        viewModel.copyUsernameToPasteboard()
+                        showsCopiedToast = true
+                    },
                     onViewTransaction: onViewTransaction,
                     onDone: {
                         viewModel.finishReceiving()
@@ -314,7 +318,7 @@ struct PaymentsLandingScreen: View {
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    receiveInto: viewModel.network
+                    receiveInto: viewModel.network.chainNetwork
                 )
                 .padding(.top, Layout.embeddedFormTopPadding)
             }
@@ -386,7 +390,7 @@ struct PaymentsLandingScreen: View {
 @MainActor
 private func landingSample(
     activeTab: PaymentsLandingTab = .internalTransfer,
-    network: ChainNetwork = .core,
+    network: ReceiveOption = .core,
     visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
     coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
     transferAmount: String = "0",

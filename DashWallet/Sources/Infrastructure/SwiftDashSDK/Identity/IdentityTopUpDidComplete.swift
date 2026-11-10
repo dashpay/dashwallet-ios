@@ -1,0 +1,75 @@
+import Foundation
+import SwiftDashSDK
+
+/// Posted once after a top-up of an identity from this wallet completes, with
+/// the credits it added (ADR-0034): by `IdentityTopUpViewModel.topUp`, and by
+/// `DWIdentityRegistrationCoordinator` for the top-ups it makes before a
+/// registration or a name purchase. Always posted on the main actor.
+struct IdentityTopUpDidComplete: Equatable {
+    static let name = Notification.Name("IdentityTopUpDidComplete")
+
+    let walletId: Data
+    let network: Network
+    let identityId: Data
+    let creditsAdded: UInt64
+
+    init(walletId: Data, network: Network, identityId: Data, creditsAdded: UInt64) {
+        self.walletId = walletId
+        self.network = network
+        self.identityId = identityId
+        self.creditsAdded = creditsAdded
+    }
+
+    init?(notification: Notification) {
+        guard notification.name == Self.name, let event = notification.object as? Self else { return nil }
+        self = event
+    }
+
+    @MainActor
+    func post(to center: NotificationCenter = .default) {
+        center.post(name: Self.name, object: self)
+    }
+
+    /// Posts the event for a completed top-up (`balanceAfter` non-nil) and
+    /// nothing for a cancelled or failed one. The credits added are the rise
+    /// over `balanceBefore`, capped at the credits handed to the transition,
+    /// the most it can have added: `balanceBefore` is the stored balance, so
+    /// the rise can include a Payer's credits that landed since it was last
+    /// refreshed. With no balance before, the credits handed to the transition.
+    @MainActor
+    static func announce(
+        balanceBefore: UInt64?,
+        balanceAfter: UInt64?,
+        suppliedCredits: UInt64,
+        walletId: Data,
+        network: Network,
+        identityId: Data,
+        center: NotificationCenter = .default
+    ) {
+        guard let balanceAfter else { return }
+        let rise = balanceBefore.map { balanceAfter > $0 ? balanceAfter - $0 : 0 } ?? suppliedCredits
+        let creditsAdded = min(rise, suppliedCredits)
+        IdentityTopUpDidComplete(
+            walletId: walletId, network: network, identityId: identityId, creditsAdded: creditsAdded)
+            .post(to: center)
+    }
+
+    /// Runs `topUp`, which returns the identity's balance after it, and
+    /// announces it when it returns; a top-up that throws announces nothing.
+    @MainActor
+    static func announcing(
+        walletId: Data,
+        network: Network,
+        identityId: Data,
+        balanceBefore: UInt64?,
+        suppliedCredits: UInt64,
+        center: NotificationCenter = .default,
+        _ topUp: () async throws -> UInt64
+    ) async rethrows -> UInt64 {
+        let balanceAfter = try await topUp()
+        announce(
+            balanceBefore: balanceBefore, balanceAfter: balanceAfter, suppliedCredits: suppliedCredits,
+            walletId: walletId, network: network, identityId: identityId, center: center)
+        return balanceAfter
+    }
+}

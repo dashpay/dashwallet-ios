@@ -50,7 +50,7 @@ enum CoreReceiptSettlementStatus: Int, Comparable {
 
 struct ReceiveReceipt: Identifiable, Equatable {
     let id: String
-    let rail: ChainNetwork
+    let rail: ReceiveOption
     let amountDuffs: UInt64
     let receivedAt: Date
     let memo: String?
@@ -101,11 +101,49 @@ enum AttendedReceiveRefreshPolicy {
     static let shieldedInterval: TimeInterval = 5
 }
 
+/// What the Identity option's card shows: the Current identity's ID and the
+/// username the wallet presents as its own. Nil without either, so a wallet
+/// with no identity, no username yet or a registration in progress has none.
+struct ReceiveIdentity: Equatable {
+    /// The Identity ID in Base58 — the only content of the QR, the copied and
+    /// the shared text (AC-03).
+    let identityId: Data
+    let identityIdBase58: String
+    let username: String
+
+    init?(identityId: Data?, username: String?) {
+        guard let identityId, !identityId.isEmpty, let username, !username.isEmpty else { return nil }
+        self.identityId = identityId
+        identityIdBase58 = ScriptAddressCodec.base58Encode(identityId)
+        self.username = username
+    }
+}
+
+enum ReceiveOptionPolicy {
+    /// Which options the Receive tab offers.
+    ///
+    /// Core and Shielded are both ordinary destinations — a wallet can be paid
+    /// privately without calling itself advanced. Platform is the one that
+    /// needs the mode: it holds credits rather than spendable Dash, and
+    /// offering it by default invites payments the payer cannot spend back.
+    /// Identity needs the mode and a username, and is never offered on the
+    /// lock screen's Quick Receive, which runs before unlock.
+    static func options(isAdvancedMode: Bool, identity: ReceiveIdentity?, isQuickReceive: Bool) -> [ReceiveOption] {
+        guard isAdvancedMode else { return [.core, .shielded] }
+        guard identity != nil, !isQuickReceive else { return [.core, .shielded, .platform] }
+        return [.core, .shielded, .platform, .identity]
+    }
+}
+
 @MainActor
 final class PaymentsLandingViewModel: ObservableObject {
 
-    @Published var activeTab: PaymentsLandingTab
-    @Published var network: ChainNetwork = .core
+    /// Every set after `init` runs `activeTabDidChange`, including a set to
+    /// the same tab from a tab-bar entry point.
+    @Published var activeTab: PaymentsLandingTab {
+        didSet { activeTabDidChange() }
+    }
+    @Published var network: ReceiveOption = .core
     /// Which hero tabs this presentation offers. The full landing shows all
     /// three; the balance-row receive sheet narrows to Receive + Internal.
     let visibleTabs: [PaymentsLandingTab]
@@ -117,14 +155,17 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// the whole landing on every keystroke in the embedded amount field.
     @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
 
-    /// Which addresses the Receive tab offers.
-    ///
-    /// Core and Shielded are both ordinary destinations — a wallet can be paid
-    /// privately without calling itself advanced. Platform is the one that
-    /// needs the mode: it holds credits rather than spendable Dash, and
-    /// offering it by default invites payments the payer cannot spend back.
-    var receiveNetworks: [ChainNetwork] {
-        isAdvancedMode ? [.core, .shielded, .platform] : [.core, .shielded]
+    /// The Current identity the Identity option shows, re-read on every
+    /// registration, wallet and network change; nil when it has no username.
+    @Published private(set) var receiveIdentity: ReceiveIdentity?
+
+    /// The lock screen's Quick Receive, which never offers Identity.
+    let isQuickReceive: Bool
+
+    /// Which options the Receive tab offers (`ReceiveOptionPolicy`).
+    var receiveOptions: [ReceiveOption] {
+        ReceiveOptionPolicy.options(
+            isAdvancedMode: isAdvancedMode, identity: receiveIdentity, isQuickReceive: isQuickReceive)
     }
 
     /// Whether the Send tab offers "Send to username".
@@ -169,7 +210,7 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// the baseline is read.
     private struct ReceiptSessionSeed {
         let generation: UInt64
-        let rail: ChainNetwork
+        let rail: ReceiveOption
         let address: String
         let walletId: Data
         let environment: Network
@@ -181,7 +222,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         let baseline: ReceiptBaseline
 
         var generation: UInt64 { seed.generation }
-        var rail: ChainNetwork { seed.rail }
+        var rail: ReceiveOption { seed.rail }
         var address: String { seed.address }
         var walletId: Data { seed.walletId }
         var environment: Network { seed.environment }
@@ -214,19 +255,34 @@ final class PaymentsLandingViewModel: ObservableObject {
     private var shieldedProjectionRefreshPending = false
     private var shieldedProjectionGeneration: UInt64 = 0
     private var session: ReceiptSession?
+    /// Watches the Current identity's credits while the Identity option is on.
+    private let identityWatcher: IdentityCreditsWatcher
+    /// The active wallet and network an identity watch runs for; nil while
+    /// the SDK host is not running the selected network.
+    private let identityContext: () -> (walletId: Data, network: Network)?
+    /// The Current identity Receive offers, re-read on every registration
+    /// status update.
+    private let receiveIdentitySource: () -> ReceiveIdentity?
+    private var identityWatchSession: IdentityCreditsWatcher.Session?
     private var generation: UInt64 = 0
     private var surfaceIsVisible = false
     private var presentationIsObscuring = false
     private var appIsActive = UIApplication.shared.applicationState == .active
 
     init(activeTab: PaymentsLandingTab,
-         network: ChainNetwork = .core,
+         network: ReceiveOption = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
-         allowsTransactionDetails: Bool = true) {
+         allowsTransactionDetails: Bool = true,
+         isQuickReceive: Bool = false) {
+        identityWatcher = Self.makeIdentityWatcher()
+        identityContext = Self.currentIdentityContext
+        receiveIdentitySource = Self.currentReceiveIdentity
         self.activeTab = activeTab
         self.network = network
         self.visibleTabs = visibleTabs
         self.allowsTransactionDetails = allowsTransactionDetails
+        self.isQuickReceive = isQuickReceive
+        identityWatcher.onStateChange = { [weak self] in self?.identityWatcherDidChange($0) }
 
         reloadCoreAddress()
         reloadShieldedAddress()
@@ -235,27 +291,24 @@ final class PaymentsLandingViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
-                self.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
-                // Platform is the only segment the mode takes away, and it can
-                // be the selected one at that moment — leaving the tab showing
-                // a Platform address with no segment left to move off it.
-                if !self.isAdvancedMode, !self.receiveNetworks.contains(self.network) {
-                    self.network = .core
-                }
+                // Platform and Identity are the segments the mode takes away,
+                // and either can be the selected one at that moment.
+                self.updateReceiveState(
+                    isAdvancedMode: DWGlobalOptions.sharedInstance().advancedModeEnabled,
+                    identity: self.receiveIdentity)
             }
             .store(in: &cancellables)
 
         #if DASHPAY
         refreshCanSendToUsername()
+        refreshReceiveIdentity()
 
         // The identity can be adopted while this landing is already up — a
         // registration finishing, or a recovery resolving one — and the row
         // has to appear without the user leaving the tab.
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.refreshCanSendToUsername()
-            }
+            .sink { [weak self] _ in self?.registrationStatusDidChange() }
             .store(in: &cancellables)
         #endif
 
@@ -322,12 +375,6 @@ final class PaymentsLandingViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        $activeTab
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.resetForRouteChange() }
-            .store(in: &cancellables)
-
         $network
             .dropFirst()
             .receive(on: RunLoop.main)
@@ -341,12 +388,28 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// subscribes to nothing.
     private init(
         previewActiveTab: PaymentsLandingTab,
-        previewNetwork: ChainNetwork,
+        previewNetwork: ReceiveOption,
         previewVisibleTabs: [PaymentsLandingTab],
         previewCoreAddress: String?,
         previewPlatformAddress: String?,
-        previewShieldedAddress: String?
+        previewShieldedAddress: String?,
+        previewIsQuickReceive: Bool,
+        previewIdentityWatcher: IdentityCreditsWatcher?,
+        previewIdentityContext: @escaping () -> (walletId: Data, network: Network)?,
+        previewReceiveIdentitySource: @escaping () -> ReceiveIdentity?,
+        previewIsWatching: Bool
     ) {
+        isWatchingForReceipt = previewIsWatching
+        isQuickReceive = previewIsQuickReceive
+        #if DASHPAY
+        identityWatcher = previewIdentityWatcher
+            ?? IdentityCreditsWatcher(read: { _ in .failure(IdentityBalanceRefresh.Superseded()) })
+        #else
+        identityWatcher = previewIdentityWatcher ?? Self.makeIdentityWatcher()
+        #endif
+        identityContext = previewIdentityContext
+        receiveIdentitySource = previewReceiveIdentitySource
+        appIsActive = true
         activeTab = previewActiveTab
         network = previewNetwork
         visibleTabs = previewVisibleTabs
@@ -357,17 +420,23 @@ final class PaymentsLandingViewModel: ObservableObject {
         // so the receipt's "View transaction" stays hidden rather than drawing
         // a control that could not do anything.
         allowsTransactionDetails = false
+        identityWatcher.onStateChange = { [weak self] in self?.identityWatcherDidChange($0) }
     }
 
     /// Preview view model. Pass `nil` for an address to preview that
     /// network's placeholder state instead of the QR card.
     static func makeForPreview(
         activeTab: PaymentsLandingTab = .internalTransfer,
-        network: ChainNetwork = .core,
+        network: ReceiveOption = .core,
         visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
         coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
         platformAddress: String? = "XmQ4rT7bN2vK9sD5xF8jH3kL6pW1aZcYuE",
-        shieldedAddress: String? = nil
+        shieldedAddress: String? = nil,
+        isQuickReceive: Bool = false,
+        identityWatcher: IdentityCreditsWatcher? = nil,
+        identityContext: @escaping () -> (walletId: Data, network: Network)? = { nil },
+        receiveIdentitySource: @escaping () -> ReceiveIdentity? = { nil },
+        isWatching: Bool = false
     ) -> PaymentsLandingViewModel {
         PaymentsLandingViewModel(
             previewActiveTab: activeTab,
@@ -375,11 +444,21 @@ final class PaymentsLandingViewModel: ObservableObject {
             previewVisibleTabs: visibleTabs,
             previewCoreAddress: coreAddress,
             previewPlatformAddress: platformAddress,
-            previewShieldedAddress: shieldedAddress)
+            previewShieldedAddress: shieldedAddress,
+            previewIsQuickReceive: isQuickReceive,
+            previewIdentityWatcher: identityWatcher,
+            previewIdentityContext: identityContext,
+            previewReceiveIdentitySource: receiveIdentitySource,
+            previewIsWatching: isWatching)
     }
     #endif
 
+    /// What the card encodes in its QR, copies and shares: the address of the
+    /// selected chain option, or on Identity the bare Base58 Identity ID.
     var currentAddress: String? {
+        if network == .identity {
+            return receiveIdentity?.identityIdBase58
+        }
         if session?.rail == network, let displayedAddress {
             return displayedAddress
         }
@@ -390,11 +469,13 @@ final class PaymentsLandingViewModel: ObservableObject {
         allowsTransactionDetails && receipt?.transactionId != nil
     }
 
-    private func candidateAddress(for rail: ChainNetwork) -> String? {
+    private func candidateAddress(for rail: ReceiveOption) -> String? {
         switch rail {
         case .core: return coreAddress
         case .platform: return platformAddress
         case .shielded: return shieldedAddress
+        // The Identity card shows the Identity ID, not an address.
+        case .identity: return nil
         }
     }
 
@@ -405,6 +486,11 @@ final class PaymentsLandingViewModel: ObservableObject {
     func copyCurrentAddressToPasteboard() {
         guard let address = currentAddress else { return }
         UIPasteboard.general.string = address
+    }
+
+    func copyUsernameToPasteboard() {
+        guard let username = receiveIdentity?.username else { return }
+        UIPasteboard.general.string = username
     }
 
     func setReceiveSurfaceVisible(_ visible: Bool) {
@@ -453,6 +539,11 @@ final class PaymentsLandingViewModel: ObservableObject {
     }
 
     #if DASHPAY
+    func registrationStatusDidChange() {
+        refreshCanSendToUsername()
+        refreshReceiveIdentity()
+    }
+
     /// Reads the network-scoped SDK truth, the same source
     /// `JoinDashPayRegistrationPolicy` treats as authoritative. The legacy
     /// `DWGlobalOptions` username mirror is global and cleared on every network
@@ -461,7 +552,131 @@ final class PaymentsLandingViewModel: ObservableObject {
         let identity = DWCurrentUserIdentityInfo.shared
         canSendToUsername = identity.hasIdentity && identity.username?.isEmpty == false
     }
+
+    /// The snapshot is empty while the SDK host has not rebound to the selected
+    /// network, so a switch clears the previous identity before any new one.
+    private func refreshReceiveIdentity() {
+        updateReceiveState(isAdvancedMode: isAdvancedMode, identity: receiveIdentitySource())
+    }
     #endif
+
+    /// Applies Advanced Mode and the Current identity, and moves the selection
+    /// to Core when the selected option is no longer offered. An option that
+    /// appears never moves the selection.
+    func updateReceiveState(isAdvancedMode: Bool, identity: ReceiveIdentity?) {
+        self.isAdvancedMode = isAdvancedMode
+        receiveIdentity = identity
+        if !receiveOptions.contains(network) {
+            network = .core
+        }
+        reconcileIdentityWatch()
+    }
+
+    #if DASHPAY
+    /// The watcher's read: `refresh` runs only while `activeContext` is the
+    /// session's wallet and network; otherwise the read fails as superseded.
+    static func identityBalanceRead(
+        activeContext: @escaping @MainActor () -> (walletId: Data, network: Network?)?,
+        refresh: @escaping @MainActor (IdentityCreditsWatcher.Session) async -> Result<UInt64, Error>
+    ) -> IdentityCreditsWatcher.Read {
+        { session in
+            guard let context = activeContext(),
+                  context.walletId == session.walletId,
+                  context.network == session.network
+            else { return .failure(IdentityBalanceRefresh.Superseded()) }
+            return await refresh(session)
+        }
+    }
+
+    /// Reads through the same refresh as the Identities screen, so a read
+    /// persists the balance and notifies open screens (AC-07).
+    private static func makeIdentityWatcher() -> IdentityCreditsWatcher {
+        IdentityCreditsWatcher(read: identityBalanceRead(
+            activeContext: {
+                let host = SwiftDashSDKHost.shared
+                return host.wallet.map { ($0.walletId, host.runningNetwork) }
+            },
+            refresh: { session in
+                guard let wallet = SwiftDashSDKHost.shared.wallet else {
+                    return .failure(IdentityBalanceRefresh.Superseded())
+                }
+                return await DWCurrentUserIdentityInfo.shared.refreshBalanceFromNetwork(
+                    identityId: session.identityId, wallet: wallet, network: session.network)
+            }))
+    }
+    #else
+    /// Without DASHPAY there is no Current identity, so Receive never offers
+    /// Identity (`currentReceiveIdentity` is nil) and this watcher never starts.
+    private static func makeIdentityWatcher() -> IdentityCreditsWatcher {
+        IdentityCreditsWatcher(read: { _ in .failure(CancellationError()) })
+    }
+    #endif
+
+    private static func currentReceiveIdentity() -> ReceiveIdentity? {
+        #if DASHPAY
+        let identity = DWCurrentUserIdentityInfo.shared
+        return ReceiveIdentity(identityId: identity.snapshotForReading.identityId, username: identity.username)
+        #else
+        return nil
+        #endif
+    }
+
+    private static func currentIdentityContext() -> (walletId: Data, network: Network)? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let network = SwiftDashSDKHost.shared.runningNetwork,
+              WalletEnvironment.network == network
+        else { return nil }
+        return (wallet.walletId, network)
+    }
+
+    /// Runs one watch per (wallet, network, identity) while Identity is the
+    /// selected option, and keeps it across everything else — a username
+    /// change or a balance notification never resets its Starting balance.
+    /// While a Receipt is up the finished session is kept, so nothing restarts
+    /// until Receive another, another option, or a wallet or network change
+    /// (`invalidateReceiptSession`).
+    private func reconcileIdentityWatch() {
+        let wanted: IdentityCreditsWatcher.Session?
+        if receipt != nil {
+            wanted = identityWatchSession
+        } else if network == .identity, receiveOptions.contains(.identity),
+                  let identity = receiveIdentity, let context = identityContext() {
+            wanted = IdentityCreditsWatcher.Session(
+                walletId: context.walletId, network: context.network, identityId: identity.identityId)
+        } else {
+            wanted = nil
+        }
+        if wanted != identityWatchSession {
+            identityWatchSession = wanted
+            if let wanted {
+                identityWatcher.start(wanted)
+            } else {
+                identityWatcher.stop()
+            }
+        }
+        identityWatcher.setGateOpen(canActivelyWatch)
+        if network == .identity, receipt == nil {
+            isWatchingForReceipt = canActivelyWatch && identityWatcher.state == .watching
+        }
+    }
+
+    private func identityWatcherDidChange(_ state: IdentityCreditsWatcher.State) {
+        guard network == .identity, identityWatchSession != nil else { return }
+        switch state {
+        case .received(let duffs):
+            acceptReceipt(ReceiveReceipt(
+                id: "identity-\(UUID().uuidString)",
+                rail: .identity,
+                amountDuffs: duffs,
+                receivedAt: Date(),
+                memo: nil,
+                transactionId: nil))
+        case .watching, .notWatching:
+            if receipt == nil {
+                isWatchingForReceipt = canActivelyWatch && state == .watching
+            }
+        }
+    }
 
     /// Resolves the wallet's default Orchard payment address and encodes it
     /// for display. `shieldedDefaultAddress` returns nil until the shielded
@@ -491,6 +706,7 @@ final class PaymentsLandingViewModel: ObservableObject {
     }
 
     private func reconcileReceiptWatching() {
+        defer { reconcileIdentityWatch() }
         guard canActivelyWatch else {
             suspendReceiptWatching()
             return
@@ -558,7 +774,7 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// the address can be acted on and nothing is ever withheld waiting for
     /// one.
     private func readReceiptBaseline(
-        for rail: ChainNetwork,
+        for rail: ReceiveOption,
         walletId: Data,
         environment: Network,
         startedAt: Date
@@ -583,6 +799,9 @@ final class PaymentsLandingViewModel: ObservableObject {
             // superset is the right thing to exclude.
             return SwiftDashSDKWalletSource.persistedShieldedActivityIds()
                 .map { .shielded(activityIds: $0) }
+        case .identity:
+            // Identity has no address, so no session reaches this read.
+            return nil
         }
     }
 
@@ -615,6 +834,9 @@ final class PaymentsLandingViewModel: ObservableObject {
             }
             isWatchingForReceipt = true
             attachShieldedObserverIfNeeded(session: session)
+        case .identity:
+            // No Identity session exists: Identity has no address to start one on.
+            isWatchingForReceipt = false
         }
     }
 
@@ -837,6 +1059,7 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     private func suspendReceiptWatching() {
         isWatchingForReceipt = false
+        identityWatcher.setGateOpen(false)
         coreReceiptCancellable?.cancel()
         coreReceiptCancellable = nil
         platformReceiptCancellable?.cancel()
@@ -856,6 +1079,19 @@ final class PaymentsLandingViewModel: ObservableObject {
         generation &+= 1
         session = nil
         displayedAddress = nil
+        identityWatchSession = nil
+        identityWatcher.stop()
+    }
+
+    /// A trip to another tab keeps a running Identity watch: only its gate
+    /// closes, so credits that land meanwhile raise a Receipt on return and an
+    /// own top-up meanwhile still moves the Starting balance (AC-08).
+    private func activeTabDidChange() {
+        if network == .identity, receipt == nil {
+            reconcileReceiptWatching()
+        } else {
+            resetForRouteChange()
+        }
     }
 
     private func resetForRouteChange() {
@@ -878,6 +1114,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         // The identity is network-scoped, so a network switch can invalidate
         // the Send tab's username row exactly as a registration change does.
         refreshCanSendToUsername()
+        refreshReceiveIdentity()
         #endif
         reconcileReceiptWatching()
     }

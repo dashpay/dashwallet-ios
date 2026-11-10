@@ -30,6 +30,8 @@ struct PaymentsReceiveContent: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
+    /// Copies the Identity option's username; the host shows the toast.
+    var onCopyUsername: () -> Void = {}
     /// Opens the transaction behind a receipt. Passed through rather than
     /// acted on — which controller presents the details is the host's.
     var onViewTransaction: (Data) -> Void = { _ in }
@@ -41,7 +43,7 @@ struct PaymentsReceiveContent: View {
     /// reads as a broken button.
     var onImportPrivateKey: (() -> Void)? = nil
 
-    /// Which way the last network change moved along `receiveNetworks`, so the
+    /// Which way the last network change moved along `receiveOptions`, so the
     /// incoming card slides in from the side it came from — the same rule the
     /// tab selector above follows.
     @State private var slidesForward = true
@@ -80,36 +82,60 @@ struct PaymentsReceiveContent: View {
     /// pill control's own background would be a second surface on top of the
     /// card's.
     ///
-    /// `fillsWidth` on each so the three divide the row evenly; without it,
-    /// zero spacing would clump them at the leading edge. The selected one
-    /// carries the tint and the others are plain, because three identical
-    /// buttons would leave the screen unable to say which address is on it.
+    /// When every title fits whole, the options divide the row evenly; when
+    /// not (four options at 375 pt, or a large text size), the row scrolls
+    /// sideways and titles are never truncated. Every selection change — the
+    /// user's or one the model makes, such as falling back to Core — scrolls
+    /// the selected option fully into view. The selected one carries the tint
+    /// and the others are plain, because identical buttons would leave the
+    /// screen unable to say which option is on it.
     private var networkRow: some View {
-        HStack(spacing: 0) {
-            ForEach(viewModel.receiveNetworks) { network in
-                DashUIKit.DashButton(
-                    text: network.title,
-                    fillsWidth: true,
-                    size: .medium,
-                    style: network == viewModel.network ? .tintedGray : .plainBlack,
-                    action: { select(network) }
-                )
+        ViewThatFits(in: .horizontal) {
+            EvenOptionRow {
+                optionButtons(fillsWidth: true)
+            }
+            .padding(.horizontal, 20)
+
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 0) {
+                        optionButtons(fillsWidth: false)
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .onAppear { proxy.scrollTo(viewModel.network) }
+                .onChange(of: viewModel.network) { _, selected in
+                    withAnimation { proxy.scrollTo(selected) }
+                }
             }
         }
-        .padding(20)
+        .padding(.vertical, 20)
+    }
+
+    private func optionButtons(fillsWidth: Bool) -> some View {
+        ForEach(viewModel.receiveOptions) { option in
+            DashUIKit.DashButton(
+                text: option.title,
+                fillsWidth: fillsWidth,
+                size: .medium,
+                style: option == viewModel.network ? .tintedGray : .plainBlack,
+                action: { select(option) }
+            )
+            .id(option)
+        }
     }
 
     /// Everything that changes the network goes through here so the direction
     /// of travel is known before the change lands — the card has to enter from
     /// whichever side the new segment sits on, and only this knows which.
-    private var networkSelection: Binding<ChainNetwork> {
+    private var networkSelection: Binding<ReceiveOption> {
         Binding(
             get: { viewModel.network },
             set: { select($0) })
     }
 
-    private func select(_ network: ChainNetwork) {
-        let options = viewModel.receiveNetworks
+    private func select(_ network: ReceiveOption) {
+        let options = viewModel.receiveOptions
         guard let from = options.firstIndex(of: viewModel.network),
               let to = options.firstIndex(of: network),
               from != to
@@ -176,9 +202,18 @@ struct PaymentsReceiveContent: View {
         }
     }
 
-    /// What the card shows for the selected network: the QR, the address and
-    /// the actions on it.
+    /// What the card shows for the selected option.
+    @ViewBuilder
     private var cardBody: some View {
+        if viewModel.network == .identity {
+            identityCardBody
+        } else {
+            addressCardBody
+        }
+    }
+
+    /// The selected chain option: the QR, the address and the actions on it.
+    private var addressCardBody: some View {
         VStack(alignment: .leading, spacing: 0) {
 
                 VStack(alignment: .center, spacing: 20) {
@@ -278,6 +313,109 @@ struct PaymentsReceiveContent: View {
                     .padding(.top, 14)
                     .padding(.bottom, 20)
         }
+    }
+
+    /// The Identity option: the QR of the bare Identity ID, the username and
+    /// the ID with their copy buttons, Share ID, Specify amount (not offered
+    /// for an identity), and why most senders cannot pay here (AC-01 – AC-04).
+    private var identityCardBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .center, spacing: 20) {
+                qrCard
+
+                VStack(spacing: 12) {
+                    copyRow(
+                        label: NSLocalizedString("Username", comment: ""),
+                        value: viewModel.receiveIdentity?.username,
+                        copyLabel: NSLocalizedString("Copy username", comment: "Receive, Identity option"),
+                        action: onCopyUsername)
+
+                    // One line, cut in the middle like an address: both ends
+                    // are what a person compares.
+                    copyRow(
+                        label: NSLocalizedString("Identity ID", comment: ""),
+                        value: viewModel.receiveIdentity?.identityIdBase58,
+                        copyLabel: NSLocalizedString("Copy Identity ID", comment: "Receive, Identity option"),
+                        action: onCopyAddress)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.top, 40)
+            .padding(.bottom, 10)
+
+            HStack(spacing: 20) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Share ID", comment: "Receive, Identity option"),
+                    isEnabled: hasAddress,
+                    size: .medium,
+                    style: .tintedGray,
+                    action: onShareAddress
+                )
+
+                // Shown and disabled: a request for an amount is not offered
+                // for an identity.
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Specify amount", comment: "Payments"),
+                    isEnabled: false,
+                    size: .medium,
+                    style: .tintedGray
+                )
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+
+            DashUIKit.SystemMessageView(
+                title: NSLocalizedString(
+                    "Most exchanges and many wallets can send only to Core addresses",
+                    comment: "Receive, Identity option warning"),
+                subtitle: NSLocalizedString(
+                    "Funds sent to your identity pay for Dash apps and usernames.",
+                    comment: "Receive, Identity option warning"),
+                icon: DashIcon.SystemMessage.warningTriangle.source,
+                backgroundColor: Color.dash.yellowAlpha10
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+
+            watchingForPayment
+                .padding(.top, 14)
+                .padding(.bottom, 20)
+        }
+    }
+
+    /// A labelled value on one line, cut in the middle when it does not fit,
+    /// with a copy button. Tapping the text copies too, as on the address row.
+    private func copyRow(label: String, value: String?, copyLabel: String, action: @escaping () -> Void) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.secondaryText)
+                Text(value ?? "")
+                    .dashFont(.subhead)
+                    .foregroundColor(.dash.primaryText)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: action)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
+
+            DashUIKit.DashButton(
+                leadingIcon: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit),
+                isEnabled: value != nil,
+                size: .medium,
+                style: .tintedGray,
+                accessibilityLabel: copyLabel,
+                action: action
+            )
+        }
+        .padding(.vertical, 6)
     }
 
     /// Always laid out, and only faded when there is nothing to watch: an
@@ -442,15 +580,46 @@ struct ReceiveWatchingIndicator: View {
     }
 }
 
+/// Lays its children out in equal widths. Its ideal width is the widest
+/// child's times their count, so `ViewThatFits` only picks it when every
+/// child gets at least its whole title.
+private struct EvenOptionRow: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let ideal = subviews.map { $0.sizeThatFits(.unspecified) }
+        let widest = ideal.map(\.width).max() ?? 0
+        let width = proposal.width.map { max($0, widest * CGFloat(subviews.count)) }
+            ?? widest * CGFloat(subviews.count)
+        return CGSize(width: width, height: ideal.map(\.height).max() ?? 0)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard !subviews.isEmpty else { return }
+        let width = bounds.width / CGFloat(subviews.count)
+        for (index, subview) in subviews.enumerated() {
+            subview.place(
+                at: CGPoint(x: bounds.minX + width * CGFloat(index), y: bounds.midY),
+                anchor: .leading,
+                proposal: ProposedViewSize(width: width, height: bounds.height))
+        }
+    }
+}
+
 #if DEBUG
 
 @MainActor
 private func receiveSample(
-    network: ChainNetwork = .core,
-    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN"
+    network: ReceiveOption = .core,
+    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+    isAdvancedMode: Bool = false,
+    identity: ReceiveIdentity? = nil,
+    isWatching: Bool = false
 ) -> some View {
-    PaymentsReceiveContent(
-        viewModel: .makeForPreview(activeTab: .receive, network: network, coreAddress: coreAddress),
+    let viewModel = PaymentsLandingViewModel.makeForPreview(
+        activeTab: .receive, coreAddress: coreAddress, isWatching: isWatching)
+    viewModel.updateReceiveState(isAdvancedMode: isAdvancedMode, identity: identity)
+    viewModel.network = network
+    return PaymentsReceiveContent(
+        viewModel: viewModel,
         onCopyAddress: {},
         onShareAddress: {},
         onSpecifyAmount: {})
@@ -468,6 +637,57 @@ private func receiveSample(
 @available(iOS 17, *)
 #Preview("No address") {
     receiveSample(coreAddress: nil)
+}
+
+private let previewIdentity = ReceiveIdentity(
+    identityId: Data((1...32).map { UInt8($0) }), username: "alice")
+
+@available(iOS 17, *)
+#Preview("Three options") {
+    receiveSample(network: .platform, isAdvancedMode: true)
+}
+
+/// Four titles overflow 375 pt: the row scrolls, the selected Identity in view.
+@available(iOS 17, *)
+#Preview("Four options, 375 pt") {
+    receiveSample(network: .identity, isAdvancedMode: true, identity: previewIdentity)
+        .frame(width: 375)
+}
+
+@available(iOS 17, *)
+#Preview("Identity, watching") {
+    receiveSample(network: .identity, isAdvancedMode: true, identity: previewIdentity, isWatching: true)
+}
+
+/// The first read has not succeeded: everything works, no watching claim.
+@available(iOS 17, *)
+#Preview("Identity, not watching") {
+    receiveSample(network: .identity, isAdvancedMode: true, identity: previewIdentity)
+}
+
+/// Identity credits have no transaction to open and carry no memo (SCR-03).
+@available(iOS 17, *)
+#Preview("Identity receipt") {
+    ReceiveReceiptCard(
+        receipt: ReceiveReceipt(
+            id: "identity-preview",
+            rail: .identity,
+            amountDuffs: 50_000_000,
+            receivedAt: Date(timeIntervalSince1970: 1_793_000_000),
+            memo: nil,
+            transactionId: nil),
+        canViewTransaction: false,
+        onViewTransaction: { _ in },
+        onReceiveAnother: {},
+        onDone: {})
+        .padding(20)
+        .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, *)
+#Preview("Four options, xxxLarge") {
+    receiveSample(network: .shielded, isAdvancedMode: true, identity: previewIdentity)
+        .dynamicTypeSize(.xxxLarge)
 }
 
 #endif

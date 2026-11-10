@@ -600,7 +600,39 @@ final class IdentityTopUpViewModel: ObservableObject {
     }
 
     /// nil = cancelled or failed (errorMessage carries the failure).
+    ///
+    /// A completed top-up posts `IdentityTopUpDidComplete` with the credits it
+    /// added, so Receive raises no Receipt for the wallet's own top-up.
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
+        let wallet = SwiftDashSDKHost.shared.wallet
+        let network = SwiftDashSDKHost.shared.runningNetwork
+        let balanceBefore = try? wallet?.managedIdentity(identityId: identityId).getBalance()
+        let balanceAfter = await executeTopUp(identityId: identityId, amountDuffs: amountDuffs, source: source)
+        if let wallet, let network {
+            IdentityTopUpDidComplete.announce(
+                balanceBefore: balanceBefore,
+                balanceAfter: balanceAfter,
+                suppliedCredits: Self.suppliedCredits(amountDuffs: amountDuffs, source: source),
+                walletId: wallet.walletId,
+                network: network,
+                identityId: identityId)
+        }
+        return balanceAfter
+    }
+
+    /// The credits `source` hands to the identity for `amountDuffs`, before
+    /// the transition's fee: the whole amount, except on the Shielded route,
+    /// which claims it less the policy's fee headroom (the headroom stays at
+    /// the wallet's own Platform address).
+    static func suppliedCredits(amountDuffs: UInt64, source: FundingSource) -> UInt64 {
+        let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+        guard source == .shielded, credits > PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits else {
+            return credits
+        }
+        return credits - PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
+    }
+
+    private func executeTopUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
         guard !isProcessing else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
@@ -718,9 +750,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         // supplied credits; the unclaimed headroom stays at the address
         // (it is the wallet's own Platform balance, not lost).
         stepLabel = NSLocalizedString("Step 2 of 2 — topping up your identity…", comment: "Identity top-up sheet — shielded route progress")
-        let claim = credits > PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
-            ? credits - PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
-            : credits
+        let claim = Self.suppliedCredits(amountDuffs: amountDuffs, source: .shielded)
         let input = ManagedPlatformWallet.IdentityAddressInput(
             addressType: storageBytes[storageBytes.startIndex],
             hash: Data(storageBytes.dropFirst()),
