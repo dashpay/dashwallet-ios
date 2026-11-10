@@ -58,7 +58,9 @@ struct CoreShieldedDrainService {
 @MainActor
 final class ShieldedTxLookup {
     static let shared = ShieldedTxLookup()
-    struct Info { let statusRaw: Int }
+    struct Info { let statusRaw: Int; var drainOperation: UUID? { nil } }
+    var consumed = Set<Data>()
+    func markConsumed(txidWire: Data) { consumed.insert(txidWire) }
     func info(forTxidHex: String) -> Info? { nil }
     func refresh(reason: String) async {}
 }
@@ -68,10 +70,13 @@ extension Notification.Name {
 @MainActor
 final class ShieldedTransferCoordinator {
     enum CoordinatorError: Error {
-        case transferFailed(Error), authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet
+        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet
         var errorDescription: String? { "Authentication cancelled" }
     }
-    enum Phase: Equatable { case idle, proving, broadcasting, success, submittedUnconfirmed, failed(String) }
+    enum Phase: Equatable {
+        case idle, signing, proving, broadcasting, success, submittedUnconfirmed, failed(String)
+        var isInFlight: Bool { self == .signing || self == .proving || self == .broadcasting }
+    }
     enum ResumeReport { case alreadyConsumed }
     struct Environment {
         let manager: TestManager
@@ -88,17 +93,20 @@ final class ShieldedTransferCoordinator {
     static let shieldedAssetLockFundingType = 5
     let failureStore = AssetLockFailureStore(defaults: UserDefaults(suiteName: "RecoveryHarness." + UUID().uuidString)!)
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
-    var phase: Phase = .idle
+    var phase: Phase = .idle {
+        didSet { if !phase.isInFlight { releaseInFlightOutPoint() } }
+    }
+    var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
+    static let drainSettleTimeout: TimeInterval = 30
     var lastResumeReport: ResumeReport?
     var lastFailure: Error?
     var lastAssetLockContext: CoreShieldedDrainContext?
-    var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
+    var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
     let environment: Environment
     var authorizations = 0
     var onAuthorize: (() -> Void)?
     var authorizationError: Error?
     init(environment: Environment) { self.environment = environment }
-    func beginTransfer() -> Bool { phase == .idle }
     func resolveEnvironment() throws -> Environment { environment }
     func authorize() async throws {
         authorizations += 1
@@ -135,7 +143,7 @@ final class ShieldedTransferCoordinator {
     var newDrainCalls: Int { coordinator.newAssetLockCalls }
     init(_ coordinator: ShieldedTransferCoordinator) { self.coordinator = coordinator }
     var binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding?
-    var unresumedLock: (txidWire: Data, vout: UInt32)?
+    var unresumedLock: ShieldedAssetLocksInFlight.OutPoint?
     enum Preparation { case authorizing }
     var preparation: Preparation?
     var consolidationSent = false
@@ -193,3 +201,8 @@ enum DiagnosticLogExporter {
     static func assetLockStatusName(_ value: Int) -> String { String(value) }
 }
 enum DWLogger { static func log(_ message: String) {} }
+
+@MainActor final class DrainClaimSettler {
+    init(operation: UUID, timeout: TimeInterval, lookup: ShieldedTxLookup) {}
+    func start() { preconditionFailure("Completed drain settling belongs to the application tests") }
+}

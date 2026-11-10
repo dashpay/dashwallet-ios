@@ -387,7 +387,25 @@ final class ConnectionsViewModel: ObservableObject {
             guard let self else { return }
             defer { self.isDisconnecting = false }
             do {
-                try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
+                let result = try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
+                // What the disconnect did with the DashPay profile keys no
+                // connection accounts for; said, since they may have been
+                // another app's.
+                if result.profileKeysUnchecked {
+                    self.message = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: NSLocalizedString(
+                            "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off.",
+                            comment: "DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart"))
+                } else if result.profileKeysTurnedOff > 0 {
+                    self.message = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.",
+                                comment: "DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off"),
+                            result.profileKeysTurnedOff))
+                }
             } catch {
                 self.message = ConnectionsScreenMessage(
                     kind: .error,

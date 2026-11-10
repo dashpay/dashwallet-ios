@@ -51,7 +51,7 @@ final class AssetLockRecoveryTests: XCTestCase {
             XCTAssertEqual(context.walletId, wallet)
             return manager
         }
-        coordinator.lastAssetLockOutPoint = (txid, 3)
+        coordinator.lastAssetLockOutPoint = .init(txidWire: txid, vout: 3)
         if cancelAuthorization { coordinator.authorizationError = CancellationError() }
 
         if coinJoin {
@@ -118,7 +118,7 @@ final class AssetLockRecoveryTests: XCTestCase {
         let coordinator = ShieldedTransferCoordinator(environment: .init(
             manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
         coordinator.phase = .failed("test failure")
-        coordinator.lastAssetLockOutPoint = (Data(repeating: 5, count: 32), 1)
+        coordinator.lastAssetLockOutPoint = .init(txidWire: Data(repeating: 5, count: 32), vout: 1)
         let caller = CoinJoinRetryHarness(coordinator)
         caller.binding = .init(walletId: wallet, network: "testnet")
         SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = .init(walletId: Data([9]), network: "testnet")
@@ -317,7 +317,7 @@ final class AssetLockRecoveryTests: XCTestCase {
         let coordinator = ShieldedTransferCoordinator(environment: .init(
             manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
         coordinator.phase = .failed("test failure")
-        coordinator.lastAssetLockOutPoint = (txid, 2)
+        coordinator.lastAssetLockOutPoint = .init(txidWire: txid, vout: 2)
         coordinator.lastAssetLockContext = .init(walletId: wallet, networkScope: "testnet")
         CoreShieldedDrainService.resolveManager = { _ in throw CoreShieldedDrainService.TestError.contextChanged }
         defer { CoreShieldedDrainService.resolveManager = nil }

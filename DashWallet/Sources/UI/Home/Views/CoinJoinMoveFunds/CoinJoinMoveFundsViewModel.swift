@@ -122,7 +122,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// does not prove the lock consumed, so only `.success` or
     /// `.submittedUnconfirmed` (the shield was submitted) clears it; until
     /// then every retry resumes it, never a fresh drain.
-    private var unresumedLock: (txidWire: Data, vout: UInt32)?
+    private var unresumedLock: ShieldedAssetLocksInFlight.OutPoint?
 
     /// Wire-order txids of this sheet's consolidations whose broadcast outcome
     /// was unknown (they may have reached peers). No new attempt plans until
@@ -146,7 +146,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     /// The committed asset lock a retry resumes: the coordinator's, or the
     /// one kept across its resets. After a terminal `.success` it still names
     /// the lock that was spent; only the stages before it read this.
-    private var committedLock: (txidWire: Data, vout: UInt32)? {
+    private var committedLock: ShieldedAssetLocksInFlight.OutPoint? {
         coordinator.lastAssetLockOutPoint ?? unresumedLock
     }
 

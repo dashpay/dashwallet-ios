@@ -19,7 +19,11 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     methods = []
     for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
                    "    func retryLastAssetLock(", "    func reset()", "    private func handleSpendError(",
-                   "    private func handlePlatformSpendError(", "    private func isStillBound("):
+                   "    private func handlePlatformSpendError(", "    private func isStillBound(",
+                   "    private func beginTransfer()", "    private func beginTransfer(\n",
+                   "    private static func logGateRefusal(", "    private func releaseInFlightOutPoint()",
+                   "    private func markInFlightLockConsumed(", "    func finishResumedAssetLock(",
+                   "    private static func releaseDrainClaim("):
         start = production.index(marker)
         opening = production.index("{", start)
         depth, end = 1, opening + 1
@@ -27,6 +31,8 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
             depth += (production[end] == "{") - (production[end] == "}")
             end += 1
         methods.append(production[start:end])
+    registry = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/ShieldedAssetLocksInFlight.swift"
+    (source / registry.name).symlink_to(registry)
     for name in ("CoreShieldedDrainStore.swift",):
         (source / name).symlink_to(repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded" / name)
     (source / "DurableFileStorage.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift")
