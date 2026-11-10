@@ -31,6 +31,7 @@ final class IdentityTopUpEventTests: XCTestCase {
     private enum Refused: Error { case byPlatform }
 
     private let center = NotificationCenter()
+    private let inFlight = IdentityTopUpsInFlight()
     private var events: [IdentityTopUpDidComplete] = []
     private var token: NSObjectProtocol?
 
@@ -63,7 +64,11 @@ final class IdentityTopUpEventTests: XCTestCase {
     ) async rethrows -> UInt64 {
         try await IdentityTopUpDidComplete.announcing(
             walletId: walletId, network: .testnet, identityId: identityId,
-            balanceBefore: balanceBefore, suppliedCredits: 1_000_000_000, center: center, topUp)
+            balanceBefore: balanceBefore, suppliedCredits: 1_000_000_000, center: center, inFlight: inFlight, topUp)
+    }
+
+    private var key: IdentityTopUpsInFlight.Key {
+        .init(walletId: walletId, network: .testnet, identityId: identityId)
     }
 
     func testSuccessfulTopUpPostsOneEventWithTheCreditsItAdded() {
@@ -145,6 +150,31 @@ final class IdentityTopUpEventTests: XCTestCase {
             XCTAssertEqual(error as? Refused, .byPlatform)
         }
         XCTAssertTrue(events.isEmpty)
+    }
+
+    /// The watch holds its Receipt while the top-up runs (review-2026-11-10-r3 Q1).
+    func testATopUpIsInFlightOnlyWhileItRuns() async throws {
+        var runningDuringTopUp = false
+        _ = try await announcing(balanceBefore: 2_000_000_000) {
+            runningDuringTopUp = inFlight.contains(key)
+            return 2_958_500_000
+        }
+        XCTAssertTrue(runningDuringTopUp)
+        XCTAssertFalse(inFlight.contains(key))
+    }
+
+    func testATopUpThatThrowsIsNoLongerInFlight() async {
+        _ = try? await announcing(balanceBefore: 2_000_000_000) { throw Refused.byPlatform }
+        XCTAssertFalse(inFlight.contains(key))
+    }
+
+    func testTwoTopUpsOfOneIdentityStayInFlightUntilBothEnd() {
+        inFlight.begin(key)
+        inFlight.begin(key)
+        inFlight.end(key)
+        XCTAssertTrue(inFlight.contains(key))
+        inFlight.end(key)
+        XCTAssertFalse(inFlight.contains(key))
     }
 
     func testANotificationOfAnotherNameIsNotAnEvent() {

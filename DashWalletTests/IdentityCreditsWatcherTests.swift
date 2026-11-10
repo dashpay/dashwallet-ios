@@ -103,13 +103,19 @@ final class IdentityCreditsWatcherTests: XCTestCase {
     private let source = FakeSource()
     private let scheduler = ManualScheduler()
     private let center = NotificationCenter()
+    private let inFlight = IdentityTopUpsInFlight()
     private lazy var watcher = IdentityCreditsWatcher(
         read: { [source] in await source.read($0) },
         schedule: { [scheduler] in scheduler.schedule($0, $1) },
-        center: center)
+        center: center,
+        inFlight: inFlight)
 
     override func setUp() async throws {
         watcher.setGateOpen(true)
+    }
+
+    private func key(_ session: IdentityCreditsWatcher.Session) -> IdentityTopUpsInFlight.Key {
+        .init(walletId: session.walletId, network: session.network, identityId: session.identityId)
     }
 
     private func answer(_ values: UInt64...) {
@@ -242,6 +248,65 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         await inFlight
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
+    }
+
+    /// Platform raises the balance a little before the top-up call returns: a
+    /// check in that window must not take the wallet's own top-up for a
+    /// payment (review-2026-11-10-r3 Q1).
+    func testARiseSeenBeforeTheOwnTopUpIsAnnouncedRaisesNoReceipt() async {
+        watcher.start(session)
+        answer(10_000, 15_000, 15_000, 16_000)
+        await scheduler.fire()
+        inFlight.begin(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .watching)
+        topUp(5_000, for: session)
+        inFlight.end(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .watching)
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 1))
+    }
+
+    /// A top-up started before the option was opened (the username flow
+    /// dismisses while its top-up runs) may or may not be in the first read,
+    /// so the Starting balance waits for it to end.
+    func testATopUpRunningWhenTheWatchStartsDelaysTheStartingBalance() async {
+        inFlight.begin(key(session))
+        watcher.start(session)
+        answer(10_000, 15_000, 16_000)
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .notWatching)
+        topUp(5_000, for: session)
+        inFlight.end(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .watching)
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 1))
+    }
+
+    /// A top-up that throws announces nothing; once it ends, a rise is a
+    /// Receipt again (the accepted limit for a top-up that failed after
+    /// Platform carried it out).
+    func testATopUpThatEndsUnannouncedReleasesTheHold() async {
+        watcher.start(session)
+        answer(10_000, 15_000, 15_000)
+        await scheduler.fire()
+        inFlight.begin(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .watching)
+        inFlight.end(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 5))
+    }
+
+    func testATopUpOfAnotherIdentityDoesNotHoldTheReceipt() async {
+        watcher.start(session)
+        answer(10_000, 15_000)
+        await scheduler.fire()
+        inFlight.begin(key(otherSession))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 5))
     }
 
     // MARK: Gate and timer

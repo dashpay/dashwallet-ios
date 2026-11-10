@@ -19,22 +19,25 @@ The Identity option raises a Receipt when the Current identity's credits rise ab
 
 1. **A typed top-up event** — after a successful top-up, the top-up path posts a new `IdentityTopUpDidComplete` notification carrying the wallet, the network, the identity and the credits the top-up added; the Identity watcher raises its Starting balance by that amount, whether or not the card is covered at that moment.
 2. **An in-memory ledger of own top-ups** — the top-up path records each top-up in a shared registry that the watcher reads on every check. Same information as option 1, pulled instead of pushed, at the cost of a new shared object.
+3. **The typed event plus a registry of top-ups in flight** — option 1, and the top-up path also registers each top-up in a shared `IdentityTopUpsInFlight` from before the SDK call until after the event is posted or the call throws. While a top-up of the watched identity is in flight, the watcher raises no Receipt and takes no Starting balance. Platform raises the balance before the top-up call returns, so option 1 alone shows a check in that window as «Received» (PR #1344 review, review-2026-11-10-r3 Q1).
 
 ## Decision outcome
 
-**Chosen:** option 1, a typed `IdentityTopUpDidComplete` event that the watcher subtracts from future increases by raising its Starting balance. It meets AC-06 and AC-08 together without adding the shared object option 2 needs, and it is a new, typed name rather than a re-post of the DashPay registration notification.
+**Chosen:** option 3, a typed `IdentityTopUpDidComplete` event that the watcher subtracts from future increases by raising its Starting balance, plus a registry of top-ups in flight that holds the Receipt decision until that event arrives. The event alone (option 1) left the window between Platform raising the balance and the top-up call returning, in which a check took the own top-up for a payment and ended the watch. The registry is shared because a top-up can start before the Receive screen that watches its identity exists (the username flow closes while its top-up still runs); that is the reason guardrail 4 asks for, and the watcher takes it injected. The event stays a new, typed name rather than a re-post of the DashPay registration notification.
 
 ## Consequences
 
 **Positive**
-- A completed top-up from this wallet raises no Receipt once it is announced, wherever it was started: Internal transfer and the profile sheet run `IdentityTopUpViewModel.topUp`, and the registration coordinator's shortfall and name-purchase top-ups and the asset-lock recovery's top-up retry run through `IdentityTopUpDidComplete.announcing`; each posts the event (the retry only when its lock row is stored, as the lock's value bounds the credits).
+- A top-up from this wallet raises no Receipt, wherever it was started and whether a check sees its rise before or after it is announced: Internal transfer and the profile sheet run `IdentityTopUpViewModel.topUp`, and the registration coordinator's shortfall and name-purchase top-ups and the asset-lock recovery's top-up retry run through `IdentityTopUpDidComplete.announcing`; each is in flight while it runs and posts the event (the retry only when its lock row is stored, as the lock's value bounds the credits).
+- A Payer's credits seen while an own top-up runs are not lost: the Receipt waits, and the event raises the Starting balance only by the top-up's credits.
 - A Payer's credits that land while Internal transfer covers the card still raise a Receipt after it closes.
 - Other future listeners (for example, a History entry for an own top-up) can use the same event.
 
 **Negative**
 - Every top-up path gets a new outgoing contract: a top-up of an existing identity that neither runs `IdentityTopUpViewModel.topUp` nor goes through `IdentityTopUpDidComplete.announcing` raises a false Receipt.
+- A new process-wide object, `IdentityTopUpsInFlight.shared`. A top-up that is in flight when the Identity option is opened delays the Starting balance until it ends, so the card says it is watching a little later.
 - The amount the event carries is what the top-up path knows: the rise over the stored balance it started from, capped at the credits it supplied. A Payer's credits that land in between are counted as the top-up's only up to that cap, so at most the top-up's fee worth of them raises no Receipt (sad.md §11).
-- The event is posted when the top-up call returns, after Platform has already raised the balance: a check in that window shows the own top-up as «Received», and a top-up that throws after Platform carried it out posts nothing (accepted limit, spec §6.1).
+- A top-up that throws after Platform carried it out posts nothing; once it leaves the registry, its rise shows as «Received» (accepted limit, spec §6.1).
 
 **Neutral**
 - A top-up of the same identity from another device holding the same recovery phrase still shows as «Received» — an accepted limit in spec §6.1 that this event cannot see.

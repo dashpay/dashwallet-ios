@@ -57,6 +57,8 @@ struct IdentityTopUpDidComplete: Equatable {
 
     /// Runs `topUp`, which returns the identity's balance after it, and
     /// announces it when it returns; a top-up that throws announces nothing.
+    /// The top-up is in `inFlight` from before `topUp` runs until after the
+    /// event is posted or `topUp` throws.
     @MainActor
     static func announcing(
         walletId: Data,
@@ -65,8 +67,12 @@ struct IdentityTopUpDidComplete: Equatable {
         balanceBefore: UInt64?,
         suppliedCredits: UInt64,
         center: NotificationCenter = .default,
+        inFlight: IdentityTopUpsInFlight = .shared,
         _ topUp: () async throws -> UInt64
     ) async rethrows -> UInt64 {
+        let key = IdentityTopUpsInFlight.Key(walletId: walletId, network: network, identityId: identityId)
+        inFlight.begin(key)
+        defer { inFlight.end(key) }
         let balanceAfter = try await topUp()
         announce(
             balanceBefore: balanceBefore, balanceAfter: balanceAfter, suppliedCredits: suppliedCredits,

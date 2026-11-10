@@ -28,8 +28,10 @@ import SwiftDashSDK
 /// session (never a stored value), a lower balance replaces it, an own top-up
 /// (`IdentityTopUpDidComplete`) raises it by the credits added, and a rise of
 /// at least 1 duff over it is one Receipt for the whole rise, which ends the
-/// session. Reads run on the Platform option's cadence and only while the gate
-/// is open (card visible, not covered, app in the foreground): closing the gate
+/// session. While an own top-up of the identity runs (`IdentityTopUpsInFlight`)
+/// no Receipt is raised and no Starting balance is taken. Reads run on the
+/// Platform option's cadence and only while the gate is open (card visible,
+/// not covered, app in the foreground): closing the gate
 /// cancels the timer and keeps the session, opening it checks at once. Created
 /// and owned by `PaymentsLandingViewModel`; not shared.
 @MainActor
@@ -70,6 +72,7 @@ final class IdentityCreditsWatcher {
     private let read: Read
     private let schedule: Schedule
     private let center: NotificationCenter
+    private let inFlight: IdentityTopUpsInFlight
     private var session: Session?
     private var startingBalance: UInt64?
     private var isGateOpen = false
@@ -82,10 +85,12 @@ final class IdentityCreditsWatcher {
 
     init(read: @escaping Read,
          schedule: @escaping Schedule = IdentityCreditsWatcher.repeating,
-         center: NotificationCenter = .default) {
+         center: NotificationCenter = .default,
+         inFlight: IdentityTopUpsInFlight = .shared) {
         self.read = read
         self.schedule = schedule
         self.center = center
+        self.inFlight = inFlight
         #if DASHPAY
         // Always posted on the main actor (see `IdentityTopUpDidComplete`).
         topUpObserver = center.addObserver(
@@ -153,14 +158,26 @@ final class IdentityCreditsWatcher {
             state = .notWatching
             return
         }
-        guard let starting = startingBalance, balance >= starting else {
+        // Platform raises the balance before an own top-up is announced, so
+        // while one runs a rise may be the wallet's own credits.
+        let ownTopUpRunning = inFlight.contains(
+            .init(walletId: session.walletId, network: session.network, identityId: session.identityId))
+        guard let starting = startingBalance else {
+            // A top-up that started before the watch may or may not be in this
+            // balance: the Starting balance waits until it has ended.
+            guard !ownTopUpRunning else { return }
+            startingBalance = balance
+            state = .watching
+            return
+        }
+        guard balance >= starting else {
             startingBalance = balance
             state = .watching
             return
         }
         let rise = balance - starting
         let creditsPerDuff = PlatformCreditsFormatter.creditsPerDuff
-        guard rise >= creditsPerDuff else {
+        guard rise >= creditsPerDuff, !ownTopUpRunning else {
             state = .watching
             return
         }

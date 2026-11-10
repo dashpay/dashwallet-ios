@@ -2040,6 +2040,8 @@
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		BABA10000000000000000102 /* IdentityTopUpDidComplete.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */; };
+		BABA10000000000000000202 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
+		BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
@@ -3912,6 +3914,7 @@
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
 		BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpDidComplete.swift; sourceTree = "<group>"; };
+		BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpsInFlight.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
@@ -7534,6 +7537,7 @@
 				CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */,
 				BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */,
 				BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */,
+				BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */,
 				D54F8E662513F09BA840FB94 /* DWIdentityRegistrationBridge.swift */,
 				5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */,
 				82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */,
@@ -10579,6 +10583,7 @@
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
 				8820AD0A74800EDA9BBE4481 /* IdentityCreditsWatcher.swift in Sources */,
+				BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */,
 				DAE070BBE395099DE28F91E4 /* ReceiveOption.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
 				C029D3337FF6DAD231B33C4B /* SendToContactScreen.swift in Sources */,
@@ -11638,6 +11643,7 @@
 				7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */,
 				BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */,
 				BABA10000000000000000102 /* IdentityTopUpDidComplete.swift in Sources */,
+				BABA10000000000000000202 /* IdentityTopUpsInFlight.swift in Sources */,
 				A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */,
 				A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */,
 				C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */,
