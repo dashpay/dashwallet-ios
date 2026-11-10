@@ -1808,9 +1808,6 @@
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
 
-/* DashConnect: after a disconnect that found keys whose app is not known yet */
-"Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them." = "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.";
-
 /* DashSpend confirmation */
 "Discount" = "Zniżka";
 

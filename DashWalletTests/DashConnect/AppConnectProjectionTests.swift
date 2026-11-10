@@ -1101,6 +1101,26 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(rows, [row])
     }
 
+    /// A disconnect that left a key of unknown bound keeps the app's row as
+    /// it is, so Disconnect stays reachable; without it the row goes.
+    func testARowKeptForAKeyOfUnknownBoundStaysAsItIs() {
+        let key = Self.authKey(10)
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        let off = Self.snapshot([Self.onPlatform(key, disabledAt: 1), Self.onPlatform(Self.authKey(20), boundKnown: false)])
+        let projection = AppConnect.project([off], intents: [Self.intent([key])])
+        XCTAssertEqual(projection.connections.first?.status, .disconnected)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows(
+                [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+                keeping: [row.id]),
+            [row])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)),
+            [])
+    }
+
     // MARK: Retry
 
     private static func plan(
