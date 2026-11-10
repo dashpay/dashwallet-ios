@@ -160,6 +160,39 @@ import XCTest
         }
     }
 
+    func testRunnerDoesNotCarryUnknownOutcomeIntoNextAuthorizedRequest() async {
+        let runner = InternalTransferRunner()
+        let request = InternalTransferRequest(amountDuffsUnsigned: 100)
+        let firstWallet = host.wallet!
+        firstWallet.failure = PlatformWalletError.transactionBroadcastUnconfirmed("unknown")
+        await runner.runTopUp(.init(identityId: Data([2]), source: .shielded), request)
+        XCTAssertEqual(runner.phase, .submittedUnconfirmed)
+        XCTAssertEqual(firstWallet.topUpCalls, 1)
+        // A new reviewed request can target another identity/runtime.
+        host.wallet = ManagedPlatformWallet()
+        await runner.runTopUp(.init(identityId: Data([3]), source: .shielded), request)
+        XCTAssertEqual(runner.phase, .success)
+        XCTAssertEqual(runner.notice, .succeeded)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+        XCTAssertEqual(host.manager!.unshieldCalls, 2)
+    }
+
+    func testRunnerDoesNotCarryMovedFundsIntoNextAuthorizedRequest() async {
+        let runner = InternalTransferRunner()
+        let request = InternalTransferRequest(amountDuffsUnsigned: 100)
+        let transfer = IdentityTopUpTransfer(identityId: Data([2]), source: .shielded)
+        host.wallet!.failure = PlatformWalletError.walletOperation("refused")
+        await runner.runTopUp(transfer, request)
+        guard case .failed = runner.phase else { return XCTFail("Expected second-leg refusal") }
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        host.wallet!.failure = nil
+        await runner.runTopUp(transfer, request)
+        XCTAssertEqual(runner.phase, .success)
+        XCTAssertEqual(runner.notice, .succeeded)
+        XCTAssertEqual(host.manager!.unshieldCalls, 2)
+        XCTAssertEqual(host.wallet!.topUpCalls, 2)
+    }
+
     func testSuccessfulTopUpCompletesBothLegs() async throws {
         let balance = try await topUp()
         XCTAssertEqual(balance, 97)

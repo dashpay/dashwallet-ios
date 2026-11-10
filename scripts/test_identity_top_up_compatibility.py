@@ -37,6 +37,12 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
         "    private func topUpFromShielded(",
     ))
     scaffold = (repository / "scripts/fixtures/IdentityTopUpCompatibilityHarness.swift").read_text()
+    scaffold = scaffold.replace("    // PRODUCTION_FUNDING_SOURCE", declaration("    enum FundingSource:"))
+    runner = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Confirm/InternalTransferRunner.swift").read_text()
+    scaffold = scaffold.replace("    // PRODUCTION_RUNNER", "\n".join(
+        declaration(marker, runner) for marker in (
+            "    enum Phase:", "    enum Notice:", "    private func runTopUp(",
+            "    private func announce(", "    private func outcome(", "    private func consume<Value>(")))
     sender = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKTransactionSender.swift").read_text()
     scaffold = scaffold.replace("    // PRODUCTION_SENDER_HELPERS", "\n".join(
         declaration(marker, sender) for marker in (

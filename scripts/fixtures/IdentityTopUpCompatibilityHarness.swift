@@ -84,7 +84,7 @@ enum PlatformPaymentIdentityFundingPolicy {
 }
 
 @MainActor final class IdentityTopUpViewModel {
-    enum FundingSource { case transparent, platform, shielded }
+    // PRODUCTION_FUNDING_SOURCE
     var stepLabel: String?
     var isProcessing = false
     var submittedUnconfirmed = false
@@ -114,3 +114,14 @@ enum SwiftDashSDKTransactionSender {
 }
 
 enum CoinJoinShieldPlanner { static let maxAssetLockInputs = 100 }
+
+// The runner's post-authorization identity dispatch and outcome handling are
+// production methods; request metadata irrelevant to that dispatch is omitted.
+enum ChainNetwork { case core, platform, shielded }
+struct IdentityTopUpTransfer { let identityId: Data; let source: ChainNetwork }
+struct InternalTransferRequest { let amountDuffsUnsigned: UInt64 }
+@MainActor final class InternalTransferRunner {
+    var phase: Phase = .idle
+    var notice: Notice?
+    // PRODUCTION_RUNNER
+}

@@ -179,7 +179,6 @@ final class InternalTransferRunner: ObservableObject {
     }
 
     private let coordinator = ShieldedTransferCoordinator()
-    private let topUpExecutor = IdentityTopUpViewModel()
     private let withdrawExecutor = IdentityWithdrawViewModel()
     private let authorizer = DWIdentityAuthorizer()
     private var cancellables = Set<AnyCancellable>()
@@ -457,6 +456,9 @@ final class InternalTransferRunner: ObservableObject {
     /// the same way: a result is success, a message is failure, and a bare
     /// nil is neither — the executor declined without anything to say.
     private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest) async {
+        // This task outlives its sheet, but outcome guards belong to this
+        // authorized request, not to every later request on the shared runner.
+        let topUpExecutor = IdentityTopUpViewModel()
         phase = .inFlight
         let newBalance = await topUpExecutor.topUp(
             identityId: topUp.identityId,
