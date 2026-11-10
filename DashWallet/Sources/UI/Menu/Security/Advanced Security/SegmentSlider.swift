@@ -17,16 +17,22 @@
 import DashUIKit
 import SwiftUI
 
-/// A slider that snaps to evenly spaced stops: a track with a tick per stop
-/// and a thumb on the selected one. Tap or drag picks the nearest stop.
-/// VoiceOver reads it as an adjustable element valued by `valueText`.
 private enum Layout {
     static let thumbDiameter: CGFloat = 30
     static let tickHeight: CGFloat = 10
     static let lineWidth: CGFloat = 1
     static let height: CGFloat = 44
+    /// How far a touch moves before it counts as a drag.
+    static let dragThreshold: CGFloat = 10
 }
 
+/// A slider that snaps to evenly spaced stops: a track with a tick per stop
+/// and a thumb on the selected one.
+///
+/// A tap picks the nearest stop. A horizontal drag moves the thumb and picks
+/// the stop it is released on, so `onSelect` runs once per drag. A drag that
+/// moves more down than across scrolls the screen and picks nothing.
+/// VoiceOver reads it as an adjustable element valued by `valueText`.
 struct SegmentSlider<Leading: View, Trailing: View>: View {
     let stopCount: Int
     /// The selected stop, `nil` when the current value isn't one of them.
@@ -38,6 +44,12 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
     let onSelect: (Int) -> Void
     @ViewBuilder let leadingLabel: Leading
     @ViewBuilder let trailingLabel: Trailing
+
+    /// The stop under a horizontal drag in progress, shown before it is
+    /// picked. Resets by itself when the scroll view takes the touch.
+    @GestureState private var dragIndex: Int?
+
+    private var displayedIndex: Int? { dragIndex ?? selectedIndex }
 
     var body: some View {
         VStack(spacing: 4) {
@@ -67,26 +79,37 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
                             .offset(x: inset + step * CGFloat(index) - Layout.lineWidth / 2)
                     }
 
-                    if let selectedIndex {
+                    if let displayedIndex {
                         Circle()
                             .fill(Color.dash.blue)
                             .frame(width: Layout.thumbDiameter, height: Layout.thumbDiameter)
-                            .offset(x: step * CGFloat(selectedIndex))
-                            .animation(.easeInOut(duration: 0.15), value: selectedIndex)
+                            .offset(x: step * CGFloat(displayedIndex))
+                            .animation(.easeInOut(duration: 0.15), value: displayedIndex)
                     }
                 }
                 // Full width, so the hit area reaches the last stop: the track
                 // is inset, and offsets don't widen the layout.
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
                 .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            let index = nearestStop(x: value.location.x - inset, step: step)
-                            if index != selectedIndex { onSelect(index) }
+                .onTapGesture(coordinateSpace: .local) { location in
+                    select(nearestStop(x: location.x - inset, step: step))
+                }
+                // Simultaneous, so a vertical swipe that starts on the track
+                // still scrolls the screen.
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: Layout.dragThreshold)
+                        .updating($dragIndex) { value, state, _ in
+                            state = isHorizontal(value) ? nearestStop(x: value.location.x - inset, step: step) : nil
+                        }
+                        .onEnded { value in
+                            guard isHorizontal(value) else { return }
+                            select(nearestStop(x: value.location.x - inset, step: step))
                         })
             }
             .frame(height: Layout.height)
+        }
+        .sensoryFeedback(.selection, trigger: dragIndex) { old, new in
+            new != nil && new != (old ?? selectedIndex)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityLabel))
@@ -106,6 +129,14 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
                 break
             }
         }
+    }
+
+    private func select(_ index: Int) {
+        if index != selectedIndex { onSelect(index) }
+    }
+
+    private func isHorizontal(_ value: DragGesture.Value) -> Bool {
+        abs(value.translation.width) > abs(value.translation.height)
     }
 
     private func nearestStop(x: CGFloat, step: CGFloat) -> Int {
