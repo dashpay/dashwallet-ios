@@ -109,6 +109,10 @@ class AtmListViewController: ExplorePointOfUseListViewController {
         }
     }
 
+    // `viewDidLoad` always sets `customNavBar`, but the navigation controller
+    // asks before the view loads.
+    override var usesCustomNavBar: Bool { true }
+
     override func viewDidLoad() {
         // Every entry point gets the DashUIKit bar: back when pushed from
         // Explore, close when presented from the Home shortcut.

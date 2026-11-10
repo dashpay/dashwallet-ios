@@ -279,6 +279,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         controller.initialSegment = .all
         controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
             title: NSLocalizedString("Where to Spend", comment: ""),
+            leading: .close,
             onBack: { [weak controller] in controller?.dismiss(animated: true) },
             onInfo: nil
         )

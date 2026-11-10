@@ -69,8 +69,13 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
 
     private weak var customNavBarHost: UIHostingController<AnyView>?
 
-    var isBackButtonHidden: Bool { customNavBar != nil }
-    var isNavigationBarHidden: Bool { customNavBar != nil }
+    /// Whether this screen draws the DashUIKit bar. The navigation controller
+    /// reads it before `viewDidLoad`, so a subclass that sets `customNavBar`
+    /// there overrides this to answer up front.
+    internal var usesCustomNavBar: Bool { customNavBar != nil }
+
+    var isBackButtonHidden: Bool { usesCustomNavBar }
+    var isNavigationBarHidden: Bool { usesCustomNavBar }
 
     /// The bar's info action; subclasses supply a default for a configuration
     /// without one.
@@ -101,8 +106,13 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
-    /// Keeps the expanded list clear of the custom bar, which overlays it.
+    /// Keeps the expanded list clear of the custom bar and the sync banner,
+    /// which overlay it.
     internal var expandedTableTopInset: CGFloat {
+        customNavBarHeight + (syncBannerHeightConstraint?.constant ?? 0)
+    }
+
+    private var customNavBarHeight: CGFloat {
         guard customNavBar != nil else { return 0 }
 
         let hostHeight = customNavBarHost?.view.bounds.height ?? 0
@@ -283,6 +293,7 @@ extension ExplorePointOfUseListViewController {
         syncBannerHeightConstraint?.constant = 30
         
         UIView.animate(withDuration: 0.3) {
+            self.updateTableViewInsetsForCurrentSheetPosition()
             self.view.layoutIfNeeded()
         }
     }
@@ -293,6 +304,7 @@ extension ExplorePointOfUseListViewController {
         syncBannerHeightConstraint?.constant = 0
         
         UIView.animate(withDuration: 0.3) {
+            self.updateTableViewInsetsForCurrentSheetPosition()
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.syncBannerView?.isHidden = true
