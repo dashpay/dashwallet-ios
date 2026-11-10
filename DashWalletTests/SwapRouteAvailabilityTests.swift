@@ -750,6 +750,31 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(store.state(of: .near, for: "AVAX.AVAX", direction: .sell), .noRoute)
     }
 
+    /// The same with the picker closed meanwhile: the cancelled refresh still settles the round when
+    /// its last sentinel returns, and the coin's newer route stays usable.
+    func testACoinRouteRecordedBeforeACancelledOutageRoundEndsStaysUsable() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC"] }
+        script.openGate()
+        script.closeGate()
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC", "ETH.ETH"] }
+
+        store.record(.available, provider: .near, asset: "AVAX.AVAX", direction: .sell)
+        clock += 1
+        task.cancel()
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+        XCTAssertEqual(label("AVAX.AVAX", capable: [.near]), .near)
+    }
+
     /// A coin's own route recorded while the round that finds the outage is still asking comes after
     /// that round started: the round finishing later does not hide it.
     func testACoinRouteRecordedDuringTheOutageRoundStaysUsable() async {

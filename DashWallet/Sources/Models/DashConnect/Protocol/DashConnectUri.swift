@@ -418,10 +418,11 @@ enum DashConnectUri {
         guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
             throw AppConnectRequestError.invalid("unknown network")
         }
-        // The DIP defines this request for testnet and devnets only. Refused
-        // here, so it does not rest on DashConnect being off on mainnet.
+        // Not enabled on mainnet yet (ADR-0009), on either carrier; the DIP
+        // allows `dashpay://connect` there. Refused here, so it does not rest
+        // on DashConnect being off on mainnet.
         guard network != .mainnet else {
-            throw AppConnectRequestError.invalid("request v2 is not defined for mainnet")
+            throw AppConnectRequestError.invalid("request v2 is not enabled on mainnet")
         }
         let body = try payload()
         guard body.count <= maxAppConnectPayloadLength else {
