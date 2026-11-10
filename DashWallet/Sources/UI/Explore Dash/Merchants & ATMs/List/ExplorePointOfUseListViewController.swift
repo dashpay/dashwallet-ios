@@ -92,6 +92,7 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
     internal var syncBannerHeightConstraint: NSLayoutConstraint?
+    private var syncBannerTopConstraint: NSLayoutConstraint?
 
     internal var contentViewTopLayoutConstraint: NSLayoutConstraint!
     internal var contentView: UIView!
@@ -540,6 +541,7 @@ extension ExplorePointOfUseListViewController {
                                                                           constant: -handlerViewHeight)
         
         syncBannerHeightConstraint = syncBannerView!.heightAnchor.constraint(equalToConstant: 0)
+        syncBannerTopConstraint = syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         // Set high z-position to overlay content
         syncBannerView!.layer.zPosition = 100
 
@@ -551,7 +553,7 @@ extension ExplorePointOfUseListViewController {
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             // Sync banner constraints - attached to app bar, overlaying content
-            syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            syncBannerTopConstraint!,
             syncBannerView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             syncBannerView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             syncBannerHeightConstraint!,
@@ -1021,6 +1023,14 @@ extension ExplorePointOfUseListViewController {
             leading: config.leading,
             onBack: config.onBack,
             onInfo: customNavBarInfoAction)
+
+        // The custom bar takes the top of the safe area, where the sync banner
+        // sits under the system bar; move the banner below it.
+        if let syncBannerView, let host = customNavBarHost {
+            syncBannerTopConstraint?.isActive = false
+            syncBannerTopConstraint = syncBannerView.topAnchor.constraint(equalTo: host.view.bottomAnchor)
+            syncBannerTopConstraint?.isActive = true
+        }
         view.layoutIfNeeded()
     }
 }

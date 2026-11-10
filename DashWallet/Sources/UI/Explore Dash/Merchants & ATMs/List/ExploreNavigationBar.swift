@@ -68,6 +68,9 @@ extension UIViewController {
 // MARK: - ExploreNavigationBar
 
 private struct ExploreNavigationBar: View {
+    /// The bar's 20pt edge padding, a 34pt circle and the 10pt minimum gap.
+    private static let titleInset: CGFloat = 20 + 34 + 10
+
     let title: String
     let leading: ExploreNavigationBarLeading
     let onBack: () -> Void
@@ -81,7 +84,15 @@ private struct ExploreNavigationBar: View {
                 case .close: DashUIKit.NavigationBarElement.close.button(action: onBack)
                 }
             },
-            central: { Text(title).font(.subheadMedium).lineLimit(1) },
+            central: {
+                Text(title)
+                    .font(.subheadMedium)
+                    .lineLimit(1)
+                    // The bar centres the title over the full width; keep a long
+                    // merchant name clear of the circles on both sides.
+                    // TODO(dashuikit-title-inset): drop once NavigationBar reserves this itself.
+                    .padding(.horizontal, Self.titleInset)
+            },
             trailing: {
                 if let onInfo {
                     DashUIKit.NavigationBarElement.info.button(action: onInfo)
