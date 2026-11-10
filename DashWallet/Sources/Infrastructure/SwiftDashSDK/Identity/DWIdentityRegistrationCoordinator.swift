@@ -1140,7 +1140,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Preserve payment/creation failure phases independently of funding dispatch.
-    private func preservingUnconfirmedOutcome(_ error: Error) -> Error {
+    private static func preservingUnconfirmedOutcome(_ error: Error) -> Error {
         switch error {
         case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
             return CoordinatorError.platformWriteUnconfirmed
@@ -1149,10 +1149,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
+    /// Preserve funding-stage routing even when its submission result is unknown.
+    static func identityTopUpFailure(_ error: Error) -> CoordinatorError {
+        .identityTopUp(preservingUnconfirmedOutcome(error))
+    }
+
     private func reportIdentityCreationFailure(
         _ error: Error, controller: DWIdentityRegistrationController
     ) -> Error {
-        let error = preservingUnconfirmedOutcome(error)
+        let error = Self.preservingUnconfirmedOutcome(error)
         if let coordError = error as? CoordinatorError {
             switch coordError {
             case .shieldedCreateUnconfirmed, .platformWriteUnconfirmed:
@@ -1470,9 +1475,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: existing identity top-up failed: \(String(describing: error))")
-            let mappedError = preservingUnconfirmedOutcome(error)
-            if case CoordinatorError.platformWriteUnconfirmed = mappedError { throw mappedError }
-            throw CoordinatorError.identityTopUp(error)
+            throw Self.identityTopUpFailure(error)
         }
         Self.logger.info("🪪 IDENT-COORD :: existing identity topped up by \(topUpDuffs) duffs")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
@@ -1589,7 +1592,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw error
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error))")
-            let error = preservingUnconfirmedOutcome(error)
+            let error = Self.preservingUnconfirmedOutcome(error)
             // A submitted write may still enter voting. Retain its provisional
             // bookmark and promotion intent for normal name reconciliation.
             if case CoordinatorError.platformWriteUnconfirmed = error {
@@ -2002,7 +2005,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error))")
-            let error = preservingUnconfirmedOutcome(error)
+            let error = Self.preservingUnconfirmedOutcome(error)
             failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
             lastErrorMessage = error.localizedDescription
             newController.enterFailed(error.localizedDescription)
@@ -2028,7 +2031,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
             failedAtPhase = .registrationUsername
-            let coordError = CoordinatorError.purchase(preservingUnconfirmedOutcome(error))
+            let coordError = CoordinatorError.purchase(Self.preservingUnconfirmedOutcome(error))
             lastErrorMessage = coordError.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw coordError

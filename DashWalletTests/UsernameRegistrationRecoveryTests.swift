@@ -1,10 +1,29 @@
 import XCTest
 @testable import dashpay
 import SwiftUI
+import SwiftDashSDK
 
 @MainActor
 final class UsernameRegistrationRecoveryTests: XCTestCase {
     private enum Failure: Error { case cancelled, contextChanged, unavailable, insufficientCredits }
+
+    func testUncertainTopUpRetainsFundingStageInsteadOfDPNSSubmission() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let errors: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("unknown"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+        ]
+        for error in errors {
+            let failure = Coordinator.identityTopUpFailure(error)
+            XCTAssertTrue(failure.isIdentityTopUp,
+                          "Funding did not reach DPNS; its provisional bookmark must be withdrawn")
+            guard case .identityTopUp(let underlying) = failure,
+                  case Coordinator.CoordinatorError.platformWriteUnconfirmed = underlying else {
+                return XCTFail("The funding-stage wrapper must retain the unconfirmed warning")
+            }
+            XCTAssertTrue(failure.localizedDescription.contains("could not be confirmed"))
+        }
+    }
 
     func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() throws {
         let readiness = IdentityNameReadiness()
