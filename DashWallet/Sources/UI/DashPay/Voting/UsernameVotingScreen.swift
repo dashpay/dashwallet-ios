@@ -50,6 +50,15 @@ struct UsernameVotingScreen: View {
                 onAddKey: { keyFlowStart = .addKey },
                 onShowKeys: { keyFlowStart = .keyList })
 
+            // An empty list already gets the browse-only header.
+            if viewModel.ownNodesCannotVote && !viewModel.votableNodes.isEmpty {
+                VotingBanner(
+                    text: NSLocalizedString(
+                        "Your own masternodes aren't listed because this wallet has no masternode voting-key account.",
+                        comment: "Voting"),
+                    tone: .warning)
+            }
+
             if let loadError = viewModel.loadError {
                 VotingBanner(text: loadError, tone: .error)
             }

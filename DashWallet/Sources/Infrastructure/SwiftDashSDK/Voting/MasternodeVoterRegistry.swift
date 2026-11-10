@@ -90,6 +90,14 @@ final class MasternodeVoterRegistry {
 
     init() {}
 
+    /// Outcome of a votable-node resolution.
+    struct Resolution {
+        let nodes: [VoterNode]
+        /// Whether the wallet has active masternodes but no provider voting
+        /// account, so none of its own nodes can vote.
+        let ownNodesCannotVote: Bool
+    }
+
     /// The wallet's votable nodes, ordered by registration.
     ///
     /// A masternode is votable when all of the following hold:
@@ -102,10 +110,10 @@ final class MasternodeVoterRegistry {
     /// it has no provider voting account, when the SDK is not running, or
     /// when the masternode phase has not synced — the caller renders the
     /// browse-only state.
-    func votableNodes() -> [VoterNode] {
+    func votableNodes() -> Resolution {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            return []
+            return Resolution(nodes: [], ownNodesCannotVote: false)
         }
 
         let eligible = manager.masternodes(for: walletId)
@@ -116,7 +124,7 @@ final class MasternodeVoterRegistry {
         let trackedNodes = trackedVotableNodes(
             excluding: Set(eligible.map(\.proTxHash)))
         guard !eligible.isEmpty else {
-            return trackedNodes
+            return Resolution(nodes: trackedNodes, ownNodesCannotVote: false)
         }
 
         let indexByAddress = MasternodeKeyUsage.indexByAddress(
@@ -151,10 +159,14 @@ final class MasternodeVoterRegistry {
 
         Self.logger.info(
             "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations")
+        // No match at all can also mean the voting keys belong to someone
+        // else, so only an empty voting pool means a missing account.
+        let ownNodesCannotVote = nodes.isEmpty
+            && (MasternodeProviderKeyDeriver(key: .voting).map { $0.highestAddressIndex == nil } ?? false)
         // Exclusion is by the wallet's ELIGIBLE set (not just the votable
         // subset): a wallet-registered node stays out of the tracked list
         // even when its derived key didn't resolve.
-        return nodes + trackedNodes
+        return Resolution(nodes: nodes + trackedNodes, ownNodesCannotVote: ownNodesCannotVote)
     }
 
     /// Tracked (wallet-independent) masternodes whose voting key the user

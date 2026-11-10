@@ -7105,6 +7105,9 @@
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
 
+/* Voting */
+"Your own masternodes aren't listed because this wallet has no masternode voting-key account." = "Your own masternodes aren't listed because this wallet has no masternode voting-key account.";
+
 /* DashSpend */
 "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Plata ta a fost trimisă, dar rețeaua nu a confirmat-o încă. Cardul tău cadou va apărea imediat ce va fi confirmată.";
 
