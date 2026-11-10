@@ -637,7 +637,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         bindings: [AppConnect.KeyBinding]
     ) -> AppConnect.EncryptionKeyState {
         AppConnect.encryptionKeyState(
-            derivedPublicKey: Self.derivedPoint,
+            derivedPublicKeys: [Self.derivedPoint],
             purpose: .encryption,
             contractId: Self.appId,
             rule: rule,
@@ -676,7 +676,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                 bindings: [.init(keyId: 5, data: elsewhere.data, singleContractId: other)]),
             .absent)
         // A disabled current key of another wallet's is a key for the app
-        // with none live: nothing is registered beside it.
+        // with none live (DIP rule 2): nothing is registered beside it.
         let disabledTheirs = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
         XCTAssertEqual(
             encryptionState([disabledTheirs], current: Self.current(9, data: disabledTheirs.data, disabled: true), bindings: []),
@@ -692,9 +692,9 @@ final class AppConnectV2LoginTests: XCTestCase {
             .notThisWallets)
         // One the fetched keys do not show yet stops the login.
         XCTAssertEqual(encryptionState([], current: Self.current(5, data: theirs.data), bindings: []), .outOfDate)
-        // Behind a disabled current key nothing is registered; a live key
-        // the store cannot place may be a later one with Platform's read
-        // behind, so a later read confirms it.
+        // Behind a disabled current key nothing is registered (DIP rule 2);
+        // a live key the store cannot place may be a later one with
+        // Platform's read behind, so a later read confirms it.
         let disabledCurrent = Self.encryptionKey(9, data: Data(repeating: 0x77, count: 33), disabled: true)
         XCTAssertEqual(
             encryptionState(
@@ -887,8 +887,8 @@ final class AppConnectV2LoginTests: XCTestCase {
             XCTAssertLessThanOrEqual(pauses, 3)
             return result
         }
-        // Behind a disabled current key the slot is left out, once a later
-        // read agrees that no newer key is current.
+        // Behind a disabled current key the slot is left out (DIP rule 2),
+        // once a later read agrees that no newer key is current.
         let agreed = try await settle([[.encryption: current]])
         XCTAssertEqual(agreed, [.notThisWallets])
         // A lagging node that has lost the disabled key does not settle the
