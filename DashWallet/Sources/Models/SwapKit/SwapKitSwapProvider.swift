@@ -427,7 +427,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Asks each of `noRouteProviders` (NEAR, then Maya) again through `quote` at the address
     /// quote's amount without the address: if a provider routes there, the address is what to fix.
     /// Returns each answer as read for the address (`addressReCheckState`); `store` records the
-    /// usual classification (`LiveRouteState.classify`).
+    /// usual classification (`LiveRouteState.classify`). When an answer recorded while the re-check
+    /// was asking is newer, the store keeps it and the re-check returns it instead.
     static func reCheckNoRoute(
         _ noRouteProviders: Set<RouteProvider>,
         asset: String,
@@ -437,12 +438,15 @@ final class SwapKitSwapProvider: SwapProvider {
         var reAsked: [LiveRouteState] = []
         for provider in [RouteProvider.near, .maya] where noRouteProviders.contains(provider) {
             var reCheck = LiveRouteState.unknown
-            await store.probeNow(asset: asset, provider: provider, direction: .sell) { asset, provider, _ in
+            var asked = LiveRouteState.unknown
+            let kept = await store.probeNow(asset: asset, provider: provider, direction: .sell) { asset, provider, _ in
                 let response = await quote(addressReCheckRequest(asset: asset, provider: provider))
                 reCheck = addressReCheckState(response)
-                return response.map(LiveRouteState.classify) ?? .unknown
+                asked = response.map(LiveRouteState.classify) ?? .unknown
+                return asked
             }
-            reAsked.append(reCheck)
+            // A different state back means a newer answer recorded meanwhile won over this one.
+            reAsked.append(kept == asked ? reCheck : kept)
         }
         return reAsked
     }

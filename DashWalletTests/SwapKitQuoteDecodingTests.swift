@@ -618,6 +618,21 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertEqual(sent.first?.providers, RouteProvider.near.swapKitProviders)
     }
 
+    /// A quote that records a route while the re-check is asking is newer than the re-check's own
+    /// no-route: the store keeps the route, and the address screen reads it (the address is what
+    /// to fix), not the older no-route.
+    func testTheReCheckReadsARouteRecordedWhileItWasAsking() async {
+        let store = SwapRouteAvailability()
+
+        let reAsked = await SwapKitSwapProvider.reCheckNoRoute([.near], asset: "ETH.ETH", store: store) { _ in
+            store.record(.available, provider: .near, asset: "ETH.ETH", direction: .sell)
+            return self.response(providerErrors: [self.providerError("noRoutesFound")])
+        }
+
+        XCTAssertEqual(store.state(of: .near, for: "ETH.ETH", direction: .sell), .available)
+        XCTAssertEqual(reAsked, [.available])
+    }
+
     func testAReCheckForAnUnknownCoinStillGivesAnAnswer() {
         XCTAssertEqual(SwapKitSwapProvider.addressReCheckMessage([.available], coin: nil), "validation_error")
         XCTAssertNil(SwapKitSwapProvider.addressReCheckMessage([.unknown], coin: nil))

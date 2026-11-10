@@ -40,8 +40,8 @@ the address screen reported every refusal as a connection problem.
   keeps applying until a new one replaces it or it expires (30 minutes).
 - At most two checks are in flight; periodic checks start only while the picker is open (one already
   asked may finish after it closes), and the address screen re-checks a "no route" once without the
-  address. The route checks and that re-check send no address; only the address screen's own quote
-  to the entered address does.
+  address. The route checks and that re-check send no address; the address screen's own quote and
+  the amount and confirmation quotes send the entered address.
 
 ## Not in scope
 
