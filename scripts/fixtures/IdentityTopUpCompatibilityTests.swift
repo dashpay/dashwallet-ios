@@ -17,9 +17,10 @@ import XCTest
     }
 
     func testAmbiguousSecondLegRetainsUnknownOutcome() async {
-        let unknowns: [PlatformWalletError] = [
-            .transactionBroadcastUnconfirmed("may be sent"),
-            .shieldedSpendUnconfirmed("may be spent"),
+        let unknowns: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("result unavailable"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("may be sent"),
+            PlatformWalletError.shieldedSpendUnconfirmed("may be spent"),
         ]
         for unknown in unknowns {
             host.wallet = ManagedPlatformWallet()
@@ -28,7 +29,7 @@ import XCTest
             do {
                 _ = try await topUp()
                 XCTFail("Expected unknown broadcast outcome")
-            } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+            } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
                     PlatformWalletError.shieldedSpendUnconfirmed {
             } catch {
                 XCTFail("Unknown outcome mislabeled as safe top-up from Platform: \(error)")

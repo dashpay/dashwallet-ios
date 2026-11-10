@@ -4,6 +4,7 @@ import OSLog
 enum WalletEnvironment {
     static var activeWalletIdHex: String?
 }
+enum SDKError: Error { case stateTransitionResultUnconfirmed(String) }
 enum PlatformWalletError: Error {
     struct Consensus { let code: Int; let kind: String }
     case consensusRejection(Consensus, String)

@@ -1,6 +1,6 @@
 import Foundation
 
-enum SDKError: Error { case networkError(String) }
+enum SDKError: Error { case stateTransitionResultUnconfirmed(String); case networkError(String) }
 enum PlatformWalletError: Error {
     case transactionBroadcastUnconfirmed(String)
     case shieldedSpendUnconfirmed(String)

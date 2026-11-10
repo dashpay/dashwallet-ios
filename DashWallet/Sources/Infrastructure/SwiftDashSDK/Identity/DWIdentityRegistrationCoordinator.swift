@@ -1142,7 +1142,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Preserve payment/creation failure phases independently of funding dispatch.
     private func preservingUnconfirmedOutcome(_ error: Error) -> Error {
         switch error {
-        case PlatformWalletError.transactionBroadcastUnconfirmed:
+        case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
             return CoordinatorError.platformWriteUnconfirmed
         default:
             return error

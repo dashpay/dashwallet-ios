@@ -1896,7 +1896,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Keep the submitted state so this sheet never offers a fresh payment.
     private func handlePlatformSpendError(_ error: Error) {
         switch error {
-        case PlatformWalletError.transactionBroadcastUnconfirmed:
+        case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
             phase = .submittedUnconfirmed
             schedulePlatformResync()
             if let manager = SwiftDashSDKHost.shared.manager {

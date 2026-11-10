@@ -279,6 +279,21 @@ final class AssetLockRecoveryTests: XCTestCase {
         XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))
     }
 
+    func testSDKAmbiguousBroadcastDoesNotBecomeFailureOrSpentProbe() async {
+        let wallet = Data(repeating: 0x42, count: 32)
+        let walletHex = wallet.map { String(format: "%02x", $0) }.joined()
+        defer { AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletHex) }
+        let manager = TestManager()
+        manager.error = SDKError.stateTransitionResultUnconfirmed("lost acknowledgement")
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        let txid = Data(repeating: 0x43, count: 32)
+        await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 2)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertNil(coordinator.lastResumeReport)
+        XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))
+    }
+
     func testDefiniteFailureRemainsFailure() async {
         let manager = TestManager()
         manager.error = PlatformWalletError.walletOperation("preflight refusal")

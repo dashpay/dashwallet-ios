@@ -662,7 +662,7 @@ final class IdentityTopUpViewModel: ObservableObject {
                     wallet: wallet,
                     modelContainer: modelContainer)
             }
-        } catch PlatformWalletError.transactionBroadcastUnconfirmed,
+        } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
                 PlatformWalletError.shieldedSpendUnconfirmed {
             submittedUnconfirmed = true
             errorMessage = NSLocalizedString(
@@ -748,6 +748,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         } catch {
             // An ambiguous second leg may already have credited the identity.
             // Never suggest another top-up when its result is unknown.
+            if case SDKError.stateTransitionResultUnconfirmed = error { throw error }
             if case PlatformWalletError.transactionBroadcastUnconfirmed = error { throw error }
             if case PlatformWalletError.shieldedSpendUnconfirmed = error { throw error }
             if error is CancellationError { throw error }
