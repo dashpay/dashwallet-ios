@@ -246,6 +246,9 @@ enum AppConnect {
         /// The stored key has the shape of an App Connect v2 auth key:
         /// HASH160 authentication at HIGH or CRITICAL, with an expiry.
         var isV2AuthKeyShaped = false
+        /// When the stored key stops working, in milliseconds since 1970;
+        /// nil for a key with no expiry.
+        var expiresAt: Int64? = nil
     }
 
     /// A key's contract bound, as the wallet's store records it.
@@ -769,6 +772,10 @@ protocol AppConnectResponseStore {
     /// Whether `save` keeps anything. A login must not register a key the
     /// store cannot record: its response could not be found again.
     var canPersist: Bool { get }
+    /// Whether the store holds a row `load` leaves out because it cannot be
+    /// read, and that may be a record of `identityId`: one naming another
+    /// identity is not.
+    func hasUnreadableRows(identityId: String) -> Bool
     func load() -> [AppConnectGrant]
     func save(_ grants: [AppConnectGrant])
     /// This store fixed to one wallet, and to the network scope it has now,
@@ -778,6 +785,7 @@ protocol AppConnectResponseStore {
 
 extension AppConnectResponseStore {
     var canPersist: Bool { true }
+    func hasUnreadableRows(identityId: String) -> Bool { false }
 }
 
 /// Wallet- and network-scoped, like `UserDefaultsDashConnectStore`, whose
@@ -850,6 +858,14 @@ final class UserDefaultsAppConnectResponseStore: AppConnectResponseStore {
     /// False as well while the stored value is not a list of rows: `save`
     /// leaves such a value alone, so nothing new would be kept.
     var canPersist: Bool { storageKey != nil && !readRows().isNotRowList }
+
+    func hasUnreadableRows(identityId: String) -> Bool {
+        let rows = readRows()
+        return rows.isNotRowList || rows.unreadable.contains {
+            guard let named = ($0 as? [String: Any])?["identityId"] as? String else { return true }
+            return named == identityId
+        }
+    }
 
     func load() -> [AppConnectGrant] {
         readRows().grants

@@ -1769,6 +1769,12 @@
    Coinbase Entry Point */
 "Disconnected" = "Bağlantı kesildi";
 
+/* DashConnect: after a disconnect whose unattributed DashPay profile keys could not be told apart */
+"Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off." = "Disconnected. DashPay profile keys not linked to any connection could not be checked, so none of them was turned off.";
+
+/* DashConnect: after a disconnect, how many unattributed DashPay profile keys were also turned off */
+"Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d." = "Disconnected. DashPay profile keys not linked to any connection were turned off as well: %d.";
+
 /* DashSpend confirmation */
 "Discount" = "İndirim";
 
