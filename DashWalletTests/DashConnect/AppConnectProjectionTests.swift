@@ -1446,4 +1446,23 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [4, 1], otherKeyIds: []), [1, 4])
         XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [], otherKeyIds: [6, 2]), [2, 6])
     }
+
+    /// A response whose delete failed stays on a closed intent: the next
+    /// signed operation on the identity picks it up, whichever app it is for.
+    func testAClosedIntentWhoseResponseWasNotDeletedIsLeftForTheNextSignedOperation() {
+        var left = Self.intent([Self.authKey(10)], published: true)
+        left.closedAt = Date(timeIntervalSince1970: 1)
+        var deleted = Self.intent([Self.authKey(11)], published: true)
+        deleted.closedAt = Date(timeIntervalSince1970: 1)
+        deleted.responseRemoved = true
+        let open = Self.intent([Self.authKey(12)], published: true)
+        var otherIdentity = Self.intent([Self.authKey(13)], identity: Self.otherIdentity, published: true)
+        otherIdentity.closedAt = Date(timeIntervalSince1970: 1)
+        var otherApp = Self.intent([Self.authKey(14, bound: .singleContract(Self.otherApp))], app: Self.otherApp, published: true)
+        otherApp.closedAt = Date(timeIntervalSince1970: 1)
+
+        let ids = AppConnect.responsesLeft(identityId: Self.identity, intents: [left, deleted, open, otherIdentity, otherApp])
+
+        XCTAssertEqual(Set(ids), [left.id, otherApp.id], "closed and not removed, on this identity, of any app")
+    }
 }
