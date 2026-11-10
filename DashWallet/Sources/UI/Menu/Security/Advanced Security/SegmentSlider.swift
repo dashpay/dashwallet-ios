@@ -91,6 +91,7 @@ struct SegmentSlider<Leading: View, Trailing: View>: View {
                 // is inset, and offsets don't widen the layout.
                 .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
                 .contentShape(Rectangle())
+                // a11y-ignore: A11Y012 the slider is one adjustable VoiceOver element, labeled below
                 .onTapGesture(coordinateSpace: .local) { location in
                     select(nearestStop(x: location.x - inset, step: step))
                 }

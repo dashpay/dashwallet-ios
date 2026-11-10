@@ -139,9 +139,13 @@ final class AdvancedSecurityViewModel: ObservableObject {
     /// The sentence under the limit slider. When `descriptionShowsAmount`,
     /// the view appends the limit amount after it.
     var spendingLimitDescription: String {
-        // With no limit stored there is no biometric allowance either, so
-        // every payment asks for the PIN, as with a zero limit.
-        if (storedLimit ?? 0) == 0 {
+        // No stored limit says nothing about the biometric allowance the
+        // authentication layer applies, so the sentence promises nothing.
+        guard let storedLimit else {
+            return NSLocalizedString("No biometric spending limit is set", comment: "Advanced Security: no biometric spending limit stored")
+        }
+        // A zero limit leaves no allowance: every payment asks for the PIN.
+        if storedLimit == 0 {
             return NSLocalizedString("PIN is always required to make a payment", comment: "")
         }
         switch store.biometry {
