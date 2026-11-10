@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to coding agents (Claude Code, Codex and others) working in this repository. `CLAUDE.md` imports it.
+This file provides guidance to coding agents (Claude Code, Codex and others) working in this repository. `CLAUDE.md` is a symlink to it.
 
 ## Project Overview
 
@@ -52,7 +52,7 @@ If the app fails with missing SDK symbols (e.g. "no member …"), verify the
 
 ## Figma
 
-Figma Dev Mode MCP setup and cleaning Figma-exported SVG assets for iOS are covered by the `figma-assets` skill (`.claude/skills/figma-assets/SKILL.md`).
+For Figma Dev Mode MCP setup and cleaning Figma-exported SVG assets for iOS, follow the steps in `.claude/skills/figma-assets/SKILL.md` (Claude Code loads it as the `figma-assets` skill).
 
 ## Architecture
 
