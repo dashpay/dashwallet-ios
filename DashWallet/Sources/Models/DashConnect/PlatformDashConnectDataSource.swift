@@ -1022,13 +1022,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     && $0.closedAt == nil && [.disconnected, .neverLanded].contains(AppConnect.status(of: $0, in: read))
             }
         } ?? []
-        if !superseded.isEmpty {
+        let ids = Set(superseded.map(\.id))
+        if !ids.isEmpty {
             let closedAt = now()
-            let ids = Set(superseded.map(\.id))
             updateIntents(in: stores) { intents in
                 for index in intents.indices where ids.contains(intents[index].id) { intents[index].closedAt = closedAt }
             }
-            await deleteResponses(of: Array(ids), responseContractId: responseContractId, context: context, signer: signer)
+        }
+        let toDelete = ids.union(AppConnect.responsesLeft(identityId: context.identityId, intents: stores.intents.load()))
+        if !toDelete.isEmpty {
+            await deleteResponses(of: Array(toDelete), responseContractId: responseContractId, context: context, signer: signer)
         }
         await refreshRows(from: read, context: context)
     }
@@ -1615,7 +1618,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// Deletes, by its original values, the response of each intent in `ids`
     /// that may be on Platform. Best effort: one that cannot be deleted now
-    /// stays marked and is tried again by the next disconnect of its app.
+    /// stays marked and is tried again by the next disconnect or approval on
+    /// the identity (`AppConnect.responsesLeft`).
     private func deleteResponses(
         of ids: [UUID],
         responseContractId: Data,
@@ -1993,8 +1997,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         if !plan.deleteResponses.isEmpty, let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
-            await deleteResponses(
-                of: plan.deleteResponses, responseContractId: responseContractId, context: context, signer: signer)
+            // With the PIN given, the responses an earlier disconnect could
+            // not delete go too.
+            let ids = Set(plan.deleteResponses).union(AppConnect.responsesLeft(identityId: context.identityId, intents: stores.intents.load()))
+            await deleteResponses(of: Array(ids), responseContractId: responseContractId, context: context, signer: signer)
         }
         await refreshRows(from: after, context: context)
 
