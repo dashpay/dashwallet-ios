@@ -2046,11 +2046,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // disconnect turns off everything that may be the app's, so they
         // are offered with any app's, on the user's confirm.
         let profileKeys = projection.unrecordedProfileKeyIds[context.identityId] ?? []
-        plan.disable = Array(Set(plan.disable).union(includingUnrecorded ? profileKeys : [])).sorted()
-        let appKeysOff = plan.disable.count + plan.fence.count
+        let profileKeysOff = includingUnrecorded ? profileKeys : []
+        let appKeysOff = Set(plan.disable).union(profileKeysOff).count + plan.fence.count
         // A fence an earlier try added and could not turn off yet.
         let fences = try await liveFenceKeyIds(snapshot: snapshot, intents: all, context: context)
-        plan.disable = Array(Set(plan.disable).union(fences)).sorted()
+        plan.disable = AppConnect.disableOrder(appKeyIds: plan.disable, otherKeyIds: profileKeysOff + fences)
         return (plan, snapshot, appKeysOff, Set(unrecordedAppKeys).union(profileKeys).count,
                 projection.unplacedKeyIds[context.identityId]?.count ?? 0)
     }

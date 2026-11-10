@@ -479,6 +479,18 @@ extension AppConnect {
         var isEmpty: Bool { disable.isEmpty && fence.isEmpty && deleteResponses.isEmpty }
     }
 
+    /// The order a disconnect disables keys in: the other keys first (the
+    /// DashPay profile keys no intent names, a fence left on), then the
+    /// app's own keys. Platform takes `maxKeysDisabledPerUpdate` keys per
+    /// update, and an update that fails leaves the later ones live. With the
+    /// app's keys last, a failure part way never leaves all of them off while
+    /// another key is still live, so the app's row stays and its retry
+    /// reaches the keys left (ADR-0031).
+    static func disableOrder(appKeyIds: [UInt32], otherKeyIds: [UInt32]) -> [UInt32] {
+        let app = Set(appKeyIds)
+        return Set(otherKeyIds).subtracting(app).sorted() + app.sorted()
+    }
+
     /// `includeUnrecorded`: also turn off the app's live keys no intent
     /// names; the user confirms that separately.
     static func disconnectPlan(
