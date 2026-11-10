@@ -1996,11 +1996,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 }
             }
         }
-        if !plan.deleteResponses.isEmpty, let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
-            // With the PIN given, the responses an earlier disconnect could
-            // not delete go too.
+        // With the PIN given, the responses an earlier disconnect could not
+        // delete go too, whether or not this app has one of its own.
+        if !plan.isEmpty, let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
             let ids = Set(plan.deleteResponses).union(AppConnect.responsesLeft(identityId: context.identityId, intents: stores.intents.load()))
-            await deleteResponses(of: Array(ids), responseContractId: responseContractId, context: context, signer: signer)
+            if !ids.isEmpty {
+                await deleteResponses(of: Array(ids), responseContractId: responseContractId, context: context, signer: signer)
+            }
         }
         await refreshRows(from: after, context: context)
 
