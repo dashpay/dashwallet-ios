@@ -45,6 +45,16 @@ final class AssetLockProbeStore {
 
     static let shared = AssetLockProbeStore()
 
+    /// Posted when `record(txid:walletIdHex:)` files a txid it did not hold
+    /// yet, when `clearForWallet(walletIdHex:)` removes a wallet's stored
+    /// probes, and after every `resetForWipe()`; on the calling thread, with
+    /// the store as the object.
+    static let didChangeNotification = Notification.Name("AssetLockProbeStoreDidChange")
+
+    private func postChange() {
+        NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
+    }
+
     private let defaults = UserDefaults.standard
     private let lock = NSLock()
     /// Scoped per wallet (`<legacyKey>_<activeWalletIdHex>`) exactly as
@@ -95,13 +105,16 @@ final class AssetLockProbeStore {
     /// under the wrong wallet.
     func record(txid: Data, walletIdHex: String?) {
         let key = key(forWalletIdHex: walletIdHex)
-        lock.lock(); defer { lock.unlock() }
-        var set = loaded(key: key)
-        guard !set.contains(txid) else { return }
-        set.insert(txid)
-        cacheKey = key
-        cache = set
-        defaults.set(Array(set), forKey: key)
+        let isNew = lock.withLock { () -> Bool in
+            var set = loaded(key: key)
+            guard !set.contains(txid) else { return false }
+            set.insert(txid)
+            cacheKey = key
+            cache = set
+            defaults.set(Array(set), forKey: key)
+            return true
+        }
+        if isNew { postChange() }
     }
 
     /// Whether `txid` (WIRE order, e.g. `Transaction.txHashData`) has already
@@ -116,25 +129,31 @@ final class AssetLockProbeStore {
     /// `walletIdHex`). Thread-safe.
     func clearForWallet(walletIdHex: String) {
         guard !walletIdHex.isEmpty else { return }
-        lock.lock(); defer { lock.unlock() }
-        let key = "\(legacyKey)_\(walletIdHex)"
-        defaults.removeObject(forKey: key)
-        if cacheKey == key {
-            cacheKey = nil
-            cache = nil
+        let removed = lock.withLock { () -> Bool in
+            let key = "\(legacyKey)_\(walletIdHex)"
+            let stored = defaults.object(forKey: key) != nil
+            defaults.removeObject(forKey: key)
+            if cacheKey == key {
+                cacheKey = nil
+                cache = nil
+            }
+            return stored
         }
+        if removed { postChange() }
     }
 
     /// Clear every wallet's probes on a full wipe (walletIds are gone by then,
     /// so the per-wallet keys are enumerated by prefix), plus the dormant bare
     /// key, plus the in-memory cache on this long-lived singleton.
     func resetForWipe() {
-        lock.lock(); defer { lock.unlock() }
-        for key in defaults.dictionaryRepresentation().keys
-        where key == legacyKey || key.hasPrefix("\(legacyKey)_") {
-            defaults.removeObject(forKey: key)
+        lock.withLock {
+            for key in defaults.dictionaryRepresentation().keys
+            where key == legacyKey || key.hasPrefix("\(legacyKey)_") {
+                defaults.removeObject(forKey: key)
+            }
+            cacheKey = nil
+            cache = nil
         }
-        cacheKey = nil
-        cache = nil
+        postChange()
     }
 }

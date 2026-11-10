@@ -74,9 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)retrySyncing {
 }
 
-- (void)checkCrowdNodeState {
-}
-
 - (void)registerForPushNotifications {
 }
 
