@@ -394,8 +394,13 @@ extension AppConnect {
     /// without turning the earlier ones off (the same request approved on
     /// another device), so the added keys alone do not tell.
     static func hasLanded(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
-        intent.keys.allSatisfy { [.live, .expired, .disabled].contains(presence(of: $0, in: snapshot)) }
-            && outstandingDisables(of: intent, in: snapshot).isEmpty
+        intent.keys.allSatisfy { key in
+            [.live, .expired, .disabled].contains(presence(of: key, in: snapshot))
+                // A key whose bound the store does not hold yet may be bound
+                // elsewhere: it is not taken as this update's, so its secret
+                // is not handed over.
+                && snapshot.keys.first { $0.id == key.id }?.boundKnown == true
+        } && outstandingDisables(of: intent, in: snapshot).isEmpty
     }
 
     /// Whether the encryption keys `intent`'s response carries can still be

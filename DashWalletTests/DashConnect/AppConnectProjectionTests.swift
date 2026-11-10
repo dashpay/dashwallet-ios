@@ -712,4 +712,16 @@ final class AppConnectProjectionTests: XCTestCase {
 
         XCTAssertEqual(Set(ids), [left.id, otherApp.id], "closed and not removed, on this identity, of any app")
     }
+
+    /// A key on the identity whose bound the store does not hold may be
+    /// bound elsewhere: the update is not taken as landed until it does, so
+    /// the response is not published. The row still counts the key as live.
+    func testAKeyWithAnUnknownBoundIsNotTakenAsLanded() {
+        let key = Self.authKey(10)
+        let intent = Self.intent([key])
+        let unknown = Self.snapshot([Self.onPlatform(key, boundKnown: false)])
+        XCTAssertFalse(AppConnect.hasLanded(intent, in: unknown))
+        XCTAssertEqual(AppConnect.status(of: intent, in: unknown), .active(expiresAt: key.expiresAt))
+        XCTAssertTrue(AppConnect.hasLanded(intent, in: Self.snapshot([Self.onPlatform(key)])))
+    }
 }
