@@ -427,8 +427,9 @@ final class InternalTransferRunner: ObservableObject {
             notice = .needsCoinConsolidation(check)
             return
         }
+        let message = consume(&topUpExecutor.errorMessage)
         phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
-            : outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+            : outcome(succeeded: newBalance != nil, message: message)
         announce(phase)
     }
 

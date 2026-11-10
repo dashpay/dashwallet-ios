@@ -273,7 +273,10 @@ final class AssetLockRecoveryTests: XCTestCase {
         let coordinator = ShieldedTransferCoordinator(environment: .init(
             manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
         let txid = Data(repeating: 0x43, count: 32)
+        let previousFailure = coordinator.failureStore.record(
+            txidWire: txid, vout: 2, error: PlatformWalletError.walletOperation("earlier refusal"))
         await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 2)
+        XCTAssertEqual(coordinator.failureStore.failure(txidWire: txid, vout: 2), previousFailure)
         XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
         XCTAssertNil(coordinator.lastResumeReport)
         XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))
@@ -288,7 +291,10 @@ final class AssetLockRecoveryTests: XCTestCase {
         let coordinator = ShieldedTransferCoordinator(environment: .init(
             manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
         let txid = Data(repeating: 0x43, count: 32)
+        let previousFailure = coordinator.failureStore.record(
+            txidWire: txid, vout: 2, error: PlatformWalletError.walletOperation("earlier refusal"))
         await coordinator.resumeAssetLock(outPointTxidWire: txid, outPointVout: 2)
+        XCTAssertEqual(coordinator.failureStore.failure(txidWire: txid, vout: 2), previousFailure)
         XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
         XCTAssertNil(coordinator.lastResumeReport)
         XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))

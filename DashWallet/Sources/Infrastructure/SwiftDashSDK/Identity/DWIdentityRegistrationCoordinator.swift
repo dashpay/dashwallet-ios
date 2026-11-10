@@ -1470,6 +1470,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: existing identity top-up failed: \(String(describing: error))")
+            let mappedError = preservingUnconfirmedOutcome(error)
+            if case CoordinatorError.platformWriteUnconfirmed = mappedError { throw mappedError }
             throw CoordinatorError.identityTopUp(error)
         }
         Self.logger.info("🪪 IDENT-COORD :: existing identity topped up by \(topUpDuffs) duffs")
@@ -1587,11 +1589,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw error
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error))")
-            // Nothing was submitted, so nothing is out for a vote — leaving the
-            // step-2.9 bookmark would report a contest that does not exist.
+            let error = preservingUnconfirmedOutcome(error)
+            // A submitted write may still enter voting. Retain its provisional
+            // bookmark and promotion intent for normal name reconciliation.
+            if case CoordinatorError.platformWriteUnconfirmed = error {
+                throw CoordinatorError.dpnsRegistration(error)
+            }
             withdrawPrematureBookmark(
                 username, isContested: isContestedSubmission, network: network, wallet: wallet)
-            throw CoordinatorError.dpnsRegistration(preservingUnconfirmedOutcome(error))
+            throw CoordinatorError.dpnsRegistration(error)
         }
 
         if !isContestedSubmission || nameState == .owned {
@@ -1996,6 +2002,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error))")
+            let error = preservingUnconfirmedOutcome(error)
             failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
             lastErrorMessage = error.localizedDescription
             newController.enterFailed(error.localizedDescription)

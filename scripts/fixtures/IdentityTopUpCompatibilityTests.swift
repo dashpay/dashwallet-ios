@@ -73,7 +73,7 @@ import XCTest
         do {
             _ = try await topUp()
             XCTFail("Expected cancellation")
-        } catch is CancellationError {
+        } catch IdentityTopUpViewModel.TopUpError.secondLegCancelled {
         } catch {
             XCTFail("Cancellation was misclassified: \(error)")
         }
@@ -92,6 +92,18 @@ import XCTest
         }
         XCTAssertEqual(host.manager!.unshieldCalls, 1)
         XCTAssertEqual(host.wallet!.topUpCalls, 0)
+    }
+
+    func testCancelledSecondLegBlocksFreshTopUpPresentation() async {
+        host.wallet!.failure = CancellationError()
+        let model = IdentityTopUpViewModel()
+        let result = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertNil(result)
+        XCTAssertTrue(model.submittedUnconfirmed)
+        XCTAssertFalse(model.isProcessing)
+        XCTAssertTrue(model.errorMessage?.contains("may have been submitted") == true)
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
     }
 
     func testFirstLegFailureNeverClaimsFundsLanded() async {

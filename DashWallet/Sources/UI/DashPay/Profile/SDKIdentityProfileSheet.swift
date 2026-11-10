@@ -551,11 +551,14 @@ final class IdentityTopUpViewModel: ObservableObject {
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
         case movedToPlatform(Error)
+        case secondLegCancelled
 
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            case .secondLegCancelled:
+                return NSLocalizedString("The identity top-up result could not be confirmed. Check your balances before continuing.", comment: "Identity top-up second leg cancelled")
             case .movedToPlatform(let error):
                 return NSLocalizedString(
                     "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
@@ -663,7 +666,7 @@ final class IdentityTopUpViewModel: ObservableObject {
                     modelContainer: modelContainer)
             }
         } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
-                PlatformWalletError.shieldedSpendUnconfirmed {
+                PlatformWalletError.shieldedSpendUnconfirmed, TopUpError.secondLegCancelled {
             submittedUnconfirmed = true
             errorMessage = NSLocalizedString(
                 "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
@@ -751,7 +754,7 @@ final class IdentityTopUpViewModel: ObservableObject {
             if case SDKError.stateTransitionResultUnconfirmed = error { throw error }
             if case PlatformWalletError.transactionBroadcastUnconfirmed = error { throw error }
             if case PlatformWalletError.shieldedSpendUnconfirmed = error { throw error }
-            if error is CancellationError { throw error }
+            if error is CancellationError { throw TopUpError.secondLegCancelled }
             throw TopUpError.movedToPlatform(error)
         }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }

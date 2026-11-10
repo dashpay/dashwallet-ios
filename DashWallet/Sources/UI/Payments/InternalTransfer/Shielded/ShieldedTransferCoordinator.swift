@@ -975,11 +975,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             logResumeOutcome("outcome=completed")
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
-                // `shieldedSpendUnconfirmed` was accepted by relay, so it is
-                // not a failure of this lock and is not stored as one.
-                if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                // An ambiguous submission is not a proven failure of this lock.
+                switch error {
+                case PlatformWalletError.shieldedSpendUnconfirmed,
+                     SDKError.stateTransitionResultUnconfirmed,
+                     PlatformWalletError.transactionBroadcastUnconfirmed:
                     logResumeOutcome("outcome=submittedUnconfirmed")
-                } else {
+                default:
                     recordResumeFailure(error)
                 }
                 handleSpendError(error, manager: env.manager)
@@ -1493,7 +1495,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 modelContainer: env.modelContainer,
                 since: startTime,
                 fundingType: Self.addressAssetLockFundingType)
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1513,6 +1515,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         recipientAmountDuffs: UInt64
     ) async {
         guard beginTransfer() else { return }
+        lastAssetLockOutPoint = (txidWire: outPointTxidWire, vout: outPointVout)
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1545,16 +1548,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
-            AssetLockRetryLog.recordFailure(
-                error,
-                prefix: AssetLockRetryLog.shieldPrefix,
-                event: "resume core→platform",
-                txidWire: outPointTxidWire,
-                vout: outPointVout,
-                fundingTypeRaw: Self.addressAssetLockFundingType,
-                statusBeforeRaw: statusBeforeRaw,
-                store: failureStore)
-            handleFailure(CoordinatorError.transferFailed(error))
+            switch error {
+            case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
+                break
+            default:
+                AssetLockRetryLog.recordFailure(
+                    error,
+                    prefix: AssetLockRetryLog.shieldPrefix,
+                    event: "resume core→platform",
+                    txidWire: outPointTxidWire,
+                    vout: outPointVout,
+                    fundingTypeRaw: Self.addressAssetLockFundingType,
+                    statusBeforeRaw: statusBeforeRaw,
+                    store: failureStore)
+            }
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1618,7 +1626,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     feeHeadroomCredits: feeHeadroomCredits)
             }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1719,7 +1727,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 destination: destination,
                 amount: amountCredits)
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
