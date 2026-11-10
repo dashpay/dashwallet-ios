@@ -18,6 +18,7 @@
 //
 
 import SwiftDashSDK
+import SwiftUI
 import XCTest
 @testable import dashpay
 
@@ -401,5 +402,37 @@ final class PaymentsLandingIdentityOptionTests: XCTestCase {
         await ticks.fire()
         XCTAssertNil(model.receipt)
         XCTAssertTrue(model.isWatchingForReceipt)
+    }
+
+    // MARK: Layout
+
+    /// The Identity card is the tallest Receive card. On a screen shorter
+    /// than it, the page must still fit what it is given (it scrolls) rather
+    /// than ask for more: an overflowing page squeezes the AC-04 warning to
+    /// one truncated line per sentence and pushes Close off the top.
+    func testIdentityReceivePageFitsTheHeightItIsGiven() throws {
+        let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive, isWatching: true)
+        model.updateReceiveState(isAdvancedMode: true, identity: try identity)
+        model.network = .identity
+        let screen = PaymentsLandingScreen(
+            viewModel: model,
+            onClose: {},
+            onDone: {},
+            onCopyAddress: {},
+            onShareAddress: {},
+            onSpecifyAmount: {},
+            onViewTransaction: { _ in },
+            onScanQR: {},
+            embeddedTransferViewModel: .makeForPreview(),
+            embeddedSendViewModel: .makeForPreview(),
+            showsHeader: false)
+        let host = UIHostingController(rootView: screen)
+        // The payments sheet's content area on an iPhone 17 and on the
+        // smallest supported iPhone (375 × 667 pt, less the sheet's top gap
+        // and the home indicator).
+        for given in [CGSize(width: 402, height: 778), CGSize(width: 375, height: 600)] {
+            let needed = host.sizeThatFits(in: given)
+            XCTAssertLessThanOrEqual(needed.height, given.height, "page at \(given)")
+        }
     }
 }

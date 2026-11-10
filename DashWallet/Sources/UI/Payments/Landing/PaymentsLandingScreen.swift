@@ -194,8 +194,9 @@ struct PaymentsLandingScreen: View {
     ///
     /// Off in the balance-row sheets (`including: .subviews` above): there a
     /// tab is a whole form with a keypad, and paging away mid-entry would drop
-    /// what the user typed. The picker tabs have nothing to lose and no scroll
-    /// view of their own to fight over the gesture.
+    /// what the user typed. The picker tabs have nothing to lose. Receive's
+    /// vertical scroll view takes only vertical drags, so a sideways swipe over
+    /// it still changes tab.
     private var tabSwipe: some Gesture {
         DragGesture(minimumDistance: Layout.swipeMinimumDistance)
             .onEnded { value in
@@ -269,7 +270,10 @@ struct PaymentsLandingScreen: View {
     private var tabContent: some View {
         switch viewModel.activeTab {
         case .receive:
-            pickerLayout {
+            // Scrolls only when the card is taller than the page: the Identity
+            // card is, and squeezed into the page its warning collapsed to one
+            // truncated line per sentence and Close was pushed off the top.
+            ScrollView(.vertical) {
                 PaymentsReceiveContent(
                     viewModel: viewModel,
                     onCopyAddress: {
@@ -290,6 +294,8 @@ struct PaymentsLandingScreen: View {
                 )
                 .padding(.horizontal, Layout.cardHorizontalPadding)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
 
         case .internalTransfer:
             switch mode {
