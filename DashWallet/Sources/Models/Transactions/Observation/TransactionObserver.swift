@@ -1,0 +1,355 @@
+//
+//  Created by Andrei Ashikhmin
+//  Copyright © 2022 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Combine
+import Foundation
+import OSLog
+import SwiftData
+import SwiftDashSDK
+
+// MARK: - ObservedTransaction from persisted rows
+
+extension ObservedTransaction {
+    /// Build from a persisted SwiftDashSDK row + a consensus decode of its raw
+    /// bytes. nil (logged) when the bytes fail to decode.
+    ///
+    /// Runs on whatever thread owns `row`'s context — it only reads the row's
+    /// own properties and its TXO relationship, decodes bytes, and wraps the
+    /// row (`HomeViewModel`'s reload already builds `Transaction` off the main
+    /// thread the same way). Not `@MainActor`: the scanner owns its context,
+    /// and decoding a large window on the main actor stalls it for seconds.
+    init?(row: PersistentTransaction, network: Network) {
+        let decoded: DecodedTransaction
+        do {
+            decoded = try TransactionDecoder.decode(row.transactionData, network: network)
+        } catch {
+            TransactionObserver.logger.error(
+                "🅾 OBSERVER :: decode failed for \(row.txidHex, privacy: .public): \(String(describing: error), privacy: .public)")
+            return nil
+        }
+        if decoded.txid != row.txid {
+            // Both are wire order; a mismatch means corrupt bytes — log loudly
+            // but keep the row's txid as the identity the rest of the app uses.
+            TransactionObserver.logger.error(
+                "🅾 OBSERVER :: txid mismatch row=\(row.txidHex, privacy: .public) decoded=\(decoded.txidDisplayHex, privacy: .public)")
+        }
+        txid = row.txid
+        txidHexDisplay = row.txidHex
+        outputs = decoded.outputs.map { Output(address: $0.address, amount: $0.valueDuffs) }
+        // The row's TXOs are exactly the wallet's own outputs of this tx.
+        let ownAddresses = Set(row.outputs.map(\.address))
+        ownOutputAddresses = decoded.outputs.compactMap { $0.address }.filter { ownAddresses.contains($0) }
+        context = row.context
+        // firstSeen first (device-clock stamp at first observation — the
+        // ordering key the observer's freshness floor uses), blockTimestamp
+        // as the fallback for rows restored from chain data.
+        let ts: UInt64 = row.firstSeen != 0 ? row.firstSeen : UInt64(row.blockTimestamp)
+        timestamp = ts == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(ts))
+        blockHeight = row.blockHeight
+        let mined = UInt64(row.blockTimestamp)
+        minedAt = mined == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(mined))
+        wrapped = Transaction(persistentTransaction: row)
+    }
+}
+
+// MARK: - TransactionObserver
+
+/// Reads and watches SwiftDashSDK-persisted transactions: the bounded row
+/// scan behind the transaction notifications, and the live receipt watch of
+/// the Receive screen.
+///
+/// The Rust persister writes `PersistentTransaction` rows on every Core SPV
+/// batch and SwiftData posts `NSManagedObjectContextDidSave`; each save
+/// triggers a bounded rescan of a live watch.
+public final class TransactionObserver {
+    static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "transaction-observer")
+
+    /// `firstSeen` is stamped from the device clock when the SDK first sees a
+    /// tx — so a small skew window below `after` keeps a transaction that
+    /// raced the subscription in the watch, while the exclusion snapshot
+    /// keeps older ones out.
+    private static let matchFloorSkew: TimeInterval = 120
+
+    /// The `firstSeen` floor a subscription started at `after` will scan from.
+    ///
+    /// Public because the exclusion snapshot a caller passes to
+    /// `observeUpdates` has to be bounded by the SAME floor: a transaction
+    /// below it can never be emitted, so carrying its txid in the exclusion
+    /// set is work with no effect on the outcome. Two independently derived
+    /// floors could drift apart and silently start admitting rows the snapshot
+    /// no longer covers, so there is exactly one.
+    static func matchFloor(after: Date) -> UInt64 {
+        UInt64(max(0, after.timeIntervalSince1970 - matchFloorSkew))
+    }
+    /// Rows admitted per rescan; the floor predicate already bounds the
+    /// window, this guards a resync burst mid-wait.
+    private static let rescanFetchLimit = 200
+    /// Scans slower than this get a log line; see `scan`.
+    private static let slowScanLogThresholdMs = 150
+
+    /// The main-actor-owned SDK handles a scan needs, resolved once per call.
+    private struct HostHandles {
+        let container: ModelContainer
+        let walletId: Data
+        let network: Network
+    }
+
+    // MARK: Shared row scanner
+
+    /// Persisted rows decoded to `ObservedTransaction`, newest-first
+    /// (`firstSeen` desc). Empty (logged) when the SDK host has no container
+    /// yet or the network is unsupported. Safe from any thread.
+    ///
+    /// The scan itself runs on the CALLER's thread against its own
+    /// `ModelContext`, never `mainContext` — a caller on the main thread
+    /// pays the scan inline, so keep it cheap. Only the two host reads need the main actor; they are
+    /// cheap property reads.
+    ///
+    /// `ObservedTransaction` is a struct decoded from each row, so the results
+    /// carry nothing back to the context they were read through.
+    static func fetchObserved(
+        fetchLimit: Int? = nil,
+        fetchOffset: Int = 0,
+        firstSeenAtOrAfter: UInt64? = nil
+    ) -> [ObservedTransaction] {
+        guard let resolved = resolveHostHandles() else { return [] }
+        return scan(
+            container: resolved.container,
+            walletId: resolved.walletId,
+            network: resolved.network,
+            fetchLimit: fetchLimit,
+            fetchOffset: fetchOffset,
+            firstSeenAtOrAfter: firstSeenAtOrAfter)
+    }
+
+    /// Active-wallet transaction IDs without consensus decoding. Receive
+    /// sessions snapshot these at start so a restore burst cannot present an
+    /// already-persisted transaction as a new payment merely because its
+    /// device-clock `firstSeen` is recent.
+    ///
+    /// `firstSeenAtOrAfter` must be the subscription's own floor
+    /// (`matchFloor(after:)`). Rows below it are already unreachable — the
+    /// rescan predicate drops them before any filter runs — so excluding them
+    /// again changes nothing and costs everything: unbounded, this walked
+    /// every transaction the wallet has ever persisted, materialized each one
+    /// (SwiftData's `propertiesToFetch` does not spare the object), and did it
+    /// on whichever thread asked. A restored wallet turned that into thousands
+    /// of rows on the main thread on every entry to the Receive tab. `nil`
+    /// keeps the unbounded behaviour for a caller that genuinely wants the
+    /// whole history.
+    ///
+    /// Returns nil when the snapshot could not be read — no host yet, or a
+    /// failed fetch — so that a caller using it as an exclusion set can tell
+    /// that apart from a wallet with nothing to exclude.
+    static func persistedTransactionIDs(firstSeenAtOrAfter: UInt64? = nil) -> Set<Data>? {
+        guard let resolved = resolveHostHandles() else { return nil }
+        let context = ModelContext(resolved.container)
+        let walletId = resolved.walletId
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate {
+                $0.outputs.contains { $0.walletId == walletId } ||
+                    $0.inputs.contains { $0.walletId == walletId }
+            })
+        if let floor = firstSeenAtOrAfter {
+            // `firstSeen` is indexed, so this is what turns the scan from a
+            // full-table join into an index range.
+            descriptor.predicate = #Predicate {
+                $0.firstSeen >= floor &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            }
+        }
+        descriptor.propertiesToFetch = [\.txid]
+        do {
+            var ids = Set(try context.fetch(descriptor).map(\.txid))
+            if let floor = firstSeenAtOrAfter {
+                ids.formUnion(try unconfirmedIDs(context: context, walletId: walletId, floor: floor))
+            }
+            return ids
+        } catch {
+            logger.error("🅾 OBSERVER :: txid snapshot failed: \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
+
+    /// How far below a subscription's floor the unconfirmed sweep reaches.
+    ///
+    /// `firstSeen` is not immutable: once a transaction is mined the persister
+    /// adopts the BLOCK timestamp in its place. A payment that sat below the
+    /// floor while unconfirmed therefore rises above it on confirmation,
+    /// becomes emittable, and — absent from the exclusion snapshot — is
+    /// presented as a new receipt. Reachable in one session: receive to the
+    /// Core address, switch rails until it ages past the match window, return
+    /// before it is mined.
+    ///
+    /// Only unconfirmed rows can move, so only they need sweeping. The sweep
+    /// is a SECOND indexed range rather than an `OR blockHeight == 0` branch
+    /// on the first: `blockHeight` carries no index, so that branch made
+    /// SQLite evaluate the correlated wallet relationship across the whole
+    /// table — the full history scan this snapshot exists to avoid.
+    ///
+    /// The bound is the stated limit of the fix: a transaction that has been
+    /// unconfirmed for longer than this and then confirms mid-session can
+    /// still surface as a receipt. A day is far past normal confirmation, and
+    /// the alternative is scanning history on every entry to the Receive tab.
+    private static let unconfirmedLookback: UInt64 = 24 * 60 * 60
+
+    /// Wallet transactions still unmined, within `unconfirmedLookback` of
+    /// `floor`. Same indexed `firstSeen` range shape as the main snapshot.
+    /// Throws rather than returning a partial set: half a snapshot is as
+    /// unusable as none.
+    private static func unconfirmedIDs(
+        context: ModelContext,
+        walletId: Data,
+        floor: UInt64
+    ) throws -> Set<Data> {
+        let sweepFloor = floor > unconfirmedLookback ? floor - unconfirmedLookback : 0
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate {
+                $0.firstSeen >= sweepFloor &&
+                    $0.blockHeight == 0 &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            })
+        descriptor.propertiesToFetch = [\.txid]
+        return Set(try context.fetch(descriptor).map(\.txid))
+    }
+
+    private static func scan(
+        container: ModelContainer,
+        walletId: Data,
+        network: Network,
+        fetchLimit: Int?,
+        fetchOffset: Int = 0,
+        firstSeenAtOrAfter: UInt64?
+    ) -> [ObservedTransaction] {
+        // Own context, so the scan never contends with the main actor.
+        let context = ModelContext(container)
+        // Scope to the active wallet through the TXO relationship, evaluated
+        // by the store: a transaction is this wallet's when it produced or
+        // spent one of the wallet's TXOs, and `PersistentTxo.walletId` is
+        // indexed. Doing the same join in Swift — fetch every walletId TXO,
+        // fault `.transaction` and `.spendingTransaction` on each, then feed
+        // the resulting txid set back through a `contains` predicate — costs
+        // two relationship faults per TXO plus an IN-list the width of the
+        // wallet's history, which is where this scan's seconds went.
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        if let floor = firstSeenAtOrAfter {
+            descriptor.predicate = #Predicate {
+                $0.firstSeen >= floor &&
+                    ($0.outputs.contains { $0.walletId == walletId } ||
+                        $0.inputs.contains { $0.walletId == walletId })
+            }
+        } else {
+            descriptor.predicate = #Predicate {
+                $0.outputs.contains { $0.walletId == walletId } ||
+                    $0.inputs.contains { $0.walletId == walletId }
+            }
+        }
+        if let fetchLimit {
+            descriptor.fetchLimit = fetchLimit
+        }
+        // Paged by a catch-up sweep walking a window wider than one fetch;
+        // the sort above is what makes the offset stable across calls.
+        descriptor.fetchOffset = fetchOffset
+        do {
+            let fetchStart = Date()
+            let rows = try context.fetch(descriptor)
+            let fetchMs = Int(Date().timeIntervalSince(fetchStart) * 1000)
+            let decodeStart = Date()
+            let observed = rows.compactMap { ObservedTransaction(row: $0, network: network) }
+            let decodeMs = Int(Date().timeIntervalSince(decodeStart) * 1000)
+            // Only when it actually costs something: a live watch rescans on
+            // every SwiftData save, so an unconditional line here is sync-time
+            // log spam. A slow scan is worth seeing because callers on the
+            // main thread pay it inline.
+            if fetchMs + decodeMs > Self.slowScanLogThresholdMs {
+                DWLogger.log("TransactionObserver scan: fetch \(rows.count) rows in \(fetchMs)ms, decode in \(decodeMs)ms")
+            }
+            return observed
+        } catch {
+            logger.error("🅾 OBSERVER :: PersistentTransaction fetch failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
+    // MARK: Matching
+
+    /// Emits each matching transaction context once, which preserves
+    /// mempool → InstantSend → mined → ChainLocked updates for a single txid.
+    /// `excludingTxids` is the session-start snapshot that guards against old
+    /// transactions receiving a fresh device-clock timestamp during restore or
+    /// resync.
+    func observeUpdates(
+        filters: [TransactionFilter],
+        after: Date,
+        excludingTxids: Set<Data>
+    ) -> AnyPublisher<ObservedTransaction, Never> {
+        struct ObservationKey: Hashable {
+            let txid: Data
+            let context: UInt32
+        }
+
+        return Deferred {
+            var seen = Set<ObservationKey>()
+            return self.matchingTransactions(filters: filters, after: after)
+                .filter { !excludingTxids.contains($0.txid) }
+                .filter { seen.insert(ObservationKey(txid: $0.txid, context: $0.context)).inserted }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    private func matchingTransactions(
+        filters: [TransactionFilter],
+        after: Date
+    ) -> AnyPublisher<ObservedTransaction, Never> {
+        let floor = Self.matchFloor(after: after)
+        return NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .map { _ in () }
+            .prepend(()) // immediate initial scan
+            .receive(on: RunLoop.main)
+            .flatMap { _ in
+                Self.fetchObserved(fetchLimit: Self.rescanFetchLimit, firstSeenAtOrAfter: floor)
+                    .filter { tx in filters.contains { $0.matches(tx) } }
+                    .publisher
+            }
+            .eraseToAnyPublisher()
+    }
+
+    private static func resolveHostHandles() -> HostHandles? {
+        let resolve = { @MainActor () -> HostHandles? in
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+                logger.info("🅾 OBSERVER :: no model container / active wallet yet — empty scan")
+                return nil
+            }
+            guard case .success(let network) = SwiftDashSDKWalletRuntime.shared.resolveCurrentNetwork() else {
+                logger.error("🅾 OBSERVER :: unsupported network — empty scan")
+                return nil
+            }
+            return HostHandles(container: container, walletId: walletId, network: network)
+        }
+
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { resolve() }
+        }
+        return DispatchQueue.main.sync { MainActor.assumeIsolated { resolve() } }
+    }
+}

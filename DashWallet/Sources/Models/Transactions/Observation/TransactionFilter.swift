@@ -1,0 +1,92 @@
+//
+//  Created by Andrei Ashikhmin
+//  Copyright © 2022 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+
+/// Source-neutral transaction view that transaction filters match on.
+///
+/// Built from a `PersistentTransaction` row plus a consensus decode of its raw
+/// bytes (`TransactionDecoder`) — persistence materializes TXO rows only for
+/// the wallet's own outputs, so seeing every output requires decoding the
+/// stored bytes.
+struct ObservedTransaction {
+    struct Output {
+        /// nil for non-standard scripts (OP_RETURN etc.).
+        let address: String?
+        /// duffs
+        let amount: UInt64
+    }
+
+    /// 32-byte txid in wire/internal order (matches `PersistentTransaction.txid`
+    /// and `Transaction.txHashData`).
+    let txid: Data
+    /// Explorer-style reversed-hex txid for logs.
+    let txidHexDisplay: String
+    let outputs: [Output]
+    /// Row `firstSeen`, falling back to `blockTimestamp`; nil when both are 0.
+    let timestamp: Date?
+    /// Row `blockHeight` — 0 while the transaction is still unmined
+    /// (mempool or InstantSend-locked only).
+    let blockHeight: UInt32
+    /// Row `blockTimestamp`, i.e. the timestamp of the block that mined this
+    /// transaction; nil while it is unmined. Unlike `timestamp` this is
+    /// consensus data, so a restore or rescan cannot re-stamp it with the
+    /// device clock — the only stamp that can tell "just arrived" apart from
+    /// "history replayed".
+    let minedAt: Date?
+    /// Own destination addresses in wire output order — DashSync's
+    /// `externalAddresses(of:)` stand-in for "which of our addresses this tx
+    /// paid" (own TXO rows projected onto the decoded output order).
+    let ownOutputAddresses: [String]
+    /// SwiftDashSDK transaction context: 0=mempool, 1=InstantSend,
+    /// 2=in-block, 3=ChainLocked.
+    let context: UInt32
+    /// Display wrapper; supplies direction/dashAmount with the existing
+    /// FFI → TransactionDirection mapping (including the outgoing → moved
+    /// fee-only promotion).
+    let wrapped: Transaction
+
+    var direction: TransactionDirection { wrapped.direction }
+}
+
+protocol TransactionFilter {
+    func matches(_ tx: ObservedTransaction) -> Bool
+}
+
+/// Matches an external incoming Core transaction that pays the exact address
+/// displayed by an attended Receive session. The SDK's direction classifier is
+/// authoritative here: internal payouts such as asset unlocks are `.moved`, so
+/// they cannot be mistaken for a new payment merely because they pay one of the
+/// wallet's addresses.
+struct ReceivedAtAddressTransactionFilter: TransactionFilter {
+    let address: String
+
+    func matches(_ tx: ObservedTransaction) -> Bool {
+        Self.matches(
+            direction: tx.direction,
+            ownOutputAddresses: tx.ownOutputAddresses,
+            address: address)
+    }
+
+    static func matches(
+        direction: TransactionDirection,
+        ownOutputAddresses: [String],
+        address: String
+    ) -> Bool {
+        direction == .received && ownOutputAddresses.contains(address)
+    }
+}

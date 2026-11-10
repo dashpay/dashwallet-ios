@@ -352,7 +352,7 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertNotEqual(mainnetUri, AppConnectVector.renewUri)
 
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(mainnetUri)) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
         }
     }
 
@@ -781,7 +781,7 @@ final class DashConnectUriTests: XCTestCase {
 
 extension DashConnectUriTests {
     /// The DIP's "Request Vector": the devnet request as a `connect` URI, with its return link.
-    private static let connectVectorUri = "dashpay://connect?v=2&n=d&r=AgPoPLkn6F-WrlCpXKO-Icx6N1UTmpQbFdmbAa9P7PDScPiDPHotWKuBbCSukV_iqpRnZYi0Z7oenyskwaPff9t4BVlhcHByAjICAbBZDlkmnGiFrPcdJ9386FGH4syXNsQulYEnzTW-bTjoAAAAC6Q7dAAAAAGi9760AAI6AQKiobSsb-8i6ioaaOgSNkSzV4dfa0EsGBCSgcFG57JxvAAAAAA7msoAAAABove-tAAHcHJvZmlsZQMQppsbT2ZmgUU97Dc0ZnpasgQh-IM8ei1Yq4FsJK6RX-KqlGdliLRnuh6fKyTBo99_23gBBggAAAGhKEJcAA&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
+    static let connectVectorUri = "dashpay://connect?v=2&n=d&r=AgPoPLkn6F-WrlCpXKO-Icx6N1UTmpQbFdmbAa9P7PDScPiDPHotWKuBbCSukV_iqpRnZYi0Z7oenyskwaPff9t4BVlhcHByAjICAbBZDlkmnGiFrPcdJ9386FGH4syXNsQulYEnzTW-bTjoAAAAC6Q7dAAAAAGi9760AAI6AQKiobSsb-8i6ioaaOgSNkSzV4dfa0EsGBCSgcFG57JxvAAAAAA7msoAAAABove-tAAHcHJvZmlsZQMQppsbT2ZmgUU97Dc0ZnpasgQh-IM8ei1Yq4FsJK6RX-KqlGdliLRnuh6fKyTBo99_23gBBggAAAGhKEJcAA&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
     private static let connectVectorCallback = "https://yap.pr/connect?r=d77dc0da9df83a47755a15c42c5d9db9d7a7fd62"
 
     /// The vector's `r`, and the URI with everything else as the DIP writes it.
@@ -881,9 +881,9 @@ extension DashConnectUriTests {
         for (code, network) in networks {
             XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=\(code)")).network, network)
         }
-        // As on `dash-key:`: the request is not defined for mainnet.
+        // As on `dash-key:`: request v2 is not enabled on mainnet yet (ADR-0009).
         XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=m"))) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not defined for mainnet"))
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
         }
     }
 
@@ -1037,6 +1037,14 @@ extension DashConnectUriTests {
         XCTAssertEqual(DashConnectDeepLink.uri(from: try XCTUnwrap(URL(string: AppConnectVector.requestUri))), AppConnectVector.requestUri)
         XCTAssertTrue(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash-st:abc?n=t&v=1"))))
         XCTAssertFalse(DashConnectDeepLink.canHandle(try XCTUnwrap(URL(string: "dash:XyZ?amount=1"))))
+    }
+
+    func testTheUrlParserTurnsAConnectLinkIntoADashConnectActionWithTheLinkUnchanged() throws {
+        let connect = try XCTUnwrap(URL(string: Self.connectVectorUri))
+
+        XCTAssertTrue(DWURLParser.canHandle(connect))
+        let action = try XCTUnwrap(DWURLParser.action(for: connect) as? DWURLDashConnectAction)
+        XCTAssertEqual(action.uri, Self.connectVectorUri)
     }
 
     func testAnOversizedDashpayUriIsClassifiedFromItsFirstScalars() {
