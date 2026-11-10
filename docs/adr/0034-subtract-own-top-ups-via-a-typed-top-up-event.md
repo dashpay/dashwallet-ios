@@ -27,7 +27,7 @@ The Identity option raises a Receipt when the Current identity's credits rise ab
 ## Consequences
 
 **Positive**
-- A completed top-up from this wallet raises no Receipt once it is announced, wherever it was started: Internal transfer and the profile sheet run `IdentityTopUpViewModel.topUp`, and the registration coordinator's shortfall and name-purchase top-ups run through `IdentityTopUpDidComplete.announcing`; each posts the event.
+- A completed top-up from this wallet raises no Receipt once it is announced, wherever it was started: Internal transfer and the profile sheet run `IdentityTopUpViewModel.topUp`, and the registration coordinator's shortfall and name-purchase top-ups and the asset-lock recovery's top-up retry run through `IdentityTopUpDidComplete.announcing`; each posts the event (the retry only when its lock row is stored, as the lock's value bounds the credits).
 - A Payer's credits that land while Internal transfer covers the card still raise a Receipt after it closes.
 - Other future listeners (for example, a History entry for an own top-up) can use the same event.
 

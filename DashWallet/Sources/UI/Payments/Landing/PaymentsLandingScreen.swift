@@ -324,7 +324,8 @@ struct PaymentsLandingScreen: View {
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    receiveInto: viewModel.network.chainNetwork
+                    // Identity is not a chain: the form keeps the route's pinned target.
+                    receiveInto: viewModel.network.chainNetwork ?? embeddedTransferViewModel.receiveTarget
                 )
                 .padding(.top, Layout.embeddedFormTopPadding)
             }
@@ -402,6 +403,7 @@ private func landingSample(
     transferAmount: String = "0",
     transferSendFrom: ChainNetwork? = nil,
     transferReceivePinned: Bool = false,
+    transferReceiveInto: ChainNetwork? = nil,
     showsHeader: Bool = true
 ) -> some View {
 
@@ -418,7 +420,7 @@ private func landingSample(
         onSpecifyAmount: {},
         onViewTransaction: { _ in },
         onScanQR: {},
-        embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
+        embeddedTransferViewModel: .makeForPreview(receiveInto: transferReceiveInto, amountText: transferAmount),
         transferSendFrom: transferSendFrom,
         transferReceivePinned: transferReceivePinned,
         embeddedSendViewModel: .makeForPreview(pinnedSource: transferSendFrom),
@@ -478,6 +480,19 @@ private func landingSample(
         visibleTabs: [.receive, .internalTransfer],
         transferAmount: "0.5",
         transferReceivePinned: true,
+        showsHeader: false)
+}
+
+/// Balance-row receive sheet with Identity picked on Receive: Identity is not
+/// a chain, so the transfer form keeps the To card the route is pinned to.
+@available(iOS 17, *)
+#Preview("Receive sheet · Identity picked, pinned To kept") {
+    landingSample(
+        network: .identity,
+        visibleTabs: [.receive, .internalTransfer],
+        transferAmount: "0.5",
+        transferReceivePinned: true,
+        transferReceiveInto: .platform,
         showsHeader: false)
 }
 

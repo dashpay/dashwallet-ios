@@ -2,9 +2,10 @@ import Foundation
 import SwiftDashSDK
 
 /// Posted once after a top-up of an identity from this wallet completes, with
-/// the credits it added (ADR-0034): by `IdentityTopUpViewModel.topUp`, and by
+/// the credits it added (ADR-0034): by `IdentityTopUpViewModel.topUp`, by
 /// `DWIdentityRegistrationCoordinator` for the top-ups it makes before a
-/// registration or a name purchase. Always posted on the main actor.
+/// registration or a name purchase, and by `AssetLockRecoveryService` for a
+/// top-up retried from its asset lock. Always posted on the main actor.
 struct IdentityTopUpDidComplete: Equatable {
     static let name = Notification.Name("IdentityTopUpDidComplete")
 

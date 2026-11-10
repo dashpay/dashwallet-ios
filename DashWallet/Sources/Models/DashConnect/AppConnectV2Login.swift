@@ -389,17 +389,110 @@ extension AppConnect {
         )
     }
 
+    /// One encryption key this wallet derives, as the data source holds it:
+    /// the private key is wiped by whoever owns the array it ends up in.
+    typealias DerivedEncryptionKey = (publicKey: Data, privateKey: Data)
+
+    /// DIP "Encryption Keys": every key this wallet can derive for one
+    /// encryption binding of `purpose`. The first is always rotation `0'` at
+    /// `m/9'/coin'/5'/7'/0'/identityId'/contractId'/purpose'/rotation'`, the
+    /// key a login registers when the identity has none for the binding.
+    /// Rotations are registered in order, so the later ones are found by
+    /// deriving `1'`, `2'`, … and stopping at the first whose key is not on
+    /// the identity in any state; that one is wiped, not kept. No more
+    /// rotations are derived than the identity has keys of `purpose`.
+    ///
+    /// On testnet and devnet the key at the path without the rotation level
+    /// comes last: wallets built before the DIP registered keys there, and a
+    /// current key at that path is still sent. Mainnet never had them, so the
+    /// path is not derived there and such a key reads as another wallet's.
+    static func derivableEncryptionKeys(
+        network: Network,
+        purpose: KeyPurpose,
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        rotation: (UInt32) throws -> DerivedEncryptionKey,
+        legacy: () throws -> DerivedEncryptionKey
+    ) throws -> [DerivedEncryptionKey] {
+        func isOnIdentity(_ publicKey: Data) -> Bool {
+            currentIdentityPublicKeys.contains { $0.purpose == purpose && $0.data == publicKey }
+        }
+        var keys: [DerivedEncryptionKey] = []
+        var kept = false
+        defer {
+            if !kept { for index in keys.indices { PlatformDashConnectDataSource.zero(&keys[index].privateKey) } }
+        }
+        keys.append(try rotation(0))
+        let maxRotations = max(1, currentIdentityPublicKeys.filter { $0.purpose == purpose }.count)
+        var next: UInt32 = 1
+        while isOnIdentity(keys[keys.count - 1].publicKey), keys.count < maxRotations {
+            var key = try rotation(next)
+            guard isOnIdentity(key.publicKey) else {
+                PlatformDashConnectDataSource.zero(&key.privateKey)
+                break
+            }
+            keys.append(key)
+            next += 1
+        }
+        if derivesLegacyEncryptionPath(network) {
+            keys.append(try legacy())
+        }
+        kept = true
+        return keys
+    }
+
+    /// Whether `network` derives encryption keys at the path without the
+    /// rotation level as well (DIP "Deployment and Compatibility").
+    static func derivesLegacyEncryptionPath(_ network: Network) -> Bool {
+        network == .testnet || network == .devnet
+    }
+
+    /// What a login does with one granted encryption binding.
+    enum EncryptionSlot: Equatable {
+        /// Send the identity's current key, which is `derivedIndex` among
+        /// the keys `derivableEncryptionKeys` returned; register nothing.
+        case send(keyId: UInt32, derivedIndex: Int)
+        /// Register rotation `0'` (the first derivable key) and send it.
+        case register
+        /// Leave the slot out and register nothing.
+        case omit
+    }
+
+    /// The slot a settled `state` comes to, or nil for one that is not
+    /// settled, or a current key that is not among `derivedPublicKeys` as
+    /// the fetched keys show it (a read that is behind).
+    static func encryptionSlot(
+        for state: EncryptionKeyState,
+        derivedPublicKeys: [Data],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo]
+    ) -> EncryptionSlot? {
+        switch state {
+        case .current(let keyId):
+            guard let key = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == keyId }),
+                  let derivedIndex = derivedPublicKeys.firstIndex(of: key.data) else { return nil }
+            return .send(keyId: keyId, derivedIndex: derivedIndex)
+        case .absent:
+            return .register
+        case .notThisWallets:
+            return .omit
+        case .outOfDate, .absentIfSettled, .notThisWalletsIfSettled, .currentIfSettled:
+            return nil
+        }
+    }
+
     /// What the identity holds for the app's encryption key of one purpose
-    /// (wallet rule 7).
+    /// (wallet rule 7, DIP "Encryption Keys").
     enum EncryptionKeyState: Equatable {
-        /// Its current key is the one this wallet derives: send it again.
+        /// Its current key is one this wallet derives: send it again.
         case current(keyId: UInt32)
-        /// It has none: register the one this wallet derives.
+        /// It has no key for the contract and purpose at all: register
+        /// rotation `0'`.
         case absent
-        /// Its current key is another wallet's, or was disabled: leave the
-        /// slot out. Replacing it would be a
-        /// rotation, which orphans what peers encrypted to it; that is an
-        /// explicit user action, never part of a login.
+        /// Its current key is another wallet's, or Platform's current key
+        /// for the contract and purpose is disabled, so none is current:
+        /// leave the slot out.
+        /// Replacing it would be a rotation, which orphans what peers
+        /// encrypted to it; that is an explicit user action, never part of a
+        /// login.
         case notThisWallets
         /// The fetched keys and Platform's current key disagree: one of the
         /// two reads is behind, and nothing can be said until both agree.
@@ -614,21 +707,28 @@ extension AppConnect {
             isDisabled: !(disabledAt == nil || disabledAt is NSNull))
     }
 
-    /// Rotation 0 only: the key at DIP-13 `7'` for (identity, contract,
-    /// purpose). `currentKey` is the key Platform names as current under
-    /// the app's `rule`; this wallet's key is sent only while it is that one
-    /// and live. The fetched keys must show that key as Platform does.
+    /// DIP "Encryption Keys", for one granted binding. `currentKey` is the
+    /// key Platform names as current under the app's `rule`; it is the
+    /// identity's current key only while it is live. `derivedPublicKeys` are
+    /// every key this wallet derives for the binding
+    /// (`derivableEncryptionKeys`). A live current key among them is sent;
+    /// any other live current key is another wallet's and its slot is left
+    /// out (rule 1). A disabled current key means a key for the contract and
+    /// purpose is on the identity and none is current: the slot is left out
+    /// and nothing is registered (rule 2). Only with no current key at all is a
+    /// key registered (rule 3). The fetched keys must show the current key
+    /// as Platform does.
     ///
     /// Every key bound to the app becomes current when it is registered, so
     /// with no current key at all a live key the store places on the app
     /// means Platform's read is behind, and a key it cannot place is
     /// bound elsewhere once a later read agrees. Beside a current key, a
-    /// live key the app may hold was registered before it, or after it with
-    /// Platform's read behind, so the answer waits on a later read. Behind
-    /// a disabled current key the slot is left out: a new key would be a
-    /// rotation, and under `unique` Platform refuses one at all.
+    /// key the app may hold was registered before it, or after it with
+    /// Platform's read behind, so under `latest` the answer waits on a later
+    /// read. Behind a disabled current key the slot is left out: a new key
+    /// would be a rotation, and under `unique` Platform refuses one at all.
     static func encryptionKeyState(
-        derivedPublicKey: Data,
+        derivedPublicKeys: [Data],
         purpose: KeyPurpose,
         contractId: Data,
         rule: CurrentKeyRule,
@@ -650,13 +750,16 @@ extension AppConnect {
                 unplaced = true
             }
         }
-        let holdsTheDerivedKey = currentIdentityPublicKeys.contains(where: { $0.data == derivedPublicKey })
         guard let currentKey else {
             // Registering a key bound to the app makes it current, so a key
             // the store places on the app with no current key at all, live or
-            // disabled, or this wallet's key in any state (it is derived for
-            // the app's contract), is a read from before it landed.
-            if placedInAnyState || holdsTheDerivedKey { return .outOfDate }
+            // disabled, or one of this wallet's keys in any state (they are
+            // derived for the app's contract), is a read from before it
+            // landed.
+            let holdsADerivedKey = currentIdentityPublicKeys.contains(where: {
+                $0.purpose == purpose && derivedPublicKeys.contains($0.data)
+            })
+            if placedInAnyState || holdsADerivedKey { return .outOfDate }
             return unplaced ? .absentIfSettled : .absent
         }
         guard let fetched = currentIdentityPublicKeys.first(where: { UInt32(bitPattern: $0.keyId) == currentKey.keyId }),
@@ -670,17 +773,17 @@ extension AppConnect {
         let mayBeBehind = rule == .latest && (placedInAnyState || unplaced)
         if !currentKey.isDisabled {
             guard fetched.keyType == .ecdsaSecp256k1, currentKey.keyType == .ecdsaSecp256k1,
-                  currentKey.data == derivedPublicKey else {
+                  derivedPublicKeys.contains(currentKey.data) else {
                 return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
             }
             return mayBeBehind ? .currentIfSettled(keyId: currentKey.keyId) : .current(keyId: currentKey.keyId)
         }
-        // The identity has a key for the contract and purpose, and none is
-        // current. Under `unique` Platform refuses any other; under `latest`
-        // a new key would be a rotation, which is the user's explicit action
-        // and never part of a login. A later live key with Platform's read
-        // behind is the one exception, so under `latest` the answer waits on
-        // a later read.
+        // Rule 2: the identity has a key for the contract and purpose, and
+        // none is current. Under `unique` Platform refuses any other; under
+        // `latest` a new key would be a rotation, which is the user's
+        // explicit action and never part of a login. A later live key with
+        // Platform's read behind is the one exception, so under `latest`
+        // the answer waits on a later read.
         if rule == .unique { return .notThisWallets }
         return mayBeBehind ? .notThisWalletsIfSettled : .notThisWallets
     }
@@ -739,12 +842,11 @@ extension AppConnect {
 
     /// The ids of the keys in `keys` that belong to the app's v2 grants:
     /// bound to a contract the app's owner owns (`appContractIds`, the app's
-    /// own among them), a document type on one, a contract group that owner
-    /// owns (`appGroupIds`), or a foreign document type v2 allows (DashPay
-    /// `profile`). Those are the bindings `ownershipRefusal` lets a request
-    /// have. The last can be another app's when its record is lost too; it
-    /// is disabled all the same, since a key left on rather than off is what
-    /// a disconnect must not do, and that app's next sign-in adds a new one.
+    /// own among them), a document type on one, or a contract group that
+    /// owner owns (`appGroupIds`). A key bound to a foreign document type v2
+    /// allows (DashPay `profile`) is not among them: that bound names no
+    /// app, so with no record it may be any app's, and a disconnect takes it
+    /// through `unattributedProfileKeyIds` instead.
     static func appsV2KeyIds(
         appContractIds: Set<Data>,
         appGroupIds: Set<Data>,
@@ -753,13 +855,112 @@ extension AppConnect {
         keys.filter { _, bound in
             switch bound {
             case .singleContract(let id): return appContractIds.contains(id)
-            case .documentType(let id, let name):
-                return appContractIds.contains(id) || allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+            case .documentType(let id, _): return appContractIds.contains(id)
             case .contractGroup(let id): return appGroupIds.contains(id)
             }
         }
         .map(\.keyId)
         .sorted()
+    }
+
+    /// The ids of the keys in `keys` bound to a foreign document type v2
+    /// allows (DashPay `profile`). Every app can be given such a key and the
+    /// bound does not say which one was, so with no record a disconnect on
+    /// the identity that ends there turns these off with the app's keys,
+    /// for every app that holds one (`sharedProfileKeyIdsToDisable`).
+    static func unattributedProfileKeyIds(keys: [(keyId: UInt32, bound: StoredBound)]) -> [UInt32] {
+        keys.filter { _, bound in
+            guard case .documentType(let id, let name) = bound else { return false }
+            return allowedForeignDocumentTypes.contains("\(id.toBase58String())/\(name)")
+        }
+        .map(\.keyId)
+        .sorted()
+    }
+
+    /// Whether a v2 key with this expiry may still work at `nowMilliseconds`.
+    /// A key that expired stays live on Platform but can no longer sign.
+    /// Platform goes by block time, so a device clock up to `clockTolerance`
+    /// fast does not count a working key as expired. Every v2 auth key has an
+    /// expiry; a key with none is not one, and counts as false here.
+    /// `expiresAt` carries the protocol's unsigned timestamp in an `Int64`'s
+    /// bits, so it is compared as unsigned: an expiry past `Int64.max` is far
+    /// in the future, not in the past.
+    static func isUnexpired(_ expiresAt: Int64?, nowMilliseconds: Int64) -> Bool {
+        guard let expiresAt else { return false }
+        let earliest = max(0, nowMilliseconds - Int64(clockTolerance * 1000))
+        return UInt64(bitPattern: expiresAt) > UInt64(earliest)
+    }
+
+    /// The unattributed profile keys the wallet's store shows as live and
+    /// not yet expired.
+    static func storedSharedProfileKeyIds(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        nowMilliseconds: Int64
+    ) -> [UInt32] {
+        let unexpired = Set(bindings.filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map(\.keyId))
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(recordedKeyIds: recordedKeyIds, bindings: bindings))
+            .filter(unexpired.contains)
+    }
+
+    /// Whether the store shows a live, unexpired v2-shaped key that no record
+    /// names and whose bound this build cannot read: it may be an
+    /// unattributed profile key, so the set a disconnect turns off cannot be
+    /// trusted.
+    static func hasUnplacedStoredKey(recordedKeyIds: Set<UInt32>, bindings: [KeyBinding], nowMilliseconds: Int64) -> Bool {
+        bindings.contains {
+            $0.isV2AuthKeyShaped && $0.hasUnreadableBound && !$0.isDisabled
+                && isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) && !recordedKeyIds.contains($0.keyId)
+        }
+    }
+
+    /// The unattributed profile keys a disconnect disables, from a fresh view
+    /// of the identity: live, not yet expired, bound to an allowlisted
+    /// foreign document type, and not in `recordedKeyIds` (the keys confirmed
+    /// records name).
+    /// `nil` when the view cannot be trusted: a live v2-shaped key no record
+    /// names, in the view or in the store, has no readable stored bound, so
+    /// it may be one of them; or the store holds one of them that the view
+    /// lacks, so the node is behind.
+    static func sharedProfileKeyIdsToDisable(
+        recordedKeyIds: Set<UInt32>,
+        bindings: [KeyBinding],
+        currentIdentityPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
+        nowMilliseconds: Int64
+    ) -> [UInt32]? {
+        let hasUnplacedKey = currentIdentityPublicKeys.contains { key in
+            let keyId = UInt32(bitPattern: key.keyId)
+            return isLiveAppConnectAuthKey(key) && isUnexpired(key.expiresAt, nowMilliseconds: nowMilliseconds)
+                && !recordedKeyIds.contains(keyId)
+                && !bindings.contains { $0.keyId == keyId && $0.data == key.data && !$0.hasUnreadableBound }
+        }
+        let fetchedKeyIds = Set(currentIdentityPublicKeys.map { UInt32(bitPattern: $0.keyId) })
+        // The store's own copy counts too: a fetched view that lacks such a
+        // key does not show it is off. One the view shows off is.
+        let offInView = Set(currentIdentityPublicKeys.filter { $0.disabledAt != nil }.map { UInt32(bitPattern: $0.keyId) })
+        guard !hasUnplacedKey,
+              !hasUnplacedStoredKey(
+                  recordedKeyIds: recordedKeyIds.union(offInView), bindings: bindings, nowMilliseconds: nowMilliseconds),
+              storedSharedProfileKeyIds(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, nowMilliseconds: nowMilliseconds
+        ).allSatisfy(fetchedKeyIds.contains) else { return nil }
+        let unexpired = Set(currentIdentityPublicKeys
+            .filter { isUnexpired($0.expiresAt, nowMilliseconds: nowMilliseconds) }.map { UInt32(bitPattern: $0.keyId) })
+        return unattributedProfileKeyIds(keys: unrecordedV2Keys(
+            recordedKeyIds: recordedKeyIds, bindings: bindings, currentIdentityPublicKeys: currentIdentityPublicKeys))
+            .filter(unexpired.contains)
+    }
+
+    /// The order a disconnect disables keys in: the unattributed profile
+    /// keys first, then the app's own keys. Platform takes
+    /// `maxKeysDisabledPerUpdate` keys per update, and an update that fails
+    /// leaves the later ones live. With the app's keys last, a failure part
+    /// way never leaves all of them off while a profile key is still live,
+    /// so the retry still counts as the app's disconnect and reaches the
+    /// profile keys left.
+    static func disableOrder(appKeyIds: [UInt32], profileKeyIds: [UInt32]) -> [UInt32] {
+        let app = Set(appKeyIds)
+        return Set(profileKeyIds).subtracting(app).sorted() + app.sorted()
     }
 
     /// The live v2-shaped keys on the identity that no grant record of it

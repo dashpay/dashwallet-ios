@@ -79,6 +79,12 @@ struct UnconfirmedTransactionRemover {
         case confirmedLocally
         case transactionOnChain
         case verificationUnavailable
+        /// A transfer is building or consuming an asset lock. A removal
+        /// reloads the wallet runtime, which would stop that transfer's SDK
+        /// call, so no removal runs meanwhile.
+        case transferInProgress
+        /// Another removal is still reloading the wallet runtime.
+        case removalInProgress
 
         var errorDescription: String? {
             switch self {
@@ -92,6 +98,10 @@ struct UnconfirmedTransactionRemover {
                 return NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it")
             case .verificationUnavailable:
                 return NSLocalizedString("Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.", comment: "Remove never-accepted transaction: explorer unreachable")
+            case .transferInProgress:
+                return NSLocalizedString("A transfer is still in progress. Try again when it has finished, or restart the app if it never does.", comment: "Remove never-accepted transaction: refused while a transfer is running")
+            case .removalInProgress:
+                return ShieldedAssetLocksInFlight.walletReloadingMessage
             }
         }
     }
@@ -132,6 +142,11 @@ struct UnconfirmedTransactionRemover {
         guard row.context == 0, row.blockHeight == 0 else {
             throw RemovalError.confirmedLocally
         }
+        // Refused early, before the explorer is asked, by the same rule the
+        // admission below applies.
+        if let refusal = Self.refusal(ShieldedAssetLocksInFlight.shared.removalAdmission) {
+            throw refusal
+        }
 
         // 2. The claim in the button title is checked, not assumed: a
         //    transaction the explorer knows (mempool or mined) is never
@@ -157,6 +172,11 @@ struct UnconfirmedTransactionRemover {
         guard SwiftDashSDKWalletSource.isWalletMember(freshRow, walletId: walletId) else {
             throw RemovalError.transactionNotFound
         }
+        // A transfer or another removal may have started while the explorer
+        // was asked. From here until the reload has finished no registry
+        // transfer may start (see `ShieldedAssetLocksInFlight.beginRemoval`).
+        try Self.admitRemoval()
+        defer { ShieldedAssetLocksInFlight.shared.endRemoval() }
         let firstSeen: UInt64 = freshRow.firstSeen
 
         // 4. Persistence surgery, then the shared reload + rescan +
@@ -188,6 +208,12 @@ struct UnconfirmedTransactionRemover {
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
             throw RemovalError.notReady
         }
+        // The reload below would stop a running transfer's SDK call, and its
+        // lock's transaction is among the mempool-context rows dropped here.
+        // Until the reload has finished no registry transfer may start (see
+        // `ShieldedAssetLocksInFlight.beginRemoval`).
+        try Self.admitRemoval()
+        defer { ShieldedAssetLocksInFlight.shared.endRemoval() }
         let context = container.mainContext
         let rows = try Self.unconfirmedRows(in: context, walletId: walletId)
         guard !rows.isEmpty else { return (dropped: 0, outcome: .rescanUnavailable) }
@@ -208,6 +234,22 @@ struct UnconfirmedTransactionRemover {
         let outcome = await Self.finishRemoval(
             txidsWire: txidsWire, walletId: walletId, oldestFirstSeen: oldestFirstSeen)
         return (dropped: rows.count, outcome: outcome)
+    }
+
+    /// Holds the runtime reload for this removal (`beginRemoval`); the
+    /// caller releases it with `endRemoval` once the reload has finished.
+    private static func admitRemoval() throws {
+        if let refusal = refusal(ShieldedAssetLocksInFlight.shared.beginRemoval()) {
+            throw refusal
+        }
+    }
+
+    private static func refusal(_ admission: ShieldedAssetLocksInFlight.RemovalAdmission) -> RemovalError? {
+        switch admission {
+        case .admitted: return nil
+        case .transferActive: return .transferInProgress
+        case .removalHeld: return .removalInProgress
+        }
     }
 
     /// The active wallet's unconfirmed (mempool-context, no block) rows —
