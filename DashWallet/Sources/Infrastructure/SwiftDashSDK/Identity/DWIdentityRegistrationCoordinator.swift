@@ -854,6 +854,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             startAssetLockPolling(walletId: wallet.walletId, modelContainer: modelContainer)
         }
 
+        // Before the PIN prompt: a Core lock over the input limit is never
+        // built (`AssetLockInputPolicy`), and nothing is left behind — the
+        // attempt resets as for a cancellation. Only a fresh Core funding
+        // builds a lock here; a paid lock or a local identity is recovered.
+        let inputCheck = Self.coreInputCheck(amountDuffs: requiredIdentityFundingDuffs)
+        if currentFundingSource == .core, recoveryLock == nil,
+           lookupExistingIdentityId(walletId: wallet.walletId, modelContainer: modelContainer) == nil,
+           AssetLockInputLimit.verdict(for: inputCheck) == .needsConsolidation {
+            resetState()
+            throw CoordinatorError.identityRegistration(AssetLockInputLimit.TooManyInputsError(check: inputCheck))
+        }
+
         // PIN / biometric gate. Throws on cancel / failure; the
         // controller stays at `.idle` so the UI doesn't show
         // "Processing payment" for a cancellation.
@@ -987,12 +999,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let identityId: Identifier
         switch context.fundingSource {
         case .core:
-            let result = try await wallet.registerIdentityWithFunding(
-                amountDuffs: requiredIdentityFundingDuffs,
-                accountIndex: Self.defaultAccountIndex,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer)
+            let result = try await AssetLockInputLimit.mappingRefusal(
+                Self.coreInputCheck(amountDuffs: requiredIdentityFundingDuffs)
+            ) {
+                try await wallet.registerIdentityWithFunding(
+                    amountDuffs: requiredIdentityFundingDuffs,
+                    accountIndex: Self.defaultAccountIndex,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer)
+            }
             identityId = result.0
 
         case .platformPayment:
@@ -1428,10 +1444,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     throw CoordinatorError.insufficientCoreBalanceForTopUp(
                         neededDuffs: topUpDuffs, availableDuffs: spendableDuffs)
                 }
-                _ = try await wallet.topUpIdentityWithFunding(
-                    identityId: identityId,
-                    amountDuffs: topUpDuffs,
-                    accountIndex: Self.defaultAccountIndex)
+                let inputCheck = Self.coreInputCheck(amountDuffs: topUpDuffs)
+                try AssetLockInputLimit.requireFits(inputCheck)
+                _ = try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId,
+                        amountDuffs: topUpDuffs,
+                        accountIndex: Self.defaultAccountIndex)
+                }
             case .platformPayment:
                 let inputs = try buildPlatformPaymentInputs(
                     walletId: wallet.walletId,
@@ -1812,6 +1832,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         priceCredits + UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * 1_000
     }
 
+    /// The Core funding of a fresh identity that buys a name needing
+    /// `requiredCredits`, rounded up to whole duffs.
+    static func purchaseIdentityFundingDuffs(requiredCredits: UInt64) -> UInt64 {
+        (requiredCredits + 999) / 1_000
+    }
+
+    /// The input check for a Core asset lock of `amountDuffs` that funds or
+    /// tops up an identity: the network's cap.
+    static func coreInputCheck(amountDuffs: UInt64) -> AssetLockInputLimit.Check {
+        AssetLockInputLimit.Check(amountDuffs: amountDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+    }
+
     /// The Core top-up a purchase sends to an existing identity holding
     /// `heldCredits`; 0 when it already holds enough.
     static func purchaseTopUpDuffs(priceCredits: UInt64, heldCredits: UInt64) -> UInt64 {
@@ -1862,6 +1894,23 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(String(describing: phase))")
             throw CoordinatorError.alreadyInFlight
         }
+        // Before the PIN prompt: the Core lock this purchase would build
+        // (a top-up of the shortfall, or the new identity's funding) is
+        // never built over the input limit (`AssetLockInputPolicy`).
+        let requiredCredits = Self.purchaseRequiredCredits(priceCredits: priceCredits)
+        let purchaseFundingDuffs = selectedIdentityId.map {
+            Self.purchaseTopUpDuffs(
+                priceCredits: priceCredits,
+                heldCredits: UsernameMarketplaceService.identityBalanceCredits(identityId: $0, container: modelContainer))
+        } ?? Self.purchaseIdentityFundingDuffs(requiredCredits: requiredCredits)
+        let inputCheck = Self.coreInputCheck(amountDuffs: purchaseFundingDuffs)
+        if purchaseFundingDuffs > 0 {
+            do {
+                try AssetLockInputLimit.requireFits(inputCheck)
+            } catch {
+                throw CoordinatorError.identityRegistration(error)
+            }
+        }
         resetState()
         currentUsername = name
         registrationWalletId = wallet.walletId
@@ -1895,7 +1944,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw error
         }
 
-        let requiredCredits = Self.purchaseRequiredCredits(priceCredits: priceCredits)
         let signer = KeychainSigner(modelContainer: modelContainer)
 
         let identityId: Identifier
@@ -1912,10 +1960,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 let shortfallDuffs = Self.purchaseTopUpDuffs(priceCredits: priceCredits, heldCredits: heldCredits)
                 if shortfallDuffs > 0 {
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs)")
-                    _ = try await wallet.topUpIdentityWithFunding(
-                        identityId: existingId,
-                        amountDuffs: shortfallDuffs,
-                        accountIndex: Self.defaultAccountIndex)
+                    _ = try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: shortfallDuffs)) {
+                        try await wallet.topUpIdentityWithFunding(
+                            identityId: existingId,
+                            amountDuffs: shortfallDuffs,
+                            accountIndex: Self.defaultAccountIndex)
+                    }
                 }
             } else {
                 // Fresh identity, funded with the full purchase amount.
@@ -1933,13 +1983,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         firstKeyId: Self.defaultKeyCount),
                     network: network))
                 newController.enterInFlight()
-                let fundingDuffs = (requiredCredits + 999) / 1_000
-                let result = try await wallet.registerIdentityWithFunding(
-                    amountDuffs: fundingDuffs,
-                    accountIndex: Self.defaultAccountIndex,
-                    identityIndex: Self.pinnedIdentityIndex,
-                    identityPubkeys: pubkeys,
-                    signer: signer)
+                let fundingDuffs = Self.purchaseIdentityFundingDuffs(requiredCredits: requiredCredits)
+                let result = try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: fundingDuffs)) {
+                    try await wallet.registerIdentityWithFunding(
+                        amountDuffs: fundingDuffs,
+                        accountIndex: Self.defaultAccountIndex,
+                        identityIndex: Self.pinnedIdentityIndex,
+                        identityPubkeys: pubkeys,
+                        signer: signer)
+                }
                 identityId = result.0
             }
         } catch {

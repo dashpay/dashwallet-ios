@@ -7,6 +7,7 @@ import XCTest
     override func setUp() async throws {
         host.wallet = ManagedPlatformWallet()
         host.manager = NativeManager()
+        SwiftDashSDKTransactionSender.coins = nil
     }
 
     func topUp() async throws -> UInt64 {
@@ -102,6 +103,32 @@ import XCTest
             XCTFail("First-leg failure was misclassified: \(error)")
         }
         XCTAssertEqual(host.wallet!.topUpCalls, 0)
+    }
+
+    func testTransparentInputLimitPreservesConsolidationPresentation() async {
+        SwiftDashSDKTransactionSender.coins = (0..<101).map { _ in
+            .init(isFinal: true, valueDuffs: 10_000, isCombinable: true)
+        }
+        let model = IdentityTopUpViewModel()
+        let result = await model.topUp(identityId: Data([2]), amountDuffs: 990_000, source: .transparent)
+        XCTAssertNil(result)
+        XCTAssertNotNil(model.inputLimitCheck)
+        XCTAssertFalse(model.submittedUnconfirmed)
+        XCTAssertNil(model.errorMessage)
+        XCTAssertEqual(host.wallet!.topUpCalls, 0)
+    }
+
+    func testInputLimitPolicyDoesNotReclassifyUnknownSubmission() async {
+        let check = AssetLockInputLimit.Check(amountDuffs: 100, inputBudget: 100)
+        do {
+            let _: UInt64 = try await AssetLockInputLimit.mappingRefusal(check) {
+                throw PlatformWalletError.transactionBroadcastUnconfirmed("unknown")
+            }
+            XCTFail("Expected unknown submission")
+        } catch PlatformWalletError.transactionBroadcastUnconfirmed {
+        } catch {
+            XCTFail("Unknown submission reclassified: \(error)")
+        }
     }
 
     func testSuccessfulTopUpCompletesBothLegs() async throws {

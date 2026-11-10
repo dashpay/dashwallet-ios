@@ -59,17 +59,17 @@ final class WalletPreparationSupportViewModel: ObservableObject {
         let subject: String
         let body: String
         if kind == .legacyMigration {
-            subject = "Dash Wallet — unable to move wallet"
+            subject = NSLocalizedString("Dash Wallet — unable to move wallet", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
         } else if kind == .keychain {
-            subject = "Dash Wallet — unable to read wallet keys"
+            subject = NSLocalizedString("Dash Wallet — unable to read wallet keys", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't open my wallet. The app says my wallet keys could not be read.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
         } else {
-            subject = "Dash Wallet — unable to open wallet"
+            subject = NSLocalizedString("Dash Wallet — unable to open wallet", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
@@ -103,32 +103,38 @@ struct WalletPreparationSupportView: View {
             Form {
                 Section {
                     Text(viewModel.guidance)
-                    Text("Never share your recovery phrase or private keys with anyone, including support.")
+                    Text(NSLocalizedString(
+                        "Never share your recovery phrase or private keys with anyone, including support.",
+                        comment: "Wallet preparation support"))
                     if !viewModel.recipient.isEmpty {
                         Text(viewModel.recipient).textSelection(.enabled)
                     }
                 }
                 Section {
-                    Toggle("Include diagnostic report", isOn: $viewModel.includeDiagnostics)
-                    DisclosureGroup("Preview diagnostic report") {
+                    Toggle(NSLocalizedString("Include diagnostic report", comment: "Wallet preparation support"), isOn: $viewModel.includeDiagnostics)
+                    DisclosureGroup(NSLocalizedString("Preview diagnostic report", comment: "Wallet preparation support")) {
                         Text(viewModel.report)
                             .font(.system(.caption, design: .monospaced))
                             .textSelection(.enabled)
                     }
                 } footer: {
-                    Text("Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.")
+                    Text(NSLocalizedString(
+                        "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.",
+                        comment: "Wallet preparation support"))
                 }
                 Section {
-                    Button("Contact Support") { viewModel.prepareDraft() }
+                    Button(NSLocalizedString("Contact Support", comment: "Wallet preparation support")) { viewModel.prepareDraft() }
                 } footer: {
-                    Text("Review and send the message in your mail app, or choose a sharing option.")
+                    Text(NSLocalizedString(
+                        "Review and send the message in your mail app, or choose a sharing option.",
+                        comment: "Wallet preparation support"))
                 }
             }
-            .navigationTitle(Text("Help"))
+            .navigationTitle(Text(NSLocalizedString("Help", comment: "Wallet preparation support")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(NSLocalizedString("Done", comment: "Wallet preparation support")) { dismiss() }
                 }
             }
             .sheet(item: $viewModel.draft) { draft in
@@ -138,10 +144,10 @@ struct WalletPreparationSupportView: View {
                     ActivityView(activityItems: draft.activityItems)
                 }
             }
-            .alert("Couldn't prepare the support message", isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
+            .alert(NSLocalizedString("Couldn't prepare the support message", comment: "Wallet preparation support"), isPresented: $viewModel.showError) {
+                Button(NSLocalizedString("OK", comment: "Wallet preparation support"), role: .cancel) {}
             } message: {
-                Text("Try again or copy the support address and write to us from your mail app.")
+                Text(NSLocalizedString("Try again or copy the support address and write to us from your mail app.", comment: "Wallet preparation support"))
             }
         }
     }

@@ -5,6 +5,7 @@ enum PlatformWalletError: Error {
     case transactionBroadcastUnconfirmed(String)
     case shieldedSpendUnconfirmed(String)
     case walletOperation(String)
+    case assetLockTooManyInputs
 }
 
 enum TestBoundaryError: Error { case unusedRoute }
@@ -88,6 +89,27 @@ enum PlatformPaymentIdentityFundingPolicy {
     var isProcessing = false
     var submittedUnconfirmed = false
     var errorMessage: String?
+    var inputLimitCheck: AssetLockInputLimit.Check?
     let authorizer = TestAuthorizer()
     // PRODUCTION_TOP_UP
 }
+
+// SDK and logging edges for the production input-limit policy.
+enum ShieldedTransferCoordinator {
+    enum CoordinatorError: Error { case transferFailed(Error) }
+}
+enum DWIdentityRegistrationCoordinator {
+    enum CoordinatorError: Error { case identityRegistration(Error), identityTopUp(Error), purchase(Error) }
+}
+enum DWLogger {
+    static func log(_ message: String, className: String) {}
+}
+enum SwiftDashSDKTransactionSender {
+    static let maxInputsPerSweep = 500
+    // PRODUCTION_SENDER_HELPERS
+    struct Coin { let isFinal: Bool; let valueDuffs: UInt64; let isCombinable: Bool }
+    @MainActor static var coins: [Coin]?
+    @MainActor static func pooledSpendableUtxos() -> [Coin]? { coins }
+}
+
+enum CoinJoinShieldPlanner { static let maxAssetLockInputs = 100 }

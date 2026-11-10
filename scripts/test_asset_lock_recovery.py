@@ -13,6 +13,8 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     source.mkdir(parents=True)
     tests.mkdir(parents=True)
     (source / "AssetLockProbeStore.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockProbeStore.swift")
+    failure_store = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift"
+    (source / failure_store.name).write_text(failure_store.read_text().replace("import SwiftDashSDK\n", ""))
     production = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedTransferCoordinator.swift").read_text()
     methods = []
     for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",

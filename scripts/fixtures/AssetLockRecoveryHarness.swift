@@ -5,6 +5,10 @@ enum WalletEnvironment {
     static var activeWalletIdHex: String?
 }
 enum PlatformWalletError: Error {
+    struct Consensus { let code: Int; let kind: String }
+    case consensusRejection(Consensus, String)
+    var errorDescription: String? { String(describing: self) }
+    var failureReason: String? { nil }
     case assetLockAlreadyConsumed
     case shieldedSpendUnconfirmed
     case transactionBroadcastUnconfirmed(String)
@@ -53,6 +57,8 @@ struct CoreShieldedDrainService {
 @MainActor
 final class ShieldedTxLookup {
     static let shared = ShieldedTxLookup()
+    struct Info { let statusRaw: Int }
+    func info(forTxidHex: String) -> Info? { nil }
     func refresh(reason: String) async {}
 }
 extension Notification.Name {
@@ -78,6 +84,8 @@ final class ShieldedTransferCoordinator {
         guard let rowLookup else { preconditionFailure("Test must configure the asset-lock row") }
         return rowLookup()
     }
+    static let shieldedAssetLockFundingType = 5
+    let failureStore = AssetLockFailureStore(defaults: UserDefaults(suiteName: "RecoveryHarness." + UUID().uuidString)!)
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
     var phase: Phase = .idle
     var lastResumeReport: ResumeReport?
@@ -174,3 +182,13 @@ final class ShieldedTransferCoordinator {
         static func current() -> Self? { selected }
     }
 }
+
+// Diagnostic output edges; retry decisions and failure persistence are production code.
+enum AssetLockRecoveryService {
+    enum RecoveryError: Error { case failed(String, Error?) }
+}
+enum DiagnosticLogExporter {
+    static func fundingTypeName(_ value: Int) -> String { String(value) }
+    static func assetLockStatusName(_ value: Int) -> String { String(value) }
+}
+enum DWLogger { static func log(_ message: String) {} }

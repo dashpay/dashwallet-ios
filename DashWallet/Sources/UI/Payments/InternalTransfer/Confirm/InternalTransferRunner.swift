@@ -94,6 +94,10 @@ final class InternalTransferRunner: ObservableObject {
         /// The user backed out of the PIN prompt, or it failed. Not an error
         /// state — the caller returns to what it was showing.
         case notAuthorized
+        /// The transfer's asset lock would need more inputs than the network
+        /// accepts. Refused before the PIN prompt; the caller offers
+        /// `CoreCoinConsolidationSheet` for this lock.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
     }
 
     @Published private(set) var phase: Phase = .idle
@@ -131,12 +135,21 @@ final class InternalTransferRunner: ObservableObject {
         case submitted
         case drainPending
         case failed(String)
+        /// The transfer's asset lock would need more inputs than the network
+        /// accepts. Drawn as `CoreCoinConsolidationSheet`, not a toast.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
 
         /// A failure stays up until the user closes it: its reason is the one
         /// thing the history will not show.
         var isFailure: Bool {
             if case .failed = self { return true }
             return false
+        }
+
+        /// The lock to offer combining coins for, when this notice is that offer.
+        var coinConsolidationCheck: AssetLockInputLimit.Check? {
+            if case .needsCoinConsolidation(let check) = self { return check }
+            return nil
         }
 
         /// How much longer this notice stays up, given when it was raised.
@@ -147,7 +160,8 @@ final class InternalTransferRunner: ObservableObject {
         /// date-stamp an old outcome as current. Anything still inside its
         /// window is shown for the rest of that window.
         func remainingDisplayTime(raisedAt: Date?, now: Date, duration: TimeInterval) -> TimeInterval? {
-            guard !isFailure else { return nil }
+            // The coin-combining offer waits for the user like a failure.
+            guard !isFailure, coinConsolidationCheck == nil else { return nil }
             let age = raisedAt.map { now.timeIntervalSince($0) } ?? 0
             return max(0, duration - age)
         }
@@ -200,6 +214,13 @@ final class InternalTransferRunner: ObservableObject {
         guard phase != .inFlight, !isAwaitingAuthorization else {
             notice = .busy
             return .busy
+        }
+
+        // Before the gate: a lock over the input limit is never built, so it
+        // asks for no PIN (`AssetLockInputPolicy`).
+        if let check = Self.assetLockInputCheck(for: request),
+           AssetLockInputLimit.verdict(for: check) == .needsConsolidation {
+            return .needsCoinConsolidation(check)
         }
 
         // Claimed BEFORE the gate, not after. `phase` only becomes `.inFlight`
@@ -308,6 +329,30 @@ final class InternalTransferRunner: ObservableObject {
         return nil
     }
 
+    /// The asset lock `request` builds from Core coins, for the input
+    /// pre-check; nil when it builds none. A Max drain is not pre-checked:
+    /// its preview already warns, and the SDK refuses one over the cap.
+    static func assetLockInputCheck(for request: InternalTransferRequest) -> AssetLockInputLimit.Check? {
+        switch request.kind {
+        case .route(.coreToShielded):
+            guard request.coreShieldedDrain == nil,
+                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: request.amountDuffsUnsigned, poolFeeCredits: poolFeeCredits)
+            else { return nil }
+            return ShieldedTransferCoordinator.shieldInputCheck(lockValueDuffs: lockDuffs)
+        case .route(.coreToPlatform):
+            guard let lockDuffs = request.coreToPlatformLockDuffs else { return nil }
+            return AssetLockInputLimit.Check(
+                amountDuffs: lockDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        case .identityTopUp(let topUp) where topUp.source == .core:
+            return AssetLockInputLimit.Check(
+                amountDuffs: request.amountDuffsUnsigned, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        case .route, .identityTopUp, .identityWithdrawal:
+            return nil
+        }
+    }
+
     // Legacy Core-funded failures are recovered from history. A Core-funded route that fails after committing its asset
     // lock is recovered by the home screen: the pending transaction row is
     // tappable and opens `ShieldedRecoverySheet`, which resumes that exact
@@ -377,6 +422,11 @@ final class InternalTransferRunner: ObservableObject {
             identityId: topUp.identityId,
             amountDuffs: request.amountDuffsUnsigned,
             source: .init(spending: topUp.source))
+        if let check = consume(&topUpExecutor.inputLimitCheck) {
+            phase = .failed(AssetLockInputLimit.message)
+            notice = .needsCoinConsolidation(check)
+            return
+        }
         phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
             : outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
         announce(phase)
@@ -420,7 +470,7 @@ final class InternalTransferRunner: ObservableObject {
 
     /// Clears the executor's message as it reads it, so a later retry cannot
     /// inherit the previous failure.
-    private func consume(_ message: inout String?) -> String? {
+    private func consume<Value>(_ message: inout Value?) -> Value? {
         defer { message = nil }
         return message
     }
@@ -445,7 +495,11 @@ final class InternalTransferRunner: ObservableObject {
             notice = request?.coreShieldedDrain != nil || isCoreDrainRecovery ? .drainPending : .submitted
         case .failed(let message):
             phase = .failed(message)
-            notice = .failed(message)
+            if let check = coordinator.inputLimitCheck {
+                notice = .needsCoinConsolidation(check)
+            } else {
+                notice = .failed(message)
+            }
             notePlatformShieldCapacityChange()
         default:
             phase = .idle

@@ -23,7 +23,8 @@ import Foundation
 ///
 /// An app running on the same phone as the wallet cannot present a QR code for
 /// the wallet to scan, so it opens the identical `dash-key:` / `dash-st:`
-/// payload as a link instead. Both carriers hand the same string to
+/// payload as a link instead. A `dashpay://connect` link carries an App Connect
+/// request the same way. Every carrier hands the same string to
 /// `ConnectionsViewModel`.
 ///
 /// ## What this carrier does not establish
@@ -47,14 +48,16 @@ import Foundation
 final class DashConnectDeepLink: NSObject {
     /// The DashConnect URI `url` carries, or `nil` when it is not one.
     ///
-    /// The payload lives in the URI's opaque part and is Base58 followed by an
-    /// ASCII query, neither of which `URL` percent-encodes, so
+    /// The payload is Base58 in the opaque part of a `dash-key:` / `dash-st:`
+    /// URI, or base64url in the query of a `dashpay://connect` URI, with the
+    /// `cb` link already percent-encoded. `URL` does not re-encode either, so
     /// `absoluteString` returns what the app emitted.
     @objc(uriFromURL:)
     static func uri(from url: URL) -> String? {
         let candidate = url.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard DashConnectUri.isKeyUri(candidate) || DashConnectUri.isStUri(candidate) else {
+        guard DashConnectUri.isKeyUri(candidate) || DashConnectUri.isStUri(candidate)
+            || DashConnectUri.isConnectUri(candidate) else {
             return nil
         }
 
@@ -64,5 +67,14 @@ final class DashConnectDeepLink: NSObject {
     @objc(canHandleURL:)
     static func canHandle(_ url: URL) -> Bool {
         uri(from: url) != nil
+    }
+
+    /// Whether `url` is a `dashpay://` link whose verb this wallet does not
+    /// know, such as `sign`. The caller says the link needs a newer wallet
+    /// rather than that it is not a Dash URL. Invitations and `connect` are
+    /// not unsupported.
+    @objc(isUnsupportedDashpayVerbURL:)
+    static func isUnsupportedDashpayVerb(_ url: URL) -> Bool {
+        DashConnectUri.isUnsupportedDashpayVerb(url.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }

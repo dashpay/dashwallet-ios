@@ -9,7 +9,8 @@ repository = Path(__file__).resolve().parents[1]
 production = (repository / "DashWallet/Sources/UI/DashPay/Profile/SDKIdentityProfileSheet.swift").read_text()
 
 
-def declaration(marker):
+def declaration(marker, text=production):
+    production = text
     start = production.index(marker)
     opening = production.index("{", start)
     depth, end = 1, opening + 1
@@ -25,6 +26,8 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
     tests = package / "Tests/IdentityTopUpHarnessTests"
     source.mkdir(parents=True)
     tests.mkdir(parents=True)
+    policy = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockInputPolicy.swift"
+    (source / policy.name).write_text(policy.read_text().replace("import SwiftDashSDK\n", ""))
     # The production control flow and error classification are unchanged.
     # Only the native SDK, persistence, and address-provider boundaries are fakes.
     methods = "\n".join(declaration(marker) for marker in (
@@ -33,6 +36,10 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
         "    private func topUpFromShielded(",
     ))
     scaffold = (repository / "scripts/fixtures/IdentityTopUpCompatibilityHarness.swift").read_text()
+    sender = (repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKTransactionSender.swift").read_text()
+    scaffold = scaffold.replace("    // PRODUCTION_SENDER_HELPERS", "\n".join(
+        declaration(marker, sender) for marker in (
+            "    static func estimatedFee(", "    static func balancedChunks<T>(")))
     sentinel = "    // PRODUCTION_TOP_UP"
     assert scaffold.count(sentinel) == 1
     (source / "IdentityTopUpHarness.swift").write_text(scaffold.replace(sentinel, methods))

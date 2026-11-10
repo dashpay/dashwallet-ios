@@ -72,7 +72,6 @@ class HomeViewModel: ObservableObject {
 
     private let transactionSource: TransactionSource
     private var txByHash: [String: TransactionListDataItem] = [:]
-    private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
@@ -364,14 +363,13 @@ class HomeViewModel: ObservableObject {
     private func clearCachedData() {
         DWLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
 
-        // Dispatch to self.queue to ensure thread-safe access to txByHash, crowdNodeTxSet, coinJoinTxSets
+        // Dispatch to self.queue to ensure thread-safe access to txByHash, coinJoinTxSets
         // These properties are also accessed/modified in reloadTxDataSource() on self.queue
         self.queue.async { [weak self] in
             guard let self = self else { return }
 
             // Clear cached data structures on the same queue they're accessed
             self.txByHash.removeAll()
-            self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets.removeAll()
             self.windowTxs.removeAll()
             self.windowOldestDayStart = 0
@@ -590,8 +588,7 @@ class HomeViewModel: ObservableObject {
         // Read main-actor state BEFORE handing off, never from inside the
         // worker pass. A `DispatchQueue.main.sync` from the queue is a barrier
         // whose cost is main-thread *availability*, not work: at launch the
-        // main thread is busy with tab-bar layout, avatar state and CrowdNode
-        // restore, so a reload that hops mid-pass inherits all of it. Hopping
+        // main thread is busy with tab-bar layout and avatar state, so a reload that hops mid-pass inherits all of it. Hopping
         // once up front, asynchronously, keeps the pass free-running.
         let dispatch = { @MainActor [weak self] in
             guard let self else { return }
@@ -857,7 +854,6 @@ class HomeViewModel: ObservableObject {
         // row that resolves once that day is paged in.
         let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
             coreTransactions: transactions)
-        self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
         self.coinJoinTxSets = [:]
         self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
@@ -881,12 +877,6 @@ class HomeViewModel: ObservableObject {
                 return nil
             }
 
-            // TODO(crowdnode-home-grouping): the "CrowdNode · Account" group
-            // needs decode-based ObservedTransaction matching (the SDK
-            // snapshot here doesn't carry transactionData); ports separately.
-            // Until then CrowdNode txs render as individual rows — the
-            // current behavior (the old DS-backed grouping branch was dead
-            // long before the .ds source case was deleted).
             if wrappedTx.isCoinJoinMixing {
                 // CoinJoin mixing tx — group it into the per-day
                 // "Mixing Transactions" set.
@@ -918,12 +908,6 @@ class HomeViewModel: ObservableObject {
         self.txByHash.removeAll()
         items.forEach { item in
             self.txByHash[item.id] = item
-        }
-
-        if !crowdNodeTxSet.transactionMap.isEmpty {
-            let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
-            items.append(item)
-            self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
         }
 
         for (_, coinJoinTxSet) in self.coinJoinTxSets {
@@ -1147,12 +1131,8 @@ class HomeViewModel: ObservableObject {
             let txItem: TransactionListDataItem = .tx(tx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
-            // TODO(crowdnode-home-grouping): the CrowdNode absorb-into-group
-            // branch that lived here was dead (it was fed by DashSync's
-            // DSTransactionManagerTransactionStatusDidChange, which no longer
-            // fires post-M6) and was removed with the CrowdNode tracking port.
-            // Today this path is fed by the metadata-provider refresh below
-            // (gift-card / custom-icon updates re-rendering an existing row).
+            // Fed by the metadata-provider refresh below (gift-card /
+            // custom-icon updates re-rendering an existing row).
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item
@@ -1654,47 +1634,14 @@ extension HomeViewModel {
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
                 let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
-                let items = customShortcuts.compactMap { number -> ShortcutAction? in
-                    guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
-                    // A faucet shortcut saved on testnet degrades to Spend
-                    // after a switch to mainnet (no mainnet faucet exists);
-                    // the saved config is untouched, so it comes back when
-                    // the user returns to testnet.
-                    if type == .getTestDash && !isTestnet {
-                        type = .spend
-                    }
-                    // A Switch Wallet shortcut degrades to Receive while the
-                    // device is back to a single wallet; the saved config is
-                    // untouched, so it returns when another wallet is added.
-                    if type == .switchWallet && !canSwitchWallet {
-                        type = .receive
-                    }
-                    // Dash DEX is offered only on mainnet with SwapKit configured (mirrors
-                    // ShortcutActionType.customizableActions and ServiceDataProvider.shouldShow);
-                    // a saved DEX shortcut degrades to Spend whenever that gate isn't met. The
-                    // saved config is untouched, so it returns once the gate passes again.
-                    let dashDEXAvailable = WalletEnvironment.isMainnet && SwapKitConstants.isConfigured
-                    if type == .dashDEX && !dashDEXAvailable {
-                        type = .spend
-                    }
-                    // A saved Nodes shortcut degrades to Spend (faucet on
-                    // testnet) while the active wallet runs no evonodes — e.g.
-                    // after a wallet switch; the saved config is untouched, so
-                    // it returns with an evonode wallet.
-                    if type == .nodes && !hasEvonodes {
-                        type = isTestnet ? .getTestDash : .spend
-                    }
-                    return ShortcutAction(type: type)
-                }
-                .filter { action in
-                    // A saved CrowdNode shortcut stays hidden until the user
-                    // has actually signed up.
-                    if action.type == .crowdNode {
-                        let state = CrowdNode.shared.signUpState
-                        return state == .finished || state == .linkedOnline
-                    }
-                    return true
-                }
+                let isDashDEXAvailable = WalletEnvironment.isMainnet && SwapKitConstants.isConfigured
+                let items = ShortcutActionType.restoredBar(
+                    saved: customShortcuts.map(\.intValue),
+                    isTestnet: isTestnet,
+                    canSwitchWallet: canSwitchWallet,
+                    hasEvonodes: hasEvonodes,
+                    isDashDEXAvailable: isDashDEXAvailable)
+                    .map { ShortcutAction(type: $0) }
                 if items.count == maxShortcutsCount {
                     self.shortcutItems = items
                 } else {
@@ -2165,9 +2112,10 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - An internal Withdrawal is projected as Pending until its matching
-    ///   Core receipt appears, then dropped so the receipt becomes the single
-    ///   authoritative history row. A withdrawal to an EXTERNAL Core address
+    /// - A Pending or Confirmed internal Withdrawal is projected as Pending
+    ///   until its matching Core receipt appears, then replaced by that receipt.
+    ///   Failed and Unknown rows retain their current status; Unknown can still
+    ///   be matched to a receipt. A withdrawal to an EXTERNAL Core address
     ///   produces no wallet-side Core transaction, so it always stays and
     ///   renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
@@ -2178,6 +2126,22 @@ class SwiftDashSDKWalletSource: TransactionSource {
         coreTransactions: [Transaction] = []
     ) -> [ShieldedActivityItem] {
         guard let (container, walletId) = hostHandles() else { return [] }
+        let ownShieldedRaw43: Data? = onMain {
+            guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
+            return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
+        }
+        return fetchShieldedActivity(container: container, walletId: walletId,
+                                     coreTransactions: coreTransactions, ownShieldedRaw43: ownShieldedRaw43)
+    }
+
+    /// Explicit snapshot inputs keep the persistence reader usable without starting the wallet runtime.
+    static func fetchShieldedActivity(
+        container: ModelContainer,
+        walletId: Data,
+        coreTransactions: [Transaction] = [],
+        ownShieldedRaw43: Data? = nil,
+        withdrawalStore: ShieldedWithdrawalStore = .shared
+    ) -> [ShieldedActivityItem] {
         let context = ModelContext(container)
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
             predicate: #Predicate { $0.walletId == walletId })
@@ -2205,17 +2169,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
         let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
 
-        // The wallet's own default Orchard address (raw 43 bytes), for the
-        // Sent-destination ownership check. Keyed by the SAME walletId the
-        // rows were fetched with (not a re-read of the host's active wallet,
-        // which could have switched between the two main hops). Nil until
-        // the shielded sub-wallet is bound — then the Received-row evidence
-        // still covers live intra-wallet transfers.
-        let ownShieldedRaw43: Data? = onMain {
-            guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
-            return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
+        var failedWithdrawalDestinations: Set<String> = []
+        var nonFailedWithdrawalDestinations: Set<String> = []
+        let observeDestination: (String, Bool) -> Void = { address, failed in
+            if failed {
+                failedWithdrawalDestinations.insert(address)
+            } else {
+                nonFailedWithdrawalDestinations.insert(address)
+            }
         }
-
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
             let reconstructedAmountCredits = projectedShieldedAmountCredits(
@@ -2228,25 +2190,11 @@ class SwiftDashSDKWalletSource: TransactionSource {
             case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
-                    // Live withdrawals record this before the payout arrives,
-                    // but restored activity can rebuild the same durable tag.
-                    ShieldedWithdrawalStore.shared.record(address: address)
-                    let pendingItem = ShieldedActivityItem(
-                        row: row,
-                        amountCreditsOverride: reconstructedAmountCredits,
-                        destinationAddress: address,
-                        isAwaitingTransparentReceipt: true)
-                    // Keep a local Pending row during the gap between the
-                    // shielded spend and the asynchronously persisted L1
-                    // receipt. Once a matching receipt exists, suppress the
-                    // placeholder so the operation never renders twice.
-                    if hasMatchingCoreReceipt(
-                        for: pendingItem,
-                        address: address,
-                        in: coreTransactions) {
-                        continue
+                    if let item = ownWithdrawalHistoryItem(
+                        row: row, amountCredits: reconstructedAmountCredits, address: address,
+                        coreTransactions: coreTransactions, observeDestination: observeDestination) {
+                        items.append(item)
                     }
-                    items.append(pendingItem)
                     continue
                 }
                 // External (or undecodable-script) withdrawal: nothing
@@ -2305,7 +2253,12 @@ class SwiftDashSDKWalletSource: TransactionSource {
                         walletId: walletId,
                         in: context)
                     if isOwnAddress {
-                        ShieldedWithdrawalStore.shared.record(address: address)
+                        if let item = ownWithdrawalHistoryItem(
+                            row: row, amountCredits: reconstructedAmountCredits, address: address,
+                            coreTransactions: coreTransactions, observeDestination: observeDestination) {
+                            items.append(item)
+                        }
+                        continue
                     }
                     let receipt = matchingCoreReceipt(
                         amountDuffs: reconstructedAmountDuffs,
@@ -2315,26 +2268,12 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     let receiptAmountCredits = receipt.map { $0.dashAmount * 1000 }
                     let effectiveAmount = receiptAmountCredits ?? reconstructedAmountCredits
 
-                    if isOwnAddress {
-                        // Same-seed restore: once the transparent receipt is in
-                        // the wallet's L1 history, that row is authoritative.
-                        if receipt != nil {
-                            continue
-                        }
-                        items.append(ShieldedActivityItem(
-                            row: row,
-                            kindOverride: .withdrawal,
-                            amountCreditsOverride: effectiveAmount,
-                            destinationAddress: address,
-                            isAwaitingTransparentReceipt: true))
-                    } else {
-                        items.append(ShieldedActivityItem(
-                            row: row,
-                            kindOverride: .withdrawal,
-                            amountCreditsOverride: effectiveAmount,
-                            destinationAddress: address,
-                            isExternalDestination: true))
-                    }
+                    items.append(ShieldedActivityItem(
+                        row: row,
+                        kindOverride: .withdrawal,
+                        amountCreditsOverride: effectiveAmount,
+                        destinationAddress: address,
+                        isExternalDestination: true))
                     continue
                 }
 
@@ -2372,7 +2311,29 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     amountCreditsOverride: reconstructedAmountCredits))
             }
         }
+        withdrawalStore.reconcile(
+            walletIdHex: walletId.map { String(format: "%02x", $0) }.joined(),
+            failed: failedWithdrawalDestinations, nonFailed: nonFailedWithdrawalDestinations)
         return items
+    }
+
+    /// While the stored status is Failed, a receipt to a reused destination must
+    /// not consume that attempt. A later SDK scan can correct its status from
+    /// chain evidence; the next refresh then resumes normal receipt matching.
+    private static func ownWithdrawalHistoryItem(
+        row: PersistentShieldedActivity,
+        amountCredits: UInt64,
+        address: String,
+        coreTransactions: [Transaction],
+        observeDestination: (String, Bool) -> Void
+    ) -> ShieldedActivityItem? {
+        let failed = row.status == ShieldedActivityItem.Status.failed.rawValue
+        observeDestination(address, failed)
+        let item = ShieldedActivityItem(
+            row: row, kindOverride: .withdrawal, amountCreditsOverride: amountCredits,
+            destinationAddress: address, isAwaitingTransparentReceipt: !failed)
+        guard !failed else { return item }
+        return hasMatchingCoreReceipt(for: item, address: address, in: coreTransactions) ? nil : item
     }
 
     private static func shouldPreferShieldedProjection(
@@ -2970,7 +2931,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 if producing.typedKind == .coinJoin || ownerType == coinJoinAccountType {
                     kindOrDepositMixing.insert(producing.txid)
                 }
-                if ownerType == standardAccountType {
+                if ownerType == PersistentAccount.standardAccountType {
                     depositsToStandard.insert(producing.txid)
                 }
             }
@@ -3045,7 +3006,6 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
     // PersistentAccount.accountType discriminants (stable across releases).
     private static let coinJoinAccountType: UInt32 = 1 // 0=Standard(BIP44/BIP32), 1=CoinJoin
-    private static let standardAccountType: UInt32 = 0
 
     /// CoinJoin-mixing classification cache for the per-row (scoped) fetch
     /// paths, keyed by txid and stamped with the row's `lastUpdated` — the
@@ -3112,9 +3072,14 @@ class SwiftDashSDKWalletSource: TransactionSource {
         }
         let spendsCoinJoin = p.inputs.contains { ownerAccountType($0) == coinJoinAccountType }
         guard spendsCoinJoin else { return false }
-        let depositsToStandard = p.outputs.contains { ownerAccountType($0) == standardAccountType }
+        let depositsToStandard = p.outputs.contains { ownerAccountType($0) == PersistentAccount.standardAccountType }
         return !depositsToStandard
     }
+}
+
+extension PersistentAccount {
+    /// `accountType` of a Standard (BIP44 or BIP32) account. Stable across releases.
+    static let standardAccountType: UInt32 = 0
 }
 
 #if DEBUG

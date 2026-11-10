@@ -74,9 +74,8 @@ the frozen upgrade-time mnemonic import contract.
 
 - **No DashSync runtime**: do not restore the pod, direct imports, `DWEnvironment`, or live `DS*` wallet/transaction/identity objects. Read wallet state through the app-owned SwiftDashSDK boundaries.
 - **Sync gating**: never gate on SPV `state == .synced` — dash-spv's steady state when fully synced is `waitForEvents` at progress ≈ 1.0 (`.synced` is a transient window). Gate on `SyncingActivityMonitor` (`.syncDone`).
-- **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
+- **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
-- **CrowdNode release posture**: temporarily suspend/hide CrowdNode for the migration release. Its implementation is already app/SDK-owned, so it does not block DashSync teardown and must not regain a DashSync fallback.
 - **Platform release pin**: temporary local integration branches are development-only. Upstream all required changes and make the final migration/release build consume platform `v5.0-dev` at 5.0.0-rc.4 (`5b41ca376b`, what testnet runs) or a later commit with the same `v13.rs`/`v14.rs`, or a later line whose protocol 14 is the one testnet runs (`v5.1-dev` at `d4750290ff` has the same `v13.rs`/`v14.rs` as 5.0.0-rc.4), or an explicitly selected release SHA/tag. Not `v4.2-dev`: its pre-release protocol 14 differs, and the testnet pin in `SwiftDashSDKHost.platformVersion(for:)` builds transitions from the linked SDK's v14.
 - **Mainnet is the fresh-install default**: `WalletEnvironment.networkKind` returns `.mainnet` when `CURRENT_CHAIN_TYPE_KEY` is absent, in ALL build configurations; testnet requires an explicit in-app switch, which writes the key. (This reverses the temporary testnet default of 2026-07-03, taken while mainnet Platform DAPI was unreachable — revisited by the owner 2026-08-07.) An install that never used the switcher moves to mainnet on its next launch. When touching this, verify mainnet Platform DAPI is actually reachable in the SDK build being shipped.
 
@@ -113,6 +112,17 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 5. **Never re-emit another system's notification names.** Re-posting `DS*` notification strings from new state poisons every future grep audit. New state gets a new typed publisher/notification; consumers migrate.
 6. **No debug residue in commits:** no session tags in log lines (à la `CJTEST`), no plan-diary comments ("Row #17 stage A", "M5/M6"), no stale line-number cross-references in doc comments. Use `TODO(label)` and link docs instead.
 7. **Legacy compatibility stays bounded and honest.** Do not restore staged DashSync/SDK paths. Only the frozen key migrator may read the old `org.dashfoundation.dash` keychain layout. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
+
+## Architecture decisions
+
+- Before changing an area, read the index of the decision log, [`docs/adr/README.md`](docs/adr/README.md), and open only the Accepted ADRs whose Area matches the files you touch.
+- Never silently contradict an Accepted ADR: name it and propose superseding it with a new ADR.
+- An ADR you draft stays Proposed until a human Reviewer who is not its author approves the PR; your own approval never counts. After that approval, setting Accepted is a status-only change (ADR-0001 rule 3).
+- Record a significant decision as an ADR in the same PR that makes it (threshold and "not needed" cases: ADR-0001).
+
+## Publicity
+
+The repository is public. Never put customer data, unfixed vulnerability detail, secrets or step-by-step attack detail against keys, PIN or encryption into files, commit messages, branch names, PRs, issues or their attachments; describe a support case by its symptom (ADR-0001 rule 2).
 
 ## Code Style
 

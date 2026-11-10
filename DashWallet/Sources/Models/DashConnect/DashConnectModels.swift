@@ -150,7 +150,11 @@ extension DashConnectTokenPurchaseRequest {
 /// the user locally turned the connection off from the wallet UI.
 ///
 /// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`.
+/// wallet has already published the matching `loginKeyResponse`. For a one-QR
+/// connection it means the app holds a session key on an identity of this
+/// wallet that this wallet has not disabled: the row is made once the key is
+/// seen on the identity, before its response is published, and stays
+/// whether or not the publish is confirmed.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
     case active
@@ -173,6 +177,14 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     }
 }
 
+/// Which login made a connection. It decides what turning it off means:
+/// a one-QR connection has a session key on the identity to disable, a
+/// two-QR connection does not (see `DashConnectDataSource.disconnect`).
+enum DashConnectLoginKind: String, Codable {
+    case twoQR
+    case oneQR
+}
+
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
     let id: String
@@ -180,6 +192,12 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
+    var loginKind: DashConnectLoginKind = .twoQR
+    /// Names the wallet and network a data source published this row for;
+    /// `nil` on a row that was built or read from a store. Not stored. It
+    /// goes back with a disconnect or a remove, so a row picked from a list
+    /// that has since changed wallets is not acted on in the new one.
+    var scope: String? = nil
 }
 
 /// A pending request derived from a scanned login QR code.
@@ -190,6 +208,14 @@ struct ConnectionRequest: Equatable {
     let walletUsername: String?
     let walletIdentityId: String?
     let existingConnection: DAppConnection?
+    /// The login approving this request would run.
+    var login: AppConnect.Login = .unresolved
+    /// Why the login is unresolved, when the wallet knows.
+    var unresolvedLoginReason: String? = nil
+    /// Names the wallet and network this request was resolved for; `nil`
+    /// when it was not resolved against one. An approval runs only while it
+    /// is still the active one.
+    var scope: String? = nil
 }
 
 extension ConnectionRequest {
@@ -217,7 +243,10 @@ extension ConnectionRequest {
         appUrl: String,
         walletUsername: String?,
         walletIdentityId: String?,
-        existingConnection: DAppConnection?
+        existingConnection: DAppConnection?,
+        login: AppConnect.Login = .unresolved,
+        unresolvedLoginReason: String? = nil,
+        scope: String? = nil
     ) {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -225,7 +254,28 @@ extension ConnectionRequest {
             appContractId: loginRequest.contractId.toBase58String(),
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
-            existingConnection: existingConnection
+            existingConnection: existingConnection,
+            login: login,
+            unresolvedLoginReason: unresolvedLoginReason,
+            scope: scope
         )
+    }
+
+    /// Whether this request, as a sheet showed it, was resolved for the
+    /// identity, wallet and network an approval is about to run for.
+    func wasResolved(forIdentityId identityId: String, scope: String) -> Bool {
+        walletIdentityId == identityId && self.scope == scope
+    }
+}
+
+extension AppConnect.SessionKeyTerms {
+    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
+    var budgetText: String {
+        PlatformCreditsFormatter.dashString(budgetCredits)
+    }
+
+    /// The lifetime in whole days.
+    var lifetimeDays: Int {
+        Int(lifetime / (24 * 60 * 60))
     }
 }

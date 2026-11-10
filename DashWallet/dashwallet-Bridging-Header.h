@@ -109,7 +109,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPUpdateProfileModel.h"
 #endif
 
-//MARK: CrowdNode
+//MARK: Seed phrase and utilities
 #import "DWCheckbox.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
@@ -135,7 +135,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWAdvancedSecurityViewController.h"
 #import "DWBiometricAuthModel.h"
 #import "DWAdvancedSecurityModel.h"
-#import "DWResetWalletInfoViewController.h"
 #import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"
