@@ -382,7 +382,9 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         let requested = Set((request.providers ?? []).compactMap { RouteProvider(swapKitProvider: $0) })
-        recordQuoteOutcome(response, requested: requested, asset: toAsset, direction: .sell)
+        Self.recordQuoteOutcome(
+            response, requested: requested, asset: toAsset, direction: .sell, store: routeAvailability
+        )
 
         let check = Self.addressCheck(response, requested: requested)
         if check != .pass {
@@ -973,22 +975,23 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Feeds what a quote to the user's address said about `asset` into the live store. Only what
     /// cannot depend on the address is recorded: a route names the providers that carry it, and a
     /// provider's halt names the provider that is halted. A no-route is left to the address-free
-    /// re-probe in `validateAddress`.
-    private func recordQuoteOutcome(
+    /// re-probe in `validateAddress`. Internal rather than private so the tests can feed it an answer.
+    static func recordQuoteOutcome(
         _ response: SwapKitQuoteResponse,
         requested: Set<RouteProvider>,
         asset: String,
-        direction: SwapDirection
+        direction: SwapDirection,
+        store: SwapRouteAvailability
     ) {
-        if let routes = response.routes, !routes.isEmpty {
-            let carrying = Set(routes.flatMap { $0.providers }.compactMap { RouteProvider(swapKitProvider: $0) })
-            for provider in carrying.intersection(requested) {
-                routeAvailability.record(.available, provider: provider, asset: asset, direction: direction)
-            }
-            return
+        let carrying = Set(
+            (response.routes ?? []).flatMap { $0.providers }.compactMap { RouteProvider(swapKitProvider: $0) }
+        )
+        for provider in carrying.intersection(requested) {
+            store.record(.available, provider: provider, asset: asset, direction: direction)
         }
 
-        // Both Maya flavours answer for `.maya`: it is halted only when no flavour says otherwise.
+        // Both Maya flavours answer for `.maya`: it is halted only when no flavour says otherwise,
+        // and a route from either flavour says otherwise.
         var halted = Set<RouteProvider>()
         var notHalted = Set<RouteProvider>()
         for error in response.providerErrors ?? [] {
@@ -1000,8 +1003,8 @@ final class SwapKitSwapProvider: SwapProvider {
                 notHalted.insert(provider)
             }
         }
-        for provider in halted.subtracting(notHalted) {
-            routeAvailability.record(.halted, provider: provider, asset: asset, direction: direction)
+        for provider in halted.subtracting(notHalted).subtracting(carrying) {
+            store.record(.halted, provider: provider, asset: asset, direction: direction)
         }
     }
 

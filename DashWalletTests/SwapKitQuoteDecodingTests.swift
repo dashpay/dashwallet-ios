@@ -631,6 +631,39 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
         XCTAssertFalse(SwapKitErrorCopy.isHalted(nil))
     }
 
+    // MARK: SwapKitSwapProvider.recordQuoteOutcome
+
+    /// A NEAR route beside a Maya halt: both are recorded, not only the route.
+    func testAQuoteRecordsAHaltBesideARoute() throws {
+        let store = SwapRouteAvailability()
+        let mixed = try decoded(#"""
+        {"routes":[{"routeId":"r","providers":["NEAR"],"expectedBuyAmount":"1"}],
+         "providerErrors":[{"provider":"MAYACHAIN_STREAMING","errorCode":"swapHalted"}]}
+        """#)
+
+        SwapKitSwapProvider.recordQuoteOutcome(
+            mixed, requested: [.near, .maya], asset: "ETH.ETH", direction: .sell, store: store
+        )
+
+        XCTAssertEqual(store.state(of: .near, for: "ETH.ETH", direction: .sell), .available)
+        XCTAssertEqual(store.state(of: .maya, for: "ETH.ETH", direction: .sell), .halted)
+    }
+
+    /// One Maya flavour routes while the other is halted: Maya carries it, so it stays available.
+    func testAMayaRouteOutweighsTheOtherMayaFlavoursHalt() throws {
+        let store = SwapRouteAvailability()
+        let mixed = try decoded(#"""
+        {"routes":[{"routeId":"r","providers":["MAYACHAIN"],"expectedBuyAmount":"1"}],
+         "providerErrors":[{"provider":"MAYACHAIN_STREAMING","errorCode":"swapHalted"}]}
+        """#)
+
+        SwapKitSwapProvider.recordQuoteOutcome(
+            mixed, requested: [.near, .maya], asset: "ETH.ETH", direction: .sell, store: store
+        )
+
+        XCTAssertEqual(store.state(of: .maya, for: "ETH.ETH", direction: .sell), .available)
+    }
+
     // MARK: Address check without a readable answer
 
     private let connectionCopy = "Address validation unavailable — please check your connection"
