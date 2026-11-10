@@ -1757,9 +1757,6 @@
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
 
-/* DashConnect: after a disconnect that found keys whose app is not known yet */
-"Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them." = "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.";
-
 /* DashSpend confirmation */
 "Discount" = "Réduction";
 
@@ -5862,6 +5859,9 @@
 
 /* DashConnect */
 "This wallet could not save the approval, so nothing was sent. Try again." = "This wallet could not save the approval, so nothing was sent. Try again.";
+
+/* DashConnect: after a disconnect that found keys whose app is not known yet */
+"This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them." = "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.";
 
 /* DashConnect: a disconnect of an app whose keys no approval of this wallet names */
 "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?" = "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?";

@@ -428,7 +428,7 @@ final class ConnectionsViewModel: ObservableObject {
                     if result.keysNotChecked > 0 {
                         texts.append(String.localizedStringWithFormat(
                             NSLocalizedString(
-                                "Disconnected. This wallet could not tell yet which app holds some keys on your identity (%d). Open Connections again later to see them.",
+                                "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.",
                                 comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
                             result.keysNotChecked))
                     }

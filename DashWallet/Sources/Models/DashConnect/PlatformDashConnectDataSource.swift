@@ -868,12 +868,32 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// and the intents show.
     private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, context: Context) async {
         let stores = context.stores
+        let updatedAt = now()
+        // An open intent whose keys are all off, of an app that has a row, is
+        // one a disconnect left open: while the read has a key of unknown
+        // bound the row stays as it is, so it keeps Disconnect; with none
+        // left the intent is closed at `updatedAt` and the row goes.
+        let hasUnplacedKey = AppConnect.project([snapshot], intents: stores.intents.load())
+            .unplacedKeyIds[snapshot.identityId]?.isEmpty == false
+        let shownApps = Set(rows(in: stores).map(\.id))
+        var kept = Set<String>()
+        updateIntents(in: stores) { intents in
+            for index in intents.indices
+            where intents[index].identityId == snapshot.identityId && intents[index].closedAt == nil
+                && shownApps.contains(intents[index].appId.toBase58String())
+                && AppConnect.status(of: intents[index], in: snapshot) == .disconnected {
+                if hasUnplacedKey {
+                    kept.insert(intents[index].appId.toBase58String())
+                } else {
+                    intents[index].closedAt = updatedAt
+                }
+            }
+        }
         let all = stores.intents.load()
         let projection = AppConnect.project([snapshot], intents: all)
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
-        let updatedAt = now()
         await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt)
+            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt, keeping: kept)
         }
     }
 
@@ -881,13 +901,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// `identityId`: an app with live keys or an update that may still land
     /// has a row; one whose keys are all off, or whose update never landed,
     /// has none, unless another identity's intents hold it or its last read
-    /// saw keys there no approval names (`seenOn`).
+    /// saw keys there no approval names (`seenOn`). A row in `keeping` stays
+    /// as it is.
     static func rows(
         _ rows: [DAppConnection],
         after projection: AppConnect.Projection,
         of identityId: Data,
         intents elsewhere: [AppConnect.ConnectionIntent],
-        at updatedAt: Date
+        at updatedAt: Date,
+        keeping kept: Set<String> = []
     ) -> [DAppConnection] {
         let me = identityId.toBase58String()
         func shownStatus(_ status: AppConnect.IntentStatus) -> ConnectionStatus? {
@@ -903,6 +925,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
         var result: [DAppConnection] = rows.compactMap { row in
             guard !shownIds.contains(row.id) else { return nil }
+            if kept.contains(row.id) { return row }
             var seenOn = row.seenOn
             seenOn.remove(me)
             if heldElsewhere.contains(row.id) { return DAppConnection(row, seenOn: seenOn) }
@@ -1985,11 +2008,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             : try await identitySnapshot(context: context).snapshot
 
         // An intent is done once none of its keys can still be live or land.
+        // While a key's bound is unknown (`planned.unplaced`) it may be the
+        // app's: the app's newest intent stays open, so its row keeps
+        // Disconnect until a read places every key.
         let closedAt = now()
+        let newestOpen = planned.unplaced > 0
+            ? stores.intents.load().filter {
+                $0.appId == appId && $0.identityId == context.identityId && $0.closedAt == nil
+                    && AppConnect.status(of: $0, in: after) == .disconnected
+            }.max { $0.createdAt < $1.createdAt }?.id
+            : nil
         updateIntents(in: stores) { intents in
             for index in intents.indices
             where intents[index].appId == appId && intents[index].identityId == context.identityId
-                && intents[index].closedAt == nil {
+                && intents[index].closedAt == nil && intents[index].id != newestOpen {
                 switch AppConnect.status(of: intents[index], in: after) {
                 case .disconnected, .neverLanded: intents[index].closedAt = closedAt
                 case .active, .confirming, .expired: break
@@ -2010,7 +2042,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // still shows live means that read is behind, or a new key landed.
         let ownIntents = stores.intents.load().filter { $0.appId == appId && $0.identityId == context.identityId }
         let stillOn = plan.disable.contains { id in after.keys.contains { $0.id == id && $0.disabledAt == nil } }
-        guard ownIntents.allSatisfy({ $0.closedAt != nil }), !stillOn else {
+        guard ownIntents.allSatisfy({ $0.closedAt != nil || $0.id == newestOpen }), !stillOn else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
         // The app's intents on another identity of this wallet can only be
