@@ -226,6 +226,54 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertNil(connectionRequest.existingConnection)
     }
 
+    func testParseQRTurnsAConnectRequestForItsNetworkIntoALoginThatKeepsTheRequest() async throws {
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .devnet,
+            store: TestDashConnectStore(initialConnections: []),
+            activeWalletIdHex: { "wallet" }
+        )
+        let uri = DashConnectUriTests.connectVectorUri
+
+        let qr = try await dataSource.parseQR(uri)
+
+        guard case let .login(request) = qr else { return XCTFail("expected a login, got \(qr)") }
+        XCTAssertEqual(request.network, .devnet)
+        XCTAssertEqual(request.appConnect, try DashConnectUri.parseConnectRequest(uri))
+    }
+
+    func testParseQRRefusesAConnectRequestForAnotherNetwork() async {
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: []),
+            activeWalletIdHex: { "wallet" }
+        )
+
+        do {
+            _ = try await dataSource.parseQR(DashConnectUriTests.connectVectorUri)
+            XCTFail("a devnet request was accepted by a testnet wallet")
+        } catch {
+            XCTAssertEqual(
+                error as? DashConnectPlatformError,
+                .unsupportedRequestNetwork(expected: .testnet, actual: .devnet)
+            )
+        }
+    }
+
+    func testParseQRAsksForANewerWalletForAnUnknownDashpayVerb() async {
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: []),
+            activeWalletIdHex: { "wallet" }
+        )
+
+        do {
+            _ = try await dataSource.parseQR("dashpay://sign?v=3")
+            XCTFail("an unknown dashpay verb was accepted")
+        } catch {
+            XCTAssertEqual(error as? DashConnectMockError, .needsNewerWallet)
+        }
+    }
+
     func testParserRefusesAnIdentityUpdate() throws {
         let wallet = ManagedPlatformWallet(handle: 0, walletId: Data(repeating: 0x00, count: 32))
         let bytes = try XCTUnwrap(Data(base64Encoded: Self.taggedIdentityUpdateFixtureBase64))

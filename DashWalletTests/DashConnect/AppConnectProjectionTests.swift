@@ -859,7 +859,7 @@ final class AppConnectProjectionTests: XCTestCase {
             Self.onPlatform(Self.authKey(21), disabledAt: 1),
         ])
         let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent, otherApps])
-        XCTAssertEqual(plan.disable, [10, 20, 30], "recorded, live unrecorded, unattributed profile; not the other app's")
+        XCTAssertEqual(plan.disable, [30, 10, 20], "the unattributed profile key first, then recorded and live unrecorded; not the other app's")
     }
 
     func testAnUnattributedProfileKeyGoesWithTheDisconnectOfAnyApp() {
@@ -1417,5 +1417,33 @@ final class AppConnectProjectionTests: XCTestCase {
         let live = Self.onPlatform(Self.authKey(21, bound: .singleContract(Self.otherApp)))
         let projection = AppConnect.project([Self.snapshot([expired, live])], intents: [])
         XCTAssertEqual(projection.connections.map(\.status), [.active(expiresAt: nil)])
+    }
+
+    /// The app's keys are disabled after the other keys, so an update that
+    /// fails part way leaves an app key live while another key is: the app's
+    /// row stays, and its retry reaches the keys left (ADR-0031).
+    func testADisconnectDisablesTheAppsKeysAfterTheOtherKeys() {
+        // One app key below ten profile keys: in id order the first update
+        // would take the app key and nine profile keys.
+        let order = AppConnect.disableOrder(appKeyIds: [3], otherKeyIds: Array(4 ... 13))
+        XCTAssertEqual(order, Array(4 ... 13) + [3])
+        let batches = stride(from: 0, to: order.count, by: AppConnect.maxKeysDisabledPerUpdate).map {
+            Array(order[$0 ..< min($0 + AppConnect.maxKeysDisabledPerUpdate, order.count)])
+        }
+        XCTAssertEqual(batches.first, Array(4 ... 13), "the first update takes only the other keys")
+        // Whichever update fails, while another key is still live so is an
+        // app key.
+        for failed in batches.indices {
+            let off = Set(batches[..<failed].joined())
+            if !Set(4 ... 13).isSubset(of: off) {
+                XCTAssertFalse(off.contains(3))
+            }
+        }
+        // Each part in id order; a key in both lists goes with the app's.
+        XCTAssertEqual(
+            AppConnect.disableOrder(appKeyIds: [20, 2, 9], otherKeyIds: [7, 5, 9]),
+            [5, 7, 2, 9, 20], "a key in both is the app's")
+        XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [4, 1], otherKeyIds: []), [1, 4])
+        XCTAssertEqual(AppConnect.disableOrder(appKeyIds: [], otherKeyIds: [6, 2]), [2, 6])
     }
 }

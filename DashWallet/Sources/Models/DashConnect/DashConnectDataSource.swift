@@ -158,7 +158,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
         case .notDashConnectQrCode:
             return "This QR code is not a DashConnect QR code."
         case .needsNewerWallet:
-            return "This link needs a newer version of the wallet."
+            return NSLocalizedString("This link needs a newer version of the wallet.", comment: "DashConnect")
         case let .unsupportedNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .stateTransitionNotSupported:

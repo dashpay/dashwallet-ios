@@ -262,10 +262,10 @@ private struct AccountRowView: View {
             // DIP-17 pools are flat — no external/internal split.
             HStack(spacing: 16) {
                 Label(
-                    String(format: NSLocalizedString("%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
+                    String.localizedStringWithFormat(NSLocalizedString("%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
                     systemImage: "checkmark.circle")
                 Label(
-                    String(format: NSLocalizedString("%d total", comment: "Wallet accounts — address pool"), row.platformAddressesTotal),
+                    String.localizedStringWithFormat(NSLocalizedString("%d total", comment: "Wallet accounts — address pool"), row.platformAddressesTotal),
                     systemImage: "tray.full")
                 Spacer()
             }
@@ -275,12 +275,12 @@ private struct AccountRowView: View {
             HStack(spacing: 16) {
                 if row.receiveAddressCount > 0 {
                     Label(
-                        String(format: NSLocalizedString("%d receive", comment: "Wallet accounts — address pool"), row.receiveAddressCount),
+                        String.localizedStringWithFormat(NSLocalizedString("%d receive", comment: "Wallet accounts — address pool"), row.receiveAddressCount),
                         systemImage: "arrow.down.circle")
                 }
                 if row.changeAddressCount > 0 {
                     Label(
-                        String(format: NSLocalizedString("%d change", comment: "Wallet accounts — address pool"), row.changeAddressCount),
+                        String.localizedStringWithFormat(NSLocalizedString("%d change", comment: "Wallet accounts — address pool"), row.changeAddressCount),
                         systemImage: "arrow.up.arrow.down.circle")
                 }
                 Spacer()

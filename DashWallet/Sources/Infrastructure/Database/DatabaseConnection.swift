@@ -100,7 +100,8 @@ extension DatabaseConnection {
             NormalizePlatformAddressActivityUnits(),
             AddNotifiedEventsTable(),
             AddBuyTrackingColumnsToSwapOrders(),
-            AddPayoutIdentityColumnsToSwapOrders()
+            AddPayoutIdentityColumnsToSwapOrders(),
+            MarkRetiredNotificationTopicsSeen()
         ]
     }
 
