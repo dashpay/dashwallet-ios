@@ -88,6 +88,7 @@ enum PlatformPaymentIdentityFundingPolicy {
     var stepLabel: String?
     var isProcessing = false
     var submittedUnconfirmed = false
+    var movedToPlatform = false
     var errorMessage: String?
     var inputLimitCheck: AssetLockInputLimit.Check?
     let authorizer = TestAuthorizer()

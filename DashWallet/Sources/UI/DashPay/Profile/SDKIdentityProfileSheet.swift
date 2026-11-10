@@ -540,6 +540,7 @@ final class IdentityTopUpViewModel: ObservableObject {
     @Published var isProcessing = false
     @Published var errorMessage: String?
     @Published private(set) var submittedUnconfirmed = false
+    @Published private(set) var movedToPlatform = false
     /// Set instead of `errorMessage` when a transparent top-up would need
     /// more inputs than one asset lock may carry: the lock to re-check once
     /// `CoreCoinConsolidationSheet` has combined the coins.
@@ -607,9 +608,14 @@ final class IdentityTopUpViewModel: ObservableObject {
         return unshieldFee + observedTopUpTransitionFeeCredits
     }
 
+    /// A settled first leg must not unshield again on this screen.
+    func canTopUp(from source: FundingSource) -> Bool {
+        !isProcessing && !submittedUnconfirmed && !(source == .shielded && movedToPlatform)
+    }
+
     /// nil = cancelled or failed (errorMessage carries the failure).
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
-        guard !isProcessing else { return nil }
+        guard canTopUp(from: source) else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
@@ -671,6 +677,10 @@ final class IdentityTopUpViewModel: ObservableObject {
             errorMessage = NSLocalizedString(
                 "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
                 comment: "Identity transfer result unknown")
+            return nil
+        } catch let error as TopUpError {
+            if case .movedToPlatform = error { movedToPlatform = true }
+            errorMessage = error.localizedDescription
             return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
@@ -946,7 +956,7 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || viewModel.submittedUnconfirmed || effectiveDuffs == nil)
+                .disabled(!viewModel.canTopUp(from: source) || effectiveDuffs == nil)
                 .opacity(effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)

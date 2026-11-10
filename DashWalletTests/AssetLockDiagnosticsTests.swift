@@ -45,19 +45,44 @@ final class AssetLockDiagnosticsTests: XCTestCase {
             PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
         ]
         for error in errors {
-            let outcome = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) { throw error }
+            let outcome = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1, walletIdHex: "wallet-a") { throw error }
             XCTAssertEqual(outcome, .submittedAwaitingSync)
             XCTAssertEqual(store.failure(txidWire: txidWire, vout: 1), previous)
         }
-        let completed = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) {}
+        let completed = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1, walletIdHex: "wallet-a") {}
         XCTAssertEqual(completed, .completed)
+    }
+
+    func testIdentityResumeConsumedReportIsScopedAndOnlyExplicitlyRechecked() async throws {
+        let failures = AssetLockFailureStore(defaults: defaults)
+        let previous = failures.record(txidWire: txidWire, vout: 1, error: PlatformWalletError.walletOperation("earlier"))
+        let probes = AssetLockProbeStore(defaults: defaults)
+        let service = AssetLockRecoveryService(failureStore: failures, probeStore: probes)
+        let outcome = try await service.identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: 1, walletIdHex: "wallet-a"
+        ) { throw PlatformWalletError.assetLockAlreadyConsumed("unverified") }
+        XCTAssertEqual(outcome, .completionUnconfirmed)
+        XCTAssertEqual(failures.failure(txidWire: txidWire, vout: 1), previous)
+        XCTAssertTrue(probes.contains(txidWire, vout: 1, walletIdHex: "wallet-a"))
+        XCTAssertFalse(probes.contains(txidWire, vout: 2, walletIdHex: "wallet-a"))
+        XCTAssertFalse(probes.contains(txidWire, vout: 1, walletIdHex: "wallet-b"))
+        let skipped = try await service.identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: 1, walletIdHex: "wallet-a", retryUnverifiedConsumption: false
+        ) { XCTFail("Automatic recovery retried a probed outpoint") }
+        XCTAssertEqual(skipped, .completionUnconfirmed)
+        var rechecked = false
+        let explicit = try await service.identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: 1, walletIdHex: "wallet-a", retryUnverifiedConsumption: true
+        ) { rechecked = true }
+        XCTAssertTrue(rechecked)
+        XCTAssertEqual(explicit, .completed)
     }
 
     func testIdentityResumeDefiniteFailureIsRecordedAndRethrown() async {
         let store = AssetLockFailureStore(defaults: defaults)
         let service = AssetLockRecoveryService(failureStore: store)
         do {
-            _ = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) {
+            _ = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1, walletIdHex: "wallet-a") {
                 throw PlatformWalletError.walletOperation("definite refusal")
             }
             XCTFail("Expected refusal")

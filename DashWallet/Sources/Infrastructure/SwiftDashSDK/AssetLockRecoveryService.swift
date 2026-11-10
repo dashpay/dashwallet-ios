@@ -37,9 +37,11 @@ struct AssetLockRecoveryService {
     /// Where an identity top-up whose network call threw records the error,
     /// and what the coordinator routes are handed for theirs.
     private let failureStore: AssetLockFailureStore
+    private let probeStore: AssetLockProbeStore
 
-    init(failureStore: AssetLockFailureStore = .shared) {
+    init(failureStore: AssetLockFailureStore = .shared, probeStore: AssetLockProbeStore = .shared) {
         self.failureStore = failureStore
+        self.probeStore = probeStore
     }
 
     private static let logger = Logger(
@@ -158,7 +160,8 @@ struct AssetLockRecoveryService {
         let outcome: Outcome
         switch fundingTypeRaw {
         case 1, 2:
-            outcome = try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
+            outcome = try await retryIdentityTopUp(
+                txidWire: txidWire, vout: vout, retryUnverifiedConsumption: retryUnverifiedConsumption)
         case 4, 5:
             // Both coordinator routes report their outcome through the
             // terminal phase rather than throwing, so the resume call and
@@ -620,7 +623,9 @@ struct AssetLockRecoveryService {
     /// `consumeInvitationVoucher` stays false: a generic retry surface
     /// must never silently consume an invitation lock (the SDK resolver
     /// refuses them).
-    private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws -> Outcome {
+    private func retryIdentityTopUp(
+        txidWire: Data, vout: UInt32, retryUnverifiedConsumption: Bool
+    ) async throws -> Outcome {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
@@ -629,8 +634,12 @@ struct AssetLockRecoveryService {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — wallet has no identity")
             throw RecoveryError.noIdentity
         }
+        let walletIdHex = wallet.walletId.map { String(format: "%02x", $0) }.joined()
         try await DWIdentityAuthorizer().authorize()
-        let outcome = try await identityTopUpResumeOutcome(txidWire: txidWire, vout: vout) {
+        let outcome = try await identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
+            retryUnverifiedConsumption: retryUnverifiedConsumption
+        ) {
             _ = try await wallet.resumeTopUpWithAssetLock(
                 identityId: identityId,
                 outPointTxid: txidWire,
@@ -642,14 +651,22 @@ struct AssetLockRecoveryService {
 
     /// Classify the network call separately from authorization and readiness refusals.
     func identityTopUpResumeOutcome(
-        txidWire: Data, vout: UInt32, submit: () async throws -> Void
+        txidWire: Data, vout: UInt32, walletIdHex: String,
+        retryUnverifiedConsumption: Bool = true, submit: () async throws -> Void
     ) async throws -> Outcome {
+        if !retryUnverifiedConsumption,
+           probeStore.contains(txidWire, vout: vout, walletIdHex: walletIdHex) {
+            return .completionUnconfirmed
+        }
         do {
             try await submit()
             return .completed
         } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
                 PlatformWalletError.shieldedSpendUnconfirmed {
             return .submittedAwaitingSync
+        } catch PlatformWalletError.assetLockAlreadyConsumed {
+            probeStore.record(txid: txidWire, vout: vout, walletIdHex: walletIdHex)
+            return .completionUnconfirmed
         } catch {
             failureStore.record(txidWire: txidWire, vout: vout, error: error)
             throw error

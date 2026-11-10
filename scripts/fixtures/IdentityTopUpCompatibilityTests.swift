@@ -52,6 +52,22 @@ import XCTest
         XCTAssertEqual(host.wallet!.topUpCalls, 1)
     }
 
+    func testSettledFirstLegCannotUnshieldAgainAfterWarningDismissal() async {
+        host.wallet!.failure = PlatformWalletError.walletOperation("rejected")
+        let model = IdentityTopUpViewModel()
+        let result = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertNil(result)
+        XCTAssertTrue(model.movedToPlatform)
+        XCTAssertFalse(model.submittedUnconfirmed)
+        model.errorMessage = nil // Dismiss the warning, then try the same action.
+        XCTAssertFalse(model.canTopUp(from: .shielded))
+        XCTAssertTrue(model.canTopUp(from: .platform))
+        let retry = await model.topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertNil(retry)
+        XCTAssertEqual(host.manager!.unshieldCalls, 1)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+    }
+
     func testSecondLegRefusalKeepsSettledFirstLeg() async {
         host.wallet!.failure = PlatformWalletError.walletOperation("rejected")
         do {
