@@ -752,6 +752,14 @@ extension AppConnect {
         return plan
     }
 
+    /// The intents on `identityId` that are closed but whose response may
+    /// still be on Platform: its delete failed, and with the row gone no
+    /// disconnect of the app reaches it again. The next signed operation on
+    /// the identity deletes it.
+    static func responsesLeft(identityId: Data, intents: [ConnectionIntent]) -> [UUID] {
+        intents.filter { $0.identityId == identityId && $0.closedAt != nil && !$0.responseRemoved }.map(\.id)
+    }
+
     /// The order a disconnect disables keys in: the other keys first (the
     /// DashPay profile keys no intent names, a fence left on), then the
     /// app's own keys. Platform takes `maxKeysDisabledPerUpdate` keys per
