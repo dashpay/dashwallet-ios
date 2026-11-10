@@ -122,10 +122,10 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         source.answers += values.map { .success($0) }
     }
 
-    private func topUp(_ credits: UInt64, for session: IdentityCreditsWatcher.Session) {
+    private func topUp(after balanceAfter: UInt64, supplied: UInt64, for session: IdentityCreditsWatcher.Session) {
         IdentityTopUpDidComplete(
-            walletId: session.walletId, network: session.network,
-            identityId: session.identityId, creditsAdded: credits)
+            walletId: session.walletId, network: session.network, identityId: session.identityId,
+            balanceAfter: balanceAfter, suppliedCredits: supplied)
             .post(to: center)
     }
 
@@ -205,7 +205,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         watcher.start(session)
         answer(10_000, 15_000, 16_000)
         await scheduler.fire()
-        topUp(5_000, for: session)
+        topUp(after: 15_000, supplied: 5_000, for: session)
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
         await scheduler.fire()
@@ -216,7 +216,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         watcher.start(session)
         answer(10_000, 15_000)
         await scheduler.fire()
-        topUp(5_000, for: otherSession)
+        topUp(after: 15_000, supplied: 5_000, for: otherSession)
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .received(duffs: 5))
     }
@@ -226,7 +226,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         answer(10_000, 15_000)
         await scheduler.fire()
         watcher.setGateOpen(false)
-        topUp(5_000, for: session)
+        topUp(after: 15_000, supplied: 5_000, for: session)
         watcher.setGateOpen(true)
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
@@ -243,7 +243,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         let readsBefore = source.reads.count
         async let inFlight: Void = scheduler.fire()
         await source.waitForReads(readsBefore + 1)
-        topUp(5_000, for: session)
+        topUp(after: 15_000, supplied: 5_000, for: session)
         source.release()
         await inFlight
         await scheduler.fire()
@@ -260,7 +260,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         inFlight.begin(key(session))
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
-        topUp(5_000, for: session)
+        topUp(after: 15_000, supplied: 5_000, for: session)
         inFlight.end(key(session))
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
@@ -277,7 +277,7 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         answer(10_000, 15_000, 16_000)
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .notWatching)
-        topUp(5_000, for: session)
+        topUp(after: 15_000, supplied: 5_000, for: session)
         inFlight.end(key(session))
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .watching)
@@ -298,6 +298,37 @@ final class IdentityCreditsWatcherTests: XCTestCase {
         inFlight.end(key(session))
         await scheduler.fire()
         XCTAssertEqual(watcher.state, .received(duffs: 5))
+    }
+
+    /// A spend seen while a top-up runs lowers the Starting balance; the
+    /// top-up's own credits must still not come back as a Receipt
+    /// (review-2026-11-11-r1 S1).
+    func testADecreaseSeenWhileATopUpRunsDoesNotTurnTheTopUpIntoAReceipt() async {
+        watcher.start(session)
+        answer(20_000, 10_000, 15_000, 16_000)
+        await scheduler.fire()
+        inFlight.begin(key(session))
+        await scheduler.fire()
+        topUp(after: 15_000, supplied: 5_000, for: session)
+        inFlight.end(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .watching)
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 1))
+    }
+
+    /// A Payer's credits that land while a top-up runs are in the balance it
+    /// returns; only the part beyond the credits it was handed (its fee) can
+    /// be taken for the top-up's.
+    func testPayerCreditsInTheTopUpsBalanceStillRaiseAReceipt() async {
+        watcher.start(session)
+        answer(10_000, 17_000)
+        await scheduler.fire()
+        inFlight.begin(key(session))
+        topUp(after: 17_000, supplied: 5_500, for: session)
+        inFlight.end(key(session))
+        await scheduler.fire()
+        XCTAssertEqual(watcher.state, .received(duffs: 1))
     }
 
     func testATopUpOfAnotherIdentityDoesNotHoldTheReceipt() async {

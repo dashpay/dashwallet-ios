@@ -2,7 +2,8 @@ import Foundation
 import SwiftDashSDK
 
 /// Posted once after a top-up of an identity from this wallet completes, with
-/// the credits it added (ADR-0034): by `IdentityTopUpViewModel.topUp`, by
+/// the balance its transition returned and the credits it was handed
+/// (ADR-0034): by `IdentityTopUpViewModel.topUp`, by
 /// `DWIdentityRegistrationCoordinator` for the top-ups it makes before a
 /// registration or a name purchase, and by `AssetLockRecoveryService` for a
 /// top-up retried from its asset lock. Always posted on the main actor.
@@ -12,13 +13,17 @@ struct IdentityTopUpDidComplete: Equatable {
     let walletId: Data
     let network: Network
     let identityId: Data
-    let creditsAdded: UInt64
+    /// The identity's balance the top-up's transition returned.
+    let balanceAfter: UInt64
+    /// The credits handed to the transition, the most it can have added.
+    let suppliedCredits: UInt64
 
-    init(walletId: Data, network: Network, identityId: Data, creditsAdded: UInt64) {
+    init(walletId: Data, network: Network, identityId: Data, balanceAfter: UInt64, suppliedCredits: UInt64) {
         self.walletId = walletId
         self.network = network
         self.identityId = identityId
-        self.creditsAdded = creditsAdded
+        self.balanceAfter = balanceAfter
+        self.suppliedCredits = suppliedCredits
     }
 
     init?(notification: Notification) {
@@ -32,14 +37,9 @@ struct IdentityTopUpDidComplete: Equatable {
     }
 
     /// Posts the event for a completed top-up (`balanceAfter` non-nil) and
-    /// nothing for a cancelled or failed one. The credits added are the rise
-    /// over `balanceBefore`, capped at the credits handed to the transition,
-    /// the most it can have added: `balanceBefore` is the stored balance, so
-    /// the rise can include a Payer's credits that landed since it was last
-    /// refreshed. With no balance before, the credits handed to the transition.
+    /// nothing for a cancelled or failed one.
     @MainActor
     static func announce(
-        balanceBefore: UInt64?,
         balanceAfter: UInt64?,
         suppliedCredits: UInt64,
         walletId: Data,
@@ -48,10 +48,9 @@ struct IdentityTopUpDidComplete: Equatable {
         center: NotificationCenter = .default
     ) {
         guard let balanceAfter else { return }
-        let rise = balanceBefore.map { balanceAfter > $0 ? balanceAfter - $0 : 0 } ?? suppliedCredits
-        let creditsAdded = min(rise, suppliedCredits)
         IdentityTopUpDidComplete(
-            walletId: walletId, network: network, identityId: identityId, creditsAdded: creditsAdded)
+            walletId: walletId, network: network, identityId: identityId,
+            balanceAfter: balanceAfter, suppliedCredits: suppliedCredits)
             .post(to: center)
     }
 
@@ -64,7 +63,6 @@ struct IdentityTopUpDidComplete: Equatable {
         walletId: Data,
         network: Network,
         identityId: Data,
-        balanceBefore: UInt64?,
         suppliedCredits: UInt64,
         center: NotificationCenter = .default,
         inFlight: IdentityTopUpsInFlight = .shared,
@@ -75,7 +73,7 @@ struct IdentityTopUpDidComplete: Equatable {
         defer { inFlight.end(key) }
         let balanceAfter = try await topUp()
         announce(
-            balanceBefore: balanceBefore, balanceAfter: balanceAfter, suppliedCredits: suppliedCredits,
+            balanceAfter: balanceAfter, suppliedCredits: suppliedCredits,
             walletId: walletId, network: network, identityId: identityId, center: center)
         return balanceAfter
     }

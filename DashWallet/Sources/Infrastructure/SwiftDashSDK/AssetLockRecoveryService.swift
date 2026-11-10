@@ -654,7 +654,6 @@ struct AssetLockRecoveryService {
                lock.amountDuffs > 0 {
                 _ = try await IdentityTopUpDidComplete.announcing(
                     walletId: wallet.walletId, network: network, identityId: identityId,
-                    balanceBefore: try? wallet.managedIdentity(identityId: identityId).getBalance(),
                     suppliedCredits: UInt64(lock.amountDuffs) * PlatformPaymentIdentityFundingPolicy.creditsPerDuff,
                     resume)
             } else {

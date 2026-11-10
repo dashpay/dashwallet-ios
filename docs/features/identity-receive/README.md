@@ -61,9 +61,9 @@ increase:
   earlier payment or an own top-up as «Received»;
 - an own top-up that fails after Platform carried it out shows as «Received» (while an own
   top-up runs, no Receipt is raised);
-- a Payer's credits that land between the stored balance's last refresh and the end of an own
-  top-up count as part of it up to the credits it supplied, so at most the top-up's fee worth of
-  them raises no Receipt (they still show in the balance).
+- a Payer's credits that land between the last check and the end of an own top-up count as part
+  of it up to the credits it supplied, so at most the top-up's fee worth of them raises no
+  Receipt (they still show in the balance).
 
 ## Not in scope
 

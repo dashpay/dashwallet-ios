@@ -601,13 +601,12 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     /// nil = cancelled or failed (errorMessage carries the failure).
     ///
-    /// A completed top-up posts `IdentityTopUpDidComplete` with the credits it
-    /// added, so Receive raises no Receipt for the wallet's own top-up; while
+    /// A completed top-up posts `IdentityTopUpDidComplete` with the balance it
+    /// returned, so Receive raises no Receipt for the wallet's own top-up; while
     /// it runs it is in `IdentityTopUpsInFlight`.
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
         let wallet = SwiftDashSDKHost.shared.wallet
         let network = SwiftDashSDKHost.shared.runningNetwork
-        let balanceBefore = try? wallet?.managedIdentity(identityId: identityId).getBalance()
         var key: IdentityTopUpsInFlight.Key?
         if let wallet, let network {
             key = .init(walletId: wallet.walletId, network: network, identityId: identityId)
@@ -617,7 +616,6 @@ final class IdentityTopUpViewModel: ObservableObject {
         let balanceAfter = await executeTopUp(identityId: identityId, amountDuffs: amountDuffs, source: source)
         if let wallet, let network {
             IdentityTopUpDidComplete.announce(
-                balanceBefore: balanceBefore,
                 balanceAfter: balanceAfter,
                 suppliedCredits: Self.suppliedCredits(amountDuffs: amountDuffs, source: source),
                 walletId: wallet.walletId,

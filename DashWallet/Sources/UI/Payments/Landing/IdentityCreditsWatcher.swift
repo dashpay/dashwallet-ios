@@ -26,14 +26,15 @@ import SwiftDashSDK
 /// Platform reports a balance, not incoming transfers, so the watch compares
 /// balances: the Starting balance is the first successful fresh read of the
 /// session (never a stored value), a lower balance replaces it, an own top-up
-/// (`IdentityTopUpDidComplete`) raises it by the credits added, and a rise of
-/// at least 1 duff over it is one Receipt for the whole rise, which ends the
-/// session. While an own top-up of the identity runs (`IdentityTopUpsInFlight`)
-/// no Receipt is raised and no Starting balance is taken. Reads run on the
-/// Platform option's cadence and only while the gate is open (card visible,
-/// not covered, app in the foreground): closing the gate
-/// cancels the timer and keeps the session, opening it checks at once. Created
-/// and owned by `PaymentsLandingViewModel`; not shared.
+/// (`IdentityTopUpDidComplete`) raises it to the balance the top-up returned,
+/// at most by the credits it was handed, and a rise of at least 1 duff over it
+/// is one Receipt for the whole rise, which ends the session. While an own
+/// top-up of the identity runs (`IdentityTopUpsInFlight`) no Receipt is raised
+/// and no Starting balance is taken. Reads run on the Platform option's cadence
+/// and only while the gate is open (card visible, not covered, app in the
+/// foreground): closing the gate cancels the timer and keeps the session,
+/// opening it checks at once. Created and owned by `PaymentsLandingViewModel`;
+/// not shared.
 @MainActor
 final class IdentityCreditsWatcher {
     struct Session: Equatable {
@@ -197,8 +198,11 @@ final class IdentityCreditsWatcher {
         // A read in flight may answer with the balance before the top-up.
         readToken &+= 1
         isReading = false
+        // The top-up's own balance, less any Payer credits in it beyond what
+        // the top-up was handed. Not a delta over the whole top-up: a spend
+        // seen meanwhile has already lowered the Starting balance.
         if let startingBalance {
-            self.startingBalance = startingBalance + event.creditsAdded
+            self.startingBalance = min(event.balanceAfter, startingBalance + event.suppliedCredits)
         }
     }
     #endif

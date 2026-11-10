@@ -1432,7 +1432,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 try AssetLockInputLimit.requireFits(inputCheck)
                 _ = try await IdentityTopUpDidComplete.announcing(
                     walletId: wallet.walletId, network: network, identityId: identityId,
-                    balanceBefore: heldCredits,
                     suppliedCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
                     try await AssetLockInputLimit.mappingRefusal(inputCheck) {
                         try await wallet.topUpIdentityWithFunding(
@@ -1448,7 +1447,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
                 _ = try await IdentityTopUpDidComplete.announcing(
                     walletId: wallet.walletId, network: network, identityId: identityId,
-                    balanceBefore: heldCredits,
                     suppliedCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
                     try await wallet.topUpFromAddresses(
                         identityId: identityId,
@@ -1956,7 +1954,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs)")
                     _ = try await IdentityTopUpDidComplete.announcing(
                         walletId: wallet.walletId, network: network, identityId: existingId,
-                        balanceBefore: try? wallet.managedIdentity(identityId: existingId).getBalance(),
                         suppliedCredits: shortfallDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
                         try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: shortfallDuffs)) {
                             try await wallet.topUpIdentityWithFunding(

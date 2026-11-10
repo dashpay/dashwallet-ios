@@ -23,7 +23,7 @@ The Identity option raises a Receipt when the Current identity's credits rise ab
 
 ## Decision outcome
 
-**Chosen:** option 3, a typed `IdentityTopUpDidComplete` event that the watcher subtracts from future increases by raising its Starting balance, plus a registry of top-ups in flight that holds the Receipt decision until that event arrives. The event alone (option 1) left the window between Platform raising the balance and the top-up call returning, in which a check took the own top-up for a payment and ended the watch. The registry is shared because a top-up can start before the Receive screen that watches its identity exists (the username flow closes while its top-up still runs); that is the reason guardrail 4 asks for, and the watcher takes it injected. The event stays a new, typed name rather than a re-post of the DashPay registration notification.
+**Chosen:** option 3, a typed `IdentityTopUpDidComplete` event that the watcher subtracts from future increases by raising its Starting balance, plus a registry of top-ups in flight that holds the Receipt decision until that event arrives. The event carries the balance the top-up's transition returned and the credits it was handed, and the watcher sets its Starting balance to the lower of that balance and its Starting balance plus those credits: a delta over the whole top-up would be cut by a spend from elsewhere while it ran, which the watcher has already subtracted, and the top-up would come back as a Receipt (review-2026-11-11-r1 S1). The event alone (option 1) left the window between Platform raising the balance and the top-up call returning, in which a check took the own top-up for a payment and ended the watch. The registry is shared because a top-up can start before the Receive screen that watches its identity exists (the username flow closes while its top-up still runs); that is the reason guardrail 4 asks for, and the watcher takes it injected. The event stays a new, typed name rather than a re-post of the DashPay registration notification.
 
 ## Consequences
 
@@ -36,7 +36,7 @@ The Identity option raises a Receipt when the Current identity's credits rise ab
 **Negative**
 - Every top-up path gets a new outgoing contract: a top-up of an existing identity that neither runs `IdentityTopUpViewModel.topUp` nor goes through `IdentityTopUpDidComplete.announcing` raises a false Receipt.
 - A new process-wide object, `IdentityTopUpsInFlight.shared`. A top-up that is in flight when the Identity option is opened delays the Starting balance until it ends, so the card says it is watching a little later.
-- The amount the event carries is what the top-up path knows: the rise over the stored balance it started from, capped at the credits it supplied. A Payer's credits that land in between are counted as the top-up's only up to that cap, so at most the top-up's fee worth of them raises no Receipt (sad.md §11).
+- The event carries the transition's own balance, so a Payer's credits that land between the watcher's last check and the end of the top-up are in it. The Starting balance moves by at most the credits the top-up was handed, so at most the top-up's fee worth of them raises no Receipt (sad.md §11).
 - A top-up that throws after Platform carried it out posts nothing; once it leaves the registry, its rise shows as «Received» (accepted limit, spec §6.1).
 
 **Neutral**

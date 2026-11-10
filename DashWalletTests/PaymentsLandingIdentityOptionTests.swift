@@ -374,7 +374,8 @@ final class PaymentsLandingIdentityOptionTests: XCTestCase {
         await ticks.fire()
         visitInternalTransfer(model) {
             IdentityTopUpDidComplete(
-                walletId: walletId, network: .testnet, identityId: identityId, creditsAdded: 20_000)
+                walletId: walletId, network: .testnet, identityId: identityId,
+                balanceAfter: 30_000, suppliedCredits: 20_000)
                 .post(to: topUpCenter)
         }
         await ticks.fire()

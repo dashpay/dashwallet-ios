@@ -45,11 +45,8 @@ final class IdentityTopUpEventTests: XCTestCase {
         if let token { center.removeObserver(token) }
     }
 
-    private func announced(
-        balanceBefore: UInt64?, balanceAfter: UInt64?, suppliedCredits: UInt64
-    ) -> [IdentityTopUpDidComplete] {
+    private func announced(balanceAfter: UInt64?, suppliedCredits: UInt64) -> [IdentityTopUpDidComplete] {
         IdentityTopUpDidComplete.announce(
-            balanceBefore: balanceBefore,
             balanceAfter: balanceAfter,
             suppliedCredits: suppliedCredits,
             walletId: walletId,
@@ -59,64 +56,38 @@ final class IdentityTopUpEventTests: XCTestCase {
         return events
     }
 
-    private func announcing(
-        balanceBefore: UInt64?, _ topUp: () async throws -> UInt64
-    ) async rethrows -> UInt64 {
+    private func announcing(_ topUp: () async throws -> UInt64) async rethrows -> UInt64 {
         try await IdentityTopUpDidComplete.announcing(
             walletId: walletId, network: .testnet, identityId: identityId,
-            balanceBefore: balanceBefore, suppliedCredits: 1_000_000_000, center: center, inFlight: inFlight, topUp)
+            suppliedCredits: 1_000_000_000, center: center, inFlight: inFlight, topUp)
     }
 
     private var key: IdentityTopUpsInFlight.Key {
         .init(walletId: walletId, network: .testnet, identityId: identityId)
     }
 
-    func testSuccessfulTopUpPostsOneEventWithTheCreditsItAdded() {
-        let events = announced(
-            balanceBefore: 2_000_000_000, balanceAfter: 2_958_500_000, suppliedCredits: 1_000_000_000)
+    /// The event carries the transition's own balance and what it was handed,
+    /// not a delta over the whole top-up: a spend from elsewhere during it
+    /// would cut that delta (review-2026-11-11-r1 S1).
+    func testSuccessfulTopUpPostsOneEventWithItsBalanceAndSuppliedCredits() {
+        let events = announced(balanceAfter: 2_958_500_000, suppliedCredits: 1_000_000_000)
         XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events.first?.creditsAdded, 958_500_000)
+        XCTAssertEqual(events.first?.balanceAfter, 2_958_500_000)
+        XCTAssertEqual(events.first?.suppliedCredits, 1_000_000_000)
         XCTAssertEqual(events.first?.identityId, identityId)
         XCTAssertEqual(events.first?.walletId, walletId)
         XCTAssertEqual(events.first?.network, .testnet)
     }
 
     func testCancelledOrFailedTopUpPostsNothing() {
-        XCTAssertTrue(announced(
-            balanceBefore: 2_000_000_000, balanceAfter: nil, suppliedCredits: 1_000_000_000).isEmpty)
-    }
-
-    /// Without a stored balance to subtract from, the credits handed to the
-    /// transition are the most the top-up can have added.
-    func testUnknownBalanceBeforeFallsBackToTheSuppliedCredits() {
-        let events = announced(
-            balanceBefore: nil, balanceAfter: 5_000_000_000, suppliedCredits: 1_000_000_000)
-        XCTAssertEqual(events.map(\.creditsAdded), [1_000_000_000])
-    }
-
-    /// The balance before is the stored one, so a Payer's credits that landed
-    /// since it was last refreshed are part of the rise. The top-up cannot have
-    /// added more than it supplied, so the rest still raises a Receipt.
-    func testPayerCreditsInTheRiseAreNotCountedAsTheTopUp() {
-        let payerCredits: UInt64 = 700_000_000
-        let events = announced(
-            balanceBefore: 2_000_000_000,
-            balanceAfter: 2_000_000_000 + payerCredits + 958_500_000,
-            suppliedCredits: 1_000_000_000)
-        XCTAssertEqual(events.map(\.creditsAdded), [1_000_000_000])
-    }
-
-    func testBalanceThatDidNotRiseAddsNothing() {
-        let events = announced(
-            balanceBefore: 3_000_000_000, balanceAfter: 2_900_000_000, suppliedCredits: 1_000_000_000)
-        XCTAssertEqual(events.map(\.creditsAdded), [0])
+        XCTAssertTrue(announced(balanceAfter: nil, suppliedCredits: 1_000_000_000).isEmpty)
     }
 
     // MARK: The credits each funding source hands to the identity
 
     /// The Shielded route unshields the whole amount but claims it into the
     /// identity less the fee headroom, which stays at the wallet's Platform
-    /// address. Announcing the whole amount would let the cap absorb up to
+    /// address. Announcing the whole amount would let the watcher absorb up to
     /// the headroom of a Payer's credits with no Receipt.
     func testShieldedTopUpSuppliesTheAmountLessTheFeeHeadroom() {
         let amountDuffs: UInt64 = 5_000_000
@@ -135,16 +106,16 @@ final class IdentityTopUpEventTests: XCTestCase {
 
     // MARK: The coordinator's top-ups (registration shortfall, name purchase)
 
-    func testATopUpThatReturnsAnnouncesTheRiseAndPassesTheBalanceOn() async throws {
-        let after = try await announcing(balanceBefore: 2_000_000_000) { 2_958_500_000 }
+    func testATopUpThatReturnsAnnouncesItsBalanceAndPassesItOn() async throws {
+        let after = try await announcing { 2_958_500_000 }
         XCTAssertEqual(after, 2_958_500_000)
-        XCTAssertEqual(events.map(\.creditsAdded), [958_500_000])
+        XCTAssertEqual(events.map(\.balanceAfter), [2_958_500_000])
         XCTAssertEqual(events.first?.identityId, identityId)
     }
 
     func testATopUpThatThrowsAnnouncesNothing() async {
         do {
-            _ = try await announcing(balanceBefore: 2_000_000_000) { throw Refused.byPlatform }
+            _ = try await announcing { throw Refused.byPlatform }
             XCTFail("The refusal must reach the caller")
         } catch {
             XCTAssertEqual(error as? Refused, .byPlatform)
@@ -155,7 +126,7 @@ final class IdentityTopUpEventTests: XCTestCase {
     /// The watch holds its Receipt while the top-up runs (review-2026-11-10-r3 Q1).
     func testATopUpIsInFlightOnlyWhileItRuns() async throws {
         var runningDuringTopUp = false
-        _ = try await announcing(balanceBefore: 2_000_000_000) {
+        _ = try await announcing {
             runningDuringTopUp = inFlight.contains(key)
             return 2_958_500_000
         }
@@ -164,7 +135,7 @@ final class IdentityTopUpEventTests: XCTestCase {
     }
 
     func testATopUpThatThrowsIsNoLongerInFlight() async {
-        _ = try? await announcing(balanceBefore: 2_000_000_000) { throw Refused.byPlatform }
+        _ = try? await announcing { throw Refused.byPlatform }
         XCTAssertFalse(inFlight.contains(key))
     }
 
