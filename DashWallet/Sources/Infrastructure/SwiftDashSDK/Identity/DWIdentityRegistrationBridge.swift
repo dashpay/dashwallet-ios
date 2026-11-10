@@ -448,8 +448,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
             currentAttemptScope = nil
         }
         lastErrorMessage = coord.lastErrorMessage
-        lastFailureReason = coord.lastErrorMessage.map {
-            UsernameRegistrationFailureWording.message(forRaw: $0, username: coord.currentUsername ?? "")
+        // The coordinator's source for the attempt that ran, not the picker's
+        // current `preferredFundingSource`, which a later selection can change.
+        let paidFromShielded = coord.currentFundingSource == .shielded
+        if isFailed, paidFromShielded, let raw = coord.lastErrorMessage {
+            Self.logger.error("🪪 IDENT-BRIDGE :: shielded-paid registration failed: \(raw, privacy: .public)")
+        }
+        lastFailureReason = coord.lastError.map {
+            UsernameRegistrationFailureWording.message(
+                for: $0, username: coord.currentUsername ?? "", paidFromShielded: paidFromShielded)
         }
 
         // Reset preferredFundingSource to the safe default on
