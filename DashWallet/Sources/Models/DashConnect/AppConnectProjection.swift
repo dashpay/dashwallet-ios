@@ -764,6 +764,18 @@ extension AppConnect {
         return plan
     }
 
+    /// The order a disconnect disables keys in: the other keys first (the
+    /// DashPay profile keys no intent names, a fence left on), then the
+    /// app's own keys. Platform takes `maxKeysDisabledPerUpdate` keys per
+    /// update, and an update that fails leaves the later ones live. With the
+    /// app's keys last, a failure part way never leaves all of them off while
+    /// another key is still live, so the app's row stays and its retry
+    /// reaches the keys left (ADR-0031).
+    static func disableOrder(appKeyIds: [UInt32], otherKeyIds: [UInt32]) -> [UInt32] {
+        let app = Set(appKeyIds)
+        return Set(otherKeyIds).subtracting(app).sorted() + app.sorted()
+    }
+
     /// What a disconnect of `appId` submits on one identity: the keys its
     /// intents name, the live keys bound to its contracts that no intent
     /// names, and every DashPay profile key no intent names. Keys whose
@@ -775,7 +787,7 @@ extension AppConnect {
         let projection = project([snapshot], intents: intents)
         let others = projection.connections.first { $0.appId == appId }?.unrecordedKeyIds[snapshot.identityId] ?? []
         let profile = projection.unrecordedProfileKeyIds[snapshot.identityId] ?? []
-        plan.disable = Array(Set(plan.disable).union(others).union(profile)).sorted()
+        plan.disable = disableOrder(appKeyIds: plan.disable + others, otherKeyIds: profile)
         return plan
     }
 

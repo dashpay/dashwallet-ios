@@ -67,14 +67,14 @@ final class NotifiedEventStoreTests: XCTestCase {
     }
 
     /// `unmark` re-arms an id admitted without a record too, so a caller that
-    /// posts one id repeatedly (CrowdNode's result) is not refused for good
+    /// posts one id repeatedly is not refused for good
     /// while the database is failing.
     func testUnmarkOnFailingDatabaseReadmitsTheId() async throws {
         let broken = NotifiedEventStore(connection: try Connection(.inMemory))
 
-        _ = await broken.markIfNew(id: "crowdnode.result", topic: .crowdnode)
-        await broken.unmark(id: "crowdnode.result")
-        let again = await broken.markIfNew(id: "crowdnode.result", topic: .crowdnode)
+        _ = await broken.markIfNew(id: "swap.result", topic: .swap)
+        await broken.unmark(id: "swap.result")
+        let again = await broken.markIfNew(id: "swap.result", topic: .swap)
 
         XCTAssertTrue(again)
     }
@@ -83,7 +83,7 @@ final class NotifiedEventStoreTests: XCTestCase {
         // The id is the dedup key on its own — the same event surfacing via
         // another topic-tagged path must still be dropped.
         _ = await store.markIfNew(id: "event.1", topic: .transactions)
-        let again = await store.markIfNew(id: "event.1", topic: .crowdnode)
+        let again = await store.markIfNew(id: "event.1", topic: .swap)
 
         XCTAssertFalse(again)
     }
@@ -91,7 +91,7 @@ final class NotifiedEventStoreTests: XCTestCase {
     func testUnseenCountCountsUnseenAcrossTopics() async {
         _ = await store.markIfNew(id: "tx.1", topic: .transactions)
         _ = await store.markIfNew(id: "tx.2", topic: .transactions)
-        _ = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        _ = await store.markIfNew(id: "swap.1", topic: .swap)
 
         var count = await store.unseenCount()
         XCTAssertEqual(count, 3)
@@ -104,10 +104,10 @@ final class NotifiedEventStoreTests: XCTestCase {
 
     func testMarkAllSeenAffectsOnlyGivenTopicAndIsIdempotent() async {
         _ = await store.markIfNew(id: "tx.1", topic: .transactions)
-        _ = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        _ = await store.markIfNew(id: "swap.1", topic: .swap)
 
-        await store.markAllSeen(topic: .crowdnode)
-        await store.markAllSeen(topic: .crowdnode)
+        await store.markAllSeen(topic: .swap)
+        await store.markAllSeen(topic: .swap)
 
         let count = await store.unseenCount()
         XCTAssertEqual(count, 1)
@@ -115,7 +115,7 @@ final class NotifiedEventStoreTests: XCTestCase {
 
     func testMarkAllSeenWithoutTopicClearsEveryTopic() async {
         _ = await store.markIfNew(id: "tx.1", topic: .transactions)
-        _ = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        _ = await store.markIfNew(id: "dp.1", topic: .dashpay)
         _ = await store.markIfNew(id: "swap.1", topic: .swap)
 
         await store.markAllSeen()
@@ -123,7 +123,7 @@ final class NotifiedEventStoreTests: XCTestCase {
         let count = await store.unseenCount()
         XCTAssertEqual(count, 0)
         // Seen is not forgotten: the ids stay recorded for dedup.
-        let again = await store.markIfNew(id: "cn.1", topic: .crowdnode)
+        let again = await store.markIfNew(id: "swap.1", topic: .swap)
         XCTAssertFalse(again)
     }
 
@@ -218,11 +218,11 @@ final class NotifiedEventStoreTests: XCTestCase {
     func testUnmarkReArmsAnIdAdmittedWhileTheDatabaseWasBroken() async throws {
         let db = try Connection(.inMemory)
         let recovering = NotifiedEventStore(connection: db)
-        _ = await recovering.markIfNew(id: "crowdnode.result", topic: .transactions)
+        _ = await recovering.markIfNew(id: "tx.result", topic: .transactions)
 
         try AddNotifiedEventsTable().migrateDatabase(db)
-        await recovering.unmark(id: "crowdnode.result")
-        let afterUnmark = await recovering.markIfNew(id: "crowdnode.result", topic: .transactions)
+        await recovering.unmark(id: "tx.result")
+        let afterUnmark = await recovering.markIfNew(id: "tx.result", topic: .transactions)
 
         XCTAssertTrue(afterUnmark)
     }
@@ -238,5 +238,24 @@ final class NotifiedEventStoreTests: XCTestCase {
         XCTAssertEqual(unseen, 0)
         let markedAgain = await store.markIfNew(id: "tx.recent", topic: .transactions)
         XCTAssertFalse(markedAgain)
+    }
+
+    /// Events of a retired topic, left unseen by an older build, stop
+    /// counting toward the badge; their ids still deduplicate, and other
+    /// topics are untouched.
+    func testRetiredTopicMigrationMarksItsEventsSeenAndKeepsThem() async throws {
+        let db = try Connection(.inMemory)
+        try AddNotifiedEventsTable().migrateDatabase(db)
+        try db.run("INSERT INTO notified_events (id, topic, created_at, seen_at) VALUES (?, ?, ?, NULL)",
+                   "tx.ab", "crowdnode", Int64(Date().timeIntervalSince1970))
+        let retiredStore = NotifiedEventStore(connection: db)
+        _ = await retiredStore.markIfNew(id: "tx.1", topic: .transactions)
+
+        try MarkRetiredNotificationTopicsSeen().migrateDatabase(db)
+
+        let unseen = await retiredStore.unseenCount()
+        XCTAssertEqual(unseen, 1)
+        let again = await retiredStore.markIfNew(id: "tx.ab", topic: .transactions)
+        XCTAssertFalse(again)
     }
 }
