@@ -74,6 +74,17 @@ final class CoreShieldedDrainRecipientTests: XCTestCase {
         XCTAssertNil(UUID(drainOperationIdBytes: Data()))
     }
 
+    /// The lock snapshot (`ShieldedTxLookup`) and the resume's row read take
+    /// the drain id from here; it is the id the running drain is claimed by
+    /// (`ShieldedAssetLocksInFlight.claimDrain(operation.id)`).
+    func testRowIdentityNamesTheDrainThatBuiltTheLock() {
+        let id = UUID()
+        let bytes = withUnsafeBytes(of: id.uuid) { Data($0) }
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: bytes).operation, id)
+        XCTAssertNil(CoreShieldedDrainRowIdentity(operationIdBytes: nil).operation, "a lock no drain built")
+        XCTAssertNil(CoreShieldedDrainRowIdentity(operationIdBytes: bytes.dropLast()).operation, "a malformed id names no drain")
+    }
+
     // MARK: - Who a new drain pays
 
     func testDrainPaysTheMarkersRecipient() {
