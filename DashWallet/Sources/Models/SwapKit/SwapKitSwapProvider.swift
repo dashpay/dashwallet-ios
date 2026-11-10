@@ -959,10 +959,14 @@ final class SwapKitSwapProvider: SwapProvider {
         do {
             return LiveRouteState.classify(try await SwapKitAPIService.shared.quote(request))
         } catch {
-            if let response = Self.decodedQuoteResponse(from: error) {
-                return LiveRouteState.classify(response)
+            let state = Self.decodedQuoteResponse(from: error).map(LiveRouteState.classify) ?? .unknown
+            // Every field of a quote response is optional, so any JSON error body decodes. Only a
+            // conclusive answer is not a failure; a 401, a 429 or a gateway error is logged.
+            if state == .unknown {
+                let detail = SwapKitFailureDetail.describe(error)
+                DWLogger.log("SwapKit: route check \(asset) \(provider) \(direction) failed — \(detail)")
             }
-            return .unknown
+            return state
         }
     }
 

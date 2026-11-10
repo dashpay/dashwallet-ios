@@ -211,9 +211,10 @@ final class SwapRouteAvailability {
         let verdict: NearVerdict
         /// When this verdict was last confirmed — what makes it due for a re-check.
         let checkedAt: Date
-        /// When the verdict last changed to this value. A coin's own answer newer than this wins
-        /// over an outage, even after the outage was re-confirmed.
-        let since: Date
+        /// The sequence at the start of the round that last changed the verdict to this value. A
+        /// coin's own answer asked or recorded after it wins over an outage, even after the outage
+        /// was re-confirmed — also one recorded while that round was still asking.
+        let sinceSequence: Int
     }
 
     private let probeAfter: TimeInterval
@@ -256,7 +257,8 @@ final class SwapRouteAvailability {
     // MARK: Reading
 
     /// The last conclusive state of `provider` for `asset`, or `nil` when nothing usable is known.
-    /// A NEAR outage applies to every coin, except one whose own answer is newer than the outage.
+    /// A NEAR outage applies to every coin, except one whose own answer was asked or recorded after
+    /// the round that first found the outage started (`Verdict.sinceSequence`).
     ///
     /// `freshOnly` ignores answers that are due for a re-probe — for building a real quote, which
     /// must not leave out a provider on an answer the picker has not refreshed for a while.
@@ -265,7 +267,7 @@ final class SwapRouteAvailability {
         let entry = readableEntry(key).flatMap { freshOnly && now().timeIntervalSince($0.checkedAt) >= probeAfter ? nil : $0 }
         let verdict = readableVerdict(direction).flatMap { freshOnly && isDue($0) ? nil : $0 }
         if provider == .near, let verdict, verdict.verdict == .down {
-            if let entry, entry.checkedAt > verdict.since {
+            if let entry, storedSequence[key, default: 0] > verdict.sinceSequence {
                 return entry.state
             }
             return .noRoute
@@ -415,11 +417,13 @@ final class SwapRouteAvailability {
         }
 
         guard noRoutes() >= 2 else {
+            let kept = readableVerdict(direction).map { "\($0.verdict)" } ?? "none"
+            DWLogger.log("SwapKit: NEAR sentinel round (\(direction)) settled nothing; keeping \(kept)")
             inconclusiveRoundAt[direction] = now()
             return readableVerdict(direction)?.verdict
         }
         inconclusiveRoundAt[direction] = nil
-        setNearVerdict(.down, direction: direction)
+        setNearVerdict(.down, direction: direction, roundStart: roundStart)
         return .down
     }
 
@@ -430,7 +434,7 @@ final class SwapRouteAvailability {
         if readableVerdict(direction)?.verdict == .down {
             forgetSentinelNoRoutes(direction: direction, storedBefore: roundStart)
         }
-        setNearVerdict(.up, direction: direction)
+        setNearVerdict(.up, direction: direction, roundStart: roundStart)
         return .up
     }
 
@@ -446,12 +450,14 @@ final class SwapRouteAvailability {
         }
     }
 
-    private func setNearVerdict(_ verdict: NearVerdict, direction: SwapDirection) {
+    private func setNearVerdict(_ verdict: NearVerdict, direction: SwapDirection, roundStart: Int) {
         let previous = readableVerdict(direction)
-        let since = previous?.verdict == verdict ? previous?.since ?? now() : now()
-        nearVerdicts[direction] = Verdict(verdict: verdict, checkedAt: now(), since: since)
+        let sinceSequence = previous?.verdict == verdict ? previous?.sinceSequence ?? roundStart : roundStart
+        nearVerdicts[direction] = Verdict(verdict: verdict, checkedAt: now(), sinceSequence: sinceSequence)
         let previousVerdict = previous?.verdict
         if previousVerdict != verdict {
+            let was = previousVerdict.map { "\($0)" } ?? "none"
+            DWLogger.log("SwapKit: NEAR verdict (\(direction)) \(was) → \(verdict)")
             changes.send(direction)
         }
     }

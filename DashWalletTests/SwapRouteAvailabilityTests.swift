@@ -250,6 +250,7 @@ final class SwapRouteAvailabilityTests: XCTestCase {
 
         XCTAssertEqual(script.calls(to: .near), ["BTC.BTC", "ETH.ETH", "SOL.SOL"])
         XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+        XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .halted, "its own answer")
     }
 
     func testAHaltedSentinelStoodInForByARoutingSOLMeansUp() async {
@@ -452,7 +453,8 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(store.state(of: .near, for: "BTC.BTC", direction: .sell), .noRoute)
     }
 
-    /// Re-confirming an outage does not bury a coin's own answer given after the outage began.
+    /// Re-confirming an outage does not bury a coin's own answer recorded after the round that
+    /// first found the outage started.
     func testAReConfirmedOutageKeepsANewerPerCoinAnswer() async {
         SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
         await refresh(["ARB.USDT": [.near]])
@@ -466,7 +468,7 @@ final class SwapRouteAvailabilityTests: XCTestCase {
         XCTAssertEqual(label("ARB.USDT", capable: [.near]), .near)
     }
 
-    /// A coin's own answer newer than the outage verdict wins over it.
+    /// A coin's own answer recorded after the round that first found the outage started wins over it.
     func testANewerPerCoinAnswerOverridesTheNearOutage() async {
         SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
         await refresh(["ARB.USDT": [.near]])
@@ -710,6 +712,67 @@ final class SwapRouteAvailabilityTests: XCTestCase {
 
         XCTAssertEqual(Array(script.calls(to: .near).prefix(3)), ["BTC.BTC", "ETH.ETH", "SOL.SOL"])
         XCTAssertEqual(store.nearVerdict(for: .sell), .up)
+    }
+
+    /// A coin's answer stored before the round that finds the outage is hidden by it.
+    func testAnAnswerFromBeforeTheOutageRoundIsHidden() async {
+        await refresh(["AVAX.AVAX": [.near]])
+        XCTAssertEqual(store.state(of: .near, for: "AVAX.AVAX", direction: .sell), .available)
+
+        clock += 601
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        await refresh(["AVAX.AVAX": [.near]])
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+        XCTAssertEqual(store.state(of: .near, for: "AVAX.AVAX", direction: .sell), .noRoute)
+    }
+
+    /// A probe asked before the round that finds the outage, returning while the round is asking,
+    /// is ordered by when it was asked: the outage hides it.
+    func testAProbeAskedBeforeTheOutageRoundIsHidden() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let check = Task { @MainActor in
+            await store.probeNow(asset: "AVAX.AVAX", provider: .near, direction: .sell, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["AVAX.AVAX"] }
+        let round = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["AVAX.AVAX", "BTC.BTC"] }
+        script.openGate()
+        _ = await check.value
+        await round.value
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+        XCTAssertEqual(store.state(of: .near, for: "AVAX.AVAX", direction: .sell), .noRoute)
+    }
+
+    /// A coin's own route recorded while the round that finds the outage is still asking comes after
+    /// that round started: the round finishing later does not hide it.
+    func testACoinRouteRecordedDuringTheOutageRoundStaysUsable() async {
+        SwapRouteAvailability.nearSentinels.forEach { script.set(.noRoute, .near, $0) }
+        script.closeGate()
+        let store: SwapRouteAvailability = self.store
+        let probe = script.probe
+        let task = Task { @MainActor in
+            await store.refresh(assets: ["AVAX.AVAX"], direction: .sell, capable: { _ in [.near] }, probe: probe)
+        }
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC"] }
+        script.openGate()
+        script.closeGate()
+        await waitUntil { self.script.calls(to: .near) == ["BTC.BTC", "ETH.ETH"] }
+
+        store.record(.available, provider: .near, asset: "AVAX.AVAX", direction: .sell)
+        clock += 1
+        script.openGate()
+        await task.value
+
+        XCTAssertEqual(store.nearVerdict(for: .sell), .down)
+        XCTAssertEqual(store.state(of: .near, for: "AVAX.AVAX", direction: .sell), .available)
+        XCTAssertEqual(label("AVAX.AVAX", capable: [.near]), .near)
     }
 
     // MARK: Load

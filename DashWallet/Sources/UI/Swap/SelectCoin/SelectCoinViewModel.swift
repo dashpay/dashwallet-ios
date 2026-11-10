@@ -156,6 +156,8 @@ class SelectCoinViewModel: ObservableObject {
                 swapProvider.refreshRouteAvailability(for: displayedPools, direction: direction)
             }
         } catch {
+            let detail = SwapKitFailureDetail.describe(error)
+            DWLogger.log("Swap: \(type(of: swapProvider)) coin list (\(direction)) failed to load — \(detail)")
             errorMessage = error.localizedDescription
         }
     }
