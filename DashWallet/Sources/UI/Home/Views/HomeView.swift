@@ -265,6 +265,10 @@ struct HomeViewContent<Content: View>: View {
     /// confirm sheet closes the moment it begins — so its outcome is
     /// announced here, where the user lands.
     @ObservedObject private var internalTransfers = InternalTransferRunner.shared
+    /// A pending "to Shielded" row whose lock is still being consumed is not
+    /// stuck: it must not offer "tap to finish", which would start a second
+    /// attempt on the same lock.
+    @ObservedObject private var shieldedLocksInFlight = ShieldedAssetLocksInFlight.shared
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
@@ -837,19 +841,6 @@ struct HomeViewContent<Content: View>: View {
         txItem txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            let firstTx = set.transactionMap.values.first
-            DashUIKit.TransactionView(
-                icon: IconName.custom("tx.item.cn.icon").dashIconSource,
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: firstTx?.shortTimeString ?? "",
-                dashAmount: set.amount,
-                amountSign: .none
-            )
-            .onTapGesture { self.selectedTxDataItem = txDataItem }
-            .frame(height: 80)
-
         case .coinjoin(let set):
             let firstTx = set.transactionMap.values.first
             DashUIKit.TransactionView(
@@ -885,6 +876,10 @@ struct HomeViewContent<Content: View>: View {
             // Same precedence for the amount treatment: only a metadata-less
             // internal move drops the +/- sign for the circulating-arrows glyph.
             let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
+            let isShieldingInFlight = txItem.isShieldedLockInFlight(in: shieldedLocksInFlight)
+            // A transfer still running reads as an ordinary internal transfer
+            // (its route chip); only a stuck one offers "tap to finish".
+            let offersShieldedFinish = txItem.isPendingShieldedTransfer && !isShieldingInFlight
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -913,7 +908,7 @@ struct HomeViewContent<Content: View>: View {
                     ?? (contactAvatar == nil ? nil : icons.primary.dashIconSource),
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
-                details: txItem.isPendingShieldedTransfer
+                details: offersShieldedFinish
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
                     : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
@@ -936,7 +931,7 @@ struct HomeViewContent<Content: View>: View {
             ) {
                 // A stuck "to Shielded" transfer opens the recovery sheet
                 // instead of the read-only detail/gift-card sheets.
-                if txItem.isPendingShieldedTransfer {
+                if offersShieldedFinish {
                     self.pendingShieldedRecovery = txItem
                 } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY
@@ -1161,7 +1156,7 @@ struct TransactionDetailsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
-    /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
+    /// The transaction opened from a CoinJoin group, shown over the group.
     @State private var groupedTransaction: Transaction? = nil
     @AccessibilityFocusState private var focusedGroupRow: String?
     
@@ -1193,8 +1188,6 @@ struct TransactionDetailsSheet: View {
         from txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            groupedTransactionsDestination(model: set)
         case .coinjoin(let set):
             groupedTransactionsDestination(model: set)
         case .coinjoinWithdrawal(let set):

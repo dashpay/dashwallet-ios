@@ -77,9 +77,6 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
         contentsView.atmHandler = { [weak self] in
             self?.showAtms()
         }
-        contentsView.stakingHandler = { [weak self] in
-            self?.showStakingIfSynced()
-        }
         
         let parentView = UIStackView()
         parentView.translatesAutoresizingMaskIntoConstraints = false
@@ -124,38 +121,6 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
             self.delegate?.exploreViewControllerShowSendPayment(self)
         }
         navigationController?.pushViewController(vc, animated: true)
-    }
-    
-    private func showStakingIfSynced() {
-        if SyncingActivityMonitor.shared.state == .syncDone {
-            let vc = CrowdNodeModelObjcWrapper.getRootVC()
-            navigationController?.pushViewController(vc, animated: true)
-        } else {
-            notifyChainSyncing()
-        }
-    }
-    
-    private func notifyChainSyncing() {
-        let title = NSLocalizedString("The chain is syncing…", comment: "")
-        let message = NSLocalizedString("Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up.", comment: "")
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        
-        let websiteAction = UIAlertAction(
-            title: NSLocalizedString("Go to CrowdNode website", comment: ""),
-            style: .default
-        ) { _ in
-            UIApplication.shared.open(CrowdNodeObjcWrapper.crowdNodeWebsiteUrl(), options: [:], completionHandler: nil)
-        }
-        alert.addAction(websiteAction)
-        
-        let closeAction = UIAlertAction(
-            title: NSLocalizedString("Close", comment: ""),
-            style: .cancel,
-            handler: nil
-        )
-        alert.addAction(closeAction)
-        
-        present(alert, animated: true, completion: nil)
     }
     
     // MARK: - Where to Spend
