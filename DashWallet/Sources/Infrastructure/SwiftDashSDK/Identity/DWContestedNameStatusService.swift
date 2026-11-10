@@ -85,6 +85,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// between leaves a marker from an earlier launch, which proves nothing
     /// was submitted and must be reconciled with Platform before it may read
     /// as "Voting" (or ever resolve to Blocked/Rejected).
+    // An empty token marks an ended, unconfirmed attempt: eligible for the
+    // same reconciliation as an earlier launch, without confirming submission.
     private static let provisionalField = "provisional"
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
@@ -212,6 +214,22 @@ public final class DWContestedNameStatusService: NSObject {
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
             "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) provisional=\(provisional, privacy: .public) inFlight=\(entries.count, privacy: .public)")
+    }
+
+    /// Release this launch's active marker for reconciliation after an unknown result.
+    /// Keep its provisional status, deadline and promotion intent intact.
+    @nonobjc
+    func markSubmissionUnconfirmed(label: String, network: Network, identityId: Data, walletId: Data) {
+        guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+        var entries = Self.entries(for: network, walletId: walletId)
+        let canonical = Self.canonicalLabel(label)
+        let identityHex = identityId.map { String(format: "%02x", $0) }.joined()
+        guard var entry = entries[canonical],
+              entry[Self.identityField] as? String == identityHex,
+              entry[Self.provisionalField] as? String == launchToken else { return }
+        entry[Self.provisionalField] = ""
+        entries[canonical] = entry
+        UserDefaults.standard.set(entries, forKey: key)
     }
 
     /// Cache the real contest deadline for one label once Platform exposes
@@ -393,7 +411,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// Retired entries without an owner remain available for migration, but
     /// cannot be assigned to whichever identity happens to be selected.
     ///
-    /// A marker from an earlier launch is left out: nothing proves that
+    /// A marker from an earlier launch or an ended, unconfirmed attempt is
+    /// left out: nothing proves that
     /// submission happened (see `provisionalField`). This launch's marker is
     /// kept — its registration is still running — unless `confirmedOnly`,
     /// which is what outcome decisions (won / lost / blocked) use.
@@ -407,8 +426,8 @@ public final class DWContestedNameStatusService: NSObject {
         }
     }
 
-    /// Pre-submission markers an earlier launch left behind: the app ended
-    /// between the marker and the DPNS write's result. Still filtered from
+    /// Markers left by an earlier launch or an ended, unconfirmed attempt.
+    /// The DPNS write's result remains unknown. Still filtered from
     /// owned names, never reported as a request, and reconciled with Platform
     /// by `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`.
     @nonobjc

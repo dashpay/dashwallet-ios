@@ -1596,6 +1596,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // A submitted write may still enter voting. Retain its provisional
             // bookmark and promotion intent for normal name reconciliation.
             if case CoordinatorError.platformWriteUnconfirmed = error {
+                DWContestedNameStatusService.shared.markSubmissionUnconfirmed(
+                    label: username, network: network, identityId: identityId, walletId: wallet.walletId)
                 throw CoordinatorError.dpnsRegistration(error)
             }
             withdrawPrematureBookmark(
@@ -2547,7 +2549,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
-    /// Settles a pre-submission marker left by an earlier launch — the app
+    /// Settles a marker from an ended, unconfirmed attempt or an earlier launch — the app
     /// ended between the step-2.9 marker and the DPNS write's result, so it is
     /// unknown whether the request was sent. Platform answers with the same
     /// lookup a registration retry makes:
@@ -2578,7 +2580,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
 
         // Same freshness guard as `resolvePendingContest`, and the marker must
-        // still be the earlier launch's: a retry started meanwhile owns it.
+        // still be eligible for reconciliation: a retry started meanwhile owns it.
         let service = DWContestedNameStatusService.shared
         guard Self.isActiveContext(walletId: wallet.walletId, network: expectedNetwork),
               DWCurrentUserIdentityInfo.shared.identityId == identityId,

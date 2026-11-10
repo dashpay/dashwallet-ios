@@ -25,6 +25,14 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
         }
     }
 
+    func testDefiniteTopUpFailureKeepsItsOriginalCause() {
+        let failure = DWIdentityRegistrationCoordinator.identityTopUpFailure(Failure.insufficientCredits)
+        guard case .identityTopUp(let underlying) = failure,
+              case Failure.insufficientCredits = underlying else {
+            return XCTFail("A definite refusal must not become an unconfirmed submission")
+        }
+    }
+
     func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() throws {
         let readiness = IdentityNameReadiness()
         let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))

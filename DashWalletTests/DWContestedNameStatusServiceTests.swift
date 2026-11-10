@@ -209,6 +209,41 @@ final class DWContestedNameStatusServiceTests: XCTestCase {
         XCTAssertEqual(service.pendingVotingEndTime(label: "alpha", for: .testnet, walletId: walletId), end)
     }
 
+    func testUnconfirmedSubmissionReconcilesWithoutRelaunch() {
+        let identity = Data([1])
+        service.recordSubmission(
+            label: "Alpha", network: .testnet, identityId: identity, walletId: walletId,
+            promoteOnWin: true, provisional: true)
+        let end = service.pendingVotingEndTime(label: "alpha", for: .testnet, walletId: walletId)
+        service.markSubmissionUnconfirmed(label: "alpha", network: .testnet, identityId: identity, walletId: walletId)
+        XCTAssertTrue(service.pendingLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+        XCTAssertEqual(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId), ["alpha"])
+        XCTAssertEqual(service.pendingVotingEndTime(label: "alpha", for: .testnet, walletId: walletId), end)
+        let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).77"
+        let entry = (UserDefaults.standard.dictionary(forKey: key)?["alpha"] as? [String: Any])
+        XCTAssertEqual(entry?["promoteOnWin"] as? Bool, true)
+
+        // The existing reconciliation path finds our contender and confirms it.
+        service.recordSubmission(label: "alpha", network: .testnet, identityId: identity, walletId: walletId)
+        XCTAssertEqual(service.pendingLabels(
+            for: .testnet, identityId: identity, walletId: walletId, confirmedOnly: true), ["alpha"])
+        service.markSubmissionUnconfirmed(label: "alpha", network: .testnet, identityId: identity, walletId: walletId)
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty,
+                      "A late unknown result must not downgrade a confirmed bookmark")
+    }
+
+    func testUnconfirmedMarkerIsIdentityScopedAndRetryOwnsItAgain() {
+        let identity = Data([1])
+        service.recordSubmission(label: "Beta", network: .testnet, identityId: identity, walletId: walletId, provisional: true)
+        service.markSubmissionUnconfirmed(label: "beta", network: .testnet, identityId: Data([2]), walletId: walletId)
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty)
+        service.markSubmissionUnconfirmed(label: "beta", network: .testnet, identityId: identity, walletId: walletId)
+        XCTAssertEqual(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId), ["beta"])
+        service.recordSubmission(label: "beta", network: .testnet, identityId: identity, walletId: walletId, provisional: true)
+        XCTAssertTrue(service.provisionalLabels(for: .testnet, identityId: identity, walletId: walletId).isEmpty,
+                      "Reconciliation must not race an active retry")
+    }
+
     func testProvisionalMarkerIsWithdrawnAndNeverDowngradesAConfirmedEntry() {
         let walletId = Data([0x91, 0x27])
         let key = "DWPendingContestedDPNSEntries.\(Network.testnet.persistenceScope).9127"
