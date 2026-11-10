@@ -74,6 +74,8 @@ struct CastVoteSheet: View {
         DashUIKit.BottomSheet(
             title: NSLocalizedString("Cast vote", comment: "Voting"),
             showBackButton: .constant(false),
+            // No swipe-down while a vote is being cast, same as the close button.
+            isDismissalEnabled: .constant(!viewModel.isCasting),
             isCloseButtonEnabled: !viewModel.isCasting,
             onClose: {
                 viewModel.dismissCastResult()

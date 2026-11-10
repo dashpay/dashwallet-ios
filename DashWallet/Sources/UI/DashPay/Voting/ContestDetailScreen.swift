@@ -28,7 +28,8 @@ import SwiftUI
 struct ContestDetailScreen: View {
     /// The UIKit stack this screen is pushed on: back pops it, and contender
     /// details are pushed onto it.
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     let contest: DPNSContest
     @ObservedObject var viewModel: VotingViewModel
 
@@ -123,7 +124,7 @@ struct ContestDetailScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -139,7 +140,9 @@ struct ContestDetailScreen: View {
         .background(Color(UIColor.systemGroupedBackground))
         .navigationBarHidden(true)
         .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
-        .sheet(item: $pendingChoice) { choice in
+        // A swipe-down skips the sheet's close button, so the result it
+        // leaves behind is cleared here as well.
+        .sheet(item: $pendingChoice, onDismiss: { viewModel.dismissCastResult() }) { choice in
             CastVoteSheet(
                 contest: current,
                 choice: choice,
@@ -299,7 +302,8 @@ struct ContestDetailScreen: View {
 
 private struct ContenderRow: View {
     /// The UIKit stack the contender details are pushed on.
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     let contender: DPNSContender
     /// Passed through to the details screen, which shows the stored form and
     /// looks this contender's published link up by it.
@@ -324,7 +328,7 @@ private struct ContenderRow: View {
                     canVote: canVote,
                     voteTitle: voteTitle,
                     onVote: onVote)
-                vc.pushViewController(UIHostingController(rootView: screen), animated: true)
+                vc?.pushViewController(UIHostingController(rootView: screen), animated: true)
             } label: {
                 HStack(spacing: 6) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -423,7 +427,8 @@ extension VoteChoice: Identifiable {
 /// where the evidence is.
 private struct ContenderDetailScreen: View {
     /// The UIKit stack this screen is pushed on; back pops it.
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     let contender: DPNSContender
     let normalizedLabel: String
     let votingEndsAt: Date?
@@ -459,7 +464,7 @@ private struct ContenderDetailScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 })
 
@@ -503,8 +508,8 @@ private struct ContenderDetailScreen: View {
                                 // this one; step back first, and open it once
                                 // the pop has finished so it is not presented
                                 // mid-transition.
-                                vc.popViewController(animated: true)
-                                if let coordinator = vc.transitionCoordinator {
+                                vc?.popViewController(animated: true)
+                                if let coordinator = vc?.transitionCoordinator {
                                     coordinator.animate(alongsideTransition: nil) { _ in onVote() }
                                 } else {
                                     onVote()

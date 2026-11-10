@@ -67,7 +67,9 @@ struct BulkSelectionBar: View {
             .padding(.bottom, 8)
         }
         .background(.bar)
-        .sheet(isPresented: $showSheet) {
+        // A swipe-down skips the sheet's close button, so the result it
+        // leaves behind is cleared here as well.
+        .sheet(isPresented: $showSheet, onDismiss: { viewModel.dismissCastResult() }) {
             BulkVoteSheet(viewModel: viewModel) {
                 showSheet = false
                 viewModel.endSelecting()
@@ -108,6 +110,8 @@ struct BulkVoteSheet: View {
         DashUIKit.BottomSheet(
             title: NSLocalizedString("Vote on several", comment: "Voting"),
             showBackButton: .constant(false),
+            // No swipe-down while a vote is being cast, same as the close button.
+            isDismissalEnabled: .constant(!viewModel.isCasting),
             isCloseButtonEnabled: !viewModel.isCasting,
             onClose: {
                 viewModel.dismissCastResult()

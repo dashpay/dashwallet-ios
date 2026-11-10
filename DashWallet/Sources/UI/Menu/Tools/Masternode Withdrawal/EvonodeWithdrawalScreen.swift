@@ -29,7 +29,8 @@ import UIKit
 /// wallet holds the payout key — and a confirmation sheet that runs the
 /// claim. Pushed on the UIKit navigation stack from `MasternodeDetailScreen`.
 struct EvonodeWithdrawalScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel: EvonodeWithdrawalViewModel
 
     /// Fired after a successful claim with the identity's remaining
@@ -41,10 +42,13 @@ struct EvonodeWithdrawalScreen: View {
     private let onOutcomeUnconfirmed: () -> Void
 
     @State private var showConfirmation = false
+    /// Set when the confirmation sheet closes the flow: the page pops once
+    /// the sheet has finished dismissing, never while it is still on screen.
+    @State private var popsAfterConfirmation = false
     @State private var showScanner = false
 
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         masternode: PlatformMasternode,
         keys: MasternodeWithdrawalKeys,
         claimableCredits: UInt64,
@@ -67,7 +71,7 @@ struct EvonodeWithdrawalScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -98,19 +102,23 @@ struct EvonodeWithdrawalScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showConfirmation) {
+        .sheet(isPresented: $showConfirmation, onDismiss: {
+            guard popsAfterConfirmation else { return }
+            popsAfterConfirmation = false
+            vc?.popViewController(animated: true)
+        }) {
             EvonodeWithdrawalConfirmSheet(
                 viewModel: viewModel,
                 onCancel: { showConfirmation = false },
                 onCompleted: { remaining in
-                    showConfirmation = false
                     onWithdrawn(remaining)
-                    vc.popViewController(animated: true)
+                    popsAfterConfirmation = true
+                    showConfirmation = false
                 },
                 onUnconfirmedAcknowledged: {
-                    showConfirmation = false
                     onOutcomeUnconfirmed()
-                    vc.popViewController(animated: true)
+                    popsAfterConfirmation = true
+                    showConfirmation = false
                 })
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)

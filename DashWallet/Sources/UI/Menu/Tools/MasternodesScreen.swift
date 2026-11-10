@@ -216,7 +216,8 @@ extension PlatformMasternode {
 // MARK: - MasternodesScreen
 
 struct MasternodesScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel = MasternodesViewModel()
 
     /// The UIKit wrapper every entry point (Governance menu, home card) uses.
@@ -236,7 +237,7 @@ struct MasternodesScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -248,7 +249,7 @@ struct MasternodesScreen: View {
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button {
-                        vc.pushViewController(
+                        vc?.pushViewController(
                             UIHostingController(rootView: AddMasternodeScreen(vc: vc, onTracked: { viewModel.load() })),
                             animated: true)
                     }
@@ -333,7 +334,7 @@ struct MasternodesScreen: View {
 
     private func trackedRow(for masternode: PlatformMasternode) -> some View {
         Button {
-            vc.pushViewController(
+            vc?.pushViewController(
                 UIHostingController(rootView: TrackedMasternodeDetailScreen(
                     vc: vc,
                     record: masternode,
@@ -351,7 +352,7 @@ struct MasternodesScreen: View {
 
     private func row(for masternode: PlatformMasternode) -> some View {
         Button {
-            vc.pushViewController(
+            vc?.pushViewController(
                 UIHostingController(rootView: MasternodeDetailScreen(
                     vc: vc,
                     masternode: masternode,
@@ -537,7 +538,8 @@ final class MasternodeDetailViewModel: ObservableObject {
 /// can claim it (owner key → payout address only; payout/transfer key →
 /// any destination). The claim itself lives in `EvonodeWithdrawalScreen`.
 struct MasternodeDetailScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     let masternode: PlatformMasternode
     let ownerOwnership: String
     let votingOwnership: String
@@ -549,7 +551,7 @@ struct MasternodeDetailScreen: View {
     @State private var unbanSubmitted = false
 
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         masternode: PlatformMasternode,
         ownerOwnership: String,
         votingOwnership: String,
@@ -569,7 +571,7 @@ struct MasternodeDetailScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -772,7 +774,7 @@ struct MasternodeDetailScreen: View {
     private var requestStatusRow: some View {
         if masternode.platformDAPIAddress != nil {
             Button {
-                vc.pushViewController(
+                vc?.pushViewController(
                     UIHostingController(rootView: EvonodeStatusScreen(vc: vc, masternode: masternode)),
                     animated: true)
             } label: {
@@ -797,7 +799,7 @@ struct MasternodeDetailScreen: View {
         if let credits = viewModel.claimableCredits, credits > 0 {
             if let keys = viewModel.withdrawalKeys, keys.canWithdraw {
                 Button {
-                    vc.pushViewController(
+                    vc?.pushViewController(
                         UIHostingController(rootView: EvonodeWithdrawalScreen(
                             vc: vc,
                             masternode: masternode,

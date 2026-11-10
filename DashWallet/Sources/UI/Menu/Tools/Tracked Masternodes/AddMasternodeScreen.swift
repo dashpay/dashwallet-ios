@@ -24,7 +24,8 @@ import UIKit
 /// then the user tracks it (with an optional label) and can attach keys,
 /// with the key that found the node already filled into its field.
 struct AddMasternodeScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel = AddMasternodeViewModel()
     @State private var showScanner = false
     /// Fires after the node is tracked and this screen closes, so the list
@@ -36,7 +37,7 @@ struct AddMasternodeScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -265,7 +266,7 @@ struct AddMasternodeScreen: View {
                     viewModel.saveLabelIfChanged()
                     if viewModel.saveKeys() {
                         onTracked()
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 } label: {
                     Text(NSLocalizedString("Done", comment: ""))

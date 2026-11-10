@@ -32,7 +32,8 @@ import SwiftUI
 struct UsernameVotingScreen: View {
     /// The UIKit stack this screen is pushed on; contest details are pushed
     /// onto it.
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     /// Leaves the screen; the bar's back button calls it.
     let onClose: () -> Void
 
@@ -146,7 +147,7 @@ struct UsernameVotingScreen: View {
 
     private func showContest(_ contest: DPNSContest) {
         let screen = ContestDetailScreen(vc: vc, contest: contest, viewModel: viewModel)
-        vc.pushViewController(UIHostingController(rootView: screen), animated: true)
+        vc?.pushViewController(UIHostingController(rootView: screen), animated: true)
     }
 
     @ViewBuilder

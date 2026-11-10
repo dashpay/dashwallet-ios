@@ -29,10 +29,11 @@ import UIKit
 /// status" button; the request itself is sent when this screen appears and
 /// again on Refresh — never on its own.
 struct EvonodeStatusScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel: EvonodeStatusViewModel
 
-    init(vc: UINavigationController, masternode: PlatformMasternode) {
+    init(vc: UINavigationController?, masternode: PlatformMasternode) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: EvonodeStatusViewModel(masternode: masternode))
     }
@@ -42,7 +43,7 @@ struct EvonodeStatusScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {

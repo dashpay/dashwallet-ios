@@ -258,7 +258,8 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
 /// learned about it, the keys attached on this device (with add / remove),
 /// and the actions those keys enable.
 struct TrackedMasternodeDetailScreen: View {
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel: TrackedMasternodeDetailViewModel
     @State private var labelDraft: String
     @State private var showStopConfirm = false
@@ -271,7 +272,7 @@ struct TrackedMasternodeDetailScreen: View {
     @State private var unbanSubmitted = false
     let onChanged: () -> Void
 
-    init(vc: UINavigationController, record: PlatformMasternode, onChanged: @escaping () -> Void) {
+    init(vc: UINavigationController?, record: PlatformMasternode, onChanged: @escaping () -> Void) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: TrackedMasternodeDetailViewModel(record: record))
         _labelDraft = State(initialValue: record.label ?? "")
@@ -283,7 +284,7 @@ struct TrackedMasternodeDetailScreen: View {
             DashUIKit.NavigationBar(
                 leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 },
                 central: {
@@ -328,7 +329,7 @@ struct TrackedMasternodeDetailScreen: View {
             Button(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), role: .destructive) {
                 if viewModel.stopTracking() {
                     onChanged()
-                    vc.popViewController(animated: true)
+                    vc?.popAfterPresentationEnds()
                 }
             }
         } message: {
@@ -573,7 +574,7 @@ struct TrackedMasternodeDetailScreen: View {
     private var requestStatusRow: some View {
         if viewModel.record.platformDAPIAddress != nil {
             Button {
-                vc.pushViewController(
+                vc?.pushViewController(
                     UIHostingController(rootView: EvonodeStatusScreen(vc: vc, masternode: viewModel.record)),
                     animated: true)
             } label: {
