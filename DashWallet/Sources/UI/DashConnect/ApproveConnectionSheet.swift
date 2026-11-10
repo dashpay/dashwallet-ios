@@ -268,8 +268,8 @@ struct ApproveConnectionSheet: View {
             )
 
             Text(
-                String(
-                    format: NSLocalizedString(
+                String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "This access ends after %d days, or when you disconnect the app.",
                         comment: "DashConnect one-QR login"),
                     terms.lifetimeDays

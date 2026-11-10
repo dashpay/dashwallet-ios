@@ -34,13 +34,13 @@ struct BulkSelectionBar: View {
             Divider()
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(String(format: NSLocalizedString("%d selected", comment: "Voting"),
+                    Text(String.localizedStringWithFormat(NSLocalizedString("%d selected", comment: "Voting"),
                                 viewModel.selectedLabels.count))
                         .font(.subheadline)
                         .fontWeight(.medium)
                     if !viewModel.selectedLabels.isEmpty {
-                        Text(String(
-                            format: NSLocalizedString("%u votes in total", comment: "Voting"),
+                        Text(String.localizedStringWithFormat(
+                            NSLocalizedString("%u votes in total", comment: "Voting"),
                             viewModel.bulkWeight(nodes: viewModel.votableNodes)))
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
@@ -187,14 +187,14 @@ struct BulkVoteSheet: View {
 
         if plan.changedPairs > 0 {
             if let replaced = plan.replacedChoice.map(Self.name(for:)) {
-                parts.append(String(
-                    format: NSLocalizedString(
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "%1$d of these masternodes already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes.",
                         comment: "Voting"),
                     plan.changedPairs, replaced, newName))
             } else {
-                parts.append(String(
-                    format: NSLocalizedString(
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "%1$d of these masternodes already voted differently on names you selected. Voting “%2$@” replaces those votes.",
                         comment: "Voting"),
                     plan.changedPairs, newName))
@@ -202,16 +202,16 @@ struct BulkVoteSheet: View {
         }
 
         if plan.duplicatePairs > 0 {
-            parts.append(String(
-                format: NSLocalizedString(
+            parts.append(String.localizedStringWithFormat(
+                NSLocalizedString(
                     "%1$d already voted “%2$@” and will be left as they are.",
                     comment: "Voting"),
                 plan.duplicatePairs, newName))
         }
 
         if plan.exhaustedPairs > 0 {
-            parts.append(String(
-                format: NSLocalizedString(
+            parts.append(String.localizedStringWithFormat(
+                NSLocalizedString(
                     "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.",
                     comment: "Voting"),
                 plan.exhaustedPairs))
@@ -223,8 +223,8 @@ struct BulkVoteSheet: View {
             return parts.joined(separator: " ")
         }
 
-        parts.append(String(
-            format: NSLocalizedString(
+        parts.append(String.localizedStringWithFormat(
+            NSLocalizedString(
                 "Continue with %1$d vote(s) across %2$d username(s)?",
                 comment: "Voting"),
             plan.totalPairs, plan.work.count))
@@ -267,8 +267,8 @@ struct BulkVoteSheet: View {
     private var form: some View {
         List {
             Section {
-                Text(String(
-                    format: NSLocalizedString(
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
                         "This applies one choice to all %d selected usernames.",
                         comment: "Voting"),
                     viewModel.selectedLabels.count))
@@ -314,7 +314,7 @@ struct BulkVoteSheet: View {
                                 .font(.subheadline)
                                 .foregroundColor(.primary)
                             Spacer()
-                            Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
+                            Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
                                         node.voteWeight))
                                 .font(.caption)
                                 .foregroundColor(Color.dash.secondaryText)
@@ -352,8 +352,8 @@ struct BulkVoteSheet: View {
                         if viewModel.isCasting {
                             SwiftUI.ProgressView()
                         } else {
-                            Text(String(
-                                format: NSLocalizedString("Vote on %d usernames", comment: "Voting"),
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString("Vote on %d usernames", comment: "Voting"),
                                 viewModel.selectedLabels.count))
                                 .fontWeight(.semibold)
                         }
@@ -389,8 +389,8 @@ private struct BulkResultView: View {
                         .foregroundColor(problematic.isEmpty
                                          ? .green
                                          : (fullySucceeded.isEmpty ? .red : .orange))
-                    Text(String(
-                        format: NSLocalizedString("%d of %d usernames voted on", comment: "Voting"),
+                    Text(String.localizedStringWithFormat(
+                        NSLocalizedString("%d of %d usernames voted on", comment: "Voting"),
                         fullySucceeded.count, reports.count))
                         .font(.headline)
                         .multilineTextAlignment(.center)

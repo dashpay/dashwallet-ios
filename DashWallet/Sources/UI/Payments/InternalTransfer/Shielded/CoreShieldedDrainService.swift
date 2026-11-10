@@ -83,6 +83,12 @@ enum CoreShieldedDrainRowIdentity: Equatable, Sendable {
         guard let bytes, !bytes.isEmpty else { self = .none; return }
         if let id = UUID(drainOperationIdBytes: bytes) { self = .operation(id) } else { self = .malformed }
     }
+
+    /// The drain's operation id, when the row names one.
+    var operation: UUID? {
+        if case .operation(let id) = self { return id }
+        return nil
+    }
 }
 
 /// The durable marker as one resume attempt found it.

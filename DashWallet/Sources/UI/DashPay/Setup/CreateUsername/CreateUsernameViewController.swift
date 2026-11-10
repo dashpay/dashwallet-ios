@@ -442,12 +442,12 @@ struct CreateUsernameView: View {
             identityLoadTimedOut = viewModel.isIdentityLoading
         }
         .alert(NSLocalizedString("Identity is still loading", comment: "Identity recovery"), isPresented: $identityLoadTimedOut) {
-            Button("Retry") {
+            Button(NSLocalizedString("Retry", comment: "Usernames")) {
                 DWCurrentUserIdentityInfo.shared.retryNameRefresh()
                 viewModel.refreshRegistrationRecoveryState()
                 identityLoadAttempt += 1
             }
-            Button("Cancel", role: .cancel) { }
+            Button(NSLocalizedString("Cancel", comment: "Usernames"), role: .cancel) { }
         } message: {
             Text(NSLocalizedString("Wait for the wallet and network to finish loading, then retry. No registration has been sent.", comment: "Identity recovery"))
         }
