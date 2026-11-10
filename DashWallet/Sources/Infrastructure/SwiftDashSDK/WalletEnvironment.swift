@@ -115,8 +115,8 @@ public final class WalletEnvironment: NSObject {
     /// managed switch (the runtime's `switchNetwork(to:)` owns the mirror
     /// zeroing and the lifecycle refresh itself) from an external write
     /// (recovery, sole-network selection), which still gets the full
-    /// observer behavior. Other listeners (DWRootModel, HomeViewModel,
-    /// CrowdNode, …) ignore `userInfo` and are unaffected.
+    /// observer behavior. Other listeners (DWRootModel, HomeViewModel, …)
+    /// ignore `userInfo` and are unaffected.
     public enum NetworkSwitchSource {
         case external
         case managedSwitch(transitionID: String)

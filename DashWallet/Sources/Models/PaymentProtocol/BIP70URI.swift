@@ -114,7 +114,8 @@ struct BIP70URI {
             case "label", "req-label": label = value
             case "message", "req-message": message = value
             case "r", "req-r": r = URL(string: value)
-            case "sender", "req-sender": callbackScheme = value
+            // Not a scheme an app can own → no callback; the rest of the link still stands.
+            case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
             case "user", "req-user": dashpayUsername = value
             case "currency", "req-currency": fiatCurrencyCode = value
             case "local", "req-local": fiatAmount = (value as NSString).floatValue

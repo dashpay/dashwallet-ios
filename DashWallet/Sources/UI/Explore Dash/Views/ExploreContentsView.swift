@@ -22,7 +22,6 @@ class ExploreContentsView: UIView {
     var getTestDashHandler: (() -> Void)?
     var whereToSpendHandler: (() -> Void)?
     var atmHandler: (() -> Void)?
-    var stakingHandler: (() -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -92,16 +91,6 @@ class ExploreContentsView: UIView {
             self?.atmHandler?()
         }
         buttonsStackView.addArrangedSubview(atmItem)
-        
-        let cnItem = createItem(
-            image: UIImage(named: "image.explore.dash.staking"),
-            title: NSLocalizedString("Staking", comment: ""),
-            subtitle: NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks.", comment: "")
-        ) { [weak self] in
-            self?.stakingHandler?()
-        }
-        cnItem.addContent(CrowdNodeAPYView(frame: .zero))
-        buttonsStackView.addArrangedSubview(cnItem)
         
         let verticalPadding: CGFloat = 10
         

@@ -837,19 +837,6 @@ struct HomeViewContent<Content: View>: View {
         txItem txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            let firstTx = set.transactionMap.values.first
-            DashUIKit.TransactionView(
-                icon: IconName.custom("tx.item.cn.icon").dashIconSource,
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
-                subtitle: firstTx?.shortTimeString ?? "",
-                dashAmount: set.amount,
-                amountSign: .none
-            )
-            .onTapGesture { self.selectedTxDataItem = txDataItem }
-            .frame(height: 80)
-
         case .coinjoin(let set):
             let firstTx = set.transactionMap.values.first
             DashUIKit.TransactionView(
@@ -1161,7 +1148,7 @@ struct TransactionDetailsSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
-    /// The transaction opened from a CrowdNode or CoinJoin group, shown over the group.
+    /// The transaction opened from a CoinJoin group, shown over the group.
     @State private var groupedTransaction: Transaction? = nil
     @AccessibilityFocusState private var focusedGroupRow: String?
     
@@ -1193,8 +1180,6 @@ struct TransactionDetailsSheet: View {
         from txDataItem: TransactionListDataItem
     ) -> some View {
         switch txDataItem {
-        case .crowdnode(let set):
-            groupedTransactionsDestination(model: set)
         case .coinjoin(let set):
             groupedTransactionsDestination(model: set)
         case .coinjoinWithdrawal(let set):
