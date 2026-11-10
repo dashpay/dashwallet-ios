@@ -3790,6 +3790,21 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
             intents.load().first { $0.id == intent.id }?.responseRemoved, false, "the response is still on Platform")
     }
 
+    /// A response an earlier disconnect could not delete has no row left to
+    /// reach it: the next disconnect on the identity deletes it too.
+    func testADisconnectAlsoDeletesTheResponseAnEarlierDisconnectLeft() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let left = Self.intent(app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at)
+        intents.save(intents.load() + [left])
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.responseRemoved, true)
+        XCTAssertEqual(intents.load().first { $0.id == left.id }?.responseRemoved, true, "the response left before is gone too")
+    }
+
     /// F11: the identity update and the response delete are written by the
     /// executor the factory built, never by one the data source builds itself.
     func testADisconnectSendsItsIdentityUpdateAndItsResponseDeleteThroughTheInjectedExecutor() async throws {
