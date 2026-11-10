@@ -2733,7 +2733,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             $0.appId == appId && $0.closedAt == nil && AppConnect.status(of: $0, in: snapshot) == .neverLanded
         }
         let fencesOff = try await ownFenceKeyIds(snapshot: snapshot, intents: neverLanded, port: port, turnedOff: true)
-        plan.disable = Array(Set(plan.disable).union(fences)).sorted()
+        plan.disable = Set(fences).subtracting(plan.disable).sorted() + plan.disable
         let unplaced = Self.unplacedKeyCount(of: snapshot, intents: all)
         return (plan, snapshot, appKeysOff, fences, fences + fencesOff, unplaced)
     }

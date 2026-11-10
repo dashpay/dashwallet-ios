@@ -44,7 +44,7 @@ extension Coinbase {
                 case .rateNotFound:
                     return NSLocalizedString("Could not find exchange rate.", comment: "")
                 case .depositFailed:
-                    return NSLocalizedString("We couldn’t make a deposit to your CrowdNode account.", comment: "Coinbase")
+                    return NSLocalizedString("Couldn't complete the transfer", comment: "Coinbase")
                 }
             }
             
