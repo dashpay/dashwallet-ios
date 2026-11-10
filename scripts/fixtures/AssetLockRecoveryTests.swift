@@ -5,9 +5,95 @@ import XCTest
 @MainActor
 final class AssetLockRecoveryTests: XCTestCase {
     override func setUp() async throws {
+        PlatformAddressSyncCoordinator.shared.resume = nil
         ShieldedTransferCoordinator.rowLookup = { .none as CoreShieldedDrainRowIdentity }
         CoreShieldedDrainService.marker = .unavailable
         SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = nil
+    }
+
+    func testPlatformResumePreservesConsumedReportAndRequiresExplicitRecheck() async {
+        let wallet = Data(repeating: 0x44, count: 32)
+        let walletHex = wallet.map { String(format: "%02x", $0) }.joined()
+        let txid = Data(repeating: 0x64, count: 32)
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: TestManager(), walletId: wallet, shieldedRecipient: Data()))
+        defer {
+            AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletHex)
+            WalletEnvironment.activeWalletIdHex = nil
+        }
+        let previous = coordinator.failureStore.record(txidWire: txid, vout: 2,
+                                                       error: PlatformWalletError.walletOperation("earlier"))
+        var calls = 0
+        PlatformAddressSyncCoordinator.shared.resume = { receivedTxid, vout, amount in
+            calls += 1
+            XCTAssertEqual(receivedTxid, txid)
+            XCTAssertEqual(vout, 2)
+            XCTAssertEqual(amount, 100)
+            WalletEnvironment.activeWalletIdHex = "other-wallet"
+            throw PlatformWalletError.assetLockAlreadyConsumed
+        }
+        await coordinator.resumeFundPlatform(outPointTxidWire: txid, outPointVout: 2, recipientAmountDuffs: 100)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertEqual(coordinator.lastResumeReport, .alreadyConsumed)
+        XCTAssertEqual(coordinator.failureStore.failure(txidWire: txid, vout: 2), previous)
+        XCTAssertTrue(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))
+        XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 3, walletIdHex: walletHex))
+        XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: "other-wallet"))
+        XCTAssertFalse(ShieldedTxLookup.shared.consumed.contains(txid))
+        coordinator.reset() // Each service retry starts with an idle coordinator.
+        await coordinator.resumeFundPlatform(outPointTxidWire: txid, outPointVout: 2,
+                                             recipientAmountDuffs: 100, retryUnverifiedConsumption: false)
+        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(coordinator.lastResumeReport, .alreadyConsumed)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        coordinator.reset() // Each service retry starts with an idle coordinator.
+        await coordinator.resumeFundPlatform(outPointTxidWire: txid, outPointVout: 2,
+                                             recipientAmountDuffs: 100, retryUnverifiedConsumption: true)
+        XCTAssertEqual(calls, 2)
+        XCTAssertEqual(coordinator.authorizations, 2)
+    }
+
+    func testPlatformRecheckCannotSubmitAfterCancelledAuthorizationOrWalletSwitch() async {
+        for cancelled in [true, false] {
+            let manager = TestManager()
+            let coordinator = ShieldedTransferCoordinator(environment: .init(
+                manager: manager, walletId: Data([1]), shieldedRecipient: Data()))
+            if cancelled {
+                coordinator.authorizationError = CancellationError()
+            } else {
+                coordinator.onAuthorize = {
+                    coordinator.basicEnvironmentOverride = .init(manager: manager, walletId: Data([2]), shieldedRecipient: Data())
+                }
+            }
+            PlatformAddressSyncCoordinator.shared.resume = { _, _, _ in XCTFail("Unauthorized resume") }
+            await coordinator.resumeFundPlatform(outPointTxidWire: Data([3]), outPointVout: 0, recipientAmountDuffs: 100)
+            guard case .failed = coordinator.phase else { return XCTFail("Expected pre-submit refusal") }
+            XCTAssertEqual(coordinator.authorizations, 1)
+        }
+    }
+
+    func testPlatformResumeUncertaintyAndDefiniteFailureRemainDistinct() async {
+        let errors: [Error] = [SDKError.stateTransitionResultUnconfirmed("unknown"),
+                               PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+                               PlatformWalletError.walletOperation("refused")]
+        for (index, error) in errors.enumerated() {
+            let coordinator = ShieldedTransferCoordinator(environment: .init(
+                manager: TestManager(), walletId: Data([5]), shieldedRecipient: Data()))
+            let txid = Data(repeating: UInt8(index + 1), count: 32)
+            let previous = coordinator.failureStore.record(txidWire: txid, vout: 0,
+                                                           error: PlatformWalletError.walletOperation("earlier"))
+            PlatformAddressSyncCoordinator.shared.resume = { _, _, _ in throw error }
+            await coordinator.resumeFundPlatform(outPointTxidWire: txid, outPointVout: 0, recipientAmountDuffs: 100)
+            XCTAssertNil(coordinator.lastResumeReport)
+            if index < 2 {
+                XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+                XCTAssertEqual(coordinator.failureStore.failure(txidWire: txid, vout: 0), previous)
+            } else {
+                guard case .failed = coordinator.phase else { return XCTFail("Expected definite failure") }
+                XCTAssertNotEqual(coordinator.failureStore.failure(txidWire: txid, vout: 0), previous)
+            }
+        }
     }
 
     func testExplicitSendRetryAuthorizesRecordedProbeAndPreservesUnverifiedOutcome() async {

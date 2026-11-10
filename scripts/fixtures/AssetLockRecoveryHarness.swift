@@ -62,6 +62,7 @@ final class ShieldedTxLookup {
     var consumed = Set<Data>()
     func markConsumed(txidWire: Data) { consumed.insert(txidWire) }
     func info(forTxidHex: String) -> Info? { nil }
+    func platformFundingInfo(forTxidHex: String) -> Info? { nil }
     func refresh(reason: String) async {}
 }
 extension Notification.Name {
@@ -70,7 +71,7 @@ extension Notification.Name {
 @MainActor
 final class ShieldedTransferCoordinator {
     enum CoordinatorError: Error {
-        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet
+        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet, addressFundingFeeUnavailable
         var errorDescription: String? { "Authentication cancelled" }
     }
     enum Phase: Equatable {
@@ -90,6 +91,10 @@ final class ShieldedTransferCoordinator {
         guard let rowLookup else { preconditionFailure("Test must configure the asset-lock row") }
         return rowLookup()
     }
+    typealias BasicEnvironment = Environment
+    var basicEnvironmentOverride: Environment?
+    func resolveBasicEnvironment() throws -> BasicEnvironment { basicEnvironmentOverride ?? environment }
+    static let addressAssetLockFundingType = 4
     static let shieldedAssetLockFundingType = 5
     let failureStore = AssetLockFailureStore(defaults: UserDefaults(suiteName: "RecoveryHarness." + UUID().uuidString)!)
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
@@ -205,4 +210,13 @@ enum DWLogger { static func log(_ message: String) {} }
 @MainActor final class DrainClaimSettler {
     init(operation: UUID, timeout: TimeInterval, lookup: ShieldedTxLookup) {}
     func start() { preconditionFailure("Completed drain settling belongs to the application tests") }
+}
+
+@MainActor final class PlatformAddressSyncCoordinator {
+    static let shared = PlatformAddressSyncCoordinator()
+    var resume: ((Data, UInt32, UInt64) async throws -> Void)?
+    func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32, recipientAmountDuffs: UInt64) async throws {
+        guard let resume else { preconditionFailure("Test must supply the native resume outcome") }
+        try await resume(outPointTxid, outPointVout, recipientAmountDuffs)
+    }
 }

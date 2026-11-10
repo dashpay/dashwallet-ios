@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     (source / failure_store.name).write_text(failure_store.read_text().replace("import SwiftDashSDK\n", ""))
     production = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedTransferCoordinator.swift").read_text()
     methods = []
-    for marker in ("    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
+    for marker in ("    func resumeFundPlatform(", "    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
                    "    func retryLastAssetLock(", "    func reset()", "    private func handleSpendError(",
                    "    private func handlePlatformSpendError(", "    private func isStillBound(",
                    "    private func beginTransfer()", "    private func beginTransfer(\n",

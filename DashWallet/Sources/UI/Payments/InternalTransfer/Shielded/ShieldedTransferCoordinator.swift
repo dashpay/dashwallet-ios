@@ -1623,7 +1623,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func resumeFundPlatform(
         outPointTxidWire: Data,
         outPointVout: UInt32,
-        recipientAmountDuffs: UInt64
+        recipientAmountDuffs: UInt64,
+        retryUnverifiedConsumption: Bool = true
     ) async {
         let statusBeforeRaw = ShieldedTxLookup.shared
             .platformFundingInfo(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
@@ -1642,10 +1643,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        let env: BasicEnvironment
         do {
-            _ = try resolveBasicEnvironment()
+            env = try resolveBasicEnvironment()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        let probeWalletIdHex = env.walletId.map { String(format: "%02x", $0) }.joined()
+        if !retryUnverifiedConsumption,
+           AssetLockProbeStore.shared.contains(outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex) {
+            lastResumeReport = .alreadyConsumed
+            phase = .submittedUnconfirmed
             return
         }
 
@@ -1653,6 +1663,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        guard let current = try? resolveBasicEnvironment(),
+              current.walletId == env.walletId, current.network == env.network,
+              current.manager === env.manager else {
+            handleFailure(CoordinatorError.noWallet)
             return
         }
 
@@ -1665,6 +1682,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
+            if let consumedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) {
+                lastResumeReport = .alreadyConsumed
+                AssetLockProbeStore.shared.record(
+                    txid: outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex)
+                phase = consumedPhase
+                schedulePlatformResync()
+                return
+            }
             switch error {
             case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
                 break

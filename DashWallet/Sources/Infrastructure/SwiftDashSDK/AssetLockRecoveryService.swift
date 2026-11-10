@@ -175,7 +175,8 @@ struct AssetLockRecoveryService {
                 await coordinator.resumeFundPlatform(
                     outPointTxidWire: txidWire,
                     outPointVout: vout,
-                    recipientAmountDuffs: recipientAmountDuffs)
+                    recipientAmountDuffs: recipientAmountDuffs,
+                    retryUnverifiedConsumption: retryUnverifiedConsumption)
             } else {
                 await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout,
                                                   retryUnverifiedConsumption: retryUnverifiedConsumption)
