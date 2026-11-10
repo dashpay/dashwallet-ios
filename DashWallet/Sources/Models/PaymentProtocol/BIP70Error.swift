@@ -50,6 +50,11 @@ enum BIP70Error: Error, Equatable {
     /// rejection: it carries the app-computed display-order tx hash so callers can record the
     /// spend instead of discarding it. Never retry the same send on this error.
     case broadcastOutcomeUnknown(txHashDisplay: Data, reason: String)
+    /// The merchant acknowledged the Payment, then the broadcast threw something other than a `BIP70Error`.
+    /// The merchant holds the signed bytes and can broadcast them itself, so the spend is committed
+    /// whatever the error says. Carries the app-computed display-order tx hash and the underlying
+    /// error's description. Never retry the same send on this error.
+    case failedAfterAcknowledgement(txHashDisplay: Data, reason: String)
 }
 
 extension BIP70Error: LocalizedError {
@@ -71,6 +76,7 @@ extension BIP70Error: LocalizedError {
         case .alreadySent: return "This payment is already being processed."
         case .paymentNotAcknowledged: return "The merchant did not confirm receiving the payment."
         case .broadcastOutcomeUnknown: return "Your payment was sent, but the network has not confirmed it yet."
+        case let .failedAfterAcknowledgement(_, reason): return reason
         }
     }
 }

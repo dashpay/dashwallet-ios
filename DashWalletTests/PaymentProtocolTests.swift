@@ -552,7 +552,7 @@ private final class FakeWallet: WalletSending {
     var calls: [String] = []
     var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
     var buildErrorsRemaining = 0 // throw from build this many times before succeeding (pre-spend failure)
-    var broadcastError: BIP70Error?
+    var broadcastError: Error?
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
         calls.append("build")
         if buildErrorsRemaining > 0 { buildErrorsRemaining -= 1; throw BIP70Error.walletNotReady }
@@ -678,7 +678,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
 
     func testBroadcastFailureKeepsBIP70ConfirmationOneShot() async throws {
         let w = FakeWallet()
-        w.broadcastError = .walletNotReady
+        w.broadcastError = BIP70Error.walletNotReady
         let svc = service(FakeTransport(unsigned(paymentURL: nil)), w)
         let confirmation = try await svc.prepareForConfirmation(
             from: url, scheme: "dash", network: .testnet)
@@ -688,6 +688,48 @@ final class BIP70PaymentServiceTests: XCTestCase {
         await assertThrowsBIP70(
             try await svc.confirmAndSend(confirmation), .alreadySent)
         XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1)
+    }
+
+    /// Once the merchant's Payment POST was acknowledged it holds the signed bytes, so whatever the local
+    /// broadcast throws afterwards is not provably unsent: the outcome is `inFlight` (no Retry), never `notSent`.
+    func testErrorAfterMerchantAckIsInFlightNeverNotSent() async throws {
+        let postAckErrors: [Error] = [
+            PlatformWalletError.staleReservationToken("stale"),
+            SwiftDashSDKTransactionSender.SendError.walletNotReady("not ready"),
+            SwiftDashSDKTransactionSender.SendError.invalidInput("bad input")
+        ]
+        for postAckError in postAckErrors {
+            let w = FakeWallet(); w.broadcastError = postAckError
+            let t = FakeTransport(unsigned())
+            let svc = service(t, w)
+            let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+
+            do {
+                _ = try await svc.confirmAndSend(confirmation)
+                XCTFail("expected the broadcast to throw")
+            } catch {
+                XCTAssertNotNil(t.postedPayment, "the merchant acknowledged before the failure")
+                guard case .inFlight = SendOutcome(error: error) else {
+                    return XCTFail("post-ACK \(postAckError) must be inFlight, got \(SendOutcome(error: error))")
+                }
+            }
+        }
+    }
+
+    /// Without a payment_url nothing was POSTed, so a refused broadcast is still provably unsent.
+    func testBroadcastErrorWithoutPaymentURLKeepsItsNotSentMapping() async throws {
+        let w = FakeWallet(); w.broadcastError = PlatformWalletError.staleReservationToken("stale")
+        let svc = service(FakeTransport(unsigned(paymentURL: nil)), w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+
+        do {
+            _ = try await svc.confirmAndSend(confirmation)
+            XCTFail("expected the broadcast to throw")
+        } catch {
+            guard case .notSent = SendOutcome(error: error) else {
+                return XCTFail("no POST happened, expected notSent, got \(SendOutcome(error: error))")
+            }
+        }
     }
 
     func testMultiOutputPassthrough() async throws {

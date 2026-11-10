@@ -15,8 +15,8 @@
 //  limitations under the License.
 //
 
-import SwiftUI
 import DashUIKit
+import SwiftUI
 
 /// The Send tab's opening step: how to name a recipient.
 ///
@@ -43,28 +43,30 @@ struct PaymentsSendCard: View {
         static let cardSpacing: CGFloat = 12
     }
 
+    /// The rows the first card shows: the username row only with an identity that has one.
+    var visibleRows: [SendMenuRow] {
+        SendMenuRow.allRows.filter { $0 != .sendToUsername || showsSendToUsername }
+    }
+
+    /// The callback a row's tap calls.
+    func handler(for action: SendMenuAction) -> () -> Void {
+        switch action {
+        case .openContactFlow: return onSendToUsername
+        case .openAddressScreen: return onSendToAddress
+        case .openQRScanner: return onScanQR
+        }
+    }
+
     var body: some View {
         VStack(spacing: Layout.cardSpacing) {
             PaymentsActionCard {
-                if showsSendToUsername {
+                ForEach(visibleRows, id: \.title) { row in
                     PaymentsActionRow(
-                        iconSystemName: DashIcon.Menu.sendAccount.rawValue,
-                        title: NSLocalizedString("Send to username", comment: "Payments"),
-                        action: onSendToUsername
+                        iconSystemName: row.iconSystemName,
+                        title: row.title,
+                        action: handler(for: row.action)
                     )
                 }
-
-                PaymentsActionRow(
-                    iconSystemName: DashIcon.Menu.sendAddress.rawValue,
-                    title: NSLocalizedString("Send to Dash address", comment: "Payments"),
-                    action: onSendToAddress
-                )
-
-                PaymentsActionRow(
-                    iconSystemName: DashIcon.Menu.scanQR.rawValue,
-                    title: NSLocalizedString("Scan Dash QR", comment: "Payments"),
-                    action: onScanQR
-                )
             }
 
             if showsSwapToCrypto {
@@ -76,6 +78,16 @@ struct PaymentsSendCard: View {
                     )
                 }
             }
+        }
+    }
+}
+
+private extension SendMenuRow {
+    var iconSystemName: String {
+        switch self {
+        case .sendToUsername: return DashIcon.Menu.sendAccount.rawValue
+        case .sendToAddress: return DashIcon.Menu.sendAddress.rawValue
+        case .scanQR: return DashIcon.Menu.scanQR.rawValue
         }
     }
 }
