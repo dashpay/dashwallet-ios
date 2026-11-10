@@ -293,7 +293,10 @@ final class SwapKitSwapProvider: SwapProvider {
     /// the quote named (`addressCheckRequest`), never empty: `sellQuoteProviders` always names NEAR
     /// or Maya.
     static func addressCheck(_ response: SwapKitQuoteResponse, requested: Set<RouteProvider>) -> AddressCheck {
-        if response.routes?.isEmpty == false {
+        // Only a route an asked provider carries counts: the swap would not use another one.
+        let routed = Set((response.routes ?? []).flatMap { $0.providers }
+            .compactMap { RouteProvider(swapKitProvider: $0) })
+        if !routed.isDisjoint(with: requested) {
             return .pass
         }
 

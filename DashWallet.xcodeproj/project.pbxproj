@@ -1126,6 +1126,7 @@
 		C5A11E000000000000000003 /* SwapRouteAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000001 /* SwapRouteAvailability.swift */; };
 		C5A11E0000000000000000F2 /* SwapKitFailureDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E0000000000000000F1 /* SwapKitFailureDetail.swift */; };
 		C5A11E0000000000000000F3 /* SwapKitFailureDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E0000000000000000F1 /* SwapKitFailureDetail.swift */; };
+		C5A11E0000000000000000F7 /* SelectCoinViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E0000000000000000F6 /* SelectCoinViewModelTests.swift */; };
 		C5A11E0000000000000000F5 /* SwapKitFailureDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E0000000000000000F4 /* SwapKitFailureDetailTests.swift */; };
 		AA0020012FA0000000000014 /* SwapExecutionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020012FA0000000000013 /* SwapExecutionData.swift */; };
 		AA0020012FA0000000000015 /* SwapExecutionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020012FA0000000000013 /* SwapExecutionData.swift */; };
@@ -3275,6 +3276,7 @@
 		AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitSwapProvider.swift; sourceTree = "<group>"; };
 		C5A11E000000000000000001 /* SwapRouteAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRouteAvailability.swift; sourceTree = "<group>"; };
 		C5A11E0000000000000000F1 /* SwapKitFailureDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitFailureDetail.swift; sourceTree = "<group>"; };
+		C5A11E0000000000000000F6 /* SelectCoinViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCoinViewModelTests.swift; sourceTree = "<group>"; };
 		C5A11E0000000000000000F4 /* SwapKitFailureDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitFailureDetailTests.swift; sourceTree = "<group>"; };
 		AA0020012FA0000000000013 /* SwapExecutionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapExecutionData.swift; sourceTree = "<group>"; };
 		AA0020022FA0000000000002 /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
@@ -7403,6 +7405,7 @@
 				7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
+				C5A11E0000000000000000F6 /* SelectCoinViewModelTests.swift */,
 				C5A11E0000000000000000F4 /* SwapKitFailureDetailTests.swift */,
 				5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */,
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
@@ -10727,6 +10730,7 @@
 				7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
+				C5A11E0000000000000000F7 /* SelectCoinViewModelTests.swift in Sources */,
 				C5A11E0000000000000000F5 /* SwapKitFailureDetailTests.swift in Sources */,
 				5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */,
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,

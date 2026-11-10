@@ -34,12 +34,14 @@ the address screen reported every refusal as a connection problem.
 
 ## What it guarantees
 
-- A coin no provider can route right now is shown halted and cannot be picked, when the published token lists name it.
+- A coin is shown halted and cannot be picked when the stored answers rule out every provider that
+  can carry it and the published token lists name it; a provider with no stored answer counts as usable.
 - An inconclusive answer is not stored and never halts a coin by itself; an earlier conclusive answer
-  keeps applying until a new one replaces it or it is due for a re-check.
+  keeps applying until a new one replaces it or it expires (30 minutes).
 - At most two checks are in flight; periodic checks start only while the picker is open (one already
   asked may finish after it closes), and the address screen re-checks a "no route" once without the
-  address; no address leaves the device in a check.
+  address. The route checks and that re-check send no address; only the address screen's own quote
+  to the entered address does.
 
 ## Not in scope
 

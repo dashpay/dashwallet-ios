@@ -56,6 +56,9 @@ class SelectCoinViewModel: ObservableObject {
     private var routeFreshnessRuns = 0
     /// Identifies the latest render, so a slower older one does not publish over it.
     private var renderGeneration = 0
+    /// Identifies the latest load: loads can overlap (the view's `.task` and a reconnect), and only
+    /// the latest one commits what it fetched.
+    private var loadGeneration = 0
 
     /// How often the live checks are re-run while the picker is on screen. Only answers that are due
     /// are asked again, so most ticks send nothing.
@@ -128,13 +131,15 @@ class SelectCoinViewModel: ObservableObject {
     func loadCoins(force: Bool = false) async {
         guard isOnline else { return }
         guard force || coins.isEmpty || errorMessage != nil else { return }
+        loadGeneration += 1
+        let generation = loadGeneration
         let shouldShowLoading = coins.isEmpty || errorMessage != nil
         if shouldShowLoading {
             isLoading = true
         }
         errorMessage = nil
         defer {
-            if shouldShowLoading {
+            if shouldShowLoading, generation == loadGeneration {
                 isLoading = false
             }
         }
@@ -145,9 +150,11 @@ class SelectCoinViewModel: ObservableObject {
             // would then filter out every pool via inboundChains.
             let pools = try await swapProvider.fetchPools(direction: direction)
             let inboundAddresses = try await swapProvider.fetchInboundAddresses()
+            guard generation == loadGeneration else { return }
             loadedPools = pools
             loadedInboundAddresses = inboundAddresses
             let sorted = await render(pools: pools, inboundAddresses: inboundAddresses)
+            guard generation == loadGeneration else { return }
             let poolsByAsset = Dictionary(pools.map { ($0.asset.uppercased(), $0) }, uniquingKeysWith: { first, _ in first })
             displayedPools = sorted.compactMap { poolsByAsset[$0.coin.swapAsset.uppercased()] }
             // A load that lands while the picker is on screen (after reconnecting, say) starts the
@@ -158,6 +165,7 @@ class SelectCoinViewModel: ObservableObject {
         } catch {
             let detail = SwapKitFailureDetail.describe(error)
             DWLogger.log("Swap: \(type(of: swapProvider)) coin list (\(direction)) failed to load — \(detail)")
+            guard generation == loadGeneration else { return }
             errorMessage = error.localizedDescription
         }
     }

@@ -515,6 +515,21 @@ final class SwapKitQuoteBoundaryTests: XCTestCase {
                        .refused("invalidDestinationAddress"))
     }
 
+    /// A route only a provider the quote did not ask can carry does not pass the address: the swap
+    /// would not use it, so the asked provider's own answer decides.
+    func testAddressCheckIgnoresARouteFromAnUnrequestedProvider() throws {
+        let thorRoutes = try decoded(#"""
+        {"routes":[{"routeId":"r","providers":["THORCHAIN"],"expectedBuyAmount":"1"}],
+         "providerErrors":[{"provider":"NEAR","errorCode":"swapHalted"}]}
+        """#)
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(thorRoutes, requested: [.near]), .unavailable)
+        let nearRoutes = try decoded(#"""
+        {"routes":[{"routeId":"r","providers":["NEAR"],"expectedBuyAmount":"1"}],
+         "providerErrors":[{"provider":"MAYACHAIN","errorCode":"swapHalted"}]}
+        """#)
+        XCTAssertEqual(SwapKitSwapProvider.addressCheck(nearRoutes, requested: [.near, .maya]), .pass)
+    }
+
     // MARK: Address check after the address-free re-check (AC-05)
 
     private let addressCopy = "We couldn't set up your swap. Please check the amount and address, then try again."
