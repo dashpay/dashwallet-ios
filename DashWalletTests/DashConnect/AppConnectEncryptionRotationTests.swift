@@ -215,8 +215,8 @@ final class AppConnectEncryptionRotationTests: XCTestCase {
 
     // MARK: - Rule 2: keys for the binding, none live
 
-    /// The bug this replaces: a disabled current key of another wallet's
-    /// read as absent under `latest`, and the login registered a new key.
+    /// DIP rule 2: a disabled current key of another wallet's leaves the
+    /// slot out and registers nothing, under both rules.
     func testOnlyADisabledForeignKeyLeavesTheSlotOutAndRegistersNothing() throws {
         let theirs = Self.encryptionKey(9, data: Data([0x02] + [UInt8](repeating: 0x77, count: 32)), disabled: true)
         for rule: AppConnect.CurrentKeyRule in [.latest, .unique] {
