@@ -190,8 +190,8 @@ struct UnbanMasternodeSheet: View {
                     value: preview.feeDuffs.formattedDashAmount)
                 MasternodeDetailRow(
                     label: NSLocalizedString("Size", comment: "Masternode unban"),
-                    value: String(
-                        format: NSLocalizedString("%d bytes", comment: "Masternode unban"),
+                    value: String.localizedStringWithFormat(
+                        NSLocalizedString("%d bytes", comment: "Masternode unban"),
                         preview.sizeBytes))
                 MasternodeDetailRow(
                     label: NSLocalizedString("Inputs", comment: "Masternode unban"),

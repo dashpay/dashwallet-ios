@@ -544,7 +544,8 @@ extension MainTabbarController {
         homeController?.performPay(to: url)
     }
 
-    /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
+    /// Opens the Connections screen for a `dash-key:`, `dash-st:` or
+    /// `dashpay://connect` link.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
