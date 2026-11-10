@@ -35,6 +35,40 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         super.tearDown()
     }
 
+    func testIdentityResumeUncertaintyPreservesEarlierFailure() async throws {
+        let store = AssetLockFailureStore(defaults: defaults)
+        let previous = store.record(txidWire: txidWire, vout: 1, error: PlatformWalletError.walletOperation("earlier refusal"))
+        let service = AssetLockRecoveryService(failureStore: store)
+        let errors: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("unknown"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+            PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
+        ]
+        for error in errors {
+            let outcome = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) { throw error }
+            XCTAssertEqual(outcome, .submittedAwaitingSync)
+            XCTAssertEqual(store.failure(txidWire: txidWire, vout: 1), previous)
+        }
+        let completed = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) {}
+        XCTAssertEqual(completed, .completed)
+    }
+
+    func testIdentityResumeDefiniteFailureIsRecordedAndRethrown() async {
+        let store = AssetLockFailureStore(defaults: defaults)
+        let service = AssetLockRecoveryService(failureStore: store)
+        do {
+            _ = try await service.identityTopUpResumeOutcome(txidWire: txidWire, vout: 1) {
+                throw PlatformWalletError.walletOperation("definite refusal")
+            }
+            XCTFail("Expected refusal")
+        } catch PlatformWalletError.walletOperation(let message) {
+            XCTAssertEqual(message, "definite refusal")
+        } catch {
+            XCTFail("Changed the definite error: \(error)")
+        }
+        XCTAssertNotNil(store.failure(txidWire: txidWire, vout: 1))
+    }
+
     // MARK: fixtures
 
     /// Wire-order txid 0x01, 0x02, … 0x20 — display order is the reverse.

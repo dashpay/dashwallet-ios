@@ -236,6 +236,17 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testUnknownRecoverySuppressesRetryAndRemovalOnThisScreen() {
+        withPendingShieldedLock { transaction in
+            let model = QuietTxDetailModel(transaction: transaction)
+            XCTAssertNotNil(model.recoveryActions.retry)
+            model.recordRecoveryOutcome(.submittedAwaitingSync)
+            XCTAssertNil(model.recoveryActions.retry)
+            XCTAssertFalse(model.recoveryActions.offersRemoval)
+        }
+    }
+
     // MARK: - Removal
 
     func testRemovalForEachState() {

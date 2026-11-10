@@ -12,6 +12,7 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
         let errors: [Error] = [
             SDKError.stateTransitionResultUnconfirmed("unknown"),
             PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+            PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
         ]
         for error in errors {
             let failure = Coordinator.identityTopUpFailure(error)
@@ -23,6 +24,25 @@ final class UsernameRegistrationRecoveryTests: XCTestCase {
             }
             XCTAssertTrue(failure.localizedDescription.contains("could not be confirmed"))
         }
+    }
+
+    func testUnconfirmedPurchaseKeepsFormBlockedAfterItsWarning() async {
+        typealias Error = DWIdentityRegistrationCoordinator.CoordinatorError
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Error.purchase(Error.platformWriteUnconfirmed))
+        guard case .submittedUnconfirmed = outcome else { return XCTFail("Expected purchase warning") }
+        XCTAssertTrue(model.purchaseSubmissionUnconfirmed)
+        XCTAssertFalse(model.canPurchaseListedNameDirectly)
+        // A second action stays unknown even without a sale price; it must not reach funding.
+        let retry = await model.purchaseListedUsername(name: "alpha")
+        guard case .submittedUnconfirmed = retry else { return XCTFail("Purchase was reopened") }
+    }
+
+    func testDefinitePurchaseFailureDoesNotLockTheForm() {
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Failure.insufficientCredits)
+        guard case .failure = outcome else { return XCTFail("Expected a definite failure") }
+        XCTAssertFalse(model.purchaseSubmissionUnconfirmed)
     }
 
     func testDefiniteTopUpFailureKeepsItsOriginalCause() {

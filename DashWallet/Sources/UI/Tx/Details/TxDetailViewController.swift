@@ -359,6 +359,7 @@ extension TXDetailViewController {
                     vout: retry.vout,
                     fundingTypeRaw: retry.fundingTypeRaw,
                     statusBeforeRaw: retry.statusRaw)
+                self?.model.recordRecoveryOutcome(outcome)
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)

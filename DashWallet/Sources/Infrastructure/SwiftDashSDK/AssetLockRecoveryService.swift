@@ -158,8 +158,7 @@ struct AssetLockRecoveryService {
         let outcome: Outcome
         switch fundingTypeRaw {
         case 1, 2:
-            try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
-            outcome = .completed
+            outcome = try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
         case 4, 5:
             // Both coordinator routes report their outcome through the
             // terminal phase rather than throwing, so the resume call and
@@ -621,7 +620,7 @@ struct AssetLockRecoveryService {
     /// `consumeInvitationVoucher` stays false: a generic retry surface
     /// must never silently consume an invitation lock (the SDK resolver
     /// refuses them).
-    private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws {
+    private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws -> Outcome {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
@@ -631,19 +630,30 @@ struct AssetLockRecoveryService {
             throw RecoveryError.noIdentity
         }
         try await DWIdentityAuthorizer().authorize()
-        do {
+        let outcome = try await identityTopUpResumeOutcome(txidWire: txidWire, vout: vout) {
             _ = try await wallet.resumeTopUpWithAssetLock(
                 identityId: identityId,
                 outPointTxid: txidWire,
                 outPointVout: vout)
+        }
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        return outcome
+    }
+
+    /// Classify the network call separately from authorization and readiness refusals.
+    func identityTopUpResumeOutcome(
+        txidWire: Data, vout: UInt32, submit: () async throws -> Void
+    ) async throws -> Outcome {
+        do {
+            try await submit()
+            return .completed
+        } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed {
+            return .submittedAwaitingSync
         } catch {
-            // The top-up call itself tried the lock, so its error is the
-            // lock's last failure. The refusals above are not stored: they say
-            // nothing about the lock. The caller logs the outcome line.
             failureStore.record(txidWire: txidWire, vout: vout, error: error)
             throw error
         }
-        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
     }
 
     /// Map the transfer coordinator's terminal phase to thrown errors.

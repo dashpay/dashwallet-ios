@@ -560,6 +560,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             return false
         }
 
+        var isSubmissionUnconfirmed: Bool {
+            switch self {
+            case .platformWriteUnconfirmed, .shieldedCreateUnconfirmed:
+                return true
+            case .purchase(let error), .identityRegistration(let error),
+                 .identityTopUp(let error), .dpnsRegistration(let error):
+                return (error as? CoordinatorError)?.isSubmissionUnconfirmed == true
+            default:
+                return false
+            }
+        }
+
         var isIdentityTopUp: Bool {
             if case .identityTopUp = self { return true }
             return false
@@ -1142,7 +1154,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Preserve payment/creation failure phases independently of funding dispatch.
     private static func preservingUnconfirmedOutcome(_ error: Error) -> Error {
         switch error {
-        case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed:
+        case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+             PlatformWalletError.shieldedSpendUnconfirmed:
             return CoordinatorError.platformWriteUnconfirmed
         default:
             return error
