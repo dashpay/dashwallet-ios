@@ -982,7 +982,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// lower budget or an earlier expiry than the copy: a node that answered
     /// from before the change the copy already has. Platform only ever raises
     /// a key's limits, and without a new identity revision, so the revision
-    /// cannot tell. Newer keys in the proved read are fine.
+    /// cannot tell. An expiry is the SDK's bit pattern of a block time and is
+    /// compared unsigned. Newer keys in the proved read are fine.
     static func requireKeysNotBehind(
         copy: [ManagedIdentity.IdentityPublicKeyInfo],
         proved: [ManagedIdentity.IdentityPublicKeyInfo]
@@ -991,7 +992,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         for key in copy {
             guard let seen = provedById[key.keyId], key.disabledAt == nil || seen.disabledAt != nil,
                   !Self.isLower(seen.totalBudget, than: key.totalBudget),
-                  !Self.isLower(seen.expiresAt, than: key.expiresAt) else {
+                  !Self.isLower(seen.expiresAt.map(UInt64.init(bitPattern:)), than: key.expiresAt.map(UInt64.init(bitPattern:)))
+            else {
                 Self.logger.error("🔗 DASHCONNECT :: the keys read is behind the wallet's copy")
                 throw DashConnectPlatformError.identityReadBehind
             }
@@ -1080,15 +1082,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
     }
 
-    /// The projection of `snapshot` with the owners it needs that are known.
-    /// A key whose owner is unknown keeps its own row.
-    static func projectWithOwners(
-        _ snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: OwnerReader
-    ) async -> AppConnect.Projection {
-        let known = await owners.knownOwners(for: snapshot, intents: intents)
-        return AppConnect.project([snapshot], intents: intents, owners: known)
-    }
-
     /// Puts the App Connect rows of `stores` in step with what `snapshot`
     /// and the intents show.
     private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, context: Context) async {
@@ -1098,6 +1091,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The same, with the owners the projection needs from `owners`: a key
     /// whose owner is unknown keeps its own row.
     private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, stores: Stores, owners: OwnerReader) async {
+        let known = await owners.knownOwners(for: snapshot, intents: stores.intents.load())
+        await refreshRows(from: snapshot, stores: stores, knownOwners: known)
+    }
+
+    /// The same, with the owners already read (`knownOwners`), so a
+    /// disconnect can tell its rows and its result from the same owners.
+    private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, stores: Stores, knownOwners: [Data: Data]) async {
         let updatedAt = now()
         // An open Disconnected intent a disconnect left open, whose app has a
         // row: while the read has a key of unknown bound the row stays as it
@@ -1121,7 +1121,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         let all = stores.intents.load()
-        let projection = await Self.projectWithOwners(snapshot, intents: all, owners: owners)
+        let projection = AppConnect.project([snapshot], intents: all, owners: knownOwners)
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
         await updateRows(in: stores) { rows in
             Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt, keeping: kept)
@@ -2714,7 +2714,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     context: context, signer: signer)
             }
         }
-        await refreshRows(from: after, stores: stores, owners: port.owners)
+        // The rows and what stays on are told from the read after the
+        // update and from one read of the owners: owners read apart could
+        // differ, a failed read being tried again. A key of the app that
+        // landed during the update, or that an owner read now places, is
+        // reported too. Without that read, the plan and the progress stand.
+        let intentsAfter = stores.intents.load()
+        let hasIntent = intentsAfter.contains { $0.appId == appId && $0.identityId == identityId }
+        let ownersAfter = await port.owners.knownOwners(for: after, intents: intentsAfter)
+        await refreshRows(from: after, stores: stores, knownOwners: ownersAfter)
+        // As in the plan: an app with no intent here takes no key by owner.
+        let remaining = afterRead.map {
+            AppConnect.disconnectPlan(
+                appId: appId, snapshot: $0, intents: intentsAfter, owners: hasIntent ? ownersAfter : [:])
+        }
 
         // A key turned off is checked on the read after the update; one that
         // still shows live means that read is behind, or a new key landed.
@@ -2731,7 +2744,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         var result = Self.disconnectResult(
             plan: plan, appKeysOff: planned.appKeysOff, leftoverFenceIds: planned.leftoverFenceIds,
-            keysNotChecked: planned.notChecked, fenceKeyIds: fenceKeyIds, after: afterRead, submission: submission)
+            keysNotChecked: remaining?.notChecked.count ?? planned.notChecked, fenceKeyIds: fenceKeyIds,
+            after: afterRead, submission: submission)
+        if let remaining {
+            result.keysStillLive += Self.keysFoundAfter(
+                plan: plan, remaining: remaining, fenceIds: fenceKeyIds.union(planned.leftoverFenceIds))
+        }
         let ownIntents = stores.intents.load().filter { $0.appId == appId && $0.identityId == identityId }
         let unfinished = result.keysStillLive + result.fencesNotPlaced
         guard stopped || unfinished > 0 || planned.unplaced > 0 || ownIntents.allSatisfy({ $0.closedAt != nil }) else {
@@ -2744,7 +2762,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
-        result.keysNotAttributable = planned.notAttributable
+        result.keysNotAttributable = remaining?.notAttributable.count ?? planned.notAttributable
         // Keys a read of another identity saw stay, and so does the row.
         result.keysOnAnotherIdentity = rows(in: stores).first { $0.id == id }?.seenOn
             .subtracting([identityId.toBase58String()]).isEmpty == false
@@ -2852,6 +2870,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return DashConnectDisconnectResult(
             keysTurnedOff: keysTurnedOff, keysStillLive: stillLiveApp.count + stillLiveUnderFenceIds,
             keysNotChecked: keysNotChecked, fencesLeftOn: fencesLeftOn, fencesNotPlaced: fencesNotPlaced)
+    }
+
+    /// The app's live keys the plan on the read after the update would turn
+    /// off that the disconnect's own plan did not have: a key that landed
+    /// during the update, or one an owner read now places with the app. The
+    /// wallet's fences are not the app's.
+    static func keysFoundAfter(
+        plan: AppConnect.DisconnectPlan, remaining: AppConnect.DisconnectPlan, fenceIds: Set<UInt32>
+    ) -> Int {
+        Set(remaining.disable).subtracting(plan.disable).subtracting(fenceIds).count
     }
 
     /// What a disconnect of `appId` submits on the active identity, from a
