@@ -5836,6 +5836,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "이 거래의 원시 바이트는 이 기기에 저장되어 있지 않습니다.";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "이 이전은 여기서 다시 시도할 수 없습니다.";
 

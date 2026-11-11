@@ -210,7 +210,9 @@ enum AssetLockInputLimit {
     }
 
     /// The error the coordinators' wrappers carry, unwrapped all the way.
-    private static func innermost(_ error: Error) -> Error {
+    /// `ShieldedTransferCoordinator.failureMessage(for:)` unwraps the
+    /// recipient-mismatch refusal through it too.
+    static func innermost(_ error: Error) -> Error {
         switch error {
         case ShieldedTransferCoordinator.CoordinatorError.transferFailed(let underlying):
             return innermost(underlying)

@@ -5838,6 +5838,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "Các byte thô của giao dịch này không được lưu trên thiết bị này.";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "Không thể thử lại việc chuyển này từ đây.";
 

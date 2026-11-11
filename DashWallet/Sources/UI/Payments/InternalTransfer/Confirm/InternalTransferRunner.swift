@@ -332,9 +332,10 @@ final class InternalTransferRunner: ObservableObject {
             coordinator.reset()
             phase = .inFlight
             attemptedResume = true
-            // The recipient is the marker's, never re-derived: an external
-            // drain resumed to the wallet's own address would pay the wrong
-            // party, and the SDK does not keep the recipient itself.
+            // The recipient passed is the marker's, never re-derived: the
+            // coordinator refuses it unless it matches the recipient the SDK
+            // recorded on the lock, and pays the marker's for a drain started
+            // before the SDK recorded one.
             await DWIdentityAuthorizer.preauthorized {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,

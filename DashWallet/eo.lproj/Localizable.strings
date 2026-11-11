@@ -5838,6 +5838,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "La krudaj bajtoj de ĉi tiu transakcio ne estas konservitaj en ĉi tiu aparato.";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "Ĉi tiu transdono ne povas esti reprovita de ĉi tie.";
 

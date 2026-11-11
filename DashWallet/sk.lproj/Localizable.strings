@@ -5836,6 +5836,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "Surové bajty tejto transakcie nie sú v tomto zariadení uložené.";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "Tento prevod sa odtiaľto nedá zopakovať.";
 
