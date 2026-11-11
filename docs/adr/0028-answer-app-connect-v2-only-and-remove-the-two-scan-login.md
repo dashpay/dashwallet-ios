@@ -34,8 +34,12 @@ answers v2 only.
 - The two-scan protection is gone, and a disconnect no longer derives two-scan keys.
 
 **Negative**
-- Keys from old two-scan logins on testnet show as unrecorded app keys and are turned off with
-  the app's disconnect.
+- Keys from old two-scan logins on testnet stay on the identity, and the wallet no longer lists
+  them. The two-scan login ran only below protocol 14, where a key cannot carry limits, so its
+  key has no expiry and is not an App Connect key (`AppConnect.isAppConnectAuthKey`). A stored
+  two-scan row goes on the first refresh, and Connections cannot turn its key off. This is no
+  worse than before, when a two-scan disconnect was local only, and it reaches only internal
+  testnet installs.
 - The Debug mock scan still feeds a v1 QR, which is refused.
 
 **Neutral**
