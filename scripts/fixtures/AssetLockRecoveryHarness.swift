@@ -14,6 +14,7 @@ enum PlatformWalletError: Error {
     case shieldedSpendUnconfirmed
     case transactionBroadcastUnconfirmed(String)
     case walletOperation(String)
+    case assetLockRecipientMismatch(String)
 }
 struct ShieldedFundFromAssetLockRecipient {
     let recipientRaw43: Data
@@ -48,7 +49,14 @@ final class TestManager {
 struct CoreShieldedDrainService {
     enum TestError: Error { case contextChanged }
     static var marker: CoreShieldedDrainMarkerLookup = .unavailable
-    func markerLookup() -> (CoreShieldedDrainMarkerLookup, CoreShieldedDrainContext?) { (Self.marker, nil) }
+    /// The wallet/network context the service reports; `nil` reads as a
+    /// wallet that is not ready, as in production.
+    static var context: CoreShieldedDrainContext?
+    func markerLookup() -> (CoreShieldedDrainMarkerLookup, CoreShieldedDrainContext?) { (Self.marker, Self.context) }
+    static func currentContext() throws -> CoreShieldedDrainContext {
+        guard let context else { throw TestError.contextChanged }
+        return context
+    }
     static var resolveManager: ((CoreShieldedDrainContext) throws -> TestManager)?
     func manager(for context: CoreShieldedDrainContext) throws -> TestManager {
         guard let resolveManager = Self.resolveManager else { throw TestError.contextChanged }
@@ -71,7 +79,7 @@ extension Notification.Name {
 @MainActor
 final class ShieldedTransferCoordinator {
     enum CoordinatorError: Error {
-        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet, addressFundingFeeUnavailable
+        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, resumeRecipientMismatch, noWallet, addressFundingFeeUnavailable
         var errorDescription: String? { "Authentication cancelled" }
     }
     enum Phase: Equatable {
@@ -86,10 +94,17 @@ final class ShieldedTransferCoordinator {
         var network: String { "testnet" }
         var modelContainer: Void { () }
     }
+    struct ResumeRow {
+        let identity: CoreShieldedDrainRowIdentity
+        let recordedRecipientRaw43: Data?
+    }
     static var rowLookup: (() -> CoreShieldedDrainRowIdentity?)?
-    static func drainRowIdentity(outPointTxidWire: Data, vout: UInt32, walletId: Data, in container: Void) -> CoreShieldedDrainRowIdentity? {
+    /// The recipient the SDK recorded on the row; `nil` for a row tracked
+    /// before the SDK recorded recipients.
+    static var recordedRecipient: Data?
+    static func resumeRow(outPointTxidWire: Data, vout: UInt32, walletId: Data, in container: Void) -> ResumeRow? {
         guard let rowLookup else { preconditionFailure("Test must configure the asset-lock row") }
-        return rowLookup()
+        return rowLookup().map { ResumeRow(identity: $0, recordedRecipientRaw43: recordedRecipient) }
     }
     typealias BasicEnvironment = Environment
     var basicEnvironmentOverride: Environment?

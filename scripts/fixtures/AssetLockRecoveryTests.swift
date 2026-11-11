@@ -7,8 +7,38 @@ final class AssetLockRecoveryTests: XCTestCase {
     override func setUp() async throws {
         PlatformAddressSyncCoordinator.shared.resume = nil
         ShieldedTransferCoordinator.rowLookup = { .none as CoreShieldedDrainRowIdentity }
+        ShieldedTransferCoordinator.recordedRecipient = nil
         CoreShieldedDrainService.marker = .unavailable
+        CoreShieldedDrainService.context = nil
         SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = nil
+    }
+
+    func testResumePaysTheRecipientTheSDKRecordedNotTheWalletsOwn() async {
+        let wallet = Data(repeating: 0x51, count: 32)
+        let recorded = Data(repeating: 7, count: 43)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        ShieldedTransferCoordinator.recordedRecipient = recorded
+        await coordinator.resumeAssetLock(outPointTxidWire: Data(repeating: 0x81, count: 32), outPointVout: 0)
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(manager.calls, 1)
+        XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [recorded])
+        XCTAssertEqual(coordinator.phase, .success)
+    }
+
+    func testResumeRefusesACallerRecipientThatDiffersFromTheRecordedOne() async {
+        let wallet = Data(repeating: 0x52, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        ShieldedTransferCoordinator.recordedRecipient = Data(repeating: 7, count: 43)
+        await coordinator.resumeAssetLock(
+            outPointTxidWire: Data(repeating: 0x82, count: 32), outPointVout: 0,
+            recipientRaw43: Data(repeating: 8, count: 43))
+        XCTAssertEqual(coordinator.authorizations, 0)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(coordinator.phase, .failed("test failure"))
     }
 
     func testPlatformResumePreservesConsumedReportAndRequiresExplicitRecheck() async {
