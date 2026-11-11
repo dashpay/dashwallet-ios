@@ -107,11 +107,26 @@ final class SendAmountViewModelTests: XCTestCase {
     private final class FakeMaxPlanner: SendMaxPlanning {
         /// A route missing from the table cannot be planned (nil). Duffs, whatever the source's own unit.
         var table: [SendRoute: UInt64] = [:]
+        /// A Shielded sweep plan's exact credits, by route.
+        var sweepCredits: [SendRoute: UInt64] = [:]
         private(set) var requested: [SendRoute] = []
 
-        func maxDuffs(route: SendRoute) async -> UInt64? {
+        func maxPlan(route: SendRoute) async -> SendMaxPlan? {
             requested.append(route)
-            return table[route]
+            return table[route].map { SendMaxPlan(duffs: $0, sweepCredits: sweepCredits[route]) }
+        }
+
+        func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck {
+            .notChecked
+        }
+    }
+
+    private final class FakeFundingCandidates: PlatformFundingCandidatesReading {
+        /// nil: the addresses cannot be read.
+        var candidates: [PlatformPaymentIdentityFundingPolicy.Candidate]? = []
+
+        func fundingCandidates() async -> [PlatformPaymentIdentityFundingPolicy.Candidate]? {
+            candidates
         }
     }
 
@@ -141,6 +156,7 @@ final class SendAmountViewModelTests: XCTestCase {
     private let estimator = FakeEstimator()
     private let planner = FakeMaxPlanner()
     private let converter = FakeConverter()
+    private let fundingCandidates = FakeFundingCandidates()
     private var continued: [SendAmountRequest] = []
 
     override func setUp() {
@@ -330,6 +346,24 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(continued.last?.isMax, true)
     }
 
+    /// A sweep plan of 123_456_789 credits shows as 123_456 duffs; Continue hands on the plan's exact credits, which
+    /// the coordinator checks the sweep against. A typed amount after it hands on none.
+    func testShieldedMaxHandsOnThePlansExactCreditsAndATypedAmountDropsThem() async {
+        balances.table[.core] = 0
+        planner.table[.shieldedToCore] = 123_456
+        planner.sweepCredits[.shieldedToCore] = 123_456_789
+        let vm = await makeVM()
+        await vm.tapMax()
+        vm.proceed()
+        XCTAssertEqual(continued.last?.amount, 123_456)
+        XCTAssertEqual(continued.last?.sweepCredits, 123_456_789)
+
+        await vm.setAmountText("1")
+        vm.proceed()
+        XCTAssertEqual(continued.last?.isMax, false)
+        XCTAssertNil(continued.last?.sweepCredits)
+    }
+
     func testMaxUsesTheRoutePlannerOfEachSource() async {
         balances.table[.core] = 0
         let shielded = await makeVM()
@@ -431,34 +465,148 @@ final class SendAmountViewModelTests: XCTestCase {
 
     // MARK: - LiveSendMaxPlanner: the balance less the fee on the routes without a planner of their own
 
-    func testTheLivePlannerFillsTheBalanceLessTheFeeOnTheFourRoutesWithoutAPlanner() async {
+    func testTheLivePlannerFillsTheBalanceLessTheFeeOnTheTwoRoutesWithoutAPlanner() async {
         balances.table = [.core: 5_000_000, .shielded: 3_000_000, .platform: 2_000_000]
         estimator.results = [
             .coreToPlatform: .fee(7_251, assetLockMinerFee: 2_250),
-            .coreToIdentity: .fee(2_250, assetLockMinerFee: 2_250),
-            .shieldedToIdentity: .fee(50_501), .platformToIdentity: .fee(41_500)
+            .coreToIdentity: .fee(2_250, assetLockMinerFee: 2_250)
         ]
-        let live = LiveSendMaxPlanner(fees: estimator, balances: balances)
-        let coreToPlatform = await live.maxDuffs(route: .coreToPlatform)
-        let coreToIdentity = await live.maxDuffs(route: .coreToIdentity)
-        let shieldedToIdentity = await live.maxDuffs(route: .shieldedToIdentity)
-        let platformToIdentity = await live.maxDuffs(route: .platformToIdentity)
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let coreToPlatform = await live.maxPlan(route: .coreToPlatform)?.duffs
+        let coreToIdentity = await live.maxPlan(route: .coreToIdentity)?.duffs
         XCTAssertEqual(coreToPlatform, 5_000_000 - 7_251)
         XCTAssertEqual(coreToIdentity, 5_000_000 - 2_250)
-        XCTAssertEqual(shieldedToIdentity, 3_000_000 - 50_501)
-        XCTAssertEqual(platformToIdentity, 2_000_000 - 41_500)
+    }
+
+    /// Shielded to an Identity ID is sized like the other Shielded routes, by the sweep plan of the pool top-up, so
+    /// the Send screen's fee estimate is never asked for it.
+    func testTheLivePlannerSizesShieldedToIdentityByTheSweepPlanNotTheBalanceLessTheFee() async {
+        balances.table = [.shielded: 3_000_000]
+        estimator.results = [.shieldedToIdentity: .fee(13_001)]
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let plan = await live.maxPlan(route: .shieldedToIdentity)
+        XCTAssertNotEqual(plan?.duffs, 3_000_000 - 13_001)
+        XCTAssertTrue(estimator.calls.isEmpty, "\(estimator.calls)")
     }
 
     func testTheLivePlannerHasNoMaxWithoutABalanceOrAFeeAndZeroWhenTheFeeEatsTheBalance() async {
         balances.table = [.core: 1_000]
         estimator.results = [.coreToPlatform: .unavailable, .coreToIdentity: .fee(2_250, assetLockMinerFee: 2_250)]
-        let live = LiveSendMaxPlanner(fees: estimator, balances: balances)
-        let noFee = await live.maxDuffs(route: .coreToPlatform)
-        let feeAboveBalance = await live.maxDuffs(route: .coreToIdentity)
-        let noBalance = await live.maxDuffs(route: .platformToIdentity)
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let noFee = await live.maxPlan(route: .coreToPlatform)?.duffs
+        let feeAboveBalance = await live.maxPlan(route: .coreToIdentity)?.duffs
         XCTAssertNil(noFee)
         XCTAssertEqual(feeAboveBalance, 0)
-        XCTAssertNil(noBalance)
+    }
+
+    // MARK: - LiveSendMaxPlanner: Platform to Identity, sized by the top-up's own input planning
+
+    private func address(_ firstByte: UInt8, credits: UInt64) -> PlatformPaymentIdentityFundingPolicy.Candidate {
+        PlatformPaymentIdentityFundingPolicy.Candidate(
+            addressType: 0, hash: Data([firstByte] + Array(repeating: 0, count: 19)), balance: credits)
+    }
+
+    /// One address of 1 DASH: the top-up keeps its fee headroom on that address, so the Max is below the balance
+    /// less the observed fee.
+    func testThePlatformToIdentityMaxIsWhatTheTopUpCanFundNotTheBalanceLessTheFee() async {
+        let candidates = [address(1, credits: oneDash * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)]
+        fundingCandidates.candidates = candidates
+        balances.table = [.platform: oneDash]
+        estimator.results = [.platformToIdentity: .fee(41_500)]
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+
+        let max = await live.maxPlan(route: .platformToIdentity)
+
+        let fundable = PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: candidates)
+        XCTAssertEqual(max, SendMaxPlan(duffs: fundable, sweepCredits: nil))
+        XCTAssertLessThan(fundable, oneDash - 41_500)
+    }
+
+    func testThePlatformToIdentityMaxIsZeroWhenNoAddressCanPayAndNilWhenTheyCannotBeRead() async {
+        balances.table = [.platform: oneDash]
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        fundingCandidates.candidates = [address(1, credits: PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits)]
+        let nothingFundable = await live.maxPlan(route: .platformToIdentity)?.duffs
+        fundingCandidates.candidates = nil
+        let unreadable = await live.maxPlan(route: .platformToIdentity)?.duffs
+        XCTAssertEqual(nothingFundable, 0)
+        XCTAssertNil(unreadable)
+    }
+
+    func testTheLivePlannerChecksAnAmountOnlyOnPlatformToIdentity() async {
+        let credits = oneDash * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+        fundingCandidates.candidates = [address(1, credits: credits)]
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let otherRoute = await live.canFund(route: .platformToCore, amount: 10 * oneDash)
+        fundingCandidates.candidates = nil
+        let unreadable = await live.canFund(route: .platformToIdentity, amount: 1)
+        XCTAssertEqual(otherRoute, .notChecked)
+        XCTAssertEqual(unreadable, .unknown)
+    }
+
+    /// The Send screen checks a typed Platform to Identity amount against what the top-up can fund, so an amount
+    /// within the balance less the fee but above that ceiling is not enough here instead of failing at Confirm.
+    func testATypedPlatformToIdentityAmountAboveWhatTheTopUpCanFundIsNotEnough() async {
+        let candidates = [address(1, credits: oneDash * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)]
+        fundingCandidates.candidates = candidates
+        balances.table[.platform] = oneDash
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
+                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+                                     maxPlanner: live, converter: converter, currentIdentity: identity)
+        await vm.load()
+        XCTAssertEqual(vm.route, .platformToIdentity)
+        let fundable = PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: candidates)
+
+        await vm.setAmountText(InternalTransferViewModel.formatTyped((fundable + 1).dashAmount, fractionDigits: 8))
+        XCTAssertEqual(vm.amountDuffs, fundable + 1)
+        XCTAssertEqual(vm.state, .notEnough, "within the balance less the fee, above what the top-up can fund")
+        XCTAssertFalse(vm.isContinueEnabled)
+
+        await vm.setAmountText(InternalTransferViewModel.formatTyped(fundable.dashAmount, fractionDigits: 8))
+        XCTAssertEqual(vm.state, .ready)
+
+        await vm.tapMax()
+        XCTAssertEqual(vm.amountDuffs, fundable)
+        XCTAssertEqual(vm.state, .ready)
+    }
+
+    func testATypedPlatformToIdentityAmountIsNotEnoughWhenNoAddressCanPay() async {
+        fundingCandidates.candidates = [address(1, credits: PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits)]
+        balances.table[.platform] = oneDash
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
+                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+                                     maxPlanner: live, converter: converter, currentIdentity: identity)
+        await vm.load()
+        await vm.setAmountText("0.001")
+        XCTAssertEqual(vm.state, .notEnough)
+    }
+
+    /// Addresses that cannot be read say nothing about the amount: the screen offers Try again, not "not enough".
+    func testAPlatformToIdentityAmountIsUnknownNotNotEnoughWhenTheAddressesCannotBeRead() async {
+        balances.table[.platform] = oneDash
+        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
+                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+                                     maxPlanner: live, converter: converter, currentIdentity: identity)
+        await vm.load()
+        fundingCandidates.candidates = nil
+
+        await vm.setAmountText("0.001")
+        XCTAssertEqual(vm.state, .feeFailed, "a typed amount")
+        XCTAssertNotNil(vm.feeFailureMessage)
+        XCTAssertFalse(vm.isContinueEnabled)
+
+        let credits = oneDash * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+        fundingCandidates.candidates = [address(1, credits: credits)]
+        await vm.retryFee()
+        XCTAssertEqual(vm.state, .ready, "Try again reads the addresses again")
+
+        fundingCandidates.candidates = nil
+        await vm.tapMax()
+        XCTAssertEqual(vm.state, .feeFailed, "Max")
+        XCTAssertFalse(vm.isContinueEnabled)
     }
 
     // MARK: - Return from Confirm with .balanceNotEnough

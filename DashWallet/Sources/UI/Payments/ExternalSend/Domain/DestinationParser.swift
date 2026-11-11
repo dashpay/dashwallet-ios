@@ -21,6 +21,10 @@ import Foundation
 /// no wallet, SDK service, network or UI is involved.
 enum DestinationParser {
     private static let identityIDByteCount = 32
+    /// The longest Base58 text a destination can have: an Identity ID (32 bytes) is at most 44 characters, a Core
+    /// address (25 bytes with its checksum) at most 35. Base58 decoding is quadratic in the input length, so a longer
+    /// word is refused before it is decoded.
+    private static let maxBase58Length = 44
 
     /// A dash: link's `sender` is kept only when `openedByApp`: a link the wallet read itself (a scan, a paste, the
     /// Address field) names no app, so none is called back after the payment (docs/adr/0007).
@@ -85,7 +89,8 @@ enum DestinationParser {
 
     private static func address(_ text: String,
                                 network: WalletEnvironment.NetworkKind) -> Result<Destination, DestinationParseError> {
-        if let decoded = ScriptAddressCodec.decodeAddress(text) {
+        let isBase58Length = text.utf8.count <= maxBase58Length
+        if isBase58Length, let decoded = ScriptAddressCodec.decodeAddress(text) {
             guard let form = PaymentNetworkResolver.token(for: network).addressForm(forVersion: decoded.version) else {
                 return .failure(.wrongNetwork)
             }
@@ -102,7 +107,7 @@ enum DestinationParser {
             }
         }
 
-        if ScriptAddressCodec.base58Decode(text)?.count == identityIDByteCount {
+        if isBase58Length, ScriptAddressCodec.base58Decode(text)?.count == identityIDByteCount {
             return .success(Destination(type: .identityID, text: text))
         }
         return .failure(.invalid)

@@ -66,6 +66,8 @@ final class ExternalSendFlow: ObservableObject {
     private var pinned: SendSource?
     /// A scan or link is being resolved; another one meanwhile starts nothing.
     private var isHandlingScan = false
+    /// A Retry is fetching the payment request again; another Retry meanwhile starts nothing.
+    private var isRefetchingRequest = false
     private var destination: Destination?
     private var recipient: IdentityRecipient?
 
@@ -192,9 +194,17 @@ final class ExternalSendFlow: ObservableObject {
         step = .send
     }
 
+    /// Back to Send for another attempt. A payment request is fetched again first: the one just attempted keeps its
+    /// single-use claim once its broadcast was tried, so it cannot be built a second time.
     func retryFromSendFailed() {
         confirmViewModel = nil
-        step = .send
+        guard let destination, destination.verifiedRequest != nil, let url = destination.paymentRequestURL else {
+            step = .send
+            return
+        }
+        guard !isRefetchingRequest else { return }
+        isRefetchingRequest = true
+        Task { await refetchRequest(url: url, callbackScheme: destination.callbackScheme) }
     }
 
     func closeFromSendFailed() {
@@ -228,21 +238,11 @@ final class ExternalSendFlow: ObservableObject {
         addressViewModel?.beginChecking()
         defer { addressViewModel?.endChecking() }
         do {
-            let details: PaymentRequestDetails
-            if let prefetched {
-                details = prefetched
-            } else {
-                details = try await paymentRequests.fetch(url: url, callbackScheme: destination.callbackScheme)
-            }
-            openSend(Destination(
-                type: .coreAddress, text: details.address, amountDuffs: details.amountDuffs,
-                label: details.merchantName, message: details.memo, paymentRequestURL: url,
-                callbackScheme: destination.callbackScheme, isVerifiedMerchant: details.isSecure), nil)
+            openSend(try await requestDestination(
+                url: url, callbackScheme: destination.callbackScheme, prefetched: prefetched), nil)
         } catch {
             guard destination.type == .coreAddress else {
-                finish(.requestFailed(
-                    title: NSLocalizedString("Couldn't make payment", comment: "External send"),
-                    message: error.localizedDescription))
+                finishRequestFailed(error)
                 return
             }
             // The request URL is dropped and the link's own address is paid, as the current Send does.
@@ -253,11 +253,48 @@ final class ExternalSendFlow: ObservableObject {
         }
     }
 
-    private func openSend(_ destination: Destination, _ recipient: IdentityRecipient?) {
+    /// Fetches and verifies the payment request at `url`, or takes `prefetched`, and returns the destination that pays
+    /// it.
+    private func requestDestination(
+        url: URL, callbackScheme: String?, prefetched: PaymentRequestDetails? = nil
+    ) async throws -> Destination {
+        let details: PaymentRequestDetails
+        if let prefetched {
+            details = prefetched
+        } else {
+            details = try await paymentRequests.fetch(url: url, callbackScheme: callbackScheme)
+        }
+        return Destination(
+            type: .coreAddress, text: details.address, amountDuffs: details.amountDuffs,
+            label: details.merchantName, message: details.memo, paymentRequestURL: url,
+            callbackScheme: callbackScheme, isVerifiedMerchant: details.isSecure,
+            verifiedRequest: details.confirmation)
+    }
+
+    /// Opens Send for the payment request fetched again, from the source the failed attempt used.
+    private func refetchRequest(url: URL, callbackScheme: String?) async {
+        defer { isRefetchingRequest = false }
+        let source = sendViewModel?.source
+        do {
+            let fetched = try await requestDestination(url: url, callbackScheme: callbackScheme)
+            openSend(fetched, nil, pinnedSource: source)
+        } catch {
+            finishRequestFailed(error)
+        }
+    }
+
+    private func finishRequestFailed(_ error: Error) {
+        finish(.requestFailed(
+            title: NSLocalizedString("Couldn't make payment", comment: "External send"),
+            message: error.localizedDescription))
+    }
+
+    private func openSend(_ destination: Destination, _ recipient: IdentityRecipient?,
+                          pinnedSource: SendSource? = nil) {
         self.destination = destination
         self.recipient = recipient
         let send = SendAmountViewModel(
-            destination: destination, pinnedSource: pinned, recipient: recipient, balances: balances,
+            destination: destination, pinnedSource: pinnedSource ?? pinned, recipient: recipient, balances: balances,
             feeEstimator: feeEstimator, maxPlanner: maxPlanner, converter: converter, currentIdentity: currentIdentity)
         send.onContinue = { [weak self] request in self?.openConfirm(request) }
         sendViewModel = send
@@ -313,9 +350,10 @@ private final class PreparedSendRecorder: ExternalSendExecuting {
     }
 
     func prepare(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
-        let prepared = try await base.prepare(route: route, destination: destination, amount: amount, isMax: isMax)
+        let prepared = try await base.prepare(
+            route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits)
         lastPrepared = prepared
         return prepared
     }

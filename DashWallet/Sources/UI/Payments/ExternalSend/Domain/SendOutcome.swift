@@ -28,9 +28,6 @@ struct MinimumAmountRefusal: Error {
 enum SendOutcome {
     case sent
     case inFlight
-    /// Shielded → Identity: the unshield moved the money to the wallet's own Platform balance and the top-up then
-    /// failed. Nothing resumes the top-up, and the money is not lost.
-    case movedToPlatform
     case notSent(NotSentReason)
 
     init(error: Error) {
@@ -45,6 +42,9 @@ enum SendOutcome {
         } else if case BIP70Error.failedAfterAcknowledgement = error {
             // The merchant acknowledged the Payment and holds the signed bytes.
             self = .inFlight
+        } else if case BIP70Error.expired = error {
+            // Thrown before the claim is spent: nothing was POSTed or broadcast.
+            self = .notSent(.expired)
         } else if error is MinimumAmountRefusal {
             self = .notSent(.belowMinimum)
         } else if error is AssetLockInputLimit.TooManyInputsError {
@@ -61,8 +61,6 @@ enum SendOutcome {
             DWLogger.log("External send outcome: sent")
         case .inFlight:
             DWLogger.log("External send outcome: inFlight")
-        case .movedToPlatform:
-            DWLogger.log("External send outcome: movedToPlatform")
         case .notSent(let reason):
             DWLogger.log("External send outcome: notSent(\(reason.category))")
         }
@@ -154,6 +152,7 @@ enum NotSentReason {
     case earlierPaymentPending
     case signingKeyUnavailable
     case belowMinimum
+    case expired
     case failed
 
     var category: String {
@@ -163,6 +162,7 @@ enum NotSentReason {
         case .earlierPaymentPending: return "earlierPaymentPending"
         case .signingKeyUnavailable: return "signingKeyUnavailable"
         case .belowMinimum: return "belowMinimum"
+        case .expired: return "expired"
         case .failed: return "failed"
         }
     }
@@ -188,6 +188,10 @@ enum NotSentReason {
         case .belowMinimum:
             return NSLocalizedString(
                 "The amount is below the minimum for this payment. Your funds were not sent.",
+                comment: "External send")
+        case .expired:
+            return NSLocalizedString(
+                "The payment request has expired. Your funds were not sent.",
                 comment: "External send")
         case .failed:
             return NSLocalizedString(

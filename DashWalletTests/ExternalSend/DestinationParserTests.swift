@@ -387,4 +387,34 @@ final class DestinationParserTests: XCTestCase {
             }
         }
     }
+
+    // Base58 decoding is quadratic in the input length, so a long word must be refused by its length first.
+    private static let longBase58Word = String(repeating: "2", count: 20_000)
+
+    func testALongBase58WordIsRefusedWithinTheBudget() {
+        let clock = ContinuousClock()
+        var result: Result<Destination, DestinationParseError>?
+        let elapsed = clock.measure { result = parse(Self.longBase58Word, .testnet) }
+        XCTAssertNil(result.flatMap { try? $0.get() })
+        XCTAssertLessThan(elapsed, .milliseconds(100))
+    }
+
+    func testFindSkipsLongWordsWithinTheBudgetAndStillFindsTheAddress() {
+        let address = core(.testnet)
+        let clipboard = "\(Self.longBase58Word) \(Self.longBase58Word)\n\(address)"
+        let clock = ContinuousClock()
+        var found: Destination?
+        let elapsed = clock.measure { found = DestinationParser.find(in: clipboard, network: .testnet) }
+        XCTAssertEqual(found?.text, address)
+        XCTAssertLessThan(elapsed, .milliseconds(100))
+    }
+
+    func testAOneMegabyteClipboardFindsNothingWithinTheBudget() {
+        let clipboard = String(repeating: "2", count: 1_000_000)
+        let clock = ContinuousClock()
+        var found: Destination?
+        let elapsed = clock.measure { found = DestinationParser.find(in: clipboard, network: .testnet) }
+        XCTAssertNil(found)
+        XCTAssertLessThan(elapsed, .milliseconds(300))
+    }
 }

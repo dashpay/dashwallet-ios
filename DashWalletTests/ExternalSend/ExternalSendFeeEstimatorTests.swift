@@ -28,7 +28,7 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
     private final class FakeSources: SendFeeSourcing, @unchecked Sendable {
         var coreFeeDuffs: UInt64? = 2_250
         var shieldedFeeCredits: [PlatformWalletManager.ShieldedFeeKind: UInt64] = [
-            .transfer: 7_000_001, .unshield: 9_000_002, .withdrawal: 11_000_003
+            .transfer: 7_000_001, .unshield: 9_000_002, .withdrawal: 11_000_003, .identityTopUpFromPool: 13_000_004
         ]
         var addressFundingFeeCredits: UInt64? = 5_000_500
         var withdrawalFeeCredits: UInt64? = 3_000_001
@@ -160,12 +160,12 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
         XCTAssertEqual(sources.shieldedCalls.map(\.numActions), [2])
     }
 
-    func testShieldedToIdentityIsTheUnshieldFloorPlusTheObservedTopUpFeeInDuffs() async {
+    func testShieldedToIdentityIsThePoolTopUpFloorOfTwoActionsInDuffs() async {
         let sources = FakeSources()
-        // 9_000_002 + 41_500_000 = 50_500_002 credits -> 50_501 duffs.
         let result = await estimate(.shieldedToIdentity, sources)
-        XCTAssertEqual(result, .fee(50_501))
-        XCTAssertEqual(sources.shieldedCalls.map(\.kind), [.unshield])
+        XCTAssertEqual(result, .fee(13_001)) // 13_000_004 credits, rounded up
+        XCTAssertEqual(sources.shieldedCalls.map(\.kind), [.identityTopUpFromPool])
+        XCTAssertEqual(sources.shieldedCalls.map(\.numActions), [2])
     }
 
     func testPlatformToCoreIsTheWithdrawalPreflightFeeInDuffs() async {

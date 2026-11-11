@@ -252,6 +252,14 @@ final class SendOutcomeMappingTests: XCTestCase {
         }
     }
 
+    // `BIP70PaymentService` throws `.expired` before it claims, POSTs or broadcasts anything.
+    func testExpiredPaymentRequestIsNotSentExpiredWithAMessage() throws {
+        let reason = try XCTUnwrap(assertNotSent(BIP70Error.expired))
+
+        XCTAssertEqual(reason.category, "expired")
+        XCTAssertFalse(reason.localizedMessage.isEmpty)
+    }
+
     func testTransferFailedWrappingUnconfirmedIsInFlight() {
         assertInFlight(CoordinatorError.transferFailed(PlatformWalletError.shieldedSpendUnconfirmed(Self.rawSdkText)))
     }

@@ -17,22 +17,25 @@
 
 import Foundation
 
-/// What a fetched and verified payment request tells Send: where to pay and how much.
+/// What a fetched and verified payment request tells Send: where to pay and how much. `confirmation` is the
+/// verified request itself, which the send builds and signs; it serves one send attempt, and a Retry fetches the
+/// request again.
 struct PaymentRequestDetails: Equatable {
     let address: String
-    let amountDuffs: UInt64
-    let merchantName: String?
-    let memo: String?
+    let confirmation: BIP70ConfirmationBox
+
+    var amountDuffs: UInt64 { confirmation.amount }
+    var merchantName: String? { confirmation.merchantName }
+    var memo: String? { confirmation.memo }
     /// The request's signature verified against a trusted certificate (the old Send's 🔒).
-    let isSecure: Bool
+    var isSecure: Bool { confirmation.isSecure }
 }
 
 extension PaymentRequestDetails {
     /// The details of a request the BIP70 fetch verified; nil when it names no address.
     init?(box: BIP70ConfirmationBox) {
         guard let address = box.primaryAddress else { return nil }
-        self.init(address: address, amountDuffs: box.amount, merchantName: box.merchantName, memo: box.memo,
-                  isSecure: box.isSecure)
+        self.init(address: address, confirmation: box)
     }
 }
 

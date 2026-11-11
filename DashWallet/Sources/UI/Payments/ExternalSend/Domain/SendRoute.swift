@@ -48,4 +48,8 @@ extension SendRoute {
         case .identityToCore, .identityToPlatform, .identityToIdentity: return .identity
         }
     }
+
+    /// Whether the fee prepared at Continue is the fee the send pays (ADR-0009). Only Core → Core, which also carries
+    /// BIP70 payment requests, is built and signed at Continue; every other route's fee is an estimate.
+    var isFeeExact: Bool { self == .coreToCore }
 }

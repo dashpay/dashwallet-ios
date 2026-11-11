@@ -772,6 +772,26 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertFalse(w.calls.contains("broadcast"))
     }
 
+    /// Built while the request was valid, tapped after it expired: nothing is POSTed or broadcast and the
+    /// claim is released, so the same confirmation can be built again.
+    func testExpiryAtPostThrowsBeforePostAndBroadcastAndReleasesTheClaim() async throws {
+        let expires = futureExpiry
+        let w = FakeWallet(); let t = FakeTransport(unsigned(expires: expires)); t.onPost = { w.calls.append("post") }
+        let svc = service(t, w)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let beforeExpiry = Date(timeIntervalSince1970: Double(expires) - 10)
+        let built = try await svc.buildForSend(c, now: beforeExpiry)
+
+        await assertThrowsBIP70(
+            try await svc.postAndBroadcast(built, now: Date(timeIntervalSince1970: Double(expires) + 1)), .expired)
+        XCTAssertNil(t.postedPayment)
+        XCTAssertEqual(w.calls, ["build"])
+
+        let rebuilt = try await svc.buildForSend(c, now: beforeExpiry)
+        _ = try await svc.postAndBroadcast(rebuilt, now: beforeExpiry)
+        XCTAssertEqual(w.calls, ["build", "build", "post", "broadcast"])
+    }
+
     func testAuthCancelStopsBeforeBuild() async {
         let w = FakeWallet(); let auth = FakeAuth(); auth.error = BIP70Error.authCancelled
         let svc = service(FakeTransport(unsigned()), w, auth: auth)

@@ -43,10 +43,13 @@ final class ExternalSendExecutorTests: XCTestCase {
 
     private let twoStepRoutes: [SendRoute] = [.coreToShielded, .coreToPlatform, .coreToIdentity]
 
-    /// Routes the coordinator's `perform*` calls carry. Identity destinations go through the identity top-up.
-    private let shieldedCoordinatorRoutes: [SendRoute] = [.shieldedToCore, .shieldedToShielded, .shieldedToPlatform]
+    /// Routes the coordinator's `perform*` calls carry. A Platform-source Identity destination goes through the
+    /// identity top-up.
+    private let shieldedCoordinatorRoutes: [SendRoute] = [
+        .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity
+    ]
     private let platformCoordinatorRoutes: [SendRoute] = [.platformToCore, .platformToShielded, .platformToPlatform]
-    private let identityTopUpRoutes: [SendRoute] = [.shieldedToIdentity, .platformToIdentity]
+    private let identityTopUpRoutes: [SendRoute] = [.platformToIdentity]
     private var coordinatorRoutes: [SendRoute] { shieldedCoordinatorRoutes + platformCoordinatorRoutes }
     private var creditRoutes: [SendRoute] { coordinatorRoutes + identityTopUpRoutes }
     private let identityRoutes: [SendRoute] = [.identityToCore, .identityToPlatform, .identityToIdentity]
@@ -75,6 +78,8 @@ final class ExternalSendExecutorTests: XCTestCase {
         var prepareError: Error?
         var broadcastOutcome: CoreTransactionBroadcastOutcome = .accepted(txid: String(repeating: "a1", count: 32))
         var fee = ExternalSendExecutorTests.coreFee
+        /// Display order, as `PreparedStandardSend.txHash` holds it.
+        var txHash = Data(repeating: 0xa1, count: 32)
         private(set) var prepareCalls: [(address: String, amount: UInt64)] = []
         private(set) var broadcasts = 0
         private(set) weak var lastPrepared: PreparedStandardSend?
@@ -84,7 +89,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             if let prepareError { throw prepareError }
             let prepared = PreparedStandardSend(
                 txData: Data([0x01]),
-                txHash: Data(repeating: 0xa1, count: 32),
+                txHash: txHash,
                 fee: fee,
                 address: address,
                 amount: amount,
@@ -125,8 +130,8 @@ final class ExternalSendExecutorTests: XCTestCase {
     /// Stands for the `ShieldedTransferCoordinator` calls the old Send / InternalTransfer make:
     /// `performShieldedTransfer`
     /// (:1618), `performWithdraw` (:1206), `performUnshield` (:1312), `performPlatformSend` (:1687),
-    /// `performPlatformWithdraw` (:1561), `performShield(recipientRaw43:)` (:1109), each read off the coordinator's
-    /// `phase` / `lastFailure`.
+    /// `performPlatformWithdraw` (:1561), `performShield(recipientRaw43:)` (:1109), and `performIdentityTopUpFromPool`
+    /// for Shielded to an Identity ID, each read off the coordinator's `phase` / `lastFailure`.
     private final class FakeCreditsSend: ShieldedPlatformSending {
         struct Run {
             let route: SendRoute
@@ -135,6 +140,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             let fee: UInt64
             /// The identity top-up seam has no Max flag; its runs keep false.
             var isMax = false
+            var sweepCredits: UInt64?
         }
 
         var result: CreditsSendResult = .completed
@@ -142,18 +148,19 @@ final class ExternalSendExecutorTests: XCTestCase {
         private(set) var sawPreauthorized: [Bool] = []
 
         func run(
-            route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool
+            route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool,
+            sweepCredits: UInt64?
         ) async -> CreditsSendResult {
             runs.append(Run(
-                route: route, destination: destination, amount: amount, fee: bindingFeeDuffs, isMax: isMax))
+                route: route, destination: destination, amount: amount, fee: bindingFeeDuffs, isMax: isMax,
+                sweepCredits: sweepCredits))
             sawPreauthorized.append(DWIdentityAuthorizer.isPreauthorized)
             return result
         }
     }
 
-    /// Stands for the identity top-up from Shielded or Platform credits (`IdentityTopUpViewModel.topUp`,
-    /// SDKIdentityProfileSheet.swift:603; `topUpFromAddresses` for Platform, `shieldedUnshield` then
-    /// `topUpFromAddresses` for Shielded).
+    /// Stands for the identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`,
+    /// `topUpFromAddresses`).
     private final class FakeIdentityTopUp: IdentityTopUpFromCreditsSending {
         var result: CreditsSendResult = .completed
         private(set) var runs: [FakeCreditsSend.Run] = []
@@ -206,14 +213,14 @@ final class ExternalSendExecutorTests: XCTestCase {
         var sendError: Error?
         var callbackURL: URL?
         var fee = ExternalSendExecutorTests.coreFee
-        private(set) var prepareCalls: [(requestURL: URL, amount: UInt64)] = []
+        private(set) var prepareCalls: [BIP70ConfirmationBox] = []
         private(set) var sends = 0
+        /// How often a prepared send gave its request's single-use claim back.
+        private(set) var releases = 0
         private(set) weak var lastPrepared: PreparedPaymentRequestSend?
 
-        func preparePaymentRequestSend(
-            requestURL: URL, callbackScheme: String?, amount: UInt64
-        ) async throws -> PreparedPaymentRequestSend {
-            prepareCalls.append((requestURL, amount))
+        func preparePaymentRequestSend(_ request: BIP70ConfirmationBox) async throws -> PreparedPaymentRequestSend {
+            prepareCalls.append(request)
             if let prepareError { throw prepareError }
             let txidDisplay = Data(repeating: 0xb2, count: 32)
             let prepared = PreparedPaymentRequestSend(
@@ -224,9 +231,10 @@ final class ExternalSendExecutorTests: XCTestCase {
                     if let sendError { throw sendError }
                     return SendResult(
                         txidHexDisplay: String(repeating: "b2", count: 32), txHashDisplay: txidDisplay, fee: fee,
-                        amount: amount, primaryAddress: ExternalSendExecutorTests.coreAddress, ackMemo: "thanks",
-                        callbackURL: callbackURL)
-                })
+                        amount: request.amount, primaryAddress: ExternalSendExecutorTests.coreAddress,
+                        ackMemo: "thanks", callbackURL: callbackURL)
+                },
+                release: { [unowned self] in releases += 1 })
             lastPrepared = prepared
             return prepared
         }
@@ -312,9 +320,11 @@ final class ExternalSendExecutorTests: XCTestCase {
     }
 
     private func prepare(
-        _ executor: ExternalSendExecutor, _ route: SendRoute, amount: UInt64 = amount, isMax: Bool = false
+        _ executor: ExternalSendExecutor, _ route: SendRoute, amount: UInt64 = amount, isMax: Bool = false,
+        sweepCredits: UInt64? = nil
     ) async throws -> PreparedExternalSend {
-        try await executor.prepare(route: route, destination: destination(for: route), amount: amount, isMax: isMax)
+        try await executor.prepare(
+            route: route, destination: destination(for: route), amount: amount, isMax: isMax, sweepCredits: sweepCredits)
     }
 
     private func assertPrepareThrows(
@@ -517,22 +527,24 @@ final class ExternalSendExecutorTests: XCTestCase {
 
     private static let requestURL = URL(fileURLWithPath: "/pay/1")
 
+    private let verifiedRequest = BIP70ConfirmationBox.fixture(address: coreAddress, amount: amount)
+
     private var requestDestination: Destination {
-        Destination(type: .coreAddress, text: Self.coreAddress, paymentRequestURL: Self.requestURL)
+        Destination(type: .coreAddress, text: Self.coreAddress, paymentRequestURL: Self.requestURL,
+                    verifiedRequest: verifiedRequest)
     }
 
     private func prepareRequest(
         _ executor: ExternalSendExecutor, amount: UInt64 = amount
     ) async throws -> PreparedExternalSend {
-        try await executor.prepare(route: .coreToCore, destination: requestDestination, amount: amount, isMax: false)
+        try await executor.prepare(route: .coreToCore, destination: requestDestination, amount: amount, isMax: false, sweepCredits: nil)
     }
 
     func testPaymentRequestPreparesThroughTheBIP70SeamWithItsBindingFeeAndNeitherPostsNorBroadcasts() async throws {
         let prepared = try await prepareRequest(makeExecutor())
 
         XCTAssertEqual(paymentRequest.prepareCalls.count, 1)
-        XCTAssertEqual(paymentRequest.prepareCalls.first?.requestURL, Self.requestURL)
-        XCTAssertEqual(paymentRequest.prepareCalls.first?.amount, Self.amount, "the fetched amount, unchanged")
+        XCTAssertIdentical(paymentRequest.prepareCalls.first, verifiedRequest, "the request fetched at open")
         XCTAssertEqual(prepared.route, .coreToCore)
         XCTAssertEqual(prepared.amount, Self.amount)
         XCTAssertEqual(prepared.fee, Self.coreFee, "Confirm shows the built transaction's fee")
@@ -705,6 +717,54 @@ final class ExternalSendExecutorTests: XCTestCase {
         }
     }
 
+    /// A plain dash: link another app opened: the sender hears back once the transaction was broadcast, as the
+    /// current Send does after `sendCompletedToAddress`.
+    func testStandardSendOfALinkAnotherAppOpenedExposesThePayAckOnlyAfterItWasSent() async throws {
+        standard.txHash = Data([0xd7] + [UInt8](repeating: 0x5d, count: 31))
+        let executor = makeExecutor()
+        let prepared = try await executor.prepare(
+            route: .coreToCore,
+            destination: Destination(type: .coreAddress, text: Self.coreAddress, callbackScheme: "app"),
+            amount: Self.amount, isMax: false, sweepCredits: nil)
+        XCTAssertNil(prepared.callbackURL, "nothing to open before send")
+
+        _ = await executor.send(prepared)
+
+        XCTAssertEqual(
+            prepared.callbackURL?.absoluteString,
+            "app://callback=payack&address=\(Self.coreAddress)"
+                + "&txid=d7" + String(repeating: "5d", count: 31))
+    }
+
+    func testStandardSendWithoutASchemeHasNoCallbackURL() async throws {
+        let executor = makeExecutor()
+        let prepared = try await executor.prepare(
+            route: .coreToCore, destination: Destination(type: .coreAddress, text: Self.coreAddress),
+            amount: Self.amount, isMax: false, sweepCredits: nil)
+
+        _ = await executor.send(prepared)
+
+        XCTAssertNil(prepared.callbackURL, "a scanned, pasted or typed address has no sender")
+    }
+
+    func testStandardSendThatWasNotSentHasNoCallbackURL() async throws {
+        let executor = makeExecutor()
+        let outcomes: [CoreTransactionBroadcastOutcome] = [
+            .rejected(txid: "t", reason: "bad-txns"), .unknown(txid: "t", reason: "no acceptance signal"),
+        ]
+        for outcome in outcomes {
+            standard.broadcastOutcome = outcome
+            let prepared = try await executor.prepare(
+                route: .coreToCore,
+                destination: Destination(type: .coreAddress, text: Self.coreAddress, callbackScheme: "app"),
+                amount: Self.amount, isMax: false, sweepCredits: nil)
+
+            _ = await executor.send(prepared)
+
+            XCTAssertNil(prepared.callbackURL, "only a sent payment opens the callback: \(outcome)")
+        }
+    }
+
     func testPaymentRequestDiscardPostsAndBroadcastsNothing() async throws {
         let executor = makeExecutor()
         let prepared = try await prepareRequest(executor)
@@ -715,6 +775,30 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertEqual(paymentRequest.sends, 0)
         XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
         XCTAssertEqual(logged.count, 1, "Cancel is no outcome; only the later send logs")
+    }
+
+    /// The request is carried from open to Confirm, so an unsent prepared send gives its single-use claim back for
+    /// the next Continue; a send that ran keeps it.
+    func testPaymentRequestDiscardReleasesTheRequestOnlyWhileUnsent() async throws {
+        let executor = makeExecutor()
+        let discarded = try await prepareRequest(executor)
+
+        executor.discard(discarded)
+        executor.discard(discarded)
+        XCTAssertEqual(paymentRequest.releases, 1, "released once")
+
+        let sent = try await prepareRequest(executor)
+        _ = await executor.send(sent)
+        executor.discard(sent)
+        XCTAssertEqual(paymentRequest.releases, 1, "a send that ran keeps its claim")
+    }
+
+    func testPaymentRequestBindingFeeNoLongerFittingReleasesTheRequest() async {
+        balances.spendable = Self.amount + Self.coreFee - 1
+
+        _ = try? await prepareRequest(makeExecutor())
+
+        XCTAssertEqual(paymentRequest.releases, 1)
     }
 
     func testPlainCoreDestinationStillUsesTheStandardSeam() async throws {
@@ -873,6 +957,28 @@ final class ExternalSendExecutorTests: XCTestCase {
         }
     }
 
+    /// The FFI refuses a Core top-up below its minimum before it builds any lock.
+    func testCoreToIdentityBelowTheTopUpMinimumIsNotSentAndNeverReachesTheSeam() async throws {
+        let executor = makeExecutor()
+        let outcome = await executor.send(try await prepare(executor, .coreToIdentity, amount: 50_499))
+        XCTAssertTrue(isNotSent(outcome, "belowMinimum"), "\(outcome)")
+        XCTAssertTrue(twoStep.runs.isEmpty, "no asset lock is started")
+
+        _ = await executor.send(try await prepare(executor, .coreToIdentity, amount: 50_500))
+        XCTAssertEqual(twoStep.runs.map(\.amount), [50_500], "the minimum itself is sent")
+    }
+
+    func testIdentityTopUpFromCoreInvalidParameterIsNotSentNotInFlight() async throws {
+        let refusal = PlatformWalletError.invalidParameter(
+            "`amount_duffs` is below the minimum top-up asset-lock balance")
+        XCTAssertFalse(LiveCoreTwoStepSend.lockMayExist(after: refusal))
+
+        let executor = makeExecutor()
+        twoStep.result = LiveCoreTwoStepSend.identityTopUpFailure(after: refusal)
+        let outcome = await executor.send(try await prepare(executor, .coreToIdentity))
+        XCTAssertTrue(isNotSent(outcome, "belowMinimum"), "\(outcome)")
+    }
+
     func testRetryAfterFeeUnavailableAuthenticatesAgainEvenInAnAuthenticatedSession() async throws {
         let executor = makeExecutor()
         prompt.didAuthenticate = true
@@ -988,7 +1094,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     // MARK: - Shielded and Platform sources: authenticate on Continue
 
     private func source(of route: SendRoute) -> SendSource {
-        shieldedCoordinatorRoutes.contains(route) || route == .shieldedToIdentity ? .shielded : .platform
+        shieldedCoordinatorRoutes.contains(route) ? .shielded : .platform
     }
 
     func testCreditSourceAuthenticationCancelledPreparesNothing() async {
@@ -1250,21 +1356,29 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertTrue(isInFlight(outcome), "the credits left the source: \(outcome)")
     }
 
-    /// The unshield moved the credits to the wallet's own Platform address and the top-up then failed: nothing
-    /// resumes the top-up, so the outcome says where the money is instead of "in progress".
-    func testShieldedToIdentityFailureAfterTheUnshieldIsMovedToPlatform() async throws {
-        identityTopUp.result = .failed(CoordinatorError.noWallet, handedOver: true)
+    /// Shielded to an Identity ID is one top-up from the pool on the Shielded seam, with the entered identity and
+    /// the amount, whoever owns the identity; the unshield-then-top-up seam is never used.
+    func testShieldedToIdentityRunsTheOneStepTopUpOnceWithTheIdentityAndTheAmount() async throws {
         let executor = makeExecutor()
         let outcome = await executor.send(try await prepare(executor, .shieldedToIdentity))
-        guard case .movedToPlatform = outcome else { return XCTFail("expected movedToPlatform, got \(outcome)") }
-        guard case .movedToPlatform? = logged.last else { return XCTFail("logged \(logged)") }
+
+        XCTAssertTrue(isSent(outcome), "\(outcome)")
+        XCTAssertEqual(credits.runs.map(\.route), [.shieldedToIdentity])
+        XCTAssertEqual(credits.runs.first?.destination, destination(for: .shieldedToIdentity))
+        XCTAssertEqual(credits.runs.first?.amount, Self.amount)
+        XCTAssertTrue(identityTopUp.runs.isEmpty, "never the unshield and topUpFromAddresses seam")
     }
 
-    func testShieldedToIdentityFailureBeforeTheUnshieldKeepsItsMapping() async throws {
-        identityTopUp.result = .failed(CoordinatorError.noWallet, handedOver: false)
+    func testShieldedToIdentityUnconfirmedIsInFlightAndARefusalBeforeSubmissionIsNotSent() async throws {
         let executor = makeExecutor()
-        let outcome = await executor.send(try await prepare(executor, .shieldedToIdentity))
-        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+        credits.result = .unconfirmed
+        let unconfirmed = await executor.send(try await prepare(executor, .shieldedToIdentity))
+        credits.result = .failed(CoordinatorError.shieldedBalanceUnavailable, handedOver: false)
+        let refused = await executor.send(try await prepare(executor, .shieldedToIdentity))
+
+        XCTAssertTrue(isInFlight(unconfirmed), "\(unconfirmed)")
+        XCTAssertTrue(isNotSent(refused, "failed"), "\(refused)")
+        XCTAssertTrue(identityTopUp.runs.isEmpty)
     }
 
     func testCreditSourceDiscardSpendsNothingAndSendAfterwardsIsNotSentFailed() async throws {
@@ -1308,6 +1422,20 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertEqual(credits.runs.map(\.isMax), coordinatorRoutes.flatMap { _ in [true, false] })
     }
 
+    /// A sweep plan of 6_082_800 + 800 credits is not whole duffs; the coordinator checks the sweep against it, so
+    /// the Shielded seam gets those credits as planned. A typed amount carries none.
+    func testShieldedMaxHandsThePlansExactCreditsToTheSeam() async throws {
+        let planCredits: UInt64 = 6_082_800 + 800
+        let executor = makeExecutor()
+        for route in shieldedCoordinatorRoutes {
+            _ = await executor.send(try await prepare(
+                executor, route, amount: planCredits / 1000, isMax: true, sweepCredits: planCredits))
+            _ = await executor.send(try await prepare(executor, route))
+        }
+
+        XCTAssertEqual(credits.runs.map(\.sweepCredits), shieldedCoordinatorRoutes.flatMap { _ in [planCredits, nil] })
+    }
+
     func testCoreToShieldedReceivesIsMaxForTheWholeWalletDrain() async throws {
         let executor = makeExecutor()
         _ = await executor.send(try await prepare(executor, .coreToShielded, isMax: true))
@@ -1326,7 +1454,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         fees.estimate = .fee((12_345_678 + 999) / 1000)
         let max: UInt64 = (1_234_567_890 - 12_345_678) / 1000
         let wholeBalanceRoutes: [SendRoute] = [
-            .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .platformToCore
+            .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity, .platformToCore
         ]
         let executor = makeExecutor()
         for route in wholeBalanceRoutes {
@@ -1577,7 +1705,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         let p2sh = Destination(type: .coreAddress, text: "7h9dhRvmgdg3cUng5kAsT3sn8mdd9eYYCz")
         let executor = makeExecutor()
         let prepared = try await executor.prepare(
-            route: .identityToCore, destination: p2sh, amount: Self.identityAmount, isMax: false)
+            route: .identityToCore, destination: p2sh, amount: Self.identityAmount, isMax: false, sweepCredits: nil)
 
         let outcome = await executor.send(prepared)
 
@@ -1761,7 +1889,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             for (amount, fee) in [(UInt64.max, UInt64(1)), (Self.amount, UInt64.max)] {
                 let result = await live.run(
                     route: route, destination: destination(for: route), amount: amount, bindingFeeDuffs: fee,
-                    isMax: false)
+                    isMax: false, sweepCredits: nil)
                 let invalidAmount = isFailure(result, matching: {
                     if case .invalidAmount? = $0 as? PlatformAddressSyncCoordinator.SendError { return true }
                     return false
@@ -1776,9 +1904,23 @@ final class ExternalSendExecutorTests: XCTestCase {
         let notShielded = Destination(type: .shieldedAddress, text: Self.coreAddress)
         for route in [SendRoute.shieldedToShielded, .platformToShielded] {
             let result = await live.run(
-                route: route, destination: notShielded, amount: Self.amount, bindingFeeDuffs: 1, isMax: true)
+                route: route, destination: notShielded, amount: Self.amount, bindingFeeDuffs: 1, isMax: true, sweepCredits: nil)
             let refused = isFailure(result, matching: isNoShieldedAddress, handedOver: false)
             XCTAssertTrue(refused, "\(route): \(result)")
+        }
+    }
+
+    func testLiveCreditSendRefusesAnIdentityIdThatIsNotThirtyTwoBytesBeforeTheTopUp() async {
+        let live = LiveShieldedPlatformSend()
+        for text in ["identity-id-recipient", Self.coreAddress] {
+            let result = await live.run(
+                route: .shieldedToIdentity, destination: Destination(type: .identityID, text: text),
+                amount: Self.amount, bindingFeeDuffs: 1, isMax: false, sweepCredits: nil)
+            let refused = isFailure(result, matching: {
+                if case .invalidDestination? = $0 as? PlatformAddressSyncCoordinator.SendError { return true }
+                return false
+            }, handedOver: false)
+            XCTAssertTrue(refused, "\(text): \(result)")
         }
     }
 
@@ -1792,17 +1934,32 @@ final class ExternalSendExecutorTests: XCTestCase {
             logOutcome: { [unowned self] in logged.append($0) })
         let notShielded = Destination(type: .shieldedAddress, text: Self.coreAddress)
         let cases: [(SendRoute, Bool)] = [
-            (.coreToShielded, false), (.coreToShielded, true), (.platformToShielded, false)
+            (.coreToShielded, false), (.coreToShielded, true), (.platformToShielded, false),
+            (.shieldedToIdentity, false)
         ]
         for (route, isMax) in cases {
             let prepared = try await executor.prepare(
-                route: route, destination: notShielded, amount: Self.amount, isMax: isMax)
+                route: route, destination: notShielded, amount: Self.amount, isMax: isMax, sweepCredits: nil)
             let outcome = await executor.send(prepared)
             XCTAssertTrue(isNotSent(outcome, "failed"), "\(route) isMax \(isMax): \(outcome)")
         }
         let belowMinimum = try await executor.prepare(
-            route: .shieldedToCore, destination: destination(for: .shieldedToCore), amount: 1, isMax: false)
+            route: .shieldedToCore, destination: destination(for: .shieldedToCore), amount: 1, isMax: false, sweepCredits: nil)
         let outcome = await executor.send(belowMinimum)
         XCTAssertTrue(isNotSent(outcome, "belowMinimum"), "\(outcome)")
+    }
+}
+
+extension BIP70ConfirmationBox {
+    /// A verified payment request paying `amount` to `address`, as the BIP70 fetch hands it over.
+    static func fixture(address: String, amount: UInt64, merchantName: String? = "Merchant",
+                        memo: String? = "Order 7", isSecure: Bool = false,
+                        callbackScheme: String? = nil) -> BIP70ConfirmationBox {
+        let details = PaymentDetails(network: "test", outputs: [], memo: memo)
+        return BIP70ConfirmationBox(Confirmation(
+            merchantName: merchantName, isSecure: isSecure, recipients: [(address: address, amount: amount)],
+            amount: amount, estimatedFee: 226, network: .testnet, paymentURL: nil, scheme: "dash",
+            merchantData: nil, memo: memo, callbackScheme: callbackScheme,
+            request: PaymentRequest(serializedDetails: details.encoded())))
     }
 }

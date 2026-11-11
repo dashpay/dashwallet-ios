@@ -35,36 +35,45 @@ protocol CoreStandardSending {
 }
 
 /// A payment request built and signed, not yet POSTed or broadcast. `send` POSTs the Payment and broadcasts, once.
+/// `release` gives the request's single-use claim back when the send is discarded before it ran, so the same request
+/// can be built again.
 @MainActor
 final class PreparedPaymentRequestSend {
     /// The transaction's wire-order txid, known once it is signed.
     let txidWire: Data
     let fee: UInt64
     private var sendAction: (() async throws -> SendResult)?
+    private var release: (() -> Void)?
 
-    init(txidWire: Data, fee: UInt64, sendAction: @escaping () async throws -> SendResult) {
+    init(txidWire: Data, fee: UInt64, sendAction: @escaping () async throws -> SendResult,
+         release: @escaping () -> Void = {}) {
         self.txidWire = txidWire
         self.fee = fee
         self.sendAction = sendAction
+        self.release = release
     }
 
     /// Runs the POST + broadcast, once: a second call (or one after `discard`) gets nil.
     fileprivate func send() async throws -> SendResult? {
         guard let action = sendAction else { return nil }
         sendAction = nil
+        release = nil
         return try await action()
     }
 
-    fileprivate func discard() { sendAction = nil }
+    /// Drops the send; one that has not run releases the request's claim.
+    fileprivate func discard() {
+        sendAction = nil
+        release?()
+        release = nil
+    }
 }
 
-/// The Core payment-request send (BIP70): authenticates, re-fetches the request and builds and signs without
-/// POSTing the Payment or broadcasting. Throws if the request's amount is not `amount`.
+/// The Core payment-request send (BIP70): authenticates and builds and signs the verified request without POSTing the
+/// Payment or broadcasting.
 protocol CorePaymentRequestSending {
     @MainActor
-    func preparePaymentRequestSend(
-        requestURL: URL, callbackScheme: String?, amount: UInt64
-    ) async throws -> PreparedPaymentRequestSend
+    func preparePaymentRequestSend(_ request: BIP70ConfirmationBox) async throws -> PreparedPaymentRequestSend
 }
 
 enum CoreTwoStepResult {
@@ -94,14 +103,17 @@ enum CreditsSendResult {
     case notStarted
 }
 
-/// The Shielded- and Platform-source routes to Core, Shielded and Platform destinations.
+/// The Shielded-source routes and the Platform-source routes to Core, Shielded and Platform destinations.
+/// `sweepCredits` is the Shielded sweep plan's exact amount on a Shielded Max, sent in place of `amount`; nil
+/// otherwise.
 protocol ShieldedPlatformSending {
     func run(
-        route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool,
+        sweepCredits: UInt64?
     ) async -> CreditsSendResult
 }
 
-/// The Shielded- and Platform-source routes to an Identity ID (a top-up from credits).
+/// The Platform-source route to an Identity ID (a top-up from the Platform addresses' credits).
 protocol IdentityTopUpFromCreditsSending {
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64
@@ -138,7 +150,8 @@ protocol CoreDrainPreviewing {
 @MainActor
 final class PreparedExternalSend {
     enum Plan {
-        case standard(PreparedStandardSend)
+        /// `callbackScheme` is the sender of a dash: link another app opened, told once the transaction was sent.
+        case standard(PreparedStandardSend, callbackScheme: String? = nil)
         case paymentRequest(PreparedPaymentRequestSend)
         case routed(destination: Destination)
     }
@@ -149,21 +162,26 @@ final class PreparedExternalSend {
     /// The part of `fee` a Core asset lock pays the L1 miners; 0 on every other route.
     let assetLockMinerFee: UInt64
     let isMax: Bool
+    /// The Shielded sweep plan's exact credits on a Shielded Max; nil otherwise.
+    let sweepCredits: UInt64?
     /// The Core to Core transaction's wire-order txid, read when the send is prepared so it outlives the plan;
     /// nil for the routed sends.
     let txidWire: Data?
-    /// The merchant's x-callback-url, set only once a payment-request send succeeded; the flow opens it.
+    /// The x-callback-url of the app that opened the link (a merchant's, for a payment request), set only once the
+    /// Core to Core send succeeded; the flow opens it.
     private(set) var callbackURL: URL?
     private var plan: Plan?
 
-    init(route: SendRoute, amount: UInt64, fee: UInt64, assetLockMinerFee: UInt64 = 0, isMax: Bool, plan: Plan) {
+    init(route: SendRoute, amount: UInt64, fee: UInt64, assetLockMinerFee: UInt64 = 0, isMax: Bool,
+         sweepCredits: UInt64? = nil, plan: Plan) {
         self.route = route
         self.amount = amount
         self.fee = fee
         self.assetLockMinerFee = assetLockMinerFee
         self.isMax = isMax
+        self.sweepCredits = sweepCredits
         switch plan {
-        case .standard(let transaction): txidWire = transaction.txidWire
+        case .standard(let transaction, _): txidWire = transaction.txidWire
         case .paymentRequest(let request): txidWire = request.txidWire
         case .routed: txidWire = nil
         }
@@ -181,8 +199,9 @@ final class PreparedExternalSend {
 
 @MainActor
 protocol ExternalSendExecuting: AnyObject {
+    /// `sweepCredits`: the Shielded sweep plan's exact credits on a Shielded Max (`SendAmountRequest.sweepCredits`).
     func prepare(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend
     func send(_ prepared: PreparedExternalSend) async -> SendOutcome
     func discard(_ prepared: PreparedExternalSend)
@@ -231,20 +250,20 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     }
 
     func prepare(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
         switch route {
         case .coreToCore:
-            if let requestURL = destination.paymentRequestURL {
-                return try await preparePaymentRequest(
-                    url: requestURL, callbackScheme: destination.callbackScheme, amount: amount, isMax: isMax)
+            if let request = destination.verifiedRequest {
+                return try await preparePaymentRequest(request, amount: amount, isMax: isMax)
             }
             return try await prepareStandard(destination: destination, amount: amount, isMax: isMax)
         case .coreToShielded, .coreToPlatform, .coreToIdentity,
              .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
              .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
              .identityToCore, .identityToPlatform, .identityToIdentity:
-            return try await prepareRouted(route: route, destination: destination, amount: amount, isMax: isMax)
+            return try await prepareRouted(
+                route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits)
         }
     }
 
@@ -253,8 +272,13 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         switch prepared.takePlan() {
         case nil:
             outcome = .notSent(.failed)
-        case .standard(let transaction)?:
+        case let .standard(transaction, callbackScheme)?:
             outcome = await broadcast(transaction)
+            if case .sent = outcome {
+                prepared.opens(BIP70PaymentService.makeCallbackURL(
+                    scheme: callbackScheme, address: transaction.address,
+                    txidHexDisplay: transaction.txHash.hexEncodedString()))
+            }
         case .paymentRequest(let request)?:
             outcome = await sendPaymentRequest(request, into: prepared)
         case .routed(let destination)?:
@@ -281,16 +305,16 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         try await requireFits(route: .coreToCore, amount: amount, fee: transaction.fee)
         return PreparedExternalSend(
-            route: .coreToCore, amount: amount, fee: transaction.fee, isMax: isMax, plan: .standard(transaction))
+            route: .coreToCore, amount: amount, fee: transaction.fee, isMax: isMax,
+            plan: .standard(transaction, callbackScheme: destination.callbackScheme))
     }
 
     private func preparePaymentRequest(
-        url: URL, callbackScheme: String?, amount: UInt64, isMax: Bool
+        _ verified: BIP70ConfirmationBox, amount: UInt64, isMax: Bool
     ) async throws -> PreparedExternalSend {
         let request: PreparedPaymentRequestSend
         do {
-            request = try await paymentRequestSend.preparePaymentRequestSend(
-                requestURL: url, callbackScheme: callbackScheme, amount: amount)
+            request = try await paymentRequestSend.preparePaymentRequestSend(verified)
         } catch {
             throw Self.preparationError(error)
         }
@@ -341,7 +365,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     // MARK: - Asset-lock and credit routes
 
     private func prepareRouted(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
         let authentication = await AuthenticationGate.authenticate(
             biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
@@ -373,26 +397,23 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         return PreparedExternalSend(
             route: route, amount: amount, fee: fee, assetLockMinerFee: minerFee, isMax: isMax,
-            plan: .routed(destination: destination))
+            sweepCredits: sweepCredits, plan: .routed(destination: destination))
     }
 
     /// The user authenticated on Continue, so the seam's own prompt is suppressed for the run.
     private func runRouted(_ prepared: PreparedExternalSend, destination: Destination) async -> SendOutcome {
+        if let refusal = Self.minimumAmountRefusal(route: prepared.route, amountDuffs: prepared.amount) {
+            return SendOutcome(error: refusal)
+        }
         switch prepared.route {
         case .coreToShielded, .coreToPlatform, .coreToIdentity:
             return await runTwoStep(prepared, destination: destination)
-        case .shieldedToIdentity, .platformToIdentity:
-            let result = await DWIdentityAuthorizer.preauthorized {
+        case .platformToIdentity:
+            return await runCredits {
                 await identityTopUp.run(
                     route: prepared.route, destination: destination, amount: prepared.amount,
                     bindingFeeDuffs: prepared.fee)
             }
-            // The Shielded top-up hands over by unshielding to an own Platform address; a failure after that leaves
-            // the money there, and no recovery finishes the top-up.
-            if prepared.route == .shieldedToIdentity, case .failed(_, handedOver: true) = result {
-                return .movedToPlatform
-            }
-            return creditsOutcome(result)
         case .identityToCore, .identityToPlatform, .identityToIdentity:
             return await runCredits {
                 await identityCredits.run(
@@ -400,13 +421,10 @@ final class ExternalSendExecutor: ExternalSendExecuting {
                     bindingFeeCredits: prepared.fee, isMax: prepared.isMax)
             }
         default:
-            if let refusal = Self.withdrawalMinimumRefusal(route: prepared.route, amountDuffs: prepared.amount) {
-                return SendOutcome(error: refusal)
-            }
             return await runCredits {
                 await creditsSend.run(
                     route: prepared.route, destination: destination, amount: prepared.amount,
-                    bindingFeeDuffs: prepared.fee, isMax: prepared.isMax)
+                    bindingFeeDuffs: prepared.fee, isMax: prepared.isMax, sweepCredits: prepared.sweepCredits)
             }
         }
     }
@@ -447,8 +465,13 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     // MARK: - Shared
 
     /// Platform's `min_withdrawal_amount` applies to the address and the shielded withdrawals to Core as to the
-    /// identity withdrawal: below it the transition is rejected, so nothing is built.
-    private static func withdrawalMinimumRefusal(route: SendRoute, amountDuffs: UInt64) -> MinimumAmountRefusal? {
+    /// identity withdrawal: below it the transition is rejected, so nothing is built. A Core top-up of an identity
+    /// below the SDK's minimum is refused before the asset lock is built.
+    private static func minimumAmountRefusal(route: SendRoute, amountDuffs: UInt64) -> MinimumAmountRefusal? {
+        if route == .coreToIdentity {
+            guard amountDuffs < DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs else { return nil }
+            return LiveCoreTwoStepSend.coreTopUpMinimumRefusal
+        }
         guard route == .platformToCore || route == .shieldedToCore else { return nil }
         let minimum = IdentityWithdrawViewModel.minimumWithdrawalCredits
         let (credits, overflow) = amountDuffs.multipliedReportingOverflow(
@@ -462,7 +485,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     /// The Core wallet drain is handled in `prepareRouted`, which also sets the fee it takes.
     private static func seamSpendsWholeBalance(_ route: SendRoute) -> Bool {
         switch route {
-        case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .platformToCore:
+        case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity, .platformToCore:
             return true
         default:
             return false
@@ -488,23 +511,15 @@ struct LiveCoreStandardSend: CoreStandardSending {
     }
 }
 
-/// Authenticates as Core to Core does, re-fetches the request, refuses a changed amount and builds and signs it.
-/// The Payment POST and the broadcast run only in the prepared send's action, then the send is recorded as the
-/// interactive BIP70 coordinator records it.
+/// Authenticates as Core to Core does and builds and signs the request fetched when the link was opened, the one
+/// Confirm shows. The Payment POST and the broadcast run only in the prepared send's action, then the send is
+/// recorded as the interactive BIP70 coordinator records it.
 struct LiveCorePaymentRequestSend: CorePaymentRequestSending {
-    /// The request's amount differs from the one Confirm showed, so nothing was built.
-    struct AmountChanged: Error {}
-
     @MainActor
-    func preparePaymentRequestSend(
-        requestURL: URL, callbackScheme: String?, amount: UInt64
-    ) async throws -> PreparedPaymentRequestSend {
-        try await SendAuthorizer().authorizeSend(spendAmount: amount)
+    func preparePaymentRequestSend(_ request: BIP70ConfirmationBox) async throws -> PreparedPaymentRequestSend {
+        let confirmation = request.confirmation
+        try await SendAuthorizer().authorizeSend(spendAmount: confirmation.amount)
         let service = BIP70PaymentService.makeForCurrentWallet()
-        let confirmation = try await service.prepareForConfirmation(
-            from: requestURL, scheme: "dash", network: try PaymentNetworkResolver.current(),
-            callbackScheme: callbackScheme)
-        guard confirmation.amount == amount else { throw AmountChanged() }
         let built = try await service.buildForSend(confirmation)
         return PreparedPaymentRequestSend(
             txidWire: Data(built.prepared.txHashDisplay.reversed()), fee: built.prepared.fee,
@@ -514,7 +529,8 @@ struct LiveCorePaymentRequestSend: CorePaymentRequestSending {
                     txidWire: Data(result.txHashDisplay.reversed()), address: result.primaryAddress,
                     amount: result.amount, fee: result.fee)
                 return result
-            })
+            },
+            release: { confirmation.sendGuard.reset() })
     }
 }
 
@@ -644,11 +660,13 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
     }
 
     /// Whether an asset lock may have been built when a Core top-up threw `error`. Only refusals of the lock's coin
-    /// selection prove it was not: any other failure counts as a possibly built lock (ADR-0040: doubt is `inFlight`).
+    /// selection, and the SDK's parameter checks that run before it, prove it was not: any other failure counts as a
+    /// possibly built lock (ADR-0040: doubt is `inFlight`).
     static func lockMayExist(after error: Error) -> Bool {
         if error is AssetLockInputLimit.TooManyInputsError { return false }
         switch error as? PlatformWalletError {
-        case .assetLockInsufficientFunds?, .coreInsufficientFunds?, .noSelectableInputs?, .assetLockTooManyInputs?:
+        case .assetLockInsufficientFunds?, .coreInsufficientFunds?, .noSelectableInputs?, .assetLockTooManyInputs?,
+             .invalidParameter?:
             return false
         default:
             return true
@@ -673,8 +691,21 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
             }
             return .completed
         } catch {
-            return .failed(error, assetLockRecorded: Self.lockMayExist(after: error))
+            return Self.identityTopUpFailure(after: error)
         }
+    }
+
+    static let coreTopUpMinimumRefusal = MinimumAmountRefusal(
+        minimumCredits: DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs
+            * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
+
+    /// What a Core top-up that threw `error` reports. `toIdentity` passes a 32-byte identity id, so the SDK's
+    /// invalid-parameter refusal is its minimum-amount check.
+    static func identityTopUpFailure(after error: Error) -> CoreTwoStepResult {
+        if case .invalidParameter? = error as? PlatformWalletError {
+            return .failed(coreTopUpMinimumRefusal, assetLockRecorded: false)
+        }
+        return .failed(error, assetLockRecorded: lockMayExist(after: error))
     }
 }
 
@@ -712,10 +743,12 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
     }
 
     func run(
-        route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool,
+        sweepCredits: UInt64?
     ) async -> CreditsSendResult {
         let perDuff = PlatformPaymentIdentityFundingPolicy.creditsPerDuff
-        let (credits, amountOverflow) = amount.multipliedReportingOverflow(by: perDuff)
+        let (amountCredits, amountOverflow) = amount.multipliedReportingOverflow(by: perDuff)
+        let credits = sweepCredits ?? amountCredits
         let (headroom, feeOverflow) = bindingFeeDuffs.multipliedReportingOverflow(by: perDuff)
         guard !amountOverflow, !feeOverflow else {
             return .failed(PlatformAddressSyncCoordinator.SendError.invalidAmount, handedOver: false)
@@ -729,7 +762,7 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
         let coordinator = ShieldedTransferCoordinator()
         let refusal: CreditsSendResult?
         switch request.route {
-        case .shieldedToShielded, .shieldedToCore, .shieldedToPlatform:
+        case .shieldedToShielded, .shieldedToCore, .shieldedToPlatform, .shieldedToIdentity:
             refusal = await performShielded(coordinator, request)
         default:
             refusal = await performPlatform(coordinator, request)
@@ -762,6 +795,12 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
         case .shieldedToPlatform:
             await coordinator.performUnshield(
                 amountCredits: request.credits, sweepAll: request.isMax, toPlatformAddress: destination.text)
+        case .shieldedToIdentity:
+            guard let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32 else {
+                return .failed(PlatformAddressSyncCoordinator.SendError.invalidDestination, handedOver: false)
+            }
+            await coordinator.performIdentityTopUpFromPool(
+                amountCredits: request.credits, sweepAll: request.isMax, identityId: identityId)
         default:
             preconditionFailure("\(request.route) is not a Shielded-source coordinator route")
         }
@@ -802,8 +841,8 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
     }
 }
 
-/// The identity top-up from Platform or Shielded credits (`IdentityCreditsTopUp`, the core of the Top Up sheet). A
-/// failure before any credits moved is `notStarted`; the Shielded route is `handedOver` once its unshield step is done.
+/// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). A
+/// failure before any credits moved is `notStarted`.
 struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64
@@ -817,26 +856,15 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
               let modelContainer = SwiftDashSDKHost.shared.modelContainer,
               let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32
         else { return .notStarted }
-        var handedOver = false
-        let topUp = IdentityCreditsTopUp(unshieldCompleted: { handedOver = true })
+        precondition(route == .platformToIdentity, "\(route) is not an identity top-up from credits route")
         do {
-            switch route {
-            case .platformToIdentity:
-                _ = try await topUp.fromPlatform(
-                    identityId: identityId, amountDuffs: amount, wallet: wallet, modelContainer: modelContainer)
-            case .shieldedToIdentity:
-                _ = try await topUp.fromShielded(
-                    identityId: identityId, amountDuffs: amount, wallet: wallet, modelContainer: modelContainer)
-            default:
-                preconditionFailure("\(route) is not an identity top-up from credits route")
-            }
+            _ = try await IdentityCreditsTopUp().fromPlatform(
+                identityId: identityId, amountDuffs: amount, wallet: wallet, modelContainer: modelContainer)
             return .completed
         } catch is PlatformPaymentIdentityFundingPolicy.PlanningError {
             return .notStarted
-        } catch IdentityTopUpViewModel.TopUpError.noPlatformReceiveAddress {
-            return .notStarted
         } catch {
-            return .failed(error, handedOver: handedOver)
+            return .failed(error, handedOver: false)
         }
     }
 }

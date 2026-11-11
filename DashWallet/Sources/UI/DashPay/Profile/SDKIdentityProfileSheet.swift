@@ -679,8 +679,6 @@ final class IdentityTopUpViewModel: ObservableObject {
 struct IdentityCreditsTopUp {
     /// Progress text of the shielded route's two steps.
     var stepChanged: (String) -> Void = { _ in }
-    /// Called once the shielded route's unshield step has completed, before the identity claim starts.
-    var unshieldCompleted: () -> Void = {}
 
     func fromPlatform(
         identityId: Data,
@@ -740,7 +738,6 @@ struct IdentityCreditsTopUp {
         // Same post-spend refreshes the transfer coordinator schedules —
         // BLAST stays the source of truth for the persisted balances.
         PlatformAddressSyncCoordinator.shared.refreshShieldedBalanceAfterSpend(using: manager)
-        unshieldCompleted()
 
         // Step 2: claim the landed credits minus the policy's fee headroom
         // into the identity. The transition's fee is deducted from the

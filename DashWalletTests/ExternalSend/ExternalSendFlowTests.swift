@@ -101,8 +101,15 @@ final class ExternalSendFlowTests: XCTestCase {
     }
 
     private func details(amount: UInt64? = nil, isSecure: Bool = false) -> PaymentRequestDetails {
-        PaymentRequestDetails(address: coreAddress, amountDuffs: amount ?? oneDash * 3 / 2,
-                              merchantName: "Merchant", memo: "Order 7", isSecure: isSecure)
+        PaymentRequestDetails(address: coreAddress, confirmation: .fixture(
+            address: coreAddress, amount: amount ?? oneDash * 3 / 2, isSecure: isSecure))
+    }
+
+    /// The real executor over a fake BIP70 send seam.
+    private func executor(paymentRequestSend: FakePaymentRequestSend) -> ExternalSendExecutor {
+        ExternalSendExecutor(
+            paymentRequestSend: paymentRequestSend,
+            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in })
     }
 
     /// Opens Send for a Core address and enters `amount` duffs, so Continue is enabled.
@@ -487,6 +494,30 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertTrue(harness.finishes.all.isEmpty)
     }
 
+    /// The request URL is dropped, the sender of a link another app opened is not: the standard send of the link's
+    /// own address finishes with the payack callback.
+    func testAFailedFetchOfALinkAnotherAppOpenedFinishesTheFallbackSendWithThePayAck() async throws {
+        let standardSend = FakeStandardSend()
+        let harness = makeHarness(
+            fetchResult: .failure(FakeFetchError(message: "Request expired")),
+            executor: ExternalSendExecutor(
+                standardSend: standardSend, balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in }))
+
+        await harness.flow.start(
+            scanned: "dash:\(coreAddress)?amount=1&r=\(requestURL.absoluteString)&sender=merchantapp",
+            openedByApp: true)
+        let confirmed = try await confirmThroughTheFlow(harness)
+        let confirm = try XCTUnwrap(confirmed)
+        await confirm.start()
+        await confirm.confirm()
+
+        XCTAssertEqual(standardSend.broadcasts, 1)
+        XCTAssertEqual(harness.finishes.all, [.success(
+            .transactionDetails, txidWire: Data(repeating: 0xe9, count: 32),
+            callbackURL: URL(string: "merchantapp://callback=payack&address=\(coreAddress)&txid="
+                + String(repeating: "e9", count: 32)))])
+    }
+
     // MARK: - Address to Send
 
     func testAResolvedAddressOpensSendWithTheIdentityRecipient() async throws {
@@ -678,10 +709,9 @@ final class ExternalSendFlowTests: XCTestCase {
         let paymentRequests = FakePaymentRequestSend()
         let callback = URL(fileURLWithPath: "/callback/paid")
         paymentRequests.callbackURL = callback
-        let executor = ExternalSendExecutor(
-            paymentRequestSend: paymentRequests,
-            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in })
-        let harness = makeHarness(fetchResult: .success(details()), executor: executor)
+        let fetched = details()
+        let harness = makeHarness(fetchResult: .success(fetched),
+                                  executor: executor(paymentRequestSend: paymentRequests))
 
         await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
         let send = try XCTUnwrap(harness.flow.sendViewModel)
@@ -691,10 +721,95 @@ final class ExternalSendFlowTests: XCTestCase {
         await confirm.start()
         await confirm.confirm()
 
-        XCTAssertEqual(paymentRequests.callbackSchemes, ["merchantapp"], "the scheme reaches the executor's seam")
+        XCTAssertEqual(harness.fetcher.callbackSchemes, ["merchantapp"], "the fetched request carries the scheme")
+        XCTAssertIdentical(paymentRequests.prepared.first, fetched.confirmation, "that request reaches the seam")
         XCTAssertEqual(paymentRequests.sentCount, 1)
         XCTAssertEqual(harness.finishes.all, [.success(
             .transactionDetails, txidWire: Data(repeating: 0xb2, count: 32), callbackURL: callback)])
+    }
+
+    // MARK: - Payment request: one fetch from open to broadcast
+
+    /// Confirm and the send read the request fetched at open: it is not fetched again, and the outputs built and
+    /// signed are the ones of the request Confirm shows.
+    func testAPaymentRequestIsFetchedOnceAndTheSendBuildsTheRequestConfirmShows() async throws {
+        let paymentRequests = FakePaymentRequestSend()
+        let fetched = details()
+        let harness = makeHarness(fetchResult: .success(fetched),
+                                  executor: executor(paymentRequestSend: paymentRequests))
+
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
+        let confirmedConfirm = try await confirmThroughTheFlow(harness)
+        let confirm = try XCTUnwrap(confirmedConfirm)
+        await confirm.start()
+        await confirm.confirm()
+
+        XCTAssertEqual(harness.fetcher.fetched, [requestURL], "one fetch from open to broadcast")
+        XCTAssertEqual(paymentRequests.prepared.count, 1)
+        let built = try XCTUnwrap(paymentRequests.prepared.first)
+        XCTAssertIdentical(built, fetched.confirmation, "Confirm and the send read the same request")
+        XCTAssertEqual(built.confirmation.recipients.map { $0.address }, [coreAddress])
+        XCTAssertEqual(built.confirmation.recipients.map { $0.amount }, [oneDash * 3 / 2])
+        XCTAssertEqual(paymentRequests.sentCount, 1)
+    }
+
+    /// The request's single-use claim stays taken once its broadcast was attempted, so Retry fetches the request
+    /// again: Confirm shows and the send builds the new one, from the same source and for the same amount.
+    func testARetryAfterNotSentFetchesTheRequestAgainAndBuildsTheNewOne() async throws {
+        let paymentRequests = FakePaymentRequestSend()
+        paymentRequests.sendError = SwiftDashSDKTransactionSender.SendError.transactionRejected(
+            txid: "t", reason: "bad-txns")
+        let attempted = details()
+        let harness = makeHarness(fetchResult: .success(attempted),
+                                  executor: executor(paymentRequestSend: paymentRequests))
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
+        let confirmedFirst = try await confirmThroughTheFlow(harness)
+        let first = try XCTUnwrap(confirmedFirst)
+        await first.start()
+        await first.confirm()
+        guard case .sendFailed = harness.flow.step else {
+            return XCTFail("expected sendFailed, got \(String(describing: harness.flow.step))")
+        }
+        let refetched = details()
+        harness.fetcher.result = .success(refetched)
+        paymentRequests.sendError = nil
+
+        harness.flow.retryFromSendFailed()
+        await eventually(harness.flow.step == .send, "Retry never returned to Send")
+        let confirmedAgain = try await confirmThroughTheFlow(harness)
+        let again = try XCTUnwrap(confirmedAgain)
+        await again.start()
+        await again.confirm()
+
+        XCTAssertEqual(harness.fetcher.fetched, [requestURL, requestURL], "Retry fetches the request again")
+        XCTAssertEqual(paymentRequests.prepared.count, 2)
+        XCTAssertIdentical(paymentRequests.prepared.last, refetched.confirmation,
+                           "the new request, not the one already attempted")
+        XCTAssertEqual(harness.flow.sendViewModel?.source, .core)
+        XCTAssertEqual(harness.flow.sendViewModel?.amountDuffs, oneDash * 3 / 2)
+        XCTAssertEqual(paymentRequests.sentCount, 2)
+    }
+
+    func testARetryWhoseFetchFailsFinishesWithRequestFailed() async throws {
+        let paymentRequests = FakePaymentRequestSend()
+        paymentRequests.sendError = SwiftDashSDKTransactionSender.SendError.transactionRejected(
+            txid: "t", reason: "bad-txns")
+        let harness = makeHarness(fetchResult: .success(details()),
+                                  executor: executor(paymentRequestSend: paymentRequests))
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
+        let confirmed = try await confirmThroughTheFlow(harness)
+        let confirm = try XCTUnwrap(confirmed)
+        await confirm.start()
+        await confirm.confirm()
+        harness.fetcher.result = .failure(FakeFetchError(message: "Request expired"))
+
+        harness.flow.retryFromSendFailed()
+        await eventually(!harness.finishes.all.isEmpty, "Retry never finished")
+
+        XCTAssertEqual(harness.finishes.all, [
+            .requestFailed(title: "Couldn't make payment", message: "Request expired"),
+        ])
+        XCTAssertEqual(paymentRequests.prepared.count, 1, "nothing is built from the attempted request")
     }
 
     func testAPlainSendHasNoCallbackURL() async throws {
@@ -889,7 +1004,8 @@ private final class FakeEstimator: SendFeeEstimating {
 }
 
 private struct FakeMaxPlanner: SendMaxPlanning {
-    func maxDuffs(route: SendRoute) async -> UInt64? { nil }
+    func maxPlan(route: SendRoute) async -> SendMaxPlan? { nil }
+    func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck { .notChecked }
 }
 
 private struct FakeConverter: SendAmountConverting {
@@ -908,7 +1024,7 @@ private final class FakeExecutor: ExternalSendExecuting {
     private(set) var preparedDestinations: [Destination] = []
 
     func prepare(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
         preparedDestinations.append(destination)
         let fee: UInt64
@@ -935,26 +1051,41 @@ private final class FakeExecutor: ExternalSendExecuting {
     func discard(_ prepared: PreparedExternalSend) {}
 }
 
-/// The BIP70 send edge of the real executor: records the scheme it is given and, once sent, hands back the
-/// merchant's callback URL.
+/// The standard send edge of the real executor: hands out a prepared transaction whose broadcast is accepted.
+private final class FakeStandardSend: CoreStandardSending {
+    private(set) var broadcasts = 0
+
+    func prepareStandardSend(address: String, amount: UInt64) async throws -> PreparedStandardSend {
+        PreparedStandardSend(
+            txData: Data([0x01]), txHash: Data(repeating: 0xe9, count: 32), fee: 226, address: address, amount: amount,
+            ensureOnlineAction: {},
+            broadcastAction: { [unowned self] in
+                broadcasts += 1
+                return .accepted(txid: "")
+            })
+    }
+}
+
+/// The BIP70 send edge of the real executor: records the request it is given to build and, once sent, hands back
+/// the merchant's callback URL.
 @MainActor
 private final class FakePaymentRequestSend: CorePaymentRequestSending {
     var callbackURL: URL?
-    private(set) var callbackSchemes: [String?] = []
+    var sendError: Error?
+    private(set) var prepared: [BIP70ConfirmationBox] = []
     private(set) var sentCount = 0
 
-    func preparePaymentRequestSend(
-        requestURL: URL, callbackScheme: String?, amount: UInt64
-    ) async throws -> PreparedPaymentRequestSend {
-        callbackSchemes.append(callbackScheme)
+    func preparePaymentRequestSend(_ request: BIP70ConfirmationBox) async throws -> PreparedPaymentRequestSend {
+        prepared.append(request)
         let txidDisplay = Data(repeating: 0xb2, count: 32)
         return PreparedPaymentRequestSend(
             txidWire: Data(txidDisplay.reversed()), fee: 226,
             sendAction: { [unowned self] in
                 sentCount += 1
+                if let sendError { throw sendError }
                 return SendResult(
                     txidHexDisplay: String(repeating: "b2", count: 32), txHashDisplay: txidDisplay, fee: 226,
-                    amount: amount, primaryAddress: nil, ackMemo: nil, callbackURL: callbackURL)
+                    amount: request.amount, primaryAddress: nil, ackMemo: nil, callbackURL: callbackURL)
             })
     }
 }

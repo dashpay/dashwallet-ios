@@ -44,10 +44,14 @@ struct Destination: Equatable {
     let callbackScheme: String?
     /// `label` is the name of a payment request's merchant whose signature verified.
     let isVerifiedMerchant: Bool
+    /// The payment request fetched and verified when the link was opened: Confirm shows it and the send builds and
+    /// signs it, without fetching it again. It serves one send attempt; a Retry fetches the request again.
+    let verifiedRequest: BIP70ConfirmationBox?
 
     init(type: Kind, text: String, isScriptForm: Bool = false, amountDuffs: UInt64? = nil,
          label: String? = nil, message: String? = nil, paymentRequestURL: URL? = nil,
-         callbackScheme: String? = nil, isVerifiedMerchant: Bool = false) {
+         callbackScheme: String? = nil, isVerifiedMerchant: Bool = false,
+         verifiedRequest: BIP70ConfirmationBox? = nil) {
         self.type = type
         self.text = text
         self.isScriptForm = isScriptForm
@@ -57,6 +61,7 @@ struct Destination: Equatable {
         self.paymentRequestURL = paymentRequestURL
         self.callbackScheme = callbackScheme
         self.isVerifiedMerchant = isVerifiedMerchant
+        self.verifiedRequest = verifiedRequest
     }
 }
 

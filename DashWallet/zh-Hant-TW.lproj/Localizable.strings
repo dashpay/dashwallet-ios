@@ -364,6 +364,9 @@
 /* No comment provided by engineer. */
 "About" = "關於";
 
+/* External send */
+"about %@" = "about %@";
+
 /* DashPay FAQ title */
 "About DashPay" = "關於 DashPay";
 
@@ -2048,6 +2051,9 @@
 
 /* DashPay: fee line of the Enable DashPay confirmation */
 "Estimated network fee" = "預估網絡費用";
+
+/* External send */
+"Estimated. The network sets the final fee." = "Estimated. The network sets the final fee.";
 
 /* External send */
 "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." = "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.";
@@ -5538,9 +5544,6 @@
 /* External send */
 "The money goes to the recipient identity's balance, not their Dash wallet balance." = "The money goes to the recipient identity's balance, not their Dash wallet balance.";
 
-/* External send */
-"The money moved to your Platform balance. The identity top-up did not complete." = "The money moved to your Platform balance. The identity top-up did not complete.";
-
 /* Balance info sheet */
 "The most private place to hold your Dash" = "存放您的 Dash 最私密的地方";
 
@@ -5588,6 +5591,9 @@
 
 /* External send */
 "The payment failed. Your funds were not sent." = "The payment failed. Your funds were not sent.";
+
+/* External send */
+"The payment request has expired. Your funds were not sent." = "The payment request has expired. Your funds were not sent.";
 
 /* External send */
 "The payment request has no address" = "The payment request has no address";
@@ -6125,9 +6131,6 @@
 
 /* Usernames: plain name on an existing identity */
 "Top up your identity" = "Top up your identity";
-
-/* External send */
-"Top-up not completed" = "Top-up not completed";
 
 /* No comment provided by engineer. */
 "Top-up your credits to continue making changes to your profile and adding contacts" = "Top-up your credits to continue making changes to your profile and adding contacts";

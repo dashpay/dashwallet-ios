@@ -1,6 +1,6 @@
 # 0039 — Estimate the fee on Send and recompute it on Confirm
 
-- **Status:** Proposed
+- **Status:** Superseded by [ADR-0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md)
 - **Date:** 2026-11-09
 - **Deciders:** Roman Chornyi (owner), with Claude during the design pass. Becomes Accepted only on a non-author Reviewer's approval of the PR that carries it (ADR-0001 rule 3).
 

@@ -80,8 +80,21 @@ struct ConfirmSheetContent: View {
             DashUIKit.List1View(label: NSLocalizedString("To", comment: "External send"), value: viewModel.toText)
             DashUIKit.List1View(label: NSLocalizedString("Network fee", comment: "External send"),
                                 value: viewModel.feeRowText)
+                .accessibilityElement(children: .combine)
+                .accessibilityValue(viewModel.feeAccessibilityValue)
+            if let note = viewModel.feeEstimateNote {
+                Text(note)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.tertiaryText)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .multilineTextAlignment(.trailing)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 12)
+            }
             DashUIKit.List1View(label: NSLocalizedString("Total", comment: "External send"),
                                 value: viewModel.totalRowText)
+                .accessibilityElement(children: .combine)
+                .accessibilityValue(viewModel.totalAccessibilityValue)
         }
         .modifier(DashUIKit.MenuViewModifier())
         .accessibilityElement(children: .contain)
@@ -155,7 +168,7 @@ private let previewIdentityID = "7Zp3MqIdentityIDxxxxxxxxxxxxxxxxxxxxxxoVyBn"
 @MainActor
 private final class PreviewExecutor: ExternalSendExecuting {
     func prepare(route: SendRoute, destination: Destination, amount: UInt64,
-                 isMax: Bool) async throws -> PreparedExternalSend {
+                 isMax: Bool, sweepCredits: UInt64?) async throws -> PreparedExternalSend {
         throw ExternalSendError.feeUnavailable
     }
 
@@ -209,7 +222,9 @@ private let identityDestination = Destination(type: .identityID, text: previewId
 
 #Preview("Preparing") { previewSheet(state: .preparing, fee: nil) }
 
-#Preview("Ready") { previewSheet() }
+#Preview("Ready, exact fee") { previewSheet() }
+
+#Preview("Ready, estimated fee") { previewSheet(route: .platformToCore) }
 
 #Preview("Ready, stacked warnings") {
     previewSheet(route: .shieldedToCore, warnings: [

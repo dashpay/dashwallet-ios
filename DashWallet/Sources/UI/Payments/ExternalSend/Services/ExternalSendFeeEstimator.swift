@@ -131,10 +131,7 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
         case .shieldedToPlatform:
             return try await Self.duffs(shieldedFee(.unshield))
         case .shieldedToIdentity:
-            let unshield = try await shieldedFee(.unshield)
-            let observed = IdentityTopUpViewModel.observedTopUpTransitionFeeCredits
-            let (total, overflow) = unshield.addingReportingOverflow(observed)
-            return overflow ? nil : Self.duffs(total)
+            return try await Self.duffs(shieldedFee(.identityTopUpFromPool))
         default:
             return try await Self.duffs(shieldedFee(.transfer))
         }

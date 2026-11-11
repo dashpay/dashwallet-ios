@@ -27,11 +27,53 @@ struct SendAmountRequest: Equatable {
     let destination: Destination
     let amount: UInt64
     let isMax: Bool
+    /// The exact credits of the Shielded sweep plan when the amount is its Max, nil otherwise. `amount` is those
+    /// credits rounded down to duffs; the coordinator checks the sweep against the credits.
+    let sweepCredits: UInt64?
+
+    init(route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64? = nil) {
+        self.route = route
+        self.destination = destination
+        self.amount = amount
+        self.isMax = isMax
+        self.sweepCredits = sweepCredits
+    }
 }
 
-/// The Max for one route, in duffs whatever the source's own unit; nil when it cannot be planned.
+/// A route's Max: in duffs whatever the source's own unit, and for a Shielded source the sweep plan's exact
+/// credits, which need not be whole duffs.
+struct SendMaxPlan: Equatable {
+    let duffs: UInt64
+    let sweepCredits: UInt64?
+}
+
+/// Whether a route's funding step can pay an amount, on top of the balance less the fee.
+enum SendFundingCheck: Equatable {
+    /// The route's balance check is the balance less the fee alone.
+    case notChecked
+    case fundable
+    case notFundable
+    /// What the funding step draws on could not be read.
+    case unknown
+}
+
+/// The Max for one route; nil when it cannot be planned.
 protocol SendMaxPlanning {
-    func maxDuffs(route: SendRoute) async -> UInt64?
+    func maxPlan(route: SendRoute) async -> SendMaxPlan?
+    func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck
+}
+
+/// The Platform-Payment addresses a Platform to Identity top-up draws on; nil when they cannot be read.
+protocol PlatformFundingCandidatesReading {
+    func fundingCandidates() async -> [PlatformPaymentIdentityFundingPolicy.Candidate]?
+}
+
+/// The active wallet's addresses, as the top-up itself reads them
+/// (`PlatformPaymentIdentityFundingPolicy.currentCandidates`).
+struct LivePlatformFundingCandidates: PlatformFundingCandidatesReading {
+    func fundingCandidates() async -> [PlatformPaymentIdentityFundingPolicy.Candidate]? {
+        await MainActor.run { try? PlatformPaymentIdentityFundingPolicy.currentCandidates() }
+    }
 }
 
 /// DASH and local currency, as the Send screen and Select source show them. Every answer is nil without a rate.
@@ -62,21 +104,49 @@ struct LiveSendAmountConverter: SendAmountConverting {
 }
 
 /// Today's per-route Max of the old Send, asked once per route: the fee-aware Core maximum, the Core drain
-/// preview, the Platform and Shielded planners the internal transfer shares. The routes the old Send has no Max for
-/// (Core to a Platform address or an Identity, Shielded and Platform to an Identity) send exactly the amount, so
-/// their Max is the source balance less the Send screen's fee estimate. The Identity source's Max is the
-/// ViewModel's (`AmountRules.identityMax`).
+/// preview, the Platform and Shielded planners the internal transfer shares. Platform to an Identity is the most the
+/// top-up's input planning can fund (`PlatformPaymentIdentityFundingPolicy.maxFundableDuffs`); Shielded to an Identity
+/// is the sweep plan of the pool top-up. The other routes the old Send has no Max for (Core to a Platform address or
+/// an Identity) send exactly the amount, so their Max is the source balance less the Send screen's fee estimate.
+/// The Identity source's Max is the ViewModel's (`AmountRules.identityMax`).
 struct LiveSendMaxPlanner: SendMaxPlanning {
     private let fees: SendFeeEstimating
     private let balances: ExternalSendBalanceReading
+    private let fundingCandidates: PlatformFundingCandidatesReading
 
     nonisolated init(fees: SendFeeEstimating = ExternalSendFeeEstimator(),
-                     balances: ExternalSendBalanceReading = LiveExternalSendBalances()) {
+                     balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
+                     fundingCandidates: PlatformFundingCandidatesReading = LivePlatformFundingCandidates()) {
         self.fees = fees
         self.balances = balances
+        self.fundingCandidates = fundingCandidates
     }
 
-    func maxDuffs(route: SendRoute) async -> UInt64? {
+    func maxPlan(route: SendRoute) async -> SendMaxPlan? {
+        switch route {
+        case .shieldedToCore:
+            return await sweepPlan(.withdrawal)
+        case .shieldedToPlatform:
+            return await sweepPlan(.unshield)
+        case .shieldedToShielded:
+            return await sweepPlan(.transfer)
+        case .shieldedToIdentity:
+            return await sweepPlan(.identityTopUpFromPool)
+        default:
+            return await maxDuffs(route: route).map { SendMaxPlan(duffs: $0, sweepCredits: nil) }
+        }
+    }
+
+    /// Platform to Identity: whether the top-up's input planning (`PlatformPaymentIdentityFundingPolicy`) can fund
+    /// `amount` from the addresses.
+    func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck {
+        guard route == .platformToIdentity else { return .notChecked }
+        guard let candidates = await fundingCandidates.fundingCandidates() else { return .unknown }
+        return PlatformPaymentIdentityFundingPolicy.canFund(candidates: candidates, fundingDuffs: amount)
+            ? .fundable : .notFundable
+    }
+
+    private func maxDuffs(route: SendRoute) async -> UInt64? {
         switch route {
         case .coreToCore:
             return await MainActor.run { SwiftDashSDKWalletState.shared.feeAwareMaxSendable() }
@@ -84,16 +154,15 @@ struct LiveSendMaxPlanner: SendMaxPlanning {
             return await coreDrainMax()
         case .platformToPlatform, .platformToShielded, .platformToCore:
             return await platformMax(route)
-        case .shieldedToCore:
-            return await sweepDuffs(.withdrawal)
-        case .shieldedToPlatform:
-            return await sweepDuffs(.unshield)
-        case .shieldedToShielded:
-            return await sweepDuffs(.transfer)
-        case .coreToPlatform, .coreToIdentity, .shieldedToIdentity, .platformToIdentity:
-            return await balanceLessFee(route)
-        case .identityToCore, .identityToPlatform, .identityToIdentity:
+        case .platformToIdentity:
+            return await fundingCandidates.fundingCandidates().map {
+                PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: $0)
+            }
+        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded, .shieldedToIdentity, .identityToCore,
+             .identityToPlatform, .identityToIdentity:
             return nil
+        case .coreToPlatform, .coreToIdentity:
+            return await balanceLessFee(route)
         }
     }
 
@@ -139,11 +208,11 @@ struct LiveSendMaxPlanner: SendMaxPlanning {
     }
 
     @MainActor
-    private func sweepDuffs(_ kind: PlatformWalletManager.ShieldedFeeKind) -> UInt64? {
+    private func sweepPlan(_ kind: PlatformWalletManager.ShieldedFeeKind) -> SendMaxPlan? {
         guard case .ready(let plan) = ShieldedTransferCoordinator.sweepAvailability(feeKind: kind) else {
             return nil
         }
-        return plan.amountCredits / 1000
+        return SendMaxPlan(duffs: plan.amountCredits / 1000, sweepCredits: plan.amountCredits)
     }
 }
 
@@ -155,7 +224,8 @@ final class SendAmountViewModel: ObservableObject {
         case amountEmpty
         case estimating
         case feeFailed
-        /// The amount is above the balance less the fee, or the source holds nothing.
+        /// The amount is above the balance less the fee or more than the route's funding step can pay, or the source
+        /// holds nothing.
         case notEnough
         case ready
     }
@@ -173,9 +243,13 @@ final class SendAmountViewModel: ObservableObject {
     /// The new source's balance is being read; until it lands no amount is checked against the old one.
     @Published private var isReadingBalance = false
     @Published private var isMax = false
+    /// The sweep credits of the last planned Max; handed on only while the amount is that Max.
+    private var maxSweepCredits: UInt64?
     /// Confirm refused this typed amount on its binding fee, which can be above Send's estimate. Holds until the
     /// amount or the source changes.
     @Published private var confirmRefusedAmount = false
+    /// The route's funding step cannot pay the estimated amount (`SendMaxPlanning.canFund`).
+    @Published private var fundingRefusedAmount = false
     @Published private var estimateFailed = false
     /// The note that says why the source was changed, until the holder picks a source.
     @Published private(set) var sourceChangedNotice: String?
@@ -438,7 +512,8 @@ final class SendAmountViewModel: ObservableObject {
 
     func proceed() {
         guard isContinueEnabled, let route else { return }
-        onContinue?(SendAmountRequest(route: route, destination: destination, amount: amountDuffs, isMax: isMax))
+        onContinue?(SendAmountRequest(route: route, destination: destination, amount: amountDuffs, isMax: isMax,
+                                      sweepCredits: isMax ? maxSweepCredits : nil))
     }
 
     #if DEBUG
@@ -540,7 +615,8 @@ final class SendAmountViewModel: ObservableObject {
     private var isAffordable: Bool {
         guard let fee, let nativeBalance else { return false }
         guard let native = source == .identity ? amountCredits : amountDuffs else { return false }
-        return AmountRules.check(amount: native, source: source, balance: nativeBalance, fee: fee) != .notEnough
+        return !fundingRefusedAmount
+            && AmountRules.check(amount: native, source: source, balance: nativeBalance, fee: fee) != .notEnough
     }
 
     /// The amount in credits; nil when it does not fit in `UInt64`, which no identity balance can cover.
@@ -585,8 +661,11 @@ final class SendAmountViewModel: ObservableObject {
         let planned: UInt64?
         if source == .identity {
             planned = await identityMaxDuffs()
+            maxSweepCredits = nil
         } else {
-            planned = await maxPlanner.maxDuffs(route: route)
+            let plan = await maxPlanner.maxPlan(route: route)
+            planned = plan?.duffs
+            maxSweepCredits = plan?.sweepCredits
         }
         guard let planned else {
             isMax = false
@@ -612,20 +691,24 @@ final class SendAmountViewModel: ObservableObject {
         isEstimating = true
     }
 
-    /// Estimates the fee for the route and amount; an answer that a later estimate has overtaken is dropped.
+    /// Estimates the fee for the route and amount and asks whether the route's funding step can pay the amount; an
+    /// unknown answer fails like the fee, with Try again. An answer that a later estimate has overtaken is dropped.
     private func runEstimate() async {
         guard let route else { return }
         estimateGeneration += 1
         let generation = estimateGeneration
         isEstimating = true
-        let result = await feeEstimator.estimate(route: route, amount: amountDuffs)
+        let amount = amountDuffs
+        let result = await feeEstimator.estimate(route: route, amount: amount)
+        let fundable = await maxPlanner.canFund(route: route, amount: amount)
         guard generation == estimateGeneration else { return }
         isEstimating = false
+        fundingRefusedAmount = fundable == .notFundable
         switch result {
-        case .fee(let value, _):
+        case .fee(let value, _) where fundable != .unknown:
             fee = value
             estimateFailed = false
-        case .unavailable:
+        case .fee, .unavailable:
             fee = nil
             estimateFailed = true
         }

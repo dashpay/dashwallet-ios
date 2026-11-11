@@ -47,13 +47,14 @@ final class ConfirmViewModelTests: XCTestCase {
 
     private func makeVM(
         route: SendRoute, destination: Destination? = nil, amount: UInt64? = nil, isMax: Bool = false,
-        recipient: IdentityRecipient? = nil, identityCredits: UInt64 = 5_000_000_000,
+        sweepCredits: UInt64? = nil, recipient: IdentityRecipient? = nil, identityCredits: UInt64 = 5_000_000_000,
         converter: SendAmountConverting = FakeConverter(rate: 25)
     ) -> ConfirmViewModel {
         let target = destination ?? defaultDestination(for: route)
         let balances = FakeBalances(values: [
             .core: coreBalance, .shielded: shieldedBalance, .platform: platformBalance, .identity: identityCredits])
-        let request = SendAmountRequest(route: route, destination: target, amount: amount ?? oneDash, isMax: isMax)
+        let request = SendAmountRequest(route: route, destination: target, amount: amount ?? oneDash, isMax: isMax,
+                                        sweepCredits: sweepCredits)
         let vm = ConfirmViewModel(
             request: request, recipient: recipient, executor: executor, balances: balances, converter: converter)
         vm.onBackToSend = { [unowned self] reason in backToSend.append(reason) }
@@ -105,6 +106,14 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertEqual(executor.sentCalls, 0, "nothing is broadcast before the Confirm tap")
     }
 
+    func testAShieldedMaxPreparesWithThePlansExactCredits() async {
+        executor.prepareResults = [.success(fee)]
+        let vm = makeVM(route: .shieldedToPlatform, amount: 123_456, isMax: true, sweepCredits: 123_456_789)
+        await vm.start()
+        XCTAssertEqual(executor.prepareCalls.first?.amount, 123_456)
+        XCTAssertEqual(executor.prepareCalls.first?.sweepCredits, 123_456_789)
+    }
+
     // MARK: - Units and fiat
 
     func testIdentityPrepareGetsCreditsAndOtherSourcesGetDuffs() async {
@@ -147,8 +156,62 @@ final class ConfirmViewModelTests: XCTestCase {
         let vm = await readyVM(route: .identityToCore, feeToUse: feeCredits)
         let feeDuffs = AmountRules.dashValue(of: feeCredits)
         XCTAssertEqual(vm.fromText, "Identity")
-        XCTAssertEqual(vm.feeText, feeDuffs.formattedDashAmount)
-        XCTAssertEqual(vm.totalText, (oneDash + feeDuffs).formattedDashAmount)
+        XCTAssertEqual(vm.feeText, "~ " + feeDuffs.formattedDashAmount)
+        XCTAssertEqual(vm.totalText, "~ " + (oneDash + feeDuffs).formattedDashAmount)
+    }
+
+    // MARK: - Exact or estimated fee (ADR-0009)
+
+    private let estimateRoutes: [SendRoute] = [
+        .coreToShielded, .coreToPlatform, .coreToIdentity,
+        .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
+        .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
+        .identityToCore, .identityToPlatform, .identityToIdentity
+    ]
+    private let estimateNote = "Estimated. The network sets the final fee."
+
+    func testCoreToCoreFeeIsExactWithoutTildeOrNote() async {
+        let vm = await readyVM(route: .coreToCore, amount: 2 * oneDash)
+        XCTAssertTrue(vm.isFeeExact)
+        XCTAssertEqual(vm.feeText, fee.formattedDashAmount)
+        XCTAssertEqual(vm.totalText, (2 * oneDash + fee).formattedDashAmount)
+        XCTAssertNil(vm.feeEstimateNote)
+        XCTAssertEqual(vm.feeAccessibilityValue, fee.formattedDashAmount)
+    }
+
+    func testPaymentRequestFeeIsExact() async {
+        let request = Destination(type: .paymentRequest, text: "",
+                                  paymentRequestURL: URL(string: "https://merchant.example/r/1"))
+        let vm = await readyVM(route: .coreToCore, destination: request)
+        XCTAssertTrue(vm.isFeeExact)
+        XCTAssertFalse(vm.feeText?.hasPrefix("~") ?? true, vm.feeText ?? "nil")
+        XCTAssertFalse(vm.totalText?.hasPrefix("~") ?? true, vm.totalText ?? "nil")
+        XCTAssertNil(vm.feeEstimateNote)
+    }
+
+    func testEveryOtherRouteShowsTheFeeAndTotalAsAnEstimate() async {
+        for route in estimateRoutes {
+            let vm = await readyVM(route: route, amount: oneDash)
+            let feeDuffs = route.source == .identity ? AmountRules.dashValue(of: fee) : fee
+            XCTAssertFalse(vm.isFeeExact, "\(route)")
+            XCTAssertEqual(vm.feeText, "~ " + feeDuffs.formattedDashAmount, "\(route)")
+            XCTAssertEqual(vm.totalText, "~ " + (oneDash + feeDuffs).formattedDashAmount, "\(route)")
+            XCTAssertEqual(vm.feeEstimateNote, estimateNote, "\(route)")
+            XCTAssertEqual(vm.feeAccessibilityValue, "about " + feeDuffs.formattedDashAmount, "\(route)")
+            XCTAssertEqual(vm.totalAccessibilityValue, "about " + (oneDash + feeDuffs).formattedDashAmount,
+                           "\(route)")
+        }
+    }
+
+    func testAnEstimateRouteShowsNoTildeOrNoteWhilePreparingOrWhenTheFeeFailed() async {
+        executor.prepareResults = [.failure(.feeUnavailable)]
+        let vm = makeVM(route: .platformToCore)
+        XCTAssertNil(vm.feeText)
+        XCTAssertNil(vm.feeEstimateNote, "nothing to qualify while preparing")
+        await vm.start()
+        XCTAssertEqual(vm.feeText, "—")
+        XCTAssertEqual(vm.totalText, "—")
+        XCTAssertNil(vm.feeEstimateNote)
     }
 
     // MARK: - Auth cancelled / failed, balance not enough
@@ -371,7 +434,7 @@ final class ConfirmViewModelTests: XCTestCase {
         let vm = await readyVM(route: .coreToIdentity, amount: oneDash)
         XCTAssertTrue(vm.warnings.contains(
             "The Platform fee is taken from the amount the identity receives."), "\(vm.warnings)")
-        XCTAssertEqual(vm.totalText, (oneDash + fee).formattedDashAmount, "the total is what leaves the wallet")
+        XCTAssertEqual(vm.totalText, "~ " + (oneDash + fee).formattedDashAmount, "the total is what leaves the wallet")
     }
 
     func testCoreToPlatformStatesThatTheUnusedPlatformFeeReturns() async {
@@ -482,6 +545,7 @@ private final class FakeExecutor: ExternalSendExecuting {
         let destination: Destination
         let amount: UInt64
         let isMax: Bool
+        let sweepCredits: UInt64?
     }
 
     var prepareResults: [Result<UInt64, ExternalSendError>] = []
@@ -493,9 +557,10 @@ private final class FakeExecutor: ExternalSendExecuting {
     private var gate: CheckedContinuation<Void, Never>?
 
     func prepare(
-        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
-        prepareCalls.append(PrepareCall(route: route, destination: destination, amount: amount, isMax: isMax))
+        prepareCalls.append(PrepareCall(
+            route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits))
         guard !prepareResults.isEmpty else { throw ExternalSendError.feeUnavailable }
         switch prepareResults.removeFirst() {
         case .success(let fee):

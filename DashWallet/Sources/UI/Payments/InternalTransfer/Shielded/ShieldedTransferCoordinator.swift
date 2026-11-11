@@ -552,6 +552,29 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return true
     }
 
+    /// The credits a Shielded spend submits: on a sweep, the plan re-priced against the notes as they stand now,
+    /// which must still pay `amountCredits`; otherwise `amountCredits` within the one-transition ceiling. nil after
+    /// the failure is reported.
+    private func submittableAmount(
+        _ amountCredits: UInt64,
+        sweepAll: Bool,
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> UInt64? {
+        guard sweepAll else {
+            return rejectIfAboveSpendCeiling(amountCredits, feeKind: feeKind) ? nil : amountCredits
+        }
+        switch Self.sweepAvailability(feeKind: feeKind) {
+        case .ready(let plan) where plan.amountCredits == amountCredits:
+            return plan.amountCredits
+        case .waitingForConfirmation(let credits):
+            handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
+            return nil
+        case .ready, .unavailable:
+            handleFailure(CoordinatorError.shieldedSweepChanged)
+            return nil
+        }
+    }
+
     // MARK: - Public API
 
     /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
@@ -1329,21 +1352,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .withdrawal) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .withdrawal) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .withdrawal) else {
+            return
         }
 
         // Destination Core (BIP44, Base58Check) address. For the internal
@@ -1435,21 +1445,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .unshield) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .unshield) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .unshield) else {
+            return
         }
 
         // Destination Platform Payment (bech32m) address — for the internal
@@ -1507,6 +1504,59 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // Refresh the Platform side after the backend accepts the transition.
         // BLAST remains the source of truth for the persisted balance.
         schedulePlatformResync()
+    }
+
+    /// External send: shielded Orchard notes → an existing identity's
+    /// credits, in one `IdentityTopUpFromShieldedPool` transition. The
+    /// identity does not have to belong to this wallet; the pool fee
+    /// (`.identityTopUpFromPool`) is spent from the notes on top of the
+    /// amount. Stages: `.signing → .proving → .broadcasting → .success`.
+    func performIdentityTopUpFromPool(
+        amountCredits: UInt64,
+        sweepAll: Bool = false,
+        identityId: Data
+    ) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: shielded→identity top-up amount=\(amountCredits) credits")
+
+        let env: BasicEnvironment
+        do {
+            env = try resolveBasicEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        guard let submittedAmount = submittableAmount(
+            amountCredits, sweepAll: sweepAll, feeKind: .identityTopUpFromPool)
+        else { return }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .proving
+
+        do {
+            try await env.manager.shieldedIdentityTopUpFromPool(
+                walletId: env.walletId,
+                // Per-operation Orchard spend authority — see `performWithdraw`.
+                resolver: MnemonicResolver(),
+                account: 0,
+                identityId: identityId,
+                amount: submittedAmount)
+        } catch {
+            handleSpendError(error, manager: env.manager)
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: shielded→identity top-up completed")
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
     }
 
     /// Route 5: BIP44 Core UTXOs → asset lock → the wallet's own Platform
@@ -1753,21 +1803,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // guard as `performWithdraw`, so a note that was spent or discovered
         // between Max and confirm fails closed instead of building a bundle
         // the pool can no longer fund exactly.
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .transfer) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .transfer) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .transfer) else {
+            return
         }
 
         do {

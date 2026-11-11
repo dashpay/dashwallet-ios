@@ -1,6 +1,6 @@
 # 0042 — Report movedToPlatform when a Shielded to Identity top-up fails after the unshield
 
-- **Status:** Proposed
+- **Status:** Superseded by [ADR-0044](0044-top-up-an-identity-from-shielded-in-one-step.md)
 - **Date:** 2026-11-10
 - **Deciders:** Roman Chornyi (owner), with Claude during the design pass. Becomes Accepted only on a non-author Reviewer's approval of the PR that carries it (ADR-0001 rule 3).
 

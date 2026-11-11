@@ -19,8 +19,9 @@ import Combine
 import Foundation
 import SwiftDashSDK
 
-/// SCR-06 Confirm and SCR-08 Sending: prepares the exact send (which authenticates), shows From, To, the binding fee,
-/// the total and every warning for the pair, and sends on the Confirm tap. Nothing is broadcast before it.
+/// SCR-06 Confirm and SCR-08 Sending: prepares the exact send (which authenticates), shows From, To, the fee (exact or
+/// an estimate, by route), the total and every warning for the pair, and sends on the Confirm tap. Nothing is broadcast
+/// before it.
 @MainActor
 final class ConfirmViewModel: ObservableObject {
     enum State: Equatable {
@@ -111,16 +112,29 @@ final class ConfirmViewModel: ObservableObject {
         return name + " · " + short
     }
 
-    /// The binding fee in DASH; "—" when it could not be calculated; nil while preparing.
+    /// Whether the fee shown is the one the send pays; otherwise fee and total are an estimate marked "~".
+    var isFeeExact: Bool { request.route.isFeeExact }
+
+    /// The fee in DASH, "~ " before an estimate; "—" when it could not be calculated; nil while preparing.
     var feeText: String? {
         if state == .feeFailed { return Self.unknown }
-        return feeDuffs?.formattedDashAmount
+        return feeDuffs.map { estimateMark + $0.formattedDashAmount }
     }
 
     var totalText: String? {
         if state == .feeFailed { return Self.unknown }
-        return feeDuffs.map { (request.amount + $0).formattedDashAmount }
+        return feeDuffs.map { estimateMark + (request.amount + $0).formattedDashAmount }
     }
+
+    /// The line under the fee when it is an estimate; nil while there is no fee to qualify.
+    var feeEstimateNote: String? {
+        guard !isFeeExact, feeDuffs != nil, state != .feeFailed else { return nil }
+        return NSLocalizedString("Estimated. The network sets the final fee.", comment: "External send")
+    }
+
+    /// What VoiceOver reads for the fee and the total: "about" in place of "~".
+    var feeAccessibilityValue: String { spoken(feeDuffs, feeRowText) }
+    var totalAccessibilityValue: String { spoken(feeDuffs.map { request.amount + $0 }, totalRowText) }
 
     var feeRowText: String { feeText ?? Self.calculating }
     var totalRowText: String { totalText ?? Self.calculating }
@@ -195,6 +209,13 @@ final class ConfirmViewModel: ObservableObject {
 
     private var isIdentitySource: Bool { request.route.source == .identity }
 
+    private var estimateMark: String { isFeeExact ? "" : "~ " }
+
+    private func spoken(_ duffs: UInt64?, _ shown: String) -> String {
+        guard !isFeeExact, state != .feeFailed, let duffs else { return shown }
+        return String(format: NSLocalizedString("about %@", comment: "External send"), duffs.formattedDashAmount)
+    }
+
     private func prepare() async {
         state = .preparing
         blockReason = nil
@@ -202,7 +223,8 @@ final class ConfirmViewModel: ObservableObject {
             ? request.amount * PlatformPaymentIdentityFundingPolicy.creditsPerDuff : request.amount
         do {
             let result = try await executor.prepare(
-                route: request.route, destination: request.destination, amount: amount, isMax: request.isMax)
+                route: request.route, destination: request.destination, amount: amount, isMax: request.isMax,
+                sweepCredits: request.sweepCredits)
             guard !isClosed else {
                 executor.discard(result)
                 return

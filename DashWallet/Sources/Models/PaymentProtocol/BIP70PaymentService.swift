@@ -278,7 +278,7 @@ final class BIP70PaymentService {
                         now: Date = Date(),
                         awaitAcceptance: Bool = true) async throws -> SendResult {
         let built = try await buildForSend(confirmation, now: now)
-        return try await postAndBroadcast(built, awaitAcceptance: awaitAcceptance)
+        return try await postAndBroadcast(built, now: now, awaitAcceptance: awaitAcceptance)
     }
 
     /// The first half of the send: the pre-spend checks, the single-use claim and build + sign. Nothing is
@@ -312,9 +312,19 @@ final class BIP70PaymentService {
     }
 
     /// The second half of the send: POST the Payment, then broadcast. Spends the claim `buildForSend` took.
-    func postAndBroadcast(_ built: BuiltSend, awaitAcceptance: Bool = true) async throws -> SendResult {
+    /// Re-checks expiry first: Confirm builds when it opens and this runs at the tap, so the request may have
+    /// expired in between. An expired request releases the claim with nothing POSTed or broadcast.
+    func postAndBroadcast(_ built: BuiltSend, now: Date = Date(),
+                          awaitAcceptance: Bool = true) async throws -> SendResult {
         let confirmation = built.confirmation
         let prepared = built.prepared
+
+        do {
+            try Self.assertNotExpired(confirmation.request.details.expires, now: now)
+        } catch {
+            confirmation.sendGuard.reset()
+            throw error
+        }
 
         // 5. Merchant round-trip BEFORE broadcast, if there's a payment_url. A decoded ACK is
         //    the acknowledgement (BIP70 has no reject bit — rejection surfaces as an HTTP or

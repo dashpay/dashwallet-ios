@@ -52,12 +52,6 @@ struct SendOutcomeRouter {
                 title: NSLocalizedString("Send in progress", comment: "External send"),
                 message: NSLocalizedString(
                     "It will finish on its own. You don't need to send it again.", comment: "External send"))
-        case .movedToPlatform:
-            return .infoToast(
-                title: NSLocalizedString("Top-up not completed", comment: "External send"),
-                message: NSLocalizedString(
-                    "The money moved to your Platform balance. The identity top-up did not complete.",
-                    comment: "External send"))
         case .notSent(let reason):
             return .sendFailed(SendFailedContent(
                 title: NSLocalizedString("Send failed", comment: "External send"),

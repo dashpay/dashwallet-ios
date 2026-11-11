@@ -123,16 +123,16 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
     }
 
     private func presentTransactionDetails(txidWire: Data) {
-        let present = { [weak self] in
+        let showDetails = { [weak self] in
             guard let self else { return }
             let controller = SuccessTxDetailViewController(model: TxDetailModel(txidWire: txidWire))
             controller.delegate = self
-            present(controller, animated: true)
+            self.present(controller, animated: true)
         }
         if let presented = presentedViewController {
-            presented.dismiss(animated: true, completion: present)
+            presented.dismiss(animated: true, completion: showDetails)
         } else {
-            present()
+            showDetails()
         }
     }
 

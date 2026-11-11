@@ -107,16 +107,6 @@ final class SendOutcomeRouterTests: XCTestCase {
         XCTAssertEqual(ExternalSendHostController.toastText(title: "", message: "All set."), "All set.")
     }
 
-    // MARK: - movedToPlatform
-
-    func testMovedToPlatformSaysWhereTheMoneyIsWithoutRetry() {
-        let destination = router.destination(for: .movedToPlatform, request: request(.shieldedToIdentity))
-        XCTAssertEqual(destination, .infoToast(
-            title: "Top-up not completed",
-            message: "The money moved to your Platform balance. The identity top-up did not complete."))
-        XCTAssertFalse(offersRetry(destination))
-    }
-
     // MARK: - notSent
 
     func testNotSentShowsSendFailedWithTheReasonsMessage() {

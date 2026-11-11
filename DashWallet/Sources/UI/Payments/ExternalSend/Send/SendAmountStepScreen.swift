@@ -195,7 +195,8 @@ private struct PreviewEstimator: SendFeeEstimating {
 }
 
 private struct PreviewPlanner: SendMaxPlanning {
-    func maxDuffs(route: SendRoute) async -> UInt64? { nil }
+    func maxPlan(route: SendRoute) async -> SendMaxPlan? { nil }
+    func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck { .notChecked }
 }
 
 /// 1 DASH = 50 units of the local currency.
