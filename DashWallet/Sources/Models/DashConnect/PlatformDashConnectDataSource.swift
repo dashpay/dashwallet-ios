@@ -1020,7 +1020,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// after those intents; one whose update never landed, or whose keys went
     /// off without a disconnect, has none, unless another identity's intents
     /// hold it or its last read saw keys there no approval names (`seenOn`).
-    /// A row whose app is in `keeping` stays as it is.
+    /// A row whose app is in `keeping` stays as it is. While the read has a
+    /// key whose bound is unknown, that key may be any app's: no row goes;
+    /// one that would is Confirming, so it keeps its Disconnect until a
+    /// read places every key.
     static func rows(
         _ rows: [DAppConnection],
         after projection: AppConnect.Projection,
@@ -1046,6 +1049,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // An App Connect row stands for intents: it stays only while another
         // identity's intents hold it, since this read says nothing of them.
         let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
+        let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
             if keeping.contains(row.id) { return row }
             guard !shownIds.contains(row.id) else { return nil }
@@ -1053,7 +1057,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             seenOn.remove(me)
             if heldElsewhere.contains(row.id) { return DAppConnection(row, seenOn: seenOn) }
             // Live keys seen on another identity: that is the access left.
-            guard !seenOn.isEmpty else { return nil }
+            guard !seenOn.isEmpty else {
+                // A key of unknown bound may still be the app's: the row
+                // stays, Confirming rather than Active, with its Disconnect.
+                guard hasUnplacedKey else { return nil }
+                return DAppConnection(
+                    row, status: .confirming, seenOn: seenOn, at: row.status == .confirming ? row.updatedAt : updatedAt)
+            }
             return DAppConnection(row, status: .active, seenOn: seenOn, at: row.status == .active ? row.updatedAt : updatedAt)
         }
         for connection in projection.connections {
