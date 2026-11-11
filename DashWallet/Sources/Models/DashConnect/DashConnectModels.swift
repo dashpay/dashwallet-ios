@@ -214,8 +214,9 @@ struct DashConnectDisconnectResult: Equatable {
     /// off only when the user asks, offered by a disconnect without listed
     /// keys: keys on the app's contracts or of its owner, given on another
     /// device or before a restore, and DashPay profile keys no app can be
-    /// told to hold. The user's answer passes them back.
-    var offeredUnrecordedKeyIds: Set<UInt32> = []
+    /// told to hold. The user's answer passes them back, with the identity
+    /// they are on. Nil when nothing is offered.
+    var offeredUnrecordedKeys: DashConnectOfferedKeys? = nil
     /// Live App Connect keys that may be the app's but could not be checked:
     /// their bound is not in the key store yet, or an owner that decides
     /// whose they are could not be read. None of them was turned off.
@@ -231,7 +232,14 @@ struct DashConnectDisconnectResult: Equatable {
     /// the active one.
     var keysOnAnotherIdentity = false
 
-    var unrecordedKeysLeft: Int { offeredUnrecordedKeyIds.count }
+    var unrecordedKeysLeft: Int { offeredUnrecordedKeys?.keyIds.count ?? 0 }
+}
+
+/// Unrecorded keys a disconnect offered to turn off. A key id is unique only
+/// within its identity, so the ids go with the identity they were read on.
+struct DashConnectOfferedKeys: Equatable {
+    let identityId: Data
+    let keyIds: Set<UInt32>
 }
 
 /// A pending request derived from a scanned login QR code.

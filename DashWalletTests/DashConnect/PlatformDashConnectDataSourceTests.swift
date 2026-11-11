@@ -594,20 +594,21 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         let spy = PurchaseApprovalSpy()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-        spy.disconnectResult = DashConnectDisconnectResult(offeredUnrecordedKeyIds: [20, 21])
+        let offeredKeys = DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20, 21])
+        spy.disconnectResult = DashConnectDisconnectResult(offeredUnrecordedKeys: offeredKeys)
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
         XCTAssertEqual(viewModel.message?.unrecordedKeysOf, Self.connection)
-        XCTAssertEqual(viewModel.message?.unrecordedKeyIds, [20, 21], "the message keeps the offered keys")
-        XCTAssertEqual(spy.disconnectedUnrecordedKeyIds, [nil])
+        XCTAssertEqual(viewModel.message?.unrecordedKeys, offeredKeys, "the message keeps the offered keys and their identity")
+        XCTAssertEqual(spy.disconnectedUnrecordedKeys, [nil])
 
-        let offered = viewModel.message?.unrecordedKeyIds
+        let offered = viewModel.message?.unrecordedKeys
         viewModel.message = nil
         spy.disconnectResult = DashConnectDisconnectResult()
-        viewModel.disconnect(Self.connection, unrecordedKeyIds: offered)
+        viewModel.disconnect(Self.connection, unrecordedKeys: offered)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
-        XCTAssertEqual(spy.disconnectedUnrecordedKeyIds, [nil, [20, 21]], "the answer passes back exactly the offered keys")
+        XCTAssertEqual(spy.disconnectedUnrecordedKeys, [nil, offeredKeys], "the answer passes back exactly the offered keys, with their identity")
         XCTAssertNil(viewModel.message)
     }
 
@@ -633,7 +634,8 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
     /// the keys still shows them.
     func testTheQuestionCarriesTheWarnings() async {
         let message = await message(after: DashConnectDisconnectResult(
-            keysTurnedOff: 1, offeredUnrecordedKeyIds: [20], keysNotChecked: 2, keysNotAttributable: 3))
+            keysTurnedOff: 1, offeredUnrecordedKeys: DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20]),
+            keysNotChecked: 2, keysNotAttributable: 3))
         let paragraphs = Self.paragraphs(message)
         XCTAssertEqual(message?.kind, .question)
         guard paragraphs.count == 3 else { return XCTFail("paragraphs: \(paragraphs)") }
@@ -969,7 +971,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     private var storedDisconnectFailure: Error?
     private var storedDisconnectedIds: [String] = []
     private var storedDisconnectedScopes: [String?] = []
-    private var storedDisconnectedUnrecordedKeyIds: [Set<UInt32>?] = []
+    private var storedDisconnectedUnrecordedKeys: [DashConnectOfferedKeys?] = []
 
     var disconnectFailure: Error? {
         get { lock.withLock { storedDisconnectFailure } }
@@ -984,8 +986,8 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    var disconnectedUnrecordedKeyIds: [Set<UInt32>?] {
-        lock.withLock { storedDisconnectedUnrecordedKeyIds }
+    var disconnectedUnrecordedKeys: [DashConnectOfferedKeys?] {
+        lock.withLock { storedDisconnectedUnrecordedKeys }
     }
 
     private var storedDisconnectResult = DashConnectDisconnectResult()
@@ -996,11 +998,11 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         set { lock.withLock { storedDisconnectResult = newValue } }
     }
 
-    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
         let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            storedDisconnectedUnrecordedKeyIds.append(unrecordedKeyIds)
+            storedDisconnectedUnrecordedKeys.append(unrecordedKeys)
             return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
@@ -1069,7 +1071,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
         throw PurchaseSpyError.unsupported
     }
 
@@ -1199,7 +1201,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([other])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
 
         XCTAssertEqual(Self.shownRows(dataSource).map(\.id), [other.id], "the list shows the wallet that is active")
         XCTAssertEqual(connections.load(), [other])
@@ -1215,7 +1217,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
 
         XCTAssertEqual(connections.load().map(\.status), [.active])
     }
@@ -1239,14 +1241,14 @@ final class AppConnectLoginTests: XCTestCase {
         center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
         await fulfillment(of: [moved], timeout: 2)
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
         await dataSource.remove(id: shown[0].id, scope: shown[0].scope)
 
         XCTAssertEqual(connections.load(), [row], "the new wallet's row for the same app is untouched")
         // The row the new list shows is this wallet's own.
         let current = Self.shownRows(dataSource)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeyIds: nil)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeys: nil)
         }
     }
 
@@ -1278,12 +1280,12 @@ final class AppConnectLoginTests: XCTestCase {
         // The same wallet and devnet name, pointed at other nodes.
         endpoint.url = "https://quorums.two.example"
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
         XCTAssertEqual(connections.load().map(\.status), [.active])
         let current = Self.shownRows(dataSource)
         XCTAssertNotEqual(current[0].scope, shown[0].scope)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeyIds: nil)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeys: nil)
         }
     }
 
@@ -1292,7 +1294,7 @@ final class AppConnectLoginTests: XCTestCase {
         let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, unrecordedKeyIds: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, unrecordedKeys: nil) }
         await dataSource.remove(id: row.id, scope: nil)
 
         XCTAssertEqual(connections.load(), [row])
@@ -1379,7 +1381,7 @@ final class AppConnectLoginTests: XCTestCase {
         // when it ends is what is checked.
         let log = OperationLog()
         let disconnect = Task {
-            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil)
+            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil)
             await log.add("disconnect ended")
         }
         try await Task.sleep(nanoseconds: 100_000_000)
@@ -1412,7 +1414,7 @@ final class AppConnectLoginTests: XCTestCase {
         await fulfillment(of: [otherStarted], timeout: 2)
 
         let disconnect = Task {
-            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
+            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
         }
         try? await Task.sleep(nanoseconds: 100_000_000)
         active.idHex = "wallet-b"
@@ -1468,7 +1470,7 @@ final class AppConnectLoginTests: XCTestCase {
         let (dataSource, _) = makeScopedDataSource(active: active)
 
         do {
-            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, unrecordedKeyIds: nil)
+            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, unrecordedKeys: nil)
             XCTFail("disconnected with no wallet")
         } catch {
             guard case DashConnectPlatformError.noWallet = error else {
@@ -1710,13 +1712,13 @@ final class AppConnectRefreshOwnersTests: XCTestCase {
     private static let group = Data(repeating: 0xC2, count: 32)
 
     private static func key(
-        _ id: UInt32, on contract: Data, bound: AppConnect.StoredBound? = nil, boundKnown: Bool = true
+        _ id: UInt32, on contract: Data, bound: AppConnect.StoredBound? = nil, boundKnown: Bool = true, disabledAt: UInt64? = nil
     ) -> AppConnect.PlatformKey {
         AppConnect.PlatformKey(
             id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
             data: Data(repeating: UInt8(id), count: 20), readOnly: false,
             bound: boundKnown ? bound ?? .singleContract(contract) : nil, boundKnown: boundKnown,
-            totalBudget: 1000, expiresAt: 1_800_000_001_000, disabledAt: nil)
+            totalBudget: 1000, expiresAt: 1_800_000_001_000, disabledAt: disabledAt)
     }
 
     private static func intent(_ key: AppConnect.PlatformKey, app: Data = app) -> AppConnect.ConnectionIntent {
@@ -1998,16 +2000,57 @@ extension AppConnectRefreshOwnersTests {
         reader.owners = [Self.otherApp: Data(repeating: 0x0B, count: 32)]
         let asked = await Self.planned(keys, [Self.intent(own), z], listed: nil, reader: reader)
         XCTAssertEqual(
-            PlatformDashConnectDataSource.disconnectResult(of: asked, listed: nil, keysOnAnotherIdentity: true),
+            PlatformDashConnectDataSource.disconnectResult(of: asked, remaining: asked, listed: nil, identityId: Self.identity, keysOnAnotherIdentity: true),
             DashConnectDisconnectResult(
-                keysTurnedOff: 1, offeredUnrecordedKeyIds: [20], keysNotChecked: 1, keysNotAttributable: 0,
+                keysTurnedOff: 1, offeredUnrecordedKeys: DashConnectOfferedKeys(identityId: Self.identity, keyIds: [20]),
+                keysNotChecked: 1, keysNotAttributable: 0,
                 keysLeftAfterQuestion: 0, keysOnAnotherIdentity: true))
         let confirmed = await Self.planned(keys, [Self.intent(own), z], listed: [], reader: reader)
         XCTAssertEqual(
-            PlatformDashConnectDataSource.disconnectResult(of: confirmed, listed: [], keysOnAnotherIdentity: false),
+            PlatformDashConnectDataSource.disconnectResult(of: confirmed, remaining: confirmed, listed: [], identityId: Self.identity, keysOnAnotherIdentity: false),
             DashConnectDisconnectResult(
-                keysTurnedOff: 1, offeredUnrecordedKeyIds: [], keysNotChecked: 1, keysNotAttributable: 0,
+                keysTurnedOff: 1, offeredUnrecordedKeys: nil, keysNotChecked: 1, keysNotAttributable: 0,
                 keysLeftAfterQuestion: 1, keysOnAnotherIdentity: false))
+    }
+
+    /// What stays on is told from the read after the update: a key of the
+    /// app that first shows there is reported, before the question as
+    /// offered and after it as left on, while the keys turned off are those
+    /// the plan before the update turned off.
+    func testAKeyFirstSeenOnTheReadAfterTheUpdateIsReportedAsStillOn() async {
+        let own = Self.key(10, on: Self.app)
+        let ownOff = Self.key(10, on: Self.app, disabledAt: 1)
+        let listedOff = Self.key(20, on: Self.app, disabledAt: 1)
+        let landed = Self.key(21, on: Self.app)
+        let intents = [Self.intent(own)]
+
+        let asked = await Self.planned([own], intents, listed: nil)
+        let askedAfter = await Self.planned([ownOff, landed], intents, listed: nil)
+        let first = PlatformDashConnectDataSource.disconnectResult(
+            of: asked, remaining: askedAfter, listed: nil, identityId: Self.identity, keysOnAnotherIdentity: false)
+        XCTAssertEqual(first.keysTurnedOff, 1)
+        XCTAssertEqual(first.offeredUnrecordedKeys, DashConnectOfferedKeys(identityId: Self.identity, keyIds: [21]))
+
+        let confirmed = await Self.planned([own, Self.key(20, on: Self.app)], intents, listed: [20])
+        let confirmedAfter = await Self.planned([ownOff, listedOff, landed], intents, listed: [20])
+        let second = PlatformDashConnectDataSource.disconnectResult(
+            of: confirmed, remaining: confirmedAfter, listed: [20], identityId: Self.identity, keysOnAnotherIdentity: false)
+        XCTAssertEqual(second.keysTurnedOff, 2, "the keys the update turned off")
+        XCTAssertEqual(second.keysLeftAfterQuestion, 1, "AC-08: the key that landed during the update stays on and is said")
+        XCTAssertNil(second.offeredUnrecordedKeys)
+    }
+
+    /// A key id is unique only within an identity: keys offered on one
+    /// identity are never turned off while another is active, even when it
+    /// has keys with the same ids. Checked before the PIN and after it.
+    func testOfferedKeysOfAnotherIdentityAreRefusedEvenWithTheSameKeyIds() {
+        let other = Data(repeating: 0x0E, count: 32)
+        let offered = DashConnectOfferedKeys(identityId: Self.identity, keyIds: [20])
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireOffered(offered, on: Self.identity))
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireOffered(nil, on: other), "nothing offered, nothing to check")
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireOffered(offered, on: other)) { error in
+            guard case DashConnectPlatformError.walletChanged = error else { return XCTFail("\(error)") }
+        }
     }
 }
 
@@ -2020,10 +2063,11 @@ final class ConnectionsMessageDialogTests: XCTestCase {
     /// SCR-03: «Leave them» above a destructive «Turn them off», which passes
     /// back exactly the offered keys.
     func testAQuestionOffersToTurnOffExactlyTheOfferedKeys() {
-        var turnedOff: (DAppConnection, Set<UInt32>)?
+        var turnedOff: (DAppConnection, DashConnectOfferedKeys)?
         var dismissed = false
+        let offered = DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20, 21])
         let message = ConnectionsScreenMessage(
-            kind: .question, text: "Question.\n\nWarning.", unrecordedKeysOf: Self.connection, unrecordedKeyIds: [20, 21])
+            kind: .question, text: "Question.\n\nWarning.", unrecordedKeysOf: Self.connection, unrecordedKeys: offered)
 
         let dialog = ConnectionsMessageDialog.dialog(
             for: message, turnOff: { turnedOff = ($0, $1) }, dismiss: { dismissed = true })
@@ -2036,7 +2080,7 @@ final class ConnectionsMessageDialogTests: XCTestCase {
         XCTAssertEqual(dialog.secondaryAction?.title, "Leave them")
         dialog.primaryAction.handler()
         XCTAssertEqual(turnedOff?.0, Self.connection)
-        XCTAssertEqual(turnedOff?.1, [20, 21])
+        XCTAssertEqual(turnedOff?.1, offered)
         XCTAssertFalse(dismissed)
         dialog.secondaryAction?.handler()
         XCTAssertTrue(dismissed)

@@ -37,8 +37,9 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
     /// A connection the user can also turn its unrecorded keys off for,
     /// from the same message.
     var unrecordedKeysOf: DAppConnection? = nil
-    /// The unrecorded keys the message offers to turn off: only these go.
-    var unrecordedKeyIds: Set<UInt32> = []
+    /// The unrecorded keys the message offers to turn off: only these go,
+    /// and only while their identity is the active one.
+    var unrecordedKeys: DashConnectOfferedKeys? = nil
 
     var id: String {
         "\(kind.rawValue):\(text)"
@@ -384,13 +385,13 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func disconnect(_ connection: DAppConnection) {
-        disconnect(connection, unrecordedKeyIds: nil)
+        disconnect(connection, unrecordedKeys: nil)
     }
 
-    /// `unrecordedKeyIds`: also turn off these live keys of the app, and
+    /// `unrecordedKeys`: also turn off these live keys of the app, and
     /// DashPay profile keys, that no approval of this wallet names. The user
     /// is asked for that separately, after a disconnect offered them.
-    func disconnect(_ connection: DAppConnection, unrecordedKeyIds: Set<UInt32>?) {
+    func disconnect(_ connection: DAppConnection, unrecordedKeys: DashConnectOfferedKeys?) {
         // Disconnecting an App Connect connection signs an identity update,
         // which takes seconds. It must not overlap anything else that signs
         // one or touches the same records: a second tap, an approval on
@@ -400,7 +401,7 @@ final class ConnectionsViewModel: ObservableObject {
               !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
             // Asked for from the message after a disconnect: say why nothing
             // happened rather than nothing.
-            if unrecordedKeyIds != nil {
+            if unrecordedKeys != nil {
                 message = ConnectionsScreenMessage(
                     kind: .error,
                     text: NSLocalizedString(
@@ -415,7 +416,7 @@ final class ConnectionsViewModel: ObservableObject {
             defer { self.isDisconnecting = false }
             do {
                 let result = try await self.dataSource.disconnect(
-                    id: connection.id, scope: connection.scope, unrecordedKeyIds: unrecordedKeyIds)
+                    id: connection.id, scope: connection.scope, unrecordedKeys: unrecordedKeys)
                 // Keys left on that may be the app's: said with the question
                 // too, so leaving the keys still shows them.
                 var warnings: [String] = []
@@ -447,7 +448,7 @@ final class ConnectionsViewModel: ObservableObject {
                         kind: .question,
                         text: ([String.localizedStringWithFormat(text, result.unrecordedKeysLeft)] + warnings).joined(separator: "\n\n"),
                         unrecordedKeysOf: connection,
-                        unrecordedKeyIds: result.offeredUnrecordedKeyIds)
+                        unrecordedKeys: result.offeredUnrecordedKeys)
                     return
                 }
                 var texts = warnings

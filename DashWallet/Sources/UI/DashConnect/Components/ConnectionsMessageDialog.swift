@@ -27,17 +27,16 @@ import SwiftUI
 enum ConnectionsMessageDialog {
     static func dialog(
         for message: ConnectionsScreenMessage,
-        turnOff: @escaping (DAppConnection, Set<UInt32>) -> Void,
+        turnOff: @escaping (DAppConnection, DashConnectOfferedKeys) -> Void,
         dismiss: @escaping () -> Void
     ) -> ModalDialog {
         let paragraphs = message.text.components(separatedBy: "\n\n")
         let icon: ModalDialog.Icon? = message.kind == .success ? nil : .warning
-        guard let connection = message.unrecordedKeysOf else {
+        guard let connection = message.unrecordedKeysOf, let keys = message.unrecordedKeys else {
             return ModalDialog(
                 icon: icon, heading: message.title, paragraphs: paragraphs,
                 primaryAction: .init(title: NSLocalizedString("OK", comment: ""), handler: dismiss))
         }
-        let keys = message.unrecordedKeyIds
         return ModalDialog(
             icon: icon, heading: message.title, paragraphs: paragraphs,
             primaryAction: .init(title: NSLocalizedString("Turn them off", comment: "DashConnect"), role: .destructive) {
@@ -67,7 +66,8 @@ private enum PreviewText {
 private func dialogPreview(_ kind: ConnectionsScreenMessage.Kind, _ paragraphs: [String], offers: Bool = false) -> some View {
     let message = ConnectionsScreenMessage(
         kind: kind, text: paragraphs.joined(separator: "\n\n"),
-        unrecordedKeysOf: offers ? MockDashConnectDataSource.sample(.active) : nil, unrecordedKeyIds: offers ? [20, 21] : [])
+        unrecordedKeysOf: offers ? MockDashConnectDataSource.sample(.active) : nil,
+        unrecordedKeys: offers ? DashConnectOfferedKeys(identityId: Data(repeating: 1, count: 32), keyIds: [20, 21]) : nil)
     return ZStack {
         Color.dash.backgroundOverlay.ignoresSafeArea()
         ConnectionsMessageDialog.dialog(for: message, turnOff: { _, _ in }, dismiss: {})

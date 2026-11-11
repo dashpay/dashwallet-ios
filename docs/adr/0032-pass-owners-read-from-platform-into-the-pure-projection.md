@@ -51,6 +51,5 @@ Since #1301 the wallet links an unrecorded key to an App Connect app only throug
 
 ## Links
 
-- Spec: [../features/app-connect-owner-attribution/spec.md](../features/app-connect-owner-attribution/spec.md) (US-01, US-02, US-04, US-05; AC-01..AC-07, AC-09..AC-12)
-- SAD: [../features/app-connect-owner-attribution/sad.md](../features/app-connect-owner-attribution/sad.md) §4
 - Related ADR: [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md); [ADR-0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md), [ADR-0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md)
+- PR: #1364; issue #1346; the #1301 review thread it answers: r4513114671
