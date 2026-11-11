@@ -310,19 +310,74 @@ final class DestinationParserTests: XCTestCase {
         }
     }
 
-    func testALinkWithAPlatformOrShieldedAddressIgnoresTheAmount() throws {
-        for network in [Network.mainnet, .testnet] {
-            let platformText = platform(network)
-            let platformDestination = try parse("dash:\(platformText)?amount=1.5", network).get()
-            XCTAssertEqual(platformDestination.type, .platformAddress)
-            XCTAssertEqual(platformDestination.text, platformText)
-            XCTAssertNil(platformDestination.amountDuffs)
+    // Payment requests made by Receive on Platform, Shielded and Identity (dashpay/dashwallet-ios#1383): the address
+    // or the bare Identity ID, then `amount=` in DASH, as Android reads them (dashpay/dash-wallet#1677).
 
-            let shieldedText = shielded(network)
-            let shieldedDestination = try parse("dash:\(shieldedText)?amount=1.5", network).get()
-            XCTAssertEqual(shieldedDestination.type, .shieldedAddress)
-            XCTAssertEqual(shieldedDestination.text, shieldedText)
-            XCTAssertNil(shieldedDestination.amountDuffs)
+    func testAPlatformLinkWithAnAmountFillsTheAmount() throws {
+        for network in [Network.mainnet, .testnet] {
+            for script in [false, true] {
+                let text = platform(network, script: script)
+                let destination = try parse("dash:\(text)?amount=1.5", network).get()
+                XCTAssertEqual(destination.type, .platformAddress)
+                XCTAssertEqual(destination.text, text)
+                XCTAssertEqual(destination.isScriptForm, script)
+                XCTAssertEqual(destination.amountDuffs, 150_000_000)
+                XCTAssertNil(destination.paymentRequestURL)
+            }
+        }
+    }
+
+    func testAShieldedLinkWithAnAmountFillsTheAmount() throws {
+        for network in [Network.mainnet, .testnet] {
+            let text = shielded(network)
+            let destination = try parse("dash:\(text)?amount=0.25", network).get()
+            XCTAssertEqual(destination.type, .shieldedAddress)
+            XCTAssertEqual(destination.text, text)
+            XCTAssertEqual(destination.amountDuffs, 25_000_000)
+            XCTAssertNil(destination.paymentRequestURL)
+        }
+    }
+
+    func testAnIdentityLinkWithAnAmountFillsTheAmount() throws {
+        for network in [Network.mainnet, .testnet] {
+            let id = identityID()
+            let destination = try parse("dash:\(id)?amount=0.1", network).get()
+            XCTAssertEqual(destination.type, .identityID)
+            XCTAssertEqual(destination.text, id)
+            XCTAssertEqual(destination.amountDuffs, 10_000_000)
+            XCTAssertNil(destination.paymentRequestURL)
+        }
+    }
+
+    func testAnIdentityLinkWithoutAnAmount() throws {
+        let id = identityID()
+        let destination = try parse("dash:\(id)", .testnet).get()
+        XCTAssertEqual(destination.type, .identityID)
+        XCTAssertEqual(destination.text, id)
+        XCTAssertNil(destination.amountDuffs)
+    }
+
+    func testAPlatformShieldedOrIdentityLinkCarriesNoPaymentRequest() throws {
+        let tail = "?amount=1&r=https://merchant.example/pr"
+        for text in [platform(.testnet), shielded(.testnet), identityID()] {
+            let destination = try parse("dash:\(text)\(tail)", .testnet).get()
+            XCTAssertEqual(destination.amountDuffs, 100_000_000)
+            XCTAssertNil(destination.paymentRequestURL, "only a Core link has a payment request to fall back from")
+        }
+    }
+
+    func testALinkWhoseAddressIsAPaymentRequestIsInvalid() {
+        for network in [Network.mainnet, .testnet] {
+            assertFails("dash:https://merchant.example/pr?amount=1", network, with: .invalid)
+            assertFails("dash:dash:?r=https://merchant.example/pr", network, with: .invalid)
+        }
+    }
+
+    func testAPlatformOrShieldedLinkOfAnotherNetworkIsWrongNetworkWithAnAmount() {
+        for network in [Network.mainnet, .testnet] {
+            let foreign = other(network)
+            assertFails("dash:\(platform(foreign))?amount=1", network, with: .wrongNetwork)
+            assertFails("dash:\(shielded(foreign))?amount=1", network, with: .wrongNetwork)
         }
     }
 

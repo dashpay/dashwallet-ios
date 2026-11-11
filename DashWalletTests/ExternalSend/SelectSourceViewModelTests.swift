@@ -18,8 +18,8 @@
 @testable import dashpay
 import XCTest
 
-/// The Select source sheet's ViewModel (SCR-05; AC-05, AC-06, AC-07): only the edges are faked (the per-source
-/// balances, the Current identity); the pair policy and the ViewModel are the real ones.
+/// The Select source sheet's ViewModel (SCR-05; AC-05, AC-06, AC-07): only the edge is faked (the Current
+/// identity); the pair policy and the ViewModel are the real ones.
 @MainActor
 final class SelectSourceViewModelTests: XCTestCase {
     private typealias Row = SelectSourceViewModel.Row
@@ -28,7 +28,6 @@ final class SelectSourceViewModelTests: XCTestCase {
 
     private let ownID = "OwnIdentityIDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     private let otherID = "OtherIdentityIDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    private let identityCredits: UInt64 = 5_000_000_000
 
     private func destination(_ type: Destination.Kind, text: String = "dest",
                              isScriptForm: Bool = false) -> Destination {
@@ -36,15 +35,6 @@ final class SelectSourceViewModelTests: XCTestCase {
     }
 
     // MARK: - Fakes
-
-    private final class FakeBalances: ExternalSendBalanceReading {
-        /// A source missing from the table is unreadable (nil). Identity is in credits, the rest in duffs.
-        var table: [SendSource: UInt64] = [:]
-
-        func spendableBalance(of source: SendSource) async -> UInt64? {
-            table[source]
-        }
-    }
 
     private final class FakeIdentity: CurrentIdentityReading {
         var current: SelectSourceIdentity?
@@ -54,38 +44,16 @@ final class SelectSourceViewModelTests: XCTestCase {
         }
     }
 
-    /// 1 DASH = 50 units of the local currency; the text is a plain marker, not the app's formatter.
-    private final class FakeConverter: SendAmountConverting {
-        var rate: Decimal? = 50
-
-        func fiat(forDuffs duffs: UInt64) -> Decimal? {
-            rate.map { Decimal(duffs) / 100_000_000 * $0 }
-        }
-
-        func duffs(forFiat fiat: Decimal) -> UInt64? {
-            nil
-        }
-
-        func fiatText(forDuffs duffs: UInt64) -> String? {
-            fiat(forDuffs: duffs).map { "$\($0)" }
-        }
-    }
-
-    private let balances = FakeBalances()
     private let identity = FakeIdentity()
-    private let converter = FakeConverter()
     private var picked: [SendSource] = []
 
     override func setUp() {
         super.setUp()
-        balances.table = [.core: 300_000_000, .shielded: 200_000_000, .platform: 100_000_000,
-                          .identity: identityCredits]
         identity.current = SelectSourceIdentity(id: ownID, username: "alice")
     }
 
     private func makeVM(_ destination: Destination, selected: SendSource = .core) async -> SelectSourceViewModel {
-        let vm = SelectSourceViewModel(destination: destination, selected: selected, balances: balances,
-                                       currentIdentity: identity, converter: converter)
+        let vm = SelectSourceViewModel(destination: destination, selected: selected, currentIdentity: identity)
         vm.onPick = { [unowned self] source in picked.append(source) }
         await vm.load()
         return vm
@@ -95,55 +63,19 @@ final class SelectSourceViewModelTests: XCTestCase {
         try XCTUnwrap(vm.rows.first { $0.source == source }, "no \(source) row")
     }
 
-    // MARK: - AC-05: every source, in order, with its balance
+    // MARK: - AC-05: every source, in order, icon and name only (owner review O5)
 
     func testListsCoreShieldedPlatformIdentityInThatOrder() async {
         let vm = await makeVM(destination(.coreAddress))
         XCTAssertEqual(vm.rows.map(\.source), [.core, .shielded, .platform, .identity])
     }
 
-    func testEachRowCarriesItsBalanceInDuffs() async throws {
+    func testRowsCarryNoBalanceForDisplay() async throws {
         let vm = await makeVM(destination(.coreAddress))
-        XCTAssertEqual(try row(.core, in: vm).balanceDuffs, 300_000_000)
-        XCTAssertEqual(try row(.shielded, in: vm).balanceDuffs, 200_000_000)
-        XCTAssertEqual(try row(.platform, in: vm).balanceDuffs, 100_000_000)
-    }
-
-    func testIdentityRowShowsItsCreditsAsTheirDashValue() async throws {
-        let vm = await makeVM(destination(.coreAddress))
-        let expected = AmountRules.dashValue(of: identityCredits)
-        XCTAssertGreaterThan(expected, 0)
-        XCTAssertNotEqual(expected, identityCredits, "credits are not duffs")
-        XCTAssertEqual(try row(.identity, in: vm).balanceDuffs, expected)
-    }
-
-    func testBalanceTextIsTheAppsDashFormatterOnTheDuffs() async throws {
-        let vm = await makeVM(destination(.coreAddress))
-        XCTAssertEqual(try row(.core, in: vm).balanceText, UInt64(300_000_000).formattedDashAmount)
-        XCTAssertEqual(try row(.identity, in: vm).balanceText,
-                       AmountRules.dashValue(of: identityCredits).formattedDashAmount)
-    }
-
-    func testEachRowShowsItsBalanceInFiatThroughTheSameConverter() async throws {
-        let vm = await makeVM(destination(.coreAddress))
-        XCTAssertEqual(try row(.core, in: vm).balanceFiatText, converter.fiatText(forDuffs: 300_000_000))
-        XCTAssertEqual(try row(.shielded, in: vm).balanceFiatText, converter.fiatText(forDuffs: 200_000_000))
-        XCTAssertEqual(try row(.identity, in: vm).balanceFiatText,
-                       converter.fiatText(forDuffs: AmountRules.dashValue(of: identityCredits)))
-        XCTAssertNotNil(try row(.core, in: vm).balanceFiatText)
-    }
-
-    func testWithoutARateTheRowHasNoFiatText() async throws {
-        converter.rate = nil
-        let vm = await makeVM(destination(.coreAddress))
-        XCTAssertNil(try row(.core, in: vm).balanceFiatText)
-        XCTAssertNotNil(try row(.core, in: vm).balanceText)
-    }
-
-    func testZeroBalanceTextIsTheFormattedZero() async throws {
-        balances.table = [.core: 0, .shielded: 0, .platform: 0, .identity: 0]
-        let vm = await makeVM(destination(.coreAddress))
-        XCTAssertEqual(try row(.core, in: vm).balanceText, UInt64(0).formattedDashAmount)
+        for source in SendSource.allCases {
+            let labels = Mirror(reflecting: try row(source, in: vm)).children.compactMap(\.label)
+            XCTAssertFalse(labels.contains { $0.lowercased().contains("balance") }, "\(source): \(labels)")
+        }
     }
 
     func testAvailableRowsAreSelectableAndCarryNoReason() async throws {
@@ -166,15 +98,16 @@ final class SelectSourceViewModelTests: XCTestCase {
 
     func testPickingAnAvailableRowReportsItAndMovesTheMark() async {
         let vm = await makeVM(destination(.coreAddress), selected: .core)
-        vm.select(.shielded)
+        vm.tap(.shielded)
         XCTAssertEqual(picked, [.shielded])
+        XCTAssertNil(vm.toastMessage, "a pick shows no Toast")
         XCTAssertEqual(vm.selected, .shielded)
         XCTAssertEqual(vm.rows.filter(\.isSelected).map(\.source), [.shielded])
     }
 
     func testPickingTheIdentityRowReportsIt() async {
         let vm = await makeVM(destination(.coreAddress))
-        vm.select(.identity)
+        vm.tap(.identity)
         XCTAssertEqual(picked, [.identity])
     }
 
@@ -191,11 +124,10 @@ final class SelectSourceViewModelTests: XCTestCase {
         XCTAssertFalse(r.isSelected, file: file, line: line)
     }
 
-    func testCoreToSomeoneElsesIdentityIDIsUnavailableButListedWithItsBalance() async throws {
+    func testCoreToSomeoneElsesIdentityIDIsUnavailableButListed() async throws {
         let vm = await makeVM(destination(.identityID, text: otherID), selected: .shielded)
         try assertUnavailable(.core, .coreToOtherIdentity, "Core can't pay someone else's identity", in: vm)
-        XCTAssertEqual(try row(.core, in: vm).balanceDuffs, 300_000_000, "dimmed, not hidden")
-        XCTAssertEqual(vm.rows.count, 4)
+        XCTAssertEqual(vm.rows.count, 4, "dimmed, not hidden")
     }
 
     func testCoreToOwnIdentityIsAvailableAndIdentityToItselfIsNot() async throws {
@@ -217,6 +149,10 @@ final class SelectSourceViewModelTests: XCTestCase {
     func testIdentityToAShieldedAddressIsUnavailable() async throws {
         let vm = await makeVM(destination(.shieldedAddress), selected: .core)
         try assertUnavailable(.identity, .notSupportedYet, "Identity can't pay a Shielded address yet", in: vm)
+        vm.tap(.identity)
+        XCTAssertEqual(vm.toastMessage, "Identity can't pay a Shielded address yet")
+        XCTAssertTrue(picked.isEmpty)
+        XCTAssertEqual(vm.selected, .core)
         XCTAssertTrue(try row(.core, in: vm).isSelectable)
         XCTAssertTrue(try row(.shielded, in: vm).isSelectable)
         XCTAssertTrue(try row(.platform, in: vm).isSelectable)
@@ -231,9 +167,11 @@ final class SelectSourceViewModelTests: XCTestCase {
         }
     }
 
-    func testTappingAnUnavailableRowChangesNothingAndReportsNothing() async throws {
+    func testTappingAnUnavailableRowShowsItsReasonAndChangesNothing() async throws {
         let vm = await makeVM(destination(.identityID, text: otherID), selected: .shielded)
-        vm.select(.core)
+        XCTAssertNil(vm.toastMessage)
+        vm.tap(.core)
+        XCTAssertEqual(vm.toastMessage, "Core can't pay someone else's identity")
         XCTAssertTrue(picked.isEmpty)
         XCTAssertEqual(vm.selected, .shielded)
         XCTAssertEqual(vm.rows.filter(\.isSelected).map(\.source), [.shielded])
@@ -271,39 +209,27 @@ final class SelectSourceViewModelTests: XCTestCase {
     func testPickingIdentityWhenItIsNotOfferedReportsNothing() async {
         identity.current = nil
         let vm = await makeVM(destination(.coreAddress), selected: .core)
-        vm.select(.identity)
+        vm.tap(.identity)
         XCTAssertTrue(picked.isEmpty)
+        XCTAssertNil(vm.toastMessage, "no row, no reason")
         XCTAssertEqual(vm.selected, .core)
     }
 
-    // MARK: - zero and unreadable balances
+    // MARK: - the Toast
 
-    func testZeroBalancesAreListedAsZeroAndStaySelectable() async throws {
-        balances.table = [.core: 0, .shielded: 0, .platform: 0, .identity: 0]
-        let vm = await makeVM(destination(.coreAddress))
-        XCTAssertEqual(vm.rows.map(\.source), [.core, .shielded, .platform, .identity])
-        for source in SendSource.allCases {
-            let r = try row(source, in: vm)
-            XCTAssertEqual(r.balanceDuffs, 0, "\(source)")
-            XCTAssertTrue(r.isSelectable, "\(source)")
-        }
-        vm.select(.platform)
-        XCTAssertEqual(picked, [.platform])
+    func testAnotherUnavailableTapReplacesTheReason() async {
+        let vm = await makeVM(destination(.platformAddress, isScriptForm: true), selected: .shielded)
+        vm.tap(.core)
+        vm.tap(.platform)
+        XCTAssertEqual(vm.toastMessage, "Platform can't pay this kind of Platform address")
+        XCTAssertTrue(picked.isEmpty)
+        XCTAssertEqual(vm.selected, .shielded)
     }
 
-    func testZeroBalanceDoesNotMakeAnUnavailablePairSelectable() async throws {
-        balances.table = [.core: 0, .shielded: 0, .platform: 0, .identity: 0]
-        let vm = await makeVM(destination(.shieldedAddress))
-        try assertUnavailable(.identity, .notSupportedYet, "Identity can't pay a Shielded address yet", in: vm)
-    }
-
-    func testAnUnreadableBalanceStaysUnknownNotZero() async throws {
-        balances.table = [.core: 300_000_000, .platform: 100_000_000, .identity: identityCredits]
-        let vm = await makeVM(destination(.coreAddress))
-        let shielded = try row(.shielded, in: vm)
-        XCTAssertNil(shielded.balanceDuffs, "unreadable is nil, never a fabricated 0")
-        XCTAssertNil(shielded.balanceText)
-        XCTAssertTrue(shielded.isSelectable, "the row is still listed and pickable")
-        XCTAssertEqual(try row(.core, in: vm).balanceDuffs, 300_000_000)
+    func testDismissingTheToastClearsTheReason() async {
+        let vm = await makeVM(destination(.shieldedAddress), selected: .core)
+        vm.tap(.identity)
+        vm.dismissToast()
+        XCTAssertNil(vm.toastMessage)
     }
 }

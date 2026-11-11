@@ -69,10 +69,12 @@ enum DestinationParser {
                                             isScriptForm: destination.isScriptForm, amountDuffs: link.amount,
                                             label: link.label, message: link.message, paymentRequestURL: requestURL,
                                             callbackScheme: callbackScheme))
-            case .platformAddress, .shieldedAddress:
-                // No agreed link format carries an amount for these (docs/features/external-send, Not in scope).
-                return .success(destination)
-            case .identityID, .paymentRequest:
+            case .platformAddress, .shieldedAddress, .identityID:
+                // Receive's payment request on Platform, Shielded or Identity: the address or the bare Identity ID,
+                // then `amount=` in DASH. A request URL is a Core payment request's, so none is kept.
+                return .success(Destination(type: destination.type, text: destination.text,
+                                            isScriptForm: destination.isScriptForm, amountDuffs: link.amount))
+            case .paymentRequest:
                 return .failure(.invalid)
             }
         }

@@ -126,6 +126,13 @@ enum SendOutcome {
         // Refusals of an asset lock's coin selection: nothing was built or broadcast.
         case .assetLockInsufficientFunds, .noSelectableInputs, .assetLockTooManyInputs:
             return .notSent(.failed)
+        // The only producer of this code is the FFI's `identity_manager_remove_identity`, which no send calls.
+        case .identityNotFound:
+            return .notSent(.identityNotFound)
+        // The Platform withdrawal's address network check runs before signing; the Platform-to-shielded capacity
+        // checks run during input selection and the input fetch, before the proof is built.
+        case .invalidNetwork, .shieldedInsufficientBalance:
+            return .notSent(.failed)
         default:
             return .inFlight
         }
@@ -151,6 +158,7 @@ enum NotSentReason {
     case rejected
     case earlierPaymentPending
     case signingKeyUnavailable
+    case identityNotFound
     case belowMinimum
     case expired
     case failed
@@ -161,6 +169,7 @@ enum NotSentReason {
         case .rejected: return "rejected"
         case .earlierPaymentPending: return "earlierPaymentPending"
         case .signingKeyUnavailable: return "signingKeyUnavailable"
+        case .identityNotFound: return "identityNotFound"
         case .belowMinimum: return "belowMinimum"
         case .expired: return "expired"
         case .failed: return "failed"
@@ -184,6 +193,10 @@ enum NotSentReason {
         case .signingKeyUnavailable:
             return NSLocalizedString(
                 "The signing key is unavailable. Your funds were not sent.",
+                comment: "External send")
+        case .identityNotFound:
+            return NSLocalizedString(
+                "This identity was not found in your wallet. Your funds were not sent.",
                 comment: "External send")
         case .belowMinimum:
             return NSLocalizedString(

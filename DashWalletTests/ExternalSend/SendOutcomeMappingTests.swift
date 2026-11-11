@@ -180,6 +180,30 @@ final class SendOutcomeMappingTests: XCTestCase {
         assertInFlight(PlatformWalletError.walletOperation(Self.rawSdkText))
     }
 
+    func testIdentityNotFoundIsNotSentIdentityNotFound() {
+        guard case .identityNotFound? = assertNotSent(PlatformWalletError.identityNotFound(Self.rawSdkText)) else {
+            return XCTFail("expected .identityNotFound")
+        }
+    }
+
+    func testOtherRefusalsProvenBeforeSubmissionAreNotSentFailed() {
+        guard case .failed? = assertNotSent(PlatformWalletError.invalidNetwork(Self.rawSdkText)) else {
+            return XCTFail("expected .failed for invalidNetwork")
+        }
+        guard case .failed? = assertNotSent(PlatformWalletError.shieldedInsufficientBalance(Self.rawSdkText)) else {
+            return XCTFail("expected .failed for shieldedInsufficientBalance")
+        }
+    }
+
+    func testRefusalsNotProvenBeforeSubmissionStayInFlight() {
+        assertInFlight(PlatformWalletError.invalidParameter(Self.rawSdkText))
+        assertInFlight(PlatformWalletError.invalidIdentifier(Self.rawSdkText))
+        assertInFlight(PlatformWalletError.identityBalanceUnavailable(Self.rawSdkText))
+        // The Rust `IdentityNotFound` reaches Swift as `.unknown` at the pin; on the Core -> Identity top-up it can
+        // follow the asset-lock broadcast.
+        assertInFlight(PlatformWalletError.unknown("Identity not found: \(Self.rawSdkText)"))
+    }
+
     // MARK: - ShieldedTransferCoordinator.CoordinatorError
 
     func testShieldedSweepWaitingIsNotSentEarlierPaymentPending() {
@@ -287,6 +311,7 @@ final class SendOutcomeMappingTests: XCTestCase {
             PlatformWalletError.signingKeyUnavailable(Self.rawSdkText),
             CoordinatorError.shieldedSweepWaiting(1000),
             PlatformWalletError.coreInsufficientFunds(Self.rawSdkText),
+            PlatformWalletError.identityNotFound(Self.rawSdkText),
         ]
         for error in errors {
             guard let reason = assertNotSent(error) else { continue }

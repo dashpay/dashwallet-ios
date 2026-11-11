@@ -253,9 +253,11 @@ final class SendAmountViewModel: ObservableObject {
     @Published private var estimateFailed = false
     /// The note that says why the source was changed, until the holder picks a source.
     @Published private(set) var sourceChangedNotice: String?
+    /// Continue's handler is still running (it authenticates and prepares the send).
+    @Published private var isContinuing = false
 
-    /// Called with what Continue hands on; only when `isContinueEnabled`.
-    var onContinue: ((SendAmountRequest) -> Void)?
+    /// Called with what Continue hands on; only when `isContinueEnabled`. Continue shows busy until it returns.
+    var onContinue: ((SendAmountRequest) async -> Void)?
 
     private let destination: Destination
     private let pinnedSource: SendSource?
@@ -269,6 +271,8 @@ final class SendAmountViewModel: ObservableObject {
     /// The source's balance in its own unit, for `AmountRules`.
     private var nativeBalance: UInt64?
     private var estimateGeneration = 0
+    /// The route `fee` was estimated for; nil while no estimate has succeeded.
+    private var feeRoute: SendRoute?
 
     init(destination: Destination, pinnedSource: SendSource?, recipient: IdentityRecipient? = nil,
          balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
@@ -320,11 +324,6 @@ final class SendAmountViewModel: ObservableObject {
     var sourceBalanceFiatText: String? { sourceBalanceDuffs.flatMap { converter.fiatText(forDuffs: $0) } }
     var fiatCurrencyCode: String { App.fiatCurrency }
 
-    /// The estimated network fee in DASH (an identity's credits converted); nil until estimated or when it failed.
-    var feeText: String? {
-        fee.map { (source == .identity ? AmountRules.dashValue(of: $0) : $0).formattedDashAmount }
-    }
-
     var isFiatAvailable: Bool { converter.fiat(forDuffs: 1) != nil }
 
     /// The amount in the other unit than the one typed: the local value of a DASH amount, or the DASH value of
@@ -358,33 +357,20 @@ final class SendAmountViewModel: ObservableObject {
     /// The To row's name for an Identity ID: "Your identity" or the username; nil falls back to the short ID.
     var recipientName: String? { recipient.flatMap(Self.recipientName(for:)) }
 
-    /// What the money does when it goes to an Identity ID (AC-12, AC-12b).
-    var recipientNotice: String? { recipient.map(Self.recipientNotice(for:)) }
-
-    /// The DashPay reserve in DASH, from the wallet's low-credit threshold.
-    private var reserveText: String {
-        AmountRules.dashValue(of: IdentityCreditBalance.lowBalance).formattedDashAmount
-    }
+    /// The top-up note when the money goes to the Current identity (AC-12b).
+    var recipientNotice: String? { recipient.flatMap(Self.recipientNotice(for:)) }
 
     private var identityMaxResult: AmountRules.MaxResult? {
         guard source == .identity, !isAmountLocked, let nativeBalance, let fee else { return nil }
         return AmountRules.identityMax(balanceCredits: nativeBalance, feeCredits: fee)
     }
 
-    /// Next to Max on the Identity source: what Max keeps, or why Max is off (AC-09).
+    /// Next to Max on the Identity source: why Max is off (AC-09).
     var reserveNote: String? {
-        switch identityMaxResult {
-        case .amount:
-            return String(format: NSLocalizedString(
-                "Max keeps %@ on your identity so contact requests and profile updates keep working.",
-                comment: "External send"), reserveText)
-        case .disabledReserveSpent:
-            return NSLocalizedString(
-                "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.",
-                comment: "External send")
-        case nil:
-            return nil
-        }
+        guard case .disabledReserveSpent = identityMaxResult else { return nil }
+        return NSLocalizedString(
+            "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.",
+            comment: "External send")
     }
 
     /// An Identity amount that can be sent but leaves less than the DashPay reserve (AC-09).
@@ -415,8 +401,8 @@ final class SendAmountViewModel: ObservableObject {
         return isAffordable && !confirmRefusedAmount ? .ready : .notEnough
     }
 
-    var isContinueEnabled: Bool { state == .ready }
-    var isContinueLoading: Bool { state == .estimating }
+    var isContinueEnabled: Bool { state == .ready && !isContinuing }
+    var isContinueLoading: Bool { state == .estimating || isContinuing }
     var isMaxEnabled: Bool {
         !isAmountLocked && state != .estimating && state != .feeFailed && identityMaxResult != .disabledReserveSpent
     }
@@ -462,7 +448,7 @@ final class SendAmountViewModel: ObservableObject {
         case .dash: amountDuffs = Self.duffs(of: value) ?? 0
         case .fiat: amountDuffs = value > 0 ? (converter.duffs(forFiat: value) ?? 0) : 0
         }
-        await runEstimate()
+        await runEstimate(reusingKnownFee: true)
     }
 
     /// The keypad's next text. A longer text that needs more decimals than the unit has is refused; a shorter
@@ -506,14 +492,24 @@ final class SendAmountViewModel: ObservableObject {
         await runEstimate()
     }
 
+    /// Confirm could not read the binding fee or the balance: Send shows that the fee could not be calculated, and
+    /// Try again estimates anew.
+    func confirmReportedFeeFailure() {
+        fee = nil
+        feeRoute = nil
+        estimateFailed = true
+    }
+
     func retryFee() async {
         await runEstimate()
     }
 
-    func proceed() {
+    func proceed() async {
         guard isContinueEnabled, let route else { return }
-        onContinue?(SendAmountRequest(route: route, destination: destination, amount: amountDuffs, isMax: isMax,
-                                      sweepCredits: isMax ? maxSweepCredits : nil))
+        isContinuing = true
+        defer { isContinuing = false }
+        await onContinue?(SendAmountRequest(route: route, destination: destination, amount: amountDuffs, isMax: isMax,
+                                            sweepCredits: isMax ? maxSweepCredits : nil))
     }
 
     #if DEBUG
@@ -577,19 +573,10 @@ final class SendAmountViewModel: ObservableObject {
             ? NSLocalizedString("Your identity", comment: "External send") : recipient.username
     }
 
-    /// What the money does when it goes to an Identity ID (AC-12, AC-12b).
-    static func recipientNotice(for recipient: IdentityRecipient) -> String {
-        if recipient.isOwnCurrentIdentity {
-            return NSLocalizedString("This tops up your own Identity credits.", comment: "External send")
-        }
-        guard let username = recipient.username else {
-            return NSLocalizedString(
-                "The money goes to the recipient identity's balance, not their Dash wallet balance.",
-                comment: "External send")
-        }
-        return String(format: NSLocalizedString(
-            "The money goes to %@'s identity balance, not their Dash wallet balance.", comment: "External send"),
-            username)
+    /// The top-up note when the money goes to the Current identity (AC-12b); nil for someone else's identity.
+    static func recipientNotice(for recipient: IdentityRecipient) -> String? {
+        guard recipient.isOwnCurrentIdentity else { return nil }
+        return NSLocalizedString("This tops up your own Identity credits.", comment: "External send")
     }
 
     nonisolated static func title(of source: SendSource) -> String {
@@ -693,13 +680,21 @@ final class SendAmountViewModel: ObservableObject {
 
     /// Estimates the fee for the route and amount and asks whether the route's funding step can pay the amount; an
     /// unknown answer fails like the fee, with Try again. An answer that a later estimate has overtaken is dropped.
-    private func runEstimate() async {
+    /// With `reusingKnownFee`, a route whose fee ignores the amount keeps the fee it already has, without Continue
+    /// turning into progress; a failed or running estimate is never reused.
+    private func runEstimate(reusingKnownFee: Bool = false) async {
         guard let route else { return }
         estimateGeneration += 1
         let generation = estimateGeneration
-        isEstimating = true
         let amount = amountDuffs
-        let result = await feeEstimator.estimate(route: route, amount: amount)
+        let result: SendFeeEstimate
+        if reusingKnownFee, route.hasAmountIndependentFee, feeRoute == route, let fee, !estimateFailed,
+           !isEstimating {
+            result = .fee(fee)
+        } else {
+            isEstimating = true
+            result = await feeEstimator.estimate(route: route, amount: amount)
+        }
         let fundable = await maxPlanner.canFund(route: route, amount: amount)
         guard generation == estimateGeneration else { return }
         isEstimating = false
@@ -707,9 +702,11 @@ final class SendAmountViewModel: ObservableObject {
         switch result {
         case .fee(let value, _) where fundable != .unknown:
             fee = value
+            feeRoute = route
             estimateFailed = false
         case .fee, .unavailable:
             fee = nil
+            feeRoute = nil
             estimateFailed = true
         }
     }

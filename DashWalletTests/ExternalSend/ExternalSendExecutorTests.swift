@@ -1349,6 +1349,16 @@ final class ExternalSendExecutorTests: XCTestCase {
         }
     }
 
+    /// The top-up from Platform addresses refuses an identity the wallet does not manage before it builds the
+    /// transition, so nothing moved: Send failed with the reason, never the "Send in progress" Toast.
+    func testPlatformToIdentityRefusedWithIdentityNotFoundIsNotSent() async throws {
+        identityTopUp.result = .failed(PlatformWalletError.identityNotFound("raw"), handedOver: false)
+        let executor = makeExecutor()
+        let outcome = await executor.send(try await prepare(executor, .platformToIdentity))
+        XCTAssertTrue(isNotSent(outcome, "identityNotFound"), "\(outcome)")
+        XCTAssertTrue(logged.last.map { isNotSent($0, "identityNotFound") } ?? false)
+    }
+
     func testPlatformToIdentityFailureAfterTheMoneyWasHandedOverIsInFlightEvenForAPreBroadcastError() async throws {
         identityTopUp.result = .failed(CoordinatorError.noWallet, handedOver: true)
         let executor = makeExecutor()

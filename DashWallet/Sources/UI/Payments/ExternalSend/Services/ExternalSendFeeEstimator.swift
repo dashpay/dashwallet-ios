@@ -37,6 +37,21 @@ protocol SendFeeEstimating {
     func estimate(route: SendRoute, amount: UInt64) async -> SendFeeEstimate
 }
 
+extension SendRoute {
+    /// The routes whose `ExternalSendFeeEstimator` fee ignores the amount: the Platform withdrawal preflight and the
+    /// fixed Platform transfer, top-up and Identity fees. Core, Shielded and the asset-lock routes are left out.
+    var hasAmountIndependentFee: Bool {
+        switch self {
+        case .platformToCore, .platformToPlatform, .platformToIdentity, .identityToCore, .identityToPlatform,
+             .identityToIdentity:
+            return true
+        case .coreToCore, .coreToShielded, .coreToPlatform, .coreToIdentity, .shieldedToCore, .shieldedToShielded,
+             .shieldedToPlatform, .shieldedToIdentity, .platformToShielded:
+            return false
+        }
+    }
+}
+
 /// The SDK and wallet edge of the estimate. Every method throws when it cannot answer.
 protocol SendFeeSourcing: Sendable {
     func coreSendFeeDuffs(amountDuffs: UInt64) async throws -> UInt64

@@ -40,6 +40,7 @@ enum UnavailableReason: Equatable, Hashable {
     case coreToOtherIdentity
     case coreToScriptFormPlatformAddress
     case platformToScriptFormPlatformAddress
+    case platformToOtherIdentity
     case identityToOwnIdentity
     case notSupportedYet
     case paymentRequestCoreOnly
@@ -52,6 +53,8 @@ enum UnavailableReason: Equatable, Hashable {
             return NSLocalizedString("Core can't pay this kind of Platform address", comment: "External send")
         case .platformToScriptFormPlatformAddress:
             return NSLocalizedString("Platform can't pay this kind of Platform address", comment: "External send")
+        case .platformToOtherIdentity:
+            return NSLocalizedString("Platform can't pay someone else's identity yet", comment: "External send")
         case .identityToOwnIdentity:
             return NSLocalizedString("Identity can't top up itself", comment: "External send")
         case .notSupportedYet:
@@ -88,6 +91,10 @@ enum SendPairPolicy {
             // The Platform transfer takes only P2PKH outputs; the unshield and the identity transfer take P2SH too.
             if destination.type == .platformAddress && destination.isScriptForm {
                 return .unavailable(.platformToScriptFormPlatformAddress)
+            }
+            // The SDK's top-up from Platform addresses refuses an identity the wallet does not manage.
+            if destination.type == .identityID && !isOwnIdentity(destination, facts) {
+                return .unavailable(.platformToOtherIdentity)
             }
             return .route(platformRoute(destination.type))
         case .identity: return decideFromIdentity(destination, facts)
@@ -157,9 +164,9 @@ enum SendPairPolicy {
         let toCore = destination.type == .coreAddress
         let isCoreDrain = source == .core && destination.type == .shieldedAddress && isMax
         var list: [ConfirmWarning] = []
-        if toCore && source != .core { list.append(.withdrawalDelay) }
+        if toCore && source == .shielded { list.append(.shieldedNotInstant) }
         if source == .shielded && destination.type != .shieldedAddress { list.append(.shieldedMadePublic) }
-        if toCore && (source == .shielded || source == .platform) { list.append(.processingTime) }
+        if toCore && source == .platform { list.append(.processingTime) }
         if toCore && source == .platform && isMax { list.append(.fullPlatformWithdrawal) }
         if isCoreDrain { list.append(.emptyingCoreBalance) }
         if !(toCore && source != .core) && !isCoreDrain { list.append(.wrongAddressReminder) }

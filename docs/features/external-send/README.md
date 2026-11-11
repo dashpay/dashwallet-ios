@@ -79,8 +79,9 @@ destination type into one flow.
   checked says so (not "not found") and offers a retry.
 - **AC-14** A balance row's Send pins that source; a pinned source that cannot pay is replaced and
   Send says so.
-- **AC-15** A scan detects every destination type; a dash: link fills the address and amount, and
-  a payment request's amount cannot be changed.
+- **AC-15** A scan detects every destination type; a dash: link with a Core, Platform or Shielded
+  address or an Identity ID fills that destination and its amount, scanned, pasted or opened from
+  another app alike, and a payment request's amount cannot be changed.
 - **AC-16** From Shielded, Platform or Identity to Core, Confirm says it is a withdrawal that
   arrives after a delay.
 - **AC-17** From Shielded to anything but Shielded, Confirm warns that the amount and destination
@@ -118,7 +119,6 @@ Code comments name the screens by these ids.
 
 - The send-to-username flow beyond its menu row.
 - Advanced Mode gating: iOS shows every source the holder has.
-- An amount inside Platform or Shielded payment links: no agreed link format carries one.
 
 ## Test coverage
 

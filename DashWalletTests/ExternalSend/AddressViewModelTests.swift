@@ -424,4 +424,62 @@ final class AddressViewModelTests: XCTestCase {
         _ = await vm.handleScanned(identityID())
         XCTAssertEqual(vm.state, .checkFailed)
     }
+
+    // MARK: - Identity links (dashpay/dashwallet-ios#1383)
+
+    func testAnIdentityLinkTypedInTheFieldIsCheckedAndKeepsItsAmount() async {
+        let id = identityID()
+        let recipient = IdentityRecipient(id: id, username: "alice", isOwnCurrentIdentity: false)
+        lookup.results = [.found(recipient)]
+        let vm = makeVM()
+        vm.setText("dash:\(id)?amount=0.1")
+        await vm.continueTapped()
+        XCTAssertEqual(lookup.lookedUp.map(\.id), [id])
+        XCTAssertEqual(handed.first?.0.type, .identityID)
+        XCTAssertEqual(handed.first?.0.amountDuffs, 10_000_000)
+        XCTAssertEqual(handed.first?.1, recipient)
+    }
+
+    func testAClipboardIdentityLinkIsCheckedBeforeItIsHandedOnAndKeepsItsAmount() async {
+        let id = identityID()
+        let recipient = IdentityRecipient(id: id, username: "alice", isOwnCurrentIdentity: false)
+        lookup.results = [.found(recipient)]
+        pasteboard.content = "dash:\(id)?amount=0.1"
+        let vm = makeVM()
+        vm.showClipboard()
+        vm.fillFromClipboard()
+        XCTAssertTrue(handed.isEmpty, "an Identity is never handed on before it is checked")
+        XCTAssertEqual(vm.text, id)
+        await vm.continueTapped()
+        XCTAssertEqual(lookup.lookedUp.map(\.id), [id])
+        XCTAssertEqual(handed.first?.0.amountDuffs, 10_000_000)
+        XCTAssertEqual(handed.first?.1, recipient)
+    }
+
+    func testAScannedIdentityLinkKeepsItsAmountThroughARetry() async {
+        let id = identityID()
+        let recipient = IdentityRecipient(id: id, username: "alice", isOwnCurrentIdentity: false)
+        lookup.results = [.couldNotCheck, .found(recipient)]
+        let vm = makeVM()
+        let accepted = await vm.handleScanned("dash:\(id)?amount=0.1")
+        XCTAssertTrue(accepted)
+        XCTAssertEqual(vm.text, id)
+        XCTAssertEqual(vm.state, .checkFailed)
+        await vm.retry()
+        XCTAssertEqual(handed.first?.0.amountDuffs, 10_000_000)
+        XCTAssertEqual(handed.first?.1, recipient)
+    }
+
+    func testEditingTheFieldAfterAnIdentityLinkDropsTheLinksAmount() async {
+        let id = identityID()
+        let recipient = IdentityRecipient(id: id, username: "alice", isOwnCurrentIdentity: false)
+        lookup.results = [.found(recipient)]
+        pasteboard.content = "dash:\(id)?amount=0.1"
+        let vm = makeVM()
+        vm.showClipboard()
+        vm.fillFromClipboard()
+        vm.setText(id)
+        await vm.continueTapped()
+        XCTAssertNil(handed.first?.0.amountDuffs, "the field is what the user typed now")
+    }
 }

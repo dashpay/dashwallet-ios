@@ -42,22 +42,18 @@ struct WalletCurrentIdentityReader: CurrentIdentityReading {
     }
 }
 
-/// SCR-05 Select source: every source with its balance, the ones that cannot pay this destination shown with
-/// the pair policy's reason and not pickable. Identity is offered only with a Current identity that has a username.
+/// SCR-05 Select source: every source by icon and name, no balances. A source that cannot pay this destination
+/// stays listed but cannot be picked; a tap on it raises the pair policy's reason as a Toast. Identity is offered
+/// only with a Current identity that has a username.
 @MainActor
 final class SelectSourceViewModel: ObservableObject {
     struct Row: Equatable, Identifiable {
         let source: SendSource
         let title: String
-        /// Duffs; the Identity row's credits are already converted. Nil when the balance could not be read.
-        let balanceDuffs: UInt64?
-        /// The balance in local currency; nil without an exchange rate or a readable balance.
-        let balanceFiatText: String?
         let unavailableReason: UnavailableReason?
         let isSelected: Bool
 
         var id: SendSource { source }
-        var balanceText: String? { balanceDuffs?.formattedDashAmount }
         var reasonText: String? { unavailableReason?.localizedMessage }
         var isSelectable: Bool { unavailableReason == nil }
     }
@@ -66,23 +62,20 @@ final class SelectSourceViewModel: ObservableObject {
     /// The rows are being read; the sheet shows its loading state.
     @Published private(set) var isLoading = false
     @Published private(set) var selected: SendSource
+    /// The reason of the unavailable row tapped last, shown as a Toast; nil when no Toast is up.
+    @Published private(set) var toastMessage: String?
 
     /// Called with the source the holder picked; only available rows report.
     var onPick: ((SendSource) -> Void)?
 
     private let destination: Destination
-    private let balances: ExternalSendBalanceReading
     private let currentIdentity: CurrentIdentityReading
-    private let converter: SendAmountConverting
 
-    init(destination: Destination, selected: SendSource, balances: ExternalSendBalanceReading,
-         currentIdentity: CurrentIdentityReading = WalletCurrentIdentityReader(),
-         converter: SendAmountConverting = LiveSendAmountConverter()) {
+    init(destination: Destination, selected: SendSource,
+         currentIdentity: CurrentIdentityReading = WalletCurrentIdentityReader()) {
         self.destination = destination
         self.selected = selected
-        self.balances = balances
         self.currentIdentity = currentIdentity
-        self.converter = converter
     }
 
     func load() async {
@@ -93,41 +86,48 @@ final class SelectSourceViewModel: ObservableObject {
         let facts = SendPairFacts(ownIdentityID: identity?.id)
         var built: [Row] = []
         for source in SendSource.allCases where source != .identity || offersIdentity {
-            let raw = await balances.spendableBalance(of: source)
-            let duffs = source == .identity ? raw.map(AmountRules.dashValue(of:)) : raw
             var reason: UnavailableReason?
             if case .unavailable(let found) = SendPairPolicy.decide(source: source, destination: destination,
                                                                     facts: facts) {
                 reason = found
             }
-            built.append(Row(source: source, title: SendAmountViewModel.title(of: source), balanceDuffs: duffs,
-                             balanceFiatText: duffs.flatMap { converter.fiatText(forDuffs: $0) },
-                             unavailableReason: reason, isSelected: false))
+            built.append(Row(source: source, title: SendAmountViewModel.title(of: source), unavailableReason: reason,
+                             isSelected: false))
         }
         rows = built
         markSelection()
     }
 
-    func select(_ source: SendSource) {
-        guard rows.contains(where: { $0.source == source && $0.isSelectable }) else { return }
+    /// A tap anywhere on a row: an available row is picked; an unavailable one raises its reason and stays unpicked.
+    func tap(_ source: SendSource) {
+        guard let row = rows.first(where: { $0.source == source }) else { return }
+        guard row.isSelectable else {
+            toastMessage = row.reasonText
+            return
+        }
+        toastMessage = nil
         selected = source
         markSelection()
         onPick?(source)
     }
 
+    func dismissToast() {
+        toastMessage = nil
+    }
+
     #if DEBUG
-    /// Lets a SwiftUI preview show rows without driving the balance and identity readers.
-    func setPreviewRows(_ newRows: [Row], loading: Bool = false) {
+    /// Lets a SwiftUI preview show rows and a Toast without driving the identity reader.
+    func setPreviewRows(_ newRows: [Row], loading: Bool = false, toastMessage: String? = nil) {
         rows = newRows
         isLoading = loading
+        self.toastMessage = toastMessage
         markSelection()
     }
     #endif
 
     private func markSelection() {
         rows = rows.map {
-            Row(source: $0.source, title: $0.title, balanceDuffs: $0.balanceDuffs,
-                balanceFiatText: $0.balanceFiatText, unavailableReason: $0.unavailableReason,
+            Row(source: $0.source, title: $0.title, unavailableReason: $0.unavailableReason,
                 isSelected: $0.isSelectable && $0.source == selected)
         }
     }

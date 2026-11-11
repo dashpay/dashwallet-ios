@@ -41,17 +41,7 @@ struct AddressScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    DashUIKit.AddressFieldView(
-                        text: Binding(get: { viewModel.text }, set: { viewModel.setText($0) }),
-                        label: NSLocalizedString("DASH address", comment: "External send"),
-                        placeholder: NSLocalizedString("Enter address", comment: "External send"),
-                        hasError: fieldError != nil,
-                        errorText: fieldError,
-                        isDisabled: viewModel.isFieldReadOnly,
-                        onScanQR: onScan)
-                        .accessibilityIdentifier("send_address_field")
-
-                    clipboardArea
+                    addressCard
 
                     if viewModel.state == .checkFailed {
                         DashUIKit.SystemMessageView(
@@ -84,6 +74,30 @@ struct AddressScreen: View {
         .background(Color.dash.primaryBackground)
     }
 
+    /// The field and the clipboard area in one white card (Figma `7057:48069`).
+    private var addressCard: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            DashUIKit.AddressFieldView(
+                text: Binding(get: { viewModel.text }, set: { viewModel.setText($0) }),
+                label: NSLocalizedString("DASH address", comment: "External send"),
+                placeholder: NSLocalizedString("Enter address", comment: "External send"),
+                hasError: fieldError != nil,
+                errorText: fieldError,
+                isDisabled: viewModel.isFieldReadOnly,
+                onScanQR: onScan)
+                .accessibilityIdentifier("send_address_field")
+
+            clipboardArea
+        }
+        .padding(20) // 6 outer + 14 inner, as in the frame
+        // `MenuViewModifier`'s tokens, but with the shadow on the card's shape only: on the whole
+        // view it is cast by the label, field and button too and draws halos inside the card.
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.dash.secondaryBackground)
+                .shadow(color: Color.dash.shadow, radius: 10, x: 0, y: 5))
+    }
+
     private var fieldError: String? {
         switch viewModel.state {
         case .invalid:
@@ -99,16 +113,22 @@ struct AddressScreen: View {
     @ViewBuilder private var clipboardArea: some View {
         switch viewModel.state {
         case .clipboard(let found):
-            VStack(alignment: .leading, spacing: 6) {
+            // Figma `7062:48931`: caption-1 caption, then the whole destination highlighted line by line.
+            VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("Tap the address from the clipboard to paste it", comment: "External send"))
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.secondaryText)
+                    .dashFont(.caption1)
+                    .foregroundStyle(Color.dash.primaryText)
                 Button(action: viewModel.fillFromClipboard) {
-                    Text(clipboardText(found))
+                    Text(highlighted(clipboardText(found)))
                         .dashFont(.subhead)
                         .foregroundStyle(Color.dash.blueText)
                         .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(format: NSLocalizedString("Paste %@", comment: "External send"),
+                                           clipboardText(found)))
                 .accessibilityIdentifier("send_address_clipboard_value")
             }
         case .clipboardNone:
@@ -123,6 +143,7 @@ struct AddressScreen: View {
                 style: .tintedBlue,
                 action: viewModel.showClipboard)
                 .accessibilityIdentifier("send_address_show_clipboard")
+                .frame(maxWidth: .infinity)
         }
     }
 
@@ -130,12 +151,20 @@ struct AddressScreen: View {
     private func clipboardText(_ found: Destination) -> String {
         found.type == .paymentRequest ? (found.paymentRequestURL?.absoluteString ?? "") : found.text
     }
+
+    /// The `blue alpha-5` highlight sits behind each wrapped line, as in the frame, not behind one box.
+    private func highlighted(_ text: String) -> AttributedString {
+        var string = AttributedString(text)
+        string.backgroundColor = Color.dash.blueAlpha5
+        return string
+    }
 }
 
 #if DEBUG
 
 private let previewAddress = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN"
 private let previewIdentityID = "4EfA9Jrvv7vTuTWfQsoCgQ9nQJi1JkZDzrmAu5AY4DpZ"
+private let previewLongAddress = "dash1kxqyzzjn8cl0sgr5vmw4pe3tq7h2fuaxd9yc6gs0lnrzv5w8j4ek3m2pt7qhxy9"
 
 private struct PreviewClipboard: ClipboardReading {
     var content: String?
@@ -168,7 +197,7 @@ private extension AddressViewModel {
 #Preview("Default") { previewScreen() }
 
 #Preview("Clipboard") {
-    previewScreen(.clipboard(Destination(type: .coreAddress, text: previewAddress)))
+    previewScreen(.clipboard(Destination(type: .platformAddress, text: previewLongAddress)))
 }
 
 #Preview("Clipboard none") { previewScreen(.clipboardNone) }
@@ -186,8 +215,7 @@ private extension AddressViewModel {
 #Preview("Could not check") { previewScreen(.checkFailed, text: previewIdentityID) }
 
 #Preview("Long text, large Dynamic Type") {
-    previewScreen(.clipboard(Destination(type: .platformAddress,
-                                         text: "dash1kxqyzzjn8cl0sgr5vmw4pe3tq7h2fuaxd9yc6gs0lnrzv5w8j4ek3m2pt7qhxy9")))
+    previewScreen(.clipboard(Destination(type: .platformAddress, text: previewLongAddress)))
         .dynamicTypeSize(.accessibility3)
 }
 

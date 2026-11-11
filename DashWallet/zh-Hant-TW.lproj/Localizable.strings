@@ -1518,9 +1518,6 @@
 /* No comment provided by engineer. */
 "Couldn't reach the evonode." = "無法連線該 evonode。";
 
-/* External send */
-"Couldn't read your balance. Check your connection and try again." = "Couldn't read your balance. Check your connection and try again.";
-
 /* Wallet preparation failure */
 "Couldn't read your wallet keys" = "Couldn't read your wallet keys";
 
@@ -2051,9 +2048,6 @@
 
 /* DashPay: fee line of the Enable DashPay confirmation */
 "Estimated network fee" = "預估網絡費用";
-
-/* External send */
-"Estimated. The network sets the final fee." = "Estimated. The network sets the final fee.";
 
 /* External send */
 "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." = "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.";
@@ -3100,9 +3094,6 @@
 /* Dash DEX / maya_max_amount_error */
 "Max %@" = "Max %@";
 
-/* External send */
-"Max keeps %@ on your identity so contact requests and profile updates keep working." = "Max keeps %@ on your identity so contact requests and profile updates keep working.";
-
 /* Core drain estimate */
 "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
 
@@ -3769,6 +3760,9 @@
 /* DashSpend */
 "Password" = "Password";
 
+/* External send */
+"Paste %@" = "Paste %@";
+
 /* Maya */
 "Paste address from" = "Paste address from";
 
@@ -3939,6 +3933,9 @@
 
 /* Sync diagnostics */
 "Platform Balance" = "Platform Balance";
+
+/* External send */
+"Platform can't pay someone else's identity yet" = "Platform can't pay someone else's identity yet";
 
 /* External send */
 "Platform can't pay this kind of Platform address" = "Platform can't pay this kind of Platform address";
@@ -5538,12 +5535,6 @@
 /* No comment provided by engineer. */
 "The minimum withdrawal is %@ DASH." = "最低提款金額為 %@ DASH。";
 
-/* External send */
-"The money goes to %@'s identity balance, not their Dash wallet balance." = "The money goes to %@'s identity balance, not their Dash wallet balance.";
-
-/* External send */
-"The money goes to the recipient identity's balance, not their Dash wallet balance." = "The money goes to the recipient identity's balance, not their Dash wallet balance.";
-
 /* Balance info sheet */
 "The most private place to hold your Dash" = "存放您的 Dash 最私密的地方";
 
@@ -5838,14 +5829,14 @@
 /* Identities */
 "This identity is being used for your pending username request." = "This identity is being used for your pending username request.";
 
+/* External send */
+"This identity was not found in your wallet. Your funds were not sent." = "This identity was not found in your wallet. Your funds were not sent.";
+
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
 
 /* DashPay Invitations */
 "This invitation link is not valid." = "此邀請連結無效。";
-
-/* External send */
-"This is a withdrawal. It arrives on Core after a delay." = "This is a withdrawal. It arrives on Core after a delay.";
 
 /* Send screen */
 "This is not a valid Dash address for this network" = "這不是此網絡的有效 Dash 位址";
@@ -6837,6 +6828,12 @@
 
 /* DashPay FAQ */
 "What's coming next?" = "接下來會有什麼？";
+
+/* External send */
+"When sending from Shielded balance to Core the amount and destination becomes public" = "When sending from Shielded balance to Core the amount and destination becomes public";
+
+/* External send */
+"When sending from Shielded balance, the transaction is not instant and takes some time" = "When sending from Shielded balance, the transaction is not instant and takes some time";
 
 /* DashPay FAQ */
 "When will contact requests become private?" = "聯繫請求何時會變為私密？";

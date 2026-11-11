@@ -168,14 +168,12 @@ final class ConfirmViewModelTests: XCTestCase {
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
         .identityToCore, .identityToPlatform, .identityToIdentity
     ]
-    private let estimateNote = "Estimated. The network sets the final fee."
 
     func testCoreToCoreFeeIsExactWithoutTildeOrNote() async {
         let vm = await readyVM(route: .coreToCore, amount: 2 * oneDash)
         XCTAssertTrue(vm.isFeeExact)
         XCTAssertEqual(vm.feeText, fee.formattedDashAmount)
         XCTAssertEqual(vm.totalText, (2 * oneDash + fee).formattedDashAmount)
-        XCTAssertNil(vm.feeEstimateNote)
         XCTAssertEqual(vm.feeAccessibilityValue, fee.formattedDashAmount)
     }
 
@@ -186,7 +184,6 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertTrue(vm.isFeeExact)
         XCTAssertFalse(vm.feeText?.hasPrefix("~") ?? true, vm.feeText ?? "nil")
         XCTAssertFalse(vm.totalText?.hasPrefix("~") ?? true, vm.totalText ?? "nil")
-        XCTAssertNil(vm.feeEstimateNote)
     }
 
     func testEveryOtherRouteShowsTheFeeAndTotalAsAnEstimate() async {
@@ -196,22 +193,15 @@ final class ConfirmViewModelTests: XCTestCase {
             XCTAssertFalse(vm.isFeeExact, "\(route)")
             XCTAssertEqual(vm.feeText, "~ " + feeDuffs.formattedDashAmount, "\(route)")
             XCTAssertEqual(vm.totalText, "~ " + (oneDash + feeDuffs).formattedDashAmount, "\(route)")
-            XCTAssertEqual(vm.feeEstimateNote, estimateNote, "\(route)")
             XCTAssertEqual(vm.feeAccessibilityValue, "about " + feeDuffs.formattedDashAmount, "\(route)")
             XCTAssertEqual(vm.totalAccessibilityValue, "about " + (oneDash + feeDuffs).formattedDashAmount,
                            "\(route)")
         }
     }
 
-    func testAnEstimateRouteShowsNoTildeOrNoteWhilePreparingOrWhenTheFeeFailed() async {
-        executor.prepareResults = [.failure(.feeUnavailable)]
+    func testAnEstimateRouteShowsNoTildeOrNoteWhilePreparing() {
         let vm = makeVM(route: .platformToCore)
         XCTAssertNil(vm.feeText)
-        XCTAssertNil(vm.feeEstimateNote, "nothing to qualify while preparing")
-        await vm.start()
-        XCTAssertEqual(vm.feeText, "—")
-        XCTAssertEqual(vm.totalText, "—")
-        XCTAssertNil(vm.feeEstimateNote)
     }
 
     // MARK: - Auth cancelled / failed, balance not enough
@@ -246,90 +236,73 @@ final class ConfirmViewModelTests: XCTestCase {
 
     // MARK: - Fee failed (AC-01b)
 
-    func testFeeUnavailableBlocksConfirmWithDashesAndTheMessage() async {
-        executor.prepareResults = [.failure(.feeUnavailable)]
-        let vm = makeVM(route: .coreToCore)
-        await vm.start()
-        XCTAssertEqual(vm.state, .feeFailed)
-        XCTAssertEqual(vm.feeText, "—")
-        XCTAssertEqual(vm.totalText, "—")
-        XCTAssertFalse(vm.isConfirmEnabled)
-        XCTAssertEqual(vm.blockedMessage,
-                       "Couldn't calculate the network fee. Check your connection and try again.")
-        XCTAssertTrue(backToSend.isEmpty, "Cancel, not the failure, returns to Send")
-        await vm.confirm()
-        XCTAssertEqual(executor.sentCalls, 0, "Confirm is blocked")
-    }
-
-    func testBalanceUnavailableBlocksConfirmWithItsOwnMessageAndTryAgainReprepares() async {
-        executor.prepareResults = [.failure(.balanceUnavailable), .success(fee)]
-        let vm = makeVM(route: .coreToCore)
-        await vm.start()
-        XCTAssertEqual(vm.state, .feeFailed)
-        XCTAssertFalse(vm.isConfirmEnabled)
-        XCTAssertEqual(vm.blockedMessage, "Couldn't read your balance. Check your connection and try again.")
-        XCTAssertTrue(backToSend.isEmpty)
-        await vm.tryAgain()
-        XCTAssertEqual(executor.prepareCalls.count, 2, "a new prepare is a new authentication")
-        XCTAssertEqual(vm.state, .ready)
-        XCTAssertNil(vm.blockedMessage)
-    }
-
-    func testFeeFailureBlocksConfirmForEverySource() async {
+    func testAFeeOrBalanceFailureGoesBackToSendForEverySourceWithNothingPrepared() async {
         for route in [SendRoute.coreToCore, .shieldedToCore, .platformToCore, .identityToCore] {
-            executor.prepareResults = [.failure(.feeUnavailable)]
-            let vm = makeVM(route: route)
-            await vm.start()
-            XCTAssertEqual(vm.state, .feeFailed, "\(route)")
-            XCTAssertFalse(vm.isConfirmEnabled, "\(route)")
+            for failure in [ExternalSendError.feeUnavailable, .balanceUnavailable] {
+                backToSend = []
+                executor.prepareResults = [.failure(failure)]
+                let vm = makeVM(route: route)
+                await vm.start()
+                XCTAssertEqual(backToSend, [.feeFailed], "\(route) \(failure)")
+                XCTAssertNil(vm.feeText, "\(route) \(failure)")
+                XCTAssertFalse(vm.isConfirmEnabled, "\(route) \(failure)")
+                await vm.confirm()
+            }
         }
-    }
-
-    func testTryAgainPreparesAgainWhichAuthenticatesAgain() async {
-        executor.prepareResults = [.failure(.feeUnavailable), .success(fee)]
-        let vm = makeVM(route: .coreToCore)
-        await vm.start()
-        XCTAssertEqual(executor.prepareCalls.count, 1)
-        await vm.tryAgain()
-        XCTAssertEqual(executor.prepareCalls.count, 2, "a new prepare is a new authentication")
-        XCTAssertEqual(vm.state, .ready)
-        XCTAssertEqual(vm.feeText, fee.formattedDashAmount)
-        XCTAssertTrue(vm.isConfirmEnabled)
-    }
-
-    func testTryAgainWithAuthenticationCancelledGoesBackToSend() async {
-        executor.prepareResults = [.failure(.feeUnavailable), .failure(.authenticationCancelled)]
-        let vm = makeVM(route: .coreToCore)
-        await vm.start()
-        await vm.tryAgain()
-        XCTAssertEqual(backToSend, [.authenticationNotCompleted])
-    }
-
-    func testCancelAfterFeeFailureReturnsToSendWithNothingToDiscard() async {
-        executor.prepareResults = [.failure(.feeUnavailable)]
-        let vm = makeVM(route: .coreToCore)
-        await vm.start()
-        vm.cancel()
-        XCTAssertEqual(backToSend, [.cancelled])
-        XCTAssertEqual(executor.discarded, 0)
+        XCTAssertEqual(executor.sentCalls, 0, "nothing is sent")
+        XCTAssertEqual(executor.discarded, 0, "nothing was prepared")
     }
 
     // MARK: - Warnings (AC-16, AC-17, AC-18, AC-09, AC-12, AC-12b)
 
-    func testWithdrawalToCoreWarnsOfTheDelay() async {
-        for route in [SendRoute.shieldedToCore, .platformToCore, .identityToCore] {
+    func testNoRouteToCoreShowsTheWithdrawalDelaySentence() async {
+        for route in [SendRoute.shieldedToCore, .platformToCore, .identityToCore, .coreToCore] {
             let vm = await readyVM(route: route)
-            XCTAssertTrue(vm.warnings.contains("This is a withdrawal. It arrives on Core after a delay."),
-                          "\(route): \(vm.warnings)")
+            XCTAssertFalse(vm.warnings.contains { $0.contains("This is a withdrawal") }, "\(route): \(vm.warnings)")
         }
-        let core = await readyVM(route: .coreToCore)
-        XCTAssertFalse(core.warnings.contains("This is a withdrawal. It arrives on Core after a delay."))
+        let shielded = await readyVM(route: .shieldedToCore)
+        XCTAssertFalse(shielded.warnings.contains { $0.contains("Processing time") }, "\(shielded.warnings)")
+    }
+
+    /// Owner review O7: From "Shielded balance"; exactly the "not instant" info notice, then the public notice in
+    /// its Core wording, no Processing time.
+    func testShieldedToCoreShowsFromShieldedBalanceAndExactlyTheTwoNotices() async {
+        let vm = await readyVM(route: .shieldedToCore)
+        XCTAssertEqual(vm.fromText, "Shielded balance")
+        XCTAssertEqual(vm.warningItems.map(\.style), [.info, .publicExposure])
+        XCTAssertEqual(vm.warnings, [
+            "When sending from Shielded balance, the transaction is not instant and takes some time",
+            "When sending from Shielded balance to Core the amount and destination becomes public"
+        ])
+        XCTAssertEqual(vm.warningItems.map(\.subtitle), [nil, nil])
+    }
+
+    func testEveryShieldedRouteShowsFromShieldedBalance() async {
+        for route in [SendRoute.shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity] {
+            let vm = await readyVM(route: route)
+            XCTAssertEqual(vm.fromText, "Shielded balance", "\(route)")
+        }
+    }
+
+    func testOnlyShieldedToANonShieldedDestinationPutsTheNoticesInTheCard() {
+        let inCard: [SendRoute] = [.shieldedToCore, .shieldedToPlatform, .shieldedToIdentity]
+        let belowCard: [SendRoute] = [
+            .shieldedToShielded, .coreToCore, .coreToShielded, .coreToPlatform, .coreToIdentity, .platformToCore,
+            .platformToShielded, .platformToPlatform, .platformToIdentity, .identityToCore, .identityToPlatform,
+            .identityToIdentity
+        ]
+        for route in inCard {
+            XCTAssertTrue(makeVM(route: route).showsWarningsInCard, "\(route)")
+        }
+        for route in belowCard {
+            XCTAssertFalse(makeVM(route: route).showsWarningsInCard, "\(route)")
+        }
     }
 
     func testShieldedToNonShieldedWarnsThatAmountAndDestinationBecomePublic() async {
         let text = "Sending from Shielded to an address that is not Shielded makes the amount and the "
             + "destination public."
-        for route in [SendRoute.shieldedToCore, .shieldedToPlatform] {
+        for route in [SendRoute.shieldedToPlatform, .shieldedToIdentity] {
             let vm = await readyVM(route: route)
             XCTAssertTrue(vm.warnings.contains(text), "\(route): \(vm.warnings)")
         }
@@ -357,7 +330,7 @@ final class ConfirmViewModelTests: XCTestCase {
         let amount = platformBalance - fee
         let expected = SendPairPolicy.warnings(source: .platform, destination: coreDestination, isMax: true)
         XCTAssertTrue(expected.contains(.fullPlatformWithdrawal))
-        XCTAssertGreaterThan(expected.count, 2)
+        XCTAssertGreaterThan(expected.count, 1)
         let vm = await readyVM(route: .platformToCore, amount: amount, isMax: true)
         XCTAssertEqual(vm.warnings.count, expected.count, "\(vm.warnings)")
         XCTAssertEqual(Set(vm.warnings).count, vm.warnings.count, "no warning is repeated")
@@ -376,22 +349,19 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertFalse(fine.warnings.contains { $0.hasPrefix(reserveText) }, "\(fine.warnings)")
     }
 
-    func testSomeoneElsesIdentityShowsTheUsernameAndTheBalanceStatement() async {
+    func testSomeoneElsesIdentityShowsTheUsernameAndNoBalanceStatement() async {
         let recipient = IdentityRecipient(id: "7Zp3MqIdentityIDxxxxxxxxxxxxxxxxxxxxxxoVyBn", username: "bob",
                                           isOwnCurrentIdentity: false)
         let vm = await readyVM(route: .platformToIdentity, recipient: recipient)
         XCTAssertTrue(vm.toText.hasPrefix("bob"), vm.toText)
-        XCTAssertTrue(vm.warnings.contains(
-            "The money goes to bob's identity balance, not their Dash wallet balance."), "\(vm.warnings)")
+        XCTAssertFalse(vm.warnings.contains { $0.contains("identity balance") }, "\(vm.warnings)")
     }
 
-    func testSomeoneElsesIdentityWithoutAUsernameStillStatesTheBalance() async {
+    func testSomeoneElsesIdentityWithoutAUsernameShowsNoBalanceStatement() async {
         let recipient = IdentityRecipient(id: "7Zp3MqIdentityIDxxxxxxxxxxxxxxxxxxxxxxoVyBn", username: nil,
                                           isOwnCurrentIdentity: false)
         let vm = await readyVM(route: .shieldedToIdentity, recipient: recipient)
-        XCTAssertTrue(vm.warnings.contains(
-            "The money goes to the recipient identity's balance, not their Dash wallet balance."),
-                      "\(vm.warnings)")
+        XCTAssertFalse(vm.warnings.contains { $0.contains("identity's balance") }, "\(vm.warnings)")
     }
 
     func testOwnIdentityIsYourIdentityAndStatesTheTopUp() async {

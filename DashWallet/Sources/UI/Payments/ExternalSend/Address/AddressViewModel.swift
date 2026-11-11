@@ -51,6 +51,9 @@ final class AddressViewModel: ObservableObject {
     @Published private(set) var state: State = .initial
     @Published private(set) var text = ""
     private var stateBeforeChecking: State = .initial
+    /// The Identity link whose ID is in the field: Continue and Retry check it with the link's amount. Any edit of
+    /// the field drops it.
+    private var identityLink: Destination?
 
     /// The destination (and, for an Identity ID, the recipient found on Platform) the flow continues with.
     var onResolved: ((Destination, IdentityRecipient?) -> Void)?
@@ -80,6 +83,7 @@ final class AddressViewModel: ObservableObject {
 
     func setText(_ newText: String) {
         text = newText
+        identityLink = nil
         state = newText.isEmpty ? .initial : .entered
     }
 
@@ -101,7 +105,11 @@ final class AddressViewModel: ObservableObject {
         // on whole rather than reduced to the address in the field.
         let isLink = found.type == .paymentRequest || found.amountDuffs != nil || found.label != nil
             || found.message != nil || found.paymentRequestURL != nil
-        if isLink {
+        if isLink, found.type == .identityID {
+            // An Identity is checked on Continue, as a typed one is.
+            setText(found.text)
+            identityLink = found
+        } else if isLink {
             onResolved?(found, nil)
         } else {
             setText(found.text)
@@ -112,12 +120,12 @@ final class AddressViewModel: ObservableObject {
 
     func continueTapped() async {
         guard canContinue else { return }
-        await resolve(text)
+        await resolveField()
     }
 
     func retry() async {
         guard state == .checkFailed else { return }
-        await resolve(text)
+        await resolveField()
     }
 
     /// The flow is fetching a payment request for what was entered or scanned.
@@ -137,9 +145,26 @@ final class AddressViewModel: ObservableObject {
     /// accepted and checked on this screen.
     func handleScanned(_ scanned: String) async -> Bool {
         guard case .success(let destination) = DestinationParser.parse(scanned, network: network) else { return false }
-        if destination.type == .identityID { setText(destination.text) }
-        await proceed(with: destination)
+        await handleScanned(destination)
         return true
+    }
+
+    /// For a destination a scan or a link already parsed. An Identity ID is put in the field and checked here, with
+    /// the link's amount kept.
+    func handleScanned(_ destination: Destination) async {
+        if destination.type == .identityID {
+            setText(destination.text)
+            identityLink = destination
+        }
+        await proceed(with: destination)
+    }
+
+    private func resolveField() async {
+        if let identityLink {
+            await proceed(with: identityLink)
+        } else {
+            await resolve(text)
+        }
     }
 
     private func resolve(_ input: String) async {

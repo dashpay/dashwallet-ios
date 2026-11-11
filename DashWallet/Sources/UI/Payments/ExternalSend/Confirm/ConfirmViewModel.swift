@@ -27,8 +27,6 @@ final class ConfirmViewModel: ObservableObject {
     enum State: Equatable {
         case preparing
         case ready
-        /// The binding fee or the balance could not be read: Confirm is blocked and Try again prepares anew.
-        case feeFailed
         case sending
     }
 
@@ -39,6 +37,9 @@ final class ConfirmViewModel: ObservableObject {
         case authenticationNotCompleted
         /// The binding fee no longer fits the balance: Send recomputes Max.
         case balanceNotEnough
+        /// The binding fee or the balance could not be read: Send shows that the fee could not be calculated, with
+        /// Try again.
+        case feeFailed
     }
 
     /// One line of the warning card.
@@ -63,7 +64,6 @@ final class ConfirmViewModel: ObservableObject {
 
     @Published private(set) var state: State = .preparing
     @Published private(set) var warningItems: [Warning] = []
-    @Published private var blockReason: BlockReason?
     /// The binding fee in DASH (an identity's credits converted); nil until prepared.
     @Published private var feeDuffs: UInt64?
 
@@ -71,11 +71,6 @@ final class ConfirmViewModel: ObservableObject {
     var onBackToSend: ((BackToSend) -> Void)?
     /// Called once with the outcome of the send; routing it is the flow's.
     var onOutcome: ((SendOutcome) -> Void)?
-
-    private enum BlockReason {
-        case fee
-        case balance
-    }
 
     private let request: SendAmountRequest
     private let recipient: IdentityRecipient?
@@ -101,7 +96,17 @@ final class ConfirmViewModel: ObservableObject {
     var amountText: String { request.amount.formattedDashAmount }
     var amountDuffs: Int64 { Int64(clamping: request.amount) }
     var amountFiatText: String? { converter.fiatText(forDuffs: request.amount) }
-    var fromText: String { SendAmountViewModel.title(of: request.route.source) }
+    var fromText: String {
+        request.route.source == .shielded
+            ? NSLocalizedString("Shielded balance", comment: "External send")
+            : SendAmountViewModel.title(of: request.route.source)
+    }
+
+    /// A send from Shielded to anything but Shielded shows its warnings inside the card, under Total; every other
+    /// route shows them below the card.
+    var showsWarningsInCard: Bool {
+        request.route.source == .shielded && request.route != .shieldedToShielded
+    }
 
     /// The address, short; an Identity ID shows its username (or "Your identity"), a link its label and a payment
     /// request its merchant before it.
@@ -115,21 +120,13 @@ final class ConfirmViewModel: ObservableObject {
     /// Whether the fee shown is the one the send pays; otherwise fee and total are an estimate marked "~".
     var isFeeExact: Bool { request.route.isFeeExact }
 
-    /// The fee in DASH, "~ " before an estimate; "—" when it could not be calculated; nil while preparing.
+    /// The fee in DASH, "~ " before an estimate; nil while preparing.
     var feeText: String? {
-        if state == .feeFailed { return Self.unknown }
-        return feeDuffs.map { estimateMark + $0.formattedDashAmount }
+        feeDuffs.map { estimateMark + $0.formattedDashAmount }
     }
 
     var totalText: String? {
-        if state == .feeFailed { return Self.unknown }
-        return feeDuffs.map { estimateMark + (request.amount + $0).formattedDashAmount }
-    }
-
-    /// The line under the fee when it is an estimate; nil while there is no fee to qualify.
-    var feeEstimateNote: String? {
-        guard !isFeeExact, feeDuffs != nil, state != .feeFailed else { return nil }
-        return NSLocalizedString("Estimated. The network sets the final fee.", comment: "External send")
+        feeDuffs.map { estimateMark + (request.amount + $0).formattedDashAmount }
     }
 
     /// What VoiceOver reads for the fee and the total: "about" in place of "~".
@@ -141,34 +138,17 @@ final class ConfirmViewModel: ObservableObject {
 
     var warnings: [String] { warningItems.map(\.text) }
 
-    var blockedMessage: String? {
-        switch blockReason {
-        case .fee?:
-            return SendAmountViewModel.feeFailureText
-        case .balance?:
-            return NSLocalizedString("Couldn't read your balance. Check your connection and try again.",
-                                     comment: "External send")
-        case nil:
-            return nil
-        }
-    }
-
     var isConfirmEnabled: Bool { state == .ready }
     var isCancelVisible: Bool { state != .sending }
     var isDismissLocked: Bool { state == .sending }
 
     // MARK: - Actions
 
-    /// Authenticates and prepares the send; runs once however often the sheet appears.
+    /// Authenticates and prepares the send, before the sheet is shown; runs once. It stays `.preparing` when the
+    /// holder was sent back to Send.
     func start() async {
         guard !hasStarted else { return }
         hasStarted = true
-        await prepare()
-    }
-
-    /// Prepares again, which authenticates again.
-    func tryAgain() async {
-        guard state == .feeFailed else { return }
         await prepare()
     }
 
@@ -193,18 +173,15 @@ final class ConfirmViewModel: ObservableObject {
 
     #if DEBUG
     /// Lets a SwiftUI preview show a state without the executor and the balance readers.
-    func setPreview(state: State, feeDuffs: UInt64?, warnings: [Warning] = [], blocked: Bool = false,
-                    balanceUnreadable: Bool = false) {
+    func setPreview(state: State, feeDuffs: UInt64?, warnings: [Warning] = []) {
         self.state = state
         self.feeDuffs = feeDuffs
         warningItems = warnings
-        blockReason = blocked ? (balanceUnreadable ? .balance : .fee) : nil
     }
     #endif
 
     // MARK: - Internals
 
-    private static let unknown = "—"
     private static let calculating = NSLocalizedString("Calculating…", comment: "External send")
 
     private var isIdentitySource: Bool { request.route.source == .identity }
@@ -212,13 +189,11 @@ final class ConfirmViewModel: ObservableObject {
     private var estimateMark: String { isFeeExact ? "" : "~ " }
 
     private func spoken(_ duffs: UInt64?, _ shown: String) -> String {
-        guard !isFeeExact, state != .feeFailed, let duffs else { return shown }
+        guard !isFeeExact, let duffs else { return shown }
         return String(format: NSLocalizedString("about %@", comment: "External send"), duffs.formattedDashAmount)
     }
 
     private func prepare() async {
-        state = .preparing
-        blockReason = nil
         let amount = isIdentitySource
             ? request.amount * PlatformPaymentIdentityFundingPolicy.creditsPerDuff : request.amount
         do {
@@ -236,7 +211,7 @@ final class ConfirmViewModel: ObservableObject {
         } catch let error as ExternalSendError {
             handle(error)
         } catch {
-            block(.fee)
+            handle(.feeUnavailable)
         }
     }
 
@@ -247,17 +222,9 @@ final class ConfirmViewModel: ObservableObject {
             onBackToSend?(.authenticationNotCompleted)
         case .balanceNotEnough:
             onBackToSend?(.balanceNotEnough)
-        case .feeUnavailable:
-            block(.fee)
-        case .balanceUnavailable:
-            block(.balance)
+        case .feeUnavailable, .balanceUnavailable:
+            onBackToSend?(.feeFailed)
         }
-    }
-
-    private func block(_ reason: BlockReason) {
-        feeDuffs = nil
-        blockReason = reason
-        state = .feeFailed
     }
 
     /// Who pays the Platform side of a Core asset lock: the top-up takes it out of what the identity receives; the
@@ -276,12 +243,12 @@ final class ConfirmViewModel: ObservableObject {
         }
     }
 
-    /// The pair's warnings, then the DashPay reserve, then who pays the Platform fee, then what the money does at an
-    /// Identity ID.
+    /// The pair's warnings, then the DashPay reserve, then who pays the Platform fee, then the top-up note of the
+    /// Current identity.
     private func makeWarnings(fee: UInt64) async -> [Warning] {
         let source = request.route.source
         var items = SendPairPolicy.warnings(source: source, destination: request.destination, isMax: request.isMax)
-            .map { Self.content(of: $0, source: source) }
+            .map { Self.content(of: $0, destination: request.destination.type) }
         if source == .identity, let credits = await balances.spendableBalance(of: .identity),
            AmountRules.check(amount: request.amount * PlatformPaymentIdentityFundingPolicy.creditsPerDuff,
                              source: .identity, balance: credits, fee: fee) == .okWithReserveWarning {
@@ -293,27 +260,31 @@ final class ConfirmViewModel: ObservableObject {
         if let platformFeeNote = Self.platformFeeNote(for: request.route) {
             items.append(Self.line(.info, platformFeeNote))
         }
-        if let recipient {
-            items.append(Self.line(.info, SendAmountViewModel.recipientNotice(for: recipient)))
+        if let recipient, let notice = SendAmountViewModel.recipientNotice(for: recipient) {
+            items.append(Self.line(.info, notice))
         }
         return items.enumerated().map { Warning(id: $0, style: $1.style, title: $1.title, subtitle: $1.subtitle) }
     }
 
-    private static func content(of warning: ConfirmWarning, source: SendSource) -> Warning {
+    private static func content(of warning: ConfirmWarning, destination: Destination.Kind) -> Warning {
         switch warning {
-        case .withdrawalDelay:
-            return line(.delay, NSLocalizedString(
-                "This is a withdrawal. It arrives on Core after a delay.", comment: "External send"))
+        case .shieldedMadePublic where destination == .coreAddress:
+            return line(.publicExposure, NSLocalizedString(
+                "When sending from Shielded balance to Core the amount and destination becomes public",
+                comment: "External send"))
         case .shieldedMadePublic:
             // swiftlint:disable line_length
             return line(.publicExposure, NSLocalizedString(
                 "Sending from Shielded to an address that is not Shielded makes the amount and the destination public.", comment: "External send"))
             // swiftlint:enable line_length
+        case .shieldedNotInstant:
+            return line(.info, NSLocalizedString(
+                "When sending from Shielded balance, the transaction is not instant and takes some time",
+                comment: "External send"))
         case .wrongAddressReminder:
             return line(.info, SendWarningText.doubleCheckTitle, SendWarningText.doubleCheckBody)
         case .processingTime:
-            return line(.delay, SendWarningText.processingTimeTitle, source == .shielded
-                ? SendWarningText.shieldedWithdrawalBody : SendWarningText.platformWithdrawalBody)
+            return line(.delay, SendWarningText.processingTimeTitle, SendWarningText.platformWithdrawalBody)
         case .fullPlatformWithdrawal:
             return line(.info, SendWarningText.fullPlatformWithdrawalBody)
         case .emptyingCoreBalance:

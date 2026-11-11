@@ -879,6 +879,23 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(uri?.amount, 150_000_000)
     }
 
+    /// dashpay/dashwallet-ios#1383: Receive's payment requests on Platform, Shielded and Identity carry a bech32m
+    /// address or a bare Base58 Identity ID before `?amount=`; the URI hands it over whole, with the amount.
+    func testURICarriesABech32mAddressOrAnIdentityIDWithItsAmount() throws {
+        let platform = try XCTUnwrap(Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: false), data: Data([0xb0] + Array(repeating: 0x02, count: 20))))
+        let shielded = try XCTUnwrap(Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: false), data: Data([0x10] + Array(repeating: 0x07, count: 43))))
+        let identityID = ScriptAddressCodec.base58Encode(Data((1 ... 32).map { UInt8($0 * 3) }))
+
+        for address in [platform, shielded, identityID] {
+            let uri = BIP70URI("dash:\(address)?amount=0.1")
+            XCTAssertEqual(uri?.address, address)
+            XCTAssertEqual(uri?.amount, 10_000_000)
+            XCTAssertEqual(uri?.isBIP70, false)
+        }
+    }
+
     func testURIRejectsNonPaymentScheme() {
         XCTAssertNil(BIP70URI("http://foo"))
     }

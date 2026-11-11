@@ -15,7 +15,9 @@
 //  limitations under the License.
 //
 
+import Combine
 @testable import dashpay
+import SwiftDashSDK
 import XCTest
 
 /// The coordinator behind every external-send entry point (AC-14, AC-15, AC-20): which screen each entry point opens
@@ -49,6 +51,18 @@ final class ExternalSendFlowTests: XCTestCase {
         ScriptAddressCodec.base58Encode(Data((1 ... 32).map { UInt8($0 * 3) })) ?? ""
     }
 
+    // DIP-0018 bech32m Platform (0xb0 + 20-byte hash) and Shielded (0x10 + 43 Orchard bytes), as in
+    // DestinationParserTests.
+    private var platformAddress: String {
+        Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: false), data: Data([0xb0] + Array(repeating: 0x02, count: 20)))
+            ?? ""
+    }
+
+    private var shieldedAddress: String {
+        Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: false), data: Data([0x10] + Array(repeating: 0x07, count: 43)))
+            ?? ""
+    }
+
     private let alice = "alice"
 
     private var foundRecipient: IdentityRecipient {
@@ -71,6 +85,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let fetcher: FakePaymentRequests
         let clipboard: FakeClipboard
         let balances: FakeBalances
+        let identity: FakeCurrentIdentity
         let finishes: FinishLog
     }
 
@@ -89,15 +104,16 @@ final class ExternalSendFlowTests: XCTestCase {
         let lookup = FakeLookup()
         let fetcher = FakePaymentRequests()
         let clipboard = FakeClipboard()
+        let identity = FakeCurrentIdentity()
         if let fetchResult { fetcher.result = fetchResult }
         let flow = ExternalSendFlow(
             network: network, identityLookup: lookup, executor: customExecutor ?? executor, balances: fakeBalances,
             feeEstimator: estimator, maxPlanner: FakeMaxPlanner(), converter: FakeConverter(),
-            currentIdentity: FakeCurrentIdentity(), paymentRequests: fetcher, clipboard: clipboard)
+            currentIdentity: identity, paymentRequests: fetcher, clipboard: clipboard)
         let log = FinishLog()
         flow.onFinish = { log.all.append($0) }
         return Harness(flow: flow, executor: executor, estimator: estimator, lookup: lookup, fetcher: fetcher,
-                       clipboard: clipboard, balances: fakeBalances, finishes: log)
+                       clipboard: clipboard, balances: fakeBalances, identity: identity, finishes: log)
     }
 
     private func details(amount: UInt64? = nil, isSecure: Bool = false) -> PaymentRequestDetails {
@@ -126,14 +142,14 @@ final class ExternalSendFlowTests: XCTestCase {
 
     private func openConfirm(_ harness: Harness, pinned: SendSource? = nil) async throws -> ConfirmViewModel {
         let send = try await openSend(harness, pinned: pinned)
-        send.proceed()
+        await send.proceed()
         return try XCTUnwrap(harness.flow.confirmViewModel)
     }
 
     private func confirmThroughTheFlow(_ harness: Harness) async throws -> ConfirmViewModel? {
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
-        send.proceed()
+        await send.proceed()
         return harness.flow.confirmViewModel
     }
 
@@ -309,6 +325,67 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertTrue(accepted)
         XCTAssertEqual(harness.lookup.lookedUp, [identityID])
         XCTAssertEqual(harness.flow.step, .send)
+    }
+
+    // dashpay/dashwallet-ios#1383: a payment request made by Receive on Platform, Shielded or Identity opens Send
+    // with its recipient and its amount, scanned or opened by another app alike.
+
+    func testAPlatformOrShieldedLinkOpensSendWithItsAmount() async throws {
+        for (address, typeText) in [(platformAddress, "Platform address"), (shieldedAddress, "Shielded address")] {
+            for openedByApp in [false, true] {
+                let harness = makeHarness()
+
+                let accepted = await harness.flow.start(scanned: "dash:\(address)?amount=1.5", openedByApp: openedByApp)
+                let send = try XCTUnwrap(harness.flow.sendViewModel, typeText)
+                await send.load()
+
+                XCTAssertTrue(accepted)
+                XCTAssertEqual(harness.flow.step, .send)
+                XCTAssertEqual(send.destinationTypeText, typeText)
+                XCTAssertEqual(send.amountDuffs, oneDash * 3 / 2, "\(typeText), opened by app: \(openedByApp)")
+                XCTAssertFalse(send.isAmountLocked)
+            }
+        }
+    }
+
+    func testAnIdentityLinkIsCheckedAndOpensSendWithItsRecipientAndAmount() async throws {
+        for openedByApp in [false, true] {
+            let harness = makeHarness()
+            harness.lookup.results = [.found(foundRecipient)]
+
+            let accepted = await harness.flow.start(scanned: "dash:\(identityID)?amount=0.1", openedByApp: openedByApp)
+            let send = try XCTUnwrap(harness.flow.sendViewModel)
+            await send.load()
+
+            XCTAssertTrue(accepted)
+            XCTAssertEqual(harness.lookup.lookedUp, [identityID], "the recipient is checked as a typed Identity ID is")
+            XCTAssertEqual(harness.flow.step, .send)
+            XCTAssertEqual(send.destinationTypeText, "Identity")
+            XCTAssertEqual(send.recipientName, alice)
+            XCTAssertEqual(send.amountDuffs, oneDash / 10, "opened by app: \(openedByApp)")
+        }
+    }
+
+    func testAnIdentityLinkWithoutAnAmountOpensSendWithNoAmount() async throws {
+        let harness = makeHarness()
+        harness.lookup.results = [.found(foundRecipient)]
+
+        let accepted = await harness.flow.start(scanned: "dash:\(identityID)")
+        let send = try XCTUnwrap(harness.flow.sendViewModel)
+        await send.load()
+
+        XCTAssertTrue(accepted)
+        XCTAssertEqual(harness.lookup.lookedUp, [identityID])
+        XCTAssertEqual(send.amountDuffs, 0)
+    }
+
+    func testAnIdentityLinkTheHostChecksBeforePresentingIsAccepted() {
+        let harness = makeHarness()
+
+        let destination = harness.flow.scannedDestination("dash:\(identityID)?amount=0.1", openedByApp: true)
+
+        XCTAssertEqual(destination?.type, .identityID)
+        XCTAssertEqual(destination?.amountDuffs, oneDash / 10)
     }
 
     // MARK: - Payment request (the existing BIP70 fetch)
@@ -508,7 +585,6 @@ final class ExternalSendFlowTests: XCTestCase {
             openedByApp: true)
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
-        await confirm.start()
         await confirm.confirm()
 
         XCTAssertEqual(standardSend.broadcasts, 1)
@@ -530,7 +606,7 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertEqual(harness.flow.step, .send)
         XCTAssertEqual(harness.flow.sendViewModel?.recipientName, alice)
-        XCTAssertNotNil(harness.flow.sendViewModel?.recipientNotice)
+        XCTAssertNil(harness.flow.sendViewModel?.recipientNotice, "someone else's identity has no notice")
     }
 
     func testAnInvalidAddressNeverOpensSend() async {
@@ -552,14 +628,59 @@ final class ExternalSendFlowTests: XCTestCase {
         let confirm = try await openConfirm(harness)
 
         XCTAssertEqual(harness.flow.step, .confirm)
+        XCTAssertEqual(confirm.state, .ready, "Confirm opens with the send already prepared")
         XCTAssertEqual(confirm.fromText, "Core")
         XCTAssertEqual(confirm.amountDuffs, Int64(oneDash))
+    }
+
+    /// The PIN prompt and the Confirm sheet must never be presented at once: Continue authenticates and prepares
+    /// while Send is on screen with Continue busy, and Confirm opens only afterwards.
+    func testContinuePreparesWhileSendIsShownAndOpensConfirmWhenPrepared() async throws {
+        let harness = makeHarness()
+        let send = try await openSend(harness)
+        var stepAtPrepare: ExternalSendFlow.Step?
+        var continueBusyAtPrepare = false
+        var continueEnabledAtPrepare = true
+        harness.executor.onPrepare = { [unowned flow = harness.flow] in
+            stepAtPrepare = flow.step
+            continueBusyAtPrepare = send.isContinueLoading
+            continueEnabledAtPrepare = send.isContinueEnabled
+        }
+
+        await send.proceed()
+
+        XCTAssertEqual(stepAtPrepare, .send, "the send is prepared before Confirm opens")
+        XCTAssertTrue(continueBusyAtPrepare, "Continue shows busy while it prepares")
+        XCTAssertFalse(continueEnabledAtPrepare, "a second tap meanwhile starts nothing")
+        XCTAssertEqual(harness.flow.step, .confirm)
+        let confirm = try XCTUnwrap(harness.flow.confirmViewModel)
+        XCTAssertEqual(confirm.state, .ready)
+        XCTAssertEqual(confirm.feeText, (226 as UInt64).formattedDashAmount)
+        XCTAssertFalse(send.isContinueLoading)
+    }
+
+    func testCancelledAuthenticationAtContinueNeverOpensConfirm() async throws {
+        let harness = makeHarness()
+        harness.executor.prepareResults = [.failure(.authenticationCancelled)]
+        let send = try await openSend(harness)
+        var steps: [ExternalSendFlow.Step?] = []
+        let watch = harness.flow.$step.sink { steps.append($0) }
+        defer { watch.cancel() }
+
+        await send.proceed()
+
+        XCTAssertEqual(harness.executor.preparedDestinations.count, 1, "Continue tried to prepare")
+        XCTAssertFalse(steps.contains(.confirm), "Confirm never opened: \(steps)")
+        XCTAssertEqual(harness.flow.step, .send)
+        XCTAssertNil(harness.flow.confirmViewModel)
+        XCTAssertFalse(send.isContinueLoading)
+        XCTAssertTrue(send.isContinueEnabled, "Continue can be tapped again")
     }
 
     func testCancellingConfirmReturnsToSendKeepingTheAmount() async throws {
         let harness = makeHarness()
         let send = try await openSend(harness)
-        send.proceed()
+        await send.proceed()
 
         harness.flow.confirmViewModel?.cancel()
 
@@ -573,23 +694,47 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.executor.prepareResults = [.failure(.authenticationCancelled)]
         let send = try await openSend(harness)
-        send.proceed()
 
-        await harness.flow.confirmViewModel?.start()
+        await send.proceed()
 
         XCTAssertEqual(harness.flow.step, .send)
         XCTAssertEqual(send.amountDuffs, oneDash)
         XCTAssertTrue(harness.finishes.all.isEmpty)
     }
 
+    /// Try again inside Confirm would authenticate over the open sheet, so a prepare that cannot read the fee or the
+    /// balance stays on Send, which shows its own could-not-calculate message and Try again.
+    func testAFeeFailureAtContinueStaysOnSendWithItsRetry() async throws {
+        for failure in [ExternalSendError.feeUnavailable, .balanceUnavailable] {
+            let harness = makeHarness()
+            harness.executor.prepareResults = [.failure(failure)]
+            let send = try await openSend(harness)
+            var steps: [ExternalSendFlow.Step?] = []
+            let watch = harness.flow.$step.sink { steps.append($0) }
+
+            await send.proceed()
+            watch.cancel()
+
+            XCTAssertFalse(steps.contains(.confirm), "\(failure): Confirm never opened: \(steps)")
+            XCTAssertEqual(harness.flow.step, .send, "\(failure)")
+            XCTAssertNil(harness.flow.confirmViewModel, "\(failure)")
+            XCTAssertEqual(send.state, .feeFailed, "\(failure)")
+            XCTAssertEqual(send.feeFailureMessage, SendAmountViewModel.feeFailureText, "\(failure)")
+            XCTAssertFalse(send.isContinueLoading, "\(failure)")
+
+            await send.retryFee()
+
+            XCTAssertEqual(send.state, .ready, "\(failure): Try again on Send estimates anew")
+        }
+    }
+
     func testBalanceNoLongerCoveringTheFeeReturnsToSendAndEstimatesAgain() async throws {
         let harness = makeHarness()
         harness.executor.prepareResults = [.failure(.balanceNotEnough)]
         let send = try await openSend(harness)
-        send.proceed()
         let estimatesBefore = harness.estimator.calls
 
-        await harness.flow.confirmViewModel?.start()
+        await send.proceed()
 
         XCTAssertEqual(harness.flow.step, .send)
         await eventually(harness.estimator.calls > estimatesBefore, "Send did not call confirmReportedNotEnough")
@@ -602,7 +747,6 @@ final class ExternalSendFlowTests: XCTestCase {
         let display = Data((0 ..< 32).map { UInt8($0) })
         harness.executor.coreTxHash = display
         let confirm = try await openConfirm(harness)
-        await confirm.start()
 
         await confirm.confirm()
 
@@ -610,21 +754,31 @@ final class ExternalSendFlowTests: XCTestCase {
                        [.success(.transactionDetails, txidWire: Data(display.reversed()), callbackURL: nil)])
     }
 
-    func testSentOnAnotherRouteFinishesWithTheSentSheetAndNoTxid() async throws {
+    func testSentFromShieldedClosesTheSheetOnTheSentToast() async throws {
         let harness = makeHarness()
         let confirm = try await openConfirm(harness, pinned: .shielded)
-        await confirm.start()
 
         await confirm.confirm()
 
-        XCTAssertEqual(harness.finishes.all, [.success(.sentSheet, txidWire: nil, callbackURL: nil)])
+        XCTAssertEqual(harness.finishes.all, [.success(.toast(message: "Sent"), txidWire: nil, callbackURL: nil)])
+        XCTAssertEqual(harness.flow.step, .sent(.toast(message: "Sent")))
+        XCTAssertNil(harness.flow.confirmViewModel)
+    }
+
+    func testSentCoreToCoreWithoutATxidShowsTheSentToastNotAnInlineSent() async throws {
+        let harness = makeHarness()
+        harness.executor.coreHasTxid = false
+        let confirm = try await openConfirm(harness)
+
+        await confirm.confirm()
+
+        XCTAssertEqual(harness.finishes.all, [.success(.toast(message: "Sent"), txidWire: nil, callbackURL: nil)])
     }
 
     func testInFlightShowsTheToastAndClosesTheFlow() async throws {
         let harness = makeHarness()
         harness.executor.sendOutcome = .inFlight
         let confirm = try await openConfirm(harness)
-        await confirm.start()
 
         await confirm.confirm()
 
@@ -637,7 +791,6 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.executor.sendOutcome = .notSent(.offline)
         let confirm = try await openConfirm(harness)
-        await confirm.start()
 
         await confirm.confirm()
 
@@ -649,12 +802,25 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertTrue(harness.finishes.all.isEmpty, "the flow stays open for Retry or Close")
     }
 
+    func testIdentityNotFoundOpensSendFailedNotTheInProgressToast() async throws {
+        let harness = makeHarness()
+        harness.executor.sendOutcome = .notSent(.identityNotFound)
+        let confirm = try await openConfirm(harness)
+
+        await confirm.confirm()
+
+        guard case .sendFailed(let content) = harness.flow.step else {
+            return XCTFail("expected sendFailed, got \(String(describing: harness.flow.step))")
+        }
+        XCTAssertEqual(content.reason, NotSentReason.identityNotFound.localizedMessage)
+        XCTAssertTrue(harness.finishes.all.isEmpty, "no Send in progress Toast")
+    }
+
     func testRetryOnSendFailedReturnsToTheSameSendWithTheSameRequest() async throws {
         let harness = makeHarness()
         harness.executor.sendOutcome = .notSent(.rejected)
         let send = try await openSend(harness)
-        send.proceed()
-        await harness.flow.confirmViewModel?.start()
+        await send.proceed()
         await harness.flow.confirmViewModel?.confirm()
 
         harness.flow.retryFromSendFailed()
@@ -671,7 +837,6 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.executor.sendOutcome = .notSent(.failed)
         let confirm = try await openConfirm(harness)
-        await confirm.start()
         await confirm.confirm()
 
         harness.flow.closeFromSendFailed()
@@ -689,7 +854,6 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertEqual(harness.fetcher.callbackSchemes, [nil])
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
-        await confirm.start()
         XCTAssertNil(harness.executor.preparedDestinations.last?.callbackScheme)
     }
 
@@ -701,7 +865,6 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertEqual(harness.fetcher.callbackSchemes, ["merchantapp"])
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
-        await confirm.start()
         XCTAssertEqual(harness.executor.preparedDestinations.last?.callbackScheme, "merchantapp")
     }
 
@@ -716,9 +879,8 @@ final class ExternalSendFlowTests: XCTestCase {
         await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
-        send.proceed()
+        await send.proceed()
         let confirm = try XCTUnwrap(harness.flow.confirmViewModel)
-        await confirm.start()
         await confirm.confirm()
 
         XCTAssertEqual(harness.fetcher.callbackSchemes, ["merchantapp"], "the fetched request carries the scheme")
@@ -741,7 +903,6 @@ final class ExternalSendFlowTests: XCTestCase {
         await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmedConfirm = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmedConfirm)
-        await confirm.start()
         await confirm.confirm()
 
         XCTAssertEqual(harness.fetcher.fetched, [requestURL], "one fetch from open to broadcast")
@@ -765,7 +926,6 @@ final class ExternalSendFlowTests: XCTestCase {
         await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmedFirst = try await confirmThroughTheFlow(harness)
         let first = try XCTUnwrap(confirmedFirst)
-        await first.start()
         await first.confirm()
         guard case .sendFailed = harness.flow.step else {
             return XCTFail("expected sendFailed, got \(String(describing: harness.flow.step))")
@@ -778,7 +938,6 @@ final class ExternalSendFlowTests: XCTestCase {
         await eventually(harness.flow.step == .send, "Retry never returned to Send")
         let confirmedAgain = try await confirmThroughTheFlow(harness)
         let again = try XCTUnwrap(confirmedAgain)
-        await again.start()
         await again.confirm()
 
         XCTAssertEqual(harness.fetcher.fetched, [requestURL, requestURL], "Retry fetches the request again")
@@ -799,7 +958,6 @@ final class ExternalSendFlowTests: XCTestCase {
         await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
-        await confirm.start()
         await confirm.confirm()
         harness.fetcher.result = .failure(FakeFetchError(message: "Request expired"))
 
@@ -815,7 +973,6 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAPlainSendHasNoCallbackURL() async throws {
         let harness = makeHarness()
         let confirm = try await openConfirm(harness)
-        await confirm.start()
 
         await confirm.confirm()
 
@@ -835,7 +992,7 @@ final class ExternalSendFlowTests: XCTestCase {
         await harness.flow.showSelectSource()
         let select = try XCTUnwrap(harness.flow.selectSourceViewModel)
         XCTAssertEqual(harness.flow.step, .selectSource)
-        select.select(.platform)
+        select.tap(.platform)
 
         await eventually(send.source == .platform, "the pick never reached Send")
         XCTAssertEqual(harness.flow.step, .send)
@@ -845,20 +1002,20 @@ final class ExternalSendFlowTests: XCTestCase {
     func testSelectSourceIsShownAtOnceAndLoadsOncePerTap() async throws {
         let harness = makeHarness()
         _ = try await openSend(harness)
-        harness.balances.holds = true
-        let before = harness.balances.reads
+        harness.identity.holds = true
+        let before = harness.identity.reads
 
         let showing = Task { await harness.flow.showSelectSource() }
-        for _ in 0 ..< 200 where !harness.balances.isHolding { await Task.yield() }
-        XCTAssertTrue(harness.balances.isHolding)
+        for _ in 0 ..< 200 where !harness.identity.isHolding { await Task.yield() }
+        XCTAssertTrue(harness.identity.isHolding)
         XCTAssertEqual(harness.flow.step, .selectSource, "shown before its rows are read")
         XCTAssertEqual(harness.flow.selectSourceViewModel?.isLoading, true)
 
-        harness.balances.release()
+        harness.identity.release()
         await showing.value
         XCTAssertEqual(harness.flow.selectSourceViewModel?.isLoading, false)
         XCTAssertEqual(harness.flow.selectSourceViewModel?.rows.count, 3)
-        XCTAssertEqual(harness.balances.reads - before, 3, "one read per row: one load")
+        XCTAssertEqual(harness.identity.reads - before, 1, "one identity read: one load")
     }
 
     func testSelectSourceOffersNothingTheDestinationCannotUse() async throws {
@@ -989,8 +1146,27 @@ private final class FakeBalances: ExternalSendBalanceReading {
     }
 }
 
-private struct FakeCurrentIdentity: CurrentIdentityReading {
-    func currentIdentity() async -> SelectSourceIdentity? { nil }
+private final class FakeCurrentIdentity: CurrentIdentityReading {
+    /// When set, the next read suspends until `release`.
+    var holds = false
+    private(set) var reads = 0
+    private var held: CheckedContinuation<Void, Never>?
+
+    var isHolding: Bool { held != nil }
+
+    func currentIdentity() async -> SelectSourceIdentity? {
+        reads += 1
+        if holds {
+            holds = false
+            await withCheckedContinuation { held = $0 }
+        }
+        return nil
+    }
+
+    func release() {
+        held?.resume()
+        held = nil
+    }
 }
 
 @MainActor
@@ -1021,12 +1197,17 @@ private final class FakeExecutor: ExternalSendExecuting {
     var prepareResults: [Result<UInt64, ExternalSendError>] = []
     var sendOutcome: SendOutcome = .sent
     var coreTxHash = Data(repeating: 7, count: 32)
+    /// False: a Core to Core prepare carries no txid, as a routed plan does.
+    var coreHasTxid = true
     private(set) var preparedDestinations: [Destination] = []
+    /// Runs when `prepare` is called, before it answers.
+    var onPrepare: (() -> Void)?
 
     func prepare(
         route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend {
         preparedDestinations.append(destination)
+        onPrepare?()
         let fee: UInt64
         if prepareResults.isEmpty {
             fee = 226
@@ -1036,7 +1217,7 @@ private final class FakeExecutor: ExternalSendExecuting {
             case .failure(let error): throw error
             }
         }
-        guard route == .coreToCore else {
+        guard route == .coreToCore, coreHasTxid else {
             return PreparedExternalSend(
                 route: route, amount: amount, fee: fee, isMax: isMax, plan: .routed(destination: destination))
         }

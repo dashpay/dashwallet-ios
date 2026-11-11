@@ -18,19 +18,10 @@
 import DashUIKit
 import SwiftUI
 
-/// SCR-06 Confirm and SCR-08 Sending. Draws the ViewModel's state; Cancel and the close button both call `cancel()`,
-/// which does nothing while sending, and the sheet's swipe-down is locked until the outcome.
+/// SCR-06 Confirm and SCR-08 Sending. Draws the ViewModel's state for a send the flow already prepared; Cancel and the
+/// close button both call `cancel()`, which does nothing while sending, and the sheet's swipe-down is locked until the
+/// outcome.
 struct ConfirmSheet: View {
-    @ObservedObject var viewModel: ConfirmViewModel
-
-    var body: some View {
-        ConfirmSheetContent(viewModel: viewModel)
-            .task { await viewModel.start() }
-    }
-}
-
-/// The sheet without the `start()` that prepares the send, which a preview must not run.
-struct ConfirmSheetContent: View {
     @ObservedObject var viewModel: ConfirmViewModel
 
     var body: some View {
@@ -51,15 +42,17 @@ struct ConfirmSheetContent: View {
     private var sheetBody: some View {
         VStack(spacing: 16) {
             amount
-            rows
-            messages
+            card
+            if !viewModel.showsWarningsInCard {
+                warningRows
+            }
             buttons
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
     }
 
-    // MARK: - Amount, From, To, fee and total
+    // MARK: - Amount, then the card: From, To, fee, total, and for a send from Shielded the warnings under them
 
     private var amount: some View {
         VStack(spacing: 4) {
@@ -73,7 +66,7 @@ struct ConfirmSheetContent: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var rows: some View {
+    private var card: some View {
         VStack(spacing: 0) {
             DashUIKit.List1View(label: NSLocalizedString("From", comment: "External send"),
                                 value: viewModel.fromText)
@@ -82,34 +75,22 @@ struct ConfirmSheetContent: View {
                                 value: viewModel.feeRowText)
                 .accessibilityElement(children: .combine)
                 .accessibilityValue(viewModel.feeAccessibilityValue)
-            if let note = viewModel.feeEstimateNote {
-                Text(note)
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .multilineTextAlignment(.trailing)
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 12)
-            }
             DashUIKit.List1View(label: NSLocalizedString("Total", comment: "External send"),
                                 value: viewModel.totalRowText)
                 .accessibilityElement(children: .combine)
                 .accessibilityValue(viewModel.totalAccessibilityValue)
+            if viewModel.showsWarningsInCard, !viewModel.warningItems.isEmpty {
+                VStack(spacing: 6) { warningRows }
+                    .padding(.top, 6)
+            }
         }
         .modifier(DashUIKit.MenuViewModifier())
         .accessibilityElement(children: .contain)
     }
 
-    // MARK: - Warnings and the blocked message
+    // MARK: - Warnings
 
-    @ViewBuilder private var messages: some View {
-        if let message = viewModel.blockedMessage {
-            DashUIKit.SystemMessageView(
-                title: message,
-                backgroundColor: Color.dash.redAlpha5,
-                buttonName: NSLocalizedString("Try again", comment: "External send"),
-                onAction: { Task { await viewModel.tryAgain() } })
-        }
+    private var warningRows: some View {
         ForEach(viewModel.warningItems) { warning in
             DashUIKit.SystemMessageView(
                 title: warning.title,
@@ -123,7 +104,7 @@ struct ConfirmSheetContent: View {
         switch style {
         case .info: return DashIcon.SystemMessage.infoRectSmall.source
         case .delay: return DashIcon.SystemMessage.timerSmall.source
-        case .publicExposure: return .system("eye")
+        case .publicExposure: return DashIcon.SystemMessage.public.source
         case .caution: return DashIcon.SystemMessage.warningTriangle.source
         }
     }
@@ -192,65 +173,61 @@ private func previewWarning(_ id: Int, _ style: ConfirmViewModel.Warning.Style, 
     ConfirmViewModel.Warning(id: id, style: style, title: title, subtitle: subtitle)
 }
 
-private let delayWarning = previewWarning(
-    0, .delay, "This is a withdrawal. It arrives on Core after a delay.")
 private let publicWarning = previewWarning(
-    1, .publicExposure,
+    0, .publicExposure,
     "Sending from Shielded to an address that is not Shielded makes the amount and the destination public.")
-private let processingWarning = previewWarning(
-    2, .delay, SendWarningText.processingTimeTitle, SendWarningText.shieldedWithdrawalBody)
+private let notInstantWarning = previewWarning(
+    0, .info, "When sending from Shielded balance, the transaction is not instant and takes some time")
+private let publicToCoreWarning = previewWarning(
+    1, .publicExposure, "When sending from Shielded balance to Core the amount and destination becomes public")
 private let reserveWarning = previewWarning(0, .caution, SendAmountViewModel.reserveWarningText)
 
 @MainActor
 private func previewSheet(
     route: SendRoute = .coreToCore, destination: Destination? = nil, recipient: IdentityRecipient? = nil,
     amount: UInt64 = 150_000_000, state: ConfirmViewModel.State = .ready, fee: UInt64? = 1_000,
-    warnings: [ConfirmViewModel.Warning] = [], blocked: Bool = false, balanceUnreadable: Bool = false
+    warnings: [ConfirmViewModel.Warning] = []
 ) -> some View {
     let target = destination ?? Destination(type: .coreAddress, text: previewAddress)
     let vm = ConfirmViewModel(
         request: SendAmountRequest(route: route, destination: target, amount: amount, isMax: false),
         recipient: recipient, executor: PreviewExecutor(), balances: PreviewBalances(),
         converter: PreviewConverter())
-    vm.setPreview(state: state, feeDuffs: fee, warnings: warnings, blocked: blocked,
-                  balanceUnreadable: balanceUnreadable)
+    vm.setPreview(state: state, feeDuffs: fee, warnings: warnings)
     return Color.dash.primaryBackground.ignoresSafeArea()
-        .sheet(isPresented: .constant(true)) { ConfirmSheetContent(viewModel: vm) }
+        .sheet(isPresented: .constant(true)) { ConfirmSheet(viewModel: vm) }
 }
 
 private let identityDestination = Destination(type: .identityID, text: previewIdentityID)
 
-#Preview("Preparing") { previewSheet(state: .preparing, fee: nil) }
-
 #Preview("Ready, exact fee") { previewSheet() }
 
+/// "~" before fee and total, "about" for VoiceOver, no note under the fee.
 #Preview("Ready, estimated fee") { previewSheet(route: .platformToCore) }
 
 #Preview("Ready, stacked warnings") {
-    previewSheet(route: .shieldedToCore, warnings: [
-        delayWarning, publicWarning, processingWarning,
-        previewWarning(3, .info, SendWarningText.doubleCheckTitle, SendWarningText.doubleCheckBody)
-    ])
+    previewSheet(route: .shieldedToPlatform, destination: Destination(type: .platformAddress, text: previewAddress),
+                 warnings: [
+                     publicWarning,
+                     previewWarning(1, .info, SendWarningText.doubleCheckTitle, SendWarningText.doubleCheckBody)
+                 ])
 }
 
-#Preview("Fee failed") { previewSheet(state: .feeFailed, fee: nil, blocked: true) }
-
-#Preview("Balance unreadable") {
-    previewSheet(state: .feeFailed, fee: nil, blocked: true, balanceUnreadable: true)
+/// From "Shielded balance", the two notices inside the card, no Processing time.
+#Preview("Shielded to Core") {
+    previewSheet(route: .shieldedToCore, warnings: [notInstantWarning, publicToCoreWarning])
 }
 
 #Preview("Sending") { previewSheet(state: .sending) }
 
 #Preview("Identity, reserve warning") {
-    previewSheet(route: .identityToCore, warnings: [delayWarning, reserveWarning])
+    previewSheet(route: .identityToCore, warnings: [reserveWarning])
 }
 
 #Preview("Recipient, someone else's identity") {
     previewSheet(
         route: .platformToIdentity, destination: identityDestination,
-        recipient: IdentityRecipient(id: previewIdentityID, username: "bob", isOwnCurrentIdentity: false),
-        warnings: [previewWarning(
-            0, .info, "The money goes to bob's identity balance, not their Dash wallet balance.")])
+        recipient: IdentityRecipient(id: previewIdentityID, username: "bob", isOwnCurrentIdentity: false))
 }
 
 #Preview("Recipient, own identity") {
@@ -263,7 +240,7 @@ private let identityDestination = Destination(type: .identityID, text: previewId
 #Preview("Long text, large Dynamic Type") {
     previewSheet(
         route: .shieldedToCore, amount: 123_456_789_012_345, fee: 12_345_678,
-        warnings: [delayWarning, publicWarning, processingWarning]
+        warnings: [notInstantWarning, publicToCoreWarning]
     )
     .dynamicTypeSize(.accessibility3)
 }

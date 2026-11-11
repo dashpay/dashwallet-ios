@@ -202,7 +202,8 @@ final class ParsedPaymentURI: NSObject {
                                 requiresSendScreenRouting: isBech32Destination)
     }
 
-    /// True when `string` is an Identity ID, which the QR scanner accepts for the external send.
+    /// True when `string` is an Identity ID, bare or in a `dash:` link, which the QR scanner accepts for the external
+    /// send.
     @objc(isIdentityIDString:)
     static func isIdentityID(string: String) -> Bool {
         let network = WalletEnvironment.networkKind

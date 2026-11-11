@@ -34,8 +34,8 @@ struct SendAmountScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: "External send"))
-                    endpoints
                     amountField
+                    endpoints
                     notices
                 }
                 .padding(.horizontal, 20)
@@ -65,8 +65,11 @@ struct SendAmountScreen: View {
                 id: "to",
                 icon: viewModel.destinationIcon,
                 title: viewModel.recipientName ?? viewModel.destinationLabel ?? viewModel.destinationTypeText,
-                subtitle: viewModel.shortAddress,
+                trailingView: AnyView(Text(viewModel.shortAddress)
+                    .dashFont(.subhead)
+                    .foregroundStyle(Color.dash.primaryText)),
                 showsBalance: false),
+            // No swap here: the card draws its static arrow, hidden from VoiceOver.
             onSwap: nil)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("send_source_and_destination")
@@ -81,12 +84,12 @@ struct SendAmountScreen: View {
             primaryCurrency: .dash,
             secondaryCurrency: .fiat(viewModel.fiatCurrencyCode),
             isPrimarySelected: viewModel.unit == .dash,
+            isCurrencySelectorHidden: true,
             currencyCodes: showsUnitPicker ? ["DASH", viewModel.fiatCurrencyCode] : nil,
             selectedCurrencyCode: viewModel.unit == .dash ? "DASH" : viewModel.fiatCurrencyCode,
             // Max stays in place while it is disabled; `tapMax` does nothing then. DashUIKit has no disabled Max.
             onMax: viewModel.isMaxVisible ? { Task { await viewModel.tapMax() } } : nil,
             onSwap: showsUnitPicker ? toggleUnit : nil,
-            onCurrencyTap: showsUnitPicker ? toggleUnit : nil,
             onSelectInputType: showsUnitPicker ? { viewModel.setUnit($0 == "DASH" ? .dash : .fiat) } : nil,
             errorMessage: viewModel.state == .notEnough
                 ? NSLocalizedString("Balance not enough", comment: "External send") : nil)
@@ -101,7 +104,7 @@ struct SendAmountScreen: View {
         viewModel.setUnit(viewModel.unit == .dash ? .fiat : .dash)
     }
 
-    // MARK: - Fee and captions
+    // MARK: - Notices
 
     private func infoMessage(_ text: String) -> some View {
         DashUIKit.SystemMessageView(
@@ -124,27 +127,12 @@ struct SendAmountScreen: View {
                 backgroundColor: Color.dash.redAlpha5,
                 buttonName: NSLocalizedString("Try again", comment: "External send"),
                 onAction: { Task { await viewModel.retryFee() } })
-        } else if let fee = viewModel.feeText {
-            feeLine(fee)
         }
         if let caption = viewModel.lockedCaption {
             Text(caption)
                 .dashFont(.footnote)
                 .foregroundStyle(Color.dash.secondaryText)
         }
-    }
-
-    private func feeLine(_ fee: String) -> some View {
-        HStack {
-            Text(NSLocalizedString("Network fee", comment: "External send"))
-                .dashFont(.footnote)
-                .foregroundStyle(Color.dash.secondaryText)
-            Spacer()
-            Text(fee)
-                .dashFont(.footnote)
-                .foregroundStyle(Color.dash.primaryText)
-        }
-        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Continue
@@ -159,7 +147,7 @@ struct SendAmountScreen: View {
                 actionButtonText: NSLocalizedString("Continue", comment: "External send"),
                 actionEnabled: viewModel.isContinueEnabled,
                 inProgress: viewModel.isContinueLoading,
-                actionHandler: viewModel.proceed)
+                actionHandler: { Task { await viewModel.proceed() } })
                 .accessibilityIdentifier("send_amount_keypad")
         } else {
             DashUIKit.DashButton(
@@ -169,7 +157,7 @@ struct SendAmountScreen: View {
                 fillsWidth: true,
                 size: .large,
                 style: .filledBlue,
-                action: viewModel.proceed)
+                action: { Task { await viewModel.proceed() } })
                 .accessibilityIdentifier("send_amount_continue")
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
@@ -279,7 +267,7 @@ private func previewScreen(
 /// Credits of an identity in the previews.
 private let previewCredits: UInt64 = 5_000_000_000
 
-#Preview("Identity source, reserve note") {
+#Preview("Identity source") {
     previewScreen(source: .identity, balance: AmountRules.dashValue(of: previewCredits), fee: 1_000_000)
 }
 

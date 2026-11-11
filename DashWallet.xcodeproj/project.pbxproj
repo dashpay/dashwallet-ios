@@ -2121,8 +2121,6 @@
 		6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */; };
 		74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
 		E5E0D0D10000000000000002 /* SendOutcomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */; };
-		E5E0D0F50000000000000002 /* ExternalSendSentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F50000000000000001 /* ExternalSendSentSheet.swift */; };
-		E5E0D0F50000000000000003 /* ExternalSendSentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F50000000000000001 /* ExternalSendSentSheet.swift */; };
 		E5E0D0F30000000000000002 /* ExternalSendHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F30000000000000001 /* ExternalSendHostController.swift */; };
 		E5E0D0F30000000000000003 /* ExternalSendHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F30000000000000001 /* ExternalSendHostController.swift */; };
 		E5E0D0F20000000000000002 /* ExternalSendFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */; };
@@ -4032,7 +4030,6 @@
 		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
 		17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryUITests.swift; sourceTree = "<group>"; };
 		E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeRouter.swift; sourceTree = "<group>"; };
-		E5E0D0F50000000000000001 /* ExternalSendSentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendSentSheet.swift; sourceTree = "<group>"; };
 		E5E0D0F30000000000000001 /* ExternalSendHostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendHostController.swift; sourceTree = "<group>"; };
 		E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFlowScreen.swift; sourceTree = "<group>"; };
 		E5E0D0F10000000000000001 /* ExternalSendFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFlow.swift; sourceTree = "<group>"; };
@@ -4147,7 +4144,6 @@
 		E5E0D0D40000000000000001 /* Sending */ = {
 			isa = PBXGroup;
 			children = (
-				E5E0D0F50000000000000001 /* ExternalSendSentSheet.swift */,
 				E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */,
 				E5E0D0D20000000000000001 /* SendFailedSheet.swift */,
 			);
@@ -10744,7 +10740,6 @@
 				E5E0D0C90000000000000002 /* ConfirmViewModel.swift in Sources */,
 				E5E0D0CA0000000000000002 /* ConfirmSheet.swift in Sources */,
 				E5E0D0D10000000000000002 /* SendOutcomeRouter.swift in Sources */,
-				E5E0D0F50000000000000002 /* ExternalSendSentSheet.swift in Sources */,
 				E5E0D0F30000000000000002 /* ExternalSendHostController.swift in Sources */,
 				E5E0D0F20000000000000002 /* ExternalSendFlowScreen.swift in Sources */,
 				E5E0D0F10000000000000002 /* ExternalSendFlow.swift in Sources */,
@@ -11865,7 +11860,6 @@
 				E5E0D0C90000000000000003 /* ConfirmViewModel.swift in Sources */,
 				E5E0D0CA0000000000000003 /* ConfirmSheet.swift in Sources */,
 				E5E0D0D10000000000000003 /* SendOutcomeRouter.swift in Sources */,
-				E5E0D0F50000000000000003 /* ExternalSendSentSheet.swift in Sources */,
 				E5E0D0F30000000000000003 /* ExternalSendHostController.swift in Sources */,
 				E5E0D0F20000000000000003 /* ExternalSendFlowScreen.swift in Sources */,
 				E5E0D0F10000000000000003 /* ExternalSendFlow.swift in Sources */,

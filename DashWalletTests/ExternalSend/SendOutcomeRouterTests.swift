@@ -57,14 +57,17 @@ final class SendOutcomeRouterTests: XCTestCase {
 
     // MARK: - sent
 
-    func testSentCoreToCoreShowsTheTransactionSuccessScreen() {
-        XCTAssertEqual(router.destination(for: .sent, request: request(.coreToCore)),
-                       .success(.transactionDetails))
+    func testSentFromCoreShowsTheTransactionSuccessScreen() {
+        for route in allRoutes where route.source == .core {
+            XCTAssertEqual(router.destination(for: .sent, request: request(route)), .success(.transactionDetails),
+                           "\(route)")
+        }
     }
 
-    func testSentOnEveryOtherRouteShowsTheSentSheetSuccess() {
-        for route in allRoutes where route != .coreToCore {
-            XCTAssertEqual(router.destination(for: .sent, request: request(route)), .success(.sentSheet),
+    /// Shielded, Platform and Identity sends have no Core transaction to show: the sheet closes on a Sent Toast.
+    func testSentFromEveryOtherSourceShowsTheSentToast() {
+        for route in allRoutes where route.source != .core {
+            XCTAssertEqual(router.destination(for: .sent, request: request(route)), .success(.toast(message: "Sent")),
                            "\(route)")
         }
     }

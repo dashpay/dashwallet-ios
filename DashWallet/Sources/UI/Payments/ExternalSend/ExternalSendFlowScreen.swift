@@ -17,8 +17,8 @@
 
 import SwiftUI
 
-/// Draws `ExternalSendFlow`: Address, with Send pushed on it, and Select source, Confirm, Send failed and the sent
-/// state as one bottom sheet over Send. Every transition is the flow's; this view only mirrors its `step`.
+/// Draws `ExternalSendFlow`: Address, with Send pushed on it, and Select source, Confirm and Send failed as one bottom
+/// sheet over Send. Every transition is the flow's; this view only mirrors its `step`.
 struct ExternalSendFlowScreen: View {
     @ObservedObject var flow: ExternalSendFlow
     var onScan: () -> Void
@@ -63,8 +63,8 @@ struct ExternalSendFlowScreen: View {
 
     private var sheetContentIsShown: Bool {
         switch flow.step {
-        case .selectSource, .confirm, .sendFailed, .sent(.sentSheet): return true
-        case .address, .send, .sent(.transactionDetails), nil: return false
+        case .selectSource, .confirm, .sendFailed: return true
+        case .address, .send, .sent, nil: return false
         }
     }
 
@@ -78,9 +78,7 @@ struct ExternalSendFlowScreen: View {
             if let confirm = flow.confirmViewModel { ConfirmSheet(viewModel: confirm) }
         case .sendFailed(let content):
             SendFailedSheet(content: content, onClose: flow.closeFromSendFailed, onRetry: flow.retryFromSendFailed)
-        case .sent:
-            ExternalSendSentSheet(amountDuffs: flow.sentAmountDuffs, fiatText: flow.sentFiatText, onDone: flow.close)
-        case .address, .send, nil:
+        case .address, .send, .sent, nil:
             EmptyView()
         }
     }
@@ -91,8 +89,7 @@ struct ExternalSendFlowScreen: View {
         case .selectSource: flow.closeSelectSource()
         case .confirm: flow.confirmViewModel?.cancel()
         case .sendFailed: flow.closeFromSendFailed()
-        case .sent: flow.close()
-        case .address, .send, nil: break
+        case .address, .send, .sent, nil: break
         }
     }
 }

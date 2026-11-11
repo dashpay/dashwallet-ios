@@ -18,13 +18,13 @@ import Foundation
 
 /// A note Confirm lists for a source and destination pair.
 enum ConfirmWarning: Equatable, Hashable {
-    /// Shielded, Platform or Identity to a Core address arrives after a delay.
-    case withdrawalDelay
     /// Shielded to a non-Shielded destination makes the amount and the destination public.
     case shieldedMadePublic
+    /// Shielded to Core is not instant: it takes the place of "Processing time" on that pair.
+    case shieldedNotInstant
     /// "Double-check the address": the default note of the current Send.
     case wrongAddressReminder
-    /// "Processing time": Shielded or Platform to Core.
+    /// "Processing time": Platform to Core.
     case processingTime
     /// Platform to Core for the whole Platform balance.
     case fullPlatformWithdrawal

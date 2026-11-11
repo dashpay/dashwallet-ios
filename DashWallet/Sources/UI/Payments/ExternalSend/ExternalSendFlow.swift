@@ -47,8 +47,6 @@ final class ExternalSendFlow: ObservableObject {
     @Published private(set) var sendViewModel: SendAmountViewModel?
     @Published private(set) var confirmViewModel: ConfirmViewModel?
     @Published private(set) var selectSourceViewModel: SelectSourceViewModel?
-    /// The amount of the send that was made, for the sent sheet.
-    private(set) var sentAmountDuffs: UInt64 = 0
 
     var onFinish: ((Finish) -> Void)?
 
@@ -96,9 +94,6 @@ final class ExternalSendFlow: ObservableObject {
         self.clipboard = clipboard
     }
 
-    /// The sent amount in local currency, nil without an exchange rate.
-    var sentFiatText: String? { converter.fiatText(forDuffs: sentAmountDuffs) }
-
     // MARK: - Entry points
 
     /// Opens the Address screen.
@@ -120,7 +115,7 @@ final class ExternalSendFlow: ObservableObject {
                prefetched: PaymentRequestDetails? = nil) async {
         if addressViewModel == nil { start() }
         if destination.type == .identityID, recipient == nil {
-            await addressViewModel?.handleScanned(destination.text)
+            await addressViewModel?.handleScanned(destination)
         } else {
             await open(destination, recipient, prefetched: prefetched)
         }
@@ -177,8 +172,7 @@ final class ExternalSendFlow: ObservableObject {
     func showSelectSource() async {
         guard let sendViewModel, let destination else { return }
         let select = SelectSourceViewModel(
-            destination: destination, selected: sendViewModel.source, balances: balances,
-            currentIdentity: currentIdentity, converter: converter)
+            destination: destination, selected: sendViewModel.source, currentIdentity: currentIdentity)
         select.onPick = { [weak self] source in
             guard let self else { return }
             step = .send
@@ -296,12 +290,16 @@ final class ExternalSendFlow: ObservableObject {
         let send = SendAmountViewModel(
             destination: destination, pinnedSource: pinnedSource ?? pinned, recipient: recipient, balances: balances,
             feeEstimator: feeEstimator, maxPlanner: maxPlanner, converter: converter, currentIdentity: currentIdentity)
-        send.onContinue = { [weak self] request in self?.openConfirm(request) }
+        send.onContinue = { [weak self] request in await self?.openConfirm(request) }
         sendViewModel = send
         step = .send
     }
 
-    private func openConfirm(_ request: SendAmountRequest) {
+    /// Authenticates and prepares the send while Send stays on screen, and opens Confirm only once that is over, so
+    /// the authentication prompt is never presented while the Confirm sheet animates in. Any prepare that did not
+    /// succeed keeps the holder on Send: a fee that could not be read shows there with Send's Try again, so no retry
+    /// authenticates over an open sheet.
+    private func openConfirm(_ request: SendAmountRequest) async {
         guard let sendViewModel else { return }
         let confirm = ConfirmViewModel(
             request: request, recipient: recipient, executor: recorder, balances: balances, converter: converter)
@@ -309,9 +307,15 @@ final class ExternalSendFlow: ObservableObject {
             guard let self else { return }
             confirmViewModel = nil
             step = .send
-            if reason == .balanceNotEnough { Task { await sendViewModel.confirmReportedNotEnough() } }
+            switch reason {
+            case .balanceNotEnough: Task { await sendViewModel.confirmReportedNotEnough() }
+            case .feeFailed: sendViewModel.confirmReportedFeeFailure()
+            case .cancelled, .authenticationNotCompleted: break
+            }
         }
         confirm.onOutcome = { [weak self] outcome in self?.route(outcome, request: request) }
+        await confirm.start()
+        guard confirm.state == .ready, step == .send, self.sendViewModel === sendViewModel else { return }
         confirmViewModel = confirm
         step = .confirm
     }
@@ -321,9 +325,8 @@ final class ExternalSendFlow: ObservableObject {
         switch router.destination(for: outcome, request: request) {
         case .success(let shown):
             let txidWire = recorder.lastPrepared?.txidWire
-            // Core to Core without a txid has no transaction screen to open, so the sent sheet shows instead.
-            let view: SendSuccessView = shown == .transactionDetails && txidWire == nil ? .sentSheet : shown
-            sentAmountDuffs = request.amount
+            // A Core send without a txid has no transaction screen to open, so the Sent Toast shows instead.
+            let view: SendSuccessView = shown == .transactionDetails && txidWire == nil ? .sentToast : shown
             step = .sent(view)
             finish(.success(view, txidWire: txidWire, callbackURL: recorder.lastPrepared?.callbackURL))
         case let .infoToast(title, message):

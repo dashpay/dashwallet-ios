@@ -86,10 +86,12 @@ final class SendAmountViewModelTests: XCTestCase {
         var gatedAmounts: Set<UInt64> = []
         private(set) var calls: [(route: SendRoute, amount: UInt64)] = []
         private var gates: [UInt64: CheckedContinuation<Void, Never>] = [:]
+        /// Released before the estimate reached its gate, so it passes straight through instead of waiting forever.
+        private var releasedEarly: Set<UInt64> = []
 
         func estimate(route: SendRoute, amount: UInt64) async -> SendFeeEstimate {
             calls.append((route, amount))
-            if gatedAmounts.contains(amount) {
+            if gatedAmounts.contains(amount), releasedEarly.remove(amount) == nil {
                 await withCheckedContinuation { gates[amount] = $0 }
             }
             return byAmount?(amount) ?? results[route] ?? defaultResult
@@ -100,7 +102,11 @@ final class SendAmountViewModelTests: XCTestCase {
         }
 
         func release(_ amount: UInt64) {
-            gates.removeValue(forKey: amount)?.resume()
+            guard let gate = gates.removeValue(forKey: amount) else {
+                releasedEarly.insert(amount)
+                return
+            }
+            gate.resume()
         }
     }
 
@@ -271,7 +277,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.amountDuffs, oneDash / 2)
         XCTAssertEqual(vm.secondaryAmountText, (oneDash / 2).formattedDashAmount)
         XCTAssertEqual(estimator.calls.last?.amount, oneDash / 2, "the estimate runs on the DASH amount")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, oneDash / 2)
     }
 
@@ -309,7 +315,7 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM()
         XCTAssertEqual(vm.state, .amountEmpty)
         XCTAssertFalse(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertTrue(continued.isEmpty)
     }
 
@@ -319,7 +325,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.setAmountText("1")
         XCTAssertEqual(vm.state, .ready)
         XCTAssertTrue(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued, [SendAmountRequest(route: .coreToCore, destination: dest, amount: oneDash,
                                                      isMax: false)])
     }
@@ -341,7 +347,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.amountDuffs, 499_990_000)
         XCTAssertEqual(vm.amountText, UInt64(499_990_000).formattedDashAmountWithoutCurrencySymbol)
         XCTAssertEqual(vm.state, .ready)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, 499_990_000)
         XCTAssertEqual(continued.last?.isMax, true)
     }
@@ -354,12 +360,12 @@ final class SendAmountViewModelTests: XCTestCase {
         planner.sweepCredits[.shieldedToCore] = 123_456_789
         let vm = await makeVM()
         await vm.tapMax()
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, 123_456)
         XCTAssertEqual(continued.last?.sweepCredits, 123_456_789)
 
         await vm.setAmountText("1")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.isMax, false)
         XCTAssertNil(continued.last?.sweepCredits)
     }
@@ -391,7 +397,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.tapMax()
         XCTAssertEqual(vm.amountText, "61.73")
         XCTAssertEqual(vm.amountDuffs, 123_456_789, "not re-derived from the rounded fiat text")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, 123_456_789)
         XCTAssertEqual(continued.last?.isMax, true)
     }
@@ -400,7 +406,7 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM()
         await vm.tapMax()
         await vm.setAmountText("1")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.isMax, false)
         XCTAssertEqual(continued.last?.amount, oneDash)
     }
@@ -424,7 +430,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.tapMax()
         XCTAssertEqual(vm.amountDuffs, coreBalance, "an unplannable Max is not guessed from balance minus fee")
         XCTAssertEqual(vm.state, .notEnough, "the amount is no longer a Max, so the balance check applies")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertTrue(continued.isEmpty)
     }
 
@@ -437,7 +443,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(planner.requested.last, .platformToCore)
         XCTAssertEqual(vm.state, .notEnough, "\(coreBalance) is above the Platform balance less the fee")
         await vm.setAmountText("0.5")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.isMax, false)
     }
 
@@ -551,8 +557,8 @@ final class SendAmountViewModelTests: XCTestCase {
         fundingCandidates.candidates = candidates
         balances.table[.platform] = oneDash
         let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
-        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
-                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: ownID), pinnedSource: .platform,
+                                     recipient: recipient(own: true), balances: balances, feeEstimator: estimator,
                                      maxPlanner: live, converter: converter, currentIdentity: identity)
         await vm.load()
         XCTAssertEqual(vm.route, .platformToIdentity)
@@ -575,8 +581,8 @@ final class SendAmountViewModelTests: XCTestCase {
         fundingCandidates.candidates = [address(1, credits: PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits)]
         balances.table[.platform] = oneDash
         let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
-        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
-                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: ownID), pinnedSource: .platform,
+                                     recipient: recipient(own: true), balances: balances, feeEstimator: estimator,
                                      maxPlanner: live, converter: converter, currentIdentity: identity)
         await vm.load()
         await vm.setAmountText("0.001")
@@ -587,8 +593,8 @@ final class SendAmountViewModelTests: XCTestCase {
     func testAPlatformToIdentityAmountIsUnknownNotNotEnoughWhenTheAddressesCannotBeRead() async {
         balances.table[.platform] = oneDash
         let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
-        let vm = SendAmountViewModel(destination: destination(.identityID, text: otherID), pinnedSource: .platform,
-                                     recipient: recipient(), balances: balances, feeEstimator: estimator,
+        let vm = SendAmountViewModel(destination: destination(.identityID, text: ownID), pinnedSource: .platform,
+                                     recipient: recipient(own: true), balances: balances, feeEstimator: estimator,
                                      maxPlanner: live, converter: converter, currentIdentity: identity)
         await vm.load()
         fundingCandidates.candidates = nil
@@ -634,7 +640,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.sourceBalanceDuffs, coreBalance, "the balance is unchanged")
         XCTAssertEqual(vm.state, .notEnough)
         XCTAssertFalse(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertTrue(continued.isEmpty)
 
         await vm.setAmountText("4.9")
@@ -655,7 +661,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.confirmReportedNotEnough()
         XCTAssertEqual(vm.amountDuffs, 99_990_000)
         XCTAssertEqual(vm.state, .ready)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.isMax, true)
         XCTAssertEqual(continued.last?.amount, 99_990_000)
     }
@@ -665,7 +671,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.setAmountText("4.999991")
         XCTAssertEqual(vm.state, .notEnough)
         XCTAssertFalse(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertTrue(continued.isEmpty)
         await vm.setAmountText("5")
         XCTAssertEqual(vm.state, .notEnough)
@@ -689,6 +695,43 @@ final class SendAmountViewModelTests: XCTestCase {
     }
 
     // MARK: - AC-01b: the fee estimate states
+
+    /// The Platform withdrawal fee does not depend on the amount, so typing reuses the fee already known: no new
+    /// estimate and no progress per keystroke; affordability stays a local check (AC-08). A failure is never reused.
+    func testTypingOnPlatformToCoreReusesTheFeeAndNeverLoads() async {
+        let vm = await makeVM(pinned: .platform)
+        XCTAssertEqual(vm.route, .platformToCore)
+        XCTAssertEqual(vm.fee, 3_000)
+        let before = estimator.calls.count
+
+        estimator.gatedAmounts = [oneDash]
+        let typing = Task { await vm.setAmountText("1") }
+        var loaded = false
+        for _ in 0 ..< 50 {
+            loaded = loaded || vm.isContinueLoading
+            await Task.yield()
+        }
+        estimator.gatedAmounts = []
+        estimator.release(oneDash)
+        await typing.value
+        XCTAssertFalse(loaded, "Continue never turns into progress while typing")
+        XCTAssertFalse(vm.isContinueLoading)
+        XCTAssertEqual(estimator.calls.count, before, "the known fee is reused")
+        XCTAssertEqual(vm.state, .ready)
+
+        await vm.setAmountText("1.99998")
+        XCTAssertEqual(vm.state, .notEnough, "200_000_000 - 3_000 is the most")
+        XCTAssertEqual(estimator.calls.count, before)
+
+        estimator.results[.platformToCore] = .unavailable
+        let failing = await makeVM(pinned: .platform)
+        XCTAssertEqual(failing.state, .feeFailed)
+        estimator.results[.platformToCore] = .fee(3_000)
+        let afterFailure = estimator.calls.count
+        await failing.setAmountText("1")
+        XCTAssertEqual(estimator.calls.count, afterFailure + 1, "a failed estimate is estimated again")
+        XCTAssertEqual(failing.state, .ready)
+    }
 
     func testWhileTheEstimateRunsContinueIsLoadingAndMaxIsDisabled() async {
         estimator.gatedAmounts = [oneDash]
@@ -734,7 +777,7 @@ final class SendAmountViewModelTests: XCTestCase {
             XCTAssertNil(vm.fee, "an unavailable estimate is never a zero fee")
             XCTAssertFalse(vm.isContinueEnabled, "\(expected)")
             XCTAssertFalse(vm.isMaxEnabled, "\(expected)")
-            vm.proceed()
+            await vm.proceed()
             XCTAssertTrue(continued.isEmpty, "\(expected)")
         }
     }
@@ -791,7 +834,7 @@ final class SendAmountViewModelTests: XCTestCase {
         await vm.pickSource(.platform)
         XCTAssertEqual(planner.requested.last, .platformToCore)
         XCTAssertEqual(vm.amountDuffs, 199_000_000)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.route, .platformToCore)
         XCTAssertEqual(continued.last?.isMax, true)
     }
@@ -808,7 +851,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertTrue(balances.isHolding)
         XCTAssertEqual(vm.state, .estimating)
         XCTAssertFalse(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertTrue(continued.isEmpty)
 
         balances.release()
@@ -945,7 +988,7 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM(dest)
         XCTAssertEqual(vm.state, .ready)
         XCTAssertTrue(vm.isContinueEnabled)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued, [SendAmountRequest(route: .coreToCore, destination: dest, amount: oneDash,
                                                      isMax: false)])
     }
@@ -973,7 +1016,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.route, .identityToCore)
         XCTAssertEqual(vm.sourceBalanceDuffs, AmountRules.dashValue(of: identityCredits))
         XCTAssertEqual(vm.sourceBalanceText, AmountRules.dashValue(of: identityCredits).formattedDashAmount)
-        XCTAssertEqual(vm.feeText, AmountRules.dashValue(of: identityFeeCredits).formattedDashAmount)
+        XCTAssertEqual(vm.fee, identityFeeCredits)
     }
 
     func testIdentityMaxIsTheCreditsLessTheFeeAndTheDashPayReserve() async {
@@ -983,7 +1026,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.amountDuffs, expected)
         XCTAssertTrue(planner.requested.isEmpty, "the Identity Max is AmountRules.identityMax, not a route planner")
         XCTAssertEqual(vm.state, .ready)
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, expected)
         XCTAssertEqual(continued.last?.isMax, true)
         XCTAssertEqual(continued.last?.route, .identityToCore)
@@ -1003,13 +1046,12 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.state, .ready)
     }
 
-    func testIdentityMaxExplainsTheReserveNextToMaxAndShowsNoWarning() async {
+    func testIdentityMaxKeepsTheReserveWithoutANoteOrWarning() async {
         let vm = await identityVM()
         XCTAssertTrue(vm.isMaxEnabled)
         await vm.tapMax()
-        let note = vm.reserveNote ?? ""
-        XCTAssertTrue(note.hasPrefix("Max keeps "), note)
-        XCTAssertTrue(note.hasSuffix("on your identity so contact requests and profile updates keep working."), note)
+        XCTAssertEqual(vm.amountDuffs, AmountRules.dashValue(of: identityCredits - identityFeeCredits - reserveCredits))
+        XCTAssertNil(vm.reserveNote)
         XCTAssertNil(vm.reserveWarning, "Max leaves exactly the reserve")
     }
 
@@ -1038,7 +1080,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertTrue(vm.isContinueEnabled)
         XCTAssertEqual(vm.reserveWarning, "This leaves less than the DashPay reserve. DashPay actions, like "
             + "contact requests and profile updates, may stop working.")
-        vm.proceed()
+        await vm.proceed()
         XCTAssertEqual(continued.last?.amount, 10_000)
         XCTAssertEqual(continued.last?.isMax, false)
     }
@@ -1094,21 +1136,18 @@ final class SendAmountViewModelTests: XCTestCase {
         IdentityRecipient(id: id ?? (own ? ownID : otherID), username: username, isOwnCurrentIdentity: own)
     }
 
-    func testAnotherIdentityShowsItsUsernameAndTheNotGoingToTheWalletStatement() async {
+    func testAnotherIdentityShowsItsUsernameAndNoNotice() async {
         let vm = await makeVM(destination(.identityID, text: otherID), recipient: recipient())
         XCTAssertEqual(vm.recipientName, "bob")
-        XCTAssertEqual(vm.recipientNotice,
-                       "The money goes to bob's identity balance, not their Dash wallet balance.")
+        XCTAssertNil(vm.recipientNotice)
         XCTAssertEqual(vm.shortAddress.count, 12)
         XCTAssertNil(vm.sourceChangedNotice)
     }
 
-    func testAnIdentityWithoutAUsernameShowsTheShortIDAloneAndTheRecipientIdentityStatement() async {
+    func testAnIdentityWithoutAUsernameShowsTheShortIDAloneAndNoNotice() async {
         let vm = await makeVM(destination(.identityID, text: otherID), recipient: recipient(username: nil))
         XCTAssertNil(vm.recipientName, "the To row falls back to the short ID")
-        let notice = vm.recipientNotice ?? ""
-        XCTAssertTrue(notice.hasPrefix("The money goes to the recipient identity"), notice)
-        XCTAssertTrue(notice.hasSuffix("not their Dash wallet balance."), notice)
+        XCTAssertNil(vm.recipientNotice)
     }
 
     func testTheCurrentIdentityFromCoreIsATopUpOfYourIdentity() async {
@@ -1125,8 +1164,7 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM(destination(.identityID, text: sibling.id), recipient: sibling)
         XCTAssertEqual(vm.source, .shielded, "Core cannot pay it")
         XCTAssertEqual(vm.recipientName, "alice2")
-        XCTAssertEqual(vm.recipientNotice,
-                       "The money goes to alice2's identity balance, not their Dash wallet balance.")
+        XCTAssertNil(vm.recipientNotice)
     }
 
     func testOtherDestinationsHaveNoRecipientStates() async {
@@ -1145,8 +1183,8 @@ final class SendAmountViewModelTests: XCTestCase {
     // MARK: - AC-14: the pinned source
 
     func testAPinnedSourceThatCanPayIsKeptWithoutANotice() async {
-        let platform = await makeVM(destination(.identityID, text: otherID), pinned: .platform,
-                                    recipient: recipient())
+        let platform = await makeVM(destination(.identityID, text: ownID), pinned: .platform,
+                                    recipient: recipient(own: true))
         XCTAssertEqual(platform.source, .platform)
         XCTAssertEqual(platform.route, .platformToIdentity)
         XCTAssertNil(platform.sourceChangedNotice)
@@ -1171,11 +1209,10 @@ final class SendAmountViewModelTests: XCTestCase {
                        "Core can't pay someone else's identity, so the source was changed to Shielded.")
     }
 
-    func testTheSourceChangedNoticeStacksWithTheRecipientStatement() async {
+    func testTheSourceChangedNoticeShowsWithoutARecipientStatement() async {
         let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
         XCTAssertNotNil(vm.sourceChangedNotice)
-        XCTAssertEqual(vm.recipientNotice,
-                       "The money goes to bob's identity balance, not their Dash wallet balance.")
+        XCTAssertNil(vm.recipientNotice)
     }
 
     func testAReplacedPinIsNeverIdentityEvenWhenOnlyItIsFunded() async {
@@ -1196,9 +1233,19 @@ final class SendAmountViewModelTests: XCTestCase {
     func testChangingTheSourceAfterAReplacementClearsTheNotice() async {
         let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
         XCTAssertNotNil(vm.sourceChangedNotice)
-        await vm.pickSource(.platform)
-        XCTAssertEqual(vm.source, .platform)
+        await vm.pickSource(.identity)
+        XCTAssertEqual(vm.source, .identity)
         XCTAssertNil(vm.sourceChangedNotice)
+    }
+
+    func testAPinnedPlatformCannotPaySomeoneElsesIdentityAndIsReplacedWithTheNotice() async {
+        let vm = await makeVM(destination(.identityID, text: otherID), pinned: .platform, recipient: recipient())
+        XCTAssertEqual(vm.source, .shielded)
+        XCTAssertEqual(vm.route, .shieldedToIdentity)
+        XCTAssertEqual(vm.sourceChangedNotice,
+                       "Platform can't pay someone else's identity yet, so the source was changed to Shielded.")
+        await vm.pickSource(.platform)
+        XCTAssertEqual(vm.source, .shielded, "Platform stays unavailable for this destination")
     }
 
     func testTheHolderCanStillPickAnotherSourceFromAPin() async {

@@ -18,10 +18,14 @@ import Foundation
 
 /// The existing success view a `sent` outcome shows.
 enum SendSuccessView: Equatable {
-    /// Core to Core: the transaction success screen of the old Send.
+    /// A send with a Core transaction: the transaction success screen of the old Send.
     case transactionDetails
-    /// Every other route: the sent sheet.
-    case sentSheet
+    /// A send with no Core transaction to show: the sheet closes and a success Toast shows over Home.
+    case toast(message: String)
+
+    static var sentToast: SendSuccessView {
+        .toast(message: NSLocalizedString("Sent", comment: "External send"))
+    }
 }
 
 /// What Send failed (SCR-10) shows, all of it already localized text.
@@ -46,7 +50,7 @@ struct SendOutcomeRouter {
     func destination(for outcome: SendOutcome, request: SendAmountRequest) -> SendOutcomeDestination {
         switch outcome {
         case .sent:
-            return .success(request.route == .coreToCore ? .transactionDetails : .sentSheet)
+            return .success(request.route.source == .core ? .transactionDetails : .sentToast)
         case .inFlight:
             return .infoToast(
                 title: NSLocalizedString("Send in progress", comment: "External send"),

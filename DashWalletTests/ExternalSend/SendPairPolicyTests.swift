@@ -75,7 +75,7 @@ final class SendPairPolicyTests: XCTestCase {
             PairCase("platform -> shielded", .platform, shielded, .route(.platformToShielded)),
             PairCase("platform -> platform", .platform, platform, .route(.platformToPlatform)),
             PairCase("platform -> own identity", .platform, ownIdentity, .route(.platformToIdentity)),
-            PairCase("platform -> other identity", .platform, otherIdentity, .route(.platformToIdentity)),
+            PairCase("platform -> other identity", .platform, otherIdentity, .unavailable(.platformToOtherIdentity)),
 
             PairCase("identity -> core", .identity, core, .route(.identityToCore)),
             PairCase("identity -> shielded (ADR-0041)", .identity, shielded, .unavailable(.notSupportedYet)),
@@ -149,6 +149,17 @@ final class SendPairPolicyTests: XCTestCase {
         // Not the Current identity, even if the wallet owns it: Core cannot pay it.
         let sibling = destination(.identityID, text: "second-identity-of-this-wallet")
         XCTAssertEqual(decide(.core, sibling), .unavailable(.coreToOtherIdentity))
+        XCTAssertEqual(decide(.platform, sibling), .unavailable(.platformToOtherIdentity))
+    }
+
+    /// At the pinned SDK the top-up from Platform addresses refuses an identity the wallet does not manage
+    /// (`IdentityNotFound`), so only the holder's own Current identity is payable from Platform.
+    func testPlatformPaysOnlyTheOwnCurrentIdentity() {
+        XCTAssertEqual(decide(.platform, destination(.identityID, text: ownID)), .route(.platformToIdentity))
+        XCTAssertEqual(decide(.platform, destination(.identityID, text: otherID)),
+                       .unavailable(.platformToOtherIdentity))
+        XCTAssertEqual(UnavailableReason.platformToOtherIdentity.localizedMessage,
+                       "Platform can't pay someone else's identity yet")
     }
 
     func testWithoutACurrentIdentityEveryIdentityIDIsSomeoneElses() {
@@ -156,6 +167,8 @@ final class SendPairPolicyTests: XCTestCase {
         let dest = destination(.identityID, text: ownID)
         XCTAssertEqual(SendPairPolicy.decide(source: .core, destination: dest, facts: noOwn),
                        .unavailable(.coreToOtherIdentity))
+        XCTAssertEqual(SendPairPolicy.decide(source: .platform, destination: dest, facts: noOwn),
+                       .unavailable(.platformToOtherIdentity))
         XCTAssertEqual(SendPairPolicy.decide(source: .identity, destination: dest, facts: noOwn),
                        .route(.identityToIdentity))
     }
@@ -171,9 +184,9 @@ final class SendPairPolicyTests: XCTestCase {
     func testUnavailableReasonsAreDistinctAndCarryText() {
         let reasons: [UnavailableReason] = [.coreToOtherIdentity, .coreToScriptFormPlatformAddress,
                                             .platformToScriptFormPlatformAddress, .identityToOwnIdentity,
-                                            .notSupportedYet, .paymentRequestCoreOnly]
-        XCTAssertEqual(Set(reasons).count, 6)
-        XCTAssertEqual(Set(reasons.map(\.localizedMessage)).count, 6)
+                                            .notSupportedYet, .paymentRequestCoreOnly, .platformToOtherIdentity]
+        XCTAssertEqual(Set(reasons).count, 7)
+        XCTAssertEqual(Set(reasons.map(\.localizedMessage)).count, 7)
         for reason in reasons {
             XCTAssertFalse(reason.localizedMessage.isEmpty, "\(reason)")
         }
@@ -197,10 +210,11 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
     func testStartingSourceSkipsASourceThatCannotPayTheDestination() {
-        // Core holds the most but cannot pay someone else's Identity ID.
+        // Core and Platform hold the most but cannot pay someone else's Identity ID.
         let dest = destination(.identityID, text: otherID)
-        XCTAssertEqual(start(dest, balances(9, 0, 5)).source, .platform)
+        XCTAssertEqual(start(dest, balances(9, 0, 5)).source, .shielded)
         XCTAssertEqual(start(dest, balances(9, 3, 5)).source, .shielded)
+        XCTAssertEqual(start(destination(.identityID, text: ownID), balances(0, 0, 5)).source, .platform)
     }
 
     /// Only Shielded among the auto-picked sources can pay a script-form Platform address.
@@ -244,10 +258,16 @@ final class SendPairPolicyTests: XCTestCase {
 
     func testPinnedCoreWithSomeoneElsesIdentityIDIsReplacedAndFlagged() {
         let dest = destination(.identityID, text: otherID)
-        let result = start(dest, balances(9, 0, 5), pinned: .core)
-        XCTAssertEqual(result.source, .platform)
+        let result = start(dest, balances(9, 2, 5), pinned: .core)
+        XCTAssertEqual(result.source, .shielded)
         XCTAssertTrue(result.sourceChanged)
         XCTAssertNotEqual(result.source, .identity)
+    }
+
+    func testPinnedPlatformWithSomeoneElsesIdentityIDIsReplacedAndFlagged() {
+        let result = start(destination(.identityID, text: otherID), balances(0, 2, 9), pinned: .platform)
+        XCTAssertEqual(result.source, .shielded)
+        XCTAssertTrue(result.sourceChanged)
     }
 
     func testPinnedCoreWithScriptFormPlatformAddressIsReplacedAndFlagged() {
@@ -276,16 +296,18 @@ final class SendPairPolicyTests: XCTestCase {
             (.shielded, destination(.coreAddress)), (.shielded, destination(.shieldedAddress)),
             (.shielded, destination(.platformAddress)), (.shielded, destination(.identityID, text: otherID)),
             (.platform, destination(.coreAddress)), (.platform, destination(.shieldedAddress)),
-            (.platform, destination(.platformAddress)), (.platform, destination(.identityID, text: otherID)),
+            (.platform, destination(.platformAddress)), (.platform, destination(.identityID, text: ownID)),
             (.identity, destination(.coreAddress)), (.identity, destination(.platformAddress)),
             (.identity, destination(.identityID, text: otherID))
         ]
     }
 
-    func testWithdrawalWarningIsListedForExactlyShieldedPlatformAndIdentityToCore() {
+    func testNoPairListsAWithdrawalDelayNotice() {
         for (source, dest) in allAvailablePairs {
-            let expected = dest.type == .coreAddress && source != .core
-            XCTAssertEqual(warnings(source, dest).contains(.withdrawalDelay), expected, "\(source) -> \(dest.type)")
+            let label = "\(source) -> \(dest.type)"
+            XCTAssertFalse(warnings(source, dest).contains { "\($0)" == "withdrawalDelay" }, label)
+            XCTAssertFalse(warnings(source, dest, isMax: true).contains { "\($0)" == "withdrawalDelay" },
+                           "\(label) Max")
         }
     }
 
@@ -296,16 +318,23 @@ final class SendPairPolicyTests: XCTestCase {
         }
     }
 
-    func testShieldedToShieldedHasNeitherWithdrawalNorPublicWarning() {
+    func testShieldedToShieldedHasNoPublicWarning() {
         let list = warnings(.shielded, destination(.shieldedAddress))
-        XCTAssertFalse(list.contains(.withdrawalDelay))
         XCTAssertFalse(list.contains(.shieldedMadePublic))
     }
 
-    func testShieldedToCoreListsBothWithdrawalAndPublic() {
-        let list = warnings(.shielded, destination(.coreAddress))
-        XCTAssertTrue(list.contains(.withdrawalDelay))
-        XCTAssertTrue(list.contains(.shieldedMadePublic))
+    /// Owner review O7: Shielded → Core says "not instant" in place of Processing time, then the public notice.
+    func testShieldedToCoreListsExactlyNotInstantAndPublic() {
+        XCTAssertEqual(warnings(.shielded, destination(.coreAddress)), [.shieldedNotInstant, .shieldedMadePublic])
+        XCTAssertEqual(warnings(.shielded, destination(.coreAddress), isMax: true),
+                       [.shieldedNotInstant, .shieldedMadePublic])
+    }
+
+    func testNotInstantOnExactlyShieldedToCore() {
+        for (source, dest) in allAvailablePairs {
+            let expected = source == .shielded && dest.type == .coreAddress
+            XCTAssertEqual(warnings(source, dest).contains(.shieldedNotInstant), expected, "\(source) -> \(dest.type)")
+        }
     }
 
     // MARK: - AC-18: the current Send's warnings keep exactly their conditions
@@ -342,9 +371,10 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertTrue(warnings(.core, destination(.coreAddress), isMax: true).contains(.wrongAddressReminder))
     }
 
-    func testProcessingTimeOnExactlyShieldedAndPlatformToCore() {
+    /// Shielded → Core tells the delay with its "not instant" notice instead (owner review O7).
+    func testProcessingTimeOnExactlyPlatformToCore() {
         for (source, dest) in allAvailablePairs {
-            let expected = dest.type == .coreAddress && (source == .shielded || source == .platform)
+            let expected = dest.type == .coreAddress && source == .platform
             XCTAssertEqual(warnings(source, dest).contains(.processingTime), expected, "\(source) -> \(dest.type)")
         }
     }
@@ -357,12 +387,14 @@ final class SendPairPolicyTests: XCTestCase {
         }
     }
 
-    func testIdentityToCoreHasTheWithdrawalWarningButNoLegacyOne() {
-        let list = warnings(.identity, destination(.coreAddress))
-        XCTAssertTrue(list.contains(.withdrawalDelay))
-        XCTAssertFalse(list.contains(.processingTime))
-        XCTAssertTrue(legacyWarnings(.identity, destination(.coreAddress)).isEmpty)
-        XCTAssertFalse(list.contains(.wrongAddressReminder))
+    func testIdentityToCoreListsNoWarning() {
+        XCTAssertEqual(warnings(.identity, destination(.coreAddress)), [])
+    }
+
+    func testPlatformToCoreListsProcessingTimeAndAtMaxTheFullWithdrawal() {
+        XCTAssertEqual(warnings(.platform, destination(.coreAddress)), [.processingTime])
+        XCTAssertEqual(warnings(.platform, destination(.coreAddress), isMax: true),
+                       [.processingTime, .fullPlatformWithdrawal])
     }
 
     func testNewPairsListNoLegacyWarningOtherThanTheDefaultReminder() {

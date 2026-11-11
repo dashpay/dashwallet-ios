@@ -101,7 +101,16 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
             presentRequestFailedAlert(title: title, message: message)
         case let .success(view, txidWire, callbackURL):
             if let callbackURL { UIApplication.shared.open(callbackURL) }
-            if view == .transactionDetails, let txidWire { presentTransactionDetails(txidWire: txidWire) }
+            showSuccess(view, txidWire: txidWire)
+        }
+    }
+
+    private func showSuccess(_ view: SendSuccessView, txidWire: Data?) {
+        switch view {
+        case .transactionDetails:
+            if let txidWire { presentTransactionDetails(txidWire: txidWire) }
+        case .toast(let message):
+            dismissAll { $0.presentDashUIKitToast(style: .success, message: message) }
         }
     }
 
