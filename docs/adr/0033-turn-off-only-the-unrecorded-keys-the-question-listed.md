@@ -2,7 +2,6 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-10
-- **Feature record:** [../features/app-connect-owner-attribution/adr/0002-turn-off-only-the-unrecorded-keys-the-question-listed.md](../features/app-connect-owner-attribution/adr/0002-turn-off-only-the-unrecorded-keys-the-question-listed.md)
 - **Deciders:** romchornyi (owner), with Claude during the design pass
 
 ## Context
