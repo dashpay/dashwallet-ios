@@ -1063,8 +1063,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// has, or call a key unchecked that the rows place. After the question
     /// (`unrecordedKeyIds` set), every offered key still on is left on,
     /// listed or not: a listed key a failed owner read kept out of the
-    /// update is on too. `holder`: another app whose row shows some of those
-    /// keys, so the user can be sent there when the app's own row is gone.
+    /// update is on too. `holder`: another app whose row shows all those
+    /// keys but the DashPay profile ones, which every disconnect offers, so
+    /// the user can be sent there when the app's own row is gone and its
+    /// disconnect offers every key the result counts.
     static func settledDisconnect(
         appId: Data, after: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
         unrecordedKeyIds: Set<UInt32>?, owners reader: OwnerReader, at updatedAt: Date
@@ -1077,8 +1079,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             knownOwners: known)
         if unrecordedKeyIds != nil { remaining.leftAfterQuestion = remaining.offered.count }
         let left = unrecordedKeyIds == nil ? [] : remaining.offered
-        let holder = projection.connections.first {
-            $0.appId != appId && !left.isDisjoint(with: $0.unrecordedKeyIds[after.identityId] ?? [])
+        let appKeys = left.subtracting(projection.unrecordedProfileKeyIds[after.identityId] ?? [])
+        let shown = appKeys.isEmpty ? left : appKeys
+        let holder = shown.isEmpty ? nil : projection.connections.first {
+            $0.appId != appId && shown.isSubset(of: $0.unrecordedKeyIds[after.identityId] ?? [])
         }?.appId
         return (
             { rows($0, after: projection, of: after.identityId, intents: elsewhere, at: updatedAt) },

@@ -2136,6 +2136,35 @@ extension AppConnectRefreshOwnersTests {
             "nil while the app's own row is there")
     }
 
+    /// Keys left on can show under several rows: a DashPay profile key
+    /// under DashPay's, the app's own under the app of the same owner. The
+    /// user is sent to the row whose disconnect offers them all, the app's,
+    /// since every disconnect also offers the profile keys; not to DashPay's,
+    /// even when it sorts first.
+    func testKeysLeftUnderSeveralRowsAreReportedUnderTheRowThatOffersThemAll() async {
+        let store = makeStore(), reader = Reader()
+        let holderApp = Data(repeating: 0xB1, count: 32)
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        XCTAssertTrue(dashPay.lexicographicallyPrecedes(holderApp), "DashPay's row sorts first")
+        let own = Self.key(10, on: holderApp), listed = Self.key(20, on: Self.sibling)
+        let arrived = Self.key(21, on: Self.sibling)
+        let profile = Self.key(30, on: dashPay, bound: .documentType(contractId: dashPay, name: "profile"))
+        let intents = [Self.intent(own, app: holderApp)]
+        reader.failing = [Self.sibling]
+        let shown = await Self.refresh(store, [own, listed], intents, memory: .init(), reader: reader)
+        XCTAssertNotNil(shown[Self.sibling], "an unread owner gives Y its own row")
+        reader.failing = []
+        let after = AppConnect.IdentitySnapshot(
+            identityId: Self.identity, revision: 2, keys: [own, Self.disabled(listed), arrived, profile], platformTime: nil)
+        let (change, remaining, holder) = await PlatformDashConnectDataSource.settledDisconnect(
+            appId: Self.sibling, after: after, intents: intents, unrecordedKeyIds: [20],
+            owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(remaining.leftAfterQuestion, 2, "the key and the profile key that arrived after the question stay on")
+        XCTAssertEqual(holder, holderApp)
+        let rows = change(store.load())
+        XCTAssertFalse(rows.contains { $0.id == Self.sibling.toBase58String() }, "Y's row is gone")
+    }
+
     /// A key id is unique only within an identity: keys offered on one
     /// identity are never turned off while another is active, even when it
     /// has keys with the same ids. Checked before the PIN and after it.
