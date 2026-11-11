@@ -2185,9 +2185,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private func handleFailure(_ error: Error) {
-        Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        // The SDK's recipient-mismatch payload names both Orchard addresses;
+        // its failure record keeps the case name without them.
+        let logged = Self.isRecipientMismatch(error)
+            ? AssetLockFailureRecord.describe(error).logDescription
+            : String(describing: error)
+        Self.logger.error("🛡️ SHIELD-TX :: failure \(logged, privacy: .public)")
         lastFailure = error
         phase = .failed(Self.failureMessage(for: error))
+    }
+
+    /// Whether `error` refused a resume's recipient: the app's own check or
+    /// the SDK's error 61, bare or inside `transferFailed`.
+    static func isRecipientMismatch(_ error: Error) -> Bool {
+        switch AssetLockInputLimit.innermost(error) {
+        case PlatformWalletError.assetLockRecipientMismatch, CoordinatorError.resumeRecipientMismatch:
+            return true
+        default:
+            return false
+        }
     }
 
     /// The text a `.failed` phase shows for `error`. The SDK's own text for a
@@ -2197,7 +2213,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         if AssetLockInputLimit.isTooManyInputs(error) {
             return AssetLockInputLimit.message
         }
-        if case PlatformWalletError.assetLockRecipientMismatch = AssetLockInputLimit.innermost(error) {
+        if isRecipientMismatch(error) {
             return CoordinatorError.resumeRecipientMismatch.localizedDescription
         }
         if let local = error as? LocalizedError, let description = local.errorDescription {

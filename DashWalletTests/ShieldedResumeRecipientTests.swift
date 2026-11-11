@@ -211,6 +211,27 @@ final class ShieldedResumeRecipientTests: XCTestCase {
         XCTAssertEqual(ShieldedTransferCoordinator.failureMessage(for: wrapped), wrapped.localizedDescription)
     }
 
+    func testRecipientRefusalsAreRecognisedBareAndWrapped() {
+        let sdkError = PlatformWalletError.assetLockRecipientMismatch(sdkMismatchDetail)
+        let refusals: [Error] = [
+            sdkError,
+            ShieldedTransferCoordinator.CoordinatorError.transferFailed(sdkError),
+            ShieldedTransferCoordinator.CoordinatorError.resumeRecipientMismatch,
+        ]
+        for error in refusals {
+            XCTAssertTrue(ShieldedTransferCoordinator.isRecipientMismatch(error), "\(error)")
+        }
+        let others: [Error] = [
+            ShieldedTransferCoordinator.CoordinatorError.drainRecipientUnknown,
+            ShieldedTransferCoordinator.CoordinatorError.transferFailed(
+                PlatformWalletError.assetLockTooManyInputs("too many inputs: 121 (max 100)")),
+            PlatformWalletError.walletOperation("operation failed"),
+        ]
+        for error in others {
+            XCTAssertFalse(ShieldedTransferCoordinator.isRecipientMismatch(error), "\(error)")
+        }
+    }
+
     func testFailureRecordNamesTheMismatchWithoutTheAddresses() {
         let sdkError = PlatformWalletError.assetLockRecipientMismatch(sdkMismatchDetail)
         let envelopes: [Error] = [
