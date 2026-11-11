@@ -960,9 +960,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func ownerReader(context: Context) -> OwnerReader {
         let sdk = context.sdk
         return OwnerReader(
-            network: "\(context.network)", memory: ownerMemory,
+            network: ownerScope(context.network.persistenceScope, context.stores.endpoint), memory: ownerMemory,
             readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
             readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
+    }
+
+    /// The Platform an owner is remembered for: the network's persistence
+    /// scope, which names a devnet, and the endpoint it is reached at, since
+    /// devnets of one name at other nodes are other chains.
+    static func ownerScope(_ persistenceScope: String, _ endpoint: String?) -> String {
+        "\(persistenceScope) \(endpoint ?? "")"
     }
 
     /// The projection of `snapshot` with the owners it needs that are known.
