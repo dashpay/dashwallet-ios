@@ -27,6 +27,8 @@ A disconnect that leaves unrecorded keys of the app asks "Turn them off?" with t
 - `DashConnectDisconnectResult` carries the offered unrecorded key ids with their count; the "Turn them off?" message keeps them next to the connection it already holds.
 - `DashConnectDataSource.disconnect` takes the listed ids in place of `includingUnrecorded: Bool`; the first disconnect passes none.
 - After the PIN, the plan turns off the listed keys that are still live and still the app's; a key the fresh read attributes to the app but the list lacks stays on, and the result says access is left instead of reporting none.
+- A key id is unique only within an identity, so the offered ids go with the identity they were read on (`DashConnectOfferedKeys`). A disconnect with listed keys runs only while that identity is the active one, checked before the PIN and after it; otherwise it is refused as a wallet or identity change.
+- What stays on (offered, left after the question, not checked, not attributable) is told from the read after the update, the read the rows are refreshed from; the count of keys turned off is the plan's.
 
 ## Consequences
 
@@ -44,6 +46,5 @@ A disconnect that leaves unrecorded keys of the app asks "Turn them off?" with t
 
 ## Links
 
-- Spec: [../features/app-connect-owner-attribution/spec.md](../features/app-connect-owner-attribution/spec.md) (US-01, AC-08)
-- SAD: [../features/app-connect-owner-attribution/sad.md](../features/app-connect-owner-attribution/sad.md) §4
 - Related ADR: [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md); [ADR-0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md)
+- PR: #1364; issue #1346; the #1301 review thread it answers: r4513114671
