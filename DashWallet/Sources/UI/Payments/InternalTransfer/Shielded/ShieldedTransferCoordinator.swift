@@ -1897,14 +1897,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Also continues an unconfirmed attempt whose lock is still recorded
     /// (`canResumeUnconfirmedAssetLock`).
     func retryLastAssetLock(recipientRaw43: Data? = nil) async {
+        let continuesUnconfirmed = canResumeUnconfirmedAssetLock
         let retryable: Bool
-        if case .failed = phase { retryable = true } else { retryable = canResumeUnconfirmedAssetLock }
+        if case .failed = phase { retryable = true } else { retryable = continuesUnconfirmed }
         guard retryable, let outpoint = lastAssetLockOutPoint,
               let context = lastAssetLockContext else { return }
         do {
             _ = try CoreShieldedDrainService().manager(for: context)
         } catch {
-            handleFailure(error)
+            // The earlier result is still unknown; a refused resume must not
+            // turn it into a failure the sheet answers with a fresh payment.
+            if !continuesUnconfirmed { handleFailure(error) }
             return
         }
         reset()
@@ -1916,6 +1919,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
             recipientRaw43: recipientRaw43,
             expectedDrainContext: context,
             retryUnverifiedConsumption: true)
+        // A resume that stopped or failed says nothing new about the earlier
+        // submission: keep the unknown-result state and its recorded lock, so
+        // closing the sheet still ends the send flow.
+        if continuesUnconfirmed, case .failed = phase {
+            lastAssetLockOutPoint = outpoint
+            lastAssetLockContext = context
+            phase = .submittedUnconfirmed
+        }
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.

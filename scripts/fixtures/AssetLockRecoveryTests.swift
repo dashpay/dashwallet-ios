@@ -455,6 +455,46 @@ final class AssetLockRecoveryTests: XCTestCase {
         XCTAssertEqual(coordinator.newAssetLockCalls, 0)
     }
 
+    func testStoppedResumeKeepsTheUnknownResultInsteadOfAFailure() async {
+        let wallet = Data(repeating: 0x4a, count: 32)
+        let txid = Data(repeating: 0x4b, count: 32)
+        let recipient = Data(repeating: 6, count: 43)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .submittedUnconfirmed
+        coordinator.lastAssetLockOutPoint = .init(txidWire: txid, vout: 1)
+        coordinator.lastAssetLockContext = .init(walletId: wallet, networkScope: "testnet")
+        CoreShieldedDrainService.resolveManager = { _ in manager }
+        defer { CoreShieldedDrainService.resolveManager = nil }
+        let caller = SendRetryHarness(coordinator)
+        caller.route = .coreToShielded
+        caller.destinationRaw43 = recipient
+
+        // Cancelled PIN prompt.
+        coordinator.authorizationError = CancellationError()
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
+        XCTAssertTrue(caller.canResumeUnconfirmedLock)
+
+        // A definite refusal of the resume itself.
+        coordinator.authorizationError = nil
+        manager.error = PlatformWalletError.walletOperation("preflight refusal")
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(manager.calls, 1)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertTrue(caller.canResumeUnconfirmedLock)
+
+        // The wallet changed: nothing is asked and the state is kept.
+        CoreShieldedDrainService.resolveManager = { _ in throw CoreShieldedDrainService.TestError.contextChanged }
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(coordinator.authorizations, 2)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertEqual(coordinator.newAssetLockCalls, 0)
+    }
+
     func testUnconfirmedSendWithoutRecordedLockOffersNoResume() async {
         let wallet = Data(repeating: 0x48, count: 32)
         let manager = TestManager()
