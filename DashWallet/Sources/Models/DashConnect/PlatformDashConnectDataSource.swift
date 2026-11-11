@@ -1271,12 +1271,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         try await requireNotAnswered(uri.request, plan: plan, snapshot: snapshot, context: context)
         let request = uri.request
         let signer = KeychainSigner(modelContainer: context.modelContainer)
-        let intent = try await newAppConnectIntent(
+        // From here on the read the intent was made from: a fence reads again.
+        let (intent, read) = try await newAppConnectIntent(
             request: request, plan: plan, consent: consent, snapshot: snapshot,
             currentPublicKeys: currentPublicKeys, context: context)
         do {
             try await submitAndPublish(
-                intent, request: request, plan: plan, snapshot: snapshot, responseContractId: responseContractId,
+                intent, request: request, plan: plan, snapshot: read, responseContractId: responseContractId,
                 context: context, signer: signer)
         } catch {
             // The request is spent from here on: the row shows where it
@@ -1545,7 +1546,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The intent of a new approval: the keys it adds under ids no key or
     /// intent of the identity holds, the earlier keys of the same connection
-    /// it turns off, and the response, sealed now.
+    /// it turns off, and the response, sealed now. With it comes the read
+    /// the intent was made from: the read after a fence, when it fenced.
     private func newAppConnectIntent(
         request: AppConnectRequest,
         plan: AppConnect.GrantPlan,
@@ -1553,7 +1555,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         snapshot: AppConnect.IdentitySnapshot,
         currentPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         context: Context
-    ) async throws -> AppConnect.ConnectionIntent {
+    ) async throws -> (intent: AppConnect.ConnectionIntent, snapshot: AppConnect.IdentitySnapshot) {
         let stores = context.stores
         var authKeys = try await deriveAuthKeys(request: request, plan: plan, context: context)
         defer { for index in authKeys.indices { Self.zero(&authKeys[index].privateKey) } }
@@ -1640,7 +1642,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             ).toHexString()
         )
         let added = Set(keys.map(\.id))
-        return AppConnect.ConnectionIntent(
+        let intent = AppConnect.ConnectionIntent(
             id: UUID(),
             identityId: context.identityId,
             appId: plan.appId,
@@ -1657,6 +1659,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             createdAt: now(),
             closedAt: nil,
             administeredGroupIds: plan.administeredGroupIds.sorted { $0.lexicographicallyPrecedes($1) })
+        return (intent, snapshot)
     }
 
     /// Whether the request was answered before (AC-11): this wallet's
