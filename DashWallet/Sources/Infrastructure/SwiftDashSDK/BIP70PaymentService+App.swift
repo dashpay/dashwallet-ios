@@ -11,9 +11,11 @@ import Foundation
 
 extension BIP70PaymentService {
     /// Builds a service backed by the funded SwiftDashSDK wallet, the app's receive-address
-    /// reader, and the PIN/biometric gate.
-    static func makeForCurrentWallet() -> BIP70PaymentService {
+    /// reader, and the PIN/biometric gate. `requiresHTTPSFetch` makes the transport fetch the
+    /// PaymentRequest over https only (see `PaymentProtocolTransport`).
+    static func makeForCurrentWallet(requiresHTTPSFetch: Bool = false) -> BIP70PaymentService {
         BIP70PaymentService(
+            transport: PaymentProtocolTransport(requiresHTTPSFetch: requiresHTTPSFetch),
             wallet: SwiftDashSDKWalletSending(),
             receiveAddress: SwiftDashSDKReceiveAddressProvider(),
             auth: BIP70SendAuthorizer())

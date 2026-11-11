@@ -205,6 +205,61 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 
+    private func makeHTTPSOnlyTransport() -> PaymentProtocolTransport {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        return PaymentProtocolTransport(session: URLSession(configuration: config), requiresHTTPSFetch: true)
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPRequestURLWithoutFetching() async {
+        var fetched = false
+        let body = fixture
+        MockURLProtocol.responseHandler = { _ in fetched = true; return (200, ["Content-Type": "application/dash-paymentrequest"], body) }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport()
+            .fetchRequest(from: URL(string: "http://merchant.example/i/abc")!, scheme: "dash")) { $0 == .insecureRequestURL }
+        XCTAssertFalse(fetched)
+    }
+
+    func testHTTPSOnlyTransportRefusesAnHTTPURIListTarget() async {
+        var fetchedHosts: [String] = []
+        MockURLProtocol.responseHandler = { request in
+            fetchedHosts.append(request.url?.absoluteString ?? "")
+            return (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
+        }
+        await assertThrowsBIP70(try await makeHTTPSOnlyTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .insecureRequestURL
+        }
+        XCTAssertEqual(fetchedHosts, [requestURL.absoluteString])
+    }
+
+    func testDefaultTransportStillFollowsAnHTTPURIListTarget() async throws {
+        let body = fixture
+        MockURLProtocol.responseHandler = { request in
+            request.url?.scheme == "https"
+                ? (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
+                : (200, ["Content-Type": "application/dash-paymentrequest"], body)
+        }
+        let req = try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")
+        XCTAssertEqual(req.pkiType, "x509+sha256")
+    }
+
+    private func redirectDecision(enforced: Bool, to target: String) -> (followed: Bool, refused: Bool) {
+        let redirects = HTTPSRedirectGuard(isEnforced: enforced)
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: requestURL)
+        let response = HTTPURLResponse(url: requestURL, statusCode: 302, httpVersion: nil, headerFields: nil)!
+        var followed = false
+        redirects.urlSession(session, task: task, willPerformHTTPRedirection: response,
+                             newRequest: URLRequest(url: URL(string: target)!)) { followed = $0 != nil }
+        return (followed, redirects.refusedRedirect)
+    }
+
+    func testRedirectGuardRefusesAnHTTPRedirectOnlyWhenEnforced() {
+        XCTAssertTrue(redirectDecision(enforced: true, to: "http://merchant.example/real") == (false, true))
+        XCTAssertTrue(redirectDecision(enforced: true, to: "https://merchant.example/real") == (true, false))
+        XCTAssertTrue(redirectDecision(enforced: false, to: "http://merchant.example/real") == (true, false))
+    }
+
     func testTransportRejectsOversizedPayload() async {
         let big = Data(count: 50_001)
         MockURLProtocol.responseHandler = { _ in (200, ["Content-Type": "application/dash-paymentrequest"], big) }
@@ -843,6 +898,26 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let outs = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
         let output = try await paymentOutput(for: unsignedNamed("Coffee Shop", outputs: outs), isSecure: true)
         XCTAssertEqual(try rows(of: output).generalInfo?.plainDetail, "This payment goes to 2 addresses.")
+    }
+
+    func testUnsignedRequestAlwaysRequiresAuthentication() {
+        for disabled in [false, true] {
+            for authorized in [false, true] {
+                XCTAssertTrue(BIP70InteractivePolicy.requiresAuthentication(
+                    isSecure: false, spendingConfirmationDisabled: disabled, alreadyAuthorized: authorized))
+            }
+        }
+    }
+
+    func testSignedRequestKeepsItsAuthenticationExemptions() {
+        func required(_ disabled: Bool, _ authorized: Bool) -> Bool {
+            BIP70InteractiveCoordinator.requiresAuthentication(
+                isSecure: true, spendingConfirmationDisabled: disabled, alreadyAuthorized: authorized)
+        }
+        XCTAssertTrue(required(false, false))
+        XCTAssertFalse(required(true, false))
+        XCTAssertFalse(required(false, true))
+        XCTAssertFalse(required(true, true))
     }
 
     func testInteractivePolicyRefusesUnsignedMultiOutput() async throws {

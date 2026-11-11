@@ -67,6 +67,14 @@ enum BIP70InteractivePolicy {
         }
     }
 
+    /// Whether sending must ask for the PIN / biometric first. A signed request keeps the two
+    /// existing exemptions; an unsigned one has neither.
+    static func requiresAuthentication(isSecure: Bool,
+                                       spendingConfirmationDisabled: Bool,
+                                       alreadyAuthorized: Bool) -> Bool {
+        !(isSecure && (spendingConfirmationDisabled || alreadyAuthorized))
+    }
+
     /// Checked on the fetched and verified request. The confirm screen shows one address, and
     /// an unsigned request has no signer answering for the others.
     static func check(_ confirmation: Confirmation) throws {
@@ -96,8 +104,19 @@ final class BIP70InteractiveCoordinator: NSObject {
     private let service: BIP70PaymentService
 
     @objc override init() {
-        service = BIP70PaymentService.makeForCurrentWallet()
+        service = BIP70PaymentService.makeForCurrentWallet(
+            requiresHTTPSFetch: !BIP70InteractivePolicy.allowsInsecureTransport)
         super.init()
+    }
+
+    /// `BIP70InteractivePolicy.requiresAuthentication` for the ObjC payment processor.
+    @objc(requiresAuthenticationForSecureRequest:spendingConfirmationDisabled:alreadyAuthorized:)
+    static func requiresAuthentication(isSecure: Bool,
+                                       spendingConfirmationDisabled: Bool,
+                                       alreadyAuthorized: Bool) -> Bool {
+        BIP70InteractivePolicy.requiresAuthentication(isSecure: isSecure,
+                                                      spendingConfirmationDisabled: spendingConfirmationDisabled,
+                                                      alreadyAuthorized: alreadyAuthorized)
     }
 
     /// Fetch + verify a BIP70 request (no build, no spend). Completion fires on the main thread.

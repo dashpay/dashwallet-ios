@@ -235,9 +235,10 @@ static NSString *DWReversedHexString(NSData *data) {
 - (void)broadcastBIP70PaymentOutput:(DWPaymentOutput *)paymentOutput {
     // An unsigned request always asks for the PIN / biometric, even with spending confirmation
     // turned off: nothing vouches for its recipient, so the prompt is the last deliberate step.
-    BOOL skipAuth = paymentOutput.isSecure &&
-                    ([[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
-                     paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized);
+    BOOL skipAuth = ![DWBIP70InteractiveCoordinator
+        requiresAuthenticationForSecureRequest:paymentOutput.isSecure
+                  spendingConfirmationDisabled:[[DWGlobalOptions sharedInstance] spendingConfirmationDisabled]
+                             alreadyAuthorized:paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized];
 
     if (skipAuth) {
         [self performBIP70Send:paymentOutput];

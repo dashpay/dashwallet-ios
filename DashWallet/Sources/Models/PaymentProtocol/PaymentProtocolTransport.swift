@@ -28,9 +28,13 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
     private static let timeout: TimeInterval = 30
 
     private let session: URLSession
+    /// When true, the PaymentRequest is fetched over https only: the request URL, a BIP73
+    /// uri-list target and every HTTP redirect on the way must be https.
+    private let requiresHTTPSFetch: Bool
 
-    init(session: URLSession = PaymentProtocolTransport.makeDefaultSession()) {
+    init(session: URLSession = PaymentProtocolTransport.makeDefaultSession(), requiresHTTPSFetch: Bool = false) {
         self.session = session
+        self.requiresHTTPSFetch = requiresHTTPSFetch
     }
 
     static func makeDefaultSession() -> URLSession {
@@ -49,10 +53,14 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
     /// `followURIList` guards BIP73 to a single hop (the uri-list may point at the real
     /// request; we never recurse beyond that).
     private func fetchRequest(from url: URL, scheme: String, followURIList: Bool) async throws -> PaymentRequest {
+        if requiresHTTPSFetch, !Self.isHTTPS(url) { throw BIP70Error.insecureRequestURL }
+
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: Self.timeout)
         request.setValue("application/\(scheme)-paymentrequest", forHTTPHeaderField: "Accept")
 
-        let (data, response) = try await session.data(for: request)
+        let redirects = HTTPSRedirectGuard(isEnforced: requiresHTTPSFetch)
+        let (data, response) = try await session.data(for: request, delegate: redirects)
+        if redirects.refusedRedirect { throw BIP70Error.insecureRequestURL }
         let http = try validate(response, data: data, host: url.host)
 
         switch http.mimeType?.lowercased() {
@@ -94,6 +102,10 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
         return http
     }
 
+    static func isHTTPS(_ url: URL?) -> Bool {
+        url?.scheme?.lowercased() == "https"
+    }
+
     private static func firstURL(inURIList data: Data) -> URL? {
         guard let text = String(data: data, encoding: .utf8) else { return nil }
         for line in text.split(whereSeparator: \.isNewline) {
@@ -102,5 +114,34 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
             return URL(string: trimmed)
         }
         return nil
+    }
+}
+
+/// Per-task delegate for the PaymentRequest fetch: when enforced, a redirect to a URL that is
+/// not https is not followed, and `refusedRedirect` records that it happened.
+final class HTTPSRedirectGuard: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    private let isEnforced: Bool
+    private let lock = NSLock()
+    private var refused = false
+
+    init(isEnforced: Bool) {
+        self.isEnforced = isEnforced
+    }
+
+    var refusedRedirect: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return refused
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask,
+                    willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest,
+                    completionHandler: @escaping (URLRequest?) -> Void) {
+        guard isEnforced, !PaymentProtocolTransport.isHTTPS(request.url) else {
+            completionHandler(request)
+            return
+        }
+        lock.lock(); refused = true; lock.unlock()
+        completionHandler(nil)
     }
 }
