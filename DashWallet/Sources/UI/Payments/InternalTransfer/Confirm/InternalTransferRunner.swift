@@ -296,6 +296,10 @@ final class InternalTransferRunner: ObservableObject {
         defer { isAwaitingAuthorization = false }
         let service = CoreShieldedDrainService()
         var attemptedResume = false
+        // A refused recipient keeps the failure `apply` showed, whatever the
+        // status re-read says or throws: nothing was sent, and the next resume
+        // is refused the same way.
+        var refusedRecipient = false
         do {
             let lookup: (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)?
             if let operation {
@@ -340,7 +344,7 @@ final class InternalTransferRunner: ObservableObject {
                     recipientRaw43: pending.operation.recipient.externalRaw43,
                     expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
-            let refusedRecipient = coordinator.lastFailure.map(ShieldedTransferCoordinator.isRecipientMismatch) ?? false
+            refusedRecipient = coordinator.lastFailure.map(ShieldedTransferCoordinator.isRecipientMismatch) ?? false
             let status = try await service.status(for: pending.operation)
             if status.drainVerdict == .completed {
                 // A concurrent resume can consume the lock while authorization
@@ -352,16 +356,16 @@ final class InternalTransferRunner: ObservableObject {
                 phase = .success
                 notice = .succeeded
             } else if case .pending = status.drainVerdict, !refusedRecipient {
-                // A refused recipient keeps the failure `apply` showed:
-                // nothing was sent, and the next resume is refused the same way.
                 phase = .submittedUnconfirmed
                 notice = .drainPending
             }
             return status
         } catch {
             if attemptedResume {
-                phase = .submittedUnconfirmed
-                notice = .drainPending
+                if !refusedRecipient {
+                    phase = .submittedUnconfirmed
+                    notice = .drainPending
+                }
             } else {
                 phase = .failed(error.localizedDescription)
                 notice = .failed(error.localizedDescription)
