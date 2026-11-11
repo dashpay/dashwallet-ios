@@ -69,8 +69,7 @@ final class InternalTransferRunner: ObservableObject {
     static let shared = InternalTransferRunner()
 
     /// The one lifecycle callers render from, whichever executor is running.
-    /// `submittedUnconfirmed` is route-only — no identity transition lands in
-    /// that state.
+    /// `submittedUnconfirmed` also covers an identity top-up with an unknown result.
     enum Phase: Equatable {
         case idle
         case inFlight
@@ -99,6 +98,10 @@ final class InternalTransferRunner: ObservableObject {
         /// accepts. Refused before the PIN prompt; the caller offers
         /// `CoreCoinConsolidationSheet` for this lock.
         case needsCoinConsolidation(AssetLockInputLimit.Check)
+        /// A removal is reloading the wallet, so a transfer from the Dash
+        /// Wallet balance would only be refused. Refused before the PIN
+        /// prompt; the notice says why.
+        case walletReloading
     }
 
     @Published private(set) var phase: Phase = .idle
@@ -176,7 +179,6 @@ final class InternalTransferRunner: ObservableObject {
     }
 
     private let coordinator = ShieldedTransferCoordinator()
-    private let topUpExecutor = IdentityTopUpViewModel()
     private let withdrawExecutor = IdentityWithdrawViewModel()
     private let authorizer = DWIdentityAuthorizer()
     private var cancellables = Set<AnyCancellable>()
@@ -217,10 +219,23 @@ final class InternalTransferRunner: ObservableObject {
             return .busy
         }
 
+        // Counted before the gate, as the coordinator counts its own call: a
+        // transfer from the Dash Wallet balance started during a removal's
+        // reload is refused without a PIN prompt, and no removal is admitted
+        // while the prompt is up. Held until the executor finishes (`run`).
+        let holdsFundingCall = Self.countsAsFundingCall(request.kind)
+        if holdsFundingCall {
+            guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+                notice = .failed(ShieldedAssetLocksInFlight.walletReloadingMessage)
+                return .walletReloading
+            }
+        }
+
         // Before the gate: a lock over the input limit is never built, so it
         // asks for no PIN (`AssetLockInputPolicy`).
         if let check = Self.assetLockInputCheck(for: request),
            AssetLockInputLimit.verdict(for: check) == .needsConsolidation {
+            if holdsFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() }
             return .needsCoinConsolidation(check)
         }
 
@@ -238,6 +253,7 @@ final class InternalTransferRunner: ObservableObject {
             // Both backing out and a failed prompt leave the caller where it
             // was — the prompt itself has already said whatever there was to
             // say, and nothing has been started to report on.
+            if holdsFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() }
             return .notAuthorized
         }
 
@@ -255,8 +271,21 @@ final class InternalTransferRunner: ObservableObject {
         // guards and started a second transfer behind the first.
         phase = .inFlight
         notice = .started
-        run(request)
+        run(request, endingFundingCall: holdsFundingCall)
         return .started
+    }
+
+    /// Whether the request builds a funding lock from the Dash Wallet balance
+    /// that `ShieldedAssetLocksInFlight` counts: Core → Shielded (Max
+    /// included) and Core → Platform address. Identity top-ups do not use the
+    /// registry yet (dashpay/dashwallet-ios#1231).
+    nonisolated static func countsAsFundingCall(_ kind: InternalTransferRequest.Kind) -> Bool {
+        switch kind {
+        case .route(.coreToShielded), .route(.coreToPlatform):
+            return true
+        case .route, .identityTopUp, .identityWithdrawal:
+            return false
+        }
     }
 
     /// Recovery reuses the UUID's exact outpoint. A missing outpoint permits
@@ -287,6 +316,13 @@ final class InternalTransferRunner: ObservableObject {
                 break
             }
             guard let outpoint = pending.outcome.outpoint else { return nil }
+            // Counted before the gate, as `start` does, and held until the
+            // resume returns.
+            guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+                notice = .failed(ShieldedAssetLocksInFlight.walletReloadingMessage)
+                return nil
+            }
+            defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
             do { try await authorizer.authorize() } catch { return nil }
             _ = try service.manager(for: context)
             isCoreDrainRecovery = true
@@ -301,7 +337,7 @@ final class InternalTransferRunner: ObservableObject {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
                     recipientRaw43: pending.operation.recipient.externalRaw43,
-                    expectedDrainContext: context)
+                    expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
             let status = try await service.status(for: pending.operation)
             if status.drainVerdict == .completed {
@@ -365,8 +401,10 @@ final class InternalTransferRunner: ObservableObject {
     /// held the gate open for this exact transfer. Without it the user would
     /// be asked for the PIN twice: once on the sheet, once again from inside
     /// the coordinator.
-    private func run(_ request: InternalTransferRequest) {
+    private func run(_ request: InternalTransferRequest, endingFundingCall: Bool) {
         Task {
+            // Ends the funding call `start` counted before the PIN prompt.
+            defer { if endingFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() } }
             await DWIdentityAuthorizer.preauthorized {
                 switch request.kind {
                 case .route(let route):
@@ -418,6 +456,9 @@ final class InternalTransferRunner: ObservableObject {
     /// the same way: a result is success, a message is failure, and a bare
     /// nil is neither — the executor declined without anything to say.
     private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest) async {
+        // This task outlives its sheet, but outcome guards belong to this
+        // authorized request, not to every later request on the shared runner.
+        let topUpExecutor = IdentityTopUpViewModel()
         phase = .inFlight
         let newBalance = await topUpExecutor.topUp(
             identityId: topUp.identityId,
@@ -428,7 +469,9 @@ final class InternalTransferRunner: ObservableObject {
             notice = .needsCoinConsolidation(check)
             return
         }
-        phase = outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+        let message = consume(&topUpExecutor.errorMessage)
+        phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: newBalance != nil, message: message)
         announce(phase)
     }
 
@@ -453,7 +496,8 @@ final class InternalTransferRunner: ObservableObject {
         case .success: notice = .succeeded
         case .failed(let message): notice = .failed(message)
         case .idle: notice = nil
-        case .inFlight, .submittedUnconfirmed: break
+        case .submittedUnconfirmed: notice = .submitted
+        case .inFlight: break
         }
     }
 
