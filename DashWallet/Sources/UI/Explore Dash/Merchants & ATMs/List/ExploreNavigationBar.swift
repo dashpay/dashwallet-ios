@@ -35,11 +35,15 @@ extension UIViewController {
         onBack: @escaping () -> Void,
         onInfo: (() -> Void)?
     ) -> UIHostingController<AnyView> {
-        let navBar = ExploreNavigationBar(title: title, leading: leading, onBack: onBack, onInfo: onInfo)
+        // One colour for the status-bar fill and the bar, so the top edge reads
+        // as a single band in both themes.
+        let barColor = UIColor(named: "SecondaryBackgroundColor") ?? .systemBackground
+        let navBar = ExploreNavigationBar(title: title, leading: leading, background: Color(barColor),
+                                          onBack: onBack, onInfo: onInfo)
 
         let topFillView = UIView()
         topFillView.translatesAutoresizingMaskIntoConstraints = false
-        topFillView.backgroundColor = UIColor(named: "SecondaryBackgroundColor") ?? .systemBackground
+        topFillView.backgroundColor = barColor
         view.addSubview(topFillView)
 
         let host = UIHostingController(rootView: AnyView(navBar))
@@ -73,6 +77,7 @@ private struct ExploreNavigationBar: View {
 
     let title: String
     let leading: ExploreNavigationBarLeading
+    let background: Color
     let onBack: () -> Void
     let onInfo: (() -> Void)?
 
@@ -88,6 +93,7 @@ private struct ExploreNavigationBar: View {
                 Text(title)
                     .font(.subheadMedium)
                     .lineLimit(1)
+                    .accessibilityAddTraits(.isHeader)
                     // The bar centres the title over the full width; keep a long
                     // merchant name clear of the circles on both sides.
                     // TODO(dashuikit-title-inset): drop once NavigationBar reserves this itself.
@@ -99,6 +105,6 @@ private struct ExploreNavigationBar: View {
                 }
             }
         )
-        .background(Color.dash.primaryBackground)
+        .background(background)
     }
 }

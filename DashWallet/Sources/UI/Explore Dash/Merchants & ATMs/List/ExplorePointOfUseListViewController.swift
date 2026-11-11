@@ -121,7 +121,7 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         }
 
         let fittingHeight = customNavBarHost?.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
-        return fittingHeight > 0 ? fittingHeight : 64
+        return fittingHeight > 0 ? fittingHeight : 74
     }
 
     internal var isFiltered: Bool { model.hasFilters }
