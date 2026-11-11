@@ -68,17 +68,22 @@ public final class SendCoinsService: NSObject {
 
     // MARK: - BIP70
 
-    /// Pays a `dash:`/BIP72 payment-request URL headlessly (CTX gift cards): parse → authorize →
-    /// fetch + verify → build → broadcast → POST the Payment. Routes entirely through the
-    /// app-side BIP70 stack (`BIP70PaymentService`) — no DashSync, no `DWPaymentProcessor`.
+    /// Pays a `dash:`/BIP72 payment-request URL headlessly (CTX gift cards): parse → fetch +
+    /// verify → check the amount → authorize → build → POST the Payment → broadcast. Routes
+    /// entirely through the app-side BIP70 stack (`BIP70PaymentService`) — no DashSync, no
+    /// `DWPaymentProcessor`.
     ///
+    /// - Parameter expectedAmount: the price the buyer approved, in duffs at the wallet's rate.
+    ///   A request for more than that plus `GiftCardPaymentGuard`'s margin is refused before
+    ///   the PIN prompt.
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention — the caller's metadata key).
     /// - Parameter awaitAcceptance: `false` returns once the merchant has acknowledged the
     ///   Payment and the broadcast is under way, without waiting out the SDK's network-acceptance
     ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
-    func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
+    func payWithDashUrl(url paymentUrlString: String, expectedAmount: UInt64,
+                        awaitAcceptance: Bool = true) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
@@ -89,7 +94,14 @@ public final class SendCoinsService: NSObject {
         do {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
-                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
+                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance,
+                validate: { confirmation in
+                    guard GiftCardPaymentGuard.isWithinApprovedAmount(
+                        requested: confirmation.amount, expected: expectedAmount) else {
+                        DWLogger.log("Gift card payment refused: requested \(confirmation.amount) duffs, approved \(expectedAmount)")
+                        throw GiftCardPaymentGuard.amountAboveApprovedError
+                    }
+                })
         } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
             // The merchant may already hold the signed bytes; hand the caller the txid so the
             // order is recorded rather than dropped on the floor.

@@ -322,6 +322,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
+        // What the buyer approved, in duffs. Resolved before the provider is asked for an
+        // order, so a missing exchange rate stops the purchase before anything is created.
+        let approvedDashAmount = try approvedPaymentAmount()
+
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.
         let txidWire: Data
@@ -343,7 +347,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
             // is already being issued (the email routinely arrived before the screen moved on).
             do {
-                txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
+                txidWire = try await sendCoinsService.payWithDashUrl(
+                    url: url, expectedAmount: approvedDashAmount, awaitAcceptance: false)
             } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
                 // Same loss, one step earlier: the network dropped between posting the payment
                 // and reading the acknowledgement. Record the order — CTX may be fulfilling it
@@ -381,17 +386,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
-            guard giftCardInfo.amount.isFinite,
-                  giftCardInfo.amount >= 0 else {
+            guard let dashAmountInSatoshis = GiftCardPaymentGuard.duffs(fromDashAmount: giftCardInfo.amount) else {
                 throw DashSpendError.paymentProcessingError("Invalid gift card amount")
             }
 
-            let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
-            guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
-                  satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
-                throw DashSpendError.paymentProcessingError("Gift card amount is out of range")
+            // Checked here, before sendCoins prompts for the PIN: a refused quote shows no
+            // prompt. The payment address was validated when the order response was parsed.
+            guard GiftCardPaymentGuard.isWithinApprovedAmount(
+                requested: dashAmountInSatoshis, expected: approvedDashAmount) else {
+                DWLogger.log("Gift card payment refused: requested \(dashAmountInSatoshis) duffs, approved \(approvedDashAmount)")
+                throw GiftCardPaymentGuard.amountAboveApprovedError
             }
-            let dashAmountInSatoshis = satoshis.uint64Value
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
@@ -410,6 +415,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote)
 
         return txidWire
+    }
+
+    /// The price on the confirmation sheet ("You pay": the card value less the discount),
+    /// converted to duffs at the wallet's current rate. Throws when no rate is available:
+    /// without it a provider's quote cannot be checked.
+    private func approvedPaymentAmount() throws -> UInt64 {
+        let approvedFiatAmount = amount * (1 - displaySavingsFraction)
+        guard approvedFiatAmount > 0,
+              let dashAmount = try? CurrencyExchanger.shared.convertToDash(
+                  amount: approvedFiatAmount, currency: kDefaultCurrencyCode),
+              dashAmount.plainDashAmount > 0 else {
+            throw GiftCardPaymentGuard.rateUnavailableError
+        }
+
+        return dashAmount.plainDashAmount
     }
 
     /// Persist everything that ties a paid order to its transaction: the tax/service metadata,

@@ -360,16 +360,26 @@ final class BIP70PaymentService {
                           callbackURL: callbackURL)
     }
 
-    /// One-shot entry for headless flows (CTX gift cards): authorize, then prepare + send.
+    /// One-shot entry for headless flows (CTX gift cards): prepare, let the caller check the
+    /// prepared request, authorize, then send.
+    ///
+    /// The request is fetched and verified BEFORE the PIN/biometric prompt, so the user
+    /// authorizes a request the caller has already accepted. A throw from `validate` ends the
+    /// flow with no prompt shown and nothing built.
+    /// - Parameter validate: the caller's own acceptance check on the prepared request (for
+    ///   example, that `Confirmation.amount` matches what the user approved). This layer holds
+    ///   no such policy; it only runs the hook.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
                                 now: Date = Date(),
-                                awaitAcceptance: Bool = true) async throws -> SendResult {
-        try await auth.authorize()
+                                awaitAcceptance: Bool = true,
+                                validate: ((Confirmation) throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now)
+        try validate?(confirmation)
+        try await auth.authorize()
         return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
     }
 

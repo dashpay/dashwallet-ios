@@ -448,7 +448,7 @@ class PiggyCardsRepository: DashSpendRepository {
     }
 
     /// Parse payment URI into address and amount
-    private func parsePaymentURI(_ payTo: String, orderId: String, message: String?) throws -> (address: String, amount: Double) {
+    private func parsePaymentURI(_ payTo: String, orderId: String, message: String?) throws -> (address: String, amount: Decimal) {
         // Check for empty or invalid URI
         guard !payTo.isEmpty else {
             let errorMessage = message ?? "Payment URI unavailable"
@@ -469,7 +469,12 @@ class PiggyCardsRepository: DashSpendRepository {
         }
 
         let address = String(components[0])
-        var amount: Double = 0
+        guard address.isValidDashAddressForCurrentNetwork else {
+            throw GiftCardPaymentGuard.invalidPaymentAddressError
+        }
+
+        // Parsed as a decimal string, never through Double: the amount becomes duffs exactly.
+        var amount: Decimal = 0
 
         // Parse query parameters
         if components.count > 1 {
@@ -479,7 +484,7 @@ class PiggyCardsRepository: DashSpendRepository {
             for item in queryItems {
                 let keyValue = item.split(separator: "=", maxSplits: 1)
                 if keyValue.count == 2 && keyValue[0] == "amount" {
-                    amount = Double(keyValue[1]) ?? 0
+                    amount = Decimal(string: String(keyValue[1]), locale: Locale(identifier: "en_US_POSIX")) ?? 0
                     break
                 }
             }
