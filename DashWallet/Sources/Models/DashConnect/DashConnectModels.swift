@@ -211,17 +211,27 @@ struct DashConnectDisconnectResult: Equatable {
     /// How many of the app's keys it turned off.
     var keysTurnedOff = 0
     /// Live keys no approval of this wallet names that a disconnect turns
-    /// off only when the user asks: keys bound to the app's contracts, given
-    /// on another device or before a restore, and DashPay profile keys no
-    /// app can be told to hold.
-    var unrecordedKeysLeft = 0
-    /// Live App Connect keys whose app the wallet could not tell yet: its key
-    /// store does not hold their bound. None of them was turned off.
+    /// off only when the user asks, offered by a disconnect without listed
+    /// keys: keys on the app's contracts or of its owner, given on another
+    /// device or before a restore, and DashPay profile keys no app can be
+    /// told to hold. The user's answer passes them back.
+    var offeredUnrecordedKeyIds: Set<UInt32> = []
+    /// Live App Connect keys that may be the app's but could not be checked:
+    /// their bound is not in the key store yet, or an owner that decides
+    /// whose they are could not be read. None of them was turned off.
     var keysNotChecked = 0
+    /// Live keys of the app's owner that another app with an approval here
+    /// has too: they may be that app's, and none was turned off.
+    var keysNotAttributable = 0
+    /// Keys the disconnect found on the app's row that the user's question
+    /// did not list: none was turned off.
+    var keysLeftAfterQuestion = 0
     /// A read of another identity of this wallet saw keys of the app no
     /// approval names. They can be turned off only while that identity is
     /// the active one.
     var keysOnAnotherIdentity = false
+
+    var unrecordedKeysLeft: Int { offeredUnrecordedKeyIds.count }
 }
 
 /// A pending request derived from a scanned login QR code.
