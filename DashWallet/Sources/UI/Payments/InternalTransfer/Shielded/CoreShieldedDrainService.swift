@@ -102,10 +102,15 @@ enum CoreShieldedDrainMarkerLookup: Sendable {
     case unavailable
 }
 
-/// Where a resume of an existing asset lock must pay. A Max drain's recipient
-/// is recorded only in the app's marker: the SDK pays whatever recipient a
-/// resume passes, so a drain row is resumed to the marker's recipient or not
-/// at all.
+/// Where a resume of a Max drain's lock pays when its SDK row has no recorded
+/// recipient: a drain built before the SDK recorded recipients
+/// (dashpay/platform#5762) has its recipient only in the app's marker, so such
+/// a row is resumed to the marker's recipient or not at all.
+/// `ShieldedResumeRecipient` consults this only for those rows.
+///
+/// TODO(drain-marker-recipient): once no unconsumed drain row can lack an SDK
+/// recipient, drop the marker's recipient and this fallback; the marker's
+/// operation UUID stays for status reconciliation and the one-drain gate.
 enum CoreShieldedDrainResumeTarget: Equatable, Sendable {
     /// The wallet's own default Orchard address.
     case ownWallet
@@ -134,6 +139,77 @@ enum CoreShieldedDrainResumeTarget: Equatable, Sendable {
                 case .external(let raw43): return .external(raw43)
                 }
             }
+        }
+    }
+}
+
+/// Where a resume of an existing Core → Shielded asset lock pays, decided
+/// before the PIN prompt for every surface that resumes one.
+///
+/// The SDK records the recipient on the tracked lock row before the lock is
+/// broadcast and, on resume, pays that recipient and refuses any other
+/// (`PlatformWalletError.assetLockRecipientMismatch`). A recorded recipient
+/// therefore decides, and a caller's recipient must agree with it. A row
+/// tracked before the SDK recorded recipients falls back to the Max drain
+/// marker (a drain row) or to the caller's recipient, then to the wallet's own
+/// address: nothing else recorded where such a lock was going, and refusing it
+/// would leave its funds locked.
+enum ShieldedResumeRecipient: Equatable, Sendable {
+
+    /// Which record decided the recipient. Logged; the address never is.
+    enum Source: String, Equatable, Sendable {
+        case recorded
+        case marker
+        case caller
+        case ownLegacy = "own-legacy"
+    }
+
+    enum Refusal: Equatable, Sendable {
+        /// The caller's recipient differs from the one this lock was built
+        /// for, or the recorded one is not an Orchard address's 43 bytes.
+        case mismatch
+        /// A drain row whose recipient cannot be established.
+        case drainRecipientUnknown
+        /// A drain row whose marker could not be read right now.
+        case drainRecipientUnavailable
+    }
+
+    case pay(Data, source: Source)
+    case refuse(Refusal)
+
+    static let recipientSize = 43
+
+    /// - Parameters:
+    ///   - recordedRaw43: `PersistentAssetLock.shieldedRecipientRaw43` of the row.
+    ///   - marker: read only for a drain row with no recorded recipient.
+    ///   - callerRaw43: the recipient the resuming surface passed, if any.
+    ///   - ownRaw43: the wallet's own default Orchard address.
+    static func resolve(
+        recordedRaw43: Data?,
+        row: CoreShieldedDrainRowIdentity,
+        marker: () -> CoreShieldedDrainMarkerLookup,
+        callerRaw43: Data?,
+        ownRaw43: Data
+    ) -> Self {
+        if let recordedRaw43 {
+            guard recordedRaw43.count == recipientSize else { return .refuse(.mismatch) }
+            if let callerRaw43, callerRaw43 != recordedRaw43 { return .refuse(.mismatch) }
+            return .pay(recordedRaw43, source: .recorded)
+        }
+        switch row {
+        case .none:
+            if let callerRaw43 { return .pay(callerRaw43, source: .caller) }
+            return .pay(ownRaw43, source: .ownLegacy)
+        case .operation, .malformed:
+            let markerRaw43: Data
+            switch CoreShieldedDrainResumeTarget.resolve(row: row, marker: marker()) {
+            case .ownWallet: markerRaw43 = ownRaw43
+            case .external(let raw43): markerRaw43 = raw43
+            case .refuse: return .refuse(.drainRecipientUnknown)
+            case .retryLater: return .refuse(.drainRecipientUnavailable)
+            }
+            if let callerRaw43, callerRaw43 != markerRaw43 { return .refuse(.mismatch) }
+            return .pay(markerRaw43, source: .marker)
         }
     }
 }

@@ -115,7 +115,21 @@ class BaseNavigationController: UINavigationController {
     override func pushViewController(_ viewController: UIViewController, animated: Bool) {
         isPushAnimationInProgress = true
 
+        if !viewControllers.isEmpty {
+            hideTabBar(on: viewController)
+        }
         super.pushViewController(viewController, animated: animated)
+    }
+
+    override func setViewControllers(_ viewControllers: [UIViewController], animated: Bool) {
+        viewControllers.dropFirst().forEach(hideTabBar(on:))
+        super.setViewControllers(viewControllers, animated: animated)
+    }
+
+    /// Only a tab's root screen shows the tab bar: every screen stacked on it
+    /// hides the bar, whether or not it sets `hidesBottomBarWhenPushed` itself.
+    private func hideTabBar(on viewController: UIViewController) {
+        viewController.hidesBottomBarWhenPushed = true
     }
 
     override func viewDidLoad() {
