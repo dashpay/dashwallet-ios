@@ -1458,6 +1458,9 @@
 /* No comment provided by engineer. */
 "Couldn't get the evonode's status." = "Stanja evonoda ni bilo mogoče pridobiti.";
 
+/* Swap: Select coin, the coin list failed to load */
+"Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 
