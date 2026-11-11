@@ -454,6 +454,29 @@ final class DashConnectStoreTests: XCTestCase {
         }
     }
 
+    /// The full wipe goes on after another devnet scope's deletion fails,
+    /// and the wallet's DashConnect records serve every scope: its deletion
+    /// of the configured scope leaves them to the wipe's commit point, which
+    /// runs only once every deletion succeeded.
+    @MainActor
+    func testTheFullWipesDeletionLeavesDashConnectKeysToItsCommitPoint() throws {
+        let walletId = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let standard = UserDefaults.standard
+        let kept = try seedDashConnectKeys(
+            in: standard, network: .devnet, devnetName: "moutai", walletIdHex: walletId.hexEncodedString())
+        defer { kept.forEach { standard.removeObject(forKey: $0) } }
+
+        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId,
+            deleteWallet: { _ in },
+            leavesDashConnectToWipe: true,
+            scope: "devnet-b")
+
+        for key in kept {
+            XCTAssertNotNil(standard.object(forKey: key), "\(key) may still serve a scope whose deletion failed")
+        }
+    }
+
     func testRemoveAllWalletsClearsEveryDashConnectKeyIncludingOrphansAndKeepsOthers() throws {
         let current = Data((0..<32).map { _ in UInt8.random(in: 0...255) }).hexEncodedString()
         let orphan = Data((0..<32).map { _ in UInt8.random(in: 0...255) }).hexEncodedString()

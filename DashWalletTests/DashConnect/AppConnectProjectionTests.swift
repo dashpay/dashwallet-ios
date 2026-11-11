@@ -770,6 +770,27 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertTrue(Self.snapshot([], identity: Self.otherIdentity, revision: 1).mayReplace(newest))
     }
 
+    /// A raise of a key's limits keeps the revision: a later read of the
+    /// same revision with the limits from before it, or without a key, or
+    /// with a turned-off key on again, is behind the one already seen.
+    func testAReadOfTheSameRevisionBehindTheLimitsAlreadySeenIsDropped() {
+        let raised = Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 2000))
+        let newest = Self.snapshot([raised], revision: 7)
+        let earlier = Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 1000))
+        let lowerBudget = AppConnect.PlatformKey(
+            id: raised.id, purpose: raised.purpose, securityLevel: raised.securityLevel, keyType: raised.keyType,
+            data: raised.data, readOnly: raised.readOnly, bound: raised.bound, boundKnown: raised.boundKnown,
+            totalBudget: 500, expiresAt: raised.expiresAt, disabledAt: nil)
+        XCTAssertFalse(Self.snapshot([earlier], revision: 7).mayReplace(newest), "an earlier expiry")
+        XCTAssertFalse(Self.snapshot([lowerBudget], revision: 7).mayReplace(newest), "a lower budget")
+        XCTAssertFalse(Self.snapshot([], revision: 7).mayReplace(newest), "a key missing")
+        let off = Self.snapshot([Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 2000), disabledAt: Self.now)], revision: 8)
+        XCTAssertTrue(off.mayReplace(newest))
+        XCTAssertFalse(Self.snapshot([raised], revision: 8).mayReplace(off), "a turned-off key on again")
+        let higher = Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 3000))
+        XCTAssertTrue(Self.snapshot([higher, Self.onPlatform(Self.authKey(11))], revision: 7).mayReplace(newest))
+    }
+
     // MARK: Key ids
 
     func testNewIdsSkipEveryIdAnIntentMayStillLandOn() {
