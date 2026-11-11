@@ -3639,7 +3639,8 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     }
 
     /// T35 (G5, AC-14): a key of unknown bound does not keep the row of an
-    /// app whose keys were turned off elsewhere: no key of it is live.
+    /// app whose keys were turned off elsewhere Active: no key of it is live.
+    /// It keeps the row Confirming, with Disconnect, as the key may be the app's.
     func testAKeyOfUnknownBoundDoesNotKeepTheRowOfAnAppTurnedOffElsewhere() async throws {
         let chain = Chain()
         let (intents, rows, intent) = connectedApp()
@@ -3651,6 +3652,7 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
 
         XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
         XCTAssertNil(rows.load().first { $0.status == .active }, "no Active row with no live key")
+        XCTAssertEqual(rows.load().map(\.status), [.confirming], "the row stays while a key's bound is unknown")
     }
 
     /// T43 (J1, H1, AC-19): a disconnect whose identity update was refused
