@@ -69,8 +69,7 @@ final class InternalTransferRunner: ObservableObject {
     static let shared = InternalTransferRunner()
 
     /// The one lifecycle callers render from, whichever executor is running.
-    /// `submittedUnconfirmed` is route-only — no identity transition lands in
-    /// that state.
+    /// `submittedUnconfirmed` also covers an identity top-up with an unknown result.
     enum Phase: Equatable {
         case idle
         case inFlight
@@ -180,7 +179,6 @@ final class InternalTransferRunner: ObservableObject {
     }
 
     private let coordinator = ShieldedTransferCoordinator()
-    private let topUpExecutor = IdentityTopUpViewModel()
     private let withdrawExecutor = IdentityWithdrawViewModel()
     private let authorizer = DWIdentityAuthorizer()
     private var cancellables = Set<AnyCancellable>()
@@ -298,6 +296,10 @@ final class InternalTransferRunner: ObservableObject {
         defer { isAwaitingAuthorization = false }
         let service = CoreShieldedDrainService()
         var attemptedResume = false
+        // A refused recipient keeps the failure `apply` showed, whatever the
+        // status re-read says or throws: nothing was sent, and the next resume
+        // is refused the same way.
+        var refusedRecipient = false
         do {
             let lookup: (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)?
             if let operation {
@@ -332,15 +334,17 @@ final class InternalTransferRunner: ObservableObject {
             coordinator.reset()
             phase = .inFlight
             attemptedResume = true
-            // The recipient is the marker's, never re-derived: an external
-            // drain resumed to the wallet's own address would pay the wrong
-            // party, and the SDK does not keep the recipient itself.
+            // The recipient passed is the marker's, never re-derived: the
+            // coordinator refuses it unless it matches the recipient the SDK
+            // recorded on the lock, and pays the marker's for a drain started
+            // before the SDK recorded one.
             await DWIdentityAuthorizer.preauthorized {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
                     recipientRaw43: pending.operation.recipient.externalRaw43,
-                    expectedDrainContext: context)
+                    expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
+            refusedRecipient = coordinator.lastFailure.map(ShieldedTransferCoordinator.isRecipientMismatch) ?? false
             let status = try await service.status(for: pending.operation)
             if status.drainVerdict == .completed {
                 // A concurrent resume can consume the lock while authorization
@@ -351,15 +355,17 @@ final class InternalTransferRunner: ObservableObject {
                 // (#1230).
                 phase = .success
                 notice = .succeeded
-            } else if case .pending = status.drainVerdict {
+            } else if case .pending = status.drainVerdict, !refusedRecipient {
                 phase = .submittedUnconfirmed
                 notice = .drainPending
             }
             return status
         } catch {
             if attemptedResume {
-                phase = .submittedUnconfirmed
-                notice = .drainPending
+                if !refusedRecipient {
+                    phase = .submittedUnconfirmed
+                    notice = .drainPending
+                }
             } else {
                 phase = .failed(error.localizedDescription)
                 notice = .failed(error.localizedDescription)
@@ -458,6 +464,9 @@ final class InternalTransferRunner: ObservableObject {
     /// the same way: a result is success, a message is failure, and a bare
     /// nil is neither — the executor declined without anything to say.
     private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest) async {
+        // This task outlives its sheet, but outcome guards belong to this
+        // authorized request, not to every later request on the shared runner.
+        let topUpExecutor = IdentityTopUpViewModel()
         phase = .inFlight
         let newBalance = await topUpExecutor.topUp(
             identityId: topUp.identityId,
@@ -468,7 +477,9 @@ final class InternalTransferRunner: ObservableObject {
             notice = .needsCoinConsolidation(check)
             return
         }
-        phase = outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+        let message = consume(&topUpExecutor.errorMessage)
+        phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: newBalance != nil, message: message)
         announce(phase)
     }
 
@@ -493,7 +504,8 @@ final class InternalTransferRunner: ObservableObject {
         case .success: notice = .succeeded
         case .failed(let message): notice = .failed(message)
         case .idle: notice = nil
-        case .inFlight, .submittedUnconfirmed: break
+        case .submittedUnconfirmed: notice = .submitted
+        case .inFlight: break
         }
     }
 

@@ -50,6 +50,7 @@ import Combine
 import Foundation
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 @MainActor
 final class ShieldedIdentityFundingReadiness: ObservableObject {
@@ -63,11 +64,11 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     /// progress before submit; Drive enforces the real rule.
     static let minimumPoolNotes: UInt64 = 250
 
-    /// Smallest consensus exit denomination — 0.1 DASH in credits.
-    /// Funds a standard (uncontested) username registration; the new
-    /// identity starts at denomination − metered fee, comfortably above
-    /// the 0.03 DASH the transparent funding paths provision.
-    static let standardDenominationCredits: UInt64 = 10_000_000_000
+    /// Smallest consensus exit denomination — 0.03 DASH in credits, the
+    /// same figure the transparent funding paths provision for a standard
+    /// (uncontested) username. The new identity starts at denomination −
+    /// metered fee, which still covers the DPNS registration.
+    static let standardDenominationCredits: UInt64 = 3_000_000_000
 
     /// Exit denomination for contested usernames — 0.25 DASH in credits:
     /// the smallest member of the shielded identity-create denomination set
@@ -115,6 +116,9 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
         /// Last known on-chain pool note count; nil until a shielded
         /// sync pass has reported one.
         let poolNoteCount: UInt64?
+        /// When the next still-resting note matures; nil when none rests.
+        /// A `.ready` snapshot's `matureCredits` grows then.
+        var nextMaturityAt: Date? = nil
     }
 
     /// Readiness for a standard (uncontested) registration — the value
@@ -128,6 +132,7 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
 
     private var managerCancellables = Set<AnyCancellable>()
     private var notificationCancellable: AnyCancellable?
+    private var foregroundCancellable: AnyCancellable?
     /// Re-evaluation alarm for the next maturing → ready flip.
     private var maturityFlipTask: Task<Void, Never>?
 
@@ -139,6 +144,18 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
                 // The runtime rebuild may have replaced the manager —
                 // re-wire the sync-event subscriptions to the new one.
                 self?.wireManagerIfNeeded(rewire: true)
+                self?.refresh()
+            }
+        // A suspended app runs no timers, so a maturity alarm due while it
+        // was away can arrive late; coming back evaluates again. Mid-rebuild
+        // there is nothing to evaluate against, and a refresh then would
+        // publish no readiness at all.
+        foregroundCancellable = NotificationCenter.default
+            .publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard SwiftDashSDKHost.shared.wallet != nil,
+                      SwiftDashSDKHost.shared.modelContainer != nil else { return }
                 self?.refresh()
             }
         wireManagerIfNeeded(rewire: false)
@@ -162,8 +179,26 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
         let descriptor = FetchDescriptor<PersistentShieldedNote>(
             predicate: PersistentShieldedNote.unspentPredicate(walletId: walletId),
             sortBy: [SortDescriptor(\.createdAt, order: .forward)])
-        let notes = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+        let notes = ((try? modelContainer.mainContext.fetch(descriptor)) ?? [])
+            .map { Note(value: $0.value, createdAt: $0.createdAt) }
+        return Self.snapshot(
+            notes: notes, requiredCredits: requiredCredits, poolNoteCount: latchedPoolNoteCount, now: now)
+    }
 
+    /// An unspent shielded note, as readiness reads it.
+    struct Note: Equatable {
+        let value: UInt64
+        let createdAt: Date
+    }
+
+    /// Readiness of unspent `notes`, sorted oldest first, against
+    /// `requiredCredits`, with the last known pool count.
+    static func snapshot(
+        notes: [Note],
+        requiredCredits: UInt64,
+        poolNoteCount: UInt64?,
+        now: Date
+    ) -> Snapshot {
         let unspent = notes.reduce(UInt64(0)) { $0 + $1.value }
         let maturityCutoff = now.addingTimeInterval(-Self.maturityWindow)
         let mature = notes
@@ -186,8 +221,8 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
                 }
             }
             state = .maturing(readyAt: readyAt)
-        } else if let poolCount = latchedPoolNoteCount, poolCount < Self.minimumPoolNotes {
-            state = .poolTooSmall(current: poolCount)
+        } else if let poolNoteCount, poolNoteCount < Self.minimumPoolNotes {
+            state = .poolTooSmall(current: poolNoteCount)
         } else {
             state = .ready
         }
@@ -197,7 +232,17 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
             requiredCredits: requiredCredits,
             matureCredits: mature,
             unspentCredits: unspent,
-            poolNoteCount: latchedPoolNoteCount)
+            poolNoteCount: poolNoteCount,
+            nextMaturityAt: notes.first { $0.createdAt > maturityCutoff }?
+                .createdAt.addingTimeInterval(Self.maturityWindow))
+    }
+
+    /// The pool count to latch from a sync report: a new positive total
+    /// only. A pass that reports nothing, zero or the same count keeps the
+    /// last one, so the pool never reads as empty between passes.
+    static func poolCountToLatch(reported: UInt64?, latched: UInt64?) -> UInt64? {
+        guard let reported, reported > 0, reported != latched else { return nil }
+        return reported
     }
 
     /// Recompute `standardSnapshot` and (re)arm the maturity alarm.
@@ -244,7 +289,7 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] total in
                 guard let self else { return }
-                if let total, total > 0, total != self.latchedPoolNoteCount {
+                if let total = Self.poolCountToLatch(reported: total, latched: self.latchedPoolNoteCount) {
                     self.latchedPoolNoteCount = total
                     self.refresh()
                 }
@@ -255,20 +300,28 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     /// Pull the current tree-total directly (the publisher only fires
     /// on change, and a pass may already have reported before we wired).
     private func latchPoolCount() {
-        if let total = SwiftDashSDKHost.shared.manager?.currentShieldedTreeTotal,
-           total > 0, total != latchedPoolNoteCount {
+        if let total = Self.poolCountToLatch(
+            reported: SwiftDashSDKHost.shared.manager?.currentShieldedTreeTotal,
+            latched: latchedPoolNoteCount) {
             latchedPoolNoteCount = total
         }
     }
 
     /// Schedule a one-shot re-evaluation at `readyAt` so `.maturing`
     /// flips to `.ready` without the user leaving and re-entering the
-    /// screen. Cancelled/re-armed on every refresh.
+    /// screen — or, once ready, at the next note's maturity, which grows
+    /// what Shielded can pay for. Cancelled/re-armed on every refresh.
     private func armMaturityFlip(for snapshot: Snapshot?) {
         maturityFlipTask?.cancel()
         maturityFlipTask = nil
-        guard case .maturing(let readyAt) = snapshot?.state else { return }
-        let delay = readyAt.timeIntervalSinceNow
+        let wakeAt: Date?
+        if case .maturing(let readyAt) = snapshot?.state {
+            wakeAt = readyAt
+        } else {
+            wakeAt = snapshot?.nextMaturityAt
+        }
+        guard let wakeAt else { return }
+        let delay = wakeAt.timeIntervalSinceNow
         guard delay > 0 else { return }
         maturityFlipTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: UInt64((delay + 1) * 1_000_000_000))

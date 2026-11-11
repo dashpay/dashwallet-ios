@@ -118,7 +118,7 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let recorder = Recorder(TxDetailModel.recoveryInputChanges(
             lookup: ShieldedTxLookup(), registry: ShieldedAssetLocksInFlight()))
 
-        probes.record(txid: txidWire, walletIdHex: wallet)
+        probes.record(txid: txidWire, vout: 0, walletIdHex: wallet)
         XCTAssertEqual(recorder.count(of: .probes), 1, "recorded")
         probes.clearForWallet(walletIdHex: wallet)
         XCTAssertEqual(recorder.count(of: .probes), 2, "cleared")
@@ -233,6 +233,17 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
             registry.release(lock)
             XCTAssertNotNil(model.recoveryActions.retry, "released: the finish action is back")
             XCTAssertFalse(model.isAssetLockRetryInFlight)
+        }
+    }
+
+    @MainActor
+    func testUnknownRecoverySuppressesRetryAndRemovalOnThisScreen() {
+        withPendingShieldedLock { transaction in
+            let model = QuietTxDetailModel(transaction: transaction)
+            XCTAssertNotNil(model.recoveryActions.retry)
+            model.recordRecoveryOutcome(.submittedAwaitingSync)
+            XCTAssertNil(model.recoveryActions.retry)
+            XCTAssertFalse(model.recoveryActions.offersRemoval)
         }
     }
 

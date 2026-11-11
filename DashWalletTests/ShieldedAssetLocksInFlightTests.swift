@@ -76,7 +76,7 @@ final class ShieldedAssetLocksInFlightTests: XCTestCase {
         drain(until: 3)
         XCTAssertEqual(emissions, 3, "the lookup changed")
 
-        probes.record(txid: lockA.txidWire, walletIdHex: probeWallet)
+        probes.record(txid: lockA.txidWire, vout: lockA.vout, walletIdHex: probeWallet)
         drain(until: 4)
         XCTAssertEqual(emissions, 4, "the lock was probed already spent")
 

@@ -359,14 +359,17 @@ extension TXDetailViewController {
                     vout: retry.vout,
                     fundingTypeRaw: retry.fundingTypeRaw,
                     statusBeforeRaw: retry.statusRaw)
+                self?.model.recordRecoveryOutcome(outcome)
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
                 case .completionUnconfirmed:
                     // Platform said the outpoint is already spent, but that
-                    // report is not quorum-authenticated. Nothing is left to
-                    // retry; say only that, so the wallet never reports a
-                    // completion it did not witness.
+                    // report is not quorum-authenticated. Say only what was
+                    // reported, so the wallet never claims a completion it
+                    // did not witness. The row keeps its retry on purpose:
+                    // each tap is an explicit, authorized recheck of this
+                    // same outpoint.
                     toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
                 case .submittedAwaitingSync:
                     // Accepted, result not readable yet. Re-submitting risks a
