@@ -433,6 +433,8 @@
 
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+"Add %@ Dash to your Shielded balance to create this username" = "Add %@ Dash to your Shielded balance to create this username";
+"Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance" = "Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Ajouter un nouveau contact";
@@ -6883,6 +6885,7 @@
 
 /* Usernames */
 "You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash available (network fee reserved).\nSome usernames cost up to %2$@ Dash.";
+"You have %@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %2$@ Dash.";
 
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
@@ -6931,6 +6934,7 @@
 
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You need at least %@ Dash to create this username" = "You need at least %@ Dash to create this username";
 
 /* Identity transfer source without a registered identity */
 "You need a DashPay identity before you can move credits out of it." = "You need a DashPay identity before you can move credits out of it.";
@@ -6939,7 +6943,6 @@
 "You need a DashPay identity before you can top up its balance." = "You need a DashPay identity before you can top up its balance.";
 
 /* Usernames */
-"You need to have more %@ Dash to create this username" = "Vous devez avoir %@ dashs de plus pour créer ce nom d'utilisateur";
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "Vous devez vous connecter à DashSpend pour acheter des cartes-cadeau.";
@@ -7165,6 +7168,8 @@
 
 /* DashConnect */
 "Your private keys" = "Your private keys";
+"Your recently shielded Dash can be used for this username at %@" = "Your recently shielded Dash can be used for this username at %@";
+"Your recently shielded Dash can be used for this username tomorrow at %@" = "Your recently shielded Dash can be used for this username tomorrow at %@";
 
 /* DashConnect one-QR login */
 "Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";
