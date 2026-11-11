@@ -30,6 +30,31 @@ enum GiftCardPaymentGuard {
         return requested - expected <= allowance
     }
 
+    /// The Dash amount a provider wrote into its payment request, or nil unless the whole
+    /// string is plain decimal digits with at most one decimal point ("1", "0.25").
+    /// `Decimal(string:)` alone reads a leading number and ignores what follows it, so the
+    /// string is checked first. Signs, exponents, grouping separators and whitespace are
+    /// refused, as is anything longer than `Decimal` can hold exactly.
+    static func dashAmount(fromQuotedString string: String) -> Decimal? {
+        guard string.count <= 30 else { return nil }
+
+        let parts = string.split(separator: ".", omittingEmptySubsequences: false)
+        guard (1...2).contains(parts.count),
+              parts.allSatisfy({ part in !part.isEmpty && part.allSatisfy { ("0"..."9").contains($0) } }) else {
+            return nil
+        }
+
+        return Decimal(string: string, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    /// `true` when the wallet's exchange rate was retrieved within the app's stale-rate
+    /// limit (`kStaleRatesDuration`, the limit behind the "Prices are at least 30 minutes
+    /// old" warning). A rate with no recorded retrieval time is not fresh.
+    static func isRateFresh(lastRetrieval: Int, now: Date = Date()) -> Bool {
+        guard lastRetrieval > 0 else { return false }
+        return now.timeIntervalSince1970 - TimeInterval(lastRetrieval) <= kStaleRatesDuration
+    }
+
     /// A Dash amount as duffs, or nil when it is not positive, is finer than one duff, or
     /// does not fit in `UInt64`. Exact: no rounding and no binary floating point.
     static func duffs(fromDashAmount amount: Decimal) -> UInt64? {

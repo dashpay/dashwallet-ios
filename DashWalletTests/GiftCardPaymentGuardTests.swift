@@ -123,4 +123,133 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertNil(GiftCardPaymentGuard.duffs(fromDashAmount: dash("184467440737.09551616")))
         XCTAssertNil(GiftCardPaymentGuard.duffs(fromDashAmount: dash("1000000000000")))
     }
+
+    // MARK: - dashAmount(fromQuotedString:)
+
+    func testPlainDecimalStringsParse() {
+        XCTAssertEqual(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1"), dash("1"))
+        XCTAssertEqual(GiftCardPaymentGuard.dashAmount(fromQuotedString: "0.25"), dash("0.25"))
+        XCTAssertEqual(GiftCardPaymentGuard.dashAmount(fromQuotedString: "12.34567891"), dash("12.34567891"))
+        XCTAssertEqual(GiftCardPaymentGuard.dashAmount(fromQuotedString: "007.50"), dash("7.5"))
+    }
+
+    /// The whole string has to be a number: a leading number followed by anything else is refused.
+    func testTrailingTextIsRefused() {
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1.25invalid"))
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1.25 "))
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1.25&x"))
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1.25DASH"))
+    }
+
+    func testRepeatedDecimalSeparatorsAreRefused() {
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1.2.3"))
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1..2"))
+    }
+
+    func testCommaFormattedAmountsAreRefused() {
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1,234.5"))
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: "1,25"))
+    }
+
+    func testSignsExponentsAndBareSeparatorsAreRefused() {
+        for string in ["-1", "+1", "1e-3", "1E3", ".5", "1.", ".", "", " 1.5", "abc", "0x10", "１.５"] {
+            XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: string), "accepted \"\(string)\"")
+        }
+    }
+
+    /// A string too long for `Decimal` to hold exactly is refused instead of being cut short.
+    func testOverlongAmountIsRefused() {
+        let overlong = "0.12345678" + String(repeating: "0", count: 40) + "1"
+        XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: overlong))
+    }
+
+    // MARK: - isRateFresh
+
+    func testRateWithinTheStaleLimitIsFresh() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let limit = Int(kStaleRatesDuration)
+        XCTAssertTrue(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 1_800_000_000, now: now))
+        XCTAssertTrue(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 1_800_000_000 - 60, now: now))
+        XCTAssertTrue(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 1_800_000_000 - limit, now: now))
+    }
+
+    func testRatePastTheStaleLimitIsNotFresh() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let limit = Int(kStaleRatesDuration)
+        XCTAssertFalse(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 1_800_000_000 - limit - 1, now: now))
+        XCTAssertFalse(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 1_800_000_000 - 86_400, now: now))
+    }
+
+    /// No recorded retrieval time means the rate's age is unknown, so it does not count as fresh.
+    func testRateWithNoRetrievalTimeIsNotFresh() {
+        XCTAssertFalse(GiftCardPaymentGuard.isRateFresh(lastRetrieval: 0))
+    }
+}
+
+/// The PiggyCards order response carries the payment as a `dash:` URI. These tests pin what
+/// the parser accepts from it.
+@MainActor
+final class PiggyCardsPaymentURITests: XCTestCase {
+
+    private static let testnetAddress = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+
+    private func isValid(on network: PaymentNetwork) -> (String) -> Bool {
+        { ScriptAddressCodec.scriptPubKey(forAddress: $0, network: network) != nil }
+    }
+
+    private func parse(_ uri: String, network: PaymentNetwork = .testnet) throws -> (address: String, amount: Decimal) {
+        try PiggyCardsRepository.parsePaymentURI(uri, message: nil, isValidAddress: isValid(on: network))
+    }
+
+    private func assertRefused(_ uri: String, network: PaymentNetwork = .testnet,
+                               file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertThrowsError(try parse(uri, network: network), "accepted \(uri)", file: file, line: line)
+    }
+
+    func testAddressAndAmountAreRead() throws {
+        let payment = try parse("dash:\(Self.testnetAddress)?amount=0.12345678")
+        XCTAssertEqual(payment.address, Self.testnetAddress)
+        XCTAssertEqual(GiftCardPaymentGuard.duffs(fromDashAmount: payment.amount), 12_345_678)
+    }
+
+    func testAmountIsReadAmongOtherParameters() throws {
+        let payment = try parse("dash:\(Self.testnetAddress)?label=order&amount=1.5&message=x")
+        XCTAssertEqual(GiftCardPaymentGuard.duffs(fromDashAmount: payment.amount), 150_000_000)
+    }
+
+    func testMalformedAmountsAreRefused() {
+        for amount in ["1.25invalid", "1.2.3", "1,234.5", "1e-3", "-1", "abc", ""] {
+            assertRefused("dash:\(Self.testnetAddress)?amount=\(amount)")
+        }
+    }
+
+    func testMissingOrZeroAmountIsRefused() {
+        assertRefused("dash:\(Self.testnetAddress)")
+        assertRefused("dash:\(Self.testnetAddress)?label=order")
+        assertRefused("dash:\(Self.testnetAddress)?amount=0")
+        assertRefused("dash:\(Self.testnetAddress)?amount=0.00000000")
+    }
+
+    /// The parser keeps a sub-duff amount as written; the duff conversion is what refuses it.
+    func testSubDuffAmountDoesNotConvertToDuffs() throws {
+        let payment = try parse("dash:\(Self.testnetAddress)?amount=0.123456789")
+        XCTAssertNil(GiftCardPaymentGuard.duffs(fromDashAmount: payment.amount))
+    }
+
+    func testAddressForAnotherNetworkIsRefused() {
+        XCTAssertNoThrow(try parse("dash:\(Self.testnetAddress)?amount=1", network: .testnet))
+        assertRefused("dash:\(Self.testnetAddress)?amount=1", network: .mainnet)
+    }
+
+    func testInvalidOrMissingAddressIsRefused() {
+        assertRefused("dash:notAnAddress?amount=1")
+        assertRefused("dash:?amount=1")
+        assertRefused("dash:\(Self.testnetAddress.dropLast())?amount=1")
+    }
+
+    func testOtherSchemesAndEmptyInputAreRefused() {
+        assertRefused("bitcoin:\(Self.testnetAddress)?amount=1")
+        assertRefused("\(Self.testnetAddress)?amount=1")
+        assertRefused("")
+    }
 }

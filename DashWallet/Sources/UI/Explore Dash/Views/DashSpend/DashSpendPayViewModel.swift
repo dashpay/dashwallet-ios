@@ -341,7 +341,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         switch provider {
         case .ctx:
-            let response = try await purchaseGiftCardAPI()
+            let response = try await purchaseGiftCardAPI(cardValue: confirmedPrice)
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
@@ -383,7 +383,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.unauthorized
             }
 
-            let lineItems = buildPiggyOrderLineItems(selectedQuantities: selectedQuantities)
+            let lineItems = buildPiggyOrderLineItems(
+                selectedQuantities: selectedQuantities, cardValue: confirmedPrice)
             let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
@@ -426,11 +427,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     /// The price on the confirmation sheet ("You pay": the card value less the discount),
-    /// converted to duffs at the wallet's current rate. Throws when no rate is available:
-    /// without it a provider's quote cannot be checked.
+    /// converted to duffs at the wallet's current rate. Throws when no rate is available or
+    /// the rate is stale: without a current rate a provider's quote cannot be checked.
     private func approvedPaymentAmount(price: Decimal, discount: Decimal) throws -> UInt64 {
         let approvedFiatAmount = price * (1 - discount)
         guard approvedFiatAmount > 0,
+              GiftCardPaymentGuard.isRateFresh(lastRetrieval: BaseRatesProvider.shared.lastUpdated),
               let dashAmount = try? CurrencyExchanger.shared.convertToDash(
                   amount: approvedFiatAmount, currency: kDefaultCurrencyCode),
               dashAmount.plainDashAmount > 0 else {
@@ -761,7 +763,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
+    /// - Parameter cardValue: the card value the buyer confirmed; the order is created for it.
+    private func purchaseGiftCardAPI(cardValue: Decimal) async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
             throw DashSpendError.unauthorized
         }
@@ -776,10 +779,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         formatter.usesGroupingSeparator = false
 
         // Round to 2 decimal places without converting to Double
-        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let roundedAmount = NSDecimalNumber(decimal: cardValue)
         let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
-        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(cardValue)")
 
         do {
             let response = try await ctxSpendRepository.purchaseGiftCard(
@@ -833,7 +836,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         checkAmountForErrors()
     }
 
-    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int]) -> [PiggyCardsRepository.OrderLineItem] {
+    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int],
+                                          cardValue: Decimal) -> [PiggyCardsRepository.OrderLineItem] {
         let positiveSelections = selectedQuantities
             .filter { $0.value > 0 }
             .map { PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble($0.key), quantity: $0.value) }
@@ -842,7 +846,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return positiveSelections
         }
 
-        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(amount), quantity: 1)]
+        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(cardValue), quantity: 1)]
     }
 
     private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int]) -> String {
