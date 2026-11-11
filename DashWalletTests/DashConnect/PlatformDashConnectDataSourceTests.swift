@@ -2095,10 +2095,13 @@ final class AppConnectLoginTests: XCTestCase {
 extension PlatformDashConnectDataSourceTests {
     private static let snapshotIdentity = Data(repeating: 0x11, count: 32)
 
-    private static func keyInfo(_ id: Int32, disabledAt: Int64? = nil) -> ManagedIdentity.IdentityPublicKeyInfo {
+    private static func keyInfo(
+        _ id: Int32, disabledAt: Int64? = nil, totalBudget: UInt64? = nil, expiresAt: Int64? = nil
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
         ManagedIdentity.IdentityPublicKeyInfo(
             keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
-            disabledAt: disabledAt, data: Data(repeating: UInt8(id), count: 20), totalBudget: nil, expiresAt: nil)
+            disabledAt: disabledAt, data: Data(repeating: UInt8(id), count: 20),
+            totalBudget: totalBudget, expiresAt: expiresAt)
     }
 
     func testTheSnapshotCarriesTheProvedBlockTime() throws {
@@ -3482,6 +3485,23 @@ extension PlatformDashConnectDataSourceTests {
         let disabled = Self.keyInfo(1, disabledAt: 1_780_000_000_000)
         XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
             copy: [Self.keyInfo(0), disabled], proved: [Self.keyInfo(0), disabled]))
+    }
+
+    /// Platform raises a key's limits without a new revision: a proved read
+    /// with the limits from before the raise is behind the copy.
+    func testALowerBudgetOrAnEarlierExpiryThanTheCopyIsBehind() {
+        assertReadBehind(
+            copy: [Self.keyInfo(1, totalBudget: 2_000, expiresAt: 1_800_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_800_000_000_000)])
+        assertReadBehind(
+            copy: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_800_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)])
+    }
+
+    func testRaisedLimitsInTheProvedReadAreNotBehind() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 2_000, expiresAt: 1_800_000_000_000)]))
     }
 
     func testAKeyEnabledInTheCopyButDisabledInTheProvedReadIsNotBehind() {
