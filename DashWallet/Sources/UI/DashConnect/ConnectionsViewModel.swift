@@ -1228,7 +1228,7 @@ final class ConnectionsViewModel: ObservableObject {
             self.isDisconnecting = false
             self.updateShownConnection()
             let notTurnedOff = result.keysStillLive > 0 || result.fencesNotPlaced > 0
-            guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 else { return }
+            guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 || result.keysNotAttributable > 0 else { return }
             var texts: [String] = []
             if result.keysStillLive > 0 {
                 texts.append(String.localizedStringWithFormat(
@@ -1247,9 +1247,18 @@ final class ConnectionsViewModel: ObservableObject {
             if result.keysNotChecked > 0 {
                 texts.append(String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.",
+                        "This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them.",
                         comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
                     result.keysNotChecked))
+            }
+            if result.keysNotAttributable > 0 {
+                // swiftlint:disable line_length
+                texts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.",
+                        comment: "DashConnect: after a disconnect that left keys another app of the same developer may hold"),
+                    result.keysNotAttributable))
+                // swiftlint:enable line_length
             }
             if result.keysOnAnotherIdentity {
                 texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
