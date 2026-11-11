@@ -3498,6 +3498,16 @@ extension PlatformDashConnectDataSourceTests {
             proved: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)])
     }
 
+    /// The SDK gives an expiry as the bit pattern of an unsigned block time:
+    /// one past `Int64.max` is later than any ordinary one, not earlier.
+    func testAnExpiryPastInt64MaxIsComparedUnsigned() {
+        let farOff = Int64(bitPattern: UInt64(Int64.max) + 10)
+        assertReadBehind(
+            copy: [Self.keyInfo(1, expiresAt: farOff)], proved: [Self.keyInfo(1, expiresAt: 1_800_000_000_000)])
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(1, expiresAt: 1_800_000_000_000)], proved: [Self.keyInfo(1, expiresAt: farOff)]))
+    }
+
     func testRaisedLimitsInTheProvedReadAreNotBehind() {
         XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
             copy: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)],
@@ -4686,12 +4696,18 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         private let lock = NSLock()
         private var reads: [Data: Int] = [:]
         var failing: Set<Data> = []
+        /// Ids whose reads fail this many more times, then read.
+        var failingTimes: [Data: Int] = [:]
         var owners: [Data: Data] = [:]
 
         func read(_ id: Data) throws -> [String: Any] {
             try lock.withLock {
                 reads[id, default: 0] += 1
                 if failing.contains(id) { throw SDKError.timeout("slow") }
+                if let left = failingTimes[id], left > 0 {
+                    failingTimes[id] = left - 1
+                    throw SDKError.timeout("slow")
+                }
                 return ["ownerId": (owners[id] ?? AppConnectOwnersThroughSeamsTests.owner).toBase58String()]
             }
         }
@@ -4708,6 +4724,9 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         private var keys: [AppConnect.PlatformKey]
         private var revision: UInt64 = 5
         private var submitted: [UInt32] = []
+        /// Keys that land with the next identity update, as a grant from
+        /// another device would during the disconnect.
+        var landing: [AppConnect.PlatformKey] = []
         let reader: Reader
         let memory = PlatformDashConnectDataSource.OwnerMemory()
 
@@ -4734,7 +4753,8 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
                         id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType,
                         data: key.data, readOnly: key.readOnly, bound: key.bound, boundKnown: key.boundKnown,
                         totalBudget: key.totalBudget, expiresAt: key.expiresAt, disabledAt: 1_800_000_000_000)
-                }
+                } + landing
+                landing = []
             }
         }
 
@@ -4858,6 +4878,35 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
             XCTAssertEqual(result.keysTurnedOff, 2, name)
             XCTAssertEqual([result.keysStillLive, result.keysNotChecked, result.keysNotAttributable], [0, 0, 0], name)
         }
+    }
+
+    /// A key of the app's owner that lands during the update is told from
+    /// the read after it, as the rows are: it is reported as still on, and
+    /// the app keeps the row a second disconnect needs.
+    func testAKeyThatLandsDuringTheUpdateIsReportedAsStillOn() async throws {
+        let own = Self.on(Self.app, 10)
+        let h = harness([own], [Self.intent(own)])
+        h.platform.landing = [Self.on(Self.sibling, 30)]
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysStillLive, result.keysNotChecked], [1, 1, 0])
+        XCTAssertEqual(h.rowIds, [Self.app])
+    }
+
+    /// An owner that could not be read before the update and reads after it
+    /// places the key with the app for the rows and the result alike: the
+    /// key is still on, not unchecked, and the app keeps its row.
+    func testAnOwnerReadAfterTheUpdateDecidesTheRowsAndTheResultAlike() async throws {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
+        // The refresh, the plan and the plan after the PIN fail; the read
+        // after the update reads.
+        reader.failingTimes = [Self.sibling: 3]
+        let h = harness([own, Self.on(Self.sibling)], [Self.intent(own)], reader: reader)
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysStillLive, result.keysNotChecked, result.keysNotAttributable], [1, 0, 0])
+        XCTAssertEqual(h.rowIds, [Self.app], "the key shows under the app, not on its own row")
     }
 
     /// AC-04, AC-11, AC-12: the disconnect still turns off the app's keys,
