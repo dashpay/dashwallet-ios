@@ -379,6 +379,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The newest read of each identity this process has seen; a read
     /// behind it is not used (`AppConnect.IdentitySnapshot.mayReplace`).
     private static let newestSnapshots = OSAllocatedUnfairLock<[Data: AppConnect.IdentitySnapshot]>(initialState: [:])
+    /// The owners of contracts and contract groups this process has read,
+    /// for every data source of the app's run: Platform never changes one.
+    private static let ownerMemory = OwnerMemory()
     private let subject: CurrentValueSubject<[DAppConnection], Never>
     private let shownRows: ShownRows
     private let operationGate: DashConnectOperationGate
@@ -646,6 +649,69 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    /// The owner a contract read from Platform names, nil when it names
+    /// none this build can read.
+    static func contractOwnerId(_ contract: [String: Any]) -> Data? {
+        (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(decodeIdentifier)
+    }
+
+    /// The owner a contract group read from Platform names, nil when it
+    /// names none this build can read.
+    static func groupOwnerId(_ info: [String: Any]) -> Data? {
+        (info["ownerId"] as? String).flatMap(decodeIdentifier)
+    }
+
+    /// The owners of contracts and contract groups, read from Platform and
+    /// remembered in memory, never on disk: Platform never changes an
+    /// owner. A read that fails, finds nothing, or names no readable owner
+    /// is not remembered, so the owner stays unknown and is read again.
+    final class OwnerMemory: Sendable {
+        private struct Key: Hashable {
+            let network: String
+            let id: Data
+        }
+
+        private let known = OSAllocatedUnfairLock<[Key: Data]>(initialState: [:])
+
+        /// The known owners of `contracts` and `groups` on `network`: those
+        /// remembered, and the rest read in parallel. An id that could not
+        /// be read is absent. Never throws.
+        func owners(
+            contracts: Set<Data>, groups: Set<Data>, network: String,
+            readContract: @escaping @Sendable (Data) async throws -> [String: Any],
+            readGroup: @escaping @Sendable (Data) async throws -> [String: Any]
+        ) async -> [Data: Data] {
+            let ids = contracts.union(groups)
+            var owners = known.withLock { known in
+                Dictionary(uniqueKeysWithValues: ids.compactMap { id in known[Key(network: network, id: id)].map { (id, $0) } })
+            }
+            let unknown = ids.subtracting(owners.keys)
+            guard !unknown.isEmpty else { return owners }
+            let read = await withTaskGroup(of: (Data, Data?).self) { group -> [Data: Data] in
+                for id in unknown {
+                    group.addTask {
+                        if groups.contains(id) {
+                            return (id, (try? await readGroup(id)).flatMap(PlatformDashConnectDataSource.groupOwnerId))
+                        }
+                        return (id, (try? await readContract(id)).flatMap(PlatformDashConnectDataSource.contractOwnerId))
+                    }
+                }
+                var read: [Data: Data] = [:]
+                for await (id, owner) in group {
+                    read[id] = owner
+                }
+                return read
+            }
+            known.withLock { known in
+                for (id, owner) in read { known[Key(network: network, id: id)] = owner }
+            }
+            PlatformDashConnectDataSource.logger.info(
+                "🔗 DASHCONNECT :: owners read: \(unknown.count, privacy: .public), not read: \(unknown.count - read.count, privacy: .public)")
+            owners.merge(read) { _, new in new }
+            return owners
+        }
+    }
+
     /// Reads the owners wallet rule 3 compares from Platform. A group the
     /// network proves absent counts as not the app's; any other failure to
     /// read throws, so the sheet offers to try again. The caller's reads run
@@ -661,9 +727,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         administeredGroupIds: Set<Data>,
         currentKeyRules: [KeyPurpose: AppConnect.CurrentKeyRule]
     ) {
-        func ownerId(of contract: [String: Any]) -> Data? {
-            (contract["ownerId"] as? String ?? contract["$ownerId"] as? String).flatMap(Self.decodeIdentifier)
-        }
         let app: [String: Any]
         do {
             app = try await readContract(plan.appId)
@@ -671,7 +734,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return (AppConnect.Refusal(.invalid, NSLocalizedString(
                 "The app's contract does not exist on this network.", comment: "DashConnect App Connect v2")), [], [:])
         }
-        guard let appOwnerId = ownerId(of: app) else {
+        guard let appOwnerId = contractOwnerId(app) else {
             return (AppConnect.Refusal(.invalid, NSLocalizedString(
                 "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
         }
@@ -686,7 +749,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 guard groupOwners[id] == nil else { continue }
                 do {
                     let info = try await readGroup(id)
-                    groupOwners[id] = (info["ownerId"] as? String).flatMap(Self.decodeIdentifier)
+                    groupOwners[id] = groupOwnerId(info)
                     // Read as administered unless the proof shows none.
                     if (info["adminIds"] as? [Any])?.isEmpty != true { administeredGroupIds.insert(id) }
                 } catch SDKError.notFound {
@@ -705,7 +768,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     continue
                 }
                 contracts[id] = contract
-                contractOwners[id] = ownerId(of: contract)
+                contractOwners[id] = contractOwnerId(contract)
             }
         }
         // A contract whose config this build cannot read says nothing of its
@@ -864,17 +927,120 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return result
     }
 
+    /// Where the owners a projection needs come from: what `memory` knows on
+    /// `network`, and the rest read with `readContract` and `readGroup`.
+    struct OwnerReader: Sendable {
+        let network: String
+        let memory: OwnerMemory
+        let readContract: @Sendable (Data) async throws -> [String: Any]
+        let readGroup: @Sendable (Data) async throws -> [String: Any]
+
+        /// The owners the projection of `snapshot` needs that are known. An
+        /// owner that could not be read is absent: unknown.
+        func knownOwners(for snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent]) async -> [Data: Data] {
+            let needed = AppConnect.ownerIdsNeeded(snapshot: snapshot, intents: intents)
+            guard !needed.isEmpty else { return [:] }
+            let groups = Set(snapshot.keys.compactMap { key -> Data? in
+                guard case .contractGroup(let id) = key.bound else { return nil }
+                return id
+            }).intersection(needed)
+            let started = ContinuousClock.now
+            let owners = await memory.owners(
+                contracts: needed.subtracting(groups), groups: groups, network: network,
+                readContract: readContract, readGroup: readGroup)
+            let elapsed = (ContinuousClock.now - started).formatted(.units(allowed: [.milliseconds]))
+            PlatformDashConnectDataSource.logger.info(
+                "🔗 DASHCONNECT :: owners for the projection: \(owners.count, privacy: .public) of \(needed.count, privacy: .public) known, in \(elapsed, privacy: .public)")
+            return owners
+        }
+    }
+
+    /// Owners from the process-wide memory, the rest read from Platform off
+    /// the main actor.
+    private static func ownerReader(context: Context) -> OwnerReader {
+        let sdk = context.sdk
+        return OwnerReader(
+            network: "\(context.network)", memory: ownerMemory,
+            readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
+            readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
+    }
+
+    /// The projection of `snapshot` with the owners it needs that are known.
+    /// A key whose owner is unknown keeps its own row.
+    static func projectWithOwners(
+        _ snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: OwnerReader
+    ) async -> AppConnect.Projection {
+        let known = await owners.knownOwners(for: snapshot, intents: intents)
+        return AppConnect.project([snapshot], intents: intents, owners: known)
+    }
+
+    /// What a disconnect of one app submits on one read of the identity, and
+    /// what its result reports.
+    struct PlannedDisconnect {
+        var plan: AppConnect.DisconnectPlan
+        /// The read it is planned on.
+        var snapshot: AppConnect.IdentitySnapshot
+        /// The keys it turns off: the app's, the listed unrecorded ones it
+        /// still offers (`offered`), and the fences it adds.
+        var appKeysOff: Int
+        /// The unrecorded keys it offers to turn off, DashPay profile keys
+        /// no intent names among them.
+        var offered: Set<UInt32>
+        var notChecked: Int
+        var notAttributable: Int
+        /// Offered keys the question did not list: they stay on.
+        var leftAfterQuestion: Int
+    }
+
+    /// The disconnect of `appId` on `snapshot`, with the owners it needs
+    /// that are known: none for an app with no intent on the identity, whose
+    /// row keeps its contract's keys whatever their owner. `unrecordedKeyIds`:
+    /// the keys the user's question listed, nil before the question; only
+    /// those still offered are turned off. `fences`: the wallet's fence keys
+    /// still live.
+    static func plannedDisconnect(
+        appId: Data, snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
+        unrecordedKeyIds: Set<UInt32>?, fences: [UInt32], owners reader: OwnerReader
+    ) async -> PlannedDisconnect {
+        let hasIntent = intents.contains { $0.appId == appId && $0.identityId == snapshot.identityId }
+        let owners = hasIntent ? await reader.knownOwners(for: snapshot, intents: intents) : [:]
+        var plan = AppConnect.disconnectPlan(
+            appId: appId, snapshot: snapshot, intents: intents, owners: owners, listedUnrecordedKeyIds: unrecordedKeyIds)
+        // DashPay profile keys no intent names are no one app's: no record
+        // proves which app was given one, on this device or another. A
+        // disconnect turns off everything that may be the app's, so they
+        // are offered with any app's, on the user's confirm.
+        let profileKeys = Set(AppConnect.project([snapshot], intents: intents, owners: owners)
+            .unrecordedProfileKeyIds[snapshot.identityId] ?? [])
+        let profileKeysOff = unrecordedKeyIds.map { profileKeys.intersection($0) } ?? []
+        let appKeysOff = Set(plan.disable).union(profileKeysOff).count + plan.fence.count
+        plan.disable = AppConnect.disableOrder(appKeyIds: plan.disable, otherKeyIds: Array(profileKeysOff) + fences)
+        let offered = Set(plan.offeredUnrecorded).union(profileKeys)
+        return PlannedDisconnect(
+            plan: plan, snapshot: snapshot, appKeysOff: appKeysOff, offered: offered,
+            notChecked: plan.notChecked.count, notAttributable: plan.notAttributable.count,
+            leftAfterQuestion: unrecordedKeyIds.map { offered.subtracting($0).count } ?? 0)
+    }
+
     /// Puts the App Connect rows of `stores` in step with what `snapshot`
     /// and the intents show.
     private func refreshRows(from snapshot: AppConnect.IdentitySnapshot, context: Context) async {
         let stores = context.stores
-        let all = stores.intents.load()
-        let projection = AppConnect.project([snapshot], intents: all)
+        let change = await Self.refreshedRows(
+            snapshot: snapshot, intents: stores.intents.load(), owners: Self.ownerReader(context: context), at: now())
+        await updateRows(in: stores, change)
+    }
+
+    /// The change a refresh makes to the stored rows: the projection of
+    /// `snapshot` with the owners it needs that are known, applied to the
+    /// rows as `rows(_:after:of:intents:at:)` does.
+    static func refreshedRows(
+        snapshot: AppConnect.IdentitySnapshot, intents all: [AppConnect.ConnectionIntent], owners: OwnerReader,
+        at updatedAt: Date
+    ) async -> ([DAppConnection]) -> [DAppConnection] {
+        let projection = await projectWithOwners(snapshot, intents: all, owners: owners)
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
-        let updatedAt = now()
-        await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt)
-        }
+        return { rows($0, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt) }
     }
 
     /// `rows` with the App Connect connections of `projection`, the read of
@@ -1206,7 +1372,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             AppConnect.disconnectPlan(
                 appId: plan.appId, snapshot: snapshot,
                 intents: intents.filter { $0.connectionId == connectionId },
-                includeUnrecorded: false)
+                owners: [:], listedUnrecordedKeyIds: nil)
         } ?? AppConnect.DisconnectPlan()
         let superseded = supersession.disable
         guard superseded.count <= AppConnect.maxKeysDisabledPerUpdate else {
@@ -1947,14 +2113,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
-        try await gated { try await disconnectInTurn(id: id, scope: scope, includingUnrecorded: includingUnrecorded) }
+    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
+        try await gated { try await disconnectInTurn(id: id, scope: scope, unrecordedKeyIds: unrecordedKeyIds) }
     }
 
     private func disconnectInTurn(
         id: String,
         scope: String?,
-        includingUnrecorded: Bool
+        unrecordedKeyIds: Set<UInt32>?
     ) async throws -> DashConnectDisconnectResult {
         guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
@@ -1974,13 +2140,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard !stores.intents.hasUnreadableRows(identityId: context.identityId) else {
             throw DashConnectPlatformError.intentsUnreadable
         }
-        var planned = try await disconnectPlan(appId: appId, includingUnrecorded: includingUnrecorded, context: context)
+        var planned = try await disconnectPlan(appId: appId, unrecordedKeyIds: unrecordedKeyIds, context: context)
         // The PIN is asked for only when there is something to sign.
         if !planned.plan.isEmpty {
             try await authorize()
             context = try await contextAfterAuthorization(matching: context)
-            // Read again: the prompt can take any time.
-            planned = try await disconnectPlan(appId: appId, includingUnrecorded: includingUnrecorded, context: context)
+            // Read again: the prompt can take any time. Owners still
+            // unknown are read again; a known one comes from memory.
+            planned = try await disconnectPlan(appId: appId, unrecordedKeyIds: unrecordedKeyIds, context: context)
         }
         let plan = planned.plan
         let signer = KeychainSigner(modelContainer: context.modelContainer)
@@ -2029,47 +2196,42 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
-        return DashConnectDisconnectResult(
-            keysTurnedOff: planned.appKeysOff,
-            unrecordedKeysLeft: includingUnrecorded ? 0 : planned.unrecordedLeft,
-            keysNotChecked: planned.unplaced,
+        return Self.disconnectResult(
+            of: planned, listed: unrecordedKeyIds,
             // Keys a read of another identity saw stay, and so does the row.
             keysOnAnotherIdentity: rows(in: stores).first { $0.id == id }?.seenOn
                 .subtracting([context.identityId.toBase58String()]).isEmpty == false)
     }
 
+    /// What a disconnect planned as `planned` reports. The offered keys are
+    /// reported only before the question (`listed` nil): the user's answer
+    /// to it passes them back.
+    static func disconnectResult(
+        of planned: PlannedDisconnect, listed: Set<UInt32>?, keysOnAnotherIdentity: Bool
+    ) -> DashConnectDisconnectResult {
+        DashConnectDisconnectResult(
+            keysTurnedOff: planned.appKeysOff,
+            offeredUnrecordedKeyIds: listed == nil ? planned.offered : [],
+            keysNotChecked: planned.notChecked,
+            keysNotAttributable: planned.notAttributable,
+            keysLeftAfterQuestion: planned.leftAfterQuestion,
+            keysOnAnotherIdentity: keysOnAnotherIdentity)
+    }
+
     /// What a disconnect of `appId` submits on the active identity, from a
-    /// fresh read, and how many keys no intent names it leaves when
-    /// `includingUnrecorded` is off.
+    /// fresh read and the owners it needs (`plannedDisconnect`).
     private func disconnectPlan(
         appId: Data,
-        includingUnrecorded: Bool,
+        unrecordedKeyIds: Set<UInt32>?,
         context: Context
-    ) async throws -> (
-        plan: AppConnect.DisconnectPlan, snapshot: AppConnect.IdentitySnapshot,
-        appKeysOff: Int, unrecordedLeft: Int, unplaced: Int
-    ) {
+    ) async throws -> PlannedDisconnect {
         let snapshot = try await identitySnapshot(context: context).snapshot
         let all = context.stores.intents.load()
-        var plan = AppConnect.disconnectPlan(
-            appId: appId, snapshot: snapshot, intents: all, includeUnrecorded: includingUnrecorded)
-        // The same intents as the plan, so the keys counted are the keys it
-        // would turn off.
-        let projection = AppConnect.project([snapshot], intents: all)
-        let unrecordedAppKeys = projection.connections.first { $0.appId == appId }?
-            .unrecordedKeyIds[context.identityId] ?? []
-        // DashPay profile keys no intent names are no one app's: no record
-        // proves which app was given one, on this device or another. A
-        // disconnect turns off everything that may be the app's, so they
-        // are offered with any app's, on the user's confirm.
-        let profileKeys = projection.unrecordedProfileKeyIds[context.identityId] ?? []
-        let profileKeysOff = includingUnrecorded ? profileKeys : []
-        let appKeysOff = Set(plan.disable).union(profileKeysOff).count + plan.fence.count
         // A fence an earlier try added and could not turn off yet.
         let fences = try await liveFenceKeyIds(snapshot: snapshot, intents: all, context: context)
-        plan.disable = AppConnect.disableOrder(appKeyIds: plan.disable, otherKeyIds: profileKeysOff + fences)
-        return (plan, snapshot, appKeysOff, Set(unrecordedAppKeys).union(profileKeys).count,
-                projection.unplacedKeyIds[context.identityId]?.count ?? 0)
+        return await Self.plannedDisconnect(
+            appId: appId, snapshot: snapshot, intents: all, unrecordedKeyIds: unrecordedKeyIds, fences: fences,
+            owners: Self.ownerReader(context: context))
     }
 
     /// The ids of this wallet's fence keys that are still live: a fence is

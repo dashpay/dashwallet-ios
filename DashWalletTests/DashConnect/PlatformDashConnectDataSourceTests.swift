@@ -594,19 +594,95 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         let spy = PurchaseApprovalSpy()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-        spy.disconnectResult = DashConnectDisconnectResult(unrecordedKeysLeft: 2)
+        spy.disconnectResult = DashConnectDisconnectResult(offeredUnrecordedKeyIds: [20, 21])
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
         XCTAssertEqual(viewModel.message?.unrecordedKeysOf, Self.connection)
-        XCTAssertEqual(spy.disconnectedIncludingUnrecorded, [false])
+        XCTAssertEqual(viewModel.message?.unrecordedKeyIds, [20, 21], "the message keeps the offered keys")
+        XCTAssertEqual(spy.disconnectedUnrecordedKeyIds, [nil])
 
+        let offered = viewModel.message?.unrecordedKeyIds
         viewModel.message = nil
         spy.disconnectResult = DashConnectDisconnectResult()
-        viewModel.disconnect(Self.connection, includingUnrecorded: true)
+        viewModel.disconnect(Self.connection, unrecordedKeyIds: offered)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
-        XCTAssertEqual(spy.disconnectedIncludingUnrecorded, [false, true])
+        XCTAssertEqual(spy.disconnectedUnrecordedKeyIds, [nil, [20, 21]], "the answer passes back exactly the offered keys")
         XCTAssertNil(viewModel.message)
+    }
+
+    /// The message a disconnect result words, its paragraphs in order.
+    private func message(after result: DashConnectDisconnectResult) async -> ConnectionsScreenMessage? {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        spy.disconnectResult = result
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+        return viewModel.message
+    }
+
+    private static let notChecked = "could not tell yet which app holds some keys"
+    private static let notAttributable = "may belong to another app of the same developer"
+    private static let leftAfterQuestion = "Disconnect it again to turn them off"
+
+    private static func paragraphs(_ message: ConnectionsScreenMessage?) -> [String] {
+        message?.text.components(separatedBy: "\n\n") ?? []
+    }
+
+    /// SCR-03 with-warnings: the question carries the warnings, so leaving
+    /// the keys still shows them.
+    func testTheQuestionCarriesTheWarnings() async {
+        let message = await message(after: DashConnectDisconnectResult(
+            keysTurnedOff: 1, offeredUnrecordedKeyIds: [20], keysNotChecked: 2, keysNotAttributable: 3))
+        let paragraphs = Self.paragraphs(message)
+        XCTAssertEqual(message?.kind, .question)
+        guard paragraphs.count == 3 else { return XCTFail("paragraphs: \(paragraphs)") }
+        XCTAssertTrue(paragraphs[0].contains("Turn them off too?"))
+        XCTAssertTrue(paragraphs[1].contains(Self.notChecked) && paragraphs[1].contains("(2)"))
+        XCTAssertTrue(paragraphs[2].contains(Self.notAttributable) && paragraphs[2].contains("(3)"))
+    }
+
+    /// SCR-04 not-attributable: its own text, pointing to the key's row,
+    /// without a retry hint.
+    func testAKeyNotAttributableIsReportedWithoutARetryHint() async {
+        let message = await message(after: DashConnectDisconnectResult(keysTurnedOff: 1, keysNotAttributable: 1))
+        XCTAssertEqual(message?.kind, .warning)
+        XCTAssertEqual(Self.paragraphs(message).count, 1)
+        XCTAssertTrue(message?.text.contains(Self.notAttributable) == true)
+        XCTAssertTrue(message?.text.contains("its own row") == true)
+        XCTAssertFalse(message?.text.contains("again later") == true)
+    }
+
+    /// SCR-04 left-after-question: a key attributed only after the question
+    /// stays on, and the result says so.
+    func testAKeyLeftAfterTheQuestionIsReported() async {
+        let message = await message(after: DashConnectDisconnectResult(keysTurnedOff: 2, keysLeftAfterQuestion: 1))
+        XCTAssertEqual(message?.kind, .warning)
+        XCTAssertTrue(message?.text.contains(Self.leftAfterQuestion) == true)
+        XCTAssertTrue(message?.text.contains("(1)") == true)
+    }
+
+    /// SCR-04 combined: not checked, not attributable, left after the
+    /// question, another identity, in that order; a finding besides the
+    /// other identity keeps the success heading.
+    func testSeveralFindingsAreWordedInOrder() async {
+        let message = await message(after: DashConnectDisconnectResult(
+            keysNotChecked: 1, keysNotAttributable: 1, keysLeftAfterQuestion: 1, keysOnAnotherIdentity: true))
+        let paragraphs = Self.paragraphs(message)
+        guard paragraphs.count == 4 else { return XCTFail("paragraphs: \(paragraphs)") }
+        XCTAssertTrue(paragraphs[0].contains(Self.notChecked))
+        XCTAssertTrue(paragraphs[1].contains(Self.notAttributable))
+        XCTAssertTrue(paragraphs[2].contains(Self.leftAfterQuestion))
+        XCTAssertEqual(paragraphs[3], DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
+        XCTAssertEqual(message?.kind, .warning)
+        XCTAssertEqual(message?.title, "Success")
+    }
+
+    /// The error heading stays for keys on another identity alone with
+    /// nothing turned off.
+    func testKeysOnlyOnAnotherIdentityWithNothingTurnedOffAreAnError() async {
+        let message = await message(after: DashConnectDisconnectResult(keysOnAnotherIdentity: true))
+        XCTAssertEqual(message?.kind, .error)
     }
 
     /// With the login unresolved the sheet's action asks again and approves
@@ -893,7 +969,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     private var storedDisconnectFailure: Error?
     private var storedDisconnectedIds: [String] = []
     private var storedDisconnectedScopes: [String?] = []
-    private var storedDisconnectedIncludingUnrecorded: [Bool] = []
+    private var storedDisconnectedUnrecordedKeyIds: [Set<UInt32>?] = []
 
     var disconnectFailure: Error? {
         get { lock.withLock { storedDisconnectFailure } }
@@ -908,8 +984,8 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    var disconnectedIncludingUnrecorded: [Bool] {
-        lock.withLock { storedDisconnectedIncludingUnrecorded }
+    var disconnectedUnrecordedKeyIds: [Set<UInt32>?] {
+        lock.withLock { storedDisconnectedUnrecordedKeyIds }
     }
 
     private var storedDisconnectResult = DashConnectDisconnectResult()
@@ -920,11 +996,11 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         set { lock.withLock { storedDisconnectResult = newValue } }
     }
 
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
         let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            storedDisconnectedIncludingUnrecorded.append(includingUnrecorded)
+            storedDisconnectedUnrecordedKeyIds.append(unrecordedKeyIds)
             return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
@@ -993,7 +1069,7 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
         throw PurchaseSpyError.unsupported
     }
 
@@ -1123,7 +1199,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([other])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
 
         XCTAssertEqual(Self.shownRows(dataSource).map(\.id), [other.id], "the list shows the wallet that is active")
         XCTAssertEqual(connections.load(), [other])
@@ -1139,7 +1215,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
 
         XCTAssertEqual(connections.load().map(\.status), [.active])
     }
@@ -1163,14 +1239,14 @@ final class AppConnectLoginTests: XCTestCase {
         center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
         await fulfillment(of: [moved], timeout: 2)
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
         await dataSource.remove(id: shown[0].id, scope: shown[0].scope)
 
         XCTAssertEqual(connections.load(), [row], "the new wallet's row for the same app is untouched")
         // The row the new list shows is this wallet's own.
         let current = Self.shownRows(dataSource)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeyIds: nil)
         }
     }
 
@@ -1202,12 +1278,12 @@ final class AppConnectLoginTests: XCTestCase {
         // The same wallet and devnet name, pointed at other nodes.
         endpoint.url = "https://quorums.two.example"
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
         XCTAssertEqual(connections.load().map(\.status), [.active])
         let current = Self.shownRows(dataSource)
         XCTAssertNotEqual(current[0].scope, shown[0].scope)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, includingUnrecorded: false)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeyIds: nil)
         }
     }
 
@@ -1216,7 +1292,7 @@ final class AppConnectLoginTests: XCTestCase {
         let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, includingUnrecorded: false) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, unrecordedKeyIds: nil) }
         await dataSource.remove(id: row.id, scope: nil)
 
         XCTAssertEqual(connections.load(), [row])
@@ -1303,7 +1379,7 @@ final class AppConnectLoginTests: XCTestCase {
         // when it ends is what is checked.
         let log = OperationLog()
         let disconnect = Task {
-            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false)
+            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil)
             await log.add("disconnect ended")
         }
         try await Task.sleep(nanoseconds: 100_000_000)
@@ -1336,7 +1412,7 @@ final class AppConnectLoginTests: XCTestCase {
         await fulfillment(of: [otherStarted], timeout: 2)
 
         let disconnect = Task {
-            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, includingUnrecorded: false) }
+            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeyIds: nil) }
         }
         try? await Task.sleep(nanoseconds: 100_000_000)
         active.idHex = "wallet-b"
@@ -1392,7 +1468,7 @@ final class AppConnectLoginTests: XCTestCase {
         let (dataSource, _) = makeScopedDataSource(active: active)
 
         do {
-            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, includingUnrecorded: false)
+            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, unrecordedKeyIds: nil)
             XCTFail("disconnected with no wallet")
         } catch {
             guard case DashConnectPlatformError.noWallet = error else {
@@ -1534,5 +1610,462 @@ final class AppConnectLoginTests: XCTestCase {
             index = next
         }
         return Data(bytes)
+    }
+}
+
+/// The owners of contracts and contract groups, read from Platform and
+/// remembered for the app's run: a known owner is never read again, and a
+/// read that fails leaves the owner unknown, to be read again.
+final class AppConnectOwnerMemoryTests: XCTestCase {
+    private static let contract = Data(repeating: 0xC1, count: 32)
+    private static let group = Data(repeating: 0xC2, count: 32)
+    private static let owner = Data(repeating: 0x0A, count: 32)
+
+    /// Counts reads per id and answers with what the test sets.
+    private final class Reads: @unchecked Sendable {
+        private let lock = NSLock()
+        private var counts: [Data: Int] = [:]
+        var answer: (Data) throws -> [String: Any] = { _ in [:] }
+
+        func read(_ id: Data) throws -> [String: Any] {
+            lock.lock()
+            counts[id, default: 0] += 1
+            let answer = self.answer
+            lock.unlock()
+            return try answer(id)
+        }
+
+        func count(_ id: Data) -> Int {
+            lock.lock()
+            defer { lock.unlock() }
+            return counts[id] ?? 0
+        }
+    }
+
+    private func owners(
+        _ memory: PlatformDashConnectDataSource.OwnerMemory, _ reads: Reads, network: String = "testnet",
+        contracts: Set<Data> = [contract], groups: Set<Data> = []
+    ) async -> [Data: Data] {
+        await memory.owners(
+            contracts: contracts, groups: groups, network: network,
+            readContract: { try reads.read($0) }, readGroup: { try reads.read($0) })
+    }
+
+    func testAKnownOwnerIsNeverReadAgain() async {
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        let first = await owners(memory, reads, groups: [Self.group])
+        let second = await owners(memory, reads, groups: [Self.group])
+        XCTAssertEqual(first, [Self.contract: Self.owner, Self.group: Self.owner])
+        XCTAssertEqual(second, first)
+        XCTAssertEqual(reads.count(Self.contract), 1)
+        XCTAssertEqual(reads.count(Self.group), 1)
+    }
+
+    func testAContractOwnerIsReadFromEitherOwnerField() async {
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+        reads.answer = { _ in ["$ownerId": Self.owner.toBase58String()] }
+        let known = await owners(memory, reads)
+        XCTAssertEqual(known, [Self.contract: Self.owner])
+    }
+
+    func testAnOwnerThatCouldNotBeReadStaysUnknownAndIsReadAgain() async {
+        let failures: [(String, (Data) throws -> [String: Any])] = [
+            ("network error", { _ in throw SDKError.timeout("slow") }),
+            ("not found", { _ in throw SDKError.notFound("behind") }),
+            ("no readable owner", { _ in ["ownerId": 7] }),
+        ]
+        for (name, failure) in failures {
+            let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+            reads.answer = failure
+            let unknown = await owners(memory, reads, groups: [Self.group])
+            XCTAssertEqual(unknown, [:], name)
+            reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+            let known = await owners(memory, reads, groups: [Self.group])
+            XCTAssertEqual(known, [Self.contract: Self.owner, Self.group: Self.owner], name)
+            XCTAssertEqual(reads.count(Self.contract), 2, name)
+            XCTAssertEqual(reads.count(Self.group), 2, name)
+        }
+    }
+
+    func testAnOwnerKnownOnOneNetworkIsReadAgainOnAnother() async {
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        _ = await owners(memory, reads, network: "testnet")
+        _ = await owners(memory, reads, network: "mainnet")
+        XCTAssertEqual(reads.count(Self.contract), 2)
+    }
+}
+
+/// A Connections refresh and a disconnect read the owners they need and
+/// place unrecorded keys with the ones they know (`projectWithOwners`,
+/// `plannedDisconnect`).
+final class AppConnectRefreshOwnersTests: XCTestCase {
+    private static let identity = Data(repeating: 0x01, count: 32)
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let sibling = Data(repeating: 0xC1, count: 32)
+    private static let sibling2 = Data(repeating: 0xC3, count: 32)
+    private static let owner = Data(repeating: 0x0A, count: 32)
+    private static let otherApp = Data(repeating: 0xA2, count: 32)
+    private static let group = Data(repeating: 0xC2, count: 32)
+
+    private static func key(
+        _ id: UInt32, on contract: Data, bound: AppConnect.StoredBound? = nil, boundKnown: Bool = true
+    ) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: UInt8(id), count: 20), readOnly: false,
+            bound: boundKnown ? bound ?? .singleContract(contract) : nil, boundKnown: boundKnown,
+            totalBudget: 1000, expiresAt: 1_800_000_001_000, disabledAt: nil)
+    }
+
+    private static func intent(_ key: AppConnect.PlatformKey, app: Data = app) -> AppConnect.ConnectionIntent {
+        AppConnect.ConnectionIntent(
+            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: Data(repeating: 0xEE, count: 20),
+            connectionId: nil,
+            keys: [AppConnect.IntendedKey(
+                id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
+                readOnly: false, bound: key.bound, totalBudget: key.totalBudget, expiresAt: key.expiresAt)],
+            sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+    }
+
+    private final class Reader: @unchecked Sendable {
+        private let lock = NSLock()
+        private var reads: [Data: Int] = [:]
+        var failing: Set<Data> = []
+        /// The owner each id reads as; any other id reads as `owner`.
+        var owners: [Data: Data] = [:]
+
+        func read(_ id: Data) throws -> [String: Any] {
+            lock.lock()
+            defer { lock.unlock() }
+            reads[id, default: 0] += 1
+            if failing.contains(id) { throw SDKError.timeout("slow") }
+            return ["ownerId": (owners[id] ?? AppConnectRefreshOwnersTests.owner).toBase58String()]
+        }
+
+        var total: Int {
+            lock.lock()
+            defer { lock.unlock() }
+            return reads.values.reduce(0, +)
+        }
+    }
+
+    private static func ownerReader(
+        _ memory: PlatformDashConnectDataSource.OwnerMemory, _ reader: Reader
+    ) -> PlatformDashConnectDataSource.OwnerReader {
+        .init(network: "testnet", memory: memory, readContract: { try reader.read($0) }, readGroup: { try reader.read($0) })
+    }
+
+    private static func rows(
+        _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent],
+        memory: PlatformDashConnectDataSource.OwnerMemory, reader: Reader
+    ) async -> [Data: [UInt32]] {
+        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
+        let projection = await PlatformDashConnectDataSource.projectWithOwners(snapshot, intents: intents, owners: ownerReader(memory, reader))
+        return Dictionary(uniqueKeysWithValues: projection.connections.map { ($0.appId, $0.unrecordedKeyIds[identity] ?? []) })
+    }
+
+    func testAKeyOfTheAppsOwnerJoinsItsRow() async {
+        let own = Self.key(10, on: Self.app)
+        let rows = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: .init(), reader: Reader())
+        XCTAssertEqual(rows, [Self.app: [20]], "AC-03: one row for the app, none for the sibling")
+    }
+
+    func testAKeyWhoseOwnerCouldNotBeReadMovesOnceALaterRefreshReadsIt() async {
+        let own = Self.key(10, on: Self.app)
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        reader.failing = [Self.sibling]
+        let first = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertEqual(first, [Self.app: [], Self.sibling: [20]], "AC-05: a separate row while unknown")
+        reader.failing = []
+        let second = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertEqual(second, [Self.app: [20]], "AC-05: moves once read")
+        XCTAssertEqual(reader.total, 3, "the app's owner is not read again")
+    }
+
+    func testWithoutAnIntentKeysOfOneOwnerKeepTheirOwnRows() async {
+        let rows = await Self.rows([Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2)], [], memory: .init(), reader: Reader())
+        XCTAssertEqual(rows, [Self.sibling: [20], Self.sibling2: [21]], "AC-10")
+    }
+
+    func testNoUnrecordedKeyReadsNoOwner() async {
+        let own = Self.key(10, on: Self.app), reader = Reader()
+        _ = await Self.rows([own], [Self.intent(own)], memory: .init(), reader: reader)
+        XCTAssertEqual(reader.total, 0)
+    }
+
+    private static func planned(
+        _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent], listed: Set<UInt32>?,
+        memory: PlatformDashConnectDataSource.OwnerMemory = .init(), reader: Reader = Reader(), appId: Data = app
+    ) async -> PlatformDashConnectDataSource.PlannedDisconnect {
+        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
+        return await PlatformDashConnectDataSource.plannedDisconnect(
+            appId: appId, snapshot: snapshot, intents: intents, unrecordedKeyIds: listed, fences: [], owners: ownerReader(memory, reader))
+    }
+
+    /// QG-2: the question listed one key; an owner read that fails before the
+    /// PIN and succeeds after attributes a second key, which stays on.
+    func testADisconnectTurnsOffOnlyTheKeysTheQuestionListed() async {
+        let own = Self.key(10, on: Self.app)
+        let keys = [own, Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2)]
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        reader.failing = [Self.sibling2]
+        let beforePin = await Self.planned(keys, [Self.intent(own)], listed: [20], memory: memory, reader: reader)
+        XCTAssertEqual(Set(beforePin.plan.disable), [10, 20])
+        reader.failing = []
+        let afterPin = await Self.planned(keys, [Self.intent(own)], listed: [20], memory: memory, reader: reader)
+        XCTAssertEqual(Set(afterPin.plan.disable), [10, 20], "nothing beyond the listed keys")
+        XCTAssertEqual(afterPin.appKeysOff, 2, "the keys counted are the keys turned off")
+        XCTAssertEqual(afterPin.leftAfterQuestion, 1)
+    }
+
+    /// AC-01, AC-02: a key of the app's owner on a sibling contract, a
+    /// document type of it or a contract group is offered, then turned off
+    /// and counted.
+    func testAKeyOfTheAppsOwnerIsOfferedThenTurnedOffAndCounted() async {
+        let own = Self.key(10, on: Self.app)
+        for (name, stray) in [
+            ("contract", Self.key(20, on: Self.sibling)),
+            ("document type", Self.key(20, on: Self.sibling, bound: .documentType(contractId: Self.sibling, name: "note"))),
+            ("contract group", Self.key(20, on: Self.group, bound: .contractGroup(Self.group))),
+        ] {
+            let asked = await Self.planned([own, stray], [Self.intent(own)], listed: nil)
+            XCTAssertEqual(asked.offered, [20], name)
+            XCTAssertEqual(asked.plan.disable, [10], name)
+            let confirmed = await Self.planned([own, stray], [Self.intent(own)], listed: asked.offered)
+            XCTAssertEqual(Set(confirmed.plan.disable), [10, 20], name)
+            XCTAssertEqual(confirmed.appKeysOff, 2, name)
+            XCTAssertEqual([confirmed.notChecked, confirmed.notAttributable, confirmed.leftAfterQuestion], [0, 0, 0], name)
+        }
+    }
+
+    /// AC-04, AC-11, AC-12: the disconnect still turns off the app's keys,
+    /// and reports the key that could not be checked.
+    func testAKeyThatCouldNotBeCheckedStaysOnAndIsReported() async {
+        let own = Self.key(10, on: Self.app)
+        let z = Self.intent(Self.key(11, on: Self.otherApp), app: Self.otherApp)
+        struct Case {
+            let name: String
+            let keys: [AppConnect.PlatformKey]
+            let intents: [AppConnect.ConnectionIntent]
+            let failing: Set<Data>
+        }
+        let cases = [
+            Case(name: "AC-04 owner unread", keys: [own, Self.key(20, on: Self.sibling)], intents: [Self.intent(own)], failing: [Self.sibling]),
+            Case(name: "AC-11 unplaced", keys: [own, Self.key(20, on: Self.sibling, boundKnown: false)], intents: [Self.intent(own)], failing: []),
+            Case(name: "AC-12 other app's owner unread", keys: [own, Self.key(20, on: Self.sibling)], intents: [Self.intent(own), z],
+                 failing: [Self.otherApp]),
+        ]
+        for c in cases {
+            let name = c.name
+            let reader = Reader()
+            reader.failing = c.failing
+            let result = await Self.planned(c.keys, c.intents, listed: [20], reader: reader)
+            XCTAssertEqual(result.plan.disable, [10], name)
+            XCTAssertEqual(result.notChecked, 1, name)
+            XCTAssertEqual(result.appKeysOff, 1, name)
+        }
+    }
+
+    /// DashPay profile keys no intent names are offered with any app's
+    /// disconnect, and turned off only when listed.
+    func testAProfileKeyIsOfferedAndTurnedOffOnlyWhenListed() async {
+        let own = Self.key(10, on: Self.app)
+        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
+        let profile = Self.key(30, on: dashPay, bound: .documentType(contractId: dashPay, name: "profile"))
+        let asked = await Self.planned([own, profile], [Self.intent(own)], listed: nil)
+        XCTAssertEqual(asked.offered, [30])
+        XCTAssertEqual(asked.plan.disable, [10])
+        let confirmed = await Self.planned([own, profile], [Self.intent(own)], listed: [30])
+        XCTAssertEqual(confirmed.plan.disable, [30, 10], "other keys before the app's")
+        XCTAssertEqual(confirmed.appKeysOff, 2)
+        let unlisted = await Self.planned([own, profile], [Self.intent(own)], listed: [])
+        XCTAssertEqual(unlisted.plan.disable, [10])
+        XCTAssertEqual(unlisted.leftAfterQuestion, 1)
+    }
+}
+
+/// The refresh and the disconnect of the data source on a real
+/// `UserDefaults` store, with owners scripted per id: what is stored, what
+/// is planned to be turned off, and what the result reports.
+extension AppConnectRefreshOwnersTests {
+    private static func disabled(_ key: AppConnect.PlatformKey) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
+            readOnly: key.readOnly, bound: key.bound, boundKnown: key.boundKnown, totalBudget: key.totalBudget,
+            expiresAt: key.expiresAt, disabledAt: 1)
+    }
+
+    /// A store on a throwaway suite, removed when the test ends.
+    private func makeStore() -> UserDefaultsDashConnectStore {
+        let suiteName = "AppConnectRefreshOwnersTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        addTeardownBlock { defaults.removePersistentDomain(forName: suiteName) }
+        return UserDefaultsDashConnectStore(
+            defaults: defaults, network: .testnet, walletIdHexProvider: { "wallet" }, devnetNameProvider: { nil })
+    }
+
+    /// Refreshes `store` from a read of `keys`, as the data source does, and
+    /// returns the stored rows by id.
+    @discardableResult
+    private static func refresh(
+        _ store: UserDefaultsDashConnectStore, _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent],
+        memory: PlatformDashConnectDataSource.OwnerMemory, reader: Reader
+    ) async -> [Data: DAppConnection] {
+        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
+        let change = await PlatformDashConnectDataSource.refreshedRows(
+            snapshot: snapshot, intents: intents, owners: ownerReader(memory, reader), at: Date(timeIntervalSince1970: 0))
+        store.save(change(store.load()))
+        return Dictionary(uniqueKeysWithValues: store.load().map { (Data.identifier(fromBase58: $0.id)!, $0) })
+    }
+
+    /// AC-03, AC-05: a failing owner read stores a row for Y; the next
+    /// refresh with the owner read stores the key under X and no row for Y.
+    func testARefreshStoresASiblingKeyUnderTheAppOnceItsOwnerIsRead() async {
+        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        let own = Self.key(10, on: Self.app)
+        let keys = [own, Self.key(20, on: Self.sibling)]
+        reader.failing = [Self.sibling]
+        let before = await Self.refresh(store, keys, [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertEqual(Set(before.keys), [Self.app, Self.sibling], "AC-05: an unread owner keeps its own row")
+        reader.failing = []
+        let after = await Self.refresh(store, keys, [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertEqual(Set(after.keys), [Self.app], "AC-03: no row named by Y")
+        XCTAssertEqual(after[Self.app]?.seenOn, [Self.identity.toBase58String()], "the key shows under X")
+    }
+
+    /// AC-06: a key of another owner stays on its own stored row, and X's
+    /// disconnect never plans it.
+    func testADisconnectNeverPlansAKeyOfAnotherOwnerAndItsRowStays() async {
+        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        reader.owners = [Self.sibling: Data(repeating: 0x0B, count: 32)]
+        let own = Self.key(10, on: Self.app), onW = Self.key(20, on: Self.sibling)
+        await Self.refresh(store, [own, onW], [Self.intent(own)], memory: memory, reader: reader)
+        let asked = await Self.planned([own, onW], [Self.intent(own)], listed: nil, memory: memory, reader: reader)
+        XCTAssertEqual(asked.offered, [])
+        let confirmed = await Self.planned([own, onW], [Self.intent(own)], listed: [20], memory: memory, reader: reader)
+        XCTAssertEqual(confirmed.plan.disable, [10], "the key on W is never submitted")
+        let after = await Self.refresh(store, [Self.disabled(own), onW], [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertEqual(Set(after.keys), [Self.sibling], "W's row stays stored")
+    }
+
+    /// AC-10: after a fresh-restore refresh both rows are stored; a
+    /// disconnect of one plans only its key, and the other row stays.
+    func testWithoutAnIntentADisconnectOfOneRowTurnsOffOnlyItsKey() async {
+        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        let onY = Self.key(20, on: Self.sibling), onY2 = Self.key(21, on: Self.sibling2)
+        let rows = await Self.refresh(store, [onY, onY2], [], memory: memory, reader: reader)
+        XCTAssertEqual(Set(rows.keys), [Self.sibling, Self.sibling2])
+        let asked = await Self.planned([onY, onY2], [], listed: nil, memory: memory, reader: reader, appId: Self.sibling)
+        XCTAssertEqual(asked.offered, [20])
+        let confirmed = await Self.planned([onY, onY2], [], listed: asked.offered, memory: memory, reader: reader, appId: Self.sibling)
+        XCTAssertEqual(confirmed.plan.disable, [20])
+        let after = await Self.refresh(store, [Self.disabled(onY), onY2], [], memory: memory, reader: reader)
+        XCTAssertEqual(Set(after.keys), [Self.sibling2])
+        XCTAssertEqual(reader.total, 0, "no owner decides anything without an intent")
+    }
+
+    /// The row the user saw for Y because its owner could not be read: its
+    /// disconnect still offers and turns off Y's key once the owner reads as
+    /// X's.
+    func testARowShownForAnUnreadOwnerStillTurnsOffItsKeyOnceTheOwnerIsRead() async {
+        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
+        reader.failing = [Self.sibling]
+        let shown = await Self.refresh(store, [own, onY], [Self.intent(own)], memory: memory, reader: reader)
+        XCTAssertNotNil(shown[Self.sibling])
+        reader.failing = []
+        let readsAtRefresh = reader.total
+        let asked = await Self.planned([own, onY], [Self.intent(own)], listed: nil, memory: memory, reader: reader, appId: Self.sibling)
+        XCTAssertEqual(asked.offered, [20])
+        let confirmed = await Self.planned(
+            [own, onY], [Self.intent(own)], listed: asked.offered, memory: memory, reader: reader, appId: Self.sibling)
+        XCTAssertEqual(confirmed.plan.disable, [20])
+        XCTAssertEqual(confirmed.appKeysOff, 1)
+        XCTAssertEqual(reader.total, readsAtRefresh, "no owner decides anything for a row with no intent")
+    }
+
+    /// What a disconnect reports from its plan: the offered keys only before
+    /// the question, and every count as planned.
+    func testTheDisconnectResultReportsThePlan() async {
+        let own = Self.key(10, on: Self.app)
+        let z = Self.intent(Self.key(11, on: Self.otherApp), app: Self.otherApp)
+        let keys = [own, Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2, boundKnown: false)]
+        let reader = Reader()
+        reader.owners = [Self.otherApp: Data(repeating: 0x0B, count: 32)]
+        let asked = await Self.planned(keys, [Self.intent(own), z], listed: nil, reader: reader)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.disconnectResult(of: asked, listed: nil, keysOnAnotherIdentity: true),
+            DashConnectDisconnectResult(
+                keysTurnedOff: 1, offeredUnrecordedKeyIds: [20], keysNotChecked: 1, keysNotAttributable: 0,
+                keysLeftAfterQuestion: 0, keysOnAnotherIdentity: true))
+        let confirmed = await Self.planned(keys, [Self.intent(own), z], listed: [], reader: reader)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.disconnectResult(of: confirmed, listed: [], keysOnAnotherIdentity: false),
+            DashConnectDisconnectResult(
+                keysTurnedOff: 1, offeredUnrecordedKeyIds: [], keysNotChecked: 1, keysNotAttributable: 0,
+                keysLeftAfterQuestion: 1, keysOnAnotherIdentity: false))
+    }
+}
+
+/// The disconnect question and result on Connections, as DashUIKit's
+/// `ModalDialog` (SCR-03, SCR-04).
+@MainActor
+final class ConnectionsMessageDialogTests: XCTestCase {
+    private static let connection = MockDashConnectDataSource.sample(.active)
+
+    /// SCR-03: «Leave them» above a destructive «Turn them off», which passes
+    /// back exactly the offered keys.
+    func testAQuestionOffersToTurnOffExactlyTheOfferedKeys() {
+        var turnedOff: (DAppConnection, Set<UInt32>)?
+        var dismissed = false
+        let message = ConnectionsScreenMessage(
+            kind: .question, text: "Question.\n\nWarning.", unrecordedKeysOf: Self.connection, unrecordedKeyIds: [20, 21])
+
+        let dialog = ConnectionsMessageDialog.dialog(
+            for: message, turnOff: { turnedOff = ($0, $1) }, dismiss: { dismissed = true })
+
+        XCTAssertEqual(dialog.icon, .warning)
+        XCTAssertEqual(dialog.heading, message.title)
+        XCTAssertEqual(dialog.paragraphs, ["Question.", "Warning."])
+        XCTAssertEqual(dialog.primaryAction.title, "Turn them off")
+        XCTAssertEqual(dialog.primaryAction.role, .destructive)
+        XCTAssertEqual(dialog.secondaryAction?.title, "Leave them")
+        dialog.primaryAction.handler()
+        XCTAssertEqual(turnedOff?.0, Self.connection)
+        XCTAssertEqual(turnedOff?.1, [20, 21])
+        XCTAssertFalse(dismissed)
+        dialog.secondaryAction?.handler()
+        XCTAssertTrue(dismissed)
+    }
+
+    /// SCR-04: one «OK», which only dismisses.
+    func testAResultHasOneOKButtonThatDismisses() {
+        var dismissed = false
+        let message = ConnectionsScreenMessage(kind: .warning, text: "Not checked.\n\nNot attributable.")
+
+        let dialog = ConnectionsMessageDialog.dialog(
+            for: message, turnOff: { _, _ in XCTFail("a result turns nothing off") }, dismiss: { dismissed = true })
+
+        XCTAssertEqual(dialog.icon, .warning)
+        XCTAssertEqual(dialog.heading, message.title)
+        XCTAssertEqual(dialog.paragraphs, ["Not checked.", "Not attributable."])
+        XCTAssertEqual(dialog.primaryAction.title, "OK")
+        XCTAssertEqual(dialog.primaryAction.role, .regular)
+        XCTAssertNil(dialog.secondaryAction)
+        dialog.primaryAction.handler()
+        XCTAssertTrue(dismissed)
+    }
+    /// Only a plain success comes without the warning icon: a token purchase
+    /// that completed is no warning.
+    func testTheIconFollowsTheKindOfTheMessage() {
+        let icons = [ConnectionsScreenMessage.Kind.success, .warning, .error, .question].map { kind in
+            ConnectionsMessageDialog.dialog(
+                for: ConnectionsScreenMessage(kind: kind, text: "Text."), turnOff: { _, _ in }, dismiss: {}).icon
+        }
+        XCTAssertEqual(icons, [nil, .warning, .warning, .warning])
     }
 }
