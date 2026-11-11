@@ -1737,6 +1737,8 @@ final class AppConnectRefreshOwnersTests: XCTestCase {
         private let lock = NSLock()
         private var reads: [Data: Int] = [:]
         var failing: Set<Data> = []
+        /// Ids whose next read fails, and only that one.
+        var failingOnce: Set<Data> = []
         /// The owner each id reads as; any other id reads as `owner`.
         var owners: [Data: Data] = [:]
 
@@ -1745,6 +1747,7 @@ final class AppConnectRefreshOwnersTests: XCTestCase {
             defer { lock.unlock() }
             reads[id, default: 0] += 1
             if failing.contains(id) { throw SDKError.timeout("slow") }
+            if failingOnce.remove(id) != nil { throw SDKError.timeout("slow") }
             return ["ownerId": (owners[id] ?? AppConnectRefreshOwnersTests.owner).toBase58String()]
         }
 
@@ -2038,6 +2041,38 @@ extension AppConnectRefreshOwnersTests {
         XCTAssertEqual(second.keysTurnedOff, 2, "the keys the update turned off")
         XCTAssertEqual(second.keysLeftAfterQuestion, 1, "AC-08: the key that landed during the update stays on and is said")
         XCTAssertNil(second.offeredUnrecordedKeys)
+    }
+
+    /// The rows and what stays on after a disconnect come from one read of
+    /// the owners: whether the owner of a key on a sibling contract reads,
+    /// does not, or fails once and then reads, a result that says a key of
+    /// the app stays on keeps the app's row, and a key the rows give a row of
+    /// its own is reported as not checked. The read here is also the one a
+    /// disconnect with nothing to submit settles on.
+    func testTheRowsAndWhatStaysOnAfterADisconnectComeFromTheSameOwners() async {
+        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
+        let intents = [Self.intent(own)]
+        let after = AppConnect.IdentitySnapshot(
+            identityId: Self.identity, revision: 2, keys: [Self.disabled(own), onY], platformTime: nil)
+        for (ownerReads, failsOnce) in [(false, false), (true, false), (false, true)] {
+            let store = makeStore(), reader = Reader()
+            reader.failing = [Self.sibling]
+            await Self.refresh(store, [own, onY], intents, memory: .init(), reader: reader)
+            reader.failing = ownerReads || failsOnce ? [] : [Self.sibling]
+            reader.failingOnce = failsOnce ? [Self.sibling] : []
+            let (change, remaining) = await PlatformDashConnectDataSource.settledDisconnect(
+                appId: Self.app, after: after, intents: intents, unrecordedKeyIds: [],
+                owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
+            let rows = Set(change(store.load()).compactMap { Data.identifier(fromBase58: $0.id) })
+            if ownerReads {
+                XCTAssertEqual(remaining.leftAfterQuestion, 1, "the sibling key is the app's and stays on")
+                XCTAssertTrue(rows.contains(Self.app), "the row a second disconnect needs is there")
+            } else {
+                XCTAssertEqual(remaining.leftAfterQuestion, 0, "nothing of the app is said to stay on")
+                XCTAssertEqual(remaining.notChecked, 1, "the key with an unread owner is reported as not checked")
+                XCTAssertEqual(rows, [Self.sibling], "the key keeps its own row")
+            }
+        }
     }
 
     /// A key id is unique only within an identity: keys offered on one

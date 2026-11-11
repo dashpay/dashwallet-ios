@@ -1004,6 +1004,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     ) async -> PlannedDisconnect {
         let hasIntent = intents.contains { $0.appId == appId && $0.identityId == snapshot.identityId }
         let owners = hasIntent ? await reader.knownOwners(for: snapshot, intents: intents) : [:]
+        return plannedDisconnect(
+            appId: appId, snapshot: snapshot, intents: intents, unrecordedKeyIds: unrecordedKeyIds, fences: fences,
+            knownOwners: owners)
+    }
+
+    /// `plannedDisconnect` with owners already read (`knownOwners`), so a
+    /// caller can plan and refresh the rows from the same owners.
+    static func plannedDisconnect(
+        appId: Data, snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
+        unrecordedKeyIds: Set<UInt32>?, fences: [UInt32], knownOwners known: [Data: Data]
+    ) -> PlannedDisconnect {
+        let hasIntent = intents.contains { $0.appId == appId && $0.identityId == snapshot.identityId }
+        let owners = hasIntent ? known : [:]
         var plan = AppConnect.disconnectPlan(
             appId: appId, snapshot: snapshot, intents: intents, owners: owners, listedUnrecordedKeyIds: unrecordedKeyIds)
         // DashPay profile keys no intent names are no one app's: no record
@@ -1039,6 +1052,33 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         at updatedAt: Date
     ) async -> ([DAppConnection]) -> [DAppConnection] {
         let projection = await projectWithOwners(snapshot, intents: all, owners: owners)
+        let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
+        return { rows($0, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt) }
+    }
+
+    /// What a disconnect leaves on `after`, the read after its update: the
+    /// change to the rows and what stays on (`remaining`), both from one read
+    /// of the owners. Owners read apart could differ, a failed read being
+    /// tried again, and the result could then name a row the list no longer
+    /// has, or call a key unchecked that the rows place.
+    static func settledDisconnect(
+        appId: Data, after: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
+        unrecordedKeyIds: Set<UInt32>?, owners reader: OwnerReader, at updatedAt: Date
+    ) async -> (rows: ([DAppConnection]) -> [DAppConnection], remaining: PlannedDisconnect) {
+        let known = await reader.knownOwners(for: after, intents: intents)
+        return (
+            refreshedRows(snapshot: after, intents: intents, knownOwners: known, at: updatedAt),
+            plannedDisconnect(
+                appId: appId, snapshot: after, intents: intents, unrecordedKeyIds: unrecordedKeyIds, fences: [],
+                knownOwners: known))
+    }
+
+    /// `refreshedRows` with owners already read (`knownOwners`).
+    static func refreshedRows(
+        snapshot: AppConnect.IdentitySnapshot, intents all: [AppConnect.ConnectionIntent], knownOwners: [Data: Data],
+        at updatedAt: Date
+    ) -> ([DAppConnection]) -> [DAppConnection] {
+        let projection = AppConnect.project([snapshot], intents: all, owners: knownOwners)
         let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
         return { rows($0, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt) }
     }
@@ -2183,12 +2223,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 await deleteResponses(of: Array(ids), responseContractId: responseContractId, context: context, signer: signer)
             }
         }
-        await refreshRows(from: after, context: context)
         // What stays on is told from the read after the update, as the rows
-        // are: a key that landed during the update is reported too.
-        let remaining = after == planned.snapshot ? planned : await Self.plannedDisconnect(
-            appId: appId, snapshot: after, intents: stores.intents.load(), unrecordedKeyIds: unrecordedKeyIds, fences: [],
-            owners: Self.ownerReader(context: context))
+        // are, and from the same owners. A key that landed during the update
+        // is reported too.
+        let (rowsAfter, remaining) = await Self.settledDisconnect(
+            appId: appId, after: after, intents: stores.intents.load(), unrecordedKeyIds: unrecordedKeyIds,
+            owners: Self.ownerReader(context: context), at: now())
+        await updateRows(in: stores, rowsAfter)
 
         // A key turned off is checked on the read after the update; one that
         // still shows live means that read is behind, or a new key landed.
