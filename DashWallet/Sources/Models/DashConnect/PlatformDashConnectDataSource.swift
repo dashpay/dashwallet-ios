@@ -2113,14 +2113,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, unrecordedKeyIds: Set<UInt32>?) async throws -> DashConnectDisconnectResult {
-        try await gated { try await disconnectInTurn(id: id, scope: scope, unrecordedKeyIds: unrecordedKeyIds) }
+    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
+        try await gated { try await disconnectInTurn(id: id, scope: scope, unrecordedKeys: unrecordedKeys) }
     }
 
     private func disconnectInTurn(
         id: String,
         scope: String?,
-        unrecordedKeyIds: Set<UInt32>?
+        unrecordedKeys: DashConnectOfferedKeys?
     ) async throws -> DashConnectDisconnectResult {
         guard let stores = await showActiveWalletRows() else {
             throw DashConnectPlatformError.noWallet
@@ -2140,11 +2140,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard !stores.intents.hasUnreadableRows(identityId: context.identityId) else {
             throw DashConnectPlatformError.intentsUnreadable
         }
+        try Self.requireOffered(unrecordedKeys, on: context.identityId)
+        let unrecordedKeyIds = unrecordedKeys?.keyIds
         var planned = try await disconnectPlan(appId: appId, unrecordedKeyIds: unrecordedKeyIds, context: context)
         // The PIN is asked for only when there is something to sign.
         if !planned.plan.isEmpty {
             try await authorize()
             context = try await contextAfterAuthorization(matching: context)
+            try Self.requireOffered(unrecordedKeys, on: context.identityId)
             // Read again: the prompt can take any time. Owners still
             // unknown are read again; a known one comes from memory.
             planned = try await disconnectPlan(appId: appId, unrecordedKeyIds: unrecordedKeyIds, context: context)
@@ -2181,6 +2184,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
         }
         await refreshRows(from: after, context: context)
+        // What stays on is told from the read after the update, as the rows
+        // are: a key that landed during the update is reported too.
+        let remaining = after == planned.snapshot ? planned : await Self.plannedDisconnect(
+            appId: appId, snapshot: after, intents: stores.intents.load(), unrecordedKeyIds: unrecordedKeyIds, fences: [],
+            owners: Self.ownerReader(context: context))
 
         // A key turned off is checked on the read after the update; one that
         // still shows live means that read is behind, or a new key landed.
@@ -2197,24 +2205,33 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
         return Self.disconnectResult(
-            of: planned, listed: unrecordedKeyIds,
+            of: planned, remaining: remaining, listed: unrecordedKeyIds, identityId: context.identityId,
             // Keys a read of another identity saw stay, and so does the row.
             keysOnAnotherIdentity: rows(in: stores).first { $0.id == id }?.seenOn
                 .subtracting([context.identityId.toBase58String()]).isEmpty == false)
     }
 
-    /// What a disconnect planned as `planned` reports. The offered keys are
-    /// reported only before the question (`listed` nil): the user's answer
-    /// to it passes them back.
+    /// Throws `walletChanged` when keys offered on one identity would be
+    /// turned off while another is active: their ids could name its keys.
+    static func requireOffered(_ offered: DashConnectOfferedKeys?, on identityId: Data) throws {
+        if let offered, offered.identityId != identityId { throw DashConnectPlatformError.walletChanged }
+    }
+
+    /// What a disconnect planned as `planned` reports: the keys it turned
+    /// off, and what stays on as `remaining`, the same disconnect planned on
+    /// the read after the update. The offered keys are reported only before
+    /// the question (`listed` nil): the user's answer to it passes them back.
     static func disconnectResult(
-        of planned: PlannedDisconnect, listed: Set<UInt32>?, keysOnAnotherIdentity: Bool
+        of planned: PlannedDisconnect, remaining: PlannedDisconnect, listed: Set<UInt32>?, identityId: Data,
+        keysOnAnotherIdentity: Bool
     ) -> DashConnectDisconnectResult {
         DashConnectDisconnectResult(
             keysTurnedOff: planned.appKeysOff,
-            offeredUnrecordedKeyIds: listed == nil ? planned.offered : [],
-            keysNotChecked: planned.notChecked,
-            keysNotAttributable: planned.notAttributable,
-            keysLeftAfterQuestion: planned.leftAfterQuestion,
+            offeredUnrecordedKeys: listed == nil && !remaining.offered.isEmpty
+                ? DashConnectOfferedKeys(identityId: identityId, keyIds: remaining.offered) : nil,
+            keysNotChecked: remaining.notChecked,
+            keysNotAttributable: remaining.notAttributable,
+            keysLeftAfterQuestion: remaining.leftAfterQuestion,
             keysOnAnotherIdentity: keysOnAnotherIdentity)
     }
 

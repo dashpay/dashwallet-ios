@@ -84,7 +84,7 @@ struct ConnectionsScreen: View {
                     for: message,
                     turnOff: { connection, keys in
                         viewModel.message = nil
-                        viewModel.disconnect(connection, unrecordedKeyIds: keys)
+                        viewModel.disconnect(connection, unrecordedKeys: keys)
                     },
                     dismiss: { viewModel.message = nil })
                     .padding(.horizontal, 20)
