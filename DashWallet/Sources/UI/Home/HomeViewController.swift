@@ -358,7 +358,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                 DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
-                    // The post-sync popup (ModalDialog) is mid-dismissal here —
+                    // The post-sync popup (LegacyModalDialog) is mid-dismissal here —
                     // its wrapper calls dismiss(animated:) immediately before
                     // running this action. Presenting the PIN now races that
                     // dismissal: DSAuthenticationManager.presentController:

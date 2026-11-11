@@ -45,13 +45,17 @@ protocol DashConnectDataSource {
     /// may still land on so it never does, and deletes the published
     /// responses. It also turns off, with no further question, the live keys
     /// bound to the app's contracts that no approval of this wallet names
-    /// (from another device or from before a restore) and every DashPay
-    /// profile key no approval names. An update that fails stops it: the
-    /// result says how many keys are still live, and the connection stays.
-    /// Keys whose bound the wallet cannot tell yet are not turned off and are
-    /// counted as not checked. The connection also stays, and that is thrown,
-    /// while an approval of the app on another identity of the wallet is not
-    /// done.
+    /// (from another device or from before a restore), the live keys on the
+    /// other contracts and contract groups of the app's owner it can
+    /// attribute to the app by owner, and every DashPay profile key no
+    /// approval names. An update that fails stops it: the result says how
+    /// many keys are still live, and the connection stays. Keys whose bound
+    /// the wallet cannot tell yet, or whose owner, the app's owner or another
+    /// app's owner here could not be read, are not turned off and are counted
+    /// as not checked; keys of the app's owner that another app here has too
+    /// are not turned off and are counted as not attributable. The
+    /// connection also stays, and that is thrown, while an approval of the
+    /// app on another identity of the wallet is not done.
     ///
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
