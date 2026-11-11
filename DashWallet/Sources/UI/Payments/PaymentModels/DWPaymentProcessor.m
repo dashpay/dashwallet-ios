@@ -247,18 +247,18 @@ static NSString *DWReversedHexString(NSData *data) {
 
     [DWWalletSendService authenticateSpendOfAmount:paymentOutput.amount + paymentOutput.fee
                                         completion:^(BOOL authenticated, BOOL cancelled) {
-        if (cancelled) {
-            [self.delegate paymentProcessorDidCancelTransactionSigning:self];
-            return;
-        }
-        if (!authenticated) {
-            [self failedWithError:nil
-                            title:NSLocalizedString(@"Couldn't make payment", nil)
-                          message:NSLocalizedString(@"Authentication failed", nil)];
-            return;
-        }
-        [self performBIP70Send:paymentOutput];
-    }];
+                                            if (cancelled) {
+                                                [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                                return;
+                                            }
+                                            if (!authenticated) {
+                                                [self failedWithError:nil
+                                                                title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                              message:NSLocalizedString(@"Authentication failed", nil)];
+                                                return;
+                                            }
+                                            [self performBIP70Send:paymentOutput];
+                                        }];
 }
 
 - (void)performBIP70Send:(DWPaymentOutput *)paymentOutput {
