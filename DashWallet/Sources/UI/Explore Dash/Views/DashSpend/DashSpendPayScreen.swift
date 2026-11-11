@@ -34,6 +34,7 @@ struct DashSpendPayScreen: View {
     @State private var quantities: [Decimal: Int] = [:]
     @State private var confirmationQuantities: [Decimal: Int] = [:]
     @State private var confirmationOriginalPrice: Decimal = 0
+    @State private var confirmationDiscount: Decimal = 0
     let onPurchaseSuccess: ((Data) -> Void)?
 
     init(
@@ -121,9 +122,10 @@ struct DashSpendPayScreen: View {
             }
         }
         .sheet(isPresented: $showConfirmationDialog) {
-            // Read once, so the sheet shows the same price and discount that Confirm passes on.
+            // Both were captured when Pay was tapped, so the sheet shows the same price and
+            // discount that Confirm passes on, whatever the view model changes to meanwhile.
             let confirmedPrice = confirmationOriginalPrice
-            let confirmedDiscount = viewModel.displaySavingsFraction
+            let confirmedDiscount = confirmationDiscount
             DashSpendPayConfirmationSheet(
                 merchantName: viewModel.merchantTitle,
                 merchantIconUrl: viewModel.merchantIconUrl,
@@ -211,6 +213,7 @@ struct DashSpendPayScreen: View {
         } else {
             viewModel.updateTotalAmount(snapshotTotal, quantities: snapshotQuantities)
         }
+        confirmationDiscount = viewModel.displaySavingsFraction
 
         DispatchQueue.main.async {
             showConfirmationDialog = true

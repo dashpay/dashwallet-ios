@@ -18,6 +18,58 @@ enum GiftCardPaymentGuard {
     /// not been calibrated against live provider quotes.
     static let maxOverchargeBasisPoints: UInt64 = 500
 
+    /// The wallet's exchange rate as read when a purchase is approved.
+    struct ExchangeRate {
+        /// Fiat price of one Dash; nil when the wallet has no rate.
+        let price: Decimal?
+        /// Unix time the rate was retrieved; 0 when unknown.
+        let retrievedAt: Int
+    }
+
+    /// The price a buyer approved, as the most Dash a provider may ask for it.
+    struct Approval {
+        /// The approved price in duffs at the wallet's rate, before the margin.
+        let amount: UInt64
+
+        /// Throws unless `requested` duffs is positive and within the margin above `amount`.
+        func check(requested: UInt64) throws {
+            guard GiftCardPaymentGuard.isWithinApprovedAmount(requested: requested, expected: amount) else {
+                DWLogger.log("Gift card payment refused: requested \(requested) duffs, approved \(amount)")
+                throw GiftCardPaymentGuard.amountAboveApprovedError
+            }
+        }
+    }
+
+    /// Turns the confirmed card value and discount into an `Approval`. Every provider's quote
+    /// is checked through the `Approval` this returns.
+    ///
+    /// Throws `rateUnavailableError` when the rate is missing, not a positive number, or not
+    /// fresh, and when the converted amount is not a positive duff count: a quote cannot be
+    /// checked against such a rate. The amount is rounded down to a whole duff.
+    static func approve(price: Decimal, discount: Decimal, rate: ExchangeRate,
+                        now: Date = Date()) throws -> Approval {
+        let fiatAmount = price * (1 - discount)
+        guard fiatAmount.isFinite, fiatAmount > 0 else { throw DashSpendError.invalidAmount }
+
+        guard let ratePrice = rate.price, ratePrice.isFinite, ratePrice > 0,
+              isRateFresh(lastRetrieval: rate.retrievedAt, now: now) else {
+            throw rateUnavailableError
+        }
+
+        let dashAmount = fiatAmount / ratePrice
+        guard dashAmount.isFinite, dashAmount > 0 else { throw rateUnavailableError }
+
+        var scaled = dashAmount * Decimal(100_000_000)
+        var whole = Decimal()
+        NSDecimalRound(&whole, &scaled, 0, .down)
+        guard whole.isFinite, whole > 0, whole <= Decimal(UInt64.max),
+              let duffs = UInt64(NSDecimalNumber(decimal: whole).stringValue) else {
+            throw rateUnavailableError
+        }
+
+        return Approval(amount: duffs)
+    }
+
     /// `true` when `requested` is positive and at most `expected` plus the allowed margin.
     /// A quote below `expected` passes: the buyer pays less than they approved.
     static func isWithinApprovedAmount(requested: UInt64, expected: UInt64) -> Bool {
@@ -49,10 +101,12 @@ enum GiftCardPaymentGuard {
 
     /// `true` when the wallet's exchange rate was retrieved within the app's stale-rate
     /// limit (`kStaleRatesDuration`, the limit behind the "Prices are at least 30 minutes
-    /// old" warning). A rate with no recorded retrieval time is not fresh.
+    /// old" warning). A rate with no recorded retrieval time, or one recorded after `now`
+    /// (the clock moved back, so its age is unknown), is not fresh.
     static func isRateFresh(lastRetrieval: Int, now: Date = Date()) -> Bool {
         guard lastRetrieval > 0 else { return false }
-        return now.timeIntervalSince1970 - TimeInterval(lastRetrieval) <= kStaleRatesDuration
+        let age = now.timeIntervalSince1970 - TimeInterval(lastRetrieval)
+        return age >= 0 && age <= kStaleRatesDuration
     }
 
     /// A Dash amount as duffs, or nil when it is not positive, is finer than one duff, or

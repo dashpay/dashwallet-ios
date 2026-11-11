@@ -235,7 +235,13 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        let amount = recipients.reduce(UInt64(0)) { $0 + $1.amount }
+        // A request whose outputs do not sum within UInt64 is malformed, not a crash.
+        var amount: UInt64 = 0
+        for recipient in recipients {
+            let (sum, overflowed) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflowed else { throw BIP70Error.malformedRequest }
+            amount = sum
+        }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,

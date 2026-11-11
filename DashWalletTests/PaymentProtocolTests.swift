@@ -811,6 +811,37 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
+    /// `SendCoinsService.payWithDashUrl` hands the caller's check the fetched request and
+    /// stops on its refusal: no PIN prompt, nothing built.
+    func testPayWithDashUrlRunsTheCallersCheckBeforeAuthorizing() async {
+        struct Refused: Error {}
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: nil)), w, auth: auth)
+        let sender = SendCoinsService(makeBIP70Service: { svc })
+        var seenAmount: UInt64?
+
+        do {
+            _ = try await sender.payWithDashUrl(
+                url: "dash:?r=http%3A%2F%2Fh%2Fpr",
+                validate: { seenAmount = $0.amount; throw Refused() })
+            XCTFail("expected throw")
+        } catch {
+            XCTAssertTrue(error is Refused, "unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(seenAmount, 100_000)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// Outputs whose amounts do not sum within UInt64 make the request malformed.
+    func testPrepareRejectsOutputsThatOverflowTheTotal() async {
+        let outputs = [PaymentOutput(amount: UInt64.max, script: p2pkh), PaymentOutput(amount: 1, script: p2pkh)]
+        let svc = service(FakeTransport(unsigned(outputs: outputs)), FakeWallet())
+        await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                                .malformedRequest)
+    }
+
     /// A request that is still valid when it is fetched but expires while the PIN prompt is
     /// open is not sent: the expiry is checked again against the time after the prompt.
     func testHeadlessRequestExpiringDuringAuthorizationIsNotSent() async {
