@@ -25,7 +25,7 @@ final class ShieldedChargedFailureFiguresTests: XCTestCase {
     private let standardDenomination: UInt64 = 3_000_000
     private let contestedDenomination: UInt64 = 25_000_000
     private let standardFundingDuffs: UInt64 = 3_000_000
-    private let contestedFundingDuffs = ContestedUsernameFee.Amounts.legacy.fundDuffs
+    private let contestedFundingDuffs = ContestedUsernameFee.Amounts.legacy.fundingDuffs
 
     private func candidate(hashByte: UInt8, balance: UInt64) -> Policy.Candidate {
         Policy.Candidate(addressType: 0, hash: Data(repeating: hashByte, count: 20), balance: balance)

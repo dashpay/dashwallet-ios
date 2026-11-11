@@ -15,12 +15,16 @@
 //
 
 import Foundation
+import SwiftData
+import SwiftDashSDK
 
 /// The explanation of the current wallet's charged Shielded registration failure.
 ///
-/// `refresh()` reads the record of one (network, wallet) scope, fixes the returned amount
-/// from the fallback address's balance the first time it is seen, and builds the text from
-/// the figures as they are now. No record in scope means no text.
+/// `refresh()` first turns the scope's unresolved create into a charged-failure record once the
+/// SDK's activity row proves its inputs consumed (`ShieldedChargedFailureStore.reconcileUnresolved`),
+/// then reads the record of one (network, wallet) scope, fixes the returned amount from the
+/// fallback address's balance the first time it is seen, and builds the text from the figures as
+/// they are now. No record in scope means no text.
 @MainActor
 final class ShieldedChargedFailureExplanationModel: ObservableObject {
     private typealias Policy = PlatformPaymentIdentityFundingPolicy
@@ -32,6 +36,7 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
     private let candidates: () -> [Policy.Candidate]?
     private let nextReceive: () -> Policy.Candidate?
     private let fundingDuffs: (_ isContested: Bool) -> UInt64
+    private let inputsConsumed: (_ identityId: Data) -> Bool
 
     /// nil when there is no record in scope.
     @Published private(set) var text: (block1: String, block2: String?)?
@@ -41,6 +46,8 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
     @Published private(set) var hasRecord = false
     /// The name of the registration the record is about; nil without a record.
     @Published private(set) var username: String?
+    /// A create whose outcome the SDK has not proven yet is kept in scope.
+    @Published private(set) var hasUnresolvedAttempt = false
 
     init(
         store: ShieldedChargedFailureStore,
@@ -48,7 +55,8 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
         walletIdHex: String?,
         candidates: @escaping () -> [PlatformPaymentIdentityFundingPolicy.Candidate]?,
         nextReceive: @escaping () -> PlatformPaymentIdentityFundingPolicy.Candidate?,
-        fundingDuffs: @escaping (_ isContested: Bool) -> UInt64
+        fundingDuffs: @escaping (_ isContested: Bool) -> UInt64,
+        inputsConsumed: @escaping (_ identityId: Data) -> Bool = { _ in false }
     ) {
         self.store = store
         self.networkRawValue = networkRawValue
@@ -56,6 +64,7 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
         self.candidates = candidates
         self.nextReceive = nextReceive
         self.fundingDuffs = fundingDuffs
+        self.inputsConsumed = inputsConsumed
     }
 
     /// The model of the active network and wallet, reading the live Platform balances.
@@ -79,10 +88,32 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
             },
             fundingDuffs: {
                 ContestedUsernameFee.shared.amounts.newIdentityFundingDuffs(isContested: $0, fromShielded: false)
-            })
+            },
+            inputsConsumed: activityProvesInputsConsumed(identityId:))
+    }
+
+    /// Whether an activity row of the active wallet for the Type-20 create `identityId` has
+    /// the SDK's `InputsConsumed` status: its inputs are spent and its identity was not
+    /// created. `Failed` proves no charge (a create that never left the wallet, notes released),
+    /// nor does `Confirmed` prove the identity created (a scan confirms a create's row from its
+    /// outputs before the outcome is read). False when the rows cannot be read.
+    static func activityProvesInputsConsumed(identityId: Data) -> Bool {
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return false }
+        let kind = ShieldedActivityItem.Kind.identityCreate.rawValue
+        let inputsConsumed = ShieldedActivityItem.Status.inputsConsumed.rawValue
+        var descriptor = FetchDescriptor<PersistentShieldedActivity>(predicate: #Predicate {
+            $0.walletId == walletId && $0.kindTag == kind && $0.identityId == identityId
+                && $0.status == inputsConsumed
+        })
+        descriptor.fetchLimit = 1
+        return ((try? ModelContext(container).fetchCount(descriptor)) ?? 0) > 0
     }
 
     func refresh() {
+        store.reconcileUnresolved(
+            networkRawValue: networkRawValue, walletIdHex: walletIdHex, inputsConsumed: inputsConsumed)
+        hasUnresolvedAttempt = store.unresolvedAttempt(networkRawValue: networkRawValue, walletIdHex: walletIdHex) != nil
         guard var record = store.record(networkRawValue: networkRawValue, walletIdHex: walletIdHex) else {
             text = nil
             needsBalanceUpdates = false

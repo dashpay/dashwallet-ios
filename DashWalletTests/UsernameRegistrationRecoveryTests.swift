@@ -382,7 +382,7 @@ extension UsernameRegistrationRecoveryTests {
         defer { defaults.removePersistentDomain(forName: suite) }
 
         let bases = UsernamePrefs.registrationRecordKeys
-        XCTAssertEqual(bases.count, 6)
+        XCTAssertEqual(bases.count, 7)
         let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
         func keys(_ wallet: Data) -> [String] {
             WalletEnvironment.NetworkKind.allCases.flatMap { network in
@@ -1105,5 +1105,120 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertTrue(copy.subtitle.hasSuffix("\nraw"), copy.subtitle)
         XCTAssertNotEqual(copy.subtitle, explanation)
         XCTAssertFalse(copy.isRecordBackedFailure)
+    }
+}
+
+// MARK: - A create left unconfirmed, proven charged later
+
+extension UsernameRegistrationRecoveryTests {
+    private var unresolvedIdentityId: Data { Data(repeating: 9, count: 32) }
+
+    /// The create call's outcome reads were unavailable: the attempt is kept for the SDK to
+    /// settle, under the registering network, with no charged record and no explanation yet.
+    @MainActor
+    func testAnUnconfirmedCreateKeepsItsAttemptUnderTheRegisteringNetworkWithoutARecord() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        let record = chargedFailureRecord()
+        let mainnet = WalletEnvironment.NetworkKind.mainnet.rawValue
+
+        let thrown = coordinator.shieldedCreateFailureError(
+            ShieldedIdentityCreateUnconfirmedError(identityId: unresolvedIdentityId, message: "wait timed out"),
+            chargedRecord: record, walletId: Data([1]), network: .mainnet)
+
+        guard case .shieldedCreateUnconfirmed? = thrown as? Coordinator.CoordinatorError else {
+            return XCTFail("Expected shieldedCreateUnconfirmed, got \(thrown)")
+        }
+        XCTAssertEqual(
+            store.unresolvedAttempt(networkRawValue: mainnet, walletIdHex: recordWalletHex),
+            .init(identityId: unresolvedIdentityId, record: record))
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+        XCTAssertNil(store.record(networkRawValue: mainnet, walletIdHex: recordWalletHex), "Amount-free until proven")
+    }
+
+    func testAnUnresolvedAttemptBecomesItsChargedRecordOnlyOnceItsInputsAreProvenConsumed() throws {
+        let store = try makeFailureStore()
+        let attempt = ShieldedChargedFailureStore.UnresolvedAttempt(
+            identityId: unresolvedIdentityId, record: chargedFailureRecord())
+        store.saveUnresolved(attempt, networkRawValue: recordNetwork, walletIdHex: recordWalletHex)
+
+        XCTAssertFalse(store.reconcileUnresolved(
+            networkRawValue: recordNetwork, walletIdHex: recordWalletHex, inputsConsumed: { _ in false }))
+        XCTAssertEqual(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex), attempt)
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+
+        var asked: [Data] = []
+        XCTAssertTrue(store.reconcileUnresolved(
+            networkRawValue: recordNetwork, walletIdHex: recordWalletHex,
+            inputsConsumed: { asked.append($0); return true }))
+        XCTAssertEqual(asked, [unresolvedIdentityId], "Asked about the attempt's own create")
+        XCTAssertEqual(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex), attempt.record)
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    func testStartingAgainAndWipingDropTheUnresolvedAttempt() throws {
+        let (defaults, _) = try chargedFailureDefaults()
+        let store = ShieldedChargedFailureStore(defaults: defaults)
+        let attempt = ShieldedChargedFailureStore.UnresolvedAttempt(
+            identityId: unresolvedIdentityId, record: chargedFailureRecord())
+        store.saveUnresolved(attempt, networkRawValue: 1, walletIdHex: "aa11")
+        store.clear(networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: 1, walletIdHex: "aa11"))
+
+        for network in WalletEnvironment.NetworkKind.allCases {
+            store.saveUnresolved(attempt, networkRawValue: network.rawValue, walletIdHex: "aa11")
+        }
+        UsernamePrefs.clearRegistrationRecords(walletIdHex: "aa11", defaults: defaults)
+        for network in WalletEnvironment.NetworkKind.allCases {
+            XCTAssertNil(store.unresolvedAttempt(networkRawValue: network.rawValue, walletIdHex: "aa11"))
+        }
+    }
+
+    /// The create's outcome reads were unavailable, so the row reported the attempt
+    /// unconfirmed; a later sync proves its inputs consumed. The explanation reads that proof,
+    /// after a relaunch too, and the row then explains the charged failure instead.
+    @MainActor
+    func testAFailureProvenDuringALaterSyncIsExplainedAfterRelaunch() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        _ = coordinator.shieldedCreateFailureError(
+            ShieldedIdentityCreateUnconfirmedError(identityId: unresolvedIdentityId, message: "wait timed out"),
+            chargedRecord: chargedFailureRecord(), walletId: Data([1]), network: .testnet)
+        let network = WalletEnvironment.NetworkKind.testnet.rawValue
+        var proven = false
+        func relaunchedModel() -> ShieldedChargedFailureExplanationModel {
+            let model = ShieldedChargedFailureExplanationModel(
+                store: store, networkRawValue: network, walletIdHex: recordWalletHex,
+                candidates: { nil }, nextReceive: { nil }, fundingDuffs: { _ in 0 },
+                inputsConsumed: { [unresolvedIdentityId] in proven && $0 == unresolvedIdentityId })
+            model.refresh()
+            return model
+        }
+
+        let before = relaunchedModel()
+        XCTAssertTrue(before.hasUnresolvedAttempt)
+        XCTAssertFalse(before.hasRecord)
+        XCTAssertNil(before.text, "Unresolved: no charged explanation")
+        XCTAssertEqual(
+            JoinDashPayViewModel.rowFailure(state: .interrupted, failureReason: nil, explanation: nil).state,
+            .interrupted)
+
+        proven = true
+        for model in [relaunchedModel(), relaunchedModel()] {
+            XCTAssertFalse(model.hasUnresolvedAttempt)
+            XCTAssertTrue(model.hasRecord)
+            XCTAssertEqual(model.username, "alice")
+            let text = try XCTUnwrap(model.text)
+            XCTAssertEqual(text.block2, "Checking where the money went\u{2026}")
+            let shown = JoinDashPayViewModel.rowFailure(
+                state: .interrupted, failureReason: nil, explanation: text.block1 + "\n" + (text.block2 ?? ""))
+            XCTAssertEqual(shown.state, .creationFailed)
+            XCTAssertNotNil(shown.failureExplanation)
+        }
+    }
+
+    func testOnlyTheInputsConsumedStatusIsAProvenChargedFailure() {
+        XCTAssertEqual(ShieldedActivityItem.Status.inputsConsumed.rawValue, 4, "The SDK's InputsConsumed status")
+        XCTAssertEqual(ShieldedActivityItem.Status.failed.rawValue, 2)
     }
 }

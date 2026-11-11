@@ -94,7 +94,18 @@ struct ShieldedChargedFailureStore {
         }
     }
 
+    /// A Type-20 create whose outcome the create call left unknown, with the record its charged
+    /// failure would have. Kept until the platform wallet SDK's activity row for its identity id
+    /// proves its inputs consumed (`reconcileUnresolved`), which can happen during a later sync,
+    /// after a relaunch too, or until the next registration starts or one succeeds. Explains
+    /// nothing by itself.
+    struct UnresolvedAttempt: Codable, Equatable {
+        let identityId: Data
+        let record: Record
+    }
+
     static let baseKey = "shieldedChargedFailureRecord"
+    static let unresolvedBaseKey = "shieldedUnresolvedCreateRecord"
 
     var defaults: UserDefaults = .standard
 
@@ -111,8 +122,44 @@ struct ShieldedChargedFailureStore {
         defaults.set(data, forKey: key)
     }
 
+    /// Drops the charged-failure record and the unresolved attempt of the scope.
     func clear(networkRawValue: Int, walletIdHex: String?) {
         guard let key = Self.key(networkRawValue: networkRawValue, walletIdHex: walletIdHex) else { return }
+        defaults.removeObject(forKey: key)
+        clearUnresolved(networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+    }
+
+    func unresolvedAttempt(networkRawValue: Int, walletIdHex: String?) -> UnresolvedAttempt? {
+        guard let key = Self.key(Self.unresolvedBaseKey, networkRawValue: networkRawValue, walletIdHex: walletIdHex),
+              let data = defaults.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(UnresolvedAttempt.self, from: data)
+    }
+
+    /// Replaces any earlier unresolved attempt of the scope.
+    func saveUnresolved(_ attempt: UnresolvedAttempt, networkRawValue: Int, walletIdHex: String?) {
+        guard let key = Self.key(Self.unresolvedBaseKey, networkRawValue: networkRawValue, walletIdHex: walletIdHex),
+              let data = try? JSONEncoder().encode(attempt) else { return }
+        defaults.set(data, forKey: key)
+    }
+
+    /// Turns the scope's unresolved attempt into its charged-failure record once
+    /// `inputsConsumed(identityId)` proves it charged; otherwise leaves it as it is. Returns
+    /// whether it did.
+    @discardableResult
+    func reconcileUnresolved(
+        networkRawValue: Int, walletIdHex: String?,
+        inputsConsumed: (_ identityId: Data) -> Bool
+    ) -> Bool {
+        guard let attempt = unresolvedAttempt(networkRawValue: networkRawValue, walletIdHex: walletIdHex),
+              inputsConsumed(attempt.identityId) else { return false }
+        save(attempt.record, networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+        clearUnresolved(networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+        return true
+    }
+
+    private func clearUnresolved(networkRawValue: Int, walletIdHex: String?) {
+        guard let key = Self.key(Self.unresolvedBaseKey, networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+        else { return }
         defaults.removeObject(forKey: key)
     }
 
@@ -125,9 +172,9 @@ struct ShieldedChargedFailureStore {
     }
 
     /// nil for the `unbound` scope, which is no wallet's.
-    private static func key(networkRawValue: Int, walletIdHex: String?) -> String? {
+    private static func key(_ base: String = baseKey, networkRawValue: Int, walletIdHex: String?) -> String? {
         guard let walletIdHex, !walletIdHex.isEmpty else { return nil }
-        return JoinDashPayDismissalScope.scopedKey(baseKey, networkRawValue: networkRawValue, walletIdHex: walletIdHex)
+        return JoinDashPayDismissalScope.scopedKey(base, networkRawValue: networkRawValue, walletIdHex: walletIdHex)
     }
 }
 

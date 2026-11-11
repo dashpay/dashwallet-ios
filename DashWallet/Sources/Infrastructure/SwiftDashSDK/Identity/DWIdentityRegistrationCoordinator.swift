@@ -3179,6 +3179,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // The fallback address's synced balance just before the Type-20 call; the
         // returned funds are the rise above it.
         let snapshotCredits = fallbackRow.balance
+        let chargedRecord = ShieldedChargedFailureStore.Record.charged(
+            username: username, isContested: contested, denominationCredits: denomination,
+            fallbackAddress: fallbackAddressBytes, snapshotCredits: snapshotCredits)
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination) contested=\(contested)")
         do {
@@ -3201,21 +3204,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
-            throw CoordinatorError.shieldedCreateUnconfirmed
+            throw shieldedCreateFailureError(
+                unconfirmed, chargedRecord: chargedRecord, walletId: walletId, network: network)
         } catch {
             Self.logger.warning("🪪 IDENT-COORD :: shielded create failed snapshotCredits=\(snapshotCredits)")
             throw shieldedCreateFailureError(
-                error,
-                chargedRecord: .charged(
-                    username: username, isContested: contested, denominationCredits: denomination,
-                    fallbackAddress: fallbackAddressBytes, snapshotCredits: snapshotCredits),
-                walletId: walletId, network: network)
+                error, chargedRecord: chargedRecord, walletId: walletId, network: network)
         }
     }
 
     /// The error a failed Type-20 create throws. A charged failure first saves
     /// `chargedRecord` for `walletId` on `network`, the network the attempt ran
-    /// on; an unknown outcome is rethrown as it is.
+    /// on. A create the SDK reports unconfirmed saves `chargedRecord` as its
+    /// unresolved attempt there instead, for the explanation to settle once the
+    /// SDK proves its outcome during a later sync
+    /// (`ShieldedChargedFailureStore.reconcileUnresolved`), and throws
+    /// `.shieldedCreateUnconfirmed`. Any other unknown outcome is rethrown as it is.
     func shieldedCreateFailureError(
         _ error: Error,
         chargedRecord: @autoclosure () -> ShieldedChargedFailureStore.Record,
@@ -3224,12 +3228,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     ) -> Error {
         let kind = ShieldedCreateFailureKind.classify(error)
         Self.logger.error("🪪 IDENT-COORD :: shielded create failed kind=\(kind) error=\(String(describing: error))")
+        let networkRawValue = WalletEnvironment.networkKind(for: network).rawValue
+        if let unconfirmed = error as? ShieldedIdentityCreateUnconfirmedError {
+            collaborators.shieldedFailureStore.saveUnresolved(
+                .init(identityId: unconfirmed.identityId, record: chargedRecord()),
+                networkRawValue: networkRawValue, walletIdHex: walletId.hexEncodedString())
+            return CoordinatorError.shieldedCreateUnconfirmed
+        }
         guard let mapped = Self.shieldedCreateFailure(error) else { return error }
         if case .charged = kind {
             collaborators.shieldedFailureStore.save(
-                chargedRecord(),
-                networkRawValue: WalletEnvironment.networkKind(for: network).rawValue,
-                walletIdHex: walletId.hexEncodedString())
+                chargedRecord(), networkRawValue: networkRawValue, walletIdHex: walletId.hexEncodedString())
         }
         return mapped
     }

@@ -20,6 +20,8 @@ dashpay/platform#5853 adds one. The wallet SDK reads two things with proofs, at 
 
 All spent, with the identity absent at or above the spending height, returns `PlatformWalletError.shieldedIdentityCreateInputsConsumed`. The outcome means the create can never execute and created no identity. It makes no claim about the fallback address, because the same notes spent by another transition (another device holding the keys) read the same.
 
+Those reads can also fail while the create call runs (a lost connection after the create was sent). The call then returns unconfirmed, and the SDK reads the outcome later, during a sync, at the same node. It records a proven outcome on the create's activity row as the `InputsConsumed` status (`PersistentShieldedActivity.status` 4). It never writes `Failed` for that outcome, because `Failed` also marks a create that never left the wallet or whose notes were released.
+
 ## Decision drivers
 
 - No raw technical error on screen, and never a "money came back" for an unknown outcome.
@@ -34,7 +36,7 @@ All spent, with the identity absent at or above the spending height, returns `Pl
 
 ## Decision outcome
 
-**Chosen:** the app treats a Shielded registration failure as charged only when the SDK proves its inputs spent and its identity not created (option 3). The record that follows says "did not go through" and "checking where the money went". It states an amount only once the fallback address is seen to rise ([ADR-0036](0036-measure-returned-funds-as-the-fallback-address-increase.md)), so the one case the proof cannot rule out (another device spent the notes) leaves the checking message, never a wrong amount.
+**Chosen:** the app treats a Shielded registration failure as charged only when the SDK proves its inputs spent and its identity not created (option 3). A create the call left unconfirmed is kept as an unresolved attempt (wallet and network scope, its identity id and the record it would have). The explanation turns it into the charged record once the create's activity row has the `InputsConsumed` status, after a relaunch too. The record that follows says "did not go through" and "checking where the money went". It states an amount only once the fallback address is seen to rise ([ADR-0036](0036-measure-returned-funds-as-the-fallback-address-increase.md)), so the one case the proof cannot rule out (another device spent the notes) leaves the checking message, never a wrong amount.
 
 ## Consequences
 
@@ -45,9 +47,11 @@ All spent, with the identity absent at or above the spending height, returns `Pl
 **Negative**
 - The app needs a platform pin with #5853. Until it merges, the pin is that PR's head.
 - A charged failure is recognised only after the proven reads succeed at the create's node. If that node is gone, the registration stays on "still confirming".
+- A create proven during a sync is explained on the next Platform address sync or the next check of the row, not at the moment the SDK writes the row.
 
 **Neutral**
 - If the notes were spent elsewhere, the row stays on the checking message until the next registration starts or one succeeds.
+- A create's `Confirmed` row is not read as success: a scan confirms the row from its outputs before the outcome is read. An unresolved attempt whose identity was created stays, explaining nothing, until the next registration starts or one succeeds.
 
 ## Links
 

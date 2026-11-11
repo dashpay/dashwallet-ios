@@ -91,7 +91,7 @@ class JoinDashPayViewModel: ObservableObject {
         let explanation = ShieldedChargedFailureExplanationModel.forCurrentScope()
         explanation.refresh()
         self.explanation = explanation
-        updateAddressSyncSubscription(hasRecord: explanation.hasRecord)
+        updateAddressSyncSubscription(isNeeded: explanation.hasRecord || explanation.hasUnresolvedAttempt)
         if let report = registrationReport() {
             let shown = Self.rowFailure(
                 state: report.state, failureReason: report.failureReason,
@@ -326,10 +326,12 @@ class JoinDashPayViewModel: ObservableObject {
 
     /// While a failure record exists, every Platform address sync may change the returned
     /// amount (still unknown) or the amount to add, so the explanation is read again on each.
+    /// While a create's outcome is unresolved, a sync may have proven it charged: once the
+    /// explanation's read turns it into a record, the row is checked again.
     /// Set up again on each check, which is also what restores it after a relaunch.
     @MainActor
-    private func updateAddressSyncSubscription(hasRecord: Bool) {
-        guard hasRecord else {
+    private func updateAddressSyncSubscription(isNeeded: Bool) {
+        guard isNeeded else {
             addressSyncUpdates = nil
             return
         }
@@ -342,7 +344,12 @@ class JoinDashPayViewModel: ObservableObject {
             .sink { [weak self] in
                 MainActor.assumeIsolated {
                     guard let self, let explanation = self.explanation else { return }
+                    let hadRecord = explanation.hasRecord
                     explanation.refresh()
+                    if !hadRecord, explanation.hasRecord {
+                        self.checkUsername()
+                        return
+                    }
                     // Only the text can change here; the row's state is rechecked on its own triggers.
                     if self.failureExplanation != nil, let text = explanation.text {
                         self.failureExplanation = Self.joined(text)

@@ -18,6 +18,10 @@ money came back or where, and a retry from Platform Payment failed because 0.029
   went to, that its inputs are spent and its identity was not created
   ([dashpay/platform#5853](https://github.com/dashpay/platform/pull/5853)). A node's rejection
   text is never trusted. [ADR-0035](../../adr/0035-classify-a-charged-shielded-registration-failure-by-the-sdks-proven-outcome.md).
+- **A failure proven later is explained too.** When the SDK cannot read the outcome during the
+  call (connection lost after the create was sent), the attempt is kept, amount-free. Once a later
+  sync proves its inputs consumed (the create's activity row gets the SDK's `InputsConsumed`
+  status), the row explains the charged failure, after a relaunch too.
 - **The registration's row explains it.** On Home and More the row says "The registration did not
   go through." and "Checking where the money went…" until Platform address sync sees the funds.
   Then it states the returned amount, names the Platform balance as where it went, and says how
