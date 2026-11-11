@@ -37,6 +37,8 @@ private struct InternalTransferToastModifier: ViewModifier {
     /// timer: its reason is the one thing the history will not show, so it
     /// stays until the user closes it.
     private static let duration: TimeInterval = 3
+    /// Longer: it tells the user not to send again, which must not be missed.
+    private static let submittedDuration: TimeInterval = 8
 
     func body(content: Content) -> some View {
         content
@@ -68,7 +70,7 @@ private struct InternalTransferToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
                 guard let remaining = runner.notice?.remainingDisplayTime(
-                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: Self.duration)
+                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: runner.notice == .submitted ? Self.submittedDuration : Self.duration)
                 else { return }
 
                 guard remaining > 0 else {
@@ -95,8 +97,8 @@ private struct InternalTransferToastModifier: ViewModifier {
     private func style(for notice: InternalTransferRunner.Notice) -> ToastStyle {
         switch notice {
         case .started: return .loading
-        case .busy, .drainPending: return .warning
-        case .succeeded, .submitted: return .success
+        case .busy, .drainPending, .submitted: return .warning
+        case .succeeded: return .success
         case .failed, .needsCoinConsolidation: return .error
         }
     }
@@ -117,8 +119,8 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "")
         case .submitted:
             return NSLocalizedString(
-                "Transfer sent — waiting for the network to confirm it",
-                comment: "Internal transfer accepted but not yet confirmed")
+                "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
+                comment: "The transfer may have reached the network; avoid sending twice")
         case .drainPending:
             return NSLocalizedString(
                 "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
