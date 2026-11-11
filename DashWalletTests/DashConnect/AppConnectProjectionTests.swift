@@ -1268,6 +1268,35 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(rows, [row])
     }
 
+    /// A disconnect here closes this identity's intent; the access another
+    /// identity of the wallet still has keeps the row, and its Disconnect.
+    func testAClosedIntentHereDoesNotShowDisconnectedWhileAnotherIdentityHasAccess() {
+        let me = Self.identity.toBase58String(), other = Self.otherIdentity.toBase58String()
+        var closed = Self.intent([Self.authKey(10)])
+        closed.closedAt = Date(timeIntervalSince1970: 1)
+        let projection = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(10), disabledAt: 1)])], intents: [closed])
+        let at = Date(timeIntervalSince1970: 2)
+        func row(seenOn: Set<String>) -> DAppConnection {
+            DAppConnection(
+                id: Self.app.toBase58String(), name: "App", url: "", status: .active,
+                updatedAt: Date(timeIntervalSince1970: 1), seenOn: seenOn)
+        }
+
+        let held = PlatformDashConnectDataSource.rows(
+            [row(seenOn: [me])], after: projection, of: Self.identity,
+            intents: [Self.intent([Self.authKey(10)], identity: Self.otherIdentity)], at: at)
+        XCTAssertEqual(held.map(\.status), [.active], "another identity's open intent holds it")
+
+        let seen = PlatformDashConnectDataSource.rows(
+            [row(seenOn: [me, other])], after: projection, of: Self.identity, intents: [], at: at)
+        XCTAssertEqual(seen.map(\.status), [.active], "live keys seen on another identity hold it")
+        XCTAssertEqual(seen.first?.seenOn, [other])
+
+        let alone = PlatformDashConnectDataSource.rows(
+            [row(seenOn: [me])], after: projection, of: Self.identity, intents: [], at: at)
+        XCTAssertEqual(alone.map(\.status), [.disconnected], "with no access elsewhere it is Disconnected")
+    }
+
     func testAFenceKeyCanSpendOneCreditAndNeverExpires() {
         let key = AppConnect.fenceKey(keyId: 7, publicKeyHash160: Data(repeating: 1, count: 20))
         XCTAssertEqual(key.totalBudget, 1)

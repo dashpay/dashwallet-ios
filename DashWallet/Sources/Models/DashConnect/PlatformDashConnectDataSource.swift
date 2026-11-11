@@ -1144,6 +1144,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// after those intents; one whose update never landed, or whose keys went
     /// off without a disconnect, has none, unless another identity's intents
     /// hold it or its last read saw keys there no approval names (`seenOn`).
+    /// Such access elsewhere also keeps a row from showing Disconnected.
     /// A row whose app is in `keeping` stays as it is. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
@@ -1201,6 +1202,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             var seenOn = existing?.seenOn ?? []
             seenOn.remove(me)
             if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
+            // Disconnected here, but another identity of the wallet still
+            // holds the app (its intents, or live keys its last read saw):
+            // the row keeps that access, and its Disconnect, until that
+            // identity's own read.
+            if status == .disconnected, let existing, heldElsewhere.contains(id) || !seenOn.isEmpty {
+                let kept: ConnectionStatus = existing.status == .disconnected ? .active : existing.status
+                result.removeAll { $0.id == id }
+                result.append(DAppConnection(
+                    existing, status: kept, seenOn: seenOn, at: existing.status == kept ? existing.updatedAt : updatedAt))
+                continue
+            }
             result.removeAll { $0.id == id }
             result.append(DAppConnection(
                 id: id,
