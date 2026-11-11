@@ -121,15 +121,18 @@ struct DashSpendPayScreen: View {
             }
         }
         .sheet(isPresented: $showConfirmationDialog) {
+            // Read once, so the sheet shows the same price and discount that Confirm passes on.
+            let confirmedPrice = confirmationOriginalPrice
+            let confirmedDiscount = viewModel.displaySavingsFraction
             DashSpendPayConfirmationSheet(
                 merchantName: viewModel.merchantTitle,
                 merchantIconUrl: viewModel.merchantIconUrl,
-                originalPrice: confirmationOriginalPrice,
-                discount: viewModel.displaySavingsFraction,
+                originalPrice: confirmedPrice,
+                discount: confirmedDiscount,
                 quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
                 onConfirm: {
                     showConfirmationDialog = false
-                    purchaseGiftCard()
+                    purchaseGiftCard(confirmedPrice: confirmedPrice, confirmedDiscount: confirmedDiscount)
                 },
                 onCancel: {
                     showConfirmationDialog = false
@@ -214,10 +217,13 @@ struct DashSpendPayScreen: View {
         }
     }
 
-    private func purchaseGiftCard() {
+    private func purchaseGiftCard(confirmedPrice: Decimal, confirmedDiscount: Decimal) {
         Task {
             do {
-                let txId = try await viewModel.purchaseGiftCardAndPay(selectedQuantities: confirmationQuantities)
+                let txId = try await viewModel.purchaseGiftCardAndPay(
+                    selectedQuantities: confirmationQuantities,
+                    confirmedPrice: confirmedPrice,
+                    confirmedDiscount: confirmedDiscount)
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)

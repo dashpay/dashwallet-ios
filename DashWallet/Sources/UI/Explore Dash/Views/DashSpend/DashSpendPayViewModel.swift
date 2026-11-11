@@ -318,13 +318,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:]) async throws -> Data {
+    /// - Parameters:
+    ///   - confirmedPrice: the card value the confirmation sheet showed.
+    ///   - confirmedDiscount: the discount fraction the confirmation sheet showed. Both are
+    ///     the sheet's own values, not this view model's current state, which a merchant
+    ///     refresh can change after the buyer confirmed.
+    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:],
+                                confirmedPrice: Decimal,
+                                confirmedDiscount: Decimal) async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
         // What the buyer approved, in duffs. Resolved before the provider is asked for an
         // order, so a missing exchange rate stops the purchase before anything is created.
-        let approvedDashAmount = try approvedPaymentAmount()
+        let approvedDashAmount = try approvedPaymentAmount(
+            price: confirmedPrice, discount: confirmedDiscount)
 
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.
@@ -420,8 +428,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// The price on the confirmation sheet ("You pay": the card value less the discount),
     /// converted to duffs at the wallet's current rate. Throws when no rate is available:
     /// without it a provider's quote cannot be checked.
-    private func approvedPaymentAmount() throws -> UInt64 {
-        let approvedFiatAmount = amount * (1 - displaySavingsFraction)
+    private func approvedPaymentAmount(price: Decimal, discount: Decimal) throws -> UInt64 {
+        let approvedFiatAmount = price * (1 - discount)
         guard approvedFiatAmount > 0,
               let dashAmount = try? CurrencyExchanger.shared.convertToDash(
                   amount: approvedFiatAmount, currency: kDefaultCurrencyCode),

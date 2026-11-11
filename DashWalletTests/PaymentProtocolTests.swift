@@ -811,6 +811,28 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
+    /// A request that is still valid when it is fetched but expires while the PIN prompt is
+    /// open is not sent: the expiry is checked again against the time after the prompt.
+    func testHeadlessRequestExpiringDuringAuthorizationIsNotSent() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforePrompt = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterPrompt = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var promptAnswered = false
+        let t = FakeTransport(unsigned(expires: expiry))
+        let auth = FakeAuth(); auth.onAuthorize = { promptAnswered = true }
+        let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { promptAnswered ? afterPrompt : beforePrompt }),
+            .expired)
+
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
+    }
+
     /// A failed merchant round-trip happens BEFORE broadcast, so the money is unspent: the
     /// failure is a hard throw carrying the tx hash, nothing is broadcast, and the send
     /// guard is released so the user can retry.
