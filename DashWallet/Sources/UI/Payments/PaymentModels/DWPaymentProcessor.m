@@ -233,8 +233,11 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.
 - (void)broadcastBIP70PaymentOutput:(DWPaymentOutput *)paymentOutput {
-    BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
-                    paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
+    // An unsigned request always asks for the PIN / biometric, even with spending confirmation
+    // turned off: nothing vouches for its recipient, so the prompt is the last deliberate step.
+    BOOL skipAuth = paymentOutput.isSecure &&
+                    ([[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
+                     paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized);
 
     if (skipAuth) {
         [self performBIP70Send:paymentOutput];

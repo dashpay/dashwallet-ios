@@ -783,6 +783,90 @@ final class BIP70PaymentServiceTests: XCTestCase {
             .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
     }
 
+    // MARK: Interactive policy + confirm-screen rows (unsigned requests)
+
+    private func unsignedNamed(_ name: String?, outputs: [PaymentOutput]? = nil) -> PaymentRequest {
+        let outs = outputs ?? [PaymentOutput(amount: 100_000, script: p2pkh)]
+        let details = PaymentDetails(network: "test", outputs: outs, expires: futureExpiry,
+                                     memo: nil, paymentURL: "http://h/pay", merchantData: nil)
+        let pkiData = name.map { X509Certificates(certificates: [Data($0.utf8)]).encoded() }
+        return PaymentRequest(pkiType: "none", pkiData: pkiData, serializedDetails: details.encoded())
+    }
+
+    private func paymentOutput(for request: PaymentRequest, isSecure: Bool? = nil) async throws -> DWPaymentOutput {
+        let confirmation = try await service(FakeTransport(request), FakeWallet())
+            .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let box = BIP70ConfirmationBox(confirmation)
+        guard let isSecure else { return BIP70PaymentOutputFactory.paymentOutput(from: box) }
+        // The lock is a property of the output, so a signed one is built directly here: a
+        // request that verifies as signed needs a certificate the simulator trusts.
+        return DWPaymentOutput(merchantName: box.merchantName, isSecure: isSecure, amount: box.amount,
+                               fee: box.estimatedFee, address: box.primaryAddress ?? "", memo: box.memo,
+                               bip70Confirmation: box)
+    }
+
+    /// The confirm screen reads an output through this protocol; Swift only sees the
+    /// conformance at runtime (the Objective-C category forward-declares the protocol).
+    private func rows(of output: DWPaymentOutput) throws -> ConfirmPaymentDataSource {
+        try XCTUnwrap(output as AnyObject as? ConfirmPaymentDataSource)
+    }
+
+    private func addressRow(of output: DWPaymentOutput) throws -> DWTitleDetailItem? {
+        try rows(of: output).address(with: UIFont.systemFont(ofSize: 12), tintColor: UIColor.black)
+    }
+
+    func testUnsignedNameIsCarriedButNotSecure() {
+        let verdict = PaymentRequestVerifier().verify(unsignedNamed("Coffee Shop"))
+        XCTAssertEqual(verdict.commonName, "Coffee Shop")
+        XCTAssertFalse(verdict.isSecure)
+    }
+
+    func testUnsignedNamedRequestShowsAddressAndUnverifiedLabel() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"))
+        XCTAssertEqual(try addressRow(of: output)?.attributedDetail?.string, Self.testnetAddress)
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "Unverified recipient: Coffee Shop")
+    }
+
+    func testUnsignedNamelessRequestShowsAddressAndUnverifiedLabel() async throws {
+        let output = try await paymentOutput(for: unsignedNamed(nil))
+        XCTAssertEqual(try addressRow(of: output)?.attributedDetail?.string, Self.testnetAddress)
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "Unverified recipient")
+    }
+
+    func testSignedRequestKeepsNameInPlaceOfAddress() async throws {
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop"), isSecure: true)
+        XCTAssertNil(try addressRow(of: output))
+        XCTAssertEqual(try rows(of: output).nameInfo?.plainDetail, "🔒 Coffee Shop")
+    }
+
+    func testSignedMultiOutputRequestSaysHowManyAddressesItPays() async throws {
+        let outs = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
+        let output = try await paymentOutput(for: unsignedNamed("Coffee Shop", outputs: outs), isSecure: true)
+        XCTAssertEqual(try rows(of: output).generalInfo?.plainDetail, "This payment goes to 2 addresses.")
+    }
+
+    func testInteractivePolicyRefusesUnsignedMultiOutput() async throws {
+        let outs = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
+        let svc = service(FakeTransport(unsignedNamed(nil, outputs: outs)), FakeWallet())
+        let multi = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        XCTAssertThrowsError(try BIP70InteractivePolicy.check(multi)) {
+            XCTAssertEqual($0 as? BIP70InteractivePolicy.Violation, .unsignedMultipleRecipients)
+        }
+        let single = try await service(FakeTransport(unsignedNamed(nil)), FakeWallet())
+            .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        XCTAssertNoThrow(try BIP70InteractivePolicy.check(single))
+    }
+
+    func testInteractivePolicyRequiresHTTPSOutsideDebug() throws {
+        let http = URL(string: "http://h/pr")!
+        let https = URL(string: "HTTPS://h/pr")!
+        XCTAssertThrowsError(try BIP70InteractivePolicy.check(requestURL: http, allowsInsecureTransport: false)) {
+            XCTAssertEqual($0 as? BIP70InteractivePolicy.Violation, .insecureTransport)
+        }
+        XCTAssertNoThrow(try BIP70InteractivePolicy.check(requestURL: https, allowsInsecureTransport: false))
+        XCTAssertNoThrow(try BIP70InteractivePolicy.check(requestURL: http, allowsInsecureTransport: true))
+    }
+
     func testCallbackURLFormat() async throws {
         let w = FakeWallet()
         let svc = service(FakeTransport(unsigned()), w)
