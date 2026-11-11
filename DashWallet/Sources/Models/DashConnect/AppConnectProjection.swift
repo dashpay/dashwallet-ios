@@ -153,11 +153,26 @@ extension AppConnect {
         /// when the read carries none. Without it no key is judged expired.
         let platformTime: UInt64?
 
-        /// Whether this read may replace `newest`. A revision only grows, so
-        /// a read below one already seen comes from a node that is behind.
+        /// Whether this read may replace `newest`. A revision only grows, a
+        /// key is never removed or turned back on, and its budget and expiry
+        /// only rise, the last without a new revision: a read behind one
+        /// already seen in any of these comes from a node that is behind.
         func mayReplace(_ newest: IdentitySnapshot?) -> Bool {
             guard let newest, newest.identityId == identityId else { return true }
-            return revision >= newest.revision
+            guard revision >= newest.revision else { return false }
+            let byId = Dictionary(keys.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            return newest.keys.allSatisfy { seen in
+                guard let key = byId[seen.id] else { return false }
+                return (seen.disabledAt == nil || key.disabledAt != nil)
+                    && !Self.isLower(key.totalBudget, than: seen.totalBudget)
+                    && !Self.isLower(key.expiresAt, than: seen.expiresAt)
+            }
+        }
+
+        /// Whether the limit `read` is below `seen`, both set.
+        private static func isLower(_ read: UInt64?, than seen: UInt64?) -> Bool {
+            guard let read, let seen else { return false }
+            return read < seen
         }
     }
 
