@@ -87,12 +87,17 @@ enum GiftCardPaymentGuard {
     /// `Decimal(string:)` alone reads a leading number and ignores what follows it, so the
     /// string is checked first. Signs, exponents, grouping separators and whitespace are
     /// refused, as is anything longer than `Decimal` can hold exactly.
+    ///
+    /// The check reads UTF-8 bytes, not `Character`s: a digit followed by a combining mark
+    /// is one `Character` that sorts between "0" and "9".
     static func dashAmount(fromQuotedString string: String) -> Decimal? {
-        guard string.count <= 30 else { return nil }
+        let bytes = string.utf8
+        guard bytes.count <= 30 else { return nil }
 
-        let parts = string.split(separator: ".", omittingEmptySubsequences: false)
+        let asciiDigits = UInt8(ascii: "0")...UInt8(ascii: "9")
+        let parts = bytes.split(separator: UInt8(ascii: "."), omittingEmptySubsequences: false)
         guard (1...2).contains(parts.count),
-              parts.allSatisfy({ part in !part.isEmpty && part.allSatisfy { ("0"..."9").contains($0) } }) else {
+              parts.allSatisfy({ part in !part.isEmpty && part.allSatisfy { asciiDigits.contains($0) } }) else {
             return nil
         }
 

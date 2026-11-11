@@ -157,6 +157,15 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         }
     }
 
+    /// A digit that carries a combining mark, a variation selector or a joiner is one
+    /// `Character`, and `Decimal(string:)` reads the digits in front of it.
+    func testDigitsWithCombiningMarksAreRefused() {
+        for string in ["1\u{0301}25", "1\u{0301}", "0.5\u{0301}", "1\u{FE0F}\u{20E3}", "12\u{200D}3", "1.\u{0301}5", "\u{0661}"] {
+            let scalars = string.unicodeScalars.map { String($0.value, radix: 16) }.joined(separator: " ")
+            XCTAssertNil(GiftCardPaymentGuard.dashAmount(fromQuotedString: string), "accepted scalars \(scalars)")
+        }
+    }
+
     /// A string too long for `Decimal` to hold exactly is refused instead of being cut short.
     func testOverlongAmountIsRefused() {
         let overlong = "0.12345678" + String(repeating: "0", count: 40) + "1"
@@ -365,6 +374,12 @@ final class PiggyCardsPaymentURITests: XCTestCase {
 
     func testMalformedAmountsAreRefused() {
         for amount in ["1.25invalid", "1.2.3", "1,234.5", "1e-3", "-1", "abc", ""] {
+            assertRefused("dash:\(Self.testnetAddress)?amount=\(amount)")
+        }
+    }
+
+    func testAmountDigitsWithCombiningMarksAreRefused() {
+        for amount in ["1\u{0301}25", "0.5\u{0301}", "1\u{FE0F}\u{20E3}", "12\u{200D}3"] {
             assertRefused("dash:\(Self.testnetAddress)?amount=\(amount)")
         }
     }
