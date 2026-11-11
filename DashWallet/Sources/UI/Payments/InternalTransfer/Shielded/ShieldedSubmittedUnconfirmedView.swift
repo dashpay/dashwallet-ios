@@ -12,6 +12,9 @@ struct ShieldedSubmittedUnconfirmedView: View {
     /// Where this transfer's status can be checked later, when the surface
     /// that started it has a place for that.
     var detail: String? = nil
+    /// Continues this same transfer on its recorded asset lock, when the
+    /// surface that started it still holds the recipient.
+    var onResume: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -28,7 +31,7 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .foregroundColor(.dash.primaryText)
 
             Text(NSLocalizedString(
-                "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.",
+                "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
                 comment: "InternalTransfer"))
                 .font(.callout)
                 .foregroundColor(.dash.secondaryText)
@@ -47,13 +50,25 @@ struct ShieldedSubmittedUnconfirmedView: View {
 
             Spacer(minLength: 12)
 
-            DashButton(
-                text: NSLocalizedString("Done", comment: ""),
-                style: .filled,
-                stretch: true,
-                action: onDone)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            if let onResume {
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Resume", comment: "InternalTransfer"),
+                    positiveButtonAction: onResume,
+                    negativeButtonText: NSLocalizedString("Done", comment: ""),
+                    negativeButtonAction: onDone)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            } else {
+                DashButton(
+                    text: NSLocalizedString("Done", comment: ""),
+                    style: .filled,
+                    stretch: true,
+                    action: onDone)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            }
         }
     }
 }

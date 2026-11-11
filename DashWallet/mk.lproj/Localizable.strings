@@ -1221,6 +1221,9 @@
 /* No comment provided by engineer. */
 "Confirm withdrawal" = "Потврди го повлекувањето";
 
+/* Username purchase result unknown */
+"Confirmation pending" = "Confirmation pending";
+
 /* SPV diagnostics */
 "Confirmed" = "Потврдена";
 
@@ -1650,6 +1653,9 @@
 
 /* Wallet support message subject */
 "Dash Wallet — unable to read wallet keys" = "Dash Wallet — unable to read wallet keys";
+
+/* Identity top-up stopped after successful unshield */
+"Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again." = "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.";
 
 /* Devnet */
 "DashConnect Contract ID" = "DashConnect Contract ID";
@@ -2479,6 +2485,9 @@
 
 /* Usernames */
 "If enough of the network determines that a username is inappropriate, they can block it" = "If enough of the network determines that a username is inappropriate, they can block it";
+
+/* Send confirm sheet: an unconfirmed Core to Shielded send can be resumed */
+"If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice." = "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.";
 
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
@@ -4487,6 +4496,9 @@
 /* Usernames — when a username vote closes */
 "Results on %@" = "Results on %@";
 
+/* InternalTransfer */
+"Resume" = "Resume";
+
 /* Resume the same asset lock */
 "Resume transfer" = "Resume transfer";
 
@@ -5388,6 +5400,9 @@
 /* No comment provided by engineer. */
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
 
+/* Identity top-up second leg cancelled */
+"The identity top-up result could not be confirmed. Check your balances before continuing." = "The identity top-up result could not be confirmed. Check your balances before continuing.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "The image you select will be uploaded to Imgur anonymously.";
 
@@ -5459,6 +5474,9 @@
 
 /* Wallets */
 "The old wallet data could not be removed. Please try again." = "The old wallet data could not be removed. Please try again.";
+
+/* DashPay registration or purchase result unknown */
+"The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment." = "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.";
 
 /* Masternode unban */
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
@@ -5543,6 +5561,9 @@
 
 /* No comment provided by engineer. */
 "The transfer is instant" = "The transfer is instant";
+
+/* Identity transfer result unknown */
+"The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer." = "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.";
 
 /* Masternode unban */
 "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
@@ -6104,8 +6125,8 @@
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
 
-/* Internal transfer accepted but not yet confirmed */
-"Transfer sent — waiting for the network to confirm it" = "Transfer sent — waiting for the network to confirm it";
+/* The transfer may have reached the network; avoid sending twice */
+"Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status." = "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.";
 
 /* Internal transfer handed to the background runner */
 "Transfer started" = "Transfer started";
@@ -7207,11 +7228,11 @@
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Your transaction was sent and the amount should appear in your wallet in a few minutes.";
 
+/* InternalTransfer */
+"Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status." = "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.";
+
 /* Dash DEX / dex_receive_memo_warning */
 "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost." = "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.";
-
-/* InternalTransfer */
-"Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
 "Your Transparent balance" = "Вашето транспарентно салдо";
