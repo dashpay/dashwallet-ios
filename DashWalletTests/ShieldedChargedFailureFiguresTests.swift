@@ -230,6 +230,8 @@ final class ShieldedChargedFailureFiguresTests: XCTestCase {
     private final class Fakes {
         var candidates: [Policy.Candidate]
         var nextReceive: Policy.Candidate?
+        /// The Platform balance read fails: the model gets no list, not an empty one.
+        var readFails = false
         var fundingRequests: [Bool] = []
         init(candidates: [Policy.Candidate], nextReceive: Policy.Candidate?) {
             self.candidates = candidates
@@ -247,7 +249,7 @@ final class ShieldedChargedFailureFiguresTests: XCTestCase {
             store: store,
             networkRawValue: network ?? self.network,
             walletIdHex: wallet ?? walletHex,
-            candidates: { fakes.candidates },
+            candidates: { fakes.readFails ? nil : fakes.candidates },
             nextReceive: { fakes.nextReceive },
             fundingDuffs: { isContested in
                 fakes.fundingRequests.append(isContested)
@@ -432,6 +434,38 @@ final class ShieldedChargedFailureFiguresTests: XCTestCase {
             model.text?.block2,
             ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil).block2)
         XCTAssertFalse(model.needsBalanceUpdates)
+    }
+
+    @MainActor
+    func test_model_amountFixed_balanceReadFails_statesReturnedAmountWithoutAdvice() {
+        // A failed read is not an empty wallet: no amount to add until a read succeeds.
+        let store = ShieldedChargedFailureStore(defaults: makeDefaults())
+        saveRecord(store, returnedDuffs: returnedFixed)
+        let fakes = freshFakes()
+        fakes.readFails = true
+        let model = makeModel(store, fakes)
+        model.refresh()
+        assertText(model.text, returned: returnedFixed, toAdd: nil)
+        XCTAssertFalse(model.needsBalanceUpdates)
+
+        fakes.readFails = false
+        model.refresh()
+        let toAdd = Policy.amountToAddDuffs(
+            candidates: fakes.candidates, nextReceive: fakes.nextReceive!, fundingDuffs: standardFundingDuffs)
+        assertText(model.text, returned: returnedFixed, toAdd: toAdd)
+    }
+
+    @MainActor
+    func test_model_amountNotFixed_balanceReadFails_staysCheckingAndFixesNothing() {
+        let store = ShieldedChargedFailureStore(defaults: makeDefaults())
+        saveRecord(store)
+        let fakes = freshFakes(fallbackBalance: snapshot + returnedCredits)
+        fakes.readFails = true
+        let model = makeModel(store, fakes)
+        model.refresh()
+        assertText(model.text, returned: nil, toAdd: nil)
+        XCTAssertTrue(model.needsBalanceUpdates)
+        XCTAssertNil(store.record(networkRawValue: network, walletIdHex: walletHex)?.returnedDuffs)
     }
 
     @MainActor

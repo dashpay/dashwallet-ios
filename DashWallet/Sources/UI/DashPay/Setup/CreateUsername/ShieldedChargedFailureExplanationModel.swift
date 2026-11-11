@@ -28,7 +28,8 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
     private let store: ShieldedChargedFailureStore
     private let networkRawValue: Int
     private let walletIdHex: String?
-    private let candidates: () -> [Policy.Candidate]
+    /// nil when the Platform balance read failed — unknown, never an empty wallet.
+    private let candidates: () -> [Policy.Candidate]?
     private let nextReceive: () -> Policy.Candidate?
     private let fundingDuffs: (_ isContested: Bool) -> UInt64
 
@@ -38,12 +39,14 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
     @Published private(set) var needsBalanceUpdates = false
     /// A record exists in scope, whatever its figures.
     @Published private(set) var hasRecord = false
+    /// The name of the registration the record is about; nil without a record.
+    @Published private(set) var username: String?
 
     init(
         store: ShieldedChargedFailureStore,
         networkRawValue: Int,
         walletIdHex: String?,
-        candidates: @escaping () -> [PlatformPaymentIdentityFundingPolicy.Candidate],
+        candidates: @escaping () -> [PlatformPaymentIdentityFundingPolicy.Candidate]?,
         nextReceive: @escaping () -> PlatformPaymentIdentityFundingPolicy.Candidate?,
         fundingDuffs: @escaping (_ isContested: Bool) -> UInt64
     ) {
@@ -61,14 +64,15 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
             store: ShieldedChargedFailureStore(),
             networkRawValue: WalletEnvironment.networkKind.rawValue,
             walletIdHex: WalletEnvironment.activeWalletIdHex as String?,
-            candidates: { (try? Policy.currentCandidates()) ?? [] },
+            candidates: { try? Policy.currentCandidates() },
             nextReceive: {
                 // The derived row carries the bech32m address only; its type and hash come from the
                 // same decoder the funding code uses. Its balance is read from the persisted rows.
                 guard let address = PlatformAddressSyncCoordinator.shared.derivedAddresses.nextReceiveAddress,
-                      let parsed = PlatformAddressSyncCoordinator.parsePlatformRecipient(bech32m: address.address)
+                      let parsed = PlatformAddressSyncCoordinator.parsePlatformRecipient(bech32m: address.address),
+                      let candidates = try? Policy.currentCandidates()
                 else { return nil }
-                let balance = ((try? Policy.currentCandidates()) ?? []).first {
+                let balance = candidates.first {
                     $0.addressType == parsed.ffiAddressType && $0.hash == parsed.hash
                 }?.balance ?? 0
                 return Policy.Candidate(addressType: parsed.ffiAddressType, hash: parsed.hash, balance: balance)
@@ -83,12 +87,14 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
             text = nil
             needsBalanceUpdates = false
             hasRecord = false
+            username = nil
             return
         }
         hasRecord = true
+        username = record.username
         let current = candidates()
 
-        if record.returnedDuffs == nil {
+        if record.returnedDuffs == nil, let current {
             let fallbackCredits = current.first {
                 Data([$0.addressType]) + $0.hash == record.fallbackAddress
             }?.balance ?? 0
@@ -107,10 +113,12 @@ final class ShieldedChargedFailureExplanationModel: ObservableObject {
             text = ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil)
             return
         }
-        // Unknown until the next receive address is derived again, e.g. right after a relaunch.
-        let toAdd = nextReceive().map {
-            Policy.amountToAddDuffs(
-                candidates: current, nextReceive: $0, fundingDuffs: fundingDuffs(record.isContested))
+        // Unknown until the next receive address is derived again, e.g. right after a relaunch,
+        // and while the balance cannot be read.
+        var toAdd: UInt64?
+        if let current, let next = nextReceive() {
+            toAdd = Policy.amountToAddDuffs(
+                candidates: current, nextReceive: next, fundingDuffs: fundingDuffs(record.isContested))
         }
         text = ShieldedChargedFailureExplanation.text(returnedDuffs: returned, amountToAddDuffs: toAdd)
     }

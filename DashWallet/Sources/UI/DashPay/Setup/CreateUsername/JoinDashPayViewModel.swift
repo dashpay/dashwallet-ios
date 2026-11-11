@@ -103,6 +103,14 @@ class JoinDashPayViewModel: ObservableObject {
             self.registrationStep = report.step
             self.failureReason = shown.failureReason
             self.failureExplanation = shown.failureExplanation
+        } else if let recorded = Self.recordRow(
+            recordUsername: explanation.username, explanation: explanation.text.map(Self.joined)) {
+            // Closing the row while the registration ran drops the handoff marker, but the
+            // record of its charged failure stays: the record alone reports it.
+            self.state = recorded.row.state
+            self.username = recorded.username
+            self.registrationStep = .processingPayment
+            self.failureExplanation = recorded.row.failureExplanation
         } else if let lost = UsernamePrefs.shared.lostContestUsername, !lost.isEmpty {
             // The vote went against this wallet. Reported until the user acts
             // on it — a lost request that silently became "request a username"
@@ -296,6 +304,13 @@ class JoinDashPayViewModel: ObservableObject {
             return RowFailure(state: state, failureReason: failureReason, failureExplanation: nil)
         }
         return RowFailure(state: .creationFailed, failureReason: nil, failureExplanation: explanation)
+    }
+
+    /// The row for a failure record of this scope when no registration report exists, e.g.
+    /// after the running row was closed; nil without a record.
+    static func recordRow(recordUsername: String?, explanation: String?) -> (row: RowFailure, username: String)? {
+        guard let recordUsername, !recordUsername.isEmpty, let explanation else { return nil }
+        return (RowFailure(state: .creationFailed, failureReason: nil, failureExplanation: explanation), recordUsername)
     }
 
     struct RowFailure: Equatable {

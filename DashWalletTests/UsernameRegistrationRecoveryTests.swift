@@ -987,6 +987,44 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertTrue(copy.isRecordBackedFailure, "The row hides its X while the record explains the failure")
     }
 
+    func testWithoutAReportTheRecordAloneIsTheExplainedFailure() {
+        let shown = JoinDashPayViewModel.recordRow(recordUsername: "alice", explanation: explanation)
+        XCTAssertEqual(shown?.row.state, .creationFailed)
+        XCTAssertEqual(shown?.row.failureExplanation, explanation)
+        XCTAssertNil(shown?.row.failureReason)
+        XCTAssertEqual(shown?.username, "alice")
+        XCTAssertNil(JoinDashPayViewModel.recordRow(recordUsername: nil, explanation: nil))
+    }
+
+    /// The row was closed while the registration ran, which drops the handoff marker; the charged
+    /// failure that follows is still reported from its record, and again after a relaunch.
+    @MainActor
+    func testClosingTheRunningRowThenAChargedFailureStillShowsTheRecordAfterRelaunch() throws {
+        let prefs = UsernamePrefs.shared
+        let saved = prefs.inFlightRegistrationUsername
+        defer { prefs.inFlightRegistrationUsername = saved }
+        prefs.inFlightRegistrationUsername = "alice"
+        JoinDashPayViewModel(previewState: .creating, username: "alice").markAsDismissed()
+        XCTAssertNil(prefs.inFlightRegistrationUsername)
+
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: "aa")
+        func relaunchedRow() -> (row: JoinDashPayViewModel.RowFailure, username: String)? {
+            let model = ShieldedChargedFailureExplanationModel(
+                store: store, networkRawValue: recordNetwork, walletIdHex: "aa",
+                candidates: { nil }, nextReceive: { nil }, fundingDuffs: { _ in 0 })
+            model.refresh()
+            return JoinDashPayViewModel.recordRow(recordUsername: model.username, explanation: model.text?.block1)
+        }
+        for shown in [relaunchedRow(), relaunchedRow()] {
+            XCTAssertEqual(shown?.row.state, .creationFailed)
+            XCTAssertEqual(shown?.username, "alice")
+            XCTAssertEqual(
+                shown?.row.failureExplanation,
+                ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil).block1)
+        }
+    }
+
     func testFailedRowWithoutARecordKeepsTodaysText() {
         let copy = JoinDashPayCopy(
             state: .creationFailed, username: "alice123", shieldedSnapshot: nil,
