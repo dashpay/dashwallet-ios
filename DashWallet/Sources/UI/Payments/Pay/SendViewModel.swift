@@ -1354,7 +1354,7 @@ final class SendViewModel: ObservableObject {
     /// "Max fee: ~0.001 DASH" the transfer executor states (0.001 DASH =
     /// 1e8 credits). The metered fee is deducted from the source balance on
     /// top of the sent amount.
-    private static let platformTransferFeeReserveCredits: UInt64 = 100_000_000
+    static let platformTransferFeeReserveCredits: UInt64 = 100_000_000
 
     /// Fee/selection headroom (credits) the route requires ON TOP of the
     /// amount. `nil` = requirement unavailable → callers fail closed.

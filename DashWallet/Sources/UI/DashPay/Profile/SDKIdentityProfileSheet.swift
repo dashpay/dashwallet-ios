@@ -651,25 +651,19 @@ final class IdentityTopUpViewModel: ObservableObject {
                 }
 
             case .platform:
-                let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
-                let candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
-                    walletId: wallet.walletId,
-                    modelContainer: modelContainer)
-                let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
-                    candidates: candidates,
-                    targetCredits: credits)
-                let signer = KeychainSigner(modelContainer: modelContainer)
-                return try await wallet.topUpFromAddresses(
-                    identityId: identityId,
-                    inputs: inputs,
-                    addressSigner: signer)
-
-            case .shielded:
-                return try await topUpFromShielded(
+                return try await IdentityCreditsTopUp().fromPlatform(
                     identityId: identityId,
                     amountDuffs: amountDuffs,
                     wallet: wallet,
                     modelContainer: modelContainer)
+
+            case .shielded:
+                return try await IdentityCreditsTopUp(stepChanged: { [weak self] in self?.stepLabel = $0 })
+                    .fromShielded(
+                        identityId: identityId,
+                        amountDuffs: amountDuffs,
+                        wallet: wallet,
+                        modelContainer: modelContainer)
             }
         } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
                 PlatformWalletError.shieldedSpendUnconfirmed, TopUpError.secondLegCancelled {
@@ -701,10 +695,40 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
     }
+}
+
+// MARK: - IdentityCreditsTopUp
+
+/// The identity top-up from Platform or Shielded credits, throwing. `IdentityTopUpViewModel` and the external send
+/// call it after they have authenticated; it never prompts.
+@MainActor
+struct IdentityCreditsTopUp {
+    /// Progress text of the shielded route's two steps.
+    var stepChanged: (String) -> Void = { _ in }
+
+    func fromPlatform(
+        identityId: Data,
+        amountDuffs: UInt64,
+        wallet: ManagedPlatformWallet,
+        modelContainer: ModelContainer
+    ) async throws -> UInt64 {
+        let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+        let candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
+        let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
+            candidates: candidates,
+            targetCredits: credits)
+        let signer = KeychainSigner(modelContainer: modelContainer)
+        return try await wallet.topUpFromAddresses(
+            identityId: identityId,
+            inputs: inputs,
+            addressSigner: signer)
+    }
 
     /// The privacy-default two-step: Shielded → own Platform address →
     /// identity credits.
-    private func topUpFromShielded(
+    func fromShielded(
         identityId: Data,
         amountDuffs: UInt64,
         wallet: ManagedPlatformWallet,
@@ -720,7 +744,7 @@ final class IdentityTopUpViewModel: ObservableObject {
             storageBytes.count == 21 else {
             // Typed so the generic catch surfaces THIS message instead of
             // overwriting it with an unrelated one.
-            throw TopUpError.noPlatformReceiveAddress
+            throw IdentityTopUpViewModel.TopUpError.noPlatformReceiveAddress
         }
         let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
 
@@ -728,7 +752,9 @@ final class IdentityTopUpViewModel: ObservableObject {
         // waits for proven execution, so the credits are on-chain at the
         // destination when it returns; the unshield's own fee comes from
         // the shielded side on top of `credits`.
-        stepLabel = NSLocalizedString("Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
+        stepChanged(NSLocalizedString(
+            "Step 1 of 2 — moving Dash out of your Shielded balance…",
+            comment: "Identity top-up sheet — shielded route progress"))
         try await manager.shieldedUnshield(
             walletId: wallet.walletId,
             resolver: MnemonicResolver(),
@@ -743,7 +769,9 @@ final class IdentityTopUpViewModel: ObservableObject {
         // into the identity. The transition's fee is deducted from the
         // supplied credits; the unclaimed headroom stays at the address
         // (it is the wallet's own Platform balance, not lost).
-        stepLabel = NSLocalizedString("Step 2 of 2 — topping up your identity…", comment: "Identity top-up sheet — shielded route progress")
+        stepChanged(NSLocalizedString(
+            "Step 2 of 2 — topping up your identity…",
+            comment: "Identity top-up sheet — shielded route progress"))
         let claim = credits > PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
             ? credits - PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
             : credits

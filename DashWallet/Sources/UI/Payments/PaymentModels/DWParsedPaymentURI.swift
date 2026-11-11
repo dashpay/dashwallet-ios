@@ -30,10 +30,46 @@ enum DashAddressClassifier {
         case shielded(raw43: Data)
     }
 
+    /// What a bech32m string (HRP `dash`/`tdash`) holds on the wire, with the network its HRP names.
+    struct Bech32mAddress: Equatable {
+        enum Form: Equatable {
+            /// `isScript`: 0x80 (P2SH) rather than 0xb0 (P2PKH).
+            case platform(isScript: Bool)
+            case shielded(raw43: Data)
+        }
+
+        let isMainnet: Bool
+        let form: Form
+    }
+
+    /// Decode a DIP-0018 bech32m string without reading the global network:
+    /// - 21-byte payload with a wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
+    /// - 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
+    /// Anything else (a broken checksum, another HRP, another payload) → nil.
+    static func decodeBech32m(_ text: String) -> Bech32mAddress? {
+        guard let decoded = Bech32m.decode(text.lowercased()) else { return nil }
+        let isMainnet: Bool
+        switch decoded.hrp {
+        case Bech32m.platformHrp(mainnet: true): isMainnet = true
+        case Bech32m.platformHrp(mainnet: false): isMainnet = false
+        default: return nil
+        }
+
+        if decoded.data.count == 21,
+           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
+            return Bech32mAddress(isMainnet: isMainnet, form: .platform(isScript: decoded.data[0] == 0x80))
+        }
+        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
+        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
+        // produces for our own address).
+        if decoded.data.count == 44, decoded.data[0] == 0x10 {
+            return Bech32mAddress(isMainnet: isMainnet, form: .shielded(raw43: decoded.data.subdata(in: 1..<44)))
+        }
+        return nil
+    }
+
     /// - Base58Check L1 address (network-checked) → `.core`
-    /// - bech32m HRP `dash`/`tdash` (current network), 21-byte payload with a
-    ///   DIP-0018 wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
-    /// - bech32m, 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
+    /// - bech32m Platform / Shielded form (`decodeBech32m`) on the current network
     /// Anything else (wrong-network HRP included) → nil.
     static func classify(_ text: String) -> Kind? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -43,22 +79,12 @@ enum DashAddressClassifier {
             return .core
         }
 
-        guard let decoded = Bech32m.decode(trimmed.lowercased()) else { return nil }
         // Mainnet HRP only on mainnet — devnet parses with the testnet HRP.
-        let expectedHrp = Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet)
-        guard decoded.hrp == expectedHrp else { return nil }
-
-        if decoded.data.count == 21,
-           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
-            return .platform
+        guard let decoded = decodeBech32m(trimmed), decoded.isMainnet == WalletEnvironment.isMainnet else { return nil }
+        switch decoded.form {
+        case .platform: return .platform
+        case .shielded(let raw43): return .shielded(raw43: raw43)
         }
-        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
-        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
-        // produces for our own address).
-        if decoded.data.count == 44, decoded.data[0] == 0x10 {
-            return .shielded(raw43: decoded.data.subdata(in: 1..<44))
-        }
-        return nil
     }
 }
 
@@ -174,6 +200,20 @@ final class ParsedPaymentURI: NSObject {
                                 isAddressValidForCurrentNetwork: addressValid,
                                 isAddressPayableForCurrentNetwork: addressValid || classified != nil,
                                 requiresSendScreenRouting: isBech32Destination)
+    }
+
+    /// True when `string` is an Identity ID, which the QR scanner accepts for the external send.
+    @objc(isIdentityIDString:)
+    static func isIdentityID(string: String) -> Bool {
+        let network = WalletEnvironment.networkKind
+        guard case .success(let destination) = DestinationParser.parse(string, network: network) else { return false }
+        return destination.type == .identityID
+    }
+
+    /// `raw` as the deep-link router reads it: a `dashwallet://pay=…` link rewritten to its `dash:` URI, anything
+    /// else unchanged.
+    static func paymentString(for raw: String) -> String {
+        deepLinkPaymentString(for: raw) ?? raw
     }
 
     /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`

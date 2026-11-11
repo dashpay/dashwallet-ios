@@ -223,10 +223,7 @@ final class CoreShieldedDrainMaxController: ObservableObject {
                     from: quote, insufficientFundsMessage: self.dependencies.insufficientFundsMessage)
                 self.notice = estimate.notice
                 guard estimate.isConfirmable else { return }
-                self.confirmation = CoreShieldedDrainConfirmation(
-                    context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,
-                    estimatedRecipientCredits: quote.estimatedRecipientCredits,
-                    estimatedL1FeeDuffs: quote.estimatedL1FeeDuffs, poolFeeCredits: quote.poolFeeCredits)
+                self.confirmation = CoreShieldedDrainConfirmation(context: context, quote: quote)
                 self.dependencies.applyEstimate(estimate.amountDuffs)
             } catch {
                 guard !Task.isCancelled, generation == self.generation else { return }

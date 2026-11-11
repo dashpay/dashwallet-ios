@@ -127,6 +127,9 @@
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Platformi jääk";
 
+/* External send */
+"%@, so the source was changed to %@." = "%1$@, so the source was changed to %2$@.";
+
 /* SPV diagnostics */
 "%d already spent" = "%d already spent";
 
@@ -328,6 +331,9 @@
 /* Platform partial withdrawal cap */
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
 
+/* External send */
+"A payment request can only be paid from Core" = "A payment request can only be paid from Core";
+
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -357,6 +363,9 @@
 
 /* No comment provided by engineer. */
 "About" = "Teave";
+
+/* External send */
+"about %@" = "about %@";
 
 /* DashPay FAQ title */
 "About DashPay" = "DashPay teave";
@@ -597,6 +606,9 @@
 /* Balance info sheet */
 "Amounts and addresses are public on the blockchain" = "Summad ja aadressid on plokiahelas avalikud";
 
+/* External send */
+"An earlier payment is still being processed. Try again in a moment." = "An earlier payment is still being processed. Try again in a moment.";
+
 /* Usernames: unfinished identity top-up */
 "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
 
@@ -810,6 +822,9 @@
 /* Platform address payment detail */
 "Balance after" = "Jääk pärast";
 
+/* External send */
+"Balance not enough" = "Balance not enough";
+
 /* Balance not restored
    Max requires a known source balance
    Selected source balance not restored */
@@ -981,6 +996,9 @@
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
+
+/* External send */
+"Calculating…" = "Calculating…";
 
 /* No comment provided by engineer. */
 "Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
@@ -1376,6 +1394,15 @@
 /* Dash Core chain */
 "Core" = "Core";
 
+/* External send */
+"Core address" = "Core address";
+
+/* External send */
+"Core can't pay someone else's identity" = "Core can't pay someone else's identity";
+
+/* External send */
+"Core can't pay this kind of Platform address" = "Core can't pay this kind of Platform address";
+
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core'i chain-locked kõrgus";
 
@@ -1452,6 +1479,12 @@
 /* SPV diagnostics */
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
 
+/* External send */
+"Couldn't calculate the network fee. Check your connection and try again." = "Couldn't calculate the network fee. Check your connection and try again.";
+
+/* External send */
+"Couldn't check the identity. Check your connection and try again." = "Couldn't check the identity. Check your connection and try again.";
+
 /* No comment provided by engineer. */
 "Couldn't check which keys of this evonode are in the wallet." = "Ei õnnestunud kontrollida, millised selle evonode'i võtmed on rahakotis.";
 
@@ -1487,6 +1520,9 @@
 
 /* No comment provided by engineer. */
 "Couldn't reach the evonode." = "Evonode'iga ei saadud ühendust.";
+
+/* External send */
+"Couldn't read your balance. Check your connection and try again." = "Couldn't read your balance. Check your connection and try again.";
 
 /* Wallet preparation failure */
 "Couldn't read your wallet keys" = "Couldn't read your wallet keys";
@@ -1595,6 +1631,9 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "Dashi aadress";
+
+/* External send */
+"DASH address" = "DASH address";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Dash balance";
@@ -2018,6 +2057,12 @@
 
 /* DashPay: fee line of the Enable DashPay confirmation */
 "Estimated network fee" = "Hinnanguline võrgutasu";
+
+/* External send */
+"Estimated. The network sets the final fee." = "Estimated. The network sets the final fee.";
+
+/* External send */
+"Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." = "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.";
 
 /* SPV sync peer type */
 "Evonode" = "Evonode";
@@ -2450,6 +2495,12 @@
 /* DashPay Invitations */
 "Identity already found" = "Identity already found";
 
+/* External send */
+"Identity can't pay a Shielded address yet" = "Identity can't pay a Shielded address yet";
+
+/* External send */
+"Identity can't top up itself" = "Identity can't top up itself";
+
 /* No comment provided by engineer. */
 "Identity check" = "Identiteedi kontroll";
 
@@ -2464,6 +2515,9 @@
 
 /* Identity recovery */
 "Identity is still loading" = "Identity is still loading";
+
+/* External send */
+"Identity not found" = "Identity not found";
 
 /* Asset lock funding a DashPay identity registration */
 "Identity registration" = "Identiteedi registreerimine";
@@ -2675,6 +2729,9 @@
 /* Settings */
 "It unlocks powerful features for managing your Dash across the network" = "It unlocks powerful features for managing your Dash across the network";
 
+/* External send */
+"It will finish on its own. You don't need to send it again." = "It will finish on its own. You don't need to send it again.";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device.";
 
@@ -2849,6 +2906,9 @@
 
 /* Username marketplace: set price fee note */
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Müüki panek on võrgutehing väikese tasuga, mis makstakse sinu identiteedi jäägilt.";
+
+/* External send */
+"Loading" = "Loading";
 
 /* Username marketplace: browse feed loading */
 "Loading activity…" = "Laadime tegevust…";
@@ -3048,6 +3108,9 @@
 
 /* Dash DEX / maya_max_amount_error */
 "Max %@" = "Max %@";
+
+/* External send */
+"Max keeps %@ on your identity so contact requests and profile updates keep working." = "Max keeps %@ on your identity so contact requests and profile updates keep working.";
 
 /* Core drain estimate */
 "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
@@ -3262,6 +3325,9 @@
 /* No comment provided by engineer. */
 "No address available" = "No address available";
 
+/* External send */
+"No address, Identity ID or dash: link on the clipboard" = "No address, Identity ID or dash: link on the clipboard";
+
 /* Sync diagnostics */
 "No addresses derived yet" = "No addresses derived yet";
 
@@ -3463,6 +3529,9 @@
 /* No comment provided by engineer. */
 "Not a Dash URL" = "Not a Dash URL";
 
+/* External send */
+"Not a valid address for this network" = "Not a valid address for this network";
+
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Not a valid Dash address";
 
@@ -3564,6 +3633,9 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* External send */
+"Nothing was sent. Your money is still in your %@ balance." = "Nothing was sent. Your money is still in your %@ balance.";
 
 /* No comment provided by engineer. */
 "Notifications" = "Notifications";
@@ -3781,6 +3853,9 @@
 /* CTXSpend error */
 "Payment processing error: %@" = "Payment processing error: %@";
 
+/* External send */
+"Payment request" = "Payment request";
+
 /* DashPay Contacts */
 "Payments" = "Payments";
 
@@ -3873,6 +3948,9 @@
 
 /* Sync diagnostics */
 "Platform Balance" = "Platform Balance";
+
+/* External send */
+"Platform can't pay this kind of Platform address" = "Platform can't pay this kind of Platform address";
 
 /* No comment provided by engineer. */
 "Platform could not be reached, so owner and payout keys were not checked." = "Platformiga ei saadud ühendust, seega omaniku ja väljamakse võtmeid ei kontrollitud.";
@@ -4700,6 +4778,9 @@
 /* No comment provided by engineer. */
 "Select option" = "Select option";
 
+/* External send */
+"Select source" = "Select source";
+
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
@@ -4735,6 +4816,12 @@
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Send Contact Request";
+
+/* External send */
+"Send failed" = "Send failed";
+
+/* External send */
+"Send in progress" = "Send in progress";
 
 /* Username marketplace: transfer sheet body */
 "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Saada see nimi teisele identiteedile tasuta. Üleandmine eemaldab ka kõik müügikuulutused. Seda ei saa tagasi võtta — uus omanik peaks selle tagasi andma.";
@@ -4778,6 +4865,9 @@
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
 
+/* External send */
+"Sending from Shielded to an address that is not Shielded makes the amount and the destination public." = "Sending from Shielded to an address that is not Shielded makes the amount and the destination public.";
+
 /* Buy Dash */
 "Sending to:" = "Sending to:";
 
@@ -4789,6 +4879,9 @@
 
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Sending...";
+
+/* External send */
+"Sending…" = "Sending…";
 
 /* Send confirm sheet: Core drain */
 "Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
@@ -4903,6 +4996,9 @@
 
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
+
+/* External send */
+"Show clipboard" = "Show clipboard";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Show content in the clipboard";
@@ -5280,8 +5376,14 @@
 /* DashConnect */
 "The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
 
+/* External send */
+"The amount is below the minimum for this payment. Your funds were not sent." = "The amount is below the minimum for this payment. Your funds were not sent.";
+
 /* Dash DEX / dex_error_insufficient_balance */
 "The amount is more than what you're sending." = "The amount is more than what you're sending.";
+
+/* External send */
+"The amount is set by the payment request." = "The amount is set by the payment request.";
 
 /* InternalTransfer */
 "The amount is too large to transfer." = "The amount is too large to transfer.";
@@ -5451,6 +5553,12 @@
 /* No comment provided by engineer. */
 "The minimum withdrawal is %@ DASH." = "Minimaalne väljavõtmine on %@ DASH.";
 
+/* External send */
+"The money goes to %@'s identity balance, not their Dash wallet balance." = "The money goes to %@'s identity balance, not their Dash wallet balance.";
+
+/* External send */
+"The money goes to the recipient identity's balance, not their Dash wallet balance." = "The money goes to the recipient identity's balance, not their Dash wallet balance.";
+
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Kõige privaatsem koht oma Dashi hoidmiseks";
 
@@ -5460,8 +5568,14 @@
 /* DashPay registration context changed */
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 
+/* External send */
+"The network fee includes a Platform fee reserve. What is not used returns to your Platform balance." = "The network fee includes a Platform fee reserve. What is not used returns to your Platform balance.";
+
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
+
+/* External send */
+"The network rejected the payment. Your funds were not sent." = "The network rejected the payment. Your funds were not sent.";
 
 /* Protocol version advisory */
 "The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
@@ -5493,6 +5607,15 @@
 /* Send to contact: the prepared payment went stale before broadcast */
 "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
 
+/* External send */
+"The payment failed. Your funds were not sent." = "The payment failed. Your funds were not sent.";
+
+/* External send */
+"The payment request has expired. Your funds were not sent." = "The payment request has expired. Your funds were not sent.";
+
+/* External send */
+"The payment request has no address" = "The payment request has no address";
+
 /* Send: Core drain recovery success */
 "The pending Max transfer completed." = "The pending Max transfer completed.";
 
@@ -5501,6 +5624,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Salvestatud rahakoti kirjel puudub võrk — uuesti sünkroonimist ei saa ette valmistada.";
+
+/* External send */
+"The Platform fee is taken from the amount the identity receives." = "The Platform fee is taken from the amount the identity receives.";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -5543,6 +5669,9 @@
 
 /* No comment provided by engineer. */
 "The signing key is missing from the keychain — re-add it and try again." = "Allkirjastamisvõti puudub võtmehoidjast — lisa see uuesti ja proovi veel kord.";
+
+/* External send */
+"The signing key is unavailable. Your funds were not sent." = "The signing key is unavailable. Your funds were not sent.";
 
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
@@ -5736,6 +5865,9 @@
 /* DashPay Invitations */
 "This invitation link is not valid." = "See kutselink pole kehtiv.";
 
+/* External send */
+"This is a withdrawal. It arrives on Core after a delay." = "This is a withdrawal. It arrives on Core after a delay.";
+
 /* Send screen */
 "This is not a valid Dash address for this network" = "See pole selle võrgu jaoks kehtiv Dashi aadress";
 
@@ -5762,6 +5894,9 @@
 
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "See ei ole DashPay kasutaja QR-kood.";
+
+/* External send */
+"This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working." = "This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working.";
 
 /* No comment provided by engineer. */
 "This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
@@ -5849,6 +5984,9 @@
 
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* External send */
+"This tops up your own Identity credits." = "This tops up your own Identity credits.";
 
 /* Remove never-accepted transaction: local state says it's on-chain */
 "This transaction is confirmed and can't be removed." = "See tehing on kinnitatud ja seda ei saa eemaldada.";
@@ -6823,6 +6961,9 @@
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Ostad sõltumatult kasutajalt, mitte Dashilt ega sellelt rakenduselt. Hind koos väikese võrgutasuga makstakse sinu identiteedi jäägilt ja nimi läheb kohe sinu identiteedile.";
 
+/* External send */
+"You are offline. Check your connection and try again." = "You are offline. Check your connection and try again.";
+
 /* Shielded manual sync requires an internet connection */
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
 
@@ -7089,6 +7230,9 @@
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Su ajalugu, korrastatult";
+
+/* External send */
+"Your identity" = "Your identity";
 
 /* Identity withdrawal — Platform refused the amount as more than the balance can cover */
 "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
