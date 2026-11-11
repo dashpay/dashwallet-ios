@@ -981,9 +981,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let request = uri.request
         let signer = KeychainSigner(modelContainer: context.modelContainer)
-        let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
-        let intent = try await newAppConnectIntent(
-            request: request, plan: plan, consent: consent, snapshot: snapshot,
+        let (read, currentPublicKeys) = try await identitySnapshot(context: context)
+        // From here on the read the intent was made from: a fence reads again.
+        let (intent, snapshot) = try await newAppConnectIntent(
+            request: request, plan: plan, consent: consent, snapshot: read,
             currentPublicKeys: currentPublicKeys, context: context)
         updateIntents(in: stores) { $0.append(intent) }
         guard stores.intents.load().contains(where: { $0.id == intent.id }) else {
@@ -1174,7 +1175,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The intent of a new approval: the keys it adds under ids no key or
     /// intent of the identity holds, the earlier keys of the same connection
-    /// it turns off, and the response, sealed now.
+    /// it turns off, and the response, sealed now. With it comes the read
+    /// the intent was made from: the read after a fence, when it fenced.
     private func newAppConnectIntent(
         request: AppConnectRequest,
         plan: AppConnect.GrantPlan,
@@ -1182,7 +1184,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         snapshot: AppConnect.IdentitySnapshot,
         currentPublicKeys: [ManagedIdentity.IdentityPublicKeyInfo],
         context: Context
-    ) async throws -> AppConnect.ConnectionIntent {
+    ) async throws -> (intent: AppConnect.ConnectionIntent, snapshot: AppConnect.IdentitySnapshot) {
         let stores = context.stores
         var authKeys = try await deriveAuthKeys(request: request, plan: plan, context: context)
         defer { for index in authKeys.indices { Self.zero(&authKeys[index].privateKey) } }
@@ -1271,7 +1273,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             ).toHexString()
         )
         let added = Set(keys.map(\.id))
-        return AppConnect.ConnectionIntent(
+        let intent = AppConnect.ConnectionIntent(
             id: UUID(),
             identityId: context.identityId,
             appId: plan.appId,
@@ -1287,6 +1289,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             responseRemoved: false,
             createdAt: now(),
             closedAt: nil)
+        return (intent, snapshot)
     }
 
     /// The auth keys of `plan`, derived from the request: the same keys on
