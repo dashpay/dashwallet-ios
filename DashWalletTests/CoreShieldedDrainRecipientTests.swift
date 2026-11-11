@@ -2,11 +2,12 @@
 //  CoreShieldedDrainRecipientTests.swift
 //  DashWalletTests
 //
-//  A Core → Shielded Max drain's recipient lives only in the app's durable
-//  marker: the SDK pays whatever address a resume passes. These cover the
-//  decisions that keep an external-recipient drain from ever being resumed to
-//  the wallet's own address, the verdict every drain surface switches on, and
-//  the Send screen's estimate wiring.
+//  A Core → Shielded Max drain's recipient is in the app's durable marker,
+//  and the resume reads it there for a drain row the SDK tracked before it
+//  recorded recipients (`ShieldedResumeRecipientTests` covers the order). These
+//  cover the decisions that keep such an external-recipient drain from ever
+//  being resumed to the wallet's own address, the verdict every drain surface
+//  switches on, and the Send screen's estimate wiring.
 //
 
 import Foundation
@@ -72,6 +73,17 @@ final class CoreShieldedDrainRecipientTests: XCTestCase {
         XCTAssertEqual(UUID(drainOperationIdBytes: bytes), id)
         XCTAssertNil(UUID(drainOperationIdBytes: bytes.dropLast()))
         XCTAssertNil(UUID(drainOperationIdBytes: Data()))
+    }
+
+    /// The lock snapshot (`ShieldedTxLookup`) and the resume's row read take
+    /// the drain id from here; it is the id the running drain is claimed by
+    /// (`ShieldedAssetLocksInFlight.claimDrain(operation.id)`).
+    func testRowIdentityNamesTheDrainThatBuiltTheLock() {
+        let id = UUID()
+        let bytes = withUnsafeBytes(of: id.uuid) { Data($0) }
+        XCTAssertEqual(CoreShieldedDrainRowIdentity(operationIdBytes: bytes).operation, id)
+        XCTAssertNil(CoreShieldedDrainRowIdentity(operationIdBytes: nil).operation, "a lock no drain built")
+        XCTAssertNil(CoreShieldedDrainRowIdentity(operationIdBytes: bytes.dropLast()).operation, "a malformed id names no drain")
     }
 
     // MARK: - Who a new drain pays
